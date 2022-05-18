@@ -117,7 +117,7 @@ class PackedAttachmentIndex final
 {
   public:
     explicit constexpr PackedAttachmentIndex(uint32_t index) : mAttachmentIndex(index) {}
-    constexpr PackedAttachmentIndex(const PackedAttachmentIndex &other) = default;
+    constexpr PackedAttachmentIndex(const PackedAttachmentIndex &other)            = default;
     constexpr PackedAttachmentIndex &operator=(const PackedAttachmentIndex &other) = default;
 
     constexpr uint32_t get() const { return mAttachmentIndex; }
@@ -466,18 +466,6 @@ angle::Result AllocateBufferMemoryWithRequirements(Context *context,
                                                    Buffer *buffer,
                                                    VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                                    DeviceMemory *deviceMemoryOut);
-class BufferPool;
-static constexpr VkDeviceSize kMaxSizeToUseSmallBufferPool = 256;
-using BufferPoolPointerArray = std::array<std::unique_ptr<BufferPool>, VK_MAX_MEMORY_TYPES>;
-BufferPool *GetDefaultBufferPool(std::unique_ptr<vk::BufferPool> &smallBufferPool,
-                                 vk::BufferPoolPointerArray &defaultBufferPools,
-                                 RendererVk *renderer,
-                                 VkDeviceSize size,
-                                 uint32_t memoryTypeIndex);
-void PruneDefaultBufferPools(RendererVk *renderer,
-                             BufferPoolPointerArray &defaultBufferPools,
-                             std::unique_ptr<vk::BufferPool> &smallBufferPool);
-bool IsDueForBufferPoolPrune(double lastPruneTime);
 
 using ShaderAndSerial = ObjectAndSerial<ShaderModule>;
 
@@ -864,30 +852,38 @@ class ClearValuesArray final
     X(ImageOrBufferView)      \
     X(Sampler)
 
-#define ANGLE_DEFINE_VK_SERIAL_TYPE(Type)                                     \
-    class Type##Serial                                                        \
-    {                                                                         \
-      public:                                                                 \
-        constexpr Type##Serial() : mSerial(kInvalid) {}                       \
-        constexpr explicit Type##Serial(uint32_t serial) : mSerial(serial) {} \
-                                                                              \
-        constexpr bool operator==(const Type##Serial &other) const            \
-        {                                                                     \
-            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);         \
-            return mSerial == other.mSerial;                                  \
-        }                                                                     \
-        constexpr bool operator!=(const Type##Serial &other) const            \
-        {                                                                     \
-            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);         \
-            return mSerial != other.mSerial;                                  \
-        }                                                                     \
-        constexpr uint32_t getValue() const { return mSerial; }               \
-        constexpr bool valid() const { return mSerial != kInvalid; }          \
-                                                                              \
-      private:                                                                \
-        uint32_t mSerial;                                                     \
-        static constexpr uint32_t kInvalid = 0;                               \
-    };                                                                        \
+#define ANGLE_DEFINE_VK_SERIAL_TYPE(Type)                                  \
+    class Type##Serial                                                     \
+    {                                                                      \
+      public:                                                              \
+        constexpr Type##Serial() : mSerial(kInvalid)                       \
+        {}                                                                 \
+        constexpr explicit Type##Serial(uint32_t serial) : mSerial(serial) \
+        {}                                                                 \
+                                                                           \
+        constexpr bool operator==(const Type##Serial &other) const         \
+        {                                                                  \
+            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);      \
+            return mSerial == other.mSerial;                               \
+        }                                                                  \
+        constexpr bool operator!=(const Type##Serial &other) const         \
+        {                                                                  \
+            ASSERT(mSerial != kInvalid || other.mSerial != kInvalid);      \
+            return mSerial != other.mSerial;                               \
+        }                                                                  \
+        constexpr uint32_t getValue() const                                \
+        {                                                                  \
+            return mSerial;                                                \
+        }                                                                  \
+        constexpr bool valid() const                                       \
+        {                                                                  \
+            return mSerial != kInvalid;                                    \
+        }                                                                  \
+                                                                           \
+      private:                                                             \
+        uint32_t mSerial;                                                  \
+        static constexpr uint32_t kInvalid = 0;                            \
+    };                                                                     \
     static constexpr Type##Serial kInvalid##Type##Serial = Type##Serial();
 
 ANGLE_VK_SERIAL_OP(ANGLE_DEFINE_VK_SERIAL_TYPE)
@@ -955,11 +951,12 @@ class BufferBlock final : angle::NonCopyable
     // This should be called whenever this found to be empty. The total number of count of empty is
     // returned.
     int32_t getAndIncrementEmptyCounter();
+    void calculateStats(vma::StatInfo *pStatInfo) const;
 
   private:
     // Protect multi-thread access to mVirtualBlock, which could be possible when asyncCommandQueue
     // is enabled.
-    ConditionalMutex mVirtualBlockMutex;
+    mutable ConditionalMutex mVirtualBlockMutex;
     VirtualBlock mVirtualBlock;
 
     Buffer mBuffer;
@@ -1331,6 +1328,9 @@ void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance);
 // VK_KHR_shared_presentable_image
 void InitGetSwapchainStatusKHRFunctions(VkDevice device);
 
+// VK_KHR_fragment_shading_rate
+void InitFragmentShadingRateKHRFunctions(VkDevice device);
+
 #endif  // !defined(ANGLE_SHARED_LIBVULKAN)
 
 GLenum CalculateGenerateMipmapFilter(ContextVk *contextVk, angle::FormatID formatID);
@@ -1444,6 +1444,7 @@ enum class RenderPassClosureReason
     XfbWriteThenComputeRead,
     XfbWriteThenIndirectDispatchBuffer,
     ImageAttachmentThenComputeRead,
+    GraphicsTextureImageAccessThenComputeAccess,
     GetQueryResult,
     BeginNonRenderPassQuery,
     EndNonRenderPassQuery,

@@ -117,14 +117,13 @@ g.test('bind_group_layouts,device_mismatch')
     { layout0Mismatched: true, layout1Mismatched: false },
     { layout0Mismatched: false, layout1Mismatched: true },
   ])
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { layout0Mismatched, layout1Mismatched } = t.params;
 
     const mismatched = layout0Mismatched || layout1Mismatched;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
 
     const bglDescriptor: GPUBindGroupLayoutDescriptor = {
       entries: [],

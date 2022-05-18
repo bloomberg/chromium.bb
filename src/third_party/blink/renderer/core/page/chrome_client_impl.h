@@ -110,6 +110,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                 ui::ScrollGranularity granularity,
                                 CompositorElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
+  void FinishScrollFocusedEditableIntoView(
+      const gfx::RectF& caret_rect_in_root_frame,
+      mojom::blink::ScrollIntoViewParamsPtr params) override;
   bool ShouldReportDetailedMessageForSourceAndSeverity(
       LocalFrame&,
       mojom::blink::ConsoleMessageLevel log_level,
@@ -191,9 +194,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void AttachRootLayer(scoped_refptr<cc::Layer>,
                        LocalFrame* local_root) override;
 
-  void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  void AttachCompositorAnimationTimeline(cc::AnimationTimeline*,
                                          LocalFrame*) override;
-  void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
+  void DetachCompositorAnimationTimeline(cc::AnimationTimeline*,
                                          LocalFrame*) override;
 
   void EnterFullscreen(LocalFrame&,
@@ -289,9 +292,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DocumentDetached(Document&) override;
 
   double UserZoomFactor() const override;
-
-  void BatterySavingsChanged(LocalFrame& main_frame,
-                             BatterySavingsFlags savings) override;
 
   void FormElementReset(HTMLFormElement& element) override;
 

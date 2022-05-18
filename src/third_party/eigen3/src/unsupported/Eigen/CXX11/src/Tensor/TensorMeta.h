@@ -122,13 +122,13 @@ struct static_for<Index, end, end, step, StepOp> {
 
 template <typename OutScalar, typename Device, bool Vectorizable>
 struct Vectorise {
-  static const int PacketSize = 1;
+  static constexpr int PacketSize = 1;
   typedef OutScalar PacketReturnType;
 };
 
 template <typename OutScalar, typename Device>
 struct Vectorise<OutScalar, Device, true> {
-  static const int PacketSize = Eigen::PacketType<OutScalar, Device>::size;
+  static constexpr int PacketSize = Eigen::PacketType<OutScalar, Device>::size;
   typedef typename Eigen::PacketType<OutScalar, Device>::type PacketReturnType;
 };
 

@@ -54,6 +54,10 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
 
   // From QuicCryptoClientStream::HandshakerInterface and TlsHandshaker
   bool encryption_established() const override;
+  bool IsCryptoFrameExpectedForEncryptionLevel(
+      EncryptionLevel level) const override;
+  EncryptionLevel GetEncryptionLevelToSendCryptoDataOfSpace(
+      PacketNumberSpace space) const override;
   bool one_rtt_keys_available() const override;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
@@ -70,7 +74,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   void OnHandshakeDoneReceived() override;
   void OnNewTokenReceived(absl::string_view token) override;
   void SetWriteSecret(EncryptionLevel level, const SSL_CIPHER* cipher,
-                      const std::vector<uint8_t>& write_secret) override;
+                      absl::Span<const uint8_t> write_secret) override;
 
   // Override to drop initial keys if trying to write ENCRYPTION_HANDSHAKE data.
   void WriteMessage(EncryptionLevel level, absl::string_view data) override;

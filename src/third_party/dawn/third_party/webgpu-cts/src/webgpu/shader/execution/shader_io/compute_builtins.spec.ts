@@ -177,7 +177,7 @@ g.test('inputs')
     pass.setBindGroup(0, bindGroup);
     switch (t.params.dispatch) {
       case 'direct':
-        pass.dispatch(t.params.numGroups.x, t.params.numGroups.y, t.params.numGroups.z);
+        pass.dispatchWorkgroups(t.params.numGroups.x, t.params.numGroups.y, t.params.numGroups.z);
         break;
       case 'indirect': {
         const dispatchBuffer = t.device.createBuffer({
@@ -191,7 +191,7 @@ g.test('inputs')
         dispatchData[1] = t.params.numGroups.y;
         dispatchData[2] = t.params.numGroups.z;
         dispatchBuffer.unmap();
-        pass.dispatchIndirect(dispatchBuffer, 0);
+        pass.dispatchWorkgroupsIndirect(dispatchBuffer, 0);
         break;
       }
     }

@@ -32,6 +32,8 @@ namespace quic {
 namespace test {
 namespace {
 
+using ::testing::ElementsAre;
+
 ParsedQuicVersionVector GetTestParams() {
   ParsedQuicVersionVector test_versions;
 
@@ -206,9 +208,11 @@ INSTANTIATE_TEST_SUITE_P(Tests, QboneClientTest,
                          ::testing::PrintToStringParamName());
 
 TEST_P(QboneClientTest, SendDataFromClient) {
-  auto server = new QboneTestServer(crypto_test_utils::ProofSourceForTesting());
+  auto server = std::make_unique<QboneTestServer>(
+      crypto_test_utils::ProofSourceForTesting());
+  QboneTestServer* server_ptr = server.get();
   QuicSocketAddress server_address(TestLoopback(), 0);
-  ServerThread server_thread(server, server_address);
+  ServerThread server_thread(std::move(server), server_address);
   server_thread.Initialize();
   server_address =
       QuicSocketAddress(server_address.host(), server_thread.GetPort());
@@ -229,29 +233,27 @@ TEST_P(QboneClientTest, SendDataFromClient) {
 
   // Wait until the server has received at least two packets, timeout after 5s.
   ASSERT_TRUE(
-      server_thread.WaitUntil([&] { return server->data().size() >= 2; },
+      server_thread.WaitUntil([&] { return server_ptr->data().size() >= 2; },
                               QuicTime::Delta::FromSeconds(5)));
 
-  std::string long_data(
-      QboneConstants::kMaxQbonePacketBytes - sizeof(ip6_hdr) - 1, 'A');
-
   // Pretend the server gets data.
-  server_thread.Schedule([&server, &long_data]() {
-    EXPECT_THAT(server->data()[0], testing::Eq(TestPacketOut("hello")));
-    EXPECT_THAT(server->data()[1], testing::Eq(TestPacketOut("world")));
+  std::string long_data(1000, 'A');
+  server_thread.Schedule([server_ptr, &long_data]() {
+    EXPECT_THAT(server_ptr->data(),
+                ElementsAre(TestPacketOut("hello"), TestPacketOut("world")));
     auto server_session = static_cast<QboneServerSession*>(
         QuicDispatcherPeer::GetFirstSessionIfAny(
-            QuicServerPeer::GetDispatcher(server)));
+            QuicServerPeer::GetDispatcher(server_ptr)));
     server_session->ProcessPacketFromNetwork(
         TestPacketIn("Somethingsomething"));
     server_session->ProcessPacketFromNetwork(TestPacketIn(long_data));
     server_session->ProcessPacketFromNetwork(TestPacketIn(long_data));
   });
-  ASSERT_TRUE(client.WaitForDataSize(3, QuicTime::Delta::FromSeconds(5)));
-  EXPECT_THAT(client.data()[0],
-              testing::Eq(TestPacketOut("Somethingsomething")));
-  EXPECT_THAT(client.data()[1], testing::Eq(TestPacketOut(long_data)));
-  EXPECT_THAT(client.data()[2], testing::Eq(TestPacketOut(long_data)));
+
+  EXPECT_TRUE(client.WaitForDataSize(3, QuicTime::Delta::FromSeconds(5)));
+  EXPECT_THAT(client.data(),
+              ElementsAre(TestPacketOut("Somethingsomething"),
+                          TestPacketOut(long_data), TestPacketOut(long_data)));
 
   client.Disconnect();
   server_thread.Quit();

@@ -10,7 +10,6 @@
 
 #include "include/core/SkSurfaceProps.h"
 #include "src/core/SkDistanceFieldGen.h"
-#include "src/core/SkGlyphBuffer.h"
 #include "src/core/SkGlyphRun.h"
 #include "src/core/SkScalerContext.h"
 #include "src/core/SkTextBlobPriv.h"
@@ -51,21 +50,9 @@ public:
     inline static constexpr uint16_t kSkSideTooBigForAtlas = 256;
 };
 
-class SkGlyphRunListPainter {
+// -- SkGlyphRunListPainterCPU ---------------------------------------------------------------------
+class SkGlyphRunListPainterCPU {
 public:
-    // Constructor for SkBitmpapDevice.
-    SkGlyphRunListPainter(const SkSurfaceProps& props,
-                          SkColorType colorType,
-                          SkColorSpace* cs,
-                          SkStrikeForGPUCacheInterface* strikeCache);
-
-#if SK_SUPPORT_GPU
-    // The following two ctors are used exclusively by the GPU, and will always use the global
-    // strike cache.
-    SkGlyphRunListPainter(const SkSurfaceProps&, const GrColorInfo&);
-    explicit SkGlyphRunListPainter(const skgpu::v1::SurfaceDrawContext&);
-#endif  // SK_SUPPORT_GPU
-
     class BitmapDevicePainter {
     public:
         BitmapDevicePainter() = default;
@@ -77,47 +64,53 @@ public:
                                 const SkSamplingOptions&, const SkPaint&) const = 0;
     };
 
+    SkGlyphRunListPainterCPU(const SkSurfaceProps& props,
+                             SkColorType colorType,
+                             SkColorSpace* cs);
+
     void drawForBitmapDevice(
             SkCanvas* canvas, const BitmapDevicePainter* bitmapDevice,
             const SkGlyphRunList& glyphRunList, const SkPaint& paint, const SkMatrix& drawMatrix);
-
-#if SK_SUPPORT_GPU
-    // A nullptr for process means that the calls to the cache will be performed, but none of the
-    // callbacks will be called.
-    // N.B. The positionMatrix has already been translated to the glyph run list origin.
-    void processGlyphRun(SkGlyphRunPainterInterface* process,
-                         const SkGlyphRun& glyphRun,
-                         const SkMatrix& positionMatrix,
-                         const SkPaint& drawPaint,
-                         const GrSDFTControl& control,
-                         const char* tag = nullptr,
-                         uint64_t blobID = SK_InvalidUniqueID);
-#endif  // SK_SUPPORT_GPU
-
 private:
-    SkGlyphRunListPainter(const SkSurfaceProps& props, SkColorType colorType,
-                          SkScalerContextFlags flags, SkStrikeForGPUCacheInterface* strikeCache);
-
-    struct ScopedBuffers {
-        ScopedBuffers(SkGlyphRunListPainter* painter, size_t size);
-        ~ScopedBuffers();
-        SkGlyphRunListPainter* fPainter;
-    };
-
-    ScopedBuffers SK_WARN_UNUSED_RESULT ensureBuffers(const SkGlyphRunList& glyphRunList);
-    ScopedBuffers SK_WARN_UNUSED_RESULT ensureBuffers(const SkGlyphRun& glyphRun);
-
     // The props as on the actual device.
     const SkSurfaceProps fDeviceProps;
+
     // The props for when the bitmap device can't draw LCD text.
     const SkSurfaceProps fBitmapFallbackProps;
     const SkColorType fColorType;
     const SkScalerContextFlags fScalerContextFlags;
+};
 
-    SkStrikeForGPUCacheInterface* const fStrikeCache;
+#if SK_SUPPORT_GPU
+class SkGlyphRunListPainter {
+public:
+    SkGlyphRunListPainter(const SkSurfaceProps& props,
+                          const SkColorSpace* colorSpace,
+                          SkStrikeForGPUCacheInterface* strikeCache);
+    // The following ctor is used exclusively by the GPU, and will always use the global
+    // strike cache.
+    explicit SkGlyphRunListPainter(const skgpu::v1::SurfaceDrawContext&);
 
-    SkDrawableGlyphBuffer fAccepted;
-    SkSourceGlyphBuffer fRejected;
+    // A nullptr for process means that the calls to the cache will be performed, but none of the
+    // callbacks will be called.
+    // N.B. The positionMatrix has already been translated to the glyph run list origin.
+    void categorizeGlyphRunList(SkGlyphRunPainterInterface* process,
+                                const SkGlyphRunList& glyphRunList,
+                                const SkMatrix& positionMatrix,
+                                const SkPaint& drawPaint,
+                                const GrSDFTControl& control,
+                                const char* tag = nullptr);
+
+private:
+    SkGlyphRunListPainter(const SkSurfaceProps& props,
+                          SkScalerContextFlags flags,
+                          SkStrikeForGPUCacheInterface* strikeCache);
+
+    // The props as on the actual device.
+    [[maybe_unused]] const SkSurfaceProps fDeviceProps;
+    [[maybe_unused]] const SkScalerContextFlags fScalerContextFlags;
+
+    [[maybe_unused]] SkStrikeForGPUCacheInterface* const fStrikeCache;
 };
 
 // SkGlyphRunPainterInterface are all the ways that Ganesh generates glyphs. The first
@@ -159,5 +152,5 @@ public:
                                    const SkFont& runFont,
                                    const GrSDFTMatrixRange& matrixRange) = 0;
 };
-
+#endif  // SK_SUPPORT_GPU
 #endif  // SkGlyphRunPainter_DEFINED

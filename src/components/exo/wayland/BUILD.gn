@@ -88,6 +88,7 @@ source_set("wayland") {
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:keyboard_configuration_protocol",
     "//third_party/wayland-protocols:keyboard_extension_protocol",
+    "//third_party/wayland-protocols:keyboard_shortcuts_inhibit_protocol",
     "//third_party/wayland-protocols:linux_explicit_synchronization_protocol",
     "//third_party/wayland-protocols:notification_shell_protocol",
     "//third_party/wayland-protocols:pointer_constraints_protocol",
@@ -190,6 +191,8 @@ source_set("wayland") {
       "zwp_idle_inhibit_manager.h",
       "zwp_input_timestamps_manager.cc",
       "zwp_input_timestamps_manager.h",
+      "zwp_keyboard_shortcuts_inhibit_manager.cc",
+      "zwp_keyboard_shortcuts_inhibit_manager.h",
       "zwp_pointer_constraints.cc",
       "zwp_pointer_constraints.h",
       "zwp_pointer_gestures.cc",
@@ -208,6 +211,7 @@ source_set("wayland") {
     if (enable_color_manager) {
       deps += [
         "//components/exo/wayland/protocol:chrome_color_management_protocol",
+        "//ui/base/wayland:color_manager_util",
       ]
       sources += [
         "zcr_color_manager.cc",
@@ -220,6 +224,7 @@ source_set("wayland") {
       "//services/device/wake_lock/power_save_blocker",
       "//third_party/wayland-protocols:idle_inhibit_protocol",
       "//ui/base/cursor/mojom:cursor_type",
+      "//ui/base/wayland:wayland_server_input_types",
       "//ui/events/ozone/layout",
     ]
   }
@@ -340,6 +345,7 @@ source_set("client_support") {
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:keyboard_configuration_protocol",
     "//third_party/wayland-protocols:keyboard_extension_protocol",
+    "//third_party/wayland-protocols:keyboard_shortcuts_inhibit_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:linux_explicit_synchronization_protocol",
@@ -721,6 +727,7 @@ if (ozone_platform_drm) {
       "//ui/gfx:gfx",
       "//ui/gfx/linux:drm",
       "//ui/gfx/linux:gbm",
+      "//ui/gl",
     ]
   }
 

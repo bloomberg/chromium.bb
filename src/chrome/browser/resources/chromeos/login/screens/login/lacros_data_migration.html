@@ -4,6 +4,7 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -15,7 +16,7 @@
 <link rel="import" href="../../components/common_styles/oobe_dialog_host_styles.html">
 <link rel="import" href="../../components/dialogs/oobe_loading_dialog.html">
 <link rel="import" href="../../components/oobe_icons.html">
-<link rel="import" href="../../components/oobe_slide/oobe_slide.html">
+<link rel="import" href="../../components/oobe_slide.html">
 
 <dom-module id="lacros-data-migration-element">
   <template>
@@ -43,7 +44,7 @@
           value="[[progressValue_]]">
       </paper-progress>
       <div slot="subtitle">
-        <p>
+        <p role="status" aria-live="polite">
           [[i18nDynamic(locale, 'lacrosDataMigrationSubtitle', progressValue_)]]
         </p>
         <p hidden="[[!canSkip_]]">

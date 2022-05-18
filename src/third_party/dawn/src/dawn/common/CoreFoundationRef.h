@@ -15,19 +15,15 @@
 #ifndef SRC_DAWN_COMMON_COREFOUNDATIONREF_H_
 #define SRC_DAWN_COMMON_COREFOUNDATIONREF_H_
 
-#include "dawn/common/RefBase.h"
-
 #include <CoreFoundation/CoreFoundation.h>
+
+#include "dawn/common/RefBase.h"
 
 template <typename T>
 struct CoreFoundationRefTraits {
     static constexpr T kNullValue = nullptr;
-    static void Reference(T value) {
-        CFRetain(value);
-    }
-    static void Release(T value) {
-        CFRelease(value);
-    }
+    static void Reference(T value) { CFRetain(value); }
+    static void Release(T value) { CFRelease(value); }
 };
 
 template <typename T>

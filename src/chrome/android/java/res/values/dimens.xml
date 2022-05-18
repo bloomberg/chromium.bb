@@ -248,6 +248,7 @@
     <dimen name="recent_tabs_show_history_item_size">60dp</dimen>
     <dimen name="recent_tabs_foreign_session_group_item_height">64dp</dimen>
     <dimen name="recent_tabs_default_group_item_height">48dp</dimen>
+    <dimen name="recent_tabs_count_text_size">11dp</dimen>
 
     <!-- Bookmarks dimensions -->
     <dimen name="bookmark_folder_item_left">16dp</dimen>
@@ -269,14 +270,15 @@
     <!-- Custom Tabs dimensions -->
     <dimen name="custom_tabs_toolbar_maxWidth">60dp</dimen>
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
-    <dimen name="custom_tabs_toolbar_horizontal_margin_no_close">8dp</dimen>
+    <dimen name="custom_tabs_toolbar_horizontal_margin_no_start">8dp</dimen>
     <dimen name="min_toolbar_icon_side_padding">6dp</dimen>
     <dimen name="custom_tabs_url_text_size">12sp</dimen>
     <dimen name="custom_tabs_title_text_size">16sp</dimen>
     <dimen name="custom_tabs_bottom_bar_max_height">120dp</dimen>
     <dimen name="custom_tabs_screenshot_height">300dp</dimen>
     <dimen name="custom_tabs_screenshot_width">190dp</dimen>
-    <dimen name="custom_tabs_top_corner_round_radius">16dp</dimen>
+    <dimen name="custom_tabs_handle_height">16dp</dimen>
+    <dimen name="custom_tabs_default_corner_radius">16dp</dimen>
 
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
@@ -287,8 +289,6 @@
 
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_button_margin">16dp</dimen>
-
-    <dimen name="pref_spinner_padding_end">8dp</dimen>
 
     <dimen name="pref_languages_add_button_padding">24dp</dimen>
     <dimen name="pref_languages_item_popup_width">260dp</dimen>

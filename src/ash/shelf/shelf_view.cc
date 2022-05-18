@@ -1022,7 +1022,14 @@ void ShelfView::CalculateIdealBounds() {
                                                        /*icon_scale=*/1.0f)
                                   .size();
         gfx::Rect ghost_view_bounds = ideal_view_bounds;
-        ghost_view_bounds.ClampToCenteredSize(icon_size);
+
+        // Ensure that the ghost_view_bounds are a square that encloses the
+        // icon_size with the same center. The ghost view should draw as a
+        // circle.
+        const int icon_width = std::min(icon_size.width(), icon_size.height());
+        ghost_view_bounds.ClampToCenteredSize(
+            gfx::Size(icon_width, icon_width));
+
         current_ghost_view->Init(ghost_view_bounds,
                                  ghost_view_bounds.width() / 2);
 
@@ -1498,8 +1505,9 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   // context menu is requested), to prevent the pending callback from showing
   // a context menu just after drag starts.
   if (!context_menu_callback_.IsCancelled()) {
-    context_menu_callback_.Cancel();
-    item_awaiting_response_ = ShelfID();
+    GetShelfAppButton(item_awaiting_response_)
+        ->OnContextMenuModelRequestCanceled();
+    ResetActiveMenuModelRequest();
   }
 
   // Move the view to the front so that it appears on top of other views.
@@ -2132,6 +2140,9 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   if (old_item.id == context_menu_id_ && shelf_menu_model_adapter_)
     shelf_menu_model_adapter_->Cancel();
 
+  if (old_item.id == item_awaiting_response_)
+    ResetActiveMenuModelRequest();
+
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
                                           true);
@@ -2631,6 +2642,11 @@ void ShelfView::RemoveGhostView() {
     last_ghost_view_->FadeOut();
     last_ghost_view_ = nullptr;
   }
+}
+
+void ShelfView::ResetActiveMenuModelRequest() {
+  context_menu_callback_.Cancel();
+  item_awaiting_response_ = ShelfID();
 }
 
 }  // namespace ash

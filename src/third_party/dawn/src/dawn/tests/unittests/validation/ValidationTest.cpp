@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/validation/ValidationTest.h"
+#include <algorithm>
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/SystemUtils.h"
 #include "dawn/dawn_proc.h"
 #include "dawn/native/NullBackend.h"
 #include "dawn/tests/ToggleParser.h"
+#include "dawn/tests/unittests/validation/ValidationTest.h"
 #include "dawn/utils/WireHelper.h"
 #include "dawn/webgpu.h"
 
-#include <algorithm>
-
 namespace {
 
-    bool gUseWire = false;
-    std::string gWireTraceDir = "";
-    std::unique_ptr<ToggleParser> gToggleParser = nullptr;
+bool gUseWire = false;
+// NOLINTNEXTLINE(runtime/string)
+std::string gWireTraceDir = "";
+std::unique_ptr<ToggleParser> gToggleParser = nullptr;
 
 }  // namespace
 
@@ -79,8 +80,7 @@ void InitDawnValidationTestEnvironment(int argc, char** argv) {
 }
 
 ValidationTest::ValidationTest()
-    : mWireHelper(utils::CreateWireHelper(gUseWire, gWireTraceDir.c_str())) {
-}
+    : mWireHelper(utils::CreateWireHelper(gUseWire, gWireTraceDir.c_str())) {}
 
 void ValidationTest::SetUp() {
     instance = std::make_unique<dawn::native::Instance>();
@@ -229,7 +229,7 @@ WGPUDevice ValidationTest::CreateTestDevice() {
 // static
 void ValidationTest::OnDeviceError(WGPUErrorType type, const char* message, void* userdata) {
     ASSERT(type != WGPUErrorType_NoError);
-    auto self = static_cast<ValidationTest*>(userdata);
+    auto* self = static_cast<ValidationTest*>(userdata);
     self->mDeviceErrorMessage = message;
 
     ASSERT_TRUE(self->mExpectError) << "Got unexpected device error: " << message;
@@ -243,7 +243,7 @@ void ValidationTest::OnDeviceError(WGPUErrorType type, const char* message, void
 void ValidationTest::OnDeviceLost(WGPUDeviceLostReason reason,
                                   const char* message,
                                   void* userdata) {
-    auto self = static_cast<ValidationTest*>(userdata);
+    auto* self = static_cast<ValidationTest*>(userdata);
     if (self->mExpectDestruction) {
         EXPECT_EQ(reason, WGPUDeviceLostReason_Destroyed);
         return;
@@ -252,7 +252,7 @@ void ValidationTest::OnDeviceLost(WGPUDeviceLostReason reason,
     ASSERT(false);
 }
 
-ValidationTest::DummyRenderPass::DummyRenderPass(const wgpu::Device& device)
+ValidationTest::PlaceholderRenderPass::PlaceholderRenderPass(const wgpu::Device& device)
     : attachmentFormat(wgpu::TextureFormat::RGBA8Unorm), width(400), height(400) {
     wgpu::TextureDescriptor descriptor;
     descriptor.dimension = wgpu::TextureDimension::e2D;

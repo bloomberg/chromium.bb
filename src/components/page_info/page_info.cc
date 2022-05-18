@@ -15,7 +15,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +38,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/permissions_client.h"
 #if BUILDFLAG(IS_ANDROID)
 #include "components/resources/android/theme_resources.h"
 #endif
@@ -56,7 +56,6 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,7 +100,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::BACKGROUND_SYNC,
     ContentSettingsType::SOUND,
     ContentSettingsType::AUTOMATIC_DOWNLOADS,
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
     ContentSettingsType::MIDI_SYSEX,
@@ -121,6 +120,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::VR,
     ContentSettingsType::AR,
     ContentSettingsType::IDLE_DETECTION,
+    ContentSettingsType::FEDERATED_IDENTITY_API,
 };
 
 // Determines whether to show permission |type| in the Page Info UI. Only
@@ -292,10 +292,6 @@ const char kPageInfoTimePrefix[] = "Security.PageInfo.TimeOpen";
 const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
 const char kPageInfoTimeNoActionPrefix[] =
     "Security.PageInfo.TimeOpen.NoAction";
-const char kPageInfoTimeAboutThisShown[] =
-    "Security.PageInfo.TimeOpen.AboutThisSiteShown";
-const char kPageInfoTimeAboutThisNotShown[] =
-    "Security.PageInfo.TimeOpen.AboutThisSiteNotShown";
 
 }  // namespace
 
@@ -338,9 +334,9 @@ PageInfo::~PageInfo() {
       did_revoke_user_ssl_decisions_ ? USER_CERT_DECISIONS_REVOKED
                                      : USER_CERT_DECISIONS_NOT_REVOKED;
   if (show_ssl_decision_revoke_button_) {
-    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.did_user_revoke_decisions2",
-                              user_decision,
-                              END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
+    base::UmaHistogramEnumeration(
+        "interstitial.ssl.did_user_revoke_decisions2", user_decision,
+        END_OF_SSL_CERTIFICATE_DECISIONS_DID_REVOKE_ENUM);
   }
 
   // Record the total time the Page Info UI was open for all opens as well as
@@ -367,13 +363,6 @@ PageInfo::~PageInfo() {
         security_state::GetSafetyTipHistogramName(kPageInfoTimeNoActionPrefix,
                                                   safety_tip_info_.status),
         start_time_);
-  }
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
-    if (was_about_this_site_shown_) {
-      LogTimeOpenHistogram(kPageInfoTimeAboutThisShown, start_time_);
-    } else {
-      LogTimeOpenHistogram(kPageInfoTimeAboutThisNotShown, start_time_);
-    }
   }
 }
 
@@ -428,11 +417,11 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   delegate_->OnPageInfoActionOccurred(action);
 #endif
 
-  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action, PAGE_INFO_COUNT);
+  base::UmaHistogramEnumeration("WebsiteSettings.Action", action);
 
   if (web_contents_) {
     ukm::builders::PageInfoBubble(
-        ukm::GetSourceIdForWebContentsDocument(web_contents_.get()))
+        web_contents_->GetMainFrame()->GetPageUkmSourceId())
         .SetActionTaken(action)
         .Record(ukm::UkmRecorder::Get());
   }
@@ -440,7 +429,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   base::UmaHistogramEnumeration(
       security_state::GetSafetyTipHistogramName(
           "Security.SafetyTips.PageInfo.Action", safety_tip_info_.status),
-      action, PAGE_INFO_COUNT);
+      action);
 
   auto* settings = GetPageSpecificContentSettings();
   if (!settings)
@@ -450,10 +439,9 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
   bool has_fledge = settings->HasJoinedUserToInterestGroup();
   switch (action) {
     case PageInfoAction::PAGE_INFO_OPENED:
-      if (has_fledge || has_topic) {
-        base::RecordAction(
-            base::UserMetricsAction("PageInfo.OpenedWithAdsPersonalization"));
-      }
+      base::RecordAction(base::UserMetricsAction("PageInfo.Opened"));
+      base::UmaHistogramBoolean("Security.PageInfo.AdPersonalizationRowShown",
+                                has_fledge || has_topic);
       break;
     case PageInfoAction::PAGE_INFO_AD_PERSONALIZATION_PAGE_OPENED:
       if (has_fledge && has_topic) {
@@ -471,7 +459,96 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
       base::RecordAction(base::UserMetricsAction(
           "PageInfo.AdPersonalization.ManageInterestClicked"));
       break;
-    default:
+    case PAGE_INFO_CERTIFICATE_DIALOG_OPENED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Security.Certificate.Opened"));
+      break;
+    case PAGE_INFO_CONNECTION_HELP_OPENED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Security.ConnectionHelp.Opened"));
+      break;
+    case PAGE_INFO_SECURITY_DETAILS_OPENED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Security.Opened"));
+      break;
+    case PAGE_INFO_SITE_SETTINGS_OPENED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.SiteSettings.Opened"));
+      break;
+    case PAGE_INFO_COOKIES_DIALOG_OPENED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Cookies.Opened"));
+      break;
+    case PAGE_INFO_COOKIES_ALLOWED_FOR_SITE:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Cookies.Allowed"));
+      break;
+    case PAGE_INFO_COOKIES_BLOCKED_FOR_SITE:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Cookies.Blocked"));
+      break;
+    case PAGE_INFO_COOKIES_CLEARED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Cookies.Cleared"));
+      break;
+    case PAGE_INFO_PERMISSION_DIALOG_OPENED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.Permission.Opened"));
+      break;
+    case PAGE_INFO_CHANGED_PERMISSION:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Permission.Changed"));
+      break;
+    case PAGE_INFO_PERMISSIONS_CLEARED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Permission.Cleared"));
+      break;
+    case PAGE_INFO_CHOOSER_OBJECT_DELETED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Permission.ChooserObjectDeleted"));
+      break;
+    case PAGE_INFO_RESET_DECISIONS_CLICKED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.Permission.ResetDecisions"));
+      break;
+    case PAGE_INFO_FORGET_SITE_OPENED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.ForgetSite.Opened"));
+      break;
+    case PAGE_INFO_FORGET_SITE_CLEARED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.ForgetSite.Cleared"));
+      break;
+    case PAGE_INFO_HISTORY_OPENED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.History.Opened"));
+      break;
+    case PAGE_INFO_HISTORY_ENTRY_REMOVED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.History.EntryRemoved"));
+      break;
+    case PAGE_INFO_HISTORY_ENTRY_CLICKED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.History.EntryClicked"));
+      break;
+    case PAGE_INFO_PASSWORD_REUSE_ALLOWED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.PasswordReuseAllowed"));
+      break;
+    case PAGE_INFO_CHANGE_PASSWORD_PRESSED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.ChangePasswordPressed"));
+      break;
+    case PAGE_INFO_SAFETY_TIP_HELP_OPENED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.SafetyTip.HelpOpened"));
+      break;
+    case PAGE_INFO_STORE_INFO_CLICKED:
+      base::RecordAction(base::UserMetricsAction("PageInfo.StoreInfo.Opened"));
+      break;
+    case PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.AboutThisSite.Opened"));
+      break;
+    case PAGE_INFO_ABOUT_THIS_SITE_SOURCE_LINK_CLICKED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.AboutThisSite.SourceLinkClicked"));
+      break;
+    case PAGE_INFO_ABOUT_THIS_SITE_MORE_ABOUT_CLICKED:
+      base::RecordAction(
+          base::UserMetricsAction("PageInfo.AboutThisSite.MoreAboutClicked"));
       break;
   }
 }
@@ -490,15 +567,15 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // the Page Info UI.
   size_t num_values;
   int histogram_value = ContentSettingTypeToHistogramValue(type, &num_values);
-  UMA_HISTOGRAM_EXACT_LINEAR("WebsiteSettings.OriginInfo.PermissionChanged",
-                             histogram_value, num_values);
+  base::UmaHistogramExactLinear("WebsiteSettings.OriginInfo.PermissionChanged",
+                                histogram_value, num_values);
 
   if (setting == ContentSetting::CONTENT_SETTING_ALLOW) {
-    UMA_HISTOGRAM_EXACT_LINEAR(
+    base::UmaHistogramExactLinear(
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", histogram_value,
         num_values);
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
-    UMA_HISTOGRAM_EXACT_LINEAR(
+    base::UmaHistogramExactLinear(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
         num_values);
   }
@@ -833,15 +910,13 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
 
   safety_tip_info_ = visible_security_state.safety_tip_info;
 #if BUILDFLAG(IS_ANDROID)
-  if (security_state::IsSafetyTipUIFeatureEnabled()) {
-    // identity_status_description_android_ is only displayed on Android when
-    // the user taps "Details" link on the page info. Reuse the description from
-    // page info UI.
-    std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
-        PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
-    if (security_description) {
-      identity_status_description_android_ = security_description->details;
-    }
+  // identity_status_description_android_ is only displayed on Android when
+  // the user taps "Details" link on the page info. Reuse the description from
+  // page info UI.
+  std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
+      PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
+  if (security_description) {
+    identity_status_description_android_ = security_description->details;
   }
 #endif
 
@@ -978,14 +1053,24 @@ void PageInfo::PresentSitePermissions() {
                                                      nullptr);
     }
 
-    // For permissions that are still prompting the user and haven't been
-    // explicitly set by another source, check its embargo status.
-    if (permissions::PermissionUtil::IsPermission(permission_info.type) &&
+    // Check embargo status if the content setting supports embargo.
+    if (permissions::PermissionDecisionAutoBlocker::IsEnabledForContentSetting(
+            permission_info.type) &&
         permission_info.setting == CONTENT_SETTING_DEFAULT &&
         permission_info.source ==
             content_settings::SettingSource::SETTING_SOURCE_USER) {
-      permissions::PermissionResult permission_result =
-          delegate_->GetPermissionStatus(permission_info.type, site_url_);
+      permissions::PermissionResult permission_result(
+          CONTENT_SETTING_DEFAULT,
+          permissions::PermissionStatusSource::UNSPECIFIED);
+      if (permissions::PermissionUtil::IsPermission(permission_info.type)) {
+        permission_result =
+            delegate_->GetPermissionStatus(permission_info.type, site_url_);
+      } else if (permission_info.type ==
+                 ContentSettingsType::FEDERATED_IDENTITY_API) {
+        permission_result =
+            delegate_->GetPermissionDecisionAutoblocker()->GetEmbargoResult(
+                site_url_, permission_info.type);
+      }
 
       // If under embargo, update |permission_info| to reflect that.
       if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
@@ -1075,9 +1160,7 @@ void PageInfo::PresentSiteIdentity() {
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
   info.safe_browsing_details = safe_browsing_details_;
-  if (security_state::IsSafetyTipUIFeatureEnabled()) {
-    info.safety_tip_info = safety_tip_info_;
-  }
+  info.safety_tip_info = safety_tip_info_;
 #if BUILDFLAG(IS_ANDROID)
   info.identity_status_description_android =
       UTF16ToUTF8(identity_status_description_android_);

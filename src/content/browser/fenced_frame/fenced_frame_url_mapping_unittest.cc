@@ -166,29 +166,19 @@ TEST(FencedFrameURLMappingTest, PendingMappedUUID) {
   EXPECT_EQ(mapped_url, observer2.mapped_url());
   EXPECT_EQ(absl::nullopt, observer2.pending_ad_components_map());
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata>
-      metadata1_first_retrieval =
-          fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(
-              urn_uuid1);
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata1 =
+      fenced_frame_url_mapping.GetSharedStorageBudgetMetadata(urn_uuid1);
 
-  EXPECT_TRUE(metadata1_first_retrieval);
-  EXPECT_EQ(metadata1_first_retrieval->origin, shared_storage_origin);
-  EXPECT_DOUBLE_EQ(metadata1_first_retrieval->budget_to_charge, 2.0);
+  EXPECT_TRUE(metadata1);
+  EXPECT_EQ(metadata1->origin, shared_storage_origin);
+  EXPECT_DOUBLE_EQ(metadata1->budget_to_charge, 2.0);
 
-  EXPECT_FALSE(
-      fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(urn_uuid1));
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata2 =
+      fenced_frame_url_mapping.GetSharedStorageBudgetMetadata(urn_uuid2);
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata>
-      metadata2_first_retrieval =
-          fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(
-              urn_uuid2);
-
-  EXPECT_TRUE(metadata2_first_retrieval);
-  EXPECT_EQ(metadata2_first_retrieval->origin, shared_storage_origin);
-  EXPECT_DOUBLE_EQ(metadata2_first_retrieval->budget_to_charge, 3.0);
-
-  EXPECT_FALSE(
-      fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(urn_uuid2));
+  EXPECT_TRUE(metadata2);
+  EXPECT_EQ(metadata2->origin, shared_storage_origin);
+  EXPECT_DOUBLE_EQ(metadata2->budget_to_charge, 3.0);
 }
 
 TEST(FencedFrameURLMappingTest, RemoveObserverOnPendingMappedUUID) {
@@ -387,6 +377,60 @@ TEST(FencedFrameURLMappingTest,
                                  /*add_to_new_map=*/false,
                                  *observer.pending_ad_components_map(),
                                  /*expected_mapped_urls=*/ad_component_urls);
+}
+
+// Test the case `ad_component_urls` has a single URL.
+TEST(FencedFrameURLMappingTest, SubstituteFencedFrameURLs) {
+  FencedFrameURLMapping fenced_frame_url_mapping;
+  GURL top_level_url(
+      "https://foo.test/page?%%TT%%${oo%%}p%%${p%%${%%l}%%%%%%%%evl%%");
+  url::Origin interest_group_owner = url::Origin::Create(top_level_url);
+  std::string interest_group_name = "bars";
+  std::vector<GURL> ad_component_urls{
+      GURL("https://bar.test/page?${REPLACED}")};
+
+  GURL urn_uuid =
+      fenced_frame_url_mapping.AddFencedFrameURLWithInterestGroupInfo(
+          top_level_url, {interest_group_owner, interest_group_name},
+          ad_component_urls);
+
+  fenced_frame_url_mapping.SubstituteMappedURL(
+      urn_uuid,
+      {{"%%notPresent%%",
+        "not inserted"},               // replacements not present not inserted
+       {"%%TT%%", "t"},                // %% replacement works
+       {"${oo%%}", "o"},               // mixture of sequences works
+       {"%%${p%%${%%l}%%%%%%", "_l"},  // mixture of sequences works
+       {"${%%l}", "Don't replace"},    // earlier replacements take precedence
+       {"%%evl%%",
+        "evel_%%still_got_it%%"},  // output can contain replacement sequences
+       {"%%still_got_it%%",
+        "not replaced"},                // output of replacement is not replaced
+       {"${REPLACED}", "component"}});  // replacements affect components
+
+  TestFencedFrameURLMappingResultObserver observer;
+  fenced_frame_url_mapping.ConvertFencedFrameURNToURL(urn_uuid, &observer);
+  EXPECT_TRUE(observer.mapping_complete_observed());
+  EXPECT_EQ(GURL("https://foo.test/page?top_level_%%still_got_it%%"),
+            observer.mapped_url());
+  EXPECT_EQ(interest_group_owner,
+            observer.ad_auction_data()->interest_group_owner);
+  EXPECT_EQ(interest_group_name,
+            observer.ad_auction_data()->interest_group_name);
+  EXPECT_TRUE(observer.pending_ad_components_map());
+
+  // Call with `add_to_new_map` set to false and true, to simulate ShadowDOM
+  // and MPArch behavior, respectively.
+  std::vector<GURL> expected_ad_component_urls{
+      GURL("https://bar.test/page?component")};
+  ValidatePendingAdComponentsMap(&fenced_frame_url_mapping,
+                                 /*add_to_new_map=*/true,
+                                 *observer.pending_ad_components_map(),
+                                 expected_ad_component_urls);
+  ValidatePendingAdComponentsMap(&fenced_frame_url_mapping,
+                                 /*add_to_new_map=*/false,
+                                 *observer.pending_ad_components_map(),
+                                 expected_ad_component_urls);
 }
 
 // Test the correctness of the URN format. The URN is expected to be in the

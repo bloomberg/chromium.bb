@@ -10,6 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/clamped_math.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -17,6 +18,7 @@
 #include "components/bookmarks/browser/bookmark_load_details.h"
 #include "components/bookmarks/browser/titled_url_index.h"
 #include "components/bookmarks/browser/url_index.h"
+#include "components/bookmarks/common/bookmark_metrics.h"
 
 namespace bookmarks {
 
@@ -87,6 +89,7 @@ void LoadBookmarks(const base::FilePath& path,
   DCHECK_LE(stats.duplicate_url_and_title_and_parent_bookmark_count,
             stats.duplicate_url_and_title_bookmark_count);
 
+  // TODO(crbug.com/1321690): Consolidate metrics calls into a file.
   base::UmaHistogramCounts100000(
       "Bookmarks.Count.OnProfileLoad",
       base::saturated_cast<int>(stats.total_url_bookmark_count));
@@ -125,6 +128,11 @@ void LoadBookmarks(const base::FilePath& path,
       base::saturated_cast<int>(
           stats.total_url_bookmark_count -
           stats.duplicate_url_and_title_and_parent_bookmark_count));
+
+  int64_t file_size_bytes;
+  if (bookmark_file_exists && base::GetFileSize(path, &file_size_bytes)) {
+    metrics::RecordFileSizeAtStartup(file_size_bytes);
+  }
 }
 
 }  // namespace

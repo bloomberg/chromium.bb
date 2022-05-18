@@ -108,7 +108,7 @@ class AudioReceiveStream : public MediaReceiveStream {
     std::string ToString() const;
 
     // Receive-stream specific RTP settings.
-    struct Rtp : public RtpConfig {
+    struct Rtp : public ReceiveStreamRtpConfig {
       Rtp();
       ~Rtp();
 
@@ -193,6 +193,17 @@ class AudioReceiveStream : public MediaReceiveStream {
 
   // Returns current value of base minimum delay in milliseconds.
   virtual int GetBaseMinimumPlayoutDelayMs() const = 0;
+
+  // Synchronization source (stream identifier) to be received.
+  // This member will not change mid-stream and can be assumed to be const
+  // post initialization.
+  virtual uint32_t remote_ssrc() const = 0;
+
+  // Access the currently set rtp extensions. Must be called on the packet
+  // delivery thread.
+  // TODO(tommi): This is currently only called from
+  // `WebRtcAudioReceiveStream::GetRtpParameters()`. See if we can remove it.
+  virtual const std::vector<RtpExtension>& GetRtpExtensions() const = 0;
 
  protected:
   virtual ~AudioReceiveStream() {}

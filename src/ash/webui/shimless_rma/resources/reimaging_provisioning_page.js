@@ -16,15 +16,6 @@ import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ProvisioningObserverInterface, ProvisioningObserverReceiver, ProvisioningStatus, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
 import {disableNextButton, enableNextButton, executeThenTransitionState} from './shimless_rma_util.js';
 
-/** @type {!Object<!ProvisioningStatus, string>} */
-const provisioningStatusTextKeys = {
-  [ProvisioningStatus.kInProgress]: 'provisioningPageInProgressText',
-  [ProvisioningStatus.kComplete]: 'provisioningPageCompleteText',
-  [ProvisioningStatus.kFailedBlocking]: 'provisioningPageFailedBlockingText',
-  [ProvisioningStatus.kFailedNonBlocking]:
-      'provisioningPageFailedNonBlockingText',
-};
-
 /**
  * @fileoverview
  * 'reimaging-provisioning-page' provisions the device then auto-transitions to
@@ -62,20 +53,8 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
         type: Object,
       },
 
-      /** @protected */
-      statusString_: {
-        type: String,
-        computed: 'getStatusString_(status_)',
-      },
-
       /** @protected {boolean} */
       shouldShowSpinner_: {
-        type: Boolean,
-        value: false,
-      },
-
-      /** @protected {boolean} */
-      shouldShowRetryButton_: {
         type: Boolean,
         value: false,
       },
@@ -98,23 +77,11 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
   }
 
   /**
-   * @protected
-   * @return {string}
-   */
-  getStatusString_() {
-    if (!this.status_) {
-      return '';
-    }
-
-    return this.i18n(provisioningStatusTextKeys[this.status_]);
-  }
-
-  /**
    * Implements ProvisioningObserver.onProvisioningUpdated()
    * TODO(joonbug): Add error handling and display failure using cr-dialog.
-   * @protected
    * @param {!ProvisioningStatus} status
    * @param {number} progress
+   * @protected
    */
   onProvisioningUpdated(status, progress) {
     this.status_ = status;
@@ -128,21 +95,6 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
     }
 
     this.shouldShowSpinner_ = this.status_ === ProvisioningStatus.kInProgress;
-    this.shouldShowRetryButton_ =
-        this.status_ === ProvisioningStatus.kFailedBlocking ||
-        this.status_ === ProvisioningStatus.kFailedNonBlocking;
-  }
-
-  /** @private */
-  onRetryProvsioningButtonClicked_() {
-    if (this.status_ !== ProvisioningStatus.kFailedBlocking &&
-        this.status_ !== ProvisioningStatus.kFailedNonBlocking) {
-      console.error('Provisioning has not failed.');
-      return;
-    }
-
-    executeThenTransitionState(
-        this, () => this.shimlessRmaService_.retryProvisioning());
   }
 }
 

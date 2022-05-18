@@ -17,13 +17,14 @@
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/WireServer.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::Mock;
+using testing::Return;
 
 class WireInjectTextureTests : public WireTest {
   public:
-    WireInjectTextureTests() {
-    }
+    WireInjectTextureTests() {}
     ~WireInjectTextureTests() override = default;
 };
 
@@ -38,8 +39,8 @@ TEST_F(WireInjectTextureTests, CallAfterReserveInject) {
                                                reservation.deviceId, reservation.deviceGeneration));
 
     wgpuTextureCreateView(reservation.texture, nullptr);
-    WGPUTextureView apiDummyView = api.GetNewTextureView();
-    EXPECT_CALL(api, TextureCreateView(apiTexture, nullptr)).WillOnce(Return(apiDummyView));
+    WGPUTextureView apiPlaceholderView = api.GetNewTextureView();
+    EXPECT_CALL(api, TextureCreateView(apiTexture, nullptr)).WillOnce(Return(apiPlaceholderView));
     FlushClient();
 }
 
@@ -112,3 +113,5 @@ TEST_F(WireInjectTextureTests, ReclaimTextureReservation) {
         FlushClient();
     }
 }
+
+}  // namespace dawn::wire

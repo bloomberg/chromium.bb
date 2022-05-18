@@ -79,10 +79,6 @@ class ClientProxy final {
   bool IsAdvertising() const;
   std::string GetAdvertisingServiceId() const;
 
-  // Get service ID of a surrently active link (either advertising, or
-  // discovering).
-  std::string GetServiceId() const;
-
   // Marks this client as discovering with the given callback.
   void StartedDiscovery(
       const std::string& service_id, Strategy strategy,
@@ -274,7 +270,8 @@ class ClientProxy final {
   // expires.
   std::string local_high_vis_mode_cache_endpoint_id_;
   ScheduledExecutor single_thread_executor_;
-  CancelableAlarm clear_local_high_vis_mode_cache_endpoint_id_alarm_;
+  std::unique_ptr<CancelableAlarm>
+      clear_local_high_vis_mode_cache_endpoint_id_alarm_;
 
   // If not empty, we are currently advertising and accepting connection
   // requests for the given service_id.

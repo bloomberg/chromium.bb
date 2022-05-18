@@ -14,33 +14,35 @@
 
 #include "src/tint/writer/msl/test_helper.h"
 
+using namespace tint::number_suffixes;  // NOLINT
+
 namespace tint::writer::msl {
 namespace {
 
 using MslGeneratorImplTest = TestHelper;
 
 TEST_F(MslGeneratorImplTest, Emit_Return) {
-  auto* r = Return();
-  WrapInFunction(r);
+    auto* r = Return();
+    WrapInFunction(r);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
+    gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
-  EXPECT_EQ(gen.result(), "  return;\n");
+    ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+    EXPECT_EQ(gen.result(), "  return;\n");
 }
 
 TEST_F(MslGeneratorImplTest, Emit_ReturnWithValue) {
-  auto* r = Return(123);
-  Func("f", {}, ty.i32(), {r});
+    auto* r = Return(123_i);
+    Func("f", {}, ty.i32(), {r});
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
+    gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
-  EXPECT_EQ(gen.result(), "  return 123;\n");
+    ASSERT_TRUE(gen.EmitStatement(r)) << gen.error();
+    EXPECT_EQ(gen.result(), "  return 123;\n");
 }
 
 }  // namespace

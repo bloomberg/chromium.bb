@@ -732,7 +732,7 @@ void LayerTreeHost::SetDebugState(const LayerTreeDebugState& new_debug_state) {
 
 void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
   DCHECK(IsMainThread());
-  DCHECK(CommitRequested());
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   if (page_scale_delta == 1.f)
     return;
   float page_scale =
@@ -1011,6 +1011,21 @@ void LayerTreeHost::UpdateScrollOffsetFromImpl(
         transform_node->needs_local_transform_update = true;
         transform_node->transform_changed = true;
         transform_tree.set_needs_update(true);
+
+        // If the scroll was realized on the compositor, then its transform node
+        // is already updated (see LayerTreeImpl::DidUpdateScrollOffset) and we
+        // are now "catching up" to it on main, so we don't need a commit.
+        //
+        // But if the scroll was NOT realized on the compositor, we need a
+        // commit to push the transform change.
+        //
+        // Skip this if scroll unification is disabled as we will not set
+        // ScrollNode::is_composited in that case.
+        //
+        if (base::FeatureList::IsEnabled(features::kScrollUnification) &&
+            !scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node)) {
+          SetNeedsCommit();
+        }
       }
 
       // The transform tree has been modified which requires a call to
@@ -1087,6 +1102,11 @@ void LayerTreeHost::NotifyThroughputTrackerResults(
     CustomTrackerResults results) {
   DCHECK(IsMainThread());
   client_->NotifyThroughputTrackerResults(std::move(results));
+}
+
+void LayerTreeHost::ReportEventLatency(
+    std::vector<EventLatencyTracker::LatencyData> latencies) {
+  client_->ReportEventLatency(std::move(latencies));
 }
 
 const base::WeakPtr<CompositorDelegateForInput>&
@@ -1375,14 +1395,6 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
     return;
   DCHECK_GE(page_scale_factor, min_page_scale_factor);
   DCHECK_LE(page_scale_factor, max_page_scale_factor);
-  // We should never process non-unit page_scale_delta for an OOPIF subframe.
-  // TODO(wjmaclean): Remove this dcheck as a pre-condition to closing the bug.
-  // https://crbug.com/845097
-  DCHECK(!settings_.is_layer_tree_for_subframe ||
-         page_scale_factor == pending_commit_state()->page_scale_factor)
-      << "Setting PSF in oopif subframe: old psf = "
-      << pending_commit_state()->page_scale_factor
-      << ", new psf = " << page_scale_factor;
 
   pending_commit_state()->page_scale_factor = page_scale_factor;
   pending_commit_state()->min_page_scale_factor = min_page_scale_factor;
@@ -1582,22 +1594,14 @@ void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
-  DCHECK(CommitRequested());
-  // We should never process non-unit page_scale_delta for an OOPIF subframe.
-  // TODO(wjmaclean): Remove this check as a pre-condition to closing the bug.
-  // https://crbug.com/845097
-  DCHECK(!settings_.is_layer_tree_for_subframe ||
-         page_scale == pending_commit_state()->page_scale_factor)
-      << "Setting PSF in oopif subframe: old psf = "
-      << pending_commit_state()->page_scale_factor
-      << ", new psf = " << page_scale;
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   pending_commit_state()->page_scale_factor = page_scale;
   SetPropertyTreesNeedRebuild();
 }
 
 void LayerTreeHost::SetElasticOverscrollFromImplSide(
     gfx::Vector2dF elastic_overscroll) {
-  DCHECK(CommitRequested());
+  DCHECK(syncing_deltas_for_test_ || CommitRequested());
   pending_commit_state()->elastic_overscroll = elastic_overscroll;
 }
 
@@ -1919,12 +1923,6 @@ void LayerTreeHost::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   DCHECK(IsMainThread());
   proxy_->SetRenderFrameObserver(std::move(observer));
-}
-
-void LayerTreeHost::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  DCHECK(IsMainThread());
-  proxy_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
 }
 
 void LayerTreeHost::SetDelegatedInkMetadata(

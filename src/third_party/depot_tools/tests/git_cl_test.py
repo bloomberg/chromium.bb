@@ -734,7 +734,8 @@ class TestGitCl(unittest.TestCase):
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
                          custom_cl_base=None, short_hostname='chromium',
-                         change_id=None, default_branch='main'):
+                         change_id=None, default_branch='main',
+                         reset_issue=False):
     calls = []
     if custom_cl_base:
       ancestor_revision = custom_cl_base
@@ -743,6 +744,9 @@ class TestGitCl(unittest.TestCase):
       ancestor_revision = 'origin/' + default_branch
 
     if issue:
+      # TODO: if tests don't provide a `change_id` the default used here
+      # will cause the TRACES_README_FORMAT mock (which uses the test provided
+      # `change_id` to fail.
       gerrit_util.GetChangeDetail.return_value = {
         'owner': {'email': (other_cl_owner or 'owner@example.com')},
         'change_id': (change_id or '123456789'),
@@ -752,8 +756,21 @@ class TestGitCl(unittest.TestCase):
         }},
         'status': fetched_status or 'NEW',
       }
+
       if fetched_status == 'ABANDONED':
         return calls
+      if fetched_status == 'MERGED':
+        calls.append(
+            (('ask_for_data',
+              'Change https://chromium-review.googlesource.com/%s has been '
+              'submitted, new uploads are not allowed. Would you like to start '
+              'a new change (Y/n)?' % issue), 'y' if reset_issue else 'n')
+            )
+        if not reset_issue:
+          return calls
+        # Part of SetIssue call.
+        calls.append(
+            ((['git', 'log', '-1', '--format=%B'],), ''))
       if other_cl_owner:
         calls += [
           (('ask_for_data', 'Press Enter to upload, or Ctrl+C to abort'), ''),
@@ -1095,7 +1112,8 @@ class TestGitCl(unittest.TestCase):
                               edit_description=None,
                               fetched_description=None,
                               default_branch='main',
-                              push_opts=None):
+                              push_opts=None,
+                              reset_issue=False):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
       if '--no-squash' in upload_args:
@@ -1169,8 +1187,16 @@ class TestGitCl(unittest.TestCase):
         custom_cl_base=custom_cl_base,
         short_hostname=short_hostname,
         change_id=change_id,
-        default_branch=default_branch)
-    if fetched_status != 'ABANDONED':
+        default_branch=default_branch,
+        reset_issue=reset_issue)
+
+    if fetched_status == 'ABANDONED' or (
+        fetched_status == 'MERGED' and not reset_issue):
+      pass  # readability
+    else:
+      if fetched_status == 'MERGED' and reset_issue:
+        fetched_status = 'NEW'
+        issue = None
       mock.patch(
           'gclient_utils.temporary_file', TemporaryFileMock()).start()
       mock.patch('os.remove', return_value=True).start()
@@ -1424,6 +1450,30 @@ class TestGitCl(unittest.TestCase):
         'authenticate to Gerrit as yet-another@example.com.\n'
         'Uploading may fail due to lack of permissions',
         sys.stdout.getvalue())
+  @mock.patch('sys.stderr', StringIO())
+  def test_gerrit_upload_for_merged(self):
+    with self.assertRaises(SystemExitMock):
+      self._run_gerrit_upload_test(
+          [],
+          'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
+          [],
+          issue=123456,
+          fetched_status='MERGED',
+          change_id='I123456789',
+          reset_issue=False)
+    self.assertEqual(
+        'New uploads are not allowed.\n',
+        sys.stderr.getvalue())
+
+  def test_gerrit_upload_new_issue_for_merged(self):
+    self._run_gerrit_upload_test(
+        [],
+        'desc ✔\n\nBUG=\n\nChange-Id: I123456789',
+        [],
+        issue=123456,
+        fetched_status='MERGED',
+        change_id='I123456789',
+        reset_issue=True)
 
   def test_upload_change_description_editor(self):
     fetched_description = 'foo\n\nChange-Id: 123456789'

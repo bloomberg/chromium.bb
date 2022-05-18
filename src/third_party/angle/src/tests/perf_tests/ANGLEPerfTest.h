@@ -13,6 +13,7 @@
 #include <gtest/gtest.h>
 
 #include <mutex>
+#include <queue>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -169,6 +170,8 @@ struct RenderTestParams : public angle::PlatformParameters
     bool trackGpuTime              = false;
     SurfaceType surfaceType        = SurfaceType::Window;
     EGLenum colorSpace             = EGL_COLORSPACE_LINEAR;
+    bool multisample               = false;
+    EGLint samples                 = -1;
 };
 
 class ANGLERenderTest : public ANGLEPerfTest
@@ -245,7 +248,7 @@ class ANGLERenderTest : public ANGLEPerfTest
     };
 
     GLuint mCurrentTimestampBeginQuery = 0;
-    std::vector<TimestampSample> mTimestampQueries;
+    std::queue<TimestampSample> mTimestampQueries;
 
     // Trace event record that can be output.
     std::vector<TraceEvent> mTraceEventBuffer;

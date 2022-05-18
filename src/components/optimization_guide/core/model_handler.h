@@ -37,6 +37,8 @@ class ModelHandler : public OptimizationTargetModelObserver {
       OptimizationGuideModelProvider* model_provider,
       scoped_refptr<base::SequencedTaskRunner> model_executor_task_runner,
       std::unique_ptr<ModelExecutor<OutputType, InputTypes...>> model_executor,
+      // Passing nullopt will use a default value.
+      absl::optional<base::TimeDelta> model_inference_timeout,
       proto::OptimizationTarget optimization_target,
       const absl::optional<proto::Any>& model_metadata)
       : model_provider_(model_provider),
@@ -54,11 +56,15 @@ class ModelHandler : public OptimizationTargetModelObserver {
         true);
 
     handler_created_time_ = base::TimeTicks::Now();
+
+    model_executor_->InitializeAndMoveToExecutionThread(
+        model_inference_timeout, optimization_target_,
+        model_executor_task_runner_, base::SequencedTaskRunnerHandle::Get());
+
+    // Run this after the executor is initialized in case the model is already
+    // available.
     model_provider_->AddObserverForOptimizationTargetModel(
         optimization_target_, model_metadata, this);
-    model_executor_->InitializeAndMoveToExecutionThread(
-        optimization_target_, model_executor_task_runner_,
-        base::SequencedTaskRunnerHandle::Get());
   }
   ~ModelHandler() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

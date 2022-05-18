@@ -57,7 +57,9 @@ rtc_library("remote_bitrate_estimator") {
     "../../rtc_base:checks",
     "../../rtc_base:logging",
     "../../rtc_base:macromagic",
-    "../../rtc_base:rtc_base_approved",
+    "../../rtc_base:platform_thread",
+    "../../rtc_base:race_checker",
+    "../../rtc_base:rate_statistics",
     "../../rtc_base:rtc_numerics",
     "../../rtc_base:safe_minmax",
     "../../rtc_base:stringutils",
@@ -81,7 +83,6 @@ if (!build_with_chromium) {
       "tools/bwe_rtp.h",
     ]
     deps = [
-      "../../rtc_base:rtc_base_approved",
       "../../test:rtp_test_utils",
       "../rtp_rtcp:rtp_rtcp_format",
     ]
@@ -128,7 +129,7 @@ if (rtc_include_tests) {
       "../../api/units:data_rate",
       "../../rtc_base",
       "../../rtc_base:checks",
-      "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:random",
       "../../system_wrappers",
       "../../test:field_trial",
       "../../test:fileutils",

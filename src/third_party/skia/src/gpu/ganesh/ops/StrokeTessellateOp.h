@@ -10,8 +10,8 @@
 
 #include "include/core/SkStrokeRec.h"
 #include "src/gpu/ganesh/ops/GrDrawOp.h"
-#include "src/gpu/ganesh/ops/StrokeTessellator.h"
-#include "src/gpu/ganesh/tessellate/shaders/GrTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/GrTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/StrokeTessellator.h"
 
 class GrRecordingContext;
 class GrStrokeTessellationShader;
@@ -25,7 +25,9 @@ public:
     StrokeTessellateOp(GrAAType, const SkMatrix&, const SkPath&, const SkStrokeRec&, GrPaint&&);
 
 private:
+    using PatchAttribs = StrokeTessellator::PatchAttribs;
     using PathStrokeList = StrokeTessellator::PathStrokeList;
+
     DEFINE_OP_CLASS_ID
 
     SkStrokeRec& headStroke() { return fPathStrokeList.fStroke; }

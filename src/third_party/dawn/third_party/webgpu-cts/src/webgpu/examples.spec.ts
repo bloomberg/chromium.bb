@@ -21,7 +21,7 @@ import { GPUTest } from './gpu_test.js';
 
 export const g = makeTestGroup(GPUTest);
 
-// Note: spaces in test names are replaced with underscores: webgpu:examples:test_name=
+// Note: spaces aren't allowed in test names; use underscores.
 g.test('test_name').fn(t => {});
 
 g.test('not_implemented_yet,without_plan').unimplemented();
@@ -228,13 +228,15 @@ g.test('gpu,with_texture_compression,bc')
 Tests that a BC format passes validation iff the feature is enabled.`
   )
   .params(u => u.combine('textureCompressionBC', [false, true]))
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { textureCompressionBC } = t.params;
 
     if (textureCompressionBC) {
-      await t.selectDeviceOrSkipTestCase('texture-compression-bc');
+      t.selectDeviceOrSkipTestCase('texture-compression-bc');
     }
-
+  })
+  .fn(async t => {
+    const { textureCompressionBC } = t.params;
     const shouldError = !textureCompressionBC;
     t.expectGPUError(
       'validation',
@@ -255,12 +257,15 @@ g.test('gpu,with_texture_compression,etc2')
 Tests that an ETC2 format passes validation iff the feature is enabled.`
   )
   .params(u => u.combine('textureCompressionETC2', [false, true]))
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     const { textureCompressionETC2 } = t.params;
 
     if (textureCompressionETC2) {
-      await t.selectDeviceOrSkipTestCase('texture-compression-etc2' as GPUFeatureName);
+      t.selectDeviceOrSkipTestCase('texture-compression-etc2' as GPUFeatureName);
     }
+  })
+  .fn(async t => {
+    const { textureCompressionETC2 } = t.params;
 
     const shouldError = !textureCompressionETC2;
     t.expectGPUError(

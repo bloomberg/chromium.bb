@@ -22,21 +22,23 @@ limitations under the License.
 
 #include "llvm/ADT/STLExtras.h"
 #include "mlir/IR/Builders.h"  // from @llvm-project
-#include "mlir/IR/BuiltinAttributes.h"  // from @llvm-project
 #include "mlir/Support/LLVM.h"  // from @llvm-project
-#include "tensorflow/c/tf_status_internal.h"
 #include "tensorflow/core/framework/allocator.h"
 #include "tensorflow/core/framework/control_flow.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/ir/importexport/convert_tensor.h"
-#include "tensorflow/core/ir/importexport/export.h"
-#include "tensorflow/core/lib/core/threadpool.h"
+#include "tensorflow/core/ir/importexport/graphdef_export.h"
+#include "tensorflow/core/platform/threadpool.h"
 #include "tensorflow/core/public/version.h"
-#include "tensorflow/core/transforms/utils/utils.h"
 
 namespace mlir {
 namespace tfg {
 namespace util {
+
+// The SimpleDevice is supposed to be used for evaluating single operation. To
+// avoid the overhead of thread creation. Set a small and conservative number as
+// the default.
+static constexpr int kThreads = 2;
 
 SimpleDevice::SimpleDevice() : DeviceBase(tensorflow::Env::Default()) {
   eigen_worker_ = std::make_unique<tensorflow::thread::ThreadPool>(
@@ -84,7 +86,9 @@ LogicalResult EvaluateOperation(tensorflow::DeviceBase *cpu_device,
   }
 
   tensorflow::NodeDef node_def;
-  if (!ConvertOperationToNode(*op, &node_def).ok())
+  if (!ConvertToNodeDef(&*op, &node_def, op.getDialect(), [&](Value value) {
+         return GetValueName(value, op.getDialect());
+       }).ok())
     return op->emitError() << "failed to convert operation to NodeDef";
 
   absl::InlinedVector<tensorflow::Tensor, 4> input_tensors(operands.size());

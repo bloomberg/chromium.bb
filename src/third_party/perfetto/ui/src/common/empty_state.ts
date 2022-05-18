@@ -13,13 +13,20 @@
 // limitations under the License.
 
 import {createEmptyRecordConfig} from '../controller/record_config_types';
+import {columnKey} from '../frontend/pivot_table_redux';
+import {TableColumn} from '../frontend/pivot_table_redux_query_generator';
 import {
   autosaveConfigStore,
   recordTargetStore
 } from '../frontend/record_config';
 
 import {featureFlags} from './feature_flags';
-import {defaultTraceTime, State, STATE_VERSION} from './state';
+import {
+  defaultTraceTime,
+  NonSerializableState,
+  State,
+  STATE_VERSION
+} from './state';
 
 const AUTOLOAD_STARTED_CONFIG_FLAG = featureFlags.register({
   id: 'autoloadStartedConfig',
@@ -29,12 +36,38 @@ const AUTOLOAD_STARTED_CONFIG_FLAG = featureFlags.register({
   defaultValue: true,
 });
 
+function columnSet(...columns: TableColumn[]): Map<string, TableColumn> {
+  const result = new Map<string, TableColumn>();
+
+  for (const column of columns) {
+    result.set(columnKey(column), column);
+  }
+
+  return result;
+}
+
+export function createEmptyNonSerializableState(): NonSerializableState {
+  return {
+    pivotTableRedux: {
+      selectionArea: null,
+      queryResult: null,
+      editMode: true,
+      selectedPivotsMap: columnSet(
+          {table: 'slice', column: 'category'},
+          {table: 'slice', column: 'name'}),
+      selectedAggregations:
+          columnSet({table: 'thread_slice', column: 'thread_dur'}, 'count'),
+      constrainToArea: true,
+      queryRequested: false,
+    },
+  };
+}
+
 export function createEmptyState(): State {
   return {
     version: STATE_VERSION,
-    nextId: 0,
-    nextNoteId: 1,  // 0 is reserved for ephemeral area marking.
-    nextAreaId: 0,
+    currentEngineId: undefined,
+    nextId: '-1',
     newEngineMode: 'USE_HTTP_RPC_IF_AVAILABLE',
     engines: {},
     traceTime: {...defaultTraceTime},
@@ -103,7 +136,6 @@ export function createEmptyState(): State {
 
     fetchChromeCategories: false,
     chromeCategories: undefined,
-    pivotTableRedux:
-        {selectionArea: null, query: null, queryId: 0, queryResult: null},
+    nonSerializableState: createEmptyNonSerializableState()
   };
 }

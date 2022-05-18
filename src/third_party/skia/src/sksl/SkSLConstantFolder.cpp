@@ -13,6 +13,7 @@
 #include "include/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
@@ -55,9 +56,7 @@ static std::unique_ptr<Expression> eliminate_no_op_boolean(Position pos,
         (op.kind() == Operator::Kind::EQEQ       && rightVal)  ||  // (expr == true)  -> (expr)
         (op.kind() == Operator::Kind::NEQ        && !rightVal)) {  // (expr != false) -> (expr)
 
-        std::unique_ptr<Expression> result = left.clone();
-        result->fPosition = pos;
-        return result;
+        return left.clone(pos);
     }
 
     return nullptr;
@@ -73,9 +72,7 @@ static std::unique_ptr<Expression> short_circuit_boolean(Position pos,
     if ((op.kind() == Operator::Kind::LOGICALAND && !leftVal) ||  // (false && expr) -> (false)
         (op.kind() == Operator::Kind::LOGICALOR  && leftVal)) {   // (true  || expr) -> (true)
 
-        std::unique_ptr<Expression> result = left.clone();
-        result->fPosition = pos;
-        return result;
+        return left.clone(pos);
     }
 
     // We can't eliminate the right-side expression via short-circuit, but we might still be able to
@@ -377,8 +374,7 @@ std::unique_ptr<Expression> ConstantFolder::MakeConstantValueForVariable(Positio
         std::unique_ptr<Expression> expr) {
     const Expression* constantExpr = GetConstantValueForVariable(*expr);
     if (constantExpr != expr.get()) {
-        expr = constantExpr->clone();
-        expr->fPosition = pos;
+        expr = constantExpr->clone(pos);
     }
     return expr;
 }
@@ -502,21 +498,11 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     const Expression* left = GetConstantValueForVariable(leftExpr);
     const Expression* right = GetConstantValueForVariable(rightExpr);
 
-    // If this is the comma operator, the left side is evaluated but not otherwise used in any way.
-    // So if the left side has no side effects, it can just be eliminated entirely.
-    if (op.kind() == Operator::Kind::COMMA && !left->hasSideEffects()) {
-        std::unique_ptr<Expression> result = right->clone();
-        result->fPosition = pos;
-        return result;
-    }
-
     // If this is the assignment operator, and both sides are the same trivial expression, this is
     // self-assignment (i.e., `var = var`) and can be reduced to just a variable reference (`var`).
     // This can happen when other parts of the assignment are optimized away.
     if (op.kind() == Operator::Kind::EQ && Analysis::IsSameExpressionTree(*left, *right)) {
-        std::unique_ptr<Expression> result = right->clone();
-        result->fPosition = pos;
-        return result;
+        return right->clone(pos);
     }
 
     // Simplify the expression when both sides are constant Boolean literals.
@@ -571,11 +557,11 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Optimize away no-op arithmetic like `x * 1`, `x *= 1`, `x + 0`, `x * 0`, `0 / x`, etc.
     const Type& leftType = left->type();
     const Type& rightType = right->type();
-    if ((leftType.isScalar() || leftType.isVector()) &&
+    if (context.fConfig->fSettings.fOptimize &&
+        (leftType.isScalar() || leftType.isVector()) &&
         (rightType.isScalar() || rightType.isVector())) {
-        std::unique_ptr<Expression> expr = simplify_no_op_arithmetic(context, pos, *left, op,
-                *right, resultType);
-        if (expr) {
+        if (std::unique_ptr<Expression> expr = simplify_no_op_arithmetic(context, pos, *left, op,
+                                                                         *right, resultType)) {
             return expr;
         }
     }

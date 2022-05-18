@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnNativeTest.h"
+#include <utility>
+#include <vector>
 
 #include "dawn/native/CommandBuffer.h"
 #include "dawn/native/Commands.h"
 #include "dawn/native/ComputePassEncoder.h"
+#include "dawn/tests/DawnNativeTest.h"
 #include "dawn/utils/WGPUHelpers.h"
+
+namespace dawn::native {
 
 class CommandBufferEncodingTests : public DawnNativeTest {
   protected:
@@ -38,8 +42,6 @@ class CommandBufferEncodingTests : public DawnNativeTest {
 // Indirect dispatch validation changes the bind groups in the middle
 // of a pass. Test that bindings are restored after the validation runs.
 TEST_F(CommandBufferEncodingTests, ComputePassEncoderIndirectDispatchStateRestoration) {
-    using namespace dawn::native;
-
     wgpu::BindGroupLayout staticLayout =
         utils::MakeBindGroupLayout(device, {{
                                                0,
@@ -102,7 +104,7 @@ TEST_F(CommandBufferEncodingTests, ComputePassEncoderIndirectDispatchStateRestor
     pass.SetBindGroup(1, dynamicBG, 1, &dynamicOffset);
     EXPECT_EQ(ToAPI(stateTracker->GetComputePipeline()), pipeline0.Get());
 
-    pass.DispatchIndirect(indirectBuffer, 0);
+    pass.DispatchWorkgroupsIndirect(indirectBuffer, 0);
 
     // Expect restored state.
     EXPECT_EQ(ToAPI(stateTracker->GetComputePipeline()), pipeline0.Get());
@@ -115,7 +117,7 @@ TEST_F(CommandBufferEncodingTests, ComputePassEncoderIndirectDispatchStateRestor
     // Dispatch again to check that the restored state can be used.
     // Also pass an indirect offset which should get replaced with the offset
     // into the scratch indirect buffer (0).
-    pass.DispatchIndirect(indirectBuffer, 4);
+    pass.DispatchWorkgroupsIndirect(indirectBuffer, 4);
 
     // Expect restored state.
     EXPECT_EQ(ToAPI(stateTracker->GetComputePipeline()), pipeline0.Get());
@@ -132,7 +134,7 @@ TEST_F(CommandBufferEncodingTests, ComputePassEncoderIndirectDispatchStateRestor
     EXPECT_EQ(ToAPI(stateTracker->GetComputePipeline()), pipeline1.Get());
     EXPECT_EQ(ToAPI(stateTracker->GetPipelineLayout()), pl1.Get());
 
-    pass.DispatchIndirect(indirectBuffer, 0);
+    pass.DispatchWorkgroupsIndirect(indirectBuffer, 0);
 
     // Expect restored state.
     EXPECT_EQ(ToAPI(stateTracker->GetComputePipeline()), pipeline1.Get());
@@ -274,8 +276,6 @@ TEST_F(CommandBufferEncodingTests, ComputePassEncoderIndirectDispatchStateRestor
 // and does not leak state changes that occured between a snapshot and the
 // state restoration.
 TEST_F(CommandBufferEncodingTests, StateNotLeakedAfterRestore) {
-    using namespace dawn::native;
-
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
 
@@ -308,3 +308,5 @@ TEST_F(CommandBufferEncodingTests, StateNotLeakedAfterRestore) {
     // Expect no pipeline
     EXPECT_FALSE(stateTracker->HasPipeline());
 }
+
+}  // namespace dawn::native

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
+
 #include "dawn/tests/DawnTest.h"
 
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <array>
 
 class ComputeSharedMemoryTests : public DawnTest {
   public:
@@ -56,7 +56,7 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();
@@ -178,7 +178,7 @@ TEST_P(ComputeSharedMemoryTests, AssortedTypes) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();

@@ -85,7 +85,7 @@ class DatarateTestLarge
         << " The datarate for the file is greater than target by too much!";
   }
 
-  virtual void BasicRateTargetingMTCBRTest() {
+  virtual void BasicRateTargetingMultiThreadCBRTest() {
     ::libaom_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30,
                                          1, 0, 400);
     cfg_.rc_buf_initial_sz = 500;
@@ -315,8 +315,8 @@ TEST_P(DatarateTestLarge, BasicRateTargetingCBR) {
 }
 
 // Check basic rate targeting for CBR, with 4 threads
-TEST_P(DatarateTestLarge, BasicRateTargetingMTCBR) {
-  BasicRateTargetingMTCBRTest();
+TEST_P(DatarateTestLarge, BasicRateTargetingMultiThreadCBR) {
+  BasicRateTargetingMultiThreadCBRTest();
 }
 
 // Check basic rate targeting for periodic key frame.
@@ -414,8 +414,8 @@ TEST_P(DatarateTestRealtime, BasicRateTargetingCBR) {
 }
 
 // Check basic rate targeting for CBR, with 4 threads
-TEST_P(DatarateTestRealtime, BasicRateTargetingMTCBR) {
-  BasicRateTargetingMTCBRTest();
+TEST_P(DatarateTestRealtime, BasicRateTargetingMultiThreadCBR) {
+  BasicRateTargetingMultiThreadCBRTest();
 }
 
 // Check basic rate targeting for periodic key frame.

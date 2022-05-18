@@ -6,46 +6,12 @@
  */
 
 #include "include/private/SkSLString.h"
+#include "src/gpu/Blend.h"
 #include "src/gpu/ganesh/glsl/GrGLSLBlend.h"
 #include "src/gpu/ganesh/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/ganesh/glsl/GrGLSLProgramBuilder.h"
 
 namespace GrGLSLBlend {
-
-const char* BlendFuncName(SkBlendMode mode) {
-    switch (mode) {
-        case SkBlendMode::kClear:      return "blend_clear";
-        case SkBlendMode::kSrc:        return "blend_src";
-        case SkBlendMode::kDst:        return "blend_dst";
-        case SkBlendMode::kSrcOver:    return "blend_src_over";
-        case SkBlendMode::kDstOver:    return "blend_dst_over";
-        case SkBlendMode::kSrcIn:      return "blend_src_in";
-        case SkBlendMode::kDstIn:      return "blend_dst_in";
-        case SkBlendMode::kSrcOut:     return "blend_src_out";
-        case SkBlendMode::kDstOut:     return "blend_dst_out";
-        case SkBlendMode::kSrcATop:    return "blend_src_atop";
-        case SkBlendMode::kDstATop:    return "blend_dst_atop";
-        case SkBlendMode::kXor:        return "blend_xor";
-        case SkBlendMode::kPlus:       return "blend_plus";
-        case SkBlendMode::kModulate:   return "blend_modulate";
-        case SkBlendMode::kScreen:     return "blend_screen";
-        case SkBlendMode::kOverlay:    return "blend_overlay";
-        case SkBlendMode::kDarken:     return "blend_darken";
-        case SkBlendMode::kLighten:    return "blend_lighten";
-        case SkBlendMode::kColorDodge: return "blend_color_dodge";
-        case SkBlendMode::kColorBurn:  return "blend_color_burn";
-        case SkBlendMode::kHardLight:  return "blend_hard_light";
-        case SkBlendMode::kSoftLight:  return "blend_soft_light";
-        case SkBlendMode::kDifference: return "blend_difference";
-        case SkBlendMode::kExclusion:  return "blend_exclusion";
-        case SkBlendMode::kMultiply:   return "blend_multiply";
-        case SkBlendMode::kHue:        return "blend_hue";
-        case SkBlendMode::kSaturation: return "blend_saturation";
-        case SkBlendMode::kColor:      return "blend_color";
-        case SkBlendMode::kLuminosity: return "blend_luminosity";
-    }
-    SkUNREACHABLE;
-}
 
 std::string BlendExpression(const GrProcessor* processor,
                             GrGLSLUniformHandler* uniformHandler,
@@ -53,53 +19,18 @@ std::string BlendExpression(const GrProcessor* processor,
                             const char* srcColor,
                             const char* dstColor,
                             SkBlendMode mode) {
-    switch (mode) {
-        case SkBlendMode::kSrcOver:
-        case SkBlendMode::kDstOver:
-        case SkBlendMode::kSrcIn:
-        case SkBlendMode::kDstIn:
-        case SkBlendMode::kSrcOut:
-        case SkBlendMode::kDstOut:
-        case SkBlendMode::kSrcATop:
-        case SkBlendMode::kDstATop:
-        case SkBlendMode::kXor:
-        case SkBlendMode::kPlus: {
-            const char* blendName;
-            *blendUniform = uniformHandler->addUniform(processor, kFragment_GrShaderFlag,
-                                                       SkSLType::kHalf4, "blend", &blendName);
-            return SkSL::String::printf("blend_porter_duff(%s, %s, %s)",
-                                        srcColor, dstColor, blendName);
-        }
-        case SkBlendMode::kHue:
-        case SkBlendMode::kSaturation:
-        case SkBlendMode::kLuminosity:
-        case SkBlendMode::kColor: {
-            const char* blendName;
-            *blendUniform = uniformHandler->addUniform(processor, kFragment_GrShaderFlag,
-                                                       SkSLType::kHalf2, "blend", &blendName);
-            return SkSL::String::printf("blend_hslc(%s, %s, bool(%s.x), bool(%s.y))",
-                                        srcColor, dstColor, blendName, blendName);
-        }
-        case SkBlendMode::kOverlay:
-        case SkBlendMode::kHardLight: {
-            const char* blendName;
-            *blendUniform = uniformHandler->addUniform(processor, kFragment_GrShaderFlag,
-                                                       SkSLType::kHalf, "blend", &blendName);
-            return SkSL::String::printf("blend_overlay(%s, %s, bool(%s))",
-                                        srcColor, dstColor, blendName);
-        }
-        case SkBlendMode::kDarken:
-        case SkBlendMode::kLighten: {
-            const char* blendName;
-            *blendUniform = uniformHandler->addUniform(processor, kFragment_GrShaderFlag,
-                                                       SkSLType::kHalf, "blend", &blendName);
-            return SkSL::String::printf("blend_darken(%s, %s, %s)", srcColor, dstColor, blendName);
-        }
-        default: {
-            return SkSL::String::printf("%s(%s, %s)",
-                                        BlendFuncName(mode), srcColor, dstColor);
-        }
+    auto info = skgpu::GetReducedBlendModeInfo(mode);
+    if (info.fUniformData.empty()) {
+        return SkSL::String::printf("%s(%s, %s)", info.fFunction, srcColor, dstColor);
     }
+
+    SkSLType skslType = (SkSLType)((int)SkSLType::kHalf + info.fUniformData.size() - 1);
+    SkASSERT(skslType >= SkSLType::kHalf && skslType <= SkSLType::kHalf4);
+
+    const char* blendName;
+    *blendUniform = uniformHandler->addUniform(processor, kFragment_GrShaderFlag,
+                                               skslType, "blend", &blendName);
+    return SkSL::String::printf("%s(%s, %s, %s)", info.fFunction, srcColor, dstColor, blendName);
 }
 
 int BlendKey(SkBlendMode mode) {
@@ -138,30 +69,25 @@ int BlendKey(SkBlendMode mode) {
 void SetBlendModeUniformData(const GrGLSLProgramDataManager& pdman,
                              GrGLSLProgramDataManager::UniformHandle blendUniform,
                              SkBlendMode mode) {
-    switch (mode) {
-        case SkBlendMode::kSrcOver:    pdman.set4f(blendUniform, 1, 0,  0, -1); break;
-        case SkBlendMode::kDstOver:    pdman.set4f(blendUniform, 0, 1, -1,  0); break;
-        case SkBlendMode::kSrcIn:      pdman.set4f(blendUniform, 0, 0,  1,  0); break;
-        case SkBlendMode::kDstIn:      pdman.set4f(blendUniform, 0, 0,  0,  1); break;
-        case SkBlendMode::kSrcOut:     pdman.set4f(blendUniform, 0, 0, -1,  0); break;
-        case SkBlendMode::kDstOut:     pdman.set4f(blendUniform, 0, 0,  0, -1); break;
-        case SkBlendMode::kSrcATop:    pdman.set4f(blendUniform, 0, 0,  1, -1); break;
-        case SkBlendMode::kDstATop:    pdman.set4f(blendUniform, 0, 0, -1,  1); break;
-        case SkBlendMode::kXor:        pdman.set4f(blendUniform, 0, 0, -1, -1); break;
-        case SkBlendMode::kPlus:       pdman.set4f(blendUniform, 1, 1,  0,  0); break;
-
-        case SkBlendMode::kHue:        pdman.set2f(blendUniform, 0, 1); break;
-        case SkBlendMode::kSaturation: pdman.set2f(blendUniform, 1, 1); break;
-        case SkBlendMode::kColor:      pdman.set2f(blendUniform, 0, 0); break;
-        case SkBlendMode::kLuminosity: pdman.set2f(blendUniform, 1, 0); break;
-
-        case SkBlendMode::kOverlay:    pdman.set1f(blendUniform, 0); break;
-        case SkBlendMode::kHardLight:  pdman.set1f(blendUniform, 1); break;
-
-        case SkBlendMode::kDarken:     pdman.set1f(blendUniform, 1); break;
-        case SkBlendMode::kLighten:    pdman.set1f(blendUniform, -1); break;
-
-        default:                    /* no uniform data necessary */ break;
+    auto info = skgpu::GetReducedBlendModeInfo(mode);
+    switch (info.fUniformData.size()) {
+        case 0:
+            /* no uniform data necessary */
+            break;
+        case 1:
+            pdman.set1f(blendUniform, info.fUniformData[0]);
+            break;
+        case 2:
+            pdman.set2f(blendUniform, info.fUniformData[0], info.fUniformData[1]);
+            break;
+        case 3:
+            pdman.set3f(blendUniform, info.fUniformData[0], info.fUniformData[1],
+                                      info.fUniformData[2]);
+            break;
+        case 4:
+            pdman.set4f(blendUniform, info.fUniformData[0], info.fUniformData[1],
+                                      info.fUniformData[2], info.fUniformData[3]);
+            break;
     }
 }
 

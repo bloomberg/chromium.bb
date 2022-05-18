@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
 
 #include "base/callback.h"
@@ -76,7 +77,7 @@ void FakeInstallFinalizer::UninstallExternalWebAppByUrl(
                      }));
 }
 
-void FakeInstallFinalizer::UninstallWithoutRegistryUpdateFromSync(
+void FakeInstallFinalizer::UninstallFromSync(
     const std::vector<AppId>& web_apps,
     RepeatingUninstallCallback callback) {
   NOTREACHED();
@@ -95,7 +96,7 @@ void FakeInstallFinalizer::UninstallWebApp(
 }
 
 void FakeInstallFinalizer::RetryIncompleteUninstalls(
-    const std::vector<AppId>& apps_to_uninstall) {
+    const base::flat_set<AppId>& apps_to_uninstall) {
   NOTREACHED();
 }
 

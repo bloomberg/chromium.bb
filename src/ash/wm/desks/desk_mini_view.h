@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -99,8 +100,19 @@ class ASH_EXPORT DeskMiniView : public views::View,
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
   // Hides the `desk_action_view_` and opens `context_menu_`. Called when
-  // `desk_preview_` is right-clicked or long-pressed.
-  void OpenContextMenu();
+  // `desk_preview_` is right-clicked or long-pressed. `source` is the type of
+  // action that caused the context menu to be opened (e.g. long press versus
+  // mouse click), and is provided to the context menu runner when the menu is
+  // open in `DeskActionContextMenu::ShowContextMenuForViewImpl` so that it can
+  // further evaluate menu positioning. This ends up doing nothing in particular
+  // in the case of the `DeskActionContextMenu` because we use a
+  // `views::MenuRunner::FIXED_ANCHOR` run type parameter, but the
+  // `MenuRunner::RunMenuAt` function still requires this parameter, so we pass
+  // it down to the function through this parameter.
+  void OpenContextMenu(ui::MenuSourceType source);
+
+  // Closes context menu on this mini view if one exists.
+  void MaybeCloseContextMenu();
 
   // views::View:
   const char* GetClassName() const override;
@@ -117,7 +129,7 @@ class ASH_EXPORT DeskMiniView : public views::View,
   // OverviewHighlightableView:
   views::View* GetView() override;
   void MaybeActivateHighlightedView() override;
-  void MaybeCloseHighlightedView() override;
+  void MaybeCloseHighlightedView(bool primary_action) override;
   void MaybeSwapHighlightedView(bool right) override;
   bool MaybeActivateHighlightedViewOnOverviewExit(
       OverviewSession* overview_session) override;
@@ -141,9 +153,10 @@ class ASH_EXPORT DeskMiniView : public views::View,
 
   // Sets either the `desk_action_view_` or the `close_desk_button_` visibility
   // to false depending on whether the `kDesksCloseAll` feature is active, and
-  // then removes the desk. If `close_windows` is true, the function tells the
-  // `DesksController` to remove `desk_`'s windows as well.
-  void OnRemovingDesk(bool close_windows);
+  // then removes the desk. If `close_type` is `kCloseAllWindows*`, this
+  // function tells the `DesksController` to remove `desk_`'s windows as well,
+  // and wait for the user to confirm.
+  void OnRemovingDesk(DeskCloseType close_type);
 
   // Callback for when `context_menu_` is closed. Makes `desk_action_view_`
   // visible.

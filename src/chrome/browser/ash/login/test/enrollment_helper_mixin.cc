@@ -10,6 +10,7 @@
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/active_directory/active_directory_join_delegate.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_status.h"
 
 namespace ash {
 namespace test {
@@ -99,23 +100,6 @@ void EnrollmentHelperMixin::ExpectAttestationEnrollmentErrorRepeated(
   EXPECT_CALL(*mock_, EnrollUsingAttestation())
       .Times(AtLeast(1))
       .WillRepeatedly(InvokeWithoutArgs([this, status]() {
-        mock_->status_consumer()->OnEnrollmentError(status);
-      }));
-}
-
-void EnrollmentHelperMixin::ExpectOfflineEnrollmentSuccess() {
-  ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
-
-  EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(InvokeWithoutArgs(
-          [this]() { mock_->status_consumer()->OnDeviceEnrolled(); }));
-}
-
-void EnrollmentHelperMixin::ExpectOfflineEnrollmentError(
-    policy::EnrollmentStatus status) {
-  ExpectEnrollmentMode(policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
-  EXPECT_CALL(*mock_, EnrollForOfflineDemo())
-      .WillOnce(InvokeWithoutArgs([this, status]() {
         mock_->status_consumer()->OnEnrollmentError(status);
       }));
 }

@@ -15,31 +15,30 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPUBINDGROUP_H_
 #define SRC_DAWN_NODE_BINDING_GPUBINDGROUP_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
 
-    // GPUBindGroup is an implementation of interop::GPUBindGroup that wraps a wgpu::BindGroup.
-    class GPUBindGroup final : public interop::GPUBindGroup {
-      public:
-        GPUBindGroup(wgpu::BindGroup group);
+// GPUBindGroup is an implementation of interop::GPUBindGroup that wraps a wgpu::BindGroup.
+class GPUBindGroup final : public interop::GPUBindGroup {
+  public:
+    explicit GPUBindGroup(wgpu::BindGroup group);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::BindGroup&() const {
-            return group_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::BindGroup&() const { return group_; }
 
-        // interop::GPUBindGroup interface compliance
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPUBindGroup interface compliance
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::BindGroup group_;
-    };
+  private:
+    wgpu::BindGroup group_;
+};
 
 }  // namespace wgpu::binding
 

@@ -34,13 +34,13 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
-LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
-LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
-                                          'llvm-bootstrap-install')
-LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
-LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
-    os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
+    os.path.join(THIRD_PARTY_DIR, 'llvm-build-tools'))
+LLVM_BOOTSTRAP_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-bootstrap')
+LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR,
+                                          'llvm-bootstrap-install')
+LLVM_INSTRUMENTED_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-instrumented')
+LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
@@ -620,7 +620,7 @@ def main():
   cxxflags = []
   ldflags = []
 
-  targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
+  targets = 'AArch64;ARM;Mips;PowerPC;RISCV;SystemZ;WebAssembly;X86'
 
   projects = 'clang;compiler-rt;lld;clang-tools-extra'
 
@@ -787,11 +787,7 @@ def main():
                msvc_arch='x64')
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
-      test_targets = ['check-all']
-      if sys.platform == 'darwin' and platform.machine() == 'arm64':
-        # TODO(llvm.org/PR49918): Run check-all on mac/arm too.
-        test_targets = ['check-llvm', 'check-clang']
-      RunCommand(['ninja'] + test_targets, msvc_arch='x64')
+      RunCommand(['ninja', 'check-all'], msvc_arch='x64')
     RunCommand(['ninja', 'install'], msvc_arch='x64')
 
     if sys.platform == 'win32':
@@ -837,7 +833,7 @@ def main():
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
-    RunCommand(['ninja'], msvc_arch='x64')
+    RunCommand(['ninja', 'clang'], msvc_arch='x64')
     print('Instrumented compiler built.')
 
     # Train by building some C++ code.
@@ -987,6 +983,9 @@ def main():
     if platform.machine() == 'aarch64':
       cmake_args.append(
           '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-unknown-linux-gnu')
+    elif platform.machine() == 'riscv64':
+      cmake_args.append(
+          '-DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu')
     else:
       cmake_args.append('-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-unknown-linux-gnu')
     cmake_args.append('-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON')
@@ -1130,9 +1129,12 @@ def main():
       ]
 
       # First build the builtins and copy to the main build tree.
-      RunCommand(['cmake'] +
-                 android_args +
-                 [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
+      RunCommand(
+          ['cmake'] + android_args +
+          # On Android, we want DWARF info for the builtins for
+          # unwinding. See crbug.com/1311807.
+          ['-DCMAKE_BUILD_TYPE=RelWithDebInfo'] +
+          [os.path.join(COMPILER_RT_DIR, 'lib', 'builtins')])
       builtins_a = 'lib/linux/libclang_rt.builtins-%s-android.a' % target_arch
       RunCommand(['ninja', builtins_a])
       shutil.copy(builtins_a, rt_lib_dst_dir)

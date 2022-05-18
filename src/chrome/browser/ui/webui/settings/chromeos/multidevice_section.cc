@@ -378,6 +378,8 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_SECTION_TITLE},
       {"multidevicePhoneHubCameraRollItemTitle",
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_SECTION_TITLE},
+      {"multidevicePhoneHubCameraRollItemSummary",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_SUMMARY},
       {"multidevicePhoneHubLearnMoreLabel",
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_LEARN_MORE_LABEL},
       {"multidevicePhoneHubNotificationsItemTitle",
@@ -424,6 +426,8 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_PROHIBITED_TOOLTIP},
       {"multideviceNotificationAccessProhibitedDisabledByAdminTooltip",
        IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_PROHIBITED_DISABLED_BY_ADMIN_TOOLTIP},
+      {"multideviceAppsAccessProhibitedDisabledByAdminTooltip",
+       IDS_SETTINGS_MULTIDEVICE_APPS_ACCESS_PROHIBITED_DISABLED_BY_ADMIN_TOOLTIP},
       {"multideviceInstantTetheringItemTitle",
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
       {"multideviceInstantTetheringItemSummary",
@@ -441,6 +445,8 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_APPS_AND_NOTIFICATIONS_SECTION_TITLE},
       {"multidevicePhoneHubCameraRollAndNotificationsItemTitle",
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_AND_NOTIFICATIONS_SECTION_TITLE},
+      {"multidevicePhoneHubCameraRollAndNotificationsItemSummary",
+       IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_AND_NOTIFICATIONS_SUMMARY},
       {"multidevicePhoneHubCameraRollAndAppsItemTitle",
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_AND_APPS_SECTION_TITLE},
       {"multidevicePhoneHubCameraRollNotificationsAndAppsItemTitle",
@@ -468,6 +474,14 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COMPLETED_SUMMARY},
       {"multidevicePermissionsSetupAwaitingResponseTitle",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_AWAITING_RESPONSE_TITLE},
+      {"multidevicePermissionsSetupCouldNotEstablishConnectionTitle",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COULD_NOT_ESTABLISH_CONNECTION_TITLE},
+      {"multidevicePermissionsSetupEstablishFailureSummary",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COULD_NOT_ESTABLISH_CONNECTION_SUMMARY},
+      {"multidevicePermissionsSetupMaintainFailureSummary",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_CONNECTION_LOST_WITH_PHONE_SUMMARY},
+      {"multidevicePermissionsSetupNotificationAccessProhibitedTitle",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ACCESS_PROHIBITED_TITLE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -538,10 +552,6 @@ void MultiDeviceSection::AddLoadTimeData(
       l10n_util::GetStringFUTF16(IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_SUMMARY,
                                  ui::GetChromeOSDeviceName()));
   html_source->AddString(
-      "multidevicePhoneHubCameraRollItemSummary",
-      ui::SubstituteChromeOSDeviceType(
-          IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_SUMMARY));
-  html_source->AddString(
       "multideviceNotificationAccessSetupAckTitle",
       ui::SubstituteChromeOSDeviceType(
           IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_SETUP_DIALOG_ACK_TITLE));
@@ -570,10 +580,6 @@ void MultiDeviceSection::AddLoadTimeData(
           IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_TASK_CONTINUATION_DISABLED_SUMMARY,
           GetHelpUrlWithBoard(phonehub::kPhoneHubLearnMoreLink)));
   html_source->AddString(
-      "multidevicePhoneHubCameraRollAndNotificationsItemSummary",
-      ui::SubstituteChromeOSDeviceType(
-          IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_AND_NOTIFICATIONS_SUMMARY));
-  html_source->AddString(
       "multidevicePhoneHubPermissionsLearnMoreURL",
       GetHelpUrlWithBoard(chrome::kPhoneHubPermissionLearnMoreURL));
   html_source->AddString(
@@ -588,6 +594,11 @@ void MultiDeviceSection::AddLoadTimeData(
       "multidevicePermissionsSetupCompletedTitle",
       ui::SubstituteChromeOSDeviceType(
           IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COMPLETED_TITLE));
+  html_source->AddString(
+      "multidevicePermissionsSetupNotificationAccessProhibitedSummary",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ACCESS_PROHIBITED_SUMMARY,
+          GetHelpUrlWithBoard(phonehub::kPhoneHubLearnMoreLink)));
 
   AddEasyUnlockStrings(html_source);
 
@@ -601,11 +612,9 @@ void MultiDeviceSection::AddLoadTimeData(
       NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
           profile()));
   // Background scanning depends on Bluetooth Advertisement Monitoring.
-  html_source->AddBoolean(
-      "isNearbyShareBackgroundScanningEnabled",
-      chromeos::features::IsBluetoothAdvertisementMonitoringEnabled() &&
-          base::FeatureList::IsEnabled(
-              ::features::kNearbySharingBackgroundScanning));
+  html_source->AddBoolean("isNearbyShareBackgroundScanningEnabled",
+                          base::FeatureList::IsEnabled(
+                              ::features::kNearbySharingBackgroundScanning));
   html_source->AddBoolean("isEcheAppEnabled", features::IsEcheSWAEnabled());
   bool is_phone_screen_lock_enabled =
       static_cast<phonehub::ScreenLockManager::LockStatus>(
@@ -617,6 +626,9 @@ void MultiDeviceSection::AddLoadTimeData(
   html_source->AddBoolean("isOnePageOnboardingEnabled",
                           base::FeatureList::IsEnabled(
                               ::features::kNearbySharingOnePageOnboarding));
+  html_source->AddBoolean(
+      "isSmartLockSignInRemoved",
+      base::FeatureList::IsEnabled(features::kSmartLockSignInRemoved));
 }
 
 void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {

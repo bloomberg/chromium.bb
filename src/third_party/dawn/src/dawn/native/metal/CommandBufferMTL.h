@@ -21,48 +21,43 @@
 #import <Metal/Metal.h>
 
 namespace dawn::native {
-    class CommandEncoder;
+class CommandEncoder;
 }
 
 namespace dawn::native::metal {
 
-    class CommandRecordingContext;
-    class Device;
-    class Texture;
+class CommandRecordingContext;
+class Device;
+class Texture;
 
-    void RecordCopyBufferToTexture(CommandRecordingContext* commandContext,
-                                   id<MTLBuffer> mtlBuffer,
-                                   uint64_t bufferSize,
-                                   uint64_t offset,
-                                   uint32_t bytesPerRow,
-                                   uint32_t rowsPerImage,
-                                   Texture* texture,
-                                   uint32_t mipLevel,
-                                   const Origin3D& origin,
-                                   Aspect aspect,
-                                   const Extent3D& copySize);
+void RecordCopyBufferToTexture(CommandRecordingContext* commandContext,
+                               id<MTLBuffer> mtlBuffer,
+                               uint64_t bufferSize,
+                               uint64_t offset,
+                               uint32_t bytesPerRow,
+                               uint32_t rowsPerImage,
+                               Texture* texture,
+                               uint32_t mipLevel,
+                               const Origin3D& origin,
+                               Aspect aspect,
+                               const Extent3D& copySize);
 
-    class CommandBuffer final : public CommandBufferBase {
-      public:
-        static Ref<CommandBuffer> Create(CommandEncoder* encoder,
-                                         const CommandBufferDescriptor* descriptor);
+class CommandBuffer final : public CommandBufferBase {
+  public:
+    static Ref<CommandBuffer> Create(CommandEncoder* encoder,
+                                     const CommandBufferDescriptor* descriptor);
 
-        MaybeError FillCommands(CommandRecordingContext* commandContext);
+    CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
+    ~CommandBuffer() override;
 
-      private:
-        using CommandBufferBase::CommandBufferBase;
+    MaybeError FillCommands(CommandRecordingContext* commandContext);
 
-        MaybeError EncodeComputePass(CommandRecordingContext* commandContext);
-        MaybeError EncodeRenderPass(CommandRecordingContext* commandContext,
-                                    MTLRenderPassDescriptor* mtlRenderPass,
-                                    uint32_t width,
-                                    uint32_t height);
+  private:
+    using CommandBufferBase::CommandBufferBase;
 
-        MaybeError EncodeRenderPassInternal(CommandRecordingContext* commandContext,
-                                            MTLRenderPassDescriptor* mtlRenderPass,
-                                            uint32_t width,
-                                            uint32_t height);
-    };
+    MaybeError EncodeComputePass(CommandRecordingContext* commandContext);
+    MaybeError EncodeRenderPass(id<MTLRenderCommandEncoder> encoder);
+};
 
 }  // namespace dawn::native::metal
 

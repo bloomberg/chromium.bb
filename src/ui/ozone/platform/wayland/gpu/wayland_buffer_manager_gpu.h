@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
@@ -32,7 +31,6 @@ class GbmDevice;
 class WaylandConnection;
 class WaylandSurfaceGpu;
 class WaylandWindow;
-struct OverlayPlane;
 
 // Forwards calls through an associated mojo connection to WaylandBufferManager
 // on the browser process side.
@@ -59,8 +57,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
       bool supports_dma_buf,
       bool supports_viewporter,
       bool supports_acquire_fence,
-      bool supports_non_backed_solid_color_buffers,
-      bool supports_subpixel_accurate_position) override;
+      uint32_t supported_surface_augmentor_version) override;
 
   // These two calls get the surface, which backs the |widget| and notifies it
   // about the submission and the presentation. After the surface receives the
@@ -130,10 +127,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                     const gfx::Rect& damage_region);
   // Send overlay configurations for a frame to a WaylandWindow identified by
   // |widget|.
-  void CommitOverlays(
-      gfx::AcceleratedWidget widget,
-      uint32_t frame_id,
-      std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
+  void CommitOverlays(gfx::AcceleratedWidget widget,
+                      uint32_t frame_id,
+                      std::vector<wl::WaylandOverlayConfig> overlays);
 
   // Asks Wayland to destroy a wl_buffer.
   void DestroyBuffer(uint32_t buffer_id);
@@ -150,6 +146,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   }
   bool supports_subpixel_accurate_position() const {
     return supports_subpixel_accurate_position_;
+  }
+  bool supports_surface_background_color() const {
+    return supports_surface_background_color_;
   }
 
   // Adds a WaylandBufferManagerGpu binding.
@@ -220,10 +219,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void CreateSolidColorBufferTask(SkColor color,
                                   const gfx::Size& size,
                                   uint32_t buf_id);
-  void CommitOverlaysTask(
-      gfx::AcceleratedWidget widget,
-      uint32_t frame_id,
-      std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
+  void CommitOverlaysTask(gfx::AcceleratedWidget widget,
+                          uint32_t frame_id,
+                          std::vector<wl::WaylandOverlayConfig> overlays);
   void DestroyBufferTask(uint32_t buffer_id);
 
 #if defined(WAYLAND_GBM)
@@ -252,6 +250,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   // Determines whether subpixel accurate position is supported.
   bool supports_subpixel_accurate_position_ = false;
+
+  // Determines whether background information for surfaces is supported.
+  bool supports_surface_background_color_ = false;
 
   // Determines whether Wayland server supports Wayland protocols that allow to
   // export wl_buffers backed by dmabuf.
@@ -307,16 +308,5 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 };
 
 }  // namespace ui
-
-// This is a specialization of mojo::TypeConverter and has to be in the mojo
-// namespace.
-namespace mojo {
-template <>
-struct TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
-                     ui::OverlayPlane> {
-  static ui::ozone::mojom::WaylandOverlayConfigPtr Convert(
-      const ui::OverlayPlane& input);
-};
-}  // namespace mojo
 
 #endif  // UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_BUFFER_MANAGER_GPU_H_

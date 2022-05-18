@@ -2136,7 +2136,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   sk_sp<SkColorSpace> decoded_target_colorspace =
       ColorSpaceForImageDecode(draw_image, image_data->mode);
   if (target_color_space && decoded_target_colorspace) {
-    if (!gfx::ColorSpace(*decoded_target_colorspace).IsPQOrHLG() &&
+    if (!gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault() &&
         SkColorSpace::Equals(target_color_space.get(),
                              decoded_target_colorspace.get())) {
       target_color_space = nullptr;
@@ -2157,7 +2157,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     } else if (image_data->yuva_pixmap_info.has_value()) {
       const bool needs_tone_mapping =
           decoded_target_colorspace &&
-          gfx::ColorSpace(*decoded_target_colorspace).IsPQOrHLG();
+          gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault();
       UploadImageIfNecessary_TransferCache_SoftwareDecode_YUVA(
           draw_image, image_data, decoded_target_colorspace,
           needs_tone_mapping ? target_color_params : absl::nullopt);
@@ -2861,8 +2861,17 @@ bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
                              image_data->upload_scale_mip_level;
   bool quality_is_compatible =
       CalculateDesiredFilterQuality(draw_image) <= image_data->quality;
-  bool color_is_compatible =
-      image_data->target_color_params == draw_image.target_color_params();
+  sk_sp<SkColorSpace> decoded_target_colorspace =
+      ColorSpaceForImageDecode(draw_image, image_data->mode);
+  bool color_is_compatible = false;
+  if (!decoded_target_colorspace ||
+      !gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault()) {
+    color_is_compatible = image_data->target_color_params.color_space ==
+                          draw_image.target_color_space();
+  } else {
+    color_is_compatible =
+        image_data->target_color_params == draw_image.target_color_params();
+  }
   if (!color_is_compatible)
     return false;
   if (is_scaled && (!scale_is_compatible || !quality_is_compatible))

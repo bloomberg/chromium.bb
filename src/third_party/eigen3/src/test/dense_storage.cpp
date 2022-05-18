@@ -100,11 +100,12 @@ void dense_storage_alignment()
   VERIFY_IS_EQUAL( (std::alignment_of<internal::plain_array<T,Size,AutoAlign,Alignment> >::value), Alignment);
 
   const std::size_t default_alignment = internal::compute_default_alignment<T,Size>::value;
-
-  VERIFY_IS_EQUAL( (std::alignment_of<DenseStorage<T,Size,1,1,AutoAlign> >::value), default_alignment);
-  VERIFY_IS_EQUAL( (std::alignment_of<Matrix<T,Size,1,AutoAlign> >::value), default_alignment);
-  struct Nested2 { Matrix<T,Size,1,AutoAlign> mat; };
-  VERIFY_IS_EQUAL(std::alignment_of<Nested2>::value, default_alignment);
+  if (default_alignment > 0) {
+    VERIFY_IS_EQUAL( (std::alignment_of<DenseStorage<T,Size,1,1,AutoAlign> >::value), default_alignment);
+    VERIFY_IS_EQUAL( (std::alignment_of<Matrix<T,Size,1,AutoAlign> >::value), default_alignment);
+    struct Nested2 { Matrix<T,Size,1,AutoAlign> mat; };
+    VERIFY_IS_EQUAL(std::alignment_of<Nested2>::value, default_alignment);
+  }
 }
 
 template<typename T>

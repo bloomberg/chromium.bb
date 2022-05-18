@@ -12,19 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <type_traits>
+
+#include "gtest/gtest.h"
 
 #include "dawn/common/RefCounted.h"
 #include "dawn/native/ToBackend.h"
 
-#include <type_traits>
-
 // Make our own Base - Backend object pair, reusing the AdapterBase name
 namespace dawn::native {
-    class AdapterBase : public RefCounted {};
-}  // namespace dawn::native
-
-using namespace dawn::native;
+class AdapterBase : public RefCounted {};
 
 class MyAdapter : public AdapterBase {};
 
@@ -44,7 +41,7 @@ TEST(ToBackend, Pointers) {
         MyAdapter* adapter = new MyAdapter;
         const AdapterBase* base = adapter;
 
-        auto backendAdapter = ToBackend(base);
+        auto* backendAdapter = ToBackend(base);
         static_assert(std::is_same<decltype(backendAdapter), const MyAdapter*>::value);
         ASSERT_EQ(adapter, backendAdapter);
 
@@ -54,7 +51,7 @@ TEST(ToBackend, Pointers) {
         MyAdapter* adapter = new MyAdapter;
         AdapterBase* base = adapter;
 
-        auto backendAdapter = ToBackend(base);
+        auto* backendAdapter = ToBackend(base);
         static_assert(std::is_same<decltype(backendAdapter), MyAdapter*>::value);
         ASSERT_EQ(adapter, backendAdapter);
 
@@ -85,3 +82,5 @@ TEST(ToBackend, Ref) {
         adapter->Release();
     }
 }
+
+}  // namespace dawn::native

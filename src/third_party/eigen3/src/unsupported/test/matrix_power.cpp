@@ -104,8 +104,8 @@ void testSingular(const MatrixType& m_const, const typename MatrixType::RealScal
   MatrixType& m = const_cast<MatrixType&>(m_const);
 
   const int IsComplex = NumTraits<typename internal::traits<MatrixType>::Scalar>::IsComplex;
-  typedef typename internal::conditional<IsComplex, TriangularView<MatrixType,Upper>, const MatrixType&>::type TriangularType;
-  typename internal::conditional< IsComplex, ComplexSchur<MatrixType>, RealSchur<MatrixType> >::type schur;
+  typedef std::conditional_t<IsComplex, TriangularView<MatrixType,Upper>, const MatrixType&> TriangularType;
+  std::conditional_t< IsComplex, ComplexSchur<MatrixType>, RealSchur<MatrixType> > schur;
   MatrixType T;
 
   for (int i=0; i < g_repeat; ++i) {

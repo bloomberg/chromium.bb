@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/wire/info_card.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/api_test/feed_api_test.h"
 #include "components/feed/core/v2/config.h"
@@ -39,6 +40,9 @@ namespace test {
 namespace {
 
 const char kTestKey[] = "Youtube";
+const int kTestInfoCardType1 = 101;
+const int kTestInfoCardType2 = 8888;
+const int kMinimumViewIntervalSeconds = 5 * 60;
 
 TEST_F(FeedApiTest, IsArticlesListVisibleByDefault) {
   EXPECT_TRUE(stream_->IsArticlesListVisible());
@@ -320,11 +324,100 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetwork) {
                        ModelStateFor(GetStreamType(), store_.get()));
 }
 
+TEST_F(FeedApiTest, OnboardingFetchAfterStartup) {
+  // Enable WebFeed and WebFeedOnboarding flags.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeed, kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  // There should have been a fetch, even though there are no subscriptions.
+  ASSERT_TRUE(network_.query_request_sent);
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+}
+
 TEST_F(FeedApiTest, WebFeedLoadWithNoSubscriptions) {
   TestWebFeedSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   EXPECT_EQ("loading -> no-subscriptions", surface.DescribeUpdates());
+}
+
+TEST_F(FeedApiTest, WebFeedLoadWithNoSubscriptionsAndOnboarding) {
+  // Turn on the onboarding feature.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  // Scopes are to control the lifetime of the surface object.
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  // The initial fetch should work fine.
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+
+  // Prepare the next fetch response.
+  response_translator_.InjectResponse(MakeTypicalNextPageState());
+
+  // Make the content a bit less than the stale threshold, and make sure we
+  // don't fetch.
+  task_environment_.FastForwardBy(base::Days(6));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  ASSERT_EQ(1, network_.GetWebFeedListContentsCount());
+
+  // Make the content as stale as the threshold, and make sure we do fetch.
+  task_environment_.FastForwardBy(base::Days(2));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+  }
+  ASSERT_EQ(2, network_.GetWebFeedListContentsCount());
+}
+
+TEST_F(FeedApiTest, WebFeedContentExprirationWithNoSubscriptionsAndOnboarding) {
+  // Turn on the onboarding feature.
+  base::test::ScopedFeatureList features;
+  std::vector<base::Feature> enabled_features = {kWebFeedOnboarding},
+                             disabled_features = {};
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  features.InitWithFeatures(enabled_features, disabled_features);
+
+  // Scopes are to control the lifetime of the surface object.
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    // The initial fetch should work fine.
+    ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+  }
+
+  // Don't prepare a fetch response to simulate fetch failure.
+
+  // Make the content a bit less than the expired threshold, and make sure we
+  // load the stale, but expired content.
+  task_environment_.FastForwardBy(base::Days(13));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
+  }
+
+  // Make the content expired, and make sure we don't load it.
+  task_environment_.FastForwardBy(base::Days(2));
+  {
+    TestWebFeedSurface surface(stream_.get());
+    WaitForIdleTaskQueue();
+    ASSERT_EQ("loading -> cant-refresh", surface.DescribeUpdates());
+  }
 }
 
 // Test that we use QueryInteractiveFeedDiscoverApi and QueryNextPageDiscoverApi
@@ -517,7 +610,8 @@ TEST_F(FeedApiTest, ForceRefreshIfMissedScheduledRefresh) {
 
 TEST_F(FeedApiTest, LoadFromNetworkBecauseStoreIsStale_NetworkStaleAge) {
   base::TimeDelta default_staleness_threshold =
-      GetFeedConfig().GetStalenessThreshold(kForYouStream);
+      GetFeedConfig().GetStalenessThreshold(kForYouStream,
+                                            /*is_web_feed_subscriber=*/true);
   base::TimeDelta server_staleness_threshold = default_staleness_threshold / 2;
 
   {
@@ -612,7 +706,8 @@ TEST_P(FeedStreamTestForAllStreamTypes, LoadFromNetworkBecauseStoreIsStale) {
       MakeTypicalInitialModelState(
           /*first_cluster_id=*/0,
           kTestTimeEpoch -
-              GetFeedConfig().GetStalenessThreshold(GetStreamType()) -
+              GetFeedConfig().GetStalenessThreshold(
+                  GetStreamType(), /*is_web_feed_subscriber=*/true) -
               base::Minutes(1)),
       base::DoNothing());
 
@@ -1769,7 +1864,8 @@ TEST_F(FeedApiTest, LoadMoreDoesNotUpdateLoggingEnabled) {
   for (bool waa_on : {true, false}) {
     for (bool privacy_notice_fulfilled : {true, false}) {
       response_translator_.InjectResponse(MakeTypicalNextPageState(
-          page++, kTestTimeEpoch, signed_in, waa_on, privacy_notice_fulfilled));
+          page++, kTestTimeEpoch, kTestTimeEpoch, signed_in, waa_on,
+          privacy_notice_fulfilled));
       stream_->LoadMore(surface, base::DoNothing());
       WaitForIdleTaskQueue();
       EXPECT_TRUE(surface.update->logging_parameters().logging_enabled());
@@ -3003,6 +3099,101 @@ TEST_F(FeedApiTest, FollowedFromWebPageMenuCount) {
   EXPECT_EQ(1, stream_->GetMetadata().followed_from_web_page_menu_count());
   EXPECT_EQ(1, stream_->GetRequestMetadata(kWebFeedStream, false)
                    .followed_from_web_page_menu_count);
+}
+
+TEST_F(FeedApiTest, InfoCardTrackingActions) {
+  // Set up the server and client timestamps that affect the computation of
+  // the view timestamps in the info card tracking state.
+  base::Time server_timestamp = base::Time::Now();
+  task_environment_.AdvanceClock(base::Seconds(100));
+  base::Time client_timestamp = base::Time::Now();
+  base::TimeDelta timestamp_adjustment = server_timestamp - client_timestamp;
+  task_environment_.AdvanceClock(base::Seconds(200));
+
+  // Load the initial page.
+  response_translator_.InjectResponse(
+      MakeTypicalInitialModelState(0, client_timestamp, server_timestamp));
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  base::HistogramTester histograms;
+
+  // Perform actions on one info card and verify the histograms.
+  base::Time first_view_timestamp2 = base::Time::Now() + timestamp_adjustment;
+  base::Time last_view_timestamp2 = first_view_timestamp2;
+  stream_->ReportInfoCardTrackViewStarted(kForYouStream, kTestInfoCardType2);
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType2,
+                                kMinimumViewIntervalSeconds);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType2);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType2);
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.InfoCard.Started",
+                                kTestInfoCardType2, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Viewed",
+                               kTestInfoCardType2, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Clicked",
+                               kTestInfoCardType2, 2);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Dismissed",
+                               kTestInfoCardType2, 0);
+
+  // Perform actions on another info card and verify the histograms.
+  base::Time first_view_timestamp1 = base::Time::Now() + timestamp_adjustment;
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  task_environment_.AdvanceClock(base::Seconds(kMinimumViewIntervalSeconds));
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  task_environment_.AdvanceClock(base::Seconds(kMinimumViewIntervalSeconds));
+  base::Time last_view_timestamp1 = base::Time::Now() + timestamp_adjustment;
+  stream_->ReportInfoCardViewed(kForYouStream, kTestInfoCardType1,
+                                kMinimumViewIntervalSeconds);
+  stream_->ReportInfoCardClicked(kForYouStream, kTestInfoCardType1);
+  stream_->ReportInfoCardDismissedExplicitly(kForYouStream, kTestInfoCardType1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Started",
+                               kTestInfoCardType1, 0);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Viewed",
+                               kTestInfoCardType1, 3);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Clicked",
+                               kTestInfoCardType1, 1);
+  histograms.ExpectBucketCount("ContentSuggestions.Feed.InfoCard.Dismissed",
+                               kTestInfoCardType1, 1);
+
+  // Refresh the page so that a feed query including the info card tracking
+  // states is sent.
+  response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  stream_->ManualRefresh(kForYouStream, base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  // Verify the info card tracking states. There should be 2 states with
+  // expected counts and view timestamps populated.
+  ASSERT_EQ(2, network_.query_request_sent->feed_request()
+                   .feed_query()
+                   .chrome_fulfillment_info()
+                   .info_card_tracking_state_size());
+  feedwire::InfoCardTrackingState state1;
+  state1.set_type(kTestInfoCardType1);
+  state1.set_view_count(3);
+  state1.set_click_count(1);
+  state1.set_explicitly_dismissed_count(1);
+  state1.set_first_view_timestamp(
+      feedstore::ToTimestampMillis(first_view_timestamp1));
+  state1.set_last_view_timestamp(
+      feedstore::ToTimestampMillis(last_view_timestamp1));
+  EXPECT_THAT(state1, EqualsProto(network_.query_request_sent->feed_request()
+                                      .feed_query()
+                                      .chrome_fulfillment_info()
+                                      .info_card_tracking_state(0)));
+  feedwire::InfoCardTrackingState state2;
+  state2.set_type(kTestInfoCardType2);
+  state2.set_view_count(1);
+  state2.set_click_count(2);
+  state2.set_first_view_timestamp(
+      feedstore::ToTimestampMillis(first_view_timestamp2));
+  state2.set_last_view_timestamp(
+      feedstore::ToTimestampMillis(last_view_timestamp2));
+  EXPECT_THAT(state2, EqualsProto(network_.query_request_sent->feed_request()
+                                      .feed_query()
+                                      .chrome_fulfillment_info()
+                                      .info_card_tracking_state(1)));
 }
 
 // Keep instantiations at the bottom.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/credentialmanagement/federated_credential.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
@@ -33,21 +34,14 @@ using mojom::blink::RevokeStatus;
 
 constexpr char kFederatedCredentialType[] = "federated";
 
-bool MaybeRejectDueToCSP(ContentSecurityPolicy* policy,
-                         ScriptPromiseResolver* resolver,
-                         const KURL& provider_url) {
-  if (policy->AllowConnectToSource(provider_url, provider_url,
-                                   RedirectStatus::kNoRedirect)) {
-    return true;
-  }
-
-  WTF::String error =
-      "Refused to connect to '" + provider_url.ElidedString() +
-      "' because it violates the document's Content Security Policy.";
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kNetworkError, error));
-  return false;
-}
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class FedCmCspStatus {
+  kSuccess = 0,
+  kFailedPathButPassedOrigin = 1,
+  kFailedOrigin = 2,
+  kMaxValue = kFailedOrigin
+};
 
 // Abort an ongoing FederatedCredential login() operation.
 void AbortFederatedCredentialRequest(ScriptState* script_state) {
@@ -183,6 +177,43 @@ FederatedCredential* FederatedCredential::Create(
                                                    hint, options);
 }
 
+bool FederatedCredential::IsRejectingPromiseDueToCSP(
+    ContentSecurityPolicy* policy,
+    ScriptPromiseResolver* resolver,
+    const KURL& provider_url) {
+  if (policy->AllowConnectToSource(provider_url, provider_url,
+                                   RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting)) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
+                              FedCmCspStatus::kSuccess);
+    return false;
+  }
+
+  // kFollowedRedirect means that the path will not be checked, which is
+  // what we want -- at least one high-profile site has specific paths
+  // in its existing connect-src policy which do not work with FedCM, breaking
+  // the "no RP changes required" promise of FedCM.
+  // (note that we disable redirects for FedCM requests on the browser side)
+  // TODO(cbiesinger): Once the two known websites are fixed, make this
+  // codepath metrics-only and move kSuppressReporting here. crbug.com/1320724
+  if (policy->AllowConnectToSource(provider_url, provider_url,
+                                   RedirectStatus::kFollowedRedirect)) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
+                              FedCmCspStatus::kFailedPathButPassedOrigin);
+    return false;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.Status.Csp",
+                            FedCmCspStatus::kFailedOrigin);
+
+  WTF::String error =
+      "Refused to connect to '" + provider_url.ElidedString() +
+      "' because it violates the document's Content Security Policy.";
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNetworkError, error));
+  return true;
+}
+
 FederatedCredential::FederatedCredential(
     const String& id,
     scoped_refptr<const SecurityOrigin> provider_origin,
@@ -257,7 +288,7 @@ ScriptPromise FederatedCredential::login(
           ->GetContentSecurityPolicyForCurrentWorld();
   // We disallow redirects (in idp_network_request_manager.cc), so it is
   // enough to check the initial URL here.
-  if (!MaybeRejectDueToCSP(policy, resolver, provider_url_))
+  if (IsRejectingPromiseDueToCSP(policy, resolver, provider_url_))
     return promise;
   if (request->hasSignal()) {
     if (request->signal()->aborted()) {
@@ -318,7 +349,7 @@ ScriptPromise FederatedCredential::logoutRps(
           DOMExceptionCode::kSyntaxError, "Invalid logout endpoint URL."));
       return promise;
     }
-    if (!MaybeRejectDueToCSP(policy, resolver, logout_request->url))
+    if (IsRejectingPromiseDueToCSP(policy, resolver, logout_request->url))
       return promise;
     if (logout_request->account_id.IsEmpty()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -368,7 +399,7 @@ ScriptPromise FederatedCredential::revoke(ScriptState* script_state,
   ContentSecurityPolicy* policy =
       resolver->GetExecutionContext()
           ->GetContentSecurityPolicyForCurrentWorld();
-  if (!MaybeRejectDueToCSP(policy, resolver, provider_url_))
+  if (IsRejectingPromiseDueToCSP(policy, resolver, provider_url_))
     return promise;
 
   auth_request->Revoke(provider_url_, client_id_, hint,

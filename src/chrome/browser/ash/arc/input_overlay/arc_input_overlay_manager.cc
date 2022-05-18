@@ -9,9 +9,12 @@
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/input_overlay/input_overlay_resources_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -83,34 +86,113 @@ ArcInputOverlayManager::ArcInputOverlayManager(
     aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
         ->AddObserver(this);
   }
+
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       // Should not block shutdown.
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
+  // For test. The unittest is based on ExoTestBase which must run on
+  // Chrome_UIThread. While TestingProfileManager::CreateTestingProfile runs on
+  // MainThread.
+  if (browser_context)
+    data_controller_ = std::make_unique<input_overlay::DataController>(
+        *browser_context, task_runner_);
 }
 
 ArcInputOverlayManager::~ArcInputOverlayManager() = default;
 
 void ArcInputOverlayManager::ReadData(const std::string& package_name,
                                       aura::Window* top_level_window) {
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ArcInputOverlayManager::ReadDefaultData, Unretained(this),
+                     package_name, top_level_window),
+      base::BindOnce(&ArcInputOverlayManager::ReadCustomizedData,
+                     Unretained(this), package_name));
+}
+
+input_overlay::TouchInjector* ArcInputOverlayManager::ReadDefaultData(
+    const std::string& package_name,
+    aura::Window* top_level_window) {
   absl::optional<int> resource_id = GetInputOverlayResourceId(package_name);
   if (!resource_id)
-    return;
+    return nullptr;
   const base::StringPiece json_file =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           resource_id.value());
   if (json_file.empty()) {
     LOG(WARNING) << "No content for: " << package_name;
-    return;
+    return nullptr;
   }
   base::JSONReader::ValueWithError result =
       base::JSONReader::ReadAndReturnValueWithError(json_file);
   DCHECK(result.value) << "Could not load input overlay data file: "
                        << result.error_message;
   if (!result.value)
-    return;
+    return nullptr;
 
   base::Value& root = result.value.value();
   std::unique_ptr<input_overlay::TouchInjector> injector =
-      std::make_unique<input_overlay::TouchInjector>(top_level_window);
+      std::make_unique<input_overlay::TouchInjector>(
+          top_level_window,
+          base::BindRepeating(&ArcInputOverlayManager::OnSaveProtoFile,
+                              weak_ptr_factory_.GetWeakPtr()));
   injector->ParseActions(root);
-  input_overlay_enabled_windows_.emplace(top_level_window, std::move(injector));
+  auto res = input_overlay_enabled_windows_.emplace(top_level_window,
+                                                    std::move(injector));
+  DCHECK(res.second);
+  return res.first->second.get();
+}
+
+void ArcInputOverlayManager::ReadCustomizedData(
+    const std::string& package_name,
+    input_overlay::TouchInjector* touch_injector) {
+  if (!touch_injector)
+    return;
+
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ArcInputOverlayManager::GetProto, Unretained(this),
+                     package_name),
+      base::BindOnce(&ArcInputOverlayManager::OnProtoDataAvailable,
+                     Unretained(this), touch_injector));
+}
+
+std::unique_ptr<input_overlay::AppDataProto> ArcInputOverlayManager::GetProto(
+    const std::string& package_name) {
+  // |data_controller_| is null for test.
+  return data_controller_ ? data_controller_->ReadProtoFromFile(package_name)
+                          : nullptr;
+}
+
+void ArcInputOverlayManager::OnProtoDataAvailable(
+    input_overlay::TouchInjector* touch_injector,
+    std::unique_ptr<input_overlay::AppDataProto> proto) {
+  if (proto) {
+    touch_injector->OnProtoDataAvailable(*proto);
+  } else {
+    touch_injector->set_first_launch(true);
+  }
+
+  touch_injector->set_data_reading_finished(true);
+  RegisterWindowIfFocused(touch_injector->target_window());
+}
+
+void ArcInputOverlayManager::OnSaveProtoFile(
+    std::unique_ptr<input_overlay::AppDataProto> proto,
+    const std::string& package_name) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ArcInputOverlayManager::SaveFile, base::Unretained(this),
+                     std::move(proto), package_name));
+}
+
+void ArcInputOverlayManager::SaveFile(
+    std::unique_ptr<input_overlay::AppDataProto> proto,
+    const std::string& package_name) {
+  if (data_controller_)
+    data_controller_->WriteProtoToFile(std::move(proto), package_name);
 }
 
 void ArcInputOverlayManager::NotifyTextInputState() {
@@ -145,10 +227,15 @@ void ArcInputOverlayManager::RegisterWindow(aura::Window* window) {
   if (it == input_overlay_enabled_windows_.end())
     return;
   DCHECK(!registered_top_level_window_);
+  // Don't register window if the data reading is not finished. It still will be
+  // registered after data reading finished by |RegisterWindowIfFocused|.
+  if (!it->second->data_reading_finished())
+    return;
+
   it->second->RegisterEventRewriter();
   registered_top_level_window_ = window;
   AddObserverToInputMethod();
-  AddDisplayOverlayController();
+  AddDisplayOverlayController(it->second.get());
   // If the window is on the extended window, it turns out only primary root
   // window catches the key event. So it needs to forward the key event from
   // primary root window to extended root window event source.
@@ -174,15 +261,22 @@ void ArcInputOverlayManager::UnRegisterWindow(aura::Window* window) {
   registered_top_level_window_ = nullptr;
 }
 
-void ArcInputOverlayManager::AddDisplayOverlayController() {
-  if (!registered_top_level_window_)
+void ArcInputOverlayManager::RegisterWindowIfFocused(aura::Window* window) {
+  if (ash::window_util::GetFocusedWindow() == window)
+    RegisterWindow(window);
+}
+
+void ArcInputOverlayManager::AddDisplayOverlayController(
+    input_overlay::TouchInjector* touch_injector) {
+  DCHECK(registered_top_level_window_);
+  DCHECK(touch_injector);
+  if (!registered_top_level_window_ || !touch_injector)
     return;
   DCHECK(!display_overlay_controller_);
-  auto it = input_overlay_enabled_windows_.find(registered_top_level_window_);
-  DCHECK(it != input_overlay_enabled_windows_.end());
+
   display_overlay_controller_ =
       std::make_unique<input_overlay::DisplayOverlayController>(
-          it->second.get());
+          touch_injector, touch_injector->first_launch());
 }
 
 void ArcInputOverlayManager::RemoveDisplayOverlayController() {

@@ -27,6 +27,10 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_menu_updater.h"
+#import "ios/chrome/browser/follow/follow_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_util.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
@@ -43,6 +47,8 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
+#import "ios/chrome/browser/ui/icons/action_icon.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_text_item.h"
@@ -64,6 +70,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/common/features.h"
@@ -99,6 +106,24 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   return item;
 }
 
+PopupMenuToolsItem* CreateFollowItem(int titleID,
+                                     PopupMenuAction action,
+                                     NSString* imageName,
+                                     NSString* accessibilityID) {
+  DCHECK(IsWebChannelsEnabled());
+  PopupMenuToolsItem* item =
+      [[PopupMenuToolsItem alloc] initWithType:kItemTypeEnumZero];
+  item.title = l10n_util::GetNSStringF(titleID, base::SysNSStringToUTF16(@""));
+  item.enabled = NO;
+  item.actionIdentifier = action;
+  item.accessibilityIdentifier = accessibilityID;
+  if (imageName) {
+    item.image = [[UIImage imageNamed:imageName]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  }
+  return item;
+}
+
 PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
                                             NSString* message,
                                             PopupMenuAction action,
@@ -117,6 +142,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 @interface PopupMenuMediator () <BookmarkModelBridgeObserver,
                                  CRWWebStateObserver,
+                                 FollowMenuUpdater,
                                  IOSLanguageDetectionTabHelperObserving,
                                  OverlayPresenterObserving,
                                  PrefObserverDelegate,
@@ -165,10 +191,17 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 // Whether the web content is currently being blocked.
 @property(nonatomic, assign) BOOL contentBlocked;
 
+// URLs for the current webpage, which are used to update the follow status.
+@property(nonatomic, strong) FollowWebPageURLs* webPageURLs;
+
+// YES if the current website has been followed.
+@property(nonatomic, assign) BOOL followStatus;
+
 #pragma mark*** Specific Items ***
 
 @property(nonatomic, strong) PopupMenuToolsItem* openNewIncognitoTabItem;
 @property(nonatomic, strong) PopupMenuToolsItem* reloadStopItem;
+@property(nonatomic, strong) PopupMenuToolsItem* followItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readLaterItem;
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
 @property(nonatomic, strong) PopupMenuToolsItem* translateItem;
@@ -220,6 +253,10 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   if (_webState) {
     _webState->RemoveObserver(_webStateObserver.get());
     _webStateObserver.reset();
+    if (self.followItem) {
+      FollowTabHelper::FromWebState(_webState)->remove_follow_menu_updater();
+      self.webPageURLs = nil;
+    }
     _webState = nullptr;
   }
 
@@ -385,7 +422,6 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
         std::make_unique<language::IOSLanguageDetectionTabHelperObserverBridge>(
             language::IOSLanguageDetectionTabHelper::FromWebState(_webState),
             self);
-
     if (self.popupMenu) {
       [self updatePopupMenu];
     }
@@ -478,6 +514,10 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
     switch (self.type) {
       case PopupMenuTypeToolsMenu:
         [self createToolsMenuItems];
+        if (self.webState && self.followItem) {
+          FollowTabHelper::FromWebState(self.webState)
+              ->set_follow_menu_updater(self);
+        }
         break;
       case PopupMenuTypeNavigationForward:
         DCHECK(!ShouldUseUIKitPopupMenu());
@@ -609,6 +649,12 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
       }));
 }
 
+- (void)updateFollowStatus {
+  DCHECK(IsWebChannelsEnabled());
+  ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
+      self.webPageURLs, !self.followStatus);
+}
+
 #pragma mark - IOSLanguageDetectionTabHelperObserving
 
 - (void)iOSLanguageDetectionTabHelper:
@@ -630,6 +676,30 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
   self.readingListItem.badgeNumber = unreadCount;
   [self.popupMenu itemsHaveChanged:@[ self.readingListItem ]];
+}
+
+#pragma mark - FollowMenuUpdater
+
+- (void)updateFollowMenuItemWithFollowWebPageURLs:
+            (FollowWebPageURLs*)webPageURLs
+                                           status:(BOOL)status
+                                       domainName:(NSString*)domainName
+                                          enabled:(BOOL)enabled {
+  DCHECK(IsWebChannelsEnabled());
+  self.webPageURLs = webPageURLs;
+  self.followStatus = status;
+  self.followItem.enabled = enabled;
+  self.followItem.title =
+      status ? l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_UNFOLLOW,
+                                       base::SysNSStringToUTF16(@""))
+             : l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_FOLLOW,
+                                       base::SysNSStringToUTF16(@""));
+  self.followItem.image =
+      [[UIImage imageNamed:self.followStatus ? @"popup_menu_unfollow"
+                                             : @"popup_menu_follow"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+  [self.popupMenu itemsHaveChanged:@[ self.followItem ]];
 }
 
 #pragma mark - BrowserContainerConsumer
@@ -833,7 +903,10 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
     if ([self shouldUseIncognitoNTPResourcesForURL:navigationItem
                                                        ->GetVirtualURL()]) {
       item.title = l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_INCOGNITO_TAB);
-      item.favicon = [UIImage imageNamed:@"incognito_badge"];
+      item.favicon = UseSymbols()
+                         ? CustomSymbolWithPointSize(kIncognitoCircleFillSymbol,
+                                                     kSymbolActionPointSize)
+                         : [UIImage imageNamed:@"incognito_badge"];
     } else {
       item.title =
           base::SysUTF16ToNSString(navigationItem->GetTitleForDisplay());
@@ -1006,6 +1079,15 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 - (NSArray<TableViewItem*>*)actionItems {
   NSMutableArray* actionsArray = [NSMutableArray array];
+
+  if (!self.isIncognito && IsWebChannelsEnabled() &&
+      GetFollowActionState(self.webState) != FollowActionStateHidden) {
+    // Follow.
+    self.followItem =
+        CreateFollowItem(IDS_IOS_TOOLS_MENU_FOLLOW, PopupMenuActionFollow,
+                         @"popup_menu_follow", kToolsMenuFollowId);
+    [actionsArray addObject:self.followItem];
+  }
   // Read Later.
   self.readLaterItem = CreateTableViewItem(
       IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST, PopupMenuActionReadLater,

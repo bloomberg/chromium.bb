@@ -5,6 +5,7 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -1754,6 +1755,7 @@ TEST_F(PasswordAutofillAgentTest,
   }
 }
 
+#if BUILDFLAG(IS_ANDROID)
 // Tests that TryToShowTouchToFill() works correctly for fillable and
 // non-fillable fields.
 TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
@@ -1776,14 +1778,9 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
   EXPECT_EQ(WebAutofillState::kPreviewed, username_element_.GetAutofillState());
   EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
-// TODO(crbug.com/1299430): Consider to disable |ShowTouchToFill| on Desktop.
-#if BUILDFLAG(IS_ANDROID)
   EXPECT_CALL(
       fake_driver_,
       ShowTouchToFill(autofill::mojom::SubmissionReadinessState::kEmptyFields));
-#else
-  EXPECT_CALL(fake_driver_, ShowTouchToFill);
-#endif
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1795,18 +1792,12 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillPassword) {
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
   EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
-// TODO(crbug.com/1299430): Consider to disable |ShowTouchToFill| on Desktop.
-#if BUILDFLAG(IS_ANDROID)
   EXPECT_CALL(
       fake_driver_,
       ShowTouchToFill(autofill::mojom::SubmissionReadinessState::kEmptyFields));
-#else
-  EXPECT_CALL(fake_driver_, ShowTouchToFill);
-#endif
   base::RunLoop().RunUntilIdle();
 }
 
-#if BUILDFLAG(IS_ANDROID)
 TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillButDontEnableSubmission) {
   LoadHTML(kPasswordChangeFormHTML);
   UpdateUrlForHTML(kPasswordChangeFormHTML);
@@ -1967,7 +1958,6 @@ TEST_F(PasswordAutofillAgentTest, SubmissionReadiness_TwoFields) {
       ShowTouchToFill(autofill::mojom::SubmissionReadinessState::kTwoFields));
   base::RunLoop().RunUntilIdle();
 }
-#endif
 
 TEST_F(PasswordAutofillAgentTest, DontTryToShowTouchToFillReadonlyPassword) {
   SetElementReadOnly(password_element_, true);
@@ -2003,6 +1993,7 @@ TEST_F(PasswordAutofillAgentTest, DontTryToShowTouchToFillSignUpForm) {
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
 }
+#endif
 
 // Tests that |FillIntoFocusedField| doesn't fill read-only text fields.
 TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
@@ -4197,6 +4188,44 @@ TEST_F(PasswordAutofillAgentTest, NoXhrSubmissionAfterFillingOnPageload) {
 }
 
 #if BUILDFLAG(IS_ANDROID)
+// If a password field is hidden, the field unlikely has an Enter listener. So,
+// trigger a form submission on the username field.
+TEST_F(PasswordAutofillAgentTest, TriggerFormSubmission_HiddenPasswordField) {
+  const char kUsernameFirstFormHTML[] =
+      "<script>"
+      "  function on_keypress(event) {"
+      "    if (event.which === 13) {"
+      "      var field = document.getElementById('password');"
+      "      field.parentElement.removeChild(field);"
+      "    }"
+      "  }"
+      "</script>"
+      "<INPUT type='text' id='username' onkeypress='on_keypress(event)'/>"
+      "<INPUT type='password' id='password' style='display:none'/>";
+  LoadHTML(kUsernameFirstFormHTML);
+  base::RunLoop().RunUntilIdle();
+  UpdateUsernameAndPasswordElements();
+
+  // Simulate the browser sending the login info, but set |wait_for_username|
+  // to prevent the form from being immediately filled because the test
+  // simulates filling with |FillSuggestion|, the function that TouchToFill
+  // uses.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Fill the form.
+  EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
+      username_element_, kAliceUsername16, kAlicePassword16));
+  base::RunLoop().RunUntilIdle();
+
+  // Trigger a form submission.
+  password_autofill_agent_->TriggerFormSubmission();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the driver actually has seen a submission.
+  EXPECT_TRUE(fake_driver_.called_dynamic_form_submission());
+}
+
 class PasswordAutofillAgentFormPresenceVariationTest
     : public PasswordAutofillAgentTest,
       public testing::WithParamInterface<bool> {};
@@ -4219,9 +4248,6 @@ TEST_P(PasswordAutofillAgentFormPresenceVariationTest, TriggerFormSubmission) {
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
       username_element_, kAliceUsername16, kAlicePassword16));
   base::RunLoop().RunUntilIdle();
-  // Check that two input fields are modified as |TriggerSubmission| expects
-  // the last intereacted input to be set.
-  EXPECT_EQ(1, fake_driver_.called_inform_about_user_input_count());
 
   // Trigger a form submission.
   password_autofill_agent_->TriggerFormSubmission();

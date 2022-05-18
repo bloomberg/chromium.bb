@@ -10,7 +10,7 @@ set -e # exit if fail
 
 if [ $# -lt 1 ];
 then
-  echo "Usage: "$0" (android|android_extra|android_small|cast|chromeos|common|flutter|ios)" >&2
+  echo "Usage: "$0" (android|cast|chromeos|common|flutter|ios)" >&2
   exit 1
 fi
 
@@ -60,24 +60,6 @@ function copy_hash_data {
   echo "Done with copying icudtl.dat.hash for $1."
 }
 
-function copy_android_extra {
-  echo "Copying icudtl_extra.dat for AndroidExtra"
-
-  LD_LIBRARY_PATH=lib/ bin/icupkg -r \
-    "${TOPSRC}/filters/android-extra-removed-resources.txt" \
-    --ignore-deps \
-    "data/out/tmp/icudt${VERSION}l.dat"
-
-  echo "AFTER strip out the content is"
-  LD_LIBRARY_PATH=lib/ bin/icupkg -l --ignore-deps \
-    "data/out/tmp/icudt${VERSION}l.dat"
-
-  rm "${TOPSRC}/android_small/icudtl_extra.dat"
-  cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/android_small/icudtl_extra.dat"
-
-  echo "Done with copying pre-built ICU data file for AndroidExtra."
-}
-
 function align_data {
   echo "Aligning files in icudtl.dat for $1"
 
@@ -125,14 +107,6 @@ case "$1" in
     ;;
   "android")
     copy_data Android $1
-    backup_outdir $1
-    ;;
-  "android_small")
-    copy_data AndroidSmall $1
-    backup_outdir $1
-    ;;
-  "android_extra")
-    copy_android_extra
     backup_outdir $1
     ;;
   "ios")

@@ -191,14 +191,16 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
   }
 }
 
-void av1_initialize_enc(void) {
+void av1_initialize_enc(unsigned int usage, enum aom_rc_mode end_usage) {
+  bool is_allintra = usage == ALLINTRA;
+
   av1_rtcd();
   aom_dsp_rtcd();
   aom_scale_rtcd();
   av1_init_intra_predictors();
   av1_init_me_luts();
-  av1_rc_init_minq_luts();
-  av1_init_wedge_masks();
+  if (!is_allintra) av1_init_wedge_masks();
+  if (!is_allintra || end_usage != AOM_Q) av1_rc_init_minq_luts();
 }
 
 static void update_reference_segmentation_map(AV1_COMP *cpi) {
@@ -253,9 +255,8 @@ static void set_tile_info(AV1_COMMON *const cm,
     tiles->log2_cols = AOMMAX(tile_cfg->tile_columns, tiles->min_log2_cols);
     tiles->log2_cols = AOMMIN(tiles->log2_cols, tiles->max_log2_cols);
   } else {
-    int mi_cols =
-        ALIGN_POWER_OF_TWO(mi_params->mi_cols, seq_params->mib_size_log2);
-    int sb_cols = mi_cols >> seq_params->mib_size_log2;
+    int sb_cols =
+        CEIL_POWER_OF_TWO(mi_params->mi_cols, seq_params->mib_size_log2);
     int size_sb, j = 0;
     tiles->uniform_spacing = 0;
     for (i = 0, start_sb = 0; start_sb < sb_cols && i < MAX_TILE_COLS; i++) {
@@ -275,9 +276,8 @@ static void set_tile_info(AV1_COMMON *const cm,
     tiles->log2_rows = AOMMAX(tile_cfg->tile_rows, tiles->min_log2_rows);
     tiles->log2_rows = AOMMIN(tiles->log2_rows, tiles->max_log2_rows);
   } else {
-    int mi_rows =
-        ALIGN_POWER_OF_TWO(mi_params->mi_rows, seq_params->mib_size_log2);
-    int sb_rows = mi_rows >> seq_params->mib_size_log2;
+    int sb_rows =
+        CEIL_POWER_OF_TWO(mi_params->mi_rows, seq_params->mib_size_log2);
     int size_sb, j = 0;
     for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
       tiles->row_start_sb[i] = start_sb;
@@ -1167,14 +1167,6 @@ AV1_PRIMARY *av1_create_primary_compressor(
         aom_calloc(num_rows * num_cols,
                    sizeof(*ppi->tpl_sb_rdmult_scaling_factors)));
 
-#if !CONFIG_REALTIME_ONLY
-    if (oxcf->pass != AOM_RC_FIRST_PASS) {
-      av1_setup_tpl_buffers(ppi, &mi_params, oxcf->frm_dim_cfg.width,
-                            oxcf->frm_dim_cfg.height, 0,
-                            oxcf->gf_cfg.lag_in_frames);
-    }
-#endif
-
 #if CONFIG_INTERNAL_STATS
     ppi->b_calculate_blockiness = 1;
     ppi->b_calculate_consistency = 1;
@@ -1245,6 +1237,10 @@ AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf,
 #if CONFIG_FRAME_PARALLEL_ENCODE
   cm->error =
       (struct aom_internal_error_info *)aom_calloc(1, sizeof(*cm->error));
+  if (!cm->error) {
+    aom_free(cpi);
+    return NULL;
+  }
 #else
   cm->error = &ppi->error;
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
@@ -1255,7 +1251,7 @@ AV1_COMP *av1_create_compressor(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf,
   if (setjmp(cm->error->jmp)) {
     cm->error->setjmp = 0;
     av1_remove_compressor(cpi);
-    return 0;
+    return NULL;
   }
 
   cm->error->setjmp = 1;
@@ -1524,6 +1520,7 @@ void av1_remove_primary_compressor(AV1_PRIMARY *ppi) {
   for (int frame = 0; frame < MAX_LAG_BUFFERS; ++frame) {
     aom_free(tpl_data->tpl_stats_pool[frame]);
     aom_free_frame_buffer(&tpl_data->tpl_rec_pool[frame]);
+    tpl_data->tpl_stats_pool[frame] = NULL;
   }
 
 #if !CONFIG_REALTIME_ONLY
@@ -1776,12 +1773,8 @@ void av1_set_mv_search_params(AV1_COMP *cpi) {
         mv_search_params->mv_step_param = av1_init_search_range(
             AOMMIN(max_mv_def, 2 * mv_search_params->max_mv_magnitude));
       }
-#if CONFIG_FRAME_PARALLEL_ENCODE
       // Reset max_mv_magnitude based on update flag.
       if (cpi->do_frame_data_update) mv_search_params->max_mv_magnitude = -1;
-#else
-      mv_search_params->max_mv_magnitude = -1;
-#endif
     }
   }
 }
@@ -1799,6 +1792,7 @@ void av1_set_screen_content_options(AV1_COMP *cpi, FeatureFlags *features) {
     features->allow_screen_content_tools = 1;
     features->allow_intrabc = cpi->oxcf.mode == REALTIME ? 0 : 1;
     cpi->is_screen_content_type = 1;
+    cpi->use_screen_content_tools = 1;
     return;
   }
 
@@ -2103,7 +2097,7 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
           cpi->oxcf.border_in_pixels, cm->features.byte_alignment, NULL, NULL,
-          NULL, cpi->oxcf.tool_cfg.enable_global_motion))
+          NULL, cpi->oxcf.tool_cfg.enable_global_motion, 0))
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
@@ -2244,7 +2238,17 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   const int use_cdef = cm->seq_params->enable_cdef &&
                        !cm->features.coded_lossless && !cm->tiles.large_scale;
   const int use_restoration = is_restoration_used(cm);
-  const int is_realtime = cpi->sf.rt_sf.use_nonrd_pick_mode;
+  // lpf_opt_level = 1 : Enables dual/quad loop-filtering.
+  // lpf_opt_level is set to 1 if transform size search depth in inter blocks
+  // is limited to one as quad loop filtering assumes that all the transform
+  // blocks within a 16x8/8x16/16x16 prediction block are of the same size.
+  // lpf_opt_level = 2 : Filters both chroma planes together, in addition to
+  // enabling dual/quad loop-filtering. This is enabled when lpf pick method
+  // is LPF_PICK_FROM_Q as u and v plane filter levels are equal.
+  int lpf_opt_level = 0;
+  if (is_inter_tx_size_search_level_one(&cpi->sf.tx_sf)) {
+    lpf_opt_level = (cpi->sf.lpf_sf.lpf_pick == LPF_PICK_FROM_Q) ? 2 : 1;
+  }
 
   struct loopfilter *lf = &cm->lf;
 
@@ -2262,7 +2266,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       !cpi->svc.non_reference_frame) {
     av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
                              mt_info->workers, num_workers,
-                             &mt_info->lf_row_sync, is_realtime);
+                             &mt_info->lf_row_sync, lpf_opt_level);
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, loop_filter_time);
@@ -2468,7 +2472,7 @@ static int encode_without_recode(AV1_COMP *cpi) {
               &cpi->orig_source, cpi->oxcf.frm_dim_cfg.width,
               cpi->oxcf.frm_dim_cfg.height, seq_params->subsampling_x,
               seq_params->subsampling_y, seq_params->use_highbitdepth,
-              cpi->oxcf.border_in_pixels, cm->features.byte_alignment))
+              cpi->oxcf.border_in_pixels, cm->features.byte_alignment, 0))
         aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to allocate scaled buffer");
     }
@@ -2595,9 +2599,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   int original_q = 0;
 #endif
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
   cpi->num_frame_recode = 0;
-#endif
+
   // Loop variables
   int loop = 0;
   int loop_count = 0;
@@ -2774,19 +2777,13 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // transform / motion compensation build reconstruction frame
     av1_encode_frame(cpi);
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
     // Disable mv_stats collection for parallel frames based on update flag.
     if (!cpi->do_frame_data_update) do_mv_stats_collection = 0;
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
-      // Reset the mv_stats in case we are interrupted by an intraframe or an
-      // overlay frame.
-#if CONFIG_FRAME_PARALLEL_ENCODE
+    // Reset the mv_stats in case we are interrupted by an intraframe or an
+    // overlay frame.
     if (cpi->mv_stats.valid && do_mv_stats_collection) av1_zero(cpi->mv_stats);
-#else
-    if (cpi->ppi->mv_stats.valid && do_mv_stats_collection)
-      av1_zero(cpi->ppi->mv_stats);
-#endif
+
     // Gather the mv_stats for the next frame
     if (cpi->sf.hl_sf.high_precision_mv_usage == LAST_MV_DATA &&
         av1_frame_allows_smart_mv(cpi) && do_mv_stats_collection) {
@@ -2866,12 +2863,10 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 
     if (loop) {
       ++loop_count;
-#if CONFIG_FRAME_PARALLEL_ENCODE
       cpi->num_frame_recode =
           (cpi->num_frame_recode < (NUM_RECODES_PER_FRAME - 1))
               ? (cpi->num_frame_recode + 1)
               : (NUM_RECODES_PER_FRAME - 1);
-#endif
 #if CONFIG_INTERNAL_STATS
       ++cpi->frame_recode_hits;
 #endif
@@ -2940,14 +2935,12 @@ static int encode_with_recode_loop_and_filter(AV1_COMP *cpi, size_t *size,
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_with_or_without_recode_time);
 #endif
-#if CONFIG_FRAME_PARALLEL_ENCODE
   for (int i = 0; i < NUM_RECODES_PER_FRAME; i++) {
     cpi->do_update_frame_probs_txtype[i] = 0;
     cpi->do_update_frame_probs_obmc[i] = 0;
     cpi->do_update_frame_probs_warp[i] = 0;
     cpi->do_update_frame_probs_interpfilter[i] = 0;
   }
-#endif
 
   cpi->do_update_vbr_bits_off_target_fast = 0;
   int err;
@@ -4224,10 +4217,8 @@ static void update_end_of_frame_stats(AV1_COMP *cpi) {
       cpi->ppi->filter_level_v = lf->filter_level_v;
     }
   }
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Store frame level mv_stats from cpi to ppi.
   cpi->ppi->mv_stats = cpi->mv_stats;
-#endif
 }
 
 // Updates frame level stats related to global motion

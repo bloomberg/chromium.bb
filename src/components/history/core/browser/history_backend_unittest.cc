@@ -613,7 +613,7 @@ class InMemoryHistoryBackendTest : public HistoryBackendTestBase {
 
   size_t GetNumberOfMatchingSearchTerms(const int keyword_id,
                                         const std::u16string& prefix) {
-    std::vector<KeywordSearchTermVisit> matching_terms;
+    std::vector<std::unique_ptr<KeywordSearchTermVisit>> matching_terms;
     mem_backend_->db()->GetMostRecentKeywordSearchTerms(
         keyword_id, prefix, 1, &matching_terms);
     return matching_terms.size();
@@ -3457,7 +3457,7 @@ TEST_F(HistoryBackendTest, QueryMostVisitedURLs) {
     backend_->AddPage(args);
   }
 
-  MostVisitedURLList most_visited = backend_->QueryMostVisitedURLs(100, 100);
+  MostVisitedURLList most_visited = backend_->QueryMostVisitedURLs(100);
 
   const std::u16string kSomeTitle;  // Ignored by equality operator.
   EXPECT_THAT(

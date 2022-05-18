@@ -166,7 +166,6 @@ LayerTreeImpl::LayerTreeImpl(
       needs_full_tree_sync_(true),
       needs_surface_ranges_sync_(false),
       next_activation_forces_redraw_(false),
-      has_ever_been_drawn_(false),
       handle_visibility_changed_(false),
       have_scroll_event_handlers_(false),
       event_listener_properties_(),
@@ -735,8 +734,6 @@ void LayerTreeImpl::PullLayerTreePropertiesFrom(CommitState& commit_state) {
   if (commit_state.force_send_metadata_request)
     RequestForceSendMetadata();
 
-  set_has_ever_been_drawn(false);
-
   // TODO(ericrk): The viewport changes caused by |top_controls_shown_ratio_|
   // changes should propagate back to the main tree. This does not currently
   // happen, so we must force the impl tree to update its viewports if
@@ -861,8 +858,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
         target_tree->LayerById(hud_layer()->id())));
   else
     target_tree->set_hud_layer(nullptr);
-
-  target_tree->has_ever_been_drawn_ = false;
 
   // Note: this needs to happen after SetPropertyTrees.
   target_tree->HandleTickmarksVisibilityChange();
@@ -1159,8 +1154,8 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
     if (TransformNode* node = transform_tree.Node(transform_node_index)) {
       ElementListType list_type = GetElementTypeForAnimation();
       bool has_potential_animation =
-          mutator_host()->HasPotentiallyRunningTransformAnimation(element_id,
-                                                                  list_type);
+          mutator_host()->HasPotentiallyRunningAnimationForProperty(
+              element_id, list_type, TargetProperty::TRANSFORM);
       if (node->has_potential_animation != has_potential_animation) {
         node->has_potential_animation = has_potential_animation;
         node->maximum_animation_scale =
@@ -1185,21 +1180,8 @@ void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
   float clamped_page_scale = ClampPageScaleFactorToLimits(active_page_scale);
-  // Temporary crash logging for https://crbug.com/845097.
-  static bool has_dumped_without_crashing = false;
-  if (host_impl_->settings().is_layer_tree_for_subframe &&
-      clamped_page_scale != 1.f && !has_dumped_without_crashing) {
-    has_dumped_without_crashing = true;
-    static auto* psf_oopif_error = base::debug::AllocateCrashKeyString(
-        "psf_oopif_error", base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(
-        psf_oopif_error, base::StringPrintf("%f", clamped_page_scale));
-    base::debug::DumpWithoutCrashing();
-  }
-  if (page_scale_factor()->SetCurrent(clamped_page_scale)) {
+  if (page_scale_factor()->SetCurrent(clamped_page_scale))
     DidUpdatePageScale();
-    UpdatePageScaleNode();
-  }
 }
 
 void LayerTreeImpl::PushPageScaleFromMainThread(float page_scale_factor,
@@ -1230,10 +1212,6 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
 
   if (changed_page_scale)
     DidUpdatePageScale();
-
-  DCHECK(lifecycle().AllowsPropertyTreeAccess());
-  if (page_scale_factor)
-    UpdatePageScaleNode();
 }
 
 void LayerTreeImpl::SetBrowserControlsParams(
@@ -1338,27 +1316,33 @@ bool LayerTreeImpl::SetPageScaleFactorLimits(float min_page_scale_factor,
 }
 
 void LayerTreeImpl::DidUpdatePageScale() {
-  if (IsActiveTree())
+  if (IsActiveTree()) {
     page_scale_factor()->SetCurrent(
         ClampPageScaleFactorToLimits(current_page_scale_factor()));
 
-  set_needs_update_draw_properties();
+    // Ensure the other trees are kept in sync.
+    if (host_impl_->pending_tree())
+      host_impl_->pending_tree()->DidUpdatePageScale();
+    if (host_impl_->recycle_tree())
+      host_impl_->recycle_tree()->DidUpdatePageScale();
 
-  // Viewport scrollbar sizes depend on the page scale factor.
-  SetScrollbarGeometriesNeedUpdate();
-
-  if (IsActiveTree()) {
     if (settings().scrollbar_flash_after_any_scroll_update) {
       host_impl_->FlashAllScrollbars(true);
-      return;
-    }
-    if (auto* scroll_node = host_impl_->OuterViewportScrollNode()) {
+    } else if (auto* scroll_node = host_impl_->OuterViewportScrollNode()) {
       if (ScrollbarAnimationController* controller =
               host_impl_->ScrollbarAnimationControllerForElementId(
                   scroll_node->element_id))
         controller->DidScrollUpdate();
     }
   }
+
+  DCHECK(lifecycle().AllowsPropertyTreeAccess());
+  UpdatePageScaleNode();
+
+  set_needs_update_draw_properties();
+
+  // Viewport scrollbar sizes depend on the page scale factor.
+  SetScrollbarGeometriesNeedUpdate();
 }
 
 void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
@@ -2154,6 +2138,11 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
 
   *scrollbar_layer_id = scrollbar_layer->id();
 
+  if (IsActiveTree()) {
+    host_impl_->DidRegisterScrollbarLayer(scroll_element_id,
+                                          scrollbar_layer->orientation());
+  }
+
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar() &&
       scrollbar_layer->GetScrollbarAnimator() !=
           LayerTreeSettings::NO_ANIMATOR) {
@@ -2893,6 +2882,10 @@ LayerTreeImpl::TakeDocumentTransitionRequests() {
 
 bool LayerTreeImpl::HasDocumentTransitionRequests() const {
   return !document_transition_requests_.empty();
+}
+
+bool LayerTreeImpl::IsReadyToActivate() const {
+  return host_impl_->IsReadyToActivate();
 }
 
 }  // namespace cc

@@ -50,13 +50,15 @@ export type MemoryModelTestParams = {
   memStride: number;
   /** For tests that access one memory location, but use dynamic addresses to avoid compiler optimization, aliased memory should be set to true. */
   aliasedMemory: boolean;
-  /** The number of memory locations accessed by this test. */
-  numMemLocations: number;
-  /** The number of read outputs per test that need to be analyzed in the result aggregation shader. */
-  numReadOutputs: number;
   /** The number of possible behaviors that a test can have. */
   numBehaviors: number;
 };
+
+/** The number of memory locations accessed by a test. Currently, only tests with up to 2 memory locations are supported. */
+const numMemLocations = 2;
+
+/** The number of read outputs per test that need to be analyzed in the result aggregation shader. Currently, only tests with up to 2 read outputs are supported. */
+const numReadOutputs = 2;
 
 /** Represents a device buffer and a utility buffer for resetting memory and copying parameters. */
 type BufferWithSource = {
@@ -135,7 +137,7 @@ export class MemoryModelTester {
     // set up buffers
     const testingThreads = this.params.workgroupSize * this.params.testingWorkgroups;
     const testLocationsSize =
-      testingThreads * this.params.numMemLocations * this.params.memStride * bytesPerWord;
+      testingThreads * numMemLocations * this.params.memStride * bytesPerWord;
     const testLocationsBuffer: BufferWithSource = {
       deviceBuf: this.test.device.createBuffer({
         size: testLocationsSize,
@@ -148,7 +150,7 @@ export class MemoryModelTester {
       size: testLocationsSize,
     };
 
-    const readResultsSize = testingThreads * this.params.numReadOutputs * bytesPerWord;
+    const readResultsSize = testingThreads * numReadOutputs * bytesPerWord;
     const readResultsBuffer: BufferWithSource = {
       deviceBuf: this.test.device.createBuffer({
         size: readResultsSize,
@@ -318,7 +320,9 @@ export class MemoryModelTester {
 
   /**
    * Run the test for the specified number of iterations. Checks the testResults buffer on the weakIndex; if
-   * this value is not 0 then the test has failed.
+   * this value is not 0 then the test has failed. The number of iterations is chosen per test so that the
+   * full set of tests meets some time budget while still being reasonably effective at uncovering issues.
+   * Currently, we aim for each test to complete in under one second.
    */
   async run(iterations: number, weakIndex: number): Promise<void> {
     for (let i = 0; i < iterations; i++) {
@@ -342,13 +346,13 @@ export class MemoryModelTester {
       const testPass = encoder.beginComputePass();
       testPass.setPipeline(this.testPipeline);
       testPass.setBindGroup(0, this.testBindGroup);
-      testPass.dispatch(numWorkgroups);
+      testPass.dispatchWorkgroups(numWorkgroups);
       testPass.end();
 
       const resultPass = encoder.beginComputePass();
       resultPass.setPipeline(this.resultPipeline);
       resultPass.setBindGroup(0, this.resultBindGroup);
-      resultPass.dispatch(this.params.testingWorkgroups);
+      resultPass.dispatchWorkgroups(this.params.testingWorkgroups);
       resultPass.end();
 
       this.test.device.queue.submit([encoder.finish()]);
@@ -822,6 +826,26 @@ const intraWorkgroupTestShaderCode = [
 `,
 ].join('\n');
 
+/**
+ * Tests that operate on storage memory and communicate with invocations in the same workgroup must offset their locations
+ * relative to global memory.
+ */
+const storageIntraWorkgroupTestShaderCode = `
+  let total_ids = workgroupXSize;
+  let id_0 = local_invocation_id[0];
+  let id_1 = permute_id(local_invocation_id[0], stress_params.permute_first, workgroupXSize);
+  let x_0 = (shuffled_workgroup * workgroupXSize + id_0) * stress_params.mem_stride * 2u;
+  let y_0 = (shuffled_workgroup * workgroupXSize + permute_id(id_0, stress_params.permute_second, total_ids)) * stress_params.mem_stride * 2u + stress_params.location_offset;
+  let x_1 = (shuffled_workgroup * workgroupXSize + id_1) * stress_params.mem_stride * 2u;
+  let y_1 = (shuffled_workgroup * workgroupXSize + permute_id(id_1, stress_params.permute_second, total_ids)) * stress_params.mem_stride * 2u + stress_params.location_offset;
+  if (stress_params.pre_stress == 1u) {
+    do_stress(stress_params.pre_stress_iterations, stress_params.pre_stress_pattern, shuffled_workgroup);
+  }
+  if (stress_params.do_barrier == 1u) {
+    spin(workgroupXSize);
+  }
+`;
+
 /** All test shaders may perform stress with non-testing threads. */
 const testShaderCommonFooter = `
     } else if (stress_params.mem_stress == 1u) {
@@ -959,12 +983,15 @@ export function buildTestShader(
   testType: TestType
 ): string {
   let memoryTypeCode;
+  let isStorageAS = false;
   switch (memoryType) {
     case MemoryType.AtomicStorageClass:
       memoryTypeCode = storageMemoryAtomicTestShaderCode;
+      isStorageAS = true;
       break;
     case MemoryType.NonAtomicStorageClass:
       memoryTypeCode = storageMemoryNonAtomicTestShaderCode;
+      isStorageAS = true;
       break;
     case MemoryType.AtomicWorkgroupClass:
       memoryTypeCode = workgroupMemoryAtomicTestShaderCode;
@@ -978,7 +1005,11 @@ export function buildTestShader(
       testTypeCode = interWorkgroupTestShaderCode;
       break;
     case TestType.IntraWorkgroup:
-      testTypeCode = intraWorkgroupTestShaderCode;
+      if (isStorageAS) {
+        testTypeCode = storageIntraWorkgroupTestShaderCode;
+      } else {
+        testTypeCode = intraWorkgroupTestShaderCode;
+      }
   }
   return [memoryTypeCode, testTypeCode, testCode, testShaderCommonFooter].join('\n');
 }

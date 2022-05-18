@@ -22,6 +22,15 @@
 
 namespace webrtc {
 
+DataChannelController::~DataChannelController() {
+  // Since channels may have multiple owners, we cannot guarantee that
+  // they will be deallocated before destroying the controller.
+  // Therefore, detach them from the controller.
+  for (auto channel : sctp_data_channels_) {
+    channel->DetachFromController();
+  }
+}
+
 bool DataChannelController::HasDataChannels() const {
   RTC_DCHECK_RUN_ON(signaling_thread());
   return !sctp_data_channels_.empty();
@@ -357,16 +366,6 @@ void DataChannelController::OnTransportChannelClosed(RTCError error) {
   for (const auto& channel : temp_sctp_dcs) {
     channel->OnTransportChannelClosed(error);
   }
-}
-
-SctpDataChannel* DataChannelController::FindDataChannelBySid(int sid) const {
-  RTC_DCHECK_RUN_ON(signaling_thread());
-  for (const auto& channel : sctp_data_channels_) {
-    if (channel->id() == sid) {
-      return channel;
-    }
-  }
-  return nullptr;
 }
 
 DataChannelTransportInterface* DataChannelController::data_channel_transport()

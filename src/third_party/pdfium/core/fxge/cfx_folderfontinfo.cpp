@@ -6,6 +6,7 @@
 
 #include "core/fxge/cfx_folderfontinfo.h"
 
+#include <iterator>
 #include <limits>
 #include <utility>
 
@@ -19,7 +20,6 @@
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/fx_font.h"
 #include "third_party/base/containers/contains.h"
-#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -244,8 +244,10 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
   if (tables.IsEmpty())
     return;
 
+  static constexpr uint32_t kNameTag =
+      CFX_FontMapper::MakeTag('n', 'a', 'm', 'e');
   ByteString names =
-      LoadTableFromTT(pFile, tables.raw_str(), nTables, 0x6e616d65, filesize);
+      LoadTableFromTT(pFile, tables.raw_str(), nTables, kNameTag, filesize);
   if (names.IsEmpty())
     return;
 
@@ -262,8 +264,10 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
 
   auto pInfo =
       std::make_unique<FontFaceInfo>(path, facename, tables, offset, filesize);
+  static constexpr uint32_t kOs2Tag =
+      CFX_FontMapper::MakeTag('O', 'S', '/', '2');
   ByteString os2 =
-      LoadTableFromTT(pFile, tables.raw_str(), nTables, 0x4f532f32, filesize);
+      LoadTableFromTT(pFile, tables.raw_str(), nTables, kOs2Tag, filesize);
   if (os2.GetLength() >= 86) {
     const uint8_t* p = os2.raw_str() + 78;
     uint32_t codepages = FXSYS_UINT32_GET_MSBFIRST(p);
@@ -302,8 +306,7 @@ void CFX_FolderFontInfo::ReportFace(const ByteString& path,
 }
 
 void* CFX_FolderFontInfo::GetSubstFont(const ByteString& face) {
-  for (size_t iBaseFont = 0; iBaseFont < pdfium::size(Base14Substs);
-       iBaseFont++) {
+  for (size_t iBaseFont = 0; iBaseFont < std::size(Base14Substs); iBaseFont++) {
     if (face == Base14Substs[iBaseFont].m_pName)
       return GetFont(Base14Substs[iBaseFont].m_pSubstName);
   }

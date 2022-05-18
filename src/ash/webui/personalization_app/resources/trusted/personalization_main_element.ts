@@ -10,6 +10,7 @@
 import './cros_button_style.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {getTemplate} from './personalization_main_element.html.js';
 import {isAmbientModeAllowed, Paths, PersonalizationRouter} from './personalization_router_element.js';
 import {WithPersonalizationStore} from './personalization_store.js';
@@ -25,6 +26,7 @@ export class PersonalizationMain extends WithPersonalizationStore {
 
   static get properties() {
     return {
+      path: String,
       clickable_: {
         type: Boolean,
         value: true,
@@ -40,12 +42,12 @@ export class PersonalizationMain extends WithPersonalizationStore {
     return isAmbientModeAllowed();
   }
 
-  private onClickUserSubpageLink_() {
-    PersonalizationRouter.instance().goToRoute(Paths.User);
+  private isRgbKeyboardEnabled_(): boolean {
+    return loadTimeData.getBoolean('isRgbKeyboardEnabled');
   }
 
   private onClickAmbientSubpageLink_() {
-    PersonalizationRouter.instance().goToRoute(Paths.Ambient);
+    PersonalizationRouter.instance().goToRoute(Paths.AMBIENT);
   }
 }
 

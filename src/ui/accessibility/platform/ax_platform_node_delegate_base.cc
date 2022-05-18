@@ -374,6 +374,14 @@ bool AXPlatformNodeDelegateBase::IsToplevelBrowserWindow() {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsPlatformDocument() const {
+  return ui::IsPlatformDocument(GetRole());
+}
+
+bool AXPlatformNodeDelegateBase::IsPlatformDocumentWithContent() const {
+  return IsPlatformDocument() && GetChildCount();
+}
+
 bool AXPlatformNodeDelegateBase::IsDescendantOfAtomicTextField() const {
   // TODO(nektar): Add const to all tree traversal methods and remove
   // const_cast.
@@ -477,16 +485,6 @@ AXPlatformNodeDelegateBase::ChildIteratorBase::ChildIteratorBase(
     const AXPlatformNodeDelegateBase::ChildIteratorBase& it)
     : index_(it.index_), parent_(it.parent_) {
   DCHECK(parent_);
-}
-
-bool AXPlatformNodeDelegateBase::ChildIteratorBase::operator==(
-    const AXPlatformNodeDelegate::ChildIterator& rhs) const {
-  return rhs.GetIndexInParent() == index_;
-}
-
-bool AXPlatformNodeDelegateBase::ChildIteratorBase::operator!=(
-    const AXPlatformNodeDelegate::ChildIterator& rhs) const {
-  return rhs.GetIndexInParent() != index_;
 }
 
 AXPlatformNodeDelegateBase::ChildIteratorBase&
@@ -769,7 +767,7 @@ bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfAriaGrid() const {
 }
 
 bool AXPlatformNodeDelegateBase::IsWebAreaForPresentationalIframe() const {
-  if (!IsPlatformDocument(GetRole()))
+  if (!ui::IsPlatformDocument(GetRole()))
     return false;
 
   AXPlatformNodeDelegate* parent = GetParentDelegate();

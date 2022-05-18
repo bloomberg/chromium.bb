@@ -11,14 +11,14 @@
 #include "random_without_cast_overflow.h"
 
 template <typename MatrixType>
-typename internal::enable_if<(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>::type
+std::enable_if_t<(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>
 check_index(const MatrixType& m) {
   VERIFY_RAISES_ASSERT(m[0]);
   VERIFY_RAISES_ASSERT((m+m)[0]);
 }
 
 template <typename MatrixType>
-typename internal::enable_if<!(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>::type
+std::enable_if_t<!(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>
 check_index(const MatrixType& /*unused*/) {}
 
 template<typename MatrixType> void basicStuff(const MatrixType& m)
@@ -241,7 +241,7 @@ struct casting_test_runner {
 };
 
 template<typename SrcScalar>
-struct casting_test_runner<SrcScalar, typename internal::enable_if<(NumTraits<SrcScalar>::IsComplex)>::type>
+struct casting_test_runner<SrcScalar, std::enable_if_t<(NumTraits<SrcScalar>::IsComplex)>>
 {
   static void run() {
     // Only a few casts from std::complex<T> are defined.

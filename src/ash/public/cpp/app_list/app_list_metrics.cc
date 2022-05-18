@@ -63,6 +63,13 @@ constexpr char kClamshellAppListSortOrderOnSessionStartHistogram[] =
 constexpr char kTabletAppListSortOrderOnSessionStartHistogram[] =
     "Apps.AppList.SortOrderOnSessionStart.TabletMode";
 
+constexpr char kAppListSortDiscoveryDurationAfterNudge[] =
+    "Apps.AppList.SortDiscoveryDurationAfterEducationNudge";
+
+constexpr char kAppListSortDiscoveryDurationAfterActivation[] =
+    "Apps.AppList."
+    "AppListSortDiscoveryDurationAfterActivation";
+
 void RecordSearchResultOpenTypeHistogram(AppListLaunchedFrom launch_location,
                                          SearchResultType type,
                                          bool is_tablet_mode) {

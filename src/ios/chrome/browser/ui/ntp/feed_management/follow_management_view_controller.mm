@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/follow/follow_block_types.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
-#import "ios/chrome/browser/ui/ntp/feed_management/follow_management_ui_updater.h"
+#import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channel_item.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channels_data_source.h"
 #include "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
@@ -16,8 +16,6 @@
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,7 +36,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface FollowManagementViewController () <FollowManagementUIUpdater>
+@interface FollowManagementViewController ()
 
 // Saved placement of the item that was last attempted to unfollow.
 @property(nonatomic, strong) NSIndexPath* indexPathOfLastUnfollowAttempt;
@@ -55,20 +53,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   [self configureNavigationBar];
   [self loadModel];
-  // TODO(crbug.com/1264872): keep the model layer object (FollowProvider) out
-  // of this view controller.
-  ios::GetChromeBrowserProvider()
-      .GetFollowProvider()
-      ->AddFollowManagementUIUpdater(self);
 }
 
-- (void)viewDidDisappear:(BOOL)animated {
-  [super viewDidDisappear:animated];
-  // TODO(crbug.com/1264872): keep the model layer object (FollowProvider) out
-  // of this view controller.
-  ios::GetChromeBrowserProvider()
-      .GetFollowProvider()
-      ->RemoveFollowManagementUIUpdater(self);
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  [self.viewDelegate followManagementViewControllerWillDismiss:self];
 }
 
 #pragma mark - UITableView
@@ -84,9 +73,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       base::mac::ObjCCastStrict<FollowedWebChannelItem>(tableViewItem);
   FollowedWebChannelCell* followedWebChannelCell =
       base::mac::ObjCCastStrict<FollowedWebChannelCell>(cellToReturn);
-  CrURL* channelURL = followedWebChannelItem.followedWebChannel.channelURL;
+  CrURL* webPageURL = followedWebChannelItem.followedWebChannel.webPageURL;
 
-  [self.faviconDataSource faviconForURL:channelURL
+  [self.faviconDataSource faviconForURL:webPageURL
                              completion:^(FaviconAttributes* attributes) {
                                // Only set favicon if the cell hasn't been
                                // reused.
@@ -120,6 +109,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UITableViewDelegate
 
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
 - (UISwipeActionsConfiguration*)tableView:(UITableView*)tableView
     trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath {
   UIContextualAction* unfollowSwipeAction = [UIContextualAction
@@ -134,6 +128,39 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         }];
   return [UISwipeActionsConfiguration
       configurationWithActions:@[ unfollowSwipeAction ]];
+}
+
+- (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
+    contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+                                        point:(CGPoint)point {
+  __weak FollowManagementViewController* weakSelf = self;
+
+  UIContextMenuActionProvider actionProvider = ^(
+      NSArray<UIMenuElement*>* suggestedActions) {
+    if (!weakSelf) {
+      // Return an empty menu.
+      return [UIMenu menuWithTitle:@"" children:@[]];
+    }
+    FollowManagementViewController* strongSelf = weakSelf;
+    NSMutableArray<UIMenuElement*>* menuElements =
+        [[NSMutableArray alloc] init];
+    UIAction* unfollowSwipeAction = [UIAction
+        actionWithTitle:l10n_util::GetNSString(
+                            IDS_IOS_FOLLOW_MANAGEMENT_UNFOLLOW_ACTION)
+                  image:nil
+             identifier:nil
+                handler:^(UIAction* action) {
+                  [strongSelf requestUnfollowWebChannelAtIndexPath:indexPath];
+                }];
+    unfollowSwipeAction.attributes = UIMenuElementAttributesDestructive;
+    [menuElements addObject:unfollowSwipeAction];
+    return [UIMenu menuWithTitle:@"" children:menuElements];
+  };
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 #pragma mark - FollowManagementUIUpdater
@@ -267,23 +294,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)addItem:(FollowedWebChannelItem*)item
     AtIndexPath:(NSIndexPath*)indexPath {
   TableViewModel* model = self.tableViewModel;
+  NSInteger sectionID =
+      [model sectionIdentifierForSectionIndex:indexPath.section];
+  [model insertItem:item
+      inSectionWithIdentifier:sectionID
+                      atIndex:indexPath.row];
+  [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
 
-  NSInteger section =
-      [model sectionForSectionIdentifier:DefaultSectionIdentifier];
-  NSInteger itemCount = [model numberOfItemsInSection:section];
-  if (itemCount == 0) {
-    [model addItem:item toSectionWithIdentifier:DefaultSectionIdentifier];
-    [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-  } else {
-    NSInteger sectionID =
-        [model sectionIdentifierForSectionIndex:indexPath.section];
-    NSUInteger index = [model indexInItemTypeForIndexPath:indexPath];
-
-    [model insertItem:item inSectionWithIdentifier:sectionID atIndex:index];
-    [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-  }
   self.lastUnfollowedWebChannelItem = nil;
   self.indexPathOfLastUnfollowAttempt = nil;
   [self showOrHideEmptyTableViewBackground];

@@ -221,6 +221,26 @@ VkResult UtilInitializeVma(VkPhysicalDevice physical_device, VkDevice device, Vm
     return vmaCreateAllocator(&allocator_info, pAllocator);
 }
 
+gpu_utils_state::CommandBuffer::CommandBuffer(GpuAssistedBase *ga, VkCommandBuffer cb,
+                                              const VkCommandBufferAllocateInfo *pCreateInfo, const COMMAND_POOL_STATE *pool)
+    : CMD_BUFFER_STATE(ga, cb, pCreateInfo, pool) {}
+
+ReadLockGuard GpuAssistedBase::ReadLock() {
+    if (fine_grained_locking) {
+        return ReadLockGuard(validation_object_mutex, std::defer_lock);
+    } else {
+        return ReadLockGuard(validation_object_mutex);
+    }
+}
+
+WriteLockGuard GpuAssistedBase::WriteLock() {
+    if (fine_grained_locking) {
+        return WriteLockGuard(validation_object_mutex, std::defer_lock);
+    } else {
+        return WriteLockGuard(validation_object_mutex);
+    }
+}
+
 void GpuAssistedBase::PreCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo *pCreateInfo,
                                                 const VkAllocationCallbacks *pAllocator, VkDevice *pDevice, void *modified_ci) {
     ValidationStateTracker::PreCallRecordCreateDevice(gpu, pCreateInfo, pAllocator, pDevice, modified_ci);
@@ -394,6 +414,32 @@ void gpu_utils_state::Queue::SubmitBarrier() {
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &barrier_command_buffer_;
         DispatchQueueSubmit(QUEUE_STATE::Queue(), 1, &submit_info, VK_NULL_HANDLE);
+    }
+}
+
+bool GpuAssistedBase::CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) const {
+    auto cb_node = GetRead<gpu_utils_state::CommandBuffer>(command_buffer);
+    if (cb_node->NeedsProcessing()) {
+        return true;
+    }
+    for (const auto *secondary_cb : cb_node->linkedCommandBuffers) {
+        auto secondary_cb_node = static_cast<const gpu_utils_state::CommandBuffer *>(secondary_cb);
+        auto guard = secondary_cb_node->ReadLock();
+        if (secondary_cb_node->NeedsProcessing()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void GpuAssistedBase::ProcessCommandBuffer(VkQueue queue, VkCommandBuffer command_buffer) {
+    auto cb_node = GetWrite<gpu_utils_state::CommandBuffer>(command_buffer);
+
+    cb_node->Process(queue);
+    for (auto *secondary_cmd_base : cb_node->linkedCommandBuffers) {
+        auto *secondary_cb_node = static_cast<gpu_utils_state::CommandBuffer *>(secondary_cmd_base);
+        auto guard = secondary_cb_node->WriteLock();
+        secondary_cb_node->Process(queue);
     }
 }
 
@@ -624,12 +670,9 @@ void GpuAssistedBase::PostCallRecordCreateRayTracingPipelinesKHR(VkDevice device
 
 // Remove all the shader trackers associated with this destroyed pipeline.
 void GpuAssistedBase::PreCallRecordDestroyPipeline(VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks *pAllocator) {
-    for (auto it = shader_map.begin(); it != shader_map.end();) {
-        if (it->second.pipeline == pipeline) {
-            it = shader_map.erase(it);
-        } else {
-            ++it;
-        }
+    auto to_erase = shader_map.snapshot([pipeline](const GpuAssistedShaderTracker &entry) { return entry.pipeline == pipeline; });
+    for (const auto &entry : to_erase) {
+        shader_map.erase(entry.first);
     }
     ValidationStateTracker::PreCallRecordDestroyPipeline(device, pipeline, pAllocator);
 }
@@ -811,8 +854,8 @@ void GpuAssistedBase::PostCallRecordPipelineCreations(const uint32_t count, cons
             } else {
                 assert(false);
             }
-            shader_map.emplace(module_state->gpu_validation_shader_id, GpuAssistedShaderTracker{pipeline_state->pipeline(), shader_module,
-                                std::move(code)});
+            shader_map.insert_or_assign(module_state->gpu_validation_shader_id, pipeline_state->pipeline(), shader_module,
+                                        std::move(code));
         }
     }
 }

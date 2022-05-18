@@ -23,7 +23,16 @@ VERSION = 3
 def LoadConfig():
   if os.path.isfile(CONFIG):
     with open(CONFIG, 'r') as f:
-      config = json.load(f)
+      try:
+        config = json.load(f)
+      except Exception:
+        # Set default value when failed to load config.
+        config = {
+            'is-googler': ninjalog_uploader.IsGoogler(),
+            'countdown': 10,
+            'version': VERSION,
+        }
+
       if config['version'] == VERSION:
         config['countdown'] = max(0, config['countdown'] - 1)
         return config

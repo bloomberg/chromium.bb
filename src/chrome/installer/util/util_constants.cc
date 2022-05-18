@@ -26,9 +26,15 @@ const char kChannel[] = "channel";
 // this option is not compatible with any other installer options.
 const char kConfigureUserSettings[] = "configure-user-settings";
 
+// Create shortcuts with the installer operation arg.
+const char kCreateShortcuts[] = "create-shortcuts";
+
 // The version number of an update containing critical fixes, for which an
 // in-use Chrome should be restarted ASAP.
 const char kCriticalUpdateVersion[] = "critical-update-version";
+
+// Deletes any existing DMToken from the registry.
+const char kDeleteDMToken[] = "delete-dmtoken";
 
 // Delete files that belong to old versions of Chrome from the install
 // directory.
@@ -81,6 +87,9 @@ const char kInstallArchive[] = "install-archive";
 
 // Specify the file path of Chrome initial preference file.
 const char kInstallerData[] = "installerdata";
+
+// What install level to create shortcuts for, if "create-shortcuts" is present.
+const char kInstallLevel[] = "install-level";
 
 // If present, specify file path to write logging info.
 const char kLogFile[] = "log-file";
@@ -217,6 +226,7 @@ const wchar_t kChromeProxyOldExe[] = L"old_chrome_proxy.exe";
 const wchar_t kCmdOnOsUpgrade[] = L"on-os-upgrade";
 const wchar_t kCmdRotateDeviceTrustKey[] = L"rotate-dtkey";
 const wchar_t kCmdStoreDMToken[] = L"store-dmtoken";
+const wchar_t kCmdDeleteDMToken[] = L"delete-dmtoken";
 const wchar_t kEulaSentinelFile[] = L"EULA Accepted";
 const wchar_t kInstallBinaryDir[] = L"Application";
 const wchar_t kInstallerDir[] = L"Installer";

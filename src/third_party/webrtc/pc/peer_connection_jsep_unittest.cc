@@ -123,7 +123,7 @@ class PeerConnectionJsepTest : public ::testing::Test {
       return nullptr;
     }
 
-    observer->SetPeerConnectionInterface(result.value());
+    observer->SetPeerConnectionInterface(result.value().get());
     return std::make_unique<PeerConnectionWrapper>(
         pc_factory, result.MoveValue(), std::move(observer));
   }
@@ -1363,7 +1363,7 @@ TEST_F(PeerConnectionJsepTest,
 
   auto caller = CreatePeerConnection();
   auto transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
-  transceiver->sender()->SetTrack(caller->CreateAudioTrack(kTrackId));
+  transceiver->sender()->SetTrack(caller->CreateAudioTrack(kTrackId).get());
 
   auto offer = caller->CreateOffer();
   auto contents = offer->description()->contents();
@@ -2230,6 +2230,60 @@ TEST_F(PeerConnectionJsepTest, RollbackRemoteDirectionChange) {
   // One way audio must remain working after rollback.
   EXPECT_EQ(callee->pc()->GetTransceivers()[0]->sender()->dtls_transport(),
             audio_transport);
+  EXPECT_EQ(callee->observer()->remove_track_events_.size(), 1u);
+}
+
+TEST_F(PeerConnectionJsepTest,
+       RollbackRestoresFiredDirectionAndOnTrackCanFireAgain) {
+  auto caller = CreatePeerConnection();
+  auto caller_transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  auto callee = CreatePeerConnection();
+  callee->AddAudioTrack("a");
+  ASSERT_EQ(callee->pc()->GetTransceivers().size(), 1u);
+  auto callee_transceiver = callee->pc()->GetTransceivers()[0];
+  EXPECT_FALSE(callee_transceiver->fired_direction().has_value());
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
+  EXPECT_TRUE(callee_transceiver->fired_direction().has_value());
+  EXPECT_EQ(callee->observer()->add_track_events_.size(), 1u);
+  // The existing transceiver becomes associated. Because it already exists,
+  // rolling it back does not remove the transceiver, so if ontrack fires again
+  // later it will be because the transceiver's internal states were restored
+  // rather than due to the creation of a new transceiver.
+  EXPECT_EQ(callee->pc()->GetTransceivers().size(), 1u);
+
+  // Rollback: the transceiver is no longer receiving.
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateRollback()));
+  EXPECT_FALSE(callee_transceiver->fired_direction().has_value());
+  EXPECT_EQ(callee->pc()->GetTransceivers().size(), 1u);
+
+  // Set the remote offer again: ontrack should fire on the same transceiver.
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
+  EXPECT_TRUE(callee_transceiver->fired_direction().has_value());
+  EXPECT_EQ(callee->observer()->add_track_events_.size(), 2u);
+  EXPECT_EQ(callee->pc()->GetTransceivers().size(), 1u);
+}
+
+TEST_F(PeerConnectionJsepTest,
+       RollbackFromInactiveToReceivingMakesOnTrackFire) {
+  auto caller = CreatePeerConnection();
+  auto caller_transceiver = caller->AddTransceiver(cricket::MEDIA_TYPE_AUDIO);
+  auto callee = CreatePeerConnection();
+  // Perform full O/A so that transceiver is associated. Ontrack fires.
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
+  EXPECT_EQ(callee->observer()->add_track_events_.size(), 1u);
+  EXPECT_EQ(callee->observer()->remove_track_events_.size(), 0u);
+  ASSERT_TRUE(
+      caller->SetRemoteDescription(callee->CreateAnswerAndSetAsLocal()));
+
+  // Start negotiating to make the transceiver inactive. Onremovetrack fires.
+  caller_transceiver->SetDirectionWithError(RtpTransceiverDirection::kInactive);
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateOfferAndSetAsLocal()));
+  EXPECT_EQ(callee->observer()->add_track_events_.size(), 1u);
+  EXPECT_EQ(callee->observer()->remove_track_events_.size(), 1u);
+
+  // Rollback the inactivation. Ontrack should fire again.
+  EXPECT_TRUE(callee->SetRemoteDescription(caller->CreateRollback()));
+  EXPECT_EQ(callee->observer()->add_track_events_.size(), 2u);
   EXPECT_EQ(callee->observer()->remove_track_events_.size(), 1u);
 }
 

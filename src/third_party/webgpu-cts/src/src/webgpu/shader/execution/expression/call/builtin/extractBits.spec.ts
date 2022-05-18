@@ -1,5 +1,34 @@
 export const description = `
-Execution Tests for the 'extractBits' builtin function
+Execution tests for the 'extractBits' builtin function
+
+T is u32 or vecN<u32>
+@const fn extractBits(e: T, offset: u32, count: u32) -> T
+Reads bits from an integer, without sign extension.
+
+When T is a scalar type, then:
+  w is the bit width of T
+  o = min(offset,w)
+  c = min(count, w - o)
+
+The result is 0 if c is 0.
+Otherwise, bits 0..c-1 of the result are copied from bits o..o+c-1 of e.
+Other bits of the result are 0.
+Component-wise when T is a vector.
+
+
+T is i32 or vecN<i32>
+@const fn extractBits(e: T, offset: u32, count: u32) -> T
+Reads bits from an integer, with sign extension.
+
+When T is a scalar type, then:
+  w is the bit width of T
+  o = min(offset,w)
+  c = min(count, w - o)
+
+The result is 0 if c is 0.
+Otherwise, bits 0..c-1 of the result are copied from bits o..o+c-1 of e.
+Other bits of the result are the same as bit c-1 of the result.
+Component-wise when T is a vector.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
@@ -22,29 +51,8 @@ import { builtin } from './builtin.js';
 export const g = makeTestGroup(GPUTest);
 
 g.test('u32')
-  .uniqueId('xxxxxxxxxxxxxxxx')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-extractBits:
-T is u32 or vecN<u32> extractBits(e: T, offset: u32, count: u32) -> T
-
-Reads bits from an integer, without sign extension.
-
-When T is a scalar type, then:
-
-* w is the bit width of T
-* o = min(offset,w)
-* c = min(count, w - o)
-* The result is 0 if c is 0.
-* Otherwise, bits 0..c-1 of the result are copied from bits o..o+c-1 of e. Other bits of the result are 0.
-
-Component-wise when T is a vector.
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`u32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -185,29 +193,8 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   });
 
 g.test('i32')
-  .uniqueId('xxxxxxxxxxxxxxxx')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-extractBits:
-T is i32 or vecN<i32> extractBits(e: T, offset: u32, count: u32) -> T
-
-Reads bits from an integer, with sign extension.
-
-When T is a scalar type, then:
-
-* w is the bit width of T
-* o = min(offset,w)
-* c = min(count, w - o)
-* The result is 0 if c is 0.
-* Otherwise, bits 0..c-1 of the result are copied from bits o..o+c-1 of e. Other bits of the result are the same as bit c-1 of the result.
-
-Component-wise when T is a vector.
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`i32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)

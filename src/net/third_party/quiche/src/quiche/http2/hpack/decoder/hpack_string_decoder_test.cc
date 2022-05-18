@@ -7,13 +7,13 @@
 // Tests of HpackStringDecoder.
 
 #include "absl/strings/string_view.h"
-#include "quiche/http2/hpack/decoder/hpack_string_collector.h"
 #include "quiche/http2/hpack/decoder/hpack_string_decoder_listener.h"
-#include "quiche/http2/hpack/tools/hpack_block_builder.h"
+#include "quiche/http2/test_tools/hpack_block_builder.h"
+#include "quiche/http2/test_tools/hpack_string_collector.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/random_decoder_test.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
+#include "quiche/http2/test_tools/verify_macros.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 namespace http2 {
 namespace test {
@@ -36,13 +36,13 @@ class HpackStringDecoderTest : public RandomDecoderTest {
   DecodeStatus ResumeDecoding(DecodeBuffer* b) override {
     // Provides coverage of DebugString and StateToString.
     // Not validating output.
-    HTTP2_VLOG(1) << decoder_.DebugString();
-    HTTP2_VLOG(2) << collector_;
+    QUICHE_VLOG(1) << decoder_.DebugString();
+    QUICHE_VLOG(2) << collector_;
     return decoder_.Resume(b, &listener_);
   }
 
   AssertionResult Collected(absl::string_view s, bool huffman_encoded) {
-    HTTP2_VLOG(1) << collector_;
+    QUICHE_VLOG(1) << collector_;
     return collector_.Collected(s, huffman_encoded);
   }
 
@@ -51,23 +51,22 @@ class HpackStringDecoderTest : public RandomDecoderTest {
   // the string to be passed to Collected outlives the call to MakeValidator.
   Validator MakeValidator(const std::string& expected_str,
                           bool expected_huffman) {
-    return
-        [expected_str, expected_huffman, this](
-            const DecodeBuffer& /*input*/,
-            DecodeStatus /*status*/) -> AssertionResult {
-          AssertionResult result = Collected(expected_str, expected_huffman);
-          if (result) {
-            VERIFY_EQ(collector_,
-                      HpackStringCollector(expected_str, expected_huffman));
-          } else {
-            VERIFY_NE(collector_,
-                      HpackStringCollector(expected_str, expected_huffman));
-          }
-          HTTP2_VLOG(2) << collector_.ToString();
-          collector_.Clear();
-          HTTP2_VLOG(2) << collector_;
-          return result;
-        };
+    return [expected_str, expected_huffman, this](
+               const DecodeBuffer& /*input*/,
+               DecodeStatus /*status*/) -> AssertionResult {
+      AssertionResult result = Collected(expected_str, expected_huffman);
+      if (result) {
+        HTTP2_VERIFY_EQ(collector_,
+                        HpackStringCollector(expected_str, expected_huffman));
+      } else {
+        HTTP2_VERIFY_NE(collector_,
+                        HpackStringCollector(expected_str, expected_huffman));
+      }
+      QUICHE_VLOG(2) << collector_.ToString();
+      collector_.Clear();
+      QUICHE_VLOG(2) << collector_;
+      return result;
+    };
   }
 
   HpackStringDecoder decoder_;

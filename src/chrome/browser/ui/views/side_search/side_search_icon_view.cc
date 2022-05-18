@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/side_search/side_search_config.h"
+#include "chrome/browser/ui/side_search/side_search_metrics.h"
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
@@ -41,6 +42,10 @@ SideSearchIconView::SideSearchIconView(
 }
 
 SideSearchIconView::~SideSearchIconView() = default;
+
+void SideSearchIconView::SetLabelVisibilityForTesting(bool visible) {
+  label()->SetVisible(visible);
+}
 
 void SideSearchIconView::UpdateImpl() {
   content::WebContents* active_contents = GetWebContents();
@@ -78,6 +83,9 @@ void SideSearchIconView::UpdateImpl() {
 void SideSearchIconView::OnExecuting(PageActionIconView::ExecuteSource source) {
   auto* side_search_browser_controller =
       BrowserView::GetBrowserViewForBrowser(browser_)->side_search_controller();
+  RecordSideSearchPageActionLabelVisibilityOnToggle(
+      label()->GetVisible() ? SideSearchPageActionLabelVisibility::kVisible
+                            : SideSearchPageActionLabelVisibility::kNotVisible);
   side_search_browser_controller->ToggleSidePanel();
 }
 
@@ -103,12 +111,13 @@ void SideSearchIconView::AnimationProgressed(const gfx::Animation* animation) {
   PageActionIconView::AnimationProgressed(animation);
   // When the label is fully revealed pause the animation for
   // kLabelPersistDuration before resuming the animation and allowing the label
-  // to animate out.
+  // to animate out. This is currently set to show for 12s including the in/out
+  // animation.
   // TODO(crbug.com/1314206): This approach of inspecting the animation progress
   // to extend the animation duration is quite hacky. This should be removed and
   // the IconLabelBubbleView API expanded to support a finer level of control.
   constexpr double kAnimationValueWhenLabelFullyShown = 0.5;
-  constexpr base::TimeDelta kLabelPersistDuration = base::Milliseconds(3200);
+  constexpr base::TimeDelta kLabelPersistDuration = base::Milliseconds(10800);
   if (should_extend_label_shown_duration_ &&
       GetAnimationValue() >= kAnimationValueWhenLabelFullyShown) {
     should_extend_label_shown_duration_ = false;

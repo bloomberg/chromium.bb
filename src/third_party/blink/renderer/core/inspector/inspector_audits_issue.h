@@ -36,9 +36,63 @@ class InspectorIssue;
 }
 }  // namespace protocol
 
+// Please keep this alphabetized.
 enum class DeprecationIssueType {
+  kAuthorizationCoveredByWildcard,
+  kCanRequestURLHTTPContainingNewline,
+  kChromeLoadTimesConnectionInfo,
+  kChromeLoadTimesFirstPaintAfterLoadTime,
+  kChromeLoadTimesWasAlternateProtocolAvailable,
+  kCookieWithTruncatingChar,
+  kCrossOriginAccessBasedOnDocumentDomain,
+  kCrossOriginWindowAlert,
+  kCrossOriginWindowConfirm,
+  kCSSSelectorInternalMediaControlsOverlayCastButton,
+  kCustomCursorIntersectsViewport,
   kDeprecationExample,
-  kUntranslated,
+  kDocumentDomainSettingWithoutOriginAgentClusterHeader,
+  kEventPath,
+  kGeolocationInsecureOrigin,
+  kGeolocationInsecureOriginDeprecatedNotRemoved,
+  kGetUserMediaInsecureOrigin,
+  kHostCandidateAttributeGetter,
+  kInsecurePrivateNetworkSubresourceRequest,
+  kLegacyConstraintGoogIPv6,
+  kLocalCSSFileExtensionRejected,
+  kMediaElementAudioSourceNode,
+  kMediaSourceAbortRemove,
+  kMediaSourceDurationTruncatingBuffered,
+  kNoSysexWebMIDIWithoutPermission,
+  kNotDeprecated,
+  kNotificationInsecureOrigin,
+  kNotificationPermissionRequestedIframe,
+  kObsoleteWebRtcCipherSuite,
+  kPaymentRequestBasicCard,
+  kPaymentRequestShowWithoutGesture,
+  kPictureSourceSrc,
+  kPrefixedCancelAnimationFrame,
+  kPrefixedRequestAnimationFrame,
+  kPrefixedStorageInfo,
+  kPrefixedVideoDisplayingFullscreen,
+  kPrefixedVideoEnterFullScreen,
+  kPrefixedVideoEnterFullscreen,
+  kPrefixedVideoExitFullScreen,
+  kPrefixedVideoExitFullscreen,
+  kPrefixedVideoSupportsFullscreen,
+  kRangeExpand,
+  kRequestedSubresourceWithEmbeddedCredentials,
+  kRTCConstraintEnableDtlsSrtpFalse,
+  kRTCConstraintEnableDtlsSrtpTrue,
+  kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics,
+  kRTCPeerConnectionSdpSemanticsPlanB,
+  kRtcpMuxPolicyNegotiate,
+  kRTPDataChannel,
+  kSharedArrayBufferConstructedWithoutIsolation,
+  kTextToSpeech_DisallowedByAutoplay,
+  kV8SharedArrayBufferConstructedInExtensionWithoutIsolation,
+  kXHRJSONEncodingDetection,
+  kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload,
+  kXRSupportsSession,
 };
 
 enum class RendererCorsIssueCode {
@@ -49,11 +103,9 @@ enum class RendererCorsIssueCode {
 
 enum class AttributionReportingIssueType {
   kPermissionPolicyDisabled,
-  kInvalidAttributionSourceEventId,
   kAttributionSourceUntrustworthyOrigin,
   kAttributionUntrustworthyOrigin,
-  kInvalidAttributionSourceExpiry,
-  kInvalidAttributionSourcePriority,
+  kInvalidHeader,
 };
 
 enum class SharedArrayBufferIssueType {
@@ -140,11 +192,8 @@ class CORE_EXPORT AuditsIssue {
   // Reports a Deprecation issue to DevTools.
   // `execution_context` is used to extract the affected frame and source.
   // `type` is the enum used to differentiate messages.
-  // `legacy_message` and `legacy_type` are for untranslated deprecations.
   static void ReportDeprecationIssue(ExecutionContext* execution_context,
-                                     const DeprecationIssueType& type,
-                                     const String& legacy_message,
-                                     const String& legacy_type);
+                                     DeprecationIssueType type);
 
   static void ReportClientHintIssue(LocalDOMWindow* local_dom_window,
                                     ClientHintIssueReason reason);

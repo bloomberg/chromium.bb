@@ -17,6 +17,7 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
+#include "ash/components/device_activity/device_active_use_case.h"
 #include "ash/components/device_activity/device_activity_controller.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/drivefs/fake_drivefs_launcher_client.h"
@@ -193,14 +194,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
@@ -211,6 +213,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
+#include "chromeos/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
@@ -291,11 +294,34 @@ void ApplySigninProfileModifications(Profile* profile) {
   prefs->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
 }
 
-void FakeSessionStopped() {
-  // Session manager would ask Chrome to exit. Fake this behavior.
+#if !defined(USE_REAL_DBUS_CLIENTS)
+chromeos::FakeSessionManagerClient* FakeSessionManagerClient() {
+  chromeos::FakeSessionManagerClient* fake_session_manager_client =
+      chromeos::FakeSessionManagerClient::Get();
+  DCHECK(fake_session_manager_client);
+  return fake_session_manager_client;
+}
+
+chromeos::FakePowerManagerClient* FakePowerManagerClient() {
+  chromeos::FakePowerManagerClient* fake_power_manager_client =
+      chromeos::FakePowerManagerClient::Get();
+  DCHECK(fake_power_manager_client);
+  return fake_power_manager_client;
+}
+
+void FakeShutdownSignal() {
+  // Receiving SIGTERM would result in `ExitIgnoreUnloadHandlers`.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
 }
+
+void InstallFakeShutdownCalls() {
+  FakeSessionManagerClient()->set_stop_session_callback(
+      base::BindOnce(&FakeShutdownSignal));
+  FakePowerManagerClient()->set_restart_callback(
+      base::BindOnce(&FakeShutdownSignal));
+}
+#endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
 }  // namespace
 
@@ -305,7 +331,6 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(
-      const content::MainFunctionParams& parameters,
       std::unique_ptr<base::FeatureList::Accessor> feature_list_accessor) {
     PowerPolicyController::Initialize(PowerManagerClient::Get());
 
@@ -567,10 +592,9 @@ class DBusServices {
 
 // ChromeBrowserMainPartsAsh ---------------------------------------------------
 
-ChromeBrowserMainPartsAsh::ChromeBrowserMainPartsAsh(
-    content::MainFunctionParams parameters,
-    StartupData* startup_data)
-    : ChromeBrowserMainPartsLinux(std::move(parameters), startup_data),
+ChromeBrowserMainPartsAsh::ChromeBrowserMainPartsAsh(bool is_integration_test,
+                                                     StartupData* startup_data)
+    : ChromeBrowserMainPartsLinux(is_integration_test, startup_data),
       feature_list_accessor_(
           startup_data->chrome_feature_list_creator()
               ->GetAndClearFeatureListAccessor(
@@ -586,13 +610,12 @@ ChromeBrowserMainPartsAsh::~ChromeBrowserMainPartsAsh() {
 // content::BrowserMainParts and ChromeBrowserMainExtraParts overrides ---------
 
 int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
-  base::CommandLine* singleton_command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
+  if (command_line->HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
-    singleton_command_line->AppendSwitch(::syncer::kDisableSync);
-    singleton_command_line->AppendSwitch(::switches::kDisableExtensions);
+    command_line->AppendSwitch(::syncer::kDisableSync);
+    command_line->AppendSwitch(::switches::kDisableExtensions);
     browser_defaults::bookmarks_enabled = false;
   }
 
@@ -600,37 +623,34 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   // showing the login manager or attempting a command line login, login with a
   // stub user.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
-      !parsed_command_line().HasSwitch(switches::kLoginManager) &&
-      !parsed_command_line().HasSwitch(switches::kLoginUser) &&
-      !parsed_command_line().HasSwitch(switches::kGuestSession)) {
-    singleton_command_line->AppendSwitchASCII(
+      !command_line->HasSwitch(switches::kLoginManager) &&
+      !command_line->HasSwitch(switches::kLoginUser) &&
+      !command_line->HasSwitch(switches::kGuestSession)) {
+    command_line->AppendSwitchASCII(
         switches::kLoginUser,
         cryptohome::Identification(user_manager::StubAccountId()).id());
-    if (!parsed_command_line().HasSwitch(switches::kLoginProfile)) {
-      singleton_command_line->AppendSwitchASCII(switches::kLoginProfile,
-                                                chrome::kTestUserProfileDir);
+    if (!command_line->HasSwitch(switches::kLoginProfile)) {
+      command_line->AppendSwitchASCII(switches::kLoginProfile,
+                                      chrome::kTestUserProfileDir);
     }
-    LOG(WARNING) << "Running as stub user with profile dir: "
-                 << singleton_command_line
-                        ->GetSwitchValuePath(switches::kLoginProfile)
-                        .value();
+    LOG(WARNING)
+        << "Running as stub user with profile dir: "
+        << command_line->GetSwitchValuePath(switches::kLoginProfile).value();
   }
 
   // DBus is initialized in ChromeMainDelegate::PostEarlyInitialization().
   CHECK(DBusThreadManager::IsInitialized());
 
 #if !defined(USE_REAL_DBUS_CLIENTS)
-  // USE_REAL_DBUS clients may be undefined even if the device is using reals
+  // USE_REAL_DBUS clients may be undefined even if the device is using real
   // dbus clients.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
-    if (parsed_command_line().HasSwitch(
-            switches::kFakeDriveFsLauncherChrootPath) &&
-        parsed_command_line().HasSwitch(
-            switches::kFakeDriveFsLauncherSocketPath)) {
+    if (command_line->HasSwitch(switches::kFakeDriveFsLauncherChrootPath) &&
+        command_line->HasSwitch(switches::kFakeDriveFsLauncherSocketPath)) {
       drivefs::FakeDriveFsLauncherClient::Init(
-          parsed_command_line().GetSwitchValuePath(
+          command_line->GetSwitchValuePath(
               switches::kFakeDriveFsLauncherChrootPath),
-          parsed_command_line().GetSwitchValuePath(
+          command_line->GetSwitchValuePath(
               switches::kFakeDriveFsLauncherSocketPath));
     }
 
@@ -638,11 +658,10 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     FakeUserDataAuthClient::Get()->set_user_data_dir(user_data_dir);
 
-    chromeos::FakeSessionManagerClient* fake_session_manager_client =
-        chromeos::FakeSessionManagerClient::Get();
-    DCHECK(fake_session_manager_client);
-    fake_session_manager_client->set_stop_session_callback(
-        base::BindOnce(&FakeSessionStopped));
+    // If we're not running on a device, i.e. either in a test or in ash Chrome
+    // on linux, fake dbus calls that would result in a shutdown of Chrome by
+    // the system.
+    InstallFakeShutdownCalls();
   }
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
@@ -670,7 +689,7 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
   g_browser_process->platform_part()->InitializeCrosComponentManager();
 
   dbus_services_ = std::make_unique<internal::DBusServices>(
-      parameters(), std::move(feature_list_accessor_));
+      std::move(feature_list_accessor_));
 
   // Need to be done after LoginState has been initialized in DBusServices().
   ::memory::MemoryKillsMonitor::Initialize();
@@ -829,10 +848,11 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   // If kLoginUser is passed this indicates that user has already
   // logged in and we should behave accordingly.
-  bool immediate_login = parsed_command_line().HasSwitch(switches::kLoginUser);
+  bool immediate_login =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser);
   if (immediate_login) {
     // Redirects Chrome logging to the user data dir.
-    RedirectChromeLogging(parsed_command_line());
+    RedirectChromeLogging(*base::CommandLine::ForCurrentProcess());
 
     // Load the default app order synchronously for restarting case.
     app_order_loader_ =
@@ -896,8 +916,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests and kiosk app launch by default.
   // Individual tests may enable them if they want.
-  if (parsed_command_line().HasSwitch(::switches::kTestType) ||
-      ShouldAutoLaunchKioskApp(parsed_command_line(),
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType) ||
+      ShouldAutoLaunchKioskApp(*base::CommandLine::ForCurrentProcess(),
                                g_browser_process->local_state())) {
     WizardController::SetZeroDelays();
   }
@@ -944,7 +965,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
   if (immediate_login) {
     const std::string cryptohome_id =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kLoginUser);
     const AccountId account_id(
         cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
 
@@ -964,7 +986,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
 
     // In case of multi-profiles --login-profile will contain user_id_hash.
     std::string user_id_hash =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kLoginProfile);
 
     if (BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
             g_browser_process->local_state(), account_id, user_id_hash)) {
@@ -1113,6 +1136,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // Initialize the NetworkHealth aggregator.
     network_health::NetworkHealthService::GetInstance();
 
+    // Create cros_healthd data collector.
+    cros_healthd::internal::DataCollector::Initialize();
+
     // Create the service connection to CrosHealthd platform service instance.
     auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
 
@@ -1149,9 +1175,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     manager->SetState(session_manager->GetDefaultIMEState(profile));
 
-    bool is_running_test = !!parameters().ui_task;
     g_browser_process->platform_part()->session_manager()->Initialize(
-        parsed_command_line(), profile, is_running_test);
+        *base::CommandLine::ForCurrentProcess(), profile,
+        is_integration_test());
 
     // Guest user profile is never initialized with locale settings,
     // so we need special handling for Guest session.
@@ -1222,18 +1248,7 @@ void ChromeBrowserMainPartsAsh::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsAsh::PostBrowserStart() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Branded builds are packaged with valid google chrome api keys.
-  if (base::FeatureList::IsEnabled(features::kDeviceActiveClient)) {
-    device_activity_controller_ =
-        std::make_unique<device_activity::DeviceActivityController>(
-            chrome::GetChannel(), g_browser_process->local_state(),
-            g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory(),
-            device_activity::DeviceActivityController::DetermineStartUpDelay(
-                first_run::GetFirstRunSentinelCreationTime()));
-  }
-#endif
+  StartDeviceActivityController();
 
   // Construct a delegate to connect the accessibility component extensions and
   // AccessibilityEventRewriter.
@@ -1588,6 +1603,52 @@ void ChromeBrowserMainPartsAsh::PostDestroyThreads() {
   // Shutdown these services after g_browser_process.
   InstallAttributes::Shutdown();
   DeviceSettingsService::Shutdown();
+}
+
+void ChromeBrowserMainPartsAsh::StartDeviceActivityController() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Terminate immediately if feature is turned off.
+  if (!base::FeatureList::IsEnabled(features::kDeviceActiveClient))
+    return;
+
+  CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
+          &ChromeBrowserMainPartsAsh::StartDeviceActivityController,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED ||
+      status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // When status is TEMPORARILY_UNTRUSTED, PrepareTrustedValues method takes
+    // ownership of the |StartDeviceActivityController| callback.
+    // It will retry later when the TRUSTED status becomes available.
+    //
+    // When status is PERMANENTLY_UNTRUSTED, client assumes this status is final
+    // until browser restarts. Client does not proceed without signature
+    // verification, so retry is not attempted. This status may be caused
+    // if device is running pre-OOBE, or if the policy proto blob fails the
+    // signature check.
+    return;
+  }
+
+  // CrosSettingsProvider::TRUSTED: device policies are loaded and trusted.
+  device_activity_controller_ =
+      std::make_unique<device_activity::DeviceActivityController>(
+          device_activity::ChromeDeviceMetadataParameters{
+              chrome::GetChannel() /* chromeos_channel */,
+              device_activity::DeviceActivityController::GetMarketSegment(
+                  g_browser_process->platform_part()
+                      ->browser_policy_connector_ash()
+                      ->GetDeviceMode(),
+                  g_browser_process->platform_part()
+                      ->browser_policy_connector_ash()
+                      ->GetEnterpriseMarketSegment()) /* market_segment */,
+          },
+          g_browser_process->local_state(),
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory(),
+          device_activity::DeviceActivityController::DetermineStartUpDelay(
+              first_run::GetFirstRunSentinelCreationTime()));
+#endif
 }
 
 }  //  namespace ash

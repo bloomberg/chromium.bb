@@ -71,7 +71,7 @@ class ConnectionRequest : public StunRequest {
 
 // Represents a communication link between a port on the local client and a
 // port on the remote client.
-class Connection : public CandidatePairInterface, public sigslot::has_slots<> {
+class Connection : public CandidatePairInterface {
  public:
   struct SentPing {
     SentPing(const std::string id, int64_t sent_time, uint32_t nomination)
@@ -367,9 +367,6 @@ class Connection : public CandidatePairInterface, public sigslot::has_slots<> {
   rtc::RateTracker recv_rate_tracker_;
   rtc::RateTracker send_rate_tracker_;
   int64_t last_send_data_ = 0;
-  // Set to true when deletion has been scheduled and must not be done again.
-  // See `Destroy()` for more details.
-  bool pending_delete_ RTC_GUARDED_BY(network_thread_) = false;
 
  private:
   // Update the local candidate based on the mapped address attribute.
@@ -474,9 +471,6 @@ class ProxyConnection : public Connection {
   ProxyConnection(rtc::WeakPtr<Port> port,
                   size_t index,
                   const Candidate& remote_candidate);
-
-  // TODO(tommi): Remove this ctor once it's no longer needed.
-  ProxyConnection(Port* port, size_t index, const Candidate& remote_candidate);
 
   int Send(const void* data,
            size_t size,

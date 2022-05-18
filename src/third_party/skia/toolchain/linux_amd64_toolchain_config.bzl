@@ -2,7 +2,7 @@
 This file specifies a clang toolchain that can run on a Linux host which doesn't depend on any
 installed packages from the host machine.
 
-See build_toolchain.bzl for more details on the creation of the toolchain.
+See download_linux_amd64_toolchain.bzl for more details on the creation of the toolchain.
 
 It uses the usr subfolder of the built toolchain as a sysroot
 
@@ -21,6 +21,8 @@ load(
     "tool",
     "variable_with_value",
 )
+
+# https://github.com/bazelbuild/bazel/blob/master/tools/build_defs/cc/action_names.bzl
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 
 # The location of the created clang toolchain.
@@ -80,9 +82,9 @@ def _make_action_configs():
     """
 
     # https://cs.opensource.google/bazel/bazel/+/master:tools/cpp/cc_toolchain_config_lib.bzl;l=435;drc=3b9e6f201a9a3465720aad8712ab7bcdeaf2e5da
-    clang_tool = tool(path = "clang_trampoline.sh")
-    lld_tool = tool(path = "lld_trampoline.sh")
-    ar_tool = tool(path = "ar_trampoline.sh")
+    clang_tool = tool(path = "linux_trampolines/clang_trampoline_linux.sh")
+    lld_tool = tool(path = "linux_trampolines/lld_trampoline_linux.sh")
+    ar_tool = tool(path = "linux_trampolines/ar_trampoline_linux.sh")
 
     # https://cs.opensource.google/bazel/bazel/+/master:tools/cpp/cc_toolchain_config_lib.bzl;l=488;drc=3b9e6f201a9a3465720aad8712ab7bcdeaf2e5da
     assemble_action = action_config(

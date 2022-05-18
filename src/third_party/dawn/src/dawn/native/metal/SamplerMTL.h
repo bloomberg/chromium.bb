@@ -23,21 +23,23 @@
 
 namespace dawn::native::metal {
 
-    class Device;
+class Device;
 
-    class Sampler final : public SamplerBase {
-      public:
-        static ResultOrError<Ref<Sampler>> Create(Device* device,
-                                                  const SamplerDescriptor* descriptor);
+class Sampler final : public SamplerBase {
+  public:
+    static ResultOrError<Ref<Sampler>> Create(Device* device, const SamplerDescriptor* descriptor);
 
-        id<MTLSamplerState> GetMTLSamplerState();
+    Sampler(DeviceBase* device, const SamplerDescriptor* descriptor);
+    ~Sampler() override;
 
-      private:
-        using SamplerBase::SamplerBase;
-        MaybeError Initialize(const SamplerDescriptor* descriptor);
+    id<MTLSamplerState> GetMTLSamplerState();
 
-        NSPRef<id<MTLSamplerState>> mMtlSamplerState;
-    };
+  private:
+    using SamplerBase::SamplerBase;
+    MaybeError Initialize(const SamplerDescriptor* descriptor);
+
+    NSPRef<id<MTLSamplerState>> mMtlSamplerState;
+};
 
 }  // namespace dawn::native::metal
 

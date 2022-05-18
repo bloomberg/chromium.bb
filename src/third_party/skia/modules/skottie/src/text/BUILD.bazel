@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "RangeSelector_hdr",
@@ -33,6 +35,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         "//include/core:SkPoint_hdr",
+        "//include/core:SkRefCnt_hdr",
         "//include/utils:SkTextUtils_hdr",
     ],
 )

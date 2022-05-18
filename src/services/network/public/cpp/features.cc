@@ -107,12 +107,6 @@ const base::Feature kDnsOverHttpsUpgrade {
 const base::Feature kMdnsResponderGeneratedNameListing{
     "MdnsResponderGeneratedNameListing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Disable special treatment on requests with keepalive set (see
-// https://fetch.spec.whatwg.org/#request-keepalive-flag). This is introduced
-// for investigation on the memory usage, and should not be enabled widely.
-const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Switches Cross-Origin Read Blocking (CORB) to use an early implementation of
 // Opaque Response Blocking (ORB, aka CORB++) behind the scenes.
 //
@@ -257,7 +251,7 @@ const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
 
 // Combine URLLoaderClient::OnReceiveResponse and OnStartLoadingResponseBody.
 const base::Feature kCombineResponseBody{"CombineResponseBody",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Don't wait for database write before responding to
 // RestrictedCookieManager::SetCookieFromString.

@@ -55,7 +55,7 @@ namespace {
 // Secret, Label, and Length are passed in as |secret|, |label|, and
 // |out_len|, respectively. The resulting expanded secret is returned.
 std::vector<uint8_t> HkdfExpandLabel(const EVP_MD* prf,
-                                     const std::vector<uint8_t>& secret,
+                                     absl::Span<const uint8_t> secret,
                                      const std::string& label, size_t out_len) {
   bssl::ScopedCBB quic_hkdf_label;
   CBB inner_label;
@@ -115,7 +115,7 @@ void CryptoUtils::InitializeCrypterSecrets(
 }
 
 void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
-                              const std::vector<uint8_t>& pp_secret,
+                              absl::Span<const uint8_t> pp_secret,
                               const ParsedQuicVersion& version,
                               QuicCrypter* crypter) {
   std::vector<uint8_t> key =
@@ -130,7 +130,7 @@ void CryptoUtils::SetKeyAndIV(const EVP_MD* prf,
 }
 
 std::vector<uint8_t> CryptoUtils::GenerateHeaderProtectionKey(
-    const EVP_MD* prf, const std::vector<uint8_t>& pp_secret,
+    const EVP_MD* prf, absl::Span<const uint8_t> pp_secret,
     const ParsedQuicVersion& version, size_t out_len) {
   return HkdfExpandLabel(prf, pp_secret, getLabelForVersion(version, "hp"),
                          out_len);
@@ -785,6 +785,26 @@ bool CryptoUtils::GetSSLCapabilities(const SSL* ssl,
 
   *capabilities = bssl::UniquePtr<uint8_t>(buffer);
   return true;
+}
+
+// static
+absl::optional<std::string> CryptoUtils::GenerateProofPayloadToBeSigned(
+    absl::string_view chlo_hash, absl::string_view server_config) {
+  size_t payload_size = sizeof(kProofSignatureLabel) + sizeof(uint32_t) +
+                        chlo_hash.size() + server_config.size();
+  std::string payload;
+  payload.resize(payload_size);
+  QuicDataWriter payload_writer(payload_size, payload.data(),
+                                quiche::Endianness::HOST_BYTE_ORDER);
+  bool success = payload_writer.WriteBytes(kProofSignatureLabel,
+                                           sizeof(kProofSignatureLabel)) &&
+                 payload_writer.WriteUInt32(chlo_hash.size()) &&
+                 payload_writer.WriteStringPiece(chlo_hash) &&
+                 payload_writer.WriteStringPiece(server_config);
+  if (!success) {
+    return absl::nullopt;
+  }
+  return payload;
 }
 
 }  // namespace quic

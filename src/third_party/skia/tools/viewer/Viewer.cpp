@@ -76,6 +76,10 @@
     #include "tools/viewer/SkottieSlide.h"
 #endif
 
+#if defined(SK_ENABLE_SVG)
+    #include "modules/svg/include/SkSVGOpenTypeSVGDecoder.h"
+#endif
+
 class CapturingShaderErrorHandler : public GrContextOptions::ShaderErrorHandler {
 public:
     void compileError(const char* shader, const char* errors) override {
@@ -354,6 +358,9 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     , fPerspectiveMode(kPerspective_Off)
 {
     SkGraphics::Init();
+#if defined(SK_ENABLE_SVG)
+    SkGraphics::SetOpenTypeSVGDecoderFactory(SkSVGOpenTypeSVGDecoder::Make);
+#endif
 
     gPathRendererNames[GpuPathRenderers::kDefault] = "Default Path Renderers";
     gPathRendererNames[GpuPathRenderers::kAtlas] = "Atlas (tessellation)";
@@ -2564,13 +2571,13 @@ void Viewer::drawImGui() {
                 // If we are changing the compile mode, we want to reset the cache and redo
                 // everything.
                 static bool sDoDeferredView = false;
-                if (doDump || newOptLevel != fOptLevel) {
+                if (doView || doDump || newOptLevel != fOptLevel) {
                     sksl = doDump || (newOptLevel == kShaderOptLevel_Source);
                     fOptLevel = (ShaderOptLevel)newOptLevel;
                     switch (fOptLevel) {
                         case kShaderOptLevel_Source:
-                            Compiler::EnableOptimizer(OverrideFlag::kDefault);
-                            Compiler::EnableInliner(OverrideFlag::kDefault);
+                            Compiler::EnableOptimizer(OverrideFlag::kOff);
+                            Compiler::EnableInliner(OverrideFlag::kOff);
                             break;
                         case kShaderOptLevel_Compile:
                             Compiler::EnableOptimizer(OverrideFlag::kOff);

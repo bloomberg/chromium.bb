@@ -26,7 +26,7 @@
 #include "media/base/media_channel.h"
 #include "media/base/media_config.h"
 #include "media/base/media_engine.h"
-#include "pc/channel.h"
+#include "pc/channel_factory_interface.h"
 #include "pc/channel_interface.h"
 #include "pc/session_description.h"
 #include "rtc_base/system/file_wrapper.h"
@@ -77,31 +77,30 @@ class ChannelManager : public ChannelFactoryInterface {
   GetSupportedVideoRtpHeaderExtensions() const;
 
   // The operations below all occur on the worker thread.
-  // ChannelManager retains ownership of the created channels, so clients should
-  // call the appropriate Destroy*Channel method when done.
+  // The caller is responsible for ensuring that destruction happens
+  // on the worker thread.
 
   // Creates a voice channel, to be associated with the specified session.
-  VoiceChannel* CreateVoiceChannel(webrtc::Call* call,
-                                   const MediaConfig& media_config,
-                                   const std::string& mid,
-                                   bool srtp_required,
-                                   const webrtc::CryptoOptions& crypto_options,
-                                   const AudioOptions& options) override;
+  std::unique_ptr<VoiceChannel> CreateVoiceChannel(
+      webrtc::Call* call,
+      const MediaConfig& media_config,
+      absl::string_view mid,
+      bool srtp_required,
+      const webrtc::CryptoOptions& crypto_options,
+      const AudioOptions& options) override;
 
   // Creates a video channel, synced with the specified voice channel, and
   // associated with the specified session.
   // Version of the above that takes PacketTransportInternal.
-  VideoChannel* CreateVideoChannel(
+  std::unique_ptr<VideoChannel> CreateVideoChannel(
       webrtc::Call* call,
       const MediaConfig& media_config,
-      const std::string& mid,
+      absl::string_view mid,
       bool srtp_required,
       const webrtc::CryptoOptions& crypto_options,
       const VideoOptions& options,
       webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory)
       override;
-
-  void DestroyChannel(ChannelInterface* channel) override;
 
   // Starts AEC dump using existing file, with a specified maximum file size in
   // bytes. When the limit is reached, logging will stop and the file will be
@@ -134,12 +133,6 @@ class ChannelManager : public ChannelFactoryInterface {
   // TODO(bugs.webrtc.org/12666): This variable is used from both the signaling
   // and worker threads. See if we can't restrict usage to a single thread.
   rtc::UniqueRandomIdGenerator ssrc_generator_;
-
-  // Vector contents are non-null.
-  std::vector<std::unique_ptr<VoiceChannel>> voice_channels_
-      RTC_GUARDED_BY(worker_thread_);
-  std::vector<std::unique_ptr<VideoChannel>> video_channels_
-      RTC_GUARDED_BY(worker_thread_);
 
   const bool enable_rtx_;
 };

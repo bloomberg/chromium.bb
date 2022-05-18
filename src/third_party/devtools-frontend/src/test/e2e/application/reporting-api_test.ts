@@ -4,7 +4,15 @@
 
 import {assert} from 'chai';
 
-import {$, click, enableExperiment, getBrowserAndPages, getTestServerPort, goToResource, waitFor} from '../../shared/helper.js';
+import {
+  $,
+  click,
+  enableExperiment,
+  getBrowserAndPages,
+  getTestServerPort,
+  goToResource,
+  waitFor,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {navigateToApplicationTab} from '../helpers/application-helpers.js';
 import {getDataGrid, getDataGridRows, getInnerTextOfDataGridCells} from '../helpers/datagrid-helpers.js';
@@ -15,21 +23,20 @@ describe('The Reporting API Page', async () => {
   beforeEach(async () => {
     await enableExperiment('reportingApiDebugging');
   });
-
   it('shows reports', async () => {
     const {target} = getBrowserAndPages();
     await navigateToApplicationTab(target, 'reporting-api');
     await click(REPORTING_API_SELECTOR);
     const dataGrid = await getDataGrid();
     const innerText = await getInnerTextOfDataGridCells(dataGrid, 1, false);
-    const reportBody = '{"columnNumber":10,"id":"PrefixedStorageInfo","lineNumber":9,"message":"' +
-        '\'window.webkitStorageInfo\' is deprecated. Please use \'navigator.webkitTemporaryStorage\' or ' +
-        '\'navigator.webkitPersistentStorage\' instead.","sourceFile":' +
+    const reportBody = '{"columnNumber":20,"id":"NavigatorVibrate","lineNumber":9,"message":' +
+        '"Blocked call to navigator.vibrate because user hasn\'t tapped on the frame or any ' +
+        'embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.","sourceFile":' +
         `"https://localhost:${getTestServerPort()}/test/e2e/resources/application/reporting-api.html"}`;
 
     assert.strictEqual(
         innerText[0][0], `https://localhost:${getTestServerPort()}/test/e2e/resources/application/reporting-api.html`);
-    assert.strictEqual(innerText[0][1], 'deprecation');
+    assert.strictEqual(innerText[0][1], 'intervention');
     assert.strictEqual(innerText[0][2], 'Queued');
     assert.strictEqual(innerText[0][3], 'default');
     assert.strictEqual(innerText[0][5], reportBody);
@@ -39,7 +46,7 @@ describe('The Reporting API Page', async () => {
 
     const jsonView = await waitFor('.json-view');
     const jsonViewText = await jsonView.evaluate(el => (el as HTMLElement).innerText);
-    assert.strictEqual(jsonViewText, '{columnNumber: 10, id: "PrefixedStorageInfo", lineNumber: 9,…}');
+    assert.strictEqual(jsonViewText, '{columnNumber: 20, id: "NavigatorVibrate", lineNumber: 9,…}');
   });
 
   it('shows endpoints', async () => {

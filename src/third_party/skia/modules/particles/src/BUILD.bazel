@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkParticleBinding_src",
@@ -9,6 +11,7 @@ generated_cc_atom(
     deps = [
         "//include/core:SkColorSpace_hdr",
         "//include/core:SkContourMeasure_hdr",
+        "//include/core:SkFont_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkPath_hdr",
         "//include/private:SkTPin_hdr",

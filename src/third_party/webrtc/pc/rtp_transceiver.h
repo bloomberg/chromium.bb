@@ -13,13 +13,14 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/types/optional.h"
 #include "api/array_view.h"
+#include "api/audio_options.h"
 #include "api/jsep.h"
 #include "api/media_types.h"
 #include "api/rtc_error.h"
@@ -30,8 +31,9 @@
 #include "api/rtp_transceiver_interface.h"
 #include "api/scoped_refptr.h"
 #include "api/task_queue/task_queue_base.h"
+#include "api/video/video_bitrate_allocator_factory.h"
+#include "media/base/media_channel.h"
 #include "pc/channel_interface.h"
-#include "pc/channel_manager.h"
 #include "pc/proxy.h"
 #include "pc/rtp_receiver.h"
 #include "pc/rtp_receiver_proxy.h"
@@ -43,7 +45,13 @@
 #include "rtc_base/third_party/sigslot/sigslot.h"
 #include "rtc_base/thread_annotations.h"
 
+namespace cricket {
+class ChannelManager;
+}
+
 namespace webrtc {
+
+class PeerConnectionSdpMethods;
 
 // Implementation of the public RtpTransceiverInterface.
 //
@@ -66,10 +74,8 @@ namespace webrtc {
 // with this m= section. Since the transceiver, senders, and receivers are
 // reference counted and can be referenced from JavaScript (in Chromium), these
 // objects must be ready to live for an arbitrary amount of time. The
-// BaseChannel is not reference counted and is owned by the ChannelManager, so
-// the PeerConnection must take care of creating/deleting the BaseChannel and
-// setting the channel reference in the transceiver to null when it has been
-// deleted.
+// BaseChannel is not reference counted, so
+// the PeerConnection must take care of creating/deleting the BaseChannel.
 //
 // The RtpTransceiver is specialized to either audio or video according to the
 // MediaType specified in the constructor. Audio RtpTransceivers will have
@@ -100,25 +106,33 @@ class RtpTransceiver : public RtpTransceiverInterface,
 
   // Returns the Voice/VideoChannel set for this transceiver. May be null if
   // the transceiver is not in the currently set local/remote description.
-  cricket::ChannelInterface* channel() const { return channel_; }
+  cricket::ChannelInterface* channel() const { return channel_.get(); }
+
+  // Creates the Voice/VideoChannel and sets it.
+  RTCError CreateChannel(
+      absl::string_view mid,
+      Call* call_ptr,
+      const cricket::MediaConfig& media_config,
+      bool srtp_required,
+      CryptoOptions crypto_options,
+      const cricket::AudioOptions& audio_options,
+      const cricket::VideoOptions& video_options,
+      VideoBitrateAllocatorFactory* video_bitrate_allocator_factory,
+      std::function<RtpTransportInternal*(absl::string_view)> transport_lookup);
 
   // Sets the Voice/VideoChannel. The caller must pass in the correct channel
   // implementation based on the type of the transceiver.  The call must
   // furthermore be made on the signaling thread.
   //
   // `channel`: The channel instance to be associated with the transceiver.
-  //     When a valid pointer is passed for `channel`, the state of the object
+  //     This must be a valid pointer.
+  //     The state of the object
   //     is expected to be newly constructed and not initalized for network
   //     activity (see next parameter for more).
   //
-  //     NOTE: For all practical purposes, the ownership of the channel
-  //     object should be considered to lie with the transceiver until
-  //     `SetChannel()` is called again with nullptr set as the new channel.
-  //     Moving forward, this parameter will change to either be a
-  //     std::unique_ptr<> or the full construction of the channel object will
-  //     be moved to happen within the context of the transceiver class.
+  //     The transceiver takes ownership of `channel`.
   //
-  // `transport_lookup`: When `channel` points to a valid channel object, this
+  // `transport_lookup`: This
   //     callback function will be used to look up the `RtpTransport` object
   //     to associate with the channel via `BaseChannel::SetRtpTransport`.
   //     The lookup function will be called on the network thread, synchronously
@@ -130,9 +144,13 @@ class RtpTransceiver : public RtpTransceiverInterface,
   //     synchronously to the network thread from the signaling thread.
   //     The callback allows us to combine the transport lookup with network
   //     state initialization of the channel object.
-  void SetChannel(cricket::ChannelInterface* channel,
+  // ClearChannel() must be used before calling SetChannel() again.
+  void SetChannel(std::unique_ptr<cricket::ChannelInterface> channel,
                   std::function<RtpTransportInternal*(const std::string&)>
                       transport_lookup);
+
+  // Clear the association between the transceiver and the channel.
+  void ClearChannel();
 
   // Adds an RtpSender of the appropriate type to be owned by this transceiver.
   // Must not be null.
@@ -201,8 +219,8 @@ class RtpTransceiver : public RtpTransceiverInterface,
 
   // Sets the fired direction for this transceiver. The fired direction is null
   // until SetRemoteDescription is called or an answer is set (either local or
-  // remote).
-  void set_fired_direction(RtpTransceiverDirection direction);
+  // remote) after which the only valid reason to go back to null is rollback.
+  void set_fired_direction(absl::optional<RtpTransceiverDirection> direction);
 
   // According to JSEP rules for SetRemoteDescription, RtpTransceivers can be
   // reused only if they were added by AddTrack.
@@ -277,6 +295,10 @@ class RtpTransceiver : public RtpTransceiverInterface,
  private:
   void OnFirstPacketReceived();
   void StopSendingAndReceiving();
+  // Delete a channel, and ensure that references to its media channel
+  // are updated before deleting it.
+  void PushNewMediaChannelAndDeleteChannel(
+      std::unique_ptr<cricket::ChannelInterface> channel_to_delete);
 
   // Enforce that this object is created, used and destroyed on one thread.
   TaskQueueBase* const thread_;
@@ -301,7 +323,10 @@ class RtpTransceiver : public RtpTransceiverInterface,
   bool reused_for_addtrack_ = false;
   bool has_ever_been_used_to_send_ = false;
 
-  cricket::ChannelInterface* channel_ = nullptr;
+  // Accessed on both thread_ and the network thread. Considered safe
+  // because all access on the network thread is within an invoke()
+  // from thread_.
+  std::unique_ptr<cricket::ChannelInterface> channel_ = nullptr;
   cricket::ChannelManager* channel_manager_ = nullptr;
   std::vector<RtpCodecCapability> codec_preferences_;
   std::vector<RtpHeaderExtensionCapability> header_extensions_to_offer_;

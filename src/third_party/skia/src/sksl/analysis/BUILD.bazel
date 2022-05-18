@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+load("//bazel:macros.bzl", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 enforce_iwyu_on_package()
 
@@ -25,8 +27,8 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
-    name = "SkSLCheckProgramUnrolledSize_src",
-    srcs = ["SkSLCheckProgramUnrolledSize.cpp"],
+    name = "SkSLCheckProgramStructure_src",
+    srcs = ["SkSLCheckProgramStructure.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkSLProgramVisitor_hdr",
@@ -81,7 +83,9 @@ generated_cc_atom(
         ":SkSLProgramVisitor_hdr",
         "//include/core:SkTypes_hdr",
         "//include/private:SkSLModifiers_hdr",
+        "//include/sksl:SkSLOperator_hdr",
         "//src/sksl:SkSLAnalysis_hdr",
+        "//src/sksl/ir:SkSLBinaryExpression_hdr",
         "//src/sksl/ir:SkSLExpression_hdr",
         "//src/sksl/ir:SkSLVariableReference_hdr",
         "//src/sksl/ir:SkSLVariable_hdr",
@@ -100,7 +104,9 @@ generated_cc_atom(
         "//include/private:SkSLStatement_hdr",
         "//include/private:SkTHash_hdr",
         "//src/sksl:SkSLAnalysis_hdr",
+        "//src/sksl:SkSLBuiltinMap_hdr",
         "//src/sksl:SkSLCompiler_hdr",
+        "//src/sksl:SkSLParsedModule_hdr",
         "//src/sksl/ir:SkSLExpression_hdr",
         "//src/sksl/ir:SkSLFunctionCall_hdr",
         "//src/sksl/ir:SkSLFunctionDeclaration_hdr",

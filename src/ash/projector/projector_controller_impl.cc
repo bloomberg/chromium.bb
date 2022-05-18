@@ -6,6 +6,7 @@
 
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/projector/projector_ui_controller.h"
@@ -18,12 +19,16 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
+#include "ui/gfx/image/image.h"
 
 namespace ash {
 
@@ -31,7 +36,9 @@ namespace {
 
 // String format of the screencast name.
 constexpr char kScreencastPathFmtStr[] =
-    "Recording %d-%02d-%02d %02d.%02d.%02d";
+    "Screencast %d-%02d-%02d %02d.%02d.%02d";
+
+constexpr char kScreencastDefaultThumbnailFileName[] = "thumbnail.png";
 
 // Create directory. Returns true if saving succeeded, or false otherwise.
 bool CreateDirectory(const base::FilePath& path) {
@@ -51,6 +58,31 @@ bool CreateDirectory(const base::FilePath& path) {
   }
 
   return true;
+}
+
+// Writes the given `data` in a file with `path`. Returns true if saving
+// succeeded, or false otherwise.
+bool SaveFile(scoped_refptr<base::RefCountedMemory> data,
+              const base::FilePath& path) {
+  // `data` could be empty in unit tests.
+  if (!data)
+    return false;
+  const int size = static_cast<int>(data->size());
+  if (!size)
+    return false;
+
+  if (size != base::WriteFile(
+                  path, reinterpret_cast<const char*>(data->front()), size)) {
+    LOG(ERROR) << "Failed to save file: " << path;
+    return false;
+  }
+
+  return true;
+}
+
+scoped_refptr<base::RefCountedMemory> EncodeImage(
+    const gfx::ImageSkia& image_skia) {
+  return gfx::Image(image_skia).As1xPNGBytes();
 }
 
 std::string GetScreencastName() {
@@ -85,6 +117,14 @@ ProjectorControllerImpl* ProjectorControllerImpl::Get() {
   return static_cast<ProjectorControllerImpl*>(ProjectorController::Get());
 }
 
+// static
+void ProjectorControllerImpl::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterUint64Pref(
+      prefs::kProjectorAnnotatorLastUsedMarkerColor, 0u,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+}
+
 void ProjectorControllerImpl::StartProjectorSession(
     const std::string& storage_dir) {
   DCHECK_EQ(GetNewScreencastPrecondition().state,
@@ -97,6 +137,7 @@ void ProjectorControllerImpl::StartProjectorSession(
     // DLP, ... etc. We don't start a Projector session until we're sure a
     // capture session started.
     controller->Start(CaptureModeEntryType::kProjector);
+    dlp_restriction_checked_completed_ = false;
     if (controller->IsActive()) {
       projector_session_->Start(storage_dir);
       client_->MinimizeProjectorApp();
@@ -160,14 +201,10 @@ void ProjectorControllerImpl::OnTranscriptionError() {
 }
 
 void ProjectorControllerImpl::OnSpeechRecognitionStopped() {
-  if (projector_session_->screencast_container_path()) {
-    // Finish saving the screencast if the container is available. The container
-    // might be unavailable if fail in creating the directory.
-    SaveScreencast();
-  }
-
   is_speech_recognition_on_ = false;
-  projector_session_->Stop();
+
+  // Try to wrap up recording. This can be no-op if DLP check is not completed.
+  MaybeWrapUpRecording();
 }
 
 bool ProjectorControllerImpl::IsEligible() const {
@@ -257,13 +294,18 @@ void ProjectorControllerImpl::OnUndoRedoAvailabilityChanged(
   // Projector toolbar.
 }
 
-void ProjectorControllerImpl::OnRecordingStarted(bool is_in_projector_mode) {
+void ProjectorControllerImpl::OnCanvasInitialized(bool success) {
+  ui_controller_->OnCanvasInitialized(success);
+}
+
+void ProjectorControllerImpl::OnRecordingStarted(aura::Window* current_root,
+                                                 bool is_in_projector_mode) {
   if (!is_in_projector_mode) {
     OnNewScreencastPreconditionChanged();
     return;
   }
   if (ui_controller_)
-    ui_controller_->ShowToolbar();
+    ui_controller_->ShowToolbar(current_root);
 
   StartSpeechRecognition();
   metadata_controller_->OnRecordingStarted();
@@ -277,30 +319,48 @@ void ProjectorControllerImpl::OnRecordingEnded(bool is_in_projector_mode) {
 
   DCHECK(projector_session_->is_active());
 
-  // TODO(b/197152209): move closing selfie cam to ProjectorUiController.
-  if (client_ && client_->IsSelfieCamVisible())
-    client_->CloseSelfieCam();
-
   // Close Projector toolbar if ui controller is present.
   if (ui_controller_)
     ui_controller_->CloseToolbar();
 
   MaybeStopSpeechRecognition();
 
-  // At this point, the screencast might not synced to Drive yet. Open
-  // Projector App which shows the Gallery view by default.
-  if (client_)
-    client_->OpenProjectorApp();
-
   RecordCreationFlowMetrics(ProjectorCreationFlow::kRecordingEnded);
+}
+
+void ProjectorControllerImpl::OnRecordedWindowChangingRoot(
+    aura::Window* new_root) {
+  DCHECK(projector_session_->is_active());
+
+  ui_controller_->OnRecordedWindowChangingRoot(new_root);
 }
 
 void ProjectorControllerImpl::OnDlpRestrictionCheckedAtVideoEnd(
     bool is_in_projector_mode,
     bool user_deleted_video_file,
     const gfx::ImageSkia& thumbnail) {
-  if (!is_in_projector_mode)
+  if (!is_in_projector_mode) {
     OnNewScreencastPreconditionChanged();
+    return;
+  }
+
+  dlp_restriction_checked_completed_ = true;
+  user_deleted_video_file_ = user_deleted_video_file;
+
+  if (user_deleted_video_file) {
+    CleanupContainerFolder();
+  } else {
+    SaveThumbnailFile(thumbnail);
+  }
+
+  // Try to wrap up recording. This can be no-op if speech recognition is not
+  // completely stopped.
+  MaybeWrapUpRecording();
+
+  // At this point, the screencast might not synced to Drive yet. Open
+  // Projector App which shows the Gallery view by default.
+  if (client_)
+    client_->OpenProjectorApp();
 }
 
 void ProjectorControllerImpl::OnRecordingStartAborted() {
@@ -308,12 +368,7 @@ void ProjectorControllerImpl::OnRecordingStartAborted() {
 
   // Delete the DriveFS path that might have been created for this aborted
   // session if any.
-  if (projector_session_->screencast_container_path()) {
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(base::GetDeletePathRecursivelyCallback(),
-                       *projector_session_->screencast_container_path()));
-  }
+  CleanupContainerFolder();
 
   projector_session_->Stop();
 
@@ -323,9 +378,9 @@ void ProjectorControllerImpl::OnRecordingStartAborted() {
   RecordCreationFlowMetrics(ProjectorCreationFlow::kRecordingAborted);
 }
 
-void ProjectorControllerImpl::OnMarkerPressed() {
+void ProjectorControllerImpl::EnableAnnotatorTool() {
   DCHECK(ui_controller_);
-  ui_controller_->OnMarkerPressed();
+  ui_controller_->EnableAnnotatorTool();
 }
 
 void ProjectorControllerImpl::SetAnnotatorTool(const AnnotatorTool& tool) {
@@ -356,6 +411,16 @@ void ProjectorControllerImpl::SetProjectorUiControllerForTest(
 void ProjectorControllerImpl::SetProjectorMetadataControllerForTest(
     std::unique_ptr<ProjectorMetadataController> metadata_controller) {
   metadata_controller_ = std::move(metadata_controller);
+}
+
+void ProjectorControllerImpl::SetOnPathDeletedCallbackForTest(
+    OnPathDeletedCallback callback) {
+  on_path_deleted_callback_ = std::move(callback);
+}
+
+void ProjectorControllerImpl::SetOnFileSavedCallbackForTest(
+    OnFileSavedCallback callback) {
+  on_file_saved_callback_ = std::move(callback);
 }
 
 void ProjectorControllerImpl::OnAudioNodesChanged() {
@@ -416,6 +481,66 @@ void ProjectorControllerImpl::OnContainerFolderCreated(
 
 void ProjectorControllerImpl::SaveScreencast() {
   metadata_controller_->SaveMetadata(GetScreencastFilePathNoExtension());
+}
+
+void ProjectorControllerImpl::MaybeWrapUpRecording() {
+  // Only wrap up the recording if speech recognition session and DLP check are
+  // completed.
+  if (is_speech_recognition_on_ || !dlp_restriction_checked_completed_)
+    return;
+
+  if (!user_deleted_video_file_ &&
+      projector_session_->screencast_container_path().has_value()) {
+    // Finish saving the screencast if the container is available. The container
+    // might be unavailable if fail in creating the directory or the folder is
+    // deleted due to DLP.
+    SaveScreencast();
+  }
+
+  projector_session_->Stop();
+}
+
+void ProjectorControllerImpl::SaveThumbnailFile(
+    const gfx::ImageSkia& thumbnail) {
+  auto screencast_container_path =
+      projector_session_->screencast_container_path();
+  if (!screencast_container_path.has_value())
+    return;
+
+  auto path =
+      screencast_container_path->Append(kScreencastDefaultThumbnailFileName);
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&SaveFile, EncodeImage(thumbnail), path),
+      on_file_saved_callback_
+          ? base::BindOnce(std::move(on_file_saved_callback_), path)
+          : base::BindOnce([](bool success) {
+              if (!success) {
+                // Thumbnail is not a critical asset. Fail silently for now.
+                LOG(ERROR) << "Failed to save the thumbnail file.";
+              }
+            }));
+}
+
+void ProjectorControllerImpl::CleanupContainerFolder() {
+  auto screencast_container_path =
+      projector_session_->screencast_container_path();
+
+  if (!screencast_container_path.has_value())
+    return;
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&base::DeletePathRecursively, *screencast_container_path),
+      on_path_deleted_callback_
+          ? base::BindOnce(std::move(on_path_deleted_callback_),
+                           *screencast_container_path)
+          : base::BindOnce(
+                [](const base::FilePath& path, bool success) {
+                  if (!success)
+                    LOG(ERROR) << "Failed to delete the folder: " << path;
+                },
+                *screencast_container_path));
 }
 
 base::FilePath ProjectorControllerImpl::GetScreencastFilePathNoExtension()

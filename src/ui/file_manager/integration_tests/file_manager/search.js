@@ -12,7 +12,7 @@ import {BASIC_DRIVE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 /**
  * Expected files shown in the search results for 'hello'
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<!TestEntryInfo>}
  * @const
  */
 const SEARCH_RESULTS_ENTRY_SET = [
@@ -125,13 +125,19 @@ testcase.searchDownloadsClearSearchKeyDown = async () => {
       await remoteCall.waitForElement(appId, '#search-box [type="search"]');
   chrome.test.assertEq('', searchInput.value);
 
-  // Wait for the search wrapper to be collapsed.
-  await remoteCall.waitForElement(appId, '#search-wrapper[collapsed]');
-
-  // Check the search button is focused.
-  const button =
-      await remoteCall.callRemoteTestUtil('deepGetActiveElement', appId, []);
-  chrome.test.assertEq('search-button', button.attributes['id']);
+  // Wait until the search button get the focus.
+  // Use repeatUntil() here because the focus won't shift to search button
+  // until the CSS animation is finished.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const activeElement =
+        await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+    if (activeElement.attributes['id'] !== 'search-button') {
+      return pending(
+          caller, 'Expected active element should be search-button, got %s',
+          activeElement.attributes['id']);
+    }
+  });
 };
 
 /**

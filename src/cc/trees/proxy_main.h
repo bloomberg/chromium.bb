@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/metrics/event_latency_tracker.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/proxy.h"
@@ -71,6 +72,8 @@ class CC_EXPORT ProxyMain : public Proxy {
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
                                   base::TimeTicks first_scroll_timestamp);
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;
@@ -117,7 +120,6 @@ class CC_EXPORT ProxyMain : public Proxy {
       base::WritableSharedMemoryMapping ukm_smoothness_data) override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
-  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling) override;
   uint32_t GetAverageThroughput() const override;
 
   // Returns |true| if the request was actually sent, |false| if one was

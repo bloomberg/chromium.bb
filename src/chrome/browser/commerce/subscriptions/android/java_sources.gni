@@ -20,6 +20,8 @@ commerce_subscriptions_java_sources = [
 
 commerce_subscriptions_java_deps = [
   "//base:base_java",
+  "//base:jni_java",
+  "//build/android:build_java",
   "//chrome/android:base_module_java",
   "//chrome/browser/android/lifecycle:java",
   "//chrome/browser/endpoint_fetcher:java",
@@ -28,6 +30,5 @@ commerce_subscriptions_java_deps = [
   "//chrome/browser/profiles/android:java",
   "//chrome/browser/tab:java",
   "//chrome/browser/tabmodel:java",
-  "//third_party/androidx:androidx_annotation_annotation_java",
   "//url:gurl_java",
 ]

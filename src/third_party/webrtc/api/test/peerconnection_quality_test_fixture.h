@@ -19,6 +19,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "api/array_view.h"
 #include "api/async_resolver_factory.h"
 #include "api/audio/audio_mixer.h"
 #include "api/call/call_factory_interface.h"
@@ -126,7 +127,12 @@ class PeerConnectionE2EQualityTestFixture {
     std::vector<std::string> slides_yuv_file_names;
   };
 
-  // Config for Vp8 simulcast or Vp9 SVC testing.
+  // Config for Vp8 simulcast or non-standard Vp9 SVC testing.
+  //
+  // To configure standard SVC setting, use `scalability_mode` in the
+  // `encoding_params` array.
+  // This configures Vp9 SVC by requesting simulcast layers, the request is
+  // internally converted to a request for SVC layers.
   //
   // SVC support is limited:
   // During SVC testing there is no SFU, so framework will try to emulate SFU
@@ -168,18 +174,50 @@ class PeerConnectionE2EQualityTestFixture {
     // It requires Selective Forwarding Unit (SFU) to be configured in the
     // network.
     absl::optional<int> target_spatial_index;
+  };
 
-    // Encoding parameters per simulcast layer. If not empty, `encoding_params`
-    // size have to be equal to `simulcast_streams_count`. Will be used to set
-    // transceiver send encoding params for simulcast layers. Applicable only
-    // for codecs that support simulcast (ex. Vp8) and will be ignored
-    // otherwise. RtpEncodingParameters::rid may be changed by fixture
-    // implementation to ensure signaling correctness.
-    std::vector<RtpEncodingParameters> encoding_params;
+  class VideoResolution {
+   public:
+    // Determines special resolutions, which can't be expressed in terms of
+    // width, height and fps.
+    enum class Spec {
+      // No extra spec set. It describes a regular resolution described by
+      // width, height and fps.
+      kNone,
+      // Describes resolution which contains max value among all sender's
+      // video streams in each dimension (width, height, fps).
+      kMaxFromSender
+    };
+
+    VideoResolution(size_t width, size_t height, int32_t fps);
+    explicit VideoResolution(Spec spec = Spec::kNone);
+
+    bool operator==(const VideoResolution& other) const;
+    bool operator!=(const VideoResolution& other) const {
+      return !(*this == other);
+    }
+
+    size_t width() const { return width_; }
+    void set_width(size_t width) { width_ = width; }
+    size_t height() const { return height_; }
+    void set_height(size_t height) { height_ = height; }
+    int32_t fps() const { return fps_; }
+    void set_fps(int32_t fps) { fps_ = fps; }
+
+    // Returns if it is a regular resolution or not. The resolution is regular
+    // if it's spec is `Spec::kNone`.
+    bool IsRegular() const { return spec_ == Spec::kNone; }
+
+   private:
+    size_t width_ = 0;
+    size_t height_ = 0;
+    int32_t fps_ = 0;
+    Spec spec_ = Spec::kNone;
   };
 
   // Contains properties of single video stream.
   struct VideoConfig {
+    explicit VideoConfig(const VideoResolution& resolution);
     VideoConfig(size_t width, size_t height, int32_t fps)
         : width(width), height(height), fps(fps) {}
     VideoConfig(std::string stream_label,
@@ -192,10 +230,14 @@ class PeerConnectionE2EQualityTestFixture {
           stream_label(std::move(stream_label)) {}
 
     // Video stream width.
-    const size_t width;
+    size_t width;
     // Video stream height.
-    const size_t height;
-    const int32_t fps;
+    size_t height;
+    int32_t fps;
+    VideoResolution GetResolution() const {
+      return VideoResolution(width, height, fps);
+    }
+
     // Have to be unique among all specified configs for all peers in the call.
     // Will be auto generated if omitted.
     absl::optional<std::string> stream_label;
@@ -211,21 +253,18 @@ class PeerConnectionE2EQualityTestFixture {
     // but only on non-lossy networks. See more in documentation to
     // VideoSimulcastConfig.
     absl::optional<VideoSimulcastConfig> simulcast_config;
+    // Encoding parameters for both singlecast and per simulcast layer.
+    // If singlecast is used, if not empty, a single value can be provided.
+    // If simulcast is used, if not empty, `encoding_params` size have to be
+    // equal to `simulcast_config.simulcast_streams_count`. Will be used to set
+    // transceiver send encoding params for each layer.
+    // RtpEncodingParameters::rid may be changed by fixture implementation to
+    // ensure signaling correctness.
+    std::vector<RtpEncodingParameters> encoding_params;
     // Count of temporal layers for video stream. This value will be set into
     // each RtpEncodingParameters of RtpParameters of corresponding
     // RtpSenderInterface for this video stream.
     absl::optional<int> temporal_layers_count;
-    // Sets the maximum encode bitrate in bps. If this value is not set, the
-    // encoder will be capped at an internal maximum value around 2 Mbps
-    // depending on the resolution. This means that it will never be able to
-    // utilize a high bandwidth link.
-    absl::optional<int> max_encode_bitrate_bps;
-    // Sets the minimum encode bitrate in bps. If this value is not set, the
-    // encoder will use an internal minimum value. Please note that if this
-    // value is set higher than the bandwidth of the link, the encoder will
-    // generate more data than the link can handle regardless of the bandwidth
-    // estimation.
-    absl::optional<int> min_encode_bitrate_bps;
     // If specified the input stream will be also copied to specified file.
     // It is actually one of the test's output file, which contains copy of what
     // was captured during the test for this video stream on sender side.
@@ -327,6 +366,68 @@ class PeerConnectionE2EQualityTestFixture {
     std::map<std::string, std::string> required_params;
   };
 
+  // Subscription to the remote video streams. It declares which remote stream
+  // peer should receive and in which resolution (width x height x fps).
+  class VideoSubscription {
+   public:
+    // Returns the resolution constructed as maximum from all resolution
+    // dimensions: width, height and fps.
+    static absl::optional<VideoResolution> GetMaxResolution(
+        rtc::ArrayView<const VideoConfig> video_configs);
+    static absl::optional<VideoResolution> GetMaxResolution(
+        rtc::ArrayView<const VideoResolution> resolutions);
+
+    // Subscribes receiver to all streams sent by the specified peer with
+    // specified resolution. It will override any resolution that was used in
+    // `SubscribeToAll` independently from methods call order.
+    VideoSubscription& SubscribeToPeer(
+        absl::string_view peer_name,
+        VideoResolution resolution =
+            VideoResolution(VideoResolution::Spec::kMaxFromSender)) {
+      peers_resolution_[std::string(peer_name)] = resolution;
+      return *this;
+    }
+
+    // Subscribes receiver to the all sent streams with specified resolution.
+    // If any stream was subscribed to with `SubscribeTo` method that will
+    // override resolution passed to this function independently from methods
+    // call order.
+    VideoSubscription& SubscribeToAllPeers(
+        VideoResolution resolution =
+            VideoResolution(VideoResolution::Spec::kMaxFromSender)) {
+      default_resolution_ = resolution;
+      return *this;
+    }
+
+    // Returns resolution for specific sender. If no specific resolution was
+    // set for this sender, then will return resolution used for all streams.
+    // If subscription doesn't subscribe to all streams, `absl::nullopt` will be
+    // returned.
+    absl::optional<VideoResolution> GetResolutionForPeer(
+        absl::string_view peer_name) const {
+      auto it = peers_resolution_.find(std::string(peer_name));
+      if (it == peers_resolution_.end()) {
+        return default_resolution_;
+      }
+      return it->second;
+    }
+
+    // Returns a maybe empty list of senders for which peer explicitly
+    // subscribed to with specific resolution.
+    std::vector<std::string> GetSubscribedPeers() const {
+      std::vector<std::string> subscribed_streams;
+      subscribed_streams.reserve(peers_resolution_.size());
+      for (const auto& entry : peers_resolution_) {
+        subscribed_streams.push_back(entry.first);
+      }
+      return subscribed_streams;
+    }
+
+   private:
+    absl::optional<VideoResolution> default_resolution_ = absl::nullopt;
+    std::map<std::string, VideoResolution> peers_resolution_;
+  };
+
   // This class is used to fully configure one peer inside the call.
   class PeerConfigurer {
    public:
@@ -396,6 +497,11 @@ class PeerConnectionE2EQualityTestFixture {
     virtual PeerConfigurer* AddVideoConfig(
         VideoConfig config,
         CapturingDeviceIndex capturing_device_index) = 0;
+    // Sets video subscription for the peer. By default subscription will
+    // include all streams with `VideoSubscription::kSameAsSendStream`
+    // resolution. To override this behavior use this method.
+    virtual PeerConfigurer* SetVideoSubscription(
+        VideoSubscription subscription) = 0;
     // Set the list of video codecs used by the peer during the test. These
     // codecs will be negotiated in SDP during offer/answer exchange. The order
     // of these codecs during negotiation will be the same as in `video_codecs`.

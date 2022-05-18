@@ -29,47 +29,28 @@ struct MyImpl : public MyInterface {
 
 EIGEN_DECLARE_TEST(meta)
 {
-  VERIFY((internal::conditional<(3<4),internal::true_type, internal::false_type>::type::value));
   VERIFY(( internal::is_same<float,float>::value));
   VERIFY((!internal::is_same<float,double>::value));
   VERIFY((!internal::is_same<float,float&>::value));
   VERIFY((!internal::is_same<float,const float&>::value));
 
-  VERIFY(( internal::is_same<float,internal::remove_all<const float&>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<const float*>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<const float*&>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<float**>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<float**&>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<float* const *&>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_all<float* const>::type >::value));
-
-  // test add_const
-  VERIFY(( internal::is_same< internal::add_const<float>::type, const float >::value));
-  VERIFY(( internal::is_same< internal::add_const<float*>::type, float* const>::value));
-  VERIFY(( internal::is_same< internal::add_const<float const*>::type, float const* const>::value));
-  VERIFY(( internal::is_same< internal::add_const<float&>::type, float& >::value));
-
-  // test remove_const
-  VERIFY(( internal::is_same< internal::remove_const<float const* const>::type, float const* >::value));
-  VERIFY(( internal::is_same< internal::remove_const<float const*>::type, float const* >::value));
-  VERIFY(( internal::is_same< internal::remove_const<float* const>::type, float* >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<const float&> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<const float*> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<const float*&> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<float**> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<float**&> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<float* const *&> >::value));
+  VERIFY(( internal::is_same<float,internal::remove_all_t<float* const> >::value));
 
   // test add_const_on_value_type
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<float&>::type, float const& >::value));
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<float*>::type, float const* >::value));
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<float&>, float const& >::value));
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<float*>, float const* >::value));
 
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<float>::type, const float >::value));
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<const float>::type, const float >::value));
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<float>, const float >::value));
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<const float>, const float >::value));
 
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<const float* const>::type, const float* const>::value));
-  VERIFY(( internal::is_same< internal::add_const_on_value_type<float* const>::type, const float* const>::value));
-
-  VERIFY(( internal::is_same<float,internal::remove_reference<float&>::type >::value));
-  VERIFY(( internal::is_same<const float,internal::remove_reference<const float&>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_pointer<float*>::type >::value));
-  VERIFY(( internal::is_same<const float,internal::remove_pointer<const float*>::type >::value));
-  VERIFY(( internal::is_same<float,internal::remove_pointer<float* const >::type >::value));
-
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<const float* const>, const float* const>::value));
+  VERIFY(( internal::is_same< internal::add_const_on_value_type_t<float* const>, const float* const>::value));
 
   // is_convertible
   STATIC_CHECK(( internal::is_convertible<float,double>::value ));

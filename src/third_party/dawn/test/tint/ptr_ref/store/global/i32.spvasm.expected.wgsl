@@ -1,12 +1,12 @@
-var<private> I : i32 = 0;
+var<private> I : i32 = 0i;
 
 fn main_1() {
-  I = 123;
-  I = ((100 + 20) + 3);
+  I = 123i;
+  I = ((100i + 20i) + 3i);
   return;
 }
 
-@stage(compute) @workgroup_size(1, 1, 1)
+@stage(compute) @workgroup_size(1i, 1i, 1i)
 fn main() {
   main_1();
 }

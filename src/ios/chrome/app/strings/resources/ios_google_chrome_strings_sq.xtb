@@ -3,9 +3,11 @@
 <translationbundle lang="sq">
 <translation id="1143896152279775643">Fjalëkalimi yt do të ruhet në "Menaxherin e fjalëkalimeve" të Google për <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Ndihmo në përmirësimin e veçorive dhe cilësisë së funksionimit të Chrome</translation>
+<translation id="1462727070346936664">Identifikohu për të përfituar sa më shumë nga Chrome.</translation>
 <translation id="1479202195792305274">Chrome mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google".</translation>
 <translation id="1493827051843127077">Caktoje Chrome si parazgjedhje për të sinkronizuar skedat, fjalëkalimet dhe informacionet e pagesës në të gjitha pajisjet e tua</translation>
 <translation id="1504372625950710826">Chrome nuk mund të kontrollonte për përditësime. Provo të kontrollosh lidhjen e internetit.</translation>
+<translation id="1511320244449497906">Je identifikuar dhe po sinkronizon të dhënat me një llogari të menaxhuar nga <ph name="DOMAIN" />, ku administratori i saj tani mund të caktojë politika përdoruesi specifike për atë llogari që mund të ndryshojnë sjelljen e Chrome.</translation>
 <translation id="1682483655351012182">Sinkronizo të dhënat e tua të Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1812249337131447686">Ndihmo në përmirësimin e Chrome duke i dërguar statistikat e përdorimit dhe raportet e ndërprerjeve aksidentale te Google</translation>
@@ -64,6 +66,7 @@
 <translation id="5162467219239570114">Chrome është i papërditësuar Nëse nuk ofrohet një përditësim në <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ka mundësi që pajisja jote nuk i mbështet më versionet e reja të Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome nuk mund të përdorë kamerën tënde sepse ajo është në përdorim nga një aplikacion tjetër</translation>
 <translation id="5460571915754665838">4. Zgjidh Chrome</translation>
+<translation id="5552137475244467770">Chrome i kontrollon periodikisht fjalëkalimet e tua për t'i krahasuar me listat që janë publikuar në linjë. Kur vepron kështu, fjalëkalimet dhe emrat e tu të përdoruesit janë të enkriptuara, në mënyrë që të mos lexohen nga askush, duke përfshirë Google.</translation>
 <translation id="5639704535586432836">Hap Cilësimet &gt; Privatësia &gt; Kamera &gt; Google Chrome dhe aktivizo kamerën.</translation>
 <translation id="5642200033778930880">Google Chrome nuk mund ta përdorë kamerën tënde në modalitetin e "Pamjes së ndarë"</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -107,6 +110,7 @@
 <translation id="7780154209050837198">Për të marrë maksimumin nga Chrome, identifikohu në Chrome me "Llogarinë tënde të Google".</translation>
 <translation id="7855730255114109580">Google Chrome është i përditësuar</translation>
 <translation id="8022947259858476807">Përdor Chrome si parazgjedhje për të hapur lidhjet, për të kërkuar nga miniaplikacionet dhe për të plotësuar automatikisht fjalëkalimet në aplikacione të tjera</translation>
+<translation id="81358522153858150">Chrome tani mbështet politikat e përdoruesit për llogarinë tënde të menaxhuar</translation>
 <translation id="8160472928944011082">Chrome nuk mund të përditësohet</translation>
 <translation id="8263079278049777200">Identifikohu në këtë sajt, "Llogarinë tënde të Google" dhe Chrome. Mund ta aktivizosh sinkronizmin më vonë.</translation>
 <translation id="8357607116237445042">Zgjidh nëse do t'i pastrosh të dhënat e Chrome nga kjo pajisje apo do t'i mbash ato</translation>

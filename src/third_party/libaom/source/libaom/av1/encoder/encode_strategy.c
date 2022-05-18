@@ -1270,6 +1270,14 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 
   cpi->skip_tpl_setup_stats = 0;
 #if !CONFIG_REALTIME_ONLY
+  if (oxcf->pass != AOM_RC_FIRST_PASS) {
+    TplParams *const tpl_data = &cpi->ppi->tpl_data;
+    if (tpl_data->tpl_stats_pool[0] == NULL) {
+      av1_setup_tpl_buffers(cpi->ppi, &cm->mi_params, oxcf->frm_dim_cfg.width,
+                            oxcf->frm_dim_cfg.height, 0,
+                            oxcf->gf_cfg.lag_in_frames);
+    }
+  }
   cpi->twopass_frame.this_frame = NULL;
   const int use_one_pass_rt_params = is_one_pass_rt_params(cpi);
   if (!use_one_pass_rt_params && !is_stat_generation_stage(cpi)) {
@@ -1291,9 +1299,9 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                 cpi->ppi->p_rc.rate_correction_factors[i];
       }
     }
+#endif
     // copy mv_stats from ppi to frame_level cpi.
     cpi->mv_stats = cpi->ppi->mv_stats;
-#endif
     av1_get_second_pass_params(cpi, &frame_params, *frame_flags);
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, av1_get_second_pass_params_time);

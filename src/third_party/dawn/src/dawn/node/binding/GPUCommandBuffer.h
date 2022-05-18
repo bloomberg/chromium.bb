@@ -15,32 +15,31 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPUCOMMANDBUFFER_H_
 #define SRC_DAWN_NODE_BINDING_GPUCOMMANDBUFFER_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
 
-    // GPUCommandBuffer is an implementation of interop::GPUCommandBuffer that wraps a
-    // wgpu::CommandBuffer.
-    class GPUCommandBuffer final : public interop::GPUCommandBuffer {
-      public:
-        GPUCommandBuffer(wgpu::CommandBuffer cmd_buf);
+// GPUCommandBuffer is an implementation of interop::GPUCommandBuffer that wraps a
+// wgpu::CommandBuffer.
+class GPUCommandBuffer final : public interop::GPUCommandBuffer {
+  public:
+    explicit GPUCommandBuffer(wgpu::CommandBuffer cmd_buf);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::CommandBuffer&() const {
-            return cmd_buf_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::CommandBuffer&() const { return cmd_buf_; }
 
-        // interop::GPUCommandBuffer interface compliance
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPUCommandBuffer interface compliance
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::CommandBuffer cmd_buf_;
-    };
+  private:
+    wgpu::CommandBuffer cmd_buf_;
+};
 
 }  // namespace wgpu::binding
 

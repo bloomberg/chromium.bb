@@ -14,13 +14,13 @@
 
 #include "dawn/tests/unittests/wire/WireTest.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::Return;
 
 class WireBasicTests : public WireTest {
   public:
-    WireBasicTests() {
-    }
+    WireBasicTests() {}
     ~WireBasicTests() override = default;
 };
 
@@ -78,3 +78,5 @@ TEST_F(WireBasicTests, ReleaseCalledOnRefCount0) {
 
     FlushClient();
 }
+
+}  // namespace dawn::wire

@@ -3,6 +3,7 @@ include_rules = [
  "+components/fullscreen_control",
  "+components/live_caption",
  "+components/services/app_service/public",
+ "+components/user_education/views",
  "+third_party/libaddressinput",
  "+services/tracing/public",
 ]
@@ -31,6 +32,7 @@ specific_include_rules = {
   ],
   ".*test.*": [
    "!ash",
+   "+ash/accelerators/accelerator_table.h",
    "+ash/components/arc/mojom",
    "+ash/components/arc/intent_helper",
    "+ash/components/arc/session",

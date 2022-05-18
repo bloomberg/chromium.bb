@@ -44,13 +44,13 @@ class Widget;
 
 namespace ash {
 
-class DesksTemplatesPresenter;
-class DesksTemplatesDialogController;
 class OverviewDelegate;
 class OverviewGrid;
 class OverviewHighlightController;
 class OverviewItem;
 class OverviewWindowDragController;
+class SavedDeskDialogController;
+class SavedDeskPresenter;
 
 // The Overview shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
@@ -233,7 +233,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       aura::Window* lost_active);
 
   // Returns true when either the `DesksTemplatesGridWidget` or
-  // `DesksTemplatesDialog` is the window that is losing activation.
+  // `SavedDeskDialog` is the window that is losing activation.
   bool IsTemplatesUiLosingActivation(aura::Window* lost_active);
 
   // Gets the window which keeps focus for the duration of overview mode.
@@ -373,8 +373,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return highlight_controller_.get();
   }
 
-  DesksTemplatesPresenter* desks_templates_presenter() {
-    return desks_templates_presenter_.get();
+  SavedDeskPresenter* saved_desk_presenter() {
+    return saved_desk_presenter_.get();
   }
 
   void set_auto_add_windows_enabled(bool enabled) {
@@ -408,13 +408,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void OnItemAdded(aura::Window* window);
 
-  // Called when a window is activated or deactivated and the desks templates
-  // feature is enabled. Returns true if we should keep overview open. Overview
-  // should be kept open if |gained_active| or |lost_active| is a desks
-  // templates dialog.
-  bool ShouldKeepOverviewOpenForDesksTemplatesDialog(
-      aura::Window* gained_active,
-      aura::Window* lost_active);
+  // Called when a window is activated or deactivated and the saved desk feature
+  // is enabled. Returns true if we should keep overview open. Overview should
+  // be kept open if `gained_active` or `lost_active` is a saved desk dialog.
+  bool ShouldKeepOverviewOpenForSavedDeskDialog(aura::Window* gained_active,
+                                                aura::Window* lost_active);
 
   // Weak pointer to the overview delegate which will be called when a selection
   // is made.
@@ -476,10 +474,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   std::unique_ptr<OverviewHighlightController> highlight_controller_;
 
   // The object responsible to talking to the desk model.
-  std::unique_ptr<DesksTemplatesPresenter> desks_templates_presenter_;
+  std::unique_ptr<SavedDeskPresenter> saved_desk_presenter_;
 
-  std::unique_ptr<DesksTemplatesDialogController>
-      desks_templates_dialog_controller_;
+  std::unique_ptr<SavedDeskDialogController> saved_desk_dialog_controller_;
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 

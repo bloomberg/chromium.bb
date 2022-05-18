@@ -65,10 +65,13 @@ template<int Alignment,typename MatrixType> void map_class_matrix(const MatrixTy
 
   Scalar a_array2[256];
   Scalar* array2 = a_array2;
-  if(Alignment!=Aligned)
+  if(Alignment!=Aligned) {
     array2 = (Scalar*)(internal::IntPtr(a_array2) + (internal::packet_traits<Scalar>::AlignedOnScalar?sizeof(Scalar):sizeof(typename NumTraits<Scalar>::Real)));
-  else
-    array2 = (Scalar*)(((internal::UIntPtr(a_array2)+EIGEN_MAX_ALIGN_BYTES-1)/EIGEN_MAX_ALIGN_BYTES)*EIGEN_MAX_ALIGN_BYTES);
+  } else {
+    // In case there is no alignment, default to pointing to the start.
+    constexpr int alignment = (std::max<int>)(EIGEN_MAX_ALIGN_BYTES, 1);
+    array2 = (Scalar*)(((internal::UIntPtr(a_array2)+alignment-1)/alignment)*alignment);
+  }
   Index maxsize2 = a_array2 - array2 + 256;
   
   // test no inner stride and some dynamic outer stride

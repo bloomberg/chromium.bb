@@ -97,16 +97,9 @@ if(CONFIG_INTERNAL_STATS AND CONFIG_AV1_HIGHBITDEPTH)
               "${AOM_ROOT}/test/hbd_metrics_test.cc")
 endif()
 
-if(NOT CONFIG_REALTIME_ONLY)
-  list(APPEND AOM_DECODE_PERF_TEST_SOURCES
-              "${AOM_ROOT}/test/decode_perf_test.cc")
-endif()
+list(APPEND AOM_DECODE_PERF_TEST_SOURCES "${AOM_ROOT}/test/decode_perf_test.cc")
 
 if(CONFIG_REALTIME_ONLY)
-  list(REMOVE_ITEM AOM_UNIT_TEST_DECODER_SOURCES
-                   "${AOM_ROOT}/test/invalid_file_test.cc"
-                   "${AOM_ROOT}/test/test_vector_test.cc")
-
   list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
                    "${AOM_ROOT}/test/av1_external_partition_test.cc"
                    "${AOM_ROOT}/test/borders_test.cc"
@@ -369,21 +362,34 @@ if(ENABLE_TESTS)
     set(CMAKE_MACOSX_RPATH 1)
   endif()
 
-  include_directories(
-    "${AOM_ROOT}/third_party/googletest/src/googletest/include")
-
-  include_directories("${AOM_ROOT}/third_party/googletest/src/googletest")
   add_library(
     aom_gtest STATIC
     "${AOM_ROOT}/third_party/googletest/src/googletest/src/gtest-all.cc")
   set_property(TARGET aom_gtest PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
-  if(MSVC OR WIN32)
-    target_compile_definitions(aom_gtest PRIVATE GTEST_OS_WINDOWS=1)
-  elseif(CONFIG_MULTITHREAD AND CMAKE_USE_PTHREADS_INIT)
-    target_compile_definitions(aom_gtest PRIVATE GTEST_HAS_PTHREAD=1)
-  else()
-    target_compile_definitions(aom_gtest PRIVATE GTEST_HAS_PTHREAD=0)
+  target_include_directories(
+    aom_gtest
+    PUBLIC "${AOM_ROOT}/third_party/googletest/src/googletest/include"
+    PRIVATE "${AOM_ROOT}/third_party/googletest/src/googletest")
+
+  # The definition of GTEST_HAS_PTHREAD must be public, since it's checked by
+  # interface headers, not just by the implementation.
+  if(NOT (MSVC OR WIN32))
+    if(CONFIG_MULTITHREAD AND CMAKE_USE_PTHREADS_INIT)
+      target_compile_definitions(aom_gtest PUBLIC GTEST_HAS_PTHREAD=1)
+    else()
+      target_compile_definitions(aom_gtest PUBLIC GTEST_HAS_PTHREAD=0)
+    endif()
   endif()
+
+  add_library(
+    aom_gmock STATIC
+    "${AOM_ROOT}/third_party/googletest/src/googlemock/src/gmock-all.cc")
+  set_property(TARGET aom_gmock PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
+  target_include_directories(
+    aom_gmock
+    PUBLIC "${AOM_ROOT}/third_party/googletest/src/googlemock/include"
+    PRIVATE "${AOM_ROOT}/third_party/googletest/src/googlemock")
+  target_link_libraries(aom_gmock ${AOM_LIB_LINK_TYPE} aom_gtest)
 endif()
 
 # Setup testdata download targets, test build targets, and test run targets. The
@@ -398,17 +404,20 @@ function(setup_aom_test_targets)
   add_library(test_aom_common OBJECT ${AOM_UNIT_TEST_COMMON_SOURCES})
   set_property(TARGET test_aom_common PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
   add_dependencies(test_aom_common aom)
+  target_link_libraries(test_aom_common ${AOM_LIB_LINK_TYPE} aom_gtest)
 
   if(CONFIG_AV1_DECODER)
     add_library(test_aom_decoder OBJECT ${AOM_UNIT_TEST_DECODER_SOURCES})
     set_property(TARGET test_aom_decoder PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
     add_dependencies(test_aom_decoder aom)
+    target_link_libraries(test_aom_decoder ${AOM_LIB_LINK_TYPE} aom_gtest)
   endif()
 
   if(CONFIG_AV1_ENCODER)
     add_library(test_aom_encoder OBJECT ${AOM_UNIT_TEST_ENCODER_SOURCES})
     set_property(TARGET test_aom_encoder PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
     add_dependencies(test_aom_encoder aom)
+    target_link_libraries(test_aom_encoder ${AOM_LIB_LINK_TYPE} aom_gtest)
   endif()
 
   add_executable(test_libaom ${AOM_UNIT_TEST_WRAPPER_SOURCES}
@@ -596,7 +605,7 @@ function(setup_aom_test_targets)
      AND NOT CONFIG_REALTIME_ONLY)
     add_executable(test_av1_rc_qmode ${AV1_RC_QMODE_SOURCES})
     target_link_libraries(test_av1_rc_qmode ${AOM_LIB_LINK_TYPE} av1_rc_qmode
-                          aom_gtest)
+                          aom_gtest aom_gmock)
     set_property(TARGET test_av1_rc_qmode
                  PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
     list(APPEND AOM_APP_TARGETS test_av1_rc_qmode)

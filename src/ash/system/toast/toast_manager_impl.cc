@@ -10,7 +10,9 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -28,9 +30,13 @@ void ToastManagerImpl::Show(const ToastData& data) {
                    [&id](const ToastData& data) { return data.id == id; });
 
   if (existing_toast != queue_.end()) {
+    // Assigns given `data` to existing queued toast, but keeps the existing
+    // toast's `time_created` value.
+    const base::TimeTicks old_time_created = existing_toast->time_created;
     *existing_toast = data;
+    existing_toast->time_created = old_time_created;
   } else {
-    if (current_toast_data_ && current_toast_data_->id == id) {
+    if (IsRunning(id)) {
       // Replace the visible toast by adding the new toast data to the front of
       // the queue and hiding the visible toast. Once the visible toast finishes
       // hiding, the new toast will be displayed.
@@ -47,7 +53,7 @@ void ToastManagerImpl::Show(const ToastData& data) {
 }
 
 void ToastManagerImpl::Cancel(const std::string& id) {
-  if (current_toast_data_ && current_toast_data_->id == id) {
+  if (IsRunning(id)) {
     overlay_->Show(false);
     return;
   }
@@ -70,6 +76,10 @@ void ToastManagerImpl::OnClosed() {
     ShowLatest();
 }
 
+bool ToastManagerImpl::IsRunning(const std::string& id) const {
+  return overlay_ && current_toast_data_ && current_toast_data_->id == id;
+}
+
 void ToastManagerImpl::ShowLatest() {
   DCHECK(!overlay_);
   DCHECK(!current_toast_data_);
@@ -90,7 +100,8 @@ void ToastManagerImpl::ShowLatest() {
   overlay_ = std::make_unique<ToastOverlay>(
       this, current_toast_data_->text, current_toast_data_->dismiss_text,
       current_toast_data_->visible_on_lock_screen && locked_,
-      current_toast_data_->is_managed, current_toast_data_->dismiss_callback);
+      current_toast_data_->is_managed, current_toast_data_->dismiss_callback,
+      current_toast_data_->expired_callback);
   overlay_->Show(true);
 
   if (current_toast_data_->duration != ToastData::kInfiniteDuration) {
@@ -100,6 +111,12 @@ void ToastManagerImpl::ShowLatest() {
                        weak_ptr_factory_.GetWeakPtr(), serial_),
         current_toast_data_->duration);
   }
+
+  base::UmaHistogramEnumeration("NotifierFramework.Toast.ShownCount",
+                                current_toast_data_->catalog_name);
+  base::UmaHistogramMediumTimes(
+      "NotifierFramework.Toast.TimeInQueue",
+      base::TimeTicks::Now() - current_toast_data_->time_created);
 }
 
 void ToastManagerImpl::OnDurationPassed(int toast_number) {

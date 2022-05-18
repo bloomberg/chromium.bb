@@ -2,11 +2,12 @@
   #container {
     display: grid;
     grid-template-areas:
-      '. . userpreview . .'
-      '. . middle      . .'
-      '. . .           . .';
+      '. . userpreview  . .'
+      '. . middle       . .'
+      '. . rbg-keyboard . .'
+      '. . .            . .';
     grid-template-columns: 1fr minmax(24px, 72px) minmax(480px, 960px) minmax(24px, 72px) 1fr;
-    grid-template-rows: 108px 1fr 12px;
+    grid-template-rows: 108px 1fr auto 12px;
     height: 100%;
     position: relative;
     width: 100%;
@@ -23,6 +24,11 @@
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
 
+  keyboard-backlight {
+    grid-area: rbg-keyboard;
+    margin-top: 12px;
+  }
+
   #ambientSubpageLink {
     --cr-icon-button-size: 48px;
     /* Make the arrow align with the thumbnail image */
@@ -34,32 +40,9 @@
     font: var(--personalization-app-label-font);
     margin: 14px 0;
   }
-
-  #userSubpageLink {
-    background-color: var(--cros-icon-color-prominent);
-    border-radius: 50%;
-    box-shadow: var(--cros-elevation-1-shadow);
-    cursor: pointer;
-    display: inline-block;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    vertical-align: middle;
-    width: 24px;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  #userSubpageLink iron-icon {
-    padding-inline-start: 4px;
-    padding-block-start: 3px;
-  }
 </style>
 <div id="container">
-  <user-preview clickable="[[clickable_]]">
-    <div id="userSubpageLink"
-        on-click="onClickUserSubpageLink_" on-keypress="onClickUserSubpageLink_">
-     <iron-icon icon="personalization:pencil"></iron-icon>
-   </div>
+  <user-preview path="[[path]]">
   </user-preview>
   <div id="middle">
     <wallpaper-preview>
@@ -80,4 +63,7 @@
       </ambient-preview>
     </template>
   </div>
+  <template is="dom-if" if="[[isRgbKeyboardEnabled_()]]">
+    <keyboard-backlight></keyboard-backlight>
+  </template>
 </div>

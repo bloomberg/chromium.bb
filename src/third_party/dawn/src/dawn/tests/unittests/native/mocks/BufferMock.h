@@ -15,34 +15,30 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_BUFFERMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_BUFFERMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/Buffer.h"
 #include "dawn/native/Device.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class BufferMock : public BufferBase {
-      public:
-        BufferMock(DeviceBase* device, BufferBase::BufferState state) : BufferBase(device, state) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->BufferBase::DestroyImpl();
-            });
-        }
-        ~BufferMock() override = default;
+class BufferMock : public BufferBase {
+  public:
+    BufferMock(DeviceBase* device, BufferBase::BufferState state);
+    ~BufferMock() override;
 
-        MOCK_METHOD(void, DestroyImpl, (), (override));
+    MOCK_METHOD(void, DestroyImpl, (), (override));
 
-        MOCK_METHOD(MaybeError, MapAtCreationImpl, (), (override));
-        MOCK_METHOD(MaybeError,
-                    MapAsyncImpl,
-                    (wgpu::MapMode mode, size_t offset, size_t size),
-                    (override));
-        MOCK_METHOD(void, UnmapImpl, (), (override));
-        MOCK_METHOD(void*, GetMappedPointerImpl, (), (override));
+    MOCK_METHOD(MaybeError, MapAtCreationImpl, (), (override));
+    MOCK_METHOD(MaybeError,
+                MapAsyncImpl,
+                (wgpu::MapMode mode, size_t offset, size_t size),
+                (override));
+    MOCK_METHOD(void, UnmapImpl, (), (override));
+    MOCK_METHOD(void*, GetMappedPointerImpl, (), (override));
 
-        MOCK_METHOD(bool, IsCPUWritableAtCreation, (), (const, override));
-    };
+    MOCK_METHOD(bool, IsCPUWritableAtCreation, (), (const, override));
+};
 
 }  // namespace dawn::native
 

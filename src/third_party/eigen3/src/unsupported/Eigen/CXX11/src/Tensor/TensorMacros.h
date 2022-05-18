@@ -14,7 +14,7 @@
 /** use this macro in sfinae selection in templated functions
  *
  *   template<typename T,
- *            typename std::enable_if< isBanana<T>::value , int >::type = 0
+ *            std::enable_if_t< isBanana<T>::value , int > = 0
  *   >
  *   void foo(){}
  *
@@ -27,7 +27,7 @@
  */
 
 #define EIGEN_SFINAE_ENABLE_IF( __condition__ ) \
-    typename internal::enable_if< ( __condition__ ) , int >::type = 0
+    std::enable_if_t< ( __condition__ ) , int > = 0
 
 // Define a macro to use a reference on the host but a value on the device
 #if defined(SYCL_DEVICE_ONLY)

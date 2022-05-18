@@ -21,19 +21,27 @@
 
 namespace webrtc {
 
+bool LibaomAv1EncoderSupportsScalabilityMode(ScalabilityMode scalability_mode) {
+  // For libaom AV1, the scalability mode is supported if we can create the
+  // scalability structure.
+  return ScalabilityStructureConfig(scalability_mode) != absl::nullopt;
+}
+
 bool SetAv1SvcConfig(VideoCodec& video_codec) {
   RTC_DCHECK_EQ(video_codec.codecType, kVideoCodecAV1);
 
-  absl::string_view scalability_mode = video_codec.ScalabilityMode();
-  if (scalability_mode.empty()) {
+  absl::optional<ScalabilityMode> scalability_mode =
+      video_codec.GetScalabilityMode();
+  if (!scalability_mode.has_value()) {
     RTC_LOG(LS_WARNING) << "Scalability mode is not set, using 'L1T1'.";
-    scalability_mode = "L1T1";
+    scalability_mode = ScalabilityMode::kL1T1;
   }
 
   std::unique_ptr<ScalableVideoController> structure =
-      CreateScalabilityStructure(scalability_mode);
+      CreateScalabilityStructure(*scalability_mode);
   if (structure == nullptr) {
-    RTC_LOG(LS_WARNING) << "Failed to create structure " << scalability_mode;
+    RTC_LOG(LS_WARNING) << "Failed to create structure "
+                        << static_cast<int>(*scalability_mode);
     return false;
   }
 

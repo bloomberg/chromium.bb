@@ -23,22 +23,22 @@ TINT_INSTANTIATE_TYPEINFO(tint::sem::Swizzle);
 
 namespace tint::sem {
 
-MemberAccessorExpression::MemberAccessorExpression(
-    const ast::MemberAccessorExpression* declaration,
-    const sem::Type* type,
-    const Statement* statement,
-    bool has_side_effects)
-    : Base(declaration, type, statement, Constant{}, has_side_effects) {}
+MemberAccessorExpression::MemberAccessorExpression(const ast::MemberAccessorExpression* declaration,
+                                                   const sem::Type* type,
+                                                   const Statement* statement,
+                                                   bool has_side_effects,
+                                                   const Variable* source_var /* = nullptr */)
+    : Base(declaration, type, statement, Constant{}, has_side_effects, source_var) {}
 
 MemberAccessorExpression::~MemberAccessorExpression() = default;
 
-StructMemberAccess::StructMemberAccess(
-    const ast::MemberAccessorExpression* declaration,
-    const sem::Type* type,
-    const Statement* statement,
-    const StructMember* member,
-    bool has_side_effects)
-    : Base(declaration, type, statement, has_side_effects), member_(member) {}
+StructMemberAccess::StructMemberAccess(const ast::MemberAccessorExpression* declaration,
+                                       const sem::Type* type,
+                                       const Statement* statement,
+                                       const StructMember* member,
+                                       bool has_side_effects,
+                                       const Variable* source_var /* = nullptr */)
+    : Base(declaration, type, statement, has_side_effects, source_var), member_(member) {}
 
 StructMemberAccess::~StructMemberAccess() = default;
 
@@ -46,8 +46,9 @@ Swizzle::Swizzle(const ast::MemberAccessorExpression* declaration,
                  const sem::Type* type,
                  const Statement* statement,
                  std::vector<uint32_t> indices,
-                 bool has_side_effects)
-    : Base(declaration, type, statement, has_side_effects),
+                 bool has_side_effects,
+                 const Variable* source_var /* = nullptr */)
+    : Base(declaration, type, statement, has_side_effects, source_var),
       indices_(std::move(indices)) {}
 
 Swizzle::~Swizzle() = default;

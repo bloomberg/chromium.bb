@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -187,17 +188,29 @@ class CONTENT_EXPORT FencedFrameURLMapping {
       const GURL& urn_uuid,
       const SharedStorageURNMappingResult& mapping_result);
 
-  // Get the `SharedStorageBudgetMetadata` associated with `urn_uuid`, and reset
-  // the current metadata to absl::nullopt. Precondition: `urn_uuid` exists in
+  // Return the `SharedStorageBudgetMetadata` associated with `urn_uuid`, or
+  // nullptr if there's no metadata associated (i.e. `urn_uuid` was not
+  // originated from shared storage). Precondition: `urn_uuid` exists in
   // `urn_uuid_to_url_map_`.
   //
-  // This method will be called when a fenced frame is navigating a top frame:
-  // if the fenced frame originates from a URN generated from the shared
-  // storage, then the shared storage origin's budget will be charged. For each
-  // URN, we only need to charge the budget once, thus the value here is
-  // released (i.e. returned and reset).
-  absl::optional<SharedStorageBudgetMetadata>
-  ReleaseSharedStorageBudgetMetadata(const GURL& urn_uuid);
+  // This method will be called during the lifetime of a `NavigationRequest`
+  // object, to associate the budget metadata to each relevant committed
+  // document. A non-null returned pointer will stay valid during the
+  // `FencedFrameURLMapping`'s (thus the page's) lifetime, and a page will
+  // outlive any `NavigationRequest` occurring in fenced frames in the page,
+  // thus it's safe for a `NavigationRequest` to store a pointer to this.
+  SharedStorageBudgetMetadata* GetSharedStorageBudgetMetadata(
+      const GURL& urn_uuid);
+
+  // Modifies the true URL from a URN by replacing substrings specified in the
+  // replacements map. The true URLs for any component ads associated with this
+  // URN will also have substrings substituted. This function will be removed
+  // once all FLEDGE auctions switch to using fenced frames.
+  // TODO(crbug.com/1253118): Remove this function when we remove support for
+  // showing FLEDGE ads in iframes.
+  void SubstituteMappedURL(
+      const GURL& urn_uuid,
+      const std::vector<std::pair<std::string, std::string>>& substitutions);
 
   bool HasObserverForTesting(const GURL& urn_uuid,
                              MappingResultObserver* observer);
@@ -229,8 +242,8 @@ class CONTENT_EXPORT FencedFrameURLMapping {
 
     // Contains the metadata needed for shared storage budget charging. Will be
     // initialized to absl::nullopt if the associated URN is not generated from
-    // shared storage; also will be reset to absl::nullopt if the budget has
-    // already been charged for the associated URN.
+    // shared storage. Its `budget_to_charge` can be updated to 0 when the
+    // budget is charged.
     absl::optional<SharedStorageBudgetMetadata> shared_storage_budget_metadata;
 
     // Ad component URLs if `mapped_url` is the result of a FLEDGE auction. When

@@ -40,6 +40,7 @@ cmake(
 cc_library(
     name = "internal",
     srcs = [
+        "base_bwu_handler.cc",
         "base_endpoint_channel.cc",
         "base_pcp_handler.cc",
         "ble_advertisement.cc",
@@ -66,6 +67,8 @@ cc_library(
         "service_controller_router.cc",
         "webrtc_bwu_handler.cc",
         "webrtc_endpoint_channel.cc",
+        "wifi_hotspot_bwu_handler.cc",
+        "wifi_hotspot_endpoint_channel.cc",
         "wifi_lan_bwu_handler.cc",
         "wifi_lan_endpoint_channel.cc",
         "wifi_lan_service_info.cc",
@@ -101,8 +104,11 @@ cc_library(
         "pcp_manager.h",
         "service_controller.h",
         "service_controller_router.h",
+        "service_id_constants.h",
         "webrtc_bwu_handler.h",
         "webrtc_endpoint_channel.h",
+        "wifi_hotspot_bwu_handler.h",
+        "wifi_hotspot_endpoint_channel.h",
         "wifi_lan_bwu_handler.h",
         "wifi_lan_endpoint_channel.h",
         "wifi_lan_service_info.h",
@@ -166,6 +172,8 @@ cc_library(
         "simulation_user.cc",
     ],
     hdrs = [
+        "fake_bwu_handler.h",
+        "fake_endpoint_channel.h",
         "mock_service_controller.h",
         "mock_service_controller_router.h",
         "offline_simulation_user.h",
@@ -192,6 +200,7 @@ cc_test(
     size = "small",
     timeout = "moderate",
     srcs = [
+        "base_bwu_handler_test.cc",
         "base_endpoint_channel_test.cc",
         "base_pcp_handler_test.cc",
         "ble_advertisement_test.cc",
@@ -209,6 +218,7 @@ cc_test(
         "payload_manager_test.cc",
         "pcp_manager_test.cc",
         "service_controller_router_test.cc",
+        "wifi_hotspot_test.cc",
         "wifi_lan_service_info_test.cc",
     ],
     defines = ["NO_WEBRTC"],

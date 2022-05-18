@@ -57,6 +57,7 @@
           'shards': 6
         },
       },
+      'slow_peer_connection_unittests': {},
       'system_wrappers_unittests': {},
       'test_support_unittests': {},
       'tools_unittests': {},
@@ -117,6 +118,7 @@
           'shards': 6
         },
       },
+      'slow_peer_connection_unittests': {},
       'system_wrappers_unittests': {},
       'test_support_unittests': {},
       'tools_unittests': {},
@@ -159,9 +161,9 @@
       },
     },
     'ios_simulator_tests': {
-      # TODO(bugs.webrtc.org/12244): Some tests are skipped on iOS simulator
-      # platforms because they fail or they are flaky.
-      #'apprtcmobile_tests': {'mixins': ['xcode_parallelization']},
+      'apprtcmobile_tests': {
+        'mixins': ['xcode_parallelization']
+      },
       'audio_decoder_unittests': {},
       'common_audio_unittests': {},
       'common_video_unittests': {},
@@ -175,9 +177,9 @@
       'sdk_framework_unittests': {
         'mixins': ['xcode_parallelization']
       },
-      # TODO(bugs.webrtc.org/12244): Some tests are skipped on iOS simulator
-      # platforms because they fail or they are flaky.
-      #'sdk_unittests': {'mixins': ['xcode_parallelization']},
+      'sdk_unittests': {
+        'mixins': ['xcode_parallelization']
+      },
       'system_wrappers_unittests': {},
       'test_support_unittests': {},
       'tools_unittests': {},

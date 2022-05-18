@@ -12,7 +12,7 @@
 #include "src/core/SkTBlockList.h"
 #include "src/gpu/ganesh/GrDynamicAtlas.h"
 #include "src/gpu/ganesh/ops/OpsTask.h"
-#include "src/gpu/ganesh/ops/PathTessellator.h"
+#include "src/gpu/ganesh/tessellate/PathTessellator.h"
 
 struct SkIPoint16;
 
@@ -41,10 +41,10 @@ public:
 
     // Must be called at flush time. The texture proxy is instantiated with 'backingTexture', if
     // provided. See GrDynamicAtlas.
-    void instantiate(GrOnFlushResourceProvider* onFlushRP,
+    bool SK_WARN_UNUSED_RESULT instantiate(GrOnFlushResourceProvider* onFlushRP,
                      sk_sp<GrTexture> backingTexture = nullptr) {
         SkASSERT(this->isClosed());
-        fDynamicAtlas->instantiate(onFlushRP, std::move(backingTexture));
+        return fDynamicAtlas->instantiate(onFlushRP, std::move(backingTexture));
     }
 
 private:

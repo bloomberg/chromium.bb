@@ -24,80 +24,73 @@ namespace {
 using IfStatementTest = TestHelper;
 
 TEST_F(IfStatementTest, Creation) {
-  auto* cond = Expr("cond");
-  auto* stmt = create<IfStatement>(Source{Source::Location{20, 2}}, cond,
-                                   Block(create<DiscardStatement>()),
-                                   ElseStatementList{});
-  auto src = stmt->source;
-  EXPECT_EQ(src.range.begin.line, 20u);
-  EXPECT_EQ(src.range.begin.column, 2u);
+    auto* cond = Expr("cond");
+    auto* stmt = If(Source{Source::Location{20, 2}}, cond, Block(create<DiscardStatement>()));
+    auto src = stmt->source;
+    EXPECT_EQ(src.range.begin.line, 20u);
+    EXPECT_EQ(src.range.begin.column, 2u);
 }
 
 TEST_F(IfStatementTest, IsIf) {
-  auto* stmt = create<IfStatement>(Expr(true), Block(), ElseStatementList{});
-  EXPECT_TRUE(stmt->Is<IfStatement>());
+    auto* stmt = If(Expr(true), Block());
+    EXPECT_TRUE(stmt->Is<IfStatement>());
 }
 
 TEST_F(IfStatementTest, Assert_Null_Condition) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b;
-        b.create<IfStatement>(nullptr, b.Block(), ElseStatementList{});
-      },
-      "internal compiler error");
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b;
+            b.If(nullptr, b.Block());
+        },
+        "internal compiler error");
 }
 
 TEST_F(IfStatementTest, Assert_Null_Body) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b;
-        b.create<IfStatement>(b.Expr(true), nullptr, ElseStatementList{});
-      },
-      "internal compiler error");
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b;
+            b.If(b.Expr(true), nullptr);
+        },
+        "internal compiler error");
 }
 
-TEST_F(IfStatementTest, Assert_Null_ElseStatement) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b;
-        auto* body = b.create<BlockStatement>(StatementList{});
-        b.create<IfStatement>(b.Expr(true), body, ElseStatementList{nullptr});
-      },
-      "internal compiler error");
+TEST_F(IfStatementTest, Assert_InvalidElse) {
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b;
+            b.If(b.Expr(true), b.Block(), b.Else(b.CallStmt(b.Call("foo"))));
+        },
+        "internal compiler error");
 }
 
 TEST_F(IfStatementTest, Assert_DifferentProgramID_Cond) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b1;
-        ProgramBuilder b2;
-        b1.create<IfStatement>(b2.Expr(true), b1.Block(), ElseStatementList{});
-      },
-      "internal compiler error");
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b1;
+            ProgramBuilder b2;
+            b1.If(b2.Expr(true), b1.Block());
+        },
+        "internal compiler error");
 }
 
 TEST_F(IfStatementTest, Assert_DifferentProgramID_Body) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b1;
-        ProgramBuilder b2;
-        b1.create<IfStatement>(b1.Expr(true), b2.Block(), ElseStatementList{});
-      },
-      "internal compiler error");
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b1;
+            ProgramBuilder b2;
+            b1.If(b1.Expr(true), b2.Block());
+        },
+        "internal compiler error");
 }
 
 TEST_F(IfStatementTest, Assert_DifferentProgramID_ElseStatement) {
-  EXPECT_FATAL_FAILURE(
-      {
-        ProgramBuilder b1;
-        ProgramBuilder b2;
-        b1.create<IfStatement>(
-            b1.Expr(true), b1.Block(),
-            ElseStatementList{
-                b2.create<ElseStatement>(b2.Expr("ident"), b2.Block()),
-            });
-      },
-      "internal compiler error");
+    EXPECT_FATAL_FAILURE(
+        {
+            ProgramBuilder b1;
+            ProgramBuilder b2;
+            b1.If(b1.Expr(true), b1.Block(), b2.Else(b2.If(b2.Expr("ident"), b2.Block())));
+        },
+        "internal compiler error");
 }
 
 }  // namespace

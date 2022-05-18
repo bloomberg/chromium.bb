@@ -219,8 +219,8 @@ template<int Mode> struct trmv_selector<Mode,ColMajor>
     
     typedef Map<Matrix<ResScalar,Dynamic,1>, plain_enum_min(AlignedMax,internal::packet_traits<ResScalar>::size)> MappedDest;
 
-    typename internal::add_const_on_value_type<ActualLhsType>::type actualLhs = LhsBlasTraits::extract(lhs);
-    typename internal::add_const_on_value_type<ActualRhsType>::type actualRhs = RhsBlasTraits::extract(rhs);
+    add_const_on_value_type_t<ActualLhsType> actualLhs = LhsBlasTraits::extract(lhs);
+    add_const_on_value_type_t<ActualRhsType> actualRhs = RhsBlasTraits::extract(rhs);
 
     LhsScalar lhs_alpha = LhsBlasTraits::extractScalarFactor(lhs);
     RhsScalar rhs_alpha = RhsBlasTraits::extractScalarFactor(rhs);
@@ -298,10 +298,10 @@ template<int Mode> struct trmv_selector<Mode,RowMajor>
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhsType;
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhsType;
-    typedef typename internal::remove_all<ActualRhsType>::type ActualRhsTypeCleaned;
+    typedef internal::remove_all_t<ActualRhsType> ActualRhsTypeCleaned;
 
-    typename add_const<ActualLhsType>::type actualLhs = LhsBlasTraits::extract(lhs);
-    typename add_const<ActualRhsType>::type actualRhs = RhsBlasTraits::extract(rhs);
+    std::add_const_t<ActualLhsType> actualLhs = LhsBlasTraits::extract(lhs);
+    std::add_const_t<ActualRhsType> actualRhs = RhsBlasTraits::extract(rhs);
 
     LhsScalar lhs_alpha = LhsBlasTraits::extractScalarFactor(lhs);
     RhsScalar rhs_alpha = RhsBlasTraits::extractScalarFactor(rhs);

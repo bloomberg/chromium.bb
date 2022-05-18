@@ -64,7 +64,7 @@ const kTestTypes = [
 
 g.test('stage_inout')
   .desc(
-    `Test that each @builtin]] attribute is validated against the required stage and in/out usage for that built-in variable.`
+    `Test that each @builtin attribute is validated against the required stage and in/out usage for that built-in variable.`
   )
   .params(u =>
     u
@@ -96,7 +96,7 @@ g.test('stage_inout')
 
 g.test('type')
   .desc(
-    `Test that each @builtin]] attribute is validated against the required type of that built-in variable.`
+    `Test that each @builtin attribute is validated against the required type of that built-in variable.`
   )
   .params(u =>
     u

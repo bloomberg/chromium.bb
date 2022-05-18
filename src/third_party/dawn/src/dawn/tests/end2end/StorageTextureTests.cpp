@@ -12,22 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <string>
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TestUtils.h"
 #include "dawn/utils/TextureUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 namespace {
-    bool OpenGLESSupportsStorageTexture(wgpu::TextureFormat format) {
-        // TODO(crbug.com/dawn/595): 32-bit RG* formats are unsupported on OpenGL ES.
-        return format != wgpu::TextureFormat::RG32Float &&
-               format != wgpu::TextureFormat::RG32Sint && format != wgpu::TextureFormat::RG32Uint;
-    }
+bool OpenGLESSupportsStorageTexture(wgpu::TextureFormat format) {
+    // TODO(crbug.com/dawn/595): 32-bit RG* formats are unsupported on OpenGL ES.
+    return format != wgpu::TextureFormat::RG32Float && format != wgpu::TextureFormat::RG32Sint &&
+           format != wgpu::TextureFormat::RG32Uint;
+}
 }  // namespace
 
 class StorageTextureTests : public DawnTest {
@@ -513,7 +515,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         wgpu::ComputePassEncoder computeEncoder = encoder.BeginComputePass();
         computeEncoder.SetBindGroup(0, bindGroup);
         computeEncoder.SetPipeline(pipeline);
-        computeEncoder.Dispatch(1);
+        computeEncoder.DispatchWorkgroups(1);
         computeEncoder.End();
 
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
@@ -535,10 +537,11 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
-        wgpu::Texture dummyOutputTexture = CreateTexture(
+        wgpu::Texture placeholderOutputTexture = CreateTexture(
             kRenderAttachmentFormat,
             wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc, {1, 1});
-        utils::ComboRenderPassDescriptor renderPassDescriptor({dummyOutputTexture.CreateView()});
+        utils::ComboRenderPassDescriptor renderPassDescriptor(
+            {placeholderOutputTexture.CreateView()});
         wgpu::RenderPassEncoder renderPassEncoder = encoder.BeginRenderPass(&renderPassDescriptor);
         renderPassEncoder.SetBindGroup(0, bindGroup);
         renderPassEncoder.SetPipeline(pipeline);
@@ -564,7 +567,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         wgpu::ComputePassEncoder computePassEncoder = encoder.BeginComputePass();
         computePassEncoder.SetBindGroup(0, bindGroup);
         computePassEncoder.SetPipeline(pipeline);
-        computePassEncoder.Dispatch(1);
+        computePassEncoder.DispatchWorkgroups(1);
         computePassEncoder.End();
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         queue.Submit(1, &commandBuffer);
@@ -588,7 +591,7 @@ fn IsEqualTo(pixel : vec4<f32>, expected : vec4<f32>) -> bool {
         wgpu::ComputePassEncoder computePassEncoder = encoder.BeginComputePass();
         computePassEncoder.SetBindGroup(0, bindGroup);
         computePassEncoder.SetPipeline(pipeline);
-        computePassEncoder.Dispatch(1);
+        computePassEncoder.DispatchWorkgroups(1);
         computePassEncoder.End();
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
         queue.Submit(1, &commandBuffer);
@@ -830,11 +833,11 @@ TEST_P(StorageTextureTests, SampledAndWriteonlyStorageTexturePingPong) {
 
     // After the first dispatch the value in storageTexture2 should be 1u.
     pass.SetBindGroup(0, bindGroupA);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
 
     // After the second dispatch the value in storageTexture1 should be 2u;
     pass.SetBindGroup(0, bindGroupB);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
 
     pass.End();
 

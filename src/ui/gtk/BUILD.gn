@@ -69,6 +69,7 @@ generate_stubs("gtk_stubs") {
 }
 
 component("gtk") {
+  visibility = [ "//ui/views/linux_ui:linux_ui_factory" ]
   public = [ "gtk_ui_factory.h" ]
 
   sources = [
@@ -137,7 +138,6 @@ component("gtk") {
     "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",
     "//ui/native_theme",
-    "//ui/shell_dialogs",
     "//ui/shell_dialogs",
     "//ui/strings",
     "//ui/views",

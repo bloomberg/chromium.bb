@@ -7,13 +7,16 @@
 
 #include <string>
 
-#include "base/containers/flat_set.h"
 #include "base/time/time.h"
 
 namespace history_clusters {
 
 // The default configuration. Always use |GetConfig()| to get the current
 // configuration.
+//
+// Config has the same thread-safety as base::FeatureList. The first call to
+// GetConfig() (which performs initialization) must be done single threaded on
+// the main thread. After that, Config can be read from any thread.
 struct Config {
   // True if journeys feature is enabled as per field trial check. Does not
   // check for any user-specific conditions (such as locales).
@@ -61,7 +64,7 @@ struct Config {
 
   // If enabled, hidden visits are dropped entirely, instead of being gated
   // behind a "Show More" UI control.
-  bool drop_hidden_visits = false;
+  bool drop_hidden_visits = true;
 
   // If enabled, when there is a Journeys search query, the backend re-scores
   // visits within a cluster to account for whether or not that visit matches.
@@ -203,7 +206,9 @@ struct Config {
 
   // Whether to assign labels to clusters. If the label exists, it will be shown
   // in the UI. If the label doesn't exist, the UI will emphasize the top visit.
-  bool should_label_clusters = false;
+  // Note: The default value here is meaningless, because the actual default
+  // value is derived from the base::Feature.
+  bool should_label_clusters = true;
 
   // Whether to assign labels to clusters from the hostnames of the cluster.
   // Does nothing if `should_label_clusters` is false. Note that since every
@@ -215,9 +220,8 @@ struct Config {
   // Does nothing if `should_label_clusters` is false.
   bool labels_from_entities = false;
 
-  // The set of hosts for which all visits belonging to that host will not be in
-  // any cluster.
-  base::flat_set<std::string> hosts_to_skip_clustering_for;
+  // Whether to check if all visits for a host should be in resulting clusters.
+  bool should_check_hosts_to_skip_clustering_for = false;
 
   // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
   bool use_continue_on_shutdown = true;

@@ -27,6 +27,10 @@ class FollowProvider {
   // followed.
   virtual bool GetFollowStatus(FollowWebPageURLs* follow_web_page_urls);
 
+  // Returns true if the web channel with |follow_web_page_urls| has been
+  // recommended.
+  virtual bool GetRecommendedStatus(FollowWebPageURLs* follow_web_page_urls);
+
   // Returns a list of followed web channels.
   virtual NSArray<FollowedWebChannel*>* GetFollowedWebChannels();
 
@@ -49,6 +53,9 @@ class FollowProvider {
   // management UI.
   virtual void RemoveFollowManagementUIUpdater(
       id<FollowManagementUIUpdater> follow_management_ui_updater);
+
+  // Whether the user follows any publishers that have available content.
+  virtual bool DoesFollowingFeedHaveContent();
 };
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_FOLLOW_FOLLOW_PROVIDER_H_

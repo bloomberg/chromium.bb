@@ -12,37 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "dawn/dawn_proc.h"
 #include "src/dawn/node/binding/Flags.h"
 #include "src/dawn/node/binding/GPU.h"
 
 namespace {
-    Napi::Value CreateGPU(const Napi::CallbackInfo& info) {
-        const auto& env = info.Env();
+Napi::Value CreateGPU(const Napi::CallbackInfo& info) {
+    const auto& env = info.Env();
 
-        std::tuple<std::vector<std::string>> args;
-        auto res = wgpu::interop::FromJS(info, args);
-        if (res != wgpu::interop::Success) {
-            Napi::Error::New(env, res.error).ThrowAsJavaScriptException();
+    std::tuple<std::vector<std::string>> args;
+    auto res = wgpu::interop::FromJS(info, args);
+    if (res != wgpu::interop::Success) {
+        Napi::Error::New(env, res.error).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    wgpu::binding::Flags flags;
+
+    // Parse out the key=value flags out of the input args array
+    for (const auto& arg : std::get<0>(args)) {
+        const size_t sep_index = arg.find("=");
+        if (sep_index == std::string::npos) {
+            Napi::Error::New(env, "Flags expected argument format is <key>=<value>")
+                .ThrowAsJavaScriptException();
             return env.Undefined();
         }
-
-        wgpu::binding::Flags flags;
-
-        // Parse out the key=value flags out of the input args array
-        for (const auto& arg : std::get<0>(args)) {
-            const size_t sep_index = arg.find("=");
-            if (sep_index == std::string::npos) {
-                Napi::Error::New(env, "Flags expected argument format is <key>=<value>")
-                    .ThrowAsJavaScriptException();
-                return env.Undefined();
-            }
-            flags.Set(arg.substr(0, sep_index), arg.substr(sep_index + 1));
-        }
-
-        // Construct a wgpu::interop::GPU interface, implemented by wgpu::bindings::GPU.
-        return wgpu::interop::GPU::Create<wgpu::binding::GPU>(env, std::move(flags));
+        flags.Set(arg.substr(0, sep_index), arg.substr(sep_index + 1));
     }
+
+    // Construct a wgpu::interop::GPU interface, implemented by wgpu::bindings::GPU.
+    return wgpu::interop::GPU::Create<wgpu::binding::GPU>(env, std::move(flags));
+}
 
 }  // namespace
 

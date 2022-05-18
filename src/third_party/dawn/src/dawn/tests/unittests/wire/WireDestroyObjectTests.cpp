@@ -15,8 +15,10 @@
 #include "dawn/tests/MockCallback.h"
 #include "dawn/tests/unittests/wire/WireTest.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::Return;
+using testing::Sequence;
 
 class WireDestroyObjectTests : public WireTest {};
 
@@ -56,3 +58,5 @@ TEST_F(WireDestroyObjectTests, DestroyDeviceDestroysChildren) {
     wgpuCommandEncoderFinish(encoder, nullptr);
     FlushClient(false);
 }
+
+}  // namespace dawn::wire

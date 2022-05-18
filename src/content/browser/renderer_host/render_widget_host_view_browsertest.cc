@@ -571,7 +571,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   }
 
   bool SetUpSourceSurface(const char* wait_message) override {
-    content::DOMMessageQueue message_queue;
+    content::DOMMessageQueue message_queue(shell()->web_contents());
     EXPECT_TRUE(NavigateToURL(shell(), TestUrl()));
     if (wait_message != nullptr) {
       std::string result(wait_message);
@@ -1066,7 +1066,6 @@ class RenderWidgetHostViewPresentationFeedbackBrowserTest
     request_trigger->UpdateRequest(base::TimeTicks::Now(),
                                    /*destination_is_loaded=*/true,
                                    /*show_reason_tab_switching=*/true,
-                                   /*show_reason_unoccluded=*/false,
                                    /*show_reason_bfcache_restore=*/false);
   }
 

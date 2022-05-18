@@ -12,55 +12,57 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <algorithm>
+#include <array>
+#include <string>
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <array>
 
 constexpr static unsigned int kRTSize = 64;
 constexpr wgpu::TextureFormat kDefaultFormat = wgpu::TextureFormat::RGBA8Unorm;
 constexpr uint32_t kBytesPerTexel = 4;
 
 namespace {
-    wgpu::Texture Create2DTexture(wgpu::Device device,
-                                  uint32_t width,
-                                  uint32_t height,
-                                  uint32_t arrayLayerCount,
-                                  uint32_t mipLevelCount,
-                                  wgpu::TextureUsage usage) {
-        wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e2D;
-        descriptor.size.width = width;
-        descriptor.size.height = height;
-        descriptor.size.depthOrArrayLayers = arrayLayerCount;
-        descriptor.sampleCount = 1;
-        descriptor.format = kDefaultFormat;
-        descriptor.mipLevelCount = mipLevelCount;
-        descriptor.usage = usage;
-        return device.CreateTexture(&descriptor);
-    }
+wgpu::Texture Create2DTexture(wgpu::Device device,
+                              uint32_t width,
+                              uint32_t height,
+                              uint32_t arrayLayerCount,
+                              uint32_t mipLevelCount,
+                              wgpu::TextureUsage usage) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
+    descriptor.size.width = width;
+    descriptor.size.height = height;
+    descriptor.size.depthOrArrayLayers = arrayLayerCount;
+    descriptor.sampleCount = 1;
+    descriptor.format = kDefaultFormat;
+    descriptor.mipLevelCount = mipLevelCount;
+    descriptor.usage = usage;
+    return device.CreateTexture(&descriptor);
+}
 
-    wgpu::Texture Create3DTexture(wgpu::Device device,
-                                  wgpu::Extent3D size,
-                                  uint32_t mipLevelCount,
-                                  wgpu::TextureUsage usage) {
-        wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e3D;
-        descriptor.size = size;
-        descriptor.sampleCount = 1;
-        descriptor.format = kDefaultFormat;
-        descriptor.mipLevelCount = mipLevelCount;
-        descriptor.usage = usage;
-        return device.CreateTexture(&descriptor);
-    }
+wgpu::Texture Create3DTexture(wgpu::Device device,
+                              wgpu::Extent3D size,
+                              uint32_t mipLevelCount,
+                              wgpu::TextureUsage usage) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e3D;
+    descriptor.size = size;
+    descriptor.sampleCount = 1;
+    descriptor.format = kDefaultFormat;
+    descriptor.mipLevelCount = mipLevelCount;
+    descriptor.usage = usage;
+    return device.CreateTexture(&descriptor);
+}
 
-    wgpu::ShaderModule CreateDefaultVertexShaderModule(wgpu::Device device) {
-        return utils::CreateShaderModule(device, R"(
+wgpu::ShaderModule CreateDefaultVertexShaderModule(wgpu::Device device) {
+    return utils::CreateShaderModule(device, R"(
             struct VertexOut {
                 @location(0) texCoord : vec2<f32>,
                 @builtin(position) position : vec4<f32>,
@@ -88,7 +90,7 @@ namespace {
                 return output;
             }
         )");
-    }
+}
 }  // anonymous namespace
 
 class TextureViewSamplingTest : public DawnTest {

@@ -17,7 +17,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Log;
 import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelInterface;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSetting;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial.ContextualSearchSwitch;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
@@ -38,14 +37,11 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.version_info.VersionInfo;
 import org.chromium.url.GURL;
 
-import java.util.regex.Pattern;
-
 /**
  * Handles business decision policy for the {@code ContextualSearchManager}.
  */
 class ContextualSearchPolicy {
     private static final String TAG = "ContextualSearch";
-    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
     private static final String DOMAIN_GOOGLE = "google";
     private static final String PATH_AMP = "/amp/";
     private static final int REMAINING_NOT_APPLICABLE = -1;
@@ -137,8 +133,7 @@ class ContextualSearchPolicy {
      *         explicitly interacts with the feature.
      */
     boolean shouldPrefetchSearchResult() {
-        if (isMandatoryPromoAvailable()
-                || PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
+        if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
             return false;
         }
 
@@ -162,9 +157,8 @@ class ContextualSearchPolicy {
      * @return Whether the previous gesture should resolve.
      */
     boolean shouldPreviousGestureResolve() {
-        if (isMandatoryPromoAvailable()
-                || ContextualSearchFieldTrial.getSwitch(
-                        ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED)) {
+        if (ContextualSearchFieldTrial.getSwitch(
+                    ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED)) {
             return false;
         }
 
@@ -199,20 +193,6 @@ class ContextualSearchPolicy {
     boolean canSendSurroundings() {
         // The user must have decided on privacy to send page content on HTTPS.
         return isContextualSearchFullyEnabled();
-    }
-
-    /**
-     * @return Whether the Mandatory Promo is enabled.
-     */
-    boolean isMandatoryPromoAvailable() {
-        if (!isUserUndecided()
-                || !ContextualSearchFieldTrial.getSwitch(
-                        ContextualSearchSwitch.IS_MANDATORY_PROMO_ENABLED)) {
-            return false;
-        }
-
-        return getPromoOpenCount() >= ContextualSearchFieldTrial.getValue(
-                       ContextualSearchSetting.MANDATORY_PROMO_LIMIT);
     }
 
     /**
@@ -338,24 +318,6 @@ class ContextualSearchPolicy {
             ContextualSearchUma.logPromoTapsBeforeFirstOpen(count);
         } else {
             ContextualSearchUma.logPromoTapsForNeverOpened(count);
-        }
-    }
-
-    /**
-     * Logs details about the Search Term Resolution.
-     * Should only be called when a search term has been resolved.
-     * @param searchTerm The Resolved Search Term.
-     */
-    void logSearchTermResolutionDetails(String searchTerm) {
-        // Only log for decided users so the data reflect fully-enabled behavior.
-        // Otherwise we'll get skewed data; more HTTP pages than HTTPS (since those don't resolve),
-        // and it's also possible that public pages, e.g. news, have more searches for multi-word
-        // entities like people.
-        if (isContextualSearchFullyEnabled()) {
-            GURL url = mNetworkCommunicator.getBasePageUrl();
-            ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(url));
-            boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(searchTerm.trim()).find();
-            ContextualSearchUma.logSearchTermResolvedWords(isSingleWord);
         }
     }
 

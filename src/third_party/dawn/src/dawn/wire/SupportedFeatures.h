@@ -15,11 +15,11 @@
 #ifndef SRC_DAWN_WIRE_SUPPORTEDFEATURES_H_
 #define SRC_DAWN_WIRE_SUPPORTEDFEATURES_H_
 
-#include <dawn/webgpu.h>
+#include "dawn/webgpu.h"
 
 namespace dawn::wire {
 
-    bool IsFeatureSupported(WGPUFeatureName feature);
+bool IsFeatureSupported(WGPUFeatureName feature);
 
 }  // namespace dawn::wire
 

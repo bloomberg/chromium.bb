@@ -53,7 +53,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                                    SkBudgeted budgeted,
                                                    GrMipmapped mipmapped,
                                                    GrProtected isProtected,
-                                                   const GrMipLevel texels[]) {
+                                                   const GrMipLevel texels[],
+                                                   std::string_view label) {
     ASSERT_SINGLE_OWNER
 
     if (this->isAbandoned()) {
@@ -109,7 +110,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                colorType,
                                tempColorType,
                                tmpTexels.get(),
-                               numMipLevels);
+                               numMipLevels,
+                               /*label=*/{});
 }
 
 sk_sp<GrTexture> GrResourceProvider::getExactScratch(SkISize dimensions,
@@ -143,7 +145,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                                    SkBudgeted budgeted,
                                                    SkBackingFit fit,
                                                    GrProtected isProtected,
-                                                   const GrMipLevel& mipLevel) {
+                                                   const GrMipLevel& mipLevel,
+                                                   std::string_view label) {
     ASSERT_SINGLE_OWNER
 
     if (!mipLevel.fPixels) {
@@ -159,8 +162,13 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
             return nullptr;
         }
 
-        auto tex = this->createApproxTexture(dimensions, format, textureType, renderable,
-                                             renderTargetSampleCnt, isProtected);
+        auto tex = this->createApproxTexture(dimensions,
+                                             format,
+                                             textureType,
+                                             renderable,
+                                             renderTargetSampleCnt,
+                                             isProtected,
+                                             /*label=*/{});
         if (!tex) {
             return nullptr;
         }
@@ -175,7 +183,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                    budgeted,
                                    GrMipmapped::kNo,
                                    isProtected,
-                                   &mipLevel);
+                                   &mipLevel,
+                                   /*label=*/{});
     }
 }
 
@@ -184,13 +193,19 @@ sk_sp<GrTexture> GrResourceProvider::createCompressedTexture(SkISize dimensions,
                                                              SkBudgeted budgeted,
                                                              GrMipmapped mipmapped,
                                                              GrProtected isProtected,
-                                                             SkData* data) {
+                                                             SkData* data,
+                                                             std::string_view label) {
     ASSERT_SINGLE_OWNER
     if (this->isAbandoned()) {
         return nullptr;
     }
-    return fGpu->createCompressedTexture(dimensions, format, budgeted, mipmapped,
-                                         isProtected, data->data(), data->size());
+    return fGpu->createCompressedTexture(dimensions,
+                                         format,
+                                         budgeted,
+                                         mipmapped,
+                                         isProtected,
+                                         data->data(),
+                                         data->size());
 }
 
 sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
@@ -200,7 +215,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                                    int renderTargetSampleCnt,
                                                    GrMipmapped mipmapped,
                                                    SkBudgeted budgeted,
-                                                   GrProtected isProtected) {
+                                                   GrProtected isProtected,
+                                                   std::string_view label) {
     ASSERT_SINGLE_OWNER
     if (this->isAbandoned()) {
         return nullptr;
@@ -236,7 +252,8 @@ sk_sp<GrTexture> GrResourceProvider::createTexture(SkISize dimensions,
                                renderTargetSampleCnt,
                                mipmapped,
                                budgeted,
-                               isProtected);
+                               isProtected,
+                               /*label=*/{});
 }
 
 // Map 'value' to a larger multiple of 2. Values <= 'kMagicTol' will pop up to
@@ -273,7 +290,8 @@ sk_sp<GrTexture> GrResourceProvider::createApproxTexture(SkISize dimensions,
                                                          GrTextureType textureType,
                                                          GrRenderable renderable,
                                                          int renderTargetSampleCnt,
-                                                         GrProtected isProtected) {
+                                                         GrProtected isProtected,
+                                                         std::string_view label) {
     ASSERT_SINGLE_OWNER
 
     if (this->isAbandoned()) {
@@ -304,10 +322,12 @@ sk_sp<GrTexture> GrResourceProvider::createApproxTexture(SkISize dimensions,
                                renderTargetSampleCnt,
                                GrMipmapped::kNo,
                                SkBudgeted::kYes,
-                               isProtected);
+                               isProtected,
+                               /*label=*/{});
 }
 
-sk_sp<GrTexture> GrResourceProvider::findAndRefScratchTexture(const skgpu::ScratchKey& key) {
+sk_sp<GrTexture> GrResourceProvider::findAndRefScratchTexture(const skgpu::ScratchKey& key,
+                                                              std::string_view label) {
     ASSERT_SINGLE_OWNER
     SkASSERT(!this->isAbandoned());
     SkASSERT(key.isValid());
@@ -315,6 +335,7 @@ sk_sp<GrTexture> GrResourceProvider::findAndRefScratchTexture(const skgpu::Scrat
     if (GrGpuResource* resource = fCache->findAndRefScratchResource(key)) {
         fGpu->stats()->incNumScratchTexturesReused();
         GrSurface* surface = static_cast<GrSurface*>(resource);
+        resource->setLabel(std::move(label));
         return sk_sp<GrTexture>(surface->asTexture());
     }
     return nullptr;
@@ -339,7 +360,7 @@ sk_sp<GrTexture> GrResourceProvider::findAndRefScratchTexture(SkISize dimensions
         skgpu::ScratchKey key;
         GrTexture::ComputeScratchKey(*this->caps(), format, dimensions, renderable,
                                      renderTargetSampleCnt, mipmapped, isProtected, &key);
-        return this->findAndRefScratchTexture(key);
+        return this->findAndRefScratchTexture(key, /*label=*/{});
     }
 
     return nullptr;
@@ -712,7 +733,8 @@ sk_sp<GrAttachment> GrResourceProvider::makeMSAAAttachment(SkISize dimensions,
                                                   format,
                                                   sampleCnt,
                                                   isProtected,
-                                                  memoryless);
+                                                  memoryless,
+                                                  /*label=*/{});
     if (scratch) {
         return scratch;
     }
@@ -724,7 +746,8 @@ sk_sp<GrAttachment> GrResourceProvider::refScratchMSAAAttachment(SkISize dimensi
                                                                  const GrBackendFormat& format,
                                                                  int sampleCnt,
                                                                  GrProtected isProtected,
-                                                                 GrMemoryless memoryless) {
+                                                                 GrMemoryless memoryless,
+                                                                 std::string_view label) {
     ASSERT_SINGLE_OWNER
     SkASSERT(!this->isAbandoned());
     SkASSERT(!this->caps()->isFormatCompressed(format));
@@ -743,6 +766,7 @@ sk_sp<GrAttachment> GrResourceProvider::refScratchMSAAAttachment(SkISize dimensi
     if (resource) {
         fGpu->stats()->incNumScratchMSAAAttachmentsReused();
         GrAttachment* attachment = static_cast<GrAttachment*>(resource);
+        resource->setLabel(std::move(label));
         return sk_sp<GrAttachment>(attachment);
     }
 

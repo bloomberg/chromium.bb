@@ -14,57 +14,52 @@
 
 #include "src/tint/resolver/resolver.h"
 #include "src/tint/resolver/resolver_test_helper.h"
-#include "src/tint/sem/atomic_type.h"
-#include "src/tint/sem/reference_type.h"
+#include "src/tint/sem/atomic.h"
+#include "src/tint/sem/reference.h"
 
 #include "gmock/gmock.h"
 
 namespace tint::resolver {
 namespace {
 
-struct ResolverAtomicTest : public resolver::TestHelper,
-                            public testing::Test {};
+struct ResolverAtomicTest : public resolver::TestHelper, public testing::Test {};
 
 TEST_F(ResolverAtomicTest, GlobalWorkgroupI32) {
-  auto* g = Global("a", ty.atomic(Source{{12, 34}}, ty.i32()),
-                   ast::StorageClass::kWorkgroup);
+    auto* g = Global("a", ty.atomic(Source{{12, 34}}, ty.i32()), ast::StorageClass::kWorkgroup);
 
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-  ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
-  auto* atomic = TypeOf(g)->UnwrapRef()->As<sem::Atomic>();
-  ASSERT_NE(atomic, nullptr);
-  EXPECT_TRUE(atomic->Type()->Is<sem::I32>());
+    EXPECT_TRUE(r()->Resolve()) << r()->error();
+    ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
+    auto* atomic = TypeOf(g)->UnwrapRef()->As<sem::Atomic>();
+    ASSERT_NE(atomic, nullptr);
+    EXPECT_TRUE(atomic->Type()->Is<sem::I32>());
 }
 
 TEST_F(ResolverAtomicTest, GlobalWorkgroupU32) {
-  auto* g = Global("a", ty.atomic(Source{{12, 34}}, ty.u32()),
-                   ast::StorageClass::kWorkgroup);
+    auto* g = Global("a", ty.atomic(Source{{12, 34}}, ty.u32()), ast::StorageClass::kWorkgroup);
 
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-  ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
-  auto* atomic = TypeOf(g)->UnwrapRef()->As<sem::Atomic>();
-  ASSERT_NE(atomic, nullptr);
-  EXPECT_TRUE(atomic->Type()->Is<sem::U32>());
+    EXPECT_TRUE(r()->Resolve()) << r()->error();
+    ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
+    auto* atomic = TypeOf(g)->UnwrapRef()->As<sem::Atomic>();
+    ASSERT_NE(atomic, nullptr);
+    EXPECT_TRUE(atomic->Type()->Is<sem::U32>());
 }
 
 TEST_F(ResolverAtomicTest, GlobalStorageStruct) {
-  auto* s =
-      Structure("s", {Member("a", ty.atomic(Source{{12, 34}}, ty.i32()))});
-  auto* g = Global("g", ty.Of(s), ast::StorageClass::kStorage,
-                   ast::Access::kReadWrite,
-                   ast::AttributeList{
-                       create<ast::BindingAttribute>(0),
-                       create<ast::GroupAttribute>(0),
-                   });
+    auto* s = Structure("s", {Member("a", ty.atomic(Source{{12, 34}}, ty.i32()))});
+    auto* g = Global("g", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
+                     ast::AttributeList{
+                         create<ast::BindingAttribute>(0),
+                         create<ast::GroupAttribute>(0),
+                     });
 
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-  ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
-  auto* str = TypeOf(g)->UnwrapRef()->As<sem::Struct>();
-  ASSERT_NE(str, nullptr);
-  ASSERT_EQ(str->Members().size(), 1u);
-  auto* atomic = str->Members()[0]->Type()->As<sem::Atomic>();
-  ASSERT_NE(atomic, nullptr);
-  ASSERT_TRUE(atomic->Type()->Is<sem::I32>());
+    EXPECT_TRUE(r()->Resolve()) << r()->error();
+    ASSERT_TRUE(TypeOf(g)->Is<sem::Reference>());
+    auto* str = TypeOf(g)->UnwrapRef()->As<sem::Struct>();
+    ASSERT_NE(str, nullptr);
+    ASSERT_EQ(str->Members().size(), 1u);
+    auto* atomic = str->Members()[0]->Type()->As<sem::Atomic>();
+    ASSERT_NE(atomic, nullptr);
+    ASSERT_TRUE(atomic->Type()->Is<sem::I32>());
 }
 
 }  // namespace

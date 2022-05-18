@@ -120,33 +120,6 @@ bool IsDictationOfflineAvailable() {
       ash::features::kOnDeviceSpeechRecognition);
 }
 
-const base::Feature kExperimentalAccessibilityDictationCommands{
-    "ExperimentalAccessibilityDictationCommands",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilityDictationCommandsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationCommands);
-}
-
-const base::Feature kExperimentalAccessibilityDictationExtension{
-    "ExperimentalAccessibilityDictationExtension",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilityDictationExtensionEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationExtension);
-}
-
-const base::Feature kExperimentalAccessibilityDictationHints{
-    "ExperimentalAccessibilityDictationHints",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilityDictationHintsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationHints);
-}
-
 const base::Feature kExperimentalAccessibilityDictationWithPumpkin{
     "ExperimentalAccessibilityDictationWithPumpkin",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -212,6 +185,7 @@ bool IsComputeAXModeEnabled() {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
 const base::Feature kReadAnything{"ReadAnything",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -219,11 +193,31 @@ bool IsReadAnythingEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnything);
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+const base::Feature kReadAnythingWithScreen2x{
+    "ReadAnythingWithScreen2x", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsReadAnythingWithScreen2xEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x);
+}
+
 const base::Feature kScreenAI{"ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsScreenAIEnabled() {
+bool IsScreenAIVisualAnnotationsEnabled() {
   return base::FeatureList::IsEnabled(::features::kScreenAI);
+}
+
+bool IsScreenAIServiceNeeded() {
+  return IsScreenAIVisualAnnotationsEnabled() ||
+         IsReadAnythingWithScreen2xEnabled();
+}
+
+// This feature is only for debug purposes and for security/privacy reasons,
+// should be never enabled by default .
+const base::Feature kScreenAIDebugMode{"ScreenAIDebugMode",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsScreenAIDebugModeEnabled() {
+  return base::FeatureList::IsEnabled(::features::kScreenAIDebugMode);
 }
 
 const base::Feature kPdfOcr{"PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT};

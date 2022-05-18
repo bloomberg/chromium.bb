@@ -15,10 +15,10 @@
   SecureContext
 ] partial interface Navigator {
   [CallWith=ScriptState, Measure, RaisesException]
-  void joinAdInterestGroup(AuctionAdInterestGroup group, double durationSeconds);
+  Promise<void> joinAdInterestGroup(AuctionAdInterestGroup group, double durationSeconds);
 
   [CallWith=ScriptState, Measure, RaisesException]
-  void leaveAdInterestGroup(optional AuctionAdInterestGroup group);
+  Promise<void> leaveAdInterestGroup(optional AuctionAdInterestGroup group);
 
   [CallWith=ScriptState, Measure, RaisesException]
   void updateAdInterestGroups();
@@ -31,6 +31,9 @@
 
   [RuntimeEnable=AllowURLsinIframes, CallWith=ScriptState, Measure, RaisesException]
   Promise<USVString> deprecatedURNToURL(USVString uuid_url);
+
+  [RuntimeEnable=AllowURLsinIframes, CallWith=ScriptState, Measure, RaisesException]
+  Promise<void> deprecatedReplaceInURN(USVString uuid_url, record<USVString, USVString> replacements);
 
   [RuntimeEnabled=Parakeet, CallWith=ScriptState, Measure, RaisesException]
   Promise<Ads> createAdRequest(AdRequestConfig config);

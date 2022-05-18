@@ -244,6 +244,10 @@ const base::FeatureParam<int> kMaxSharedStorageInitTries = {
     &kSharedStorageAPI, "MaxSharedStorageInitTries", 2};
 const base::FeatureParam<int> kMaxSharedStorageIteratorBatchSize = {
     &kSharedStorageAPI, "MaxSharedStorageIteratorBatchSize", 100};
+const base::FeatureParam<int> kSharedStorageBitBudget = {
+    &kSharedStorageAPI, "SharedStorageBitBudget", 12};
+const base::FeatureParam<base::TimeDelta> kSharedStorageBudgetInterval = {
+    &kSharedStorageAPI, "SharedStorageBudgetInterval", base::Hours(24)};
 const base::FeatureParam<base::TimeDelta>
     kSharedStorageStaleOriginPurgeInitialInterval = {
         &kSharedStorageAPI, "SharedStorageStaleOriginPurgeInitialInterval",
@@ -438,11 +442,6 @@ const base::Feature kStopInBackground {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Freeze scheduler task queues in background on network idle.
-// This feature only works if stop-in-background is enabled.
-const base::Feature kFreezeBackgroundTabOnNetworkIdle{
-    "freeze-background-tab-on-network-idle", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the Storage Access API. https://crbug.com/989663.
 const base::Feature kStorageAccessAPI{"StorageAccessAPI",
@@ -710,8 +709,12 @@ const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
 const base::Feature kOffsetParentNewSpecBehavior{
     "OffsetParentNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// Makes form elements cancel previous form submissions made by the same form
+// when the default event handler schedules a form submission.
+// TODO(crbug.com/1234409): Remove this flag when this feature has been in
+// stable for a release with no issues
+const base::Feature kCancelFormSubmissionInDefaultHandler{
+    "CancelFormSubmissionInDefaultHandler", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the JPEG XL Image File Format (JXL).
 const base::Feature kJXL{"JXL", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -902,6 +905,14 @@ const base::Feature kWebAppEnableTranslations{
 // https://github.com/WICG/pwa-url-handler/blob/main/explainer.md
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls parsing of the "lock_screen" dictionary field and its "start_url"
+// entry in web app manifests.  See explainer for more information:
+// https://github.com/WICG/lock-screen/
+// Note: the lock screen API and OS integration is separately controlled by
+// the content feature `kWebLockScreenApi`.
+const base::Feature kWebAppManifestLockScreen{
+    "WebAppManifestLockScreen", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
@@ -1349,7 +1360,7 @@ const base::FeatureParam<double> kScaleTileMemoryLimitFactor{
     &kScaleTileMemoryLimit, "Factor", 1.0};
 
 const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, allows web pages to use the experimental EditContext API to
 // better control text input. See crbug.com/999184.
@@ -1436,6 +1447,23 @@ const base::Feature kDeferBeginMainFrameDuringLoading{
 const base::FeatureParam<base::TimeDelta> kRecentBeginMainFrameCutoff = {
     &kDeferBeginMainFrameDuringLoading, "recent_begin_main_frame_cutoff",
     base::Milliseconds(150)};
+
+const base::Feature kDecodeScriptSourceOffThread{
+    "DecodeScriptSourceOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAllowSourceSwitchOnPausedVideoMediaStream{
+    "AllowSourceSwitchOnPausedVideoMediaStream",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kDispatchPopstateSync{"DispatchPopstateSync",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Exposes non-standard stats in the WebRTC getStats() API.
+const base::Feature kWebRtcExposeNonStandardStats{
+    "WebRtc-ExposeNonStandardStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSubstringSetTreeForAttributeBuckets{
+    "SubstringSetTreeForAttributeBuckets", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

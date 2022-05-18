@@ -18,6 +18,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/qt/qt.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -56,6 +57,20 @@ component("ui_data_pack") {
 
   defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
 
+  if (is_chromeos) {
+    sources += [
+      "resource/temporary_shared_resource_path_chromeos.cc",
+      "resource/temporary_shared_resource_path_chromeos.h",
+    ]
+  }
+  if (is_chromeos_lacros) {
+    sources += [
+      "resource/data_pack_with_resource_sharing_lacros.cc",
+      "resource/data_pack_with_resource_sharing_lacros.h",
+    ]
+    deps += [ "//components/version_info" ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
@@ -69,6 +84,7 @@ buildflag_header("buildflags") {
     "HAS_NATIVE_ACCESSIBILITY=$has_native_accessibility",
     "HAS_PLATFORM_ACCESSIBILITY_SUPPORT=$has_platform_accessibility_support",
     "USE_GTK=$use_gtk",
+    "USE_QT=$use_qt",
   ]
 }
 
@@ -124,6 +140,8 @@ component("base") {
     "models/dialog_model_field.cc",
     "models/dialog_model_field.h",
     "models/dialog_model_host.h",
+    "models/dialog_model_menu_model_adapter.cc",
+    "models/dialog_model_menu_model_adapter.h",
     "models/image_model.cc",
     "models/image_model.h",
     "models/list_model.h",
@@ -275,8 +293,6 @@ component("base") {
       "cocoa/find_pasteboard.mm",
       "cocoa/flipped_view.h",
       "cocoa/flipped_view.mm",
-      "cocoa/focus_tracker.h",
-      "cocoa/focus_tracker.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
       "cocoa/nsmenuitem_additions.h",
@@ -317,6 +333,10 @@ component("base") {
       "l10n/l10n_util_mac.mm",
       "resource/resource_bundle_mac.mm",
     ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [ "resource/resource_bundle_lacros.cc" ]
   }
 
   if (is_ios) {
@@ -695,6 +715,8 @@ static_library("test_support") {
     "interaction/interaction_test_util.h",
     "resource/mock_resource_bundle_delegate.cc",
     "resource/mock_resource_bundle_delegate.h",
+    "test/idle_test_utils.cc",
+    "test/idle_test_utils.h",
   ]
 
   if (is_mac) {
@@ -758,7 +780,10 @@ static_library("test_support") {
     ]
   }
 
-  public_deps = [ ":base" ]
+  public_deps = [
+    ":base",
+    "//ui/base/idle",
+  ]
   deps = [
     "//base",
     "//base/test:test_config",
@@ -933,6 +958,9 @@ test("ui_base_unittests") {
       "l10n/l10n_util_mac_unittest.mm",
     ]
   }
+  if (is_chromeos_lacros) {
+    sources += [ "resource/data_pack_with_resource_sharing_lacros_unittest.cc" ]
+  }
   if (!is_ios) {
     sources += [
       "themed_vector_icon_unittest.cc",
@@ -1026,7 +1054,6 @@ test("ui_base_unittests") {
         "cocoa/bubble_closer_unittest.mm",
         "cocoa/cocoa_base_utils_unittest.mm",
         "cocoa/constrained_window/constrained_window_animation_unittest.mm",
-        "cocoa/focus_tracker_unittest.mm",
         "cocoa/menu_controller_unittest.mm",
         "cocoa/touch_bar_util_unittest.mm",
         "cocoa/tracking_area_unittest.mm",
@@ -1197,6 +1224,11 @@ test("ui_base_unittests") {
       "//third_party/abseil-cpp:absl",
       "//ui/lottie",
     ]
+  }
+
+  # If the platform supports wayland, run wayland library unittests, too.
+  if (is_chromeos_ash || ozone_platform_wayland) {
+    deps += [ "//ui/base/wayland:unittests" ]
   }
 }
 

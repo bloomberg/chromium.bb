@@ -24,13 +24,15 @@ Expression::Expression(const ast::Expression* declaration,
                        const sem::Type* type,
                        const Statement* statement,
                        Constant constant,
-                       bool has_side_effects)
+                       bool has_side_effects,
+                       const Variable* source_var /* = nullptr */)
     : declaration_(declaration),
+      source_variable_(source_var),
       type_(type),
       statement_(statement),
       constant_(std::move(constant)),
       has_side_effects_(has_side_effects) {
-  TINT_ASSERT(Semantic, type_);
+    TINT_ASSERT(Semantic, type_);
 }
 
 Expression::~Expression() = default;

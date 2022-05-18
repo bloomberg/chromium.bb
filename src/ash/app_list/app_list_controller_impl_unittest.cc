@@ -27,6 +27,7 @@
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
@@ -1309,6 +1310,32 @@ TEST_F(AppListControllerImplAppListBubbleTest,
   // No crash.
 }
 
+TEST_F(AppListControllerImplAppListBubbleTest, HideContinueSectionUpdatesPref) {
+  auto* controller = Shell::Get()->app_list_controller();
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  // Continue section defaults to not hidden.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kLauncherContinueSectionHidden));
+  EXPECT_FALSE(controller->ShouldHideContinueSection());
+
+  // Hiding continue section is reflected in prefs.
+  controller->SetHideContinueSection(true);
+  EXPECT_TRUE(controller->ShouldHideContinueSection());
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kLauncherContinueSectionHidden));
+
+  // Showing continue section is reflected in prefs.
+  controller->SetHideContinueSection(false);
+  EXPECT_FALSE(controller->ShouldHideContinueSection());
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kLauncherContinueSectionHidden));
+
+  // Hiding continue section can be done via the AppListController interface
+  // exposed in //ash/public.
+  AppListController::Get()->HideContinueSection();
+  EXPECT_TRUE(controller->ShouldHideContinueSection());
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kLauncherContinueSectionHidden));
+}
+
 // Kiosk tests with the bubble launcher enabled.
 class AppListControllerImplKioskTest
     : public AppListControllerImplAppListBubbleTest {
@@ -1433,8 +1460,7 @@ class AppListControllerWithAssistantTest
 
  protected:
   void ToggleAssistantUiWithAccelerator() {
-    PressAndReleaseKey(ui::KeyboardCode::VKEY_A,
-                       ui::EventFlags::EF_COMMAND_DOWN);
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_A, ui::EF_COMMAND_DOWN);
     EXPECT_TRUE(assistant_test_api_->IsVisible());
   }
 

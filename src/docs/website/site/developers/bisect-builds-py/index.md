@@ -29,13 +29,11 @@ macOS
 curl -s --basic -n "https://chromium.googlesource.com/chromium/src/+/HEAD/tools/bisect-builds.py?format=TEXT" | base64 -D > bisect-builds.py
 ```
 
-Windows (no curl, base64) python2
+Windows (no curl, base64) python3
 
 ```none
-python -c "import urllib2; import base64; print base64.b64decode(urllib2.urlopen(\"https://chromium.googlesource.com/chromium/src/+/HEAD/tools/bisect-builds.py?format=TEXT\").read())" > bisect-builds.py
+python3 -c "import base64; import urllib.request; print(str(base64.b64decode(urllib.request.urlopen(\"https://chromium.googlesource.com/chromium/src/+/HEAD/tools/bisect-builds.py?format=TEXT\").read()),'utf-8'))" > bisect-builds.py
 ```
-
-Note: Bisect builds works with Python 2 or 3.
 
 Run it like this:
 

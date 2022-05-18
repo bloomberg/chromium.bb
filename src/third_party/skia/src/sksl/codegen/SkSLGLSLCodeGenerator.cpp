@@ -13,7 +13,6 @@
 #include "include/private/SkSLLayout.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLProgramElement.h"
-#include "include/private/SkSLProgramKind.h"
 #include "include/private/SkSLStatement.h"
 #include "include/private/SkSLString.h"
 #include "include/private/SkTArray.h"
@@ -929,7 +928,7 @@ void GLSLCodeGenerator::writeBinaryExpression(const BinaryExpression& b,
     if (precedence >= parentPrecedence) {
         this->write("(");
     }
-    bool positionWorkaround = fProgram.fConfig->fKind == ProgramKind::kVertex &&
+    bool positionWorkaround = ProgramConfig::IsVertex(fProgram.fConfig->fKind) &&
                               op.isAssignment() &&
                               left.is<FieldAccess>() &&
                               is_sk_position(left.as<FieldAccess>()) &&
@@ -1129,10 +1128,9 @@ void GLSLCodeGenerator::writeModifiers(const Modifiers& modifiers,
         (modifiers.fFlags & Modifiers::kOut_Flag)) {
         this->write("inout ");
     } else if (modifiers.fFlags & Modifiers::kIn_Flag) {
-        if (globalContext &&
-            this->caps().generation() < SkSL::GLSLGeneration::k130) {
-            this->write(fProgram.fConfig->fKind == ProgramKind::kVertex ? "attribute "
-                                                                        : "varying ");
+        if (globalContext && this->caps().generation() < SkSL::GLSLGeneration::k130) {
+            this->write(ProgramConfig::IsVertex(fProgram.fConfig->fKind) ? "attribute "
+                                                                         : "varying ");
         } else {
             this->write("in ");
         }
@@ -1283,7 +1281,6 @@ void GLSLCodeGenerator::writeStatement(const Statement& s) {
         case Statement::Kind::kDiscard:
             this->write("discard;");
             break;
-        case Statement::Kind::kInlineMarker:
         case Statement::Kind::kNop:
             this->write(";");
             break;
@@ -1413,10 +1410,12 @@ void GLSLCodeGenerator::writeDoStatement(const DoStatement& d) {
 }
 
 void GLSLCodeGenerator::writeExpressionStatement(const ExpressionStatement& s) {
-    if (s.expression()->hasSideEffects()) {
-        this->writeExpression(*s.expression(), Precedence::kTopLevel);
-        this->write(";");
+    if (fProgram.fConfig->fSettings.fOptimize && !s.expression()->hasSideEffects()) {
+        // Don't emit dead expressions.
+        return;
     }
+    this->writeExpression(*s.expression(), Precedence::kTopLevel);
+    this->write(";");
 }
 
 void GLSLCodeGenerator::writeSwitchStatement(const SwitchStatement& s) {
@@ -1618,27 +1617,20 @@ bool GLSLCodeGenerator::generateCode() {
 
     if (!this->caps().canUseFragCoord()) {
         Layout layout;
-        switch (fProgram.fConfig->fKind) {
-            case ProgramKind::kVertex: {
-                Modifiers modifiers(layout, Modifiers::kOut_Flag);
-                this->writeModifiers(modifiers, true);
-                if (this->usesPrecisionModifiers()) {
-                    this->write("highp ");
-                }
-                this->write("vec4 sk_FragCoord_Workaround;\n");
-                break;
+        if (ProgramConfig::IsVertex(fProgram.fConfig->fKind)) {
+            Modifiers modifiers(layout, Modifiers::kOut_Flag);
+            this->writeModifiers(modifiers, true);
+            if (this->usesPrecisionModifiers()) {
+                this->write("highp ");
             }
-            case ProgramKind::kFragment: {
-                Modifiers modifiers(layout, Modifiers::kIn_Flag);
-                this->writeModifiers(modifiers, true);
-                if (this->usesPrecisionModifiers()) {
-                    this->write("highp ");
-                }
-                this->write("vec4 sk_FragCoord_Workaround;\n");
-                break;
+            this->write("vec4 sk_FragCoord_Workaround;\n");
+        } else if (ProgramConfig::IsFragment(fProgram.fConfig->fKind)) {
+            Modifiers modifiers(layout, Modifiers::kIn_Flag);
+            this->writeModifiers(modifiers, true);
+            if (this->usesPrecisionModifiers()) {
+                this->write("highp ");
             }
-            default:
-                break;
+            this->write("vec4 sk_FragCoord_Workaround;\n");
         }
     }
 

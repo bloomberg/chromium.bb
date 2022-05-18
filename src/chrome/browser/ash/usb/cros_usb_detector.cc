@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/vector_icons/vector_icons.h"
@@ -395,11 +395,15 @@ CrosUsbDetector::CrosUsbDetector() {
   g_cros_usb_detector = this;
   guest_os_classes_blocked_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PHYSICAL));
+  // do we actually need this? already blocked in permission_broker
   guest_os_classes_blocked_.emplace_back(UsbFilterByClassCode(USB_CLASS_HUB));
-  guest_os_classes_blocked_.emplace_back(UsbFilterByClassCode(USB_CLASS_HID));
   guest_os_classes_blocked_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_PRINTER));
 
+  // if we still feel squirrely about allowing HID we can prevent ash from
+  // creating a 'Share with Linux' notification.
+  guest_os_classes_without_notif_.emplace_back(
+      UsbFilterByClassCode(USB_CLASS_HID));
   guest_os_classes_without_notif_.emplace_back(
       UsbFilterByClassCode(USB_CLASS_AUDIO));
   guest_os_classes_without_notif_.emplace_back(
@@ -429,7 +433,7 @@ CrosUsbDetector::CrosUsbDetector() {
   fastboot_device_filter_->has_protocol_code = true;
   fastboot_device_filter_->protocol_code = kFastbootProtocol;
 
-  chromeos::ConciergeClient::Get()->AddVmObserver(this);
+  ConciergeClient::Get()->AddVmObserver(this);
   chromeos::DBusThreadManager::Get()
       ->GetVmPluginDispatcherClient()
       ->AddObserver(this);
@@ -439,7 +443,7 @@ CrosUsbDetector::CrosUsbDetector() {
 CrosUsbDetector::~CrosUsbDetector() {
   DCHECK_EQ(this, g_cros_usb_detector);
   disks::DiskMountManager::GetInstance()->RemoveObserver(this);
-  chromeos::ConciergeClient::Get()->RemoveVmObserver(this);
+  ConciergeClient::Get()->RemoveVmObserver(this);
   chromeos::DBusThreadManager::Get()
       ->GetVmPluginDispatcherClient()
       ->RemoveObserver(this);
@@ -776,7 +780,7 @@ void CrosUsbDetector::DetachUsbDeviceFromVm(
   request.set_owner_id(crostini::CryptohomeIdForProfile(profile()));
   request.set_guest_port(*device.guest_port);
 
-  chromeos::ConciergeClient::Get()->DetachUsbDevice(
+  ConciergeClient::Get()->DetachUsbDevice(
       std::move(request),
       base::BindOnce(&CrosUsbDetector::OnUsbDeviceDetachFinished,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, guid,
@@ -946,7 +950,7 @@ void CrosUsbDetector::DoVmAttach(
   request.set_vendor_id(device_info->vendor_id);
   request.set_product_id(device_info->product_id);
 
-  chromeos::ConciergeClient::Get()->AttachUsbDevice(
+  ConciergeClient::Get()->AttachUsbDevice(
       std::move(fd), std::move(request),
       base::BindOnce(&CrosUsbDetector::OnUsbDeviceAttachFinished,
                      weak_ptr_factory_.GetWeakPtr(), vm_name, device_info->guid,

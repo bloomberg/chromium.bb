@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/containers/contains.h"
 #include "base/i18n/case_conversion.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
@@ -16,6 +17,7 @@
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/query_parser/query_parser.h"
+#include "components/query_parser/snippet.h"
 #include "components/url_formatter/url_formatter.h"
 
 namespace history_clusters {
@@ -40,34 +42,51 @@ bool DoesQueryMatchClusterKeywords(
 // Flags any elements within `cluster_visits` that match `find_nodes`. The
 // matching is deliberately meant to closely mirror the History implementation.
 // Returns the total score of matching visits, and returns 0 if no visits match.
-float ComputeTotalMatchScore(
-    const query_parser::QueryNodeVector& find_nodes,
-    std::vector<history::ClusterVisit>* cluster_visits) {
-  DCHECK(cluster_visits);
-
+float MarkMatchesAndGetScore(const query_parser::QueryNodeVector& find_nodes,
+                             history::Cluster* cluster) {
+  DCHECK(cluster);
   float total_matching_visit_score = 0.0;
 
-  for (auto& visit : *cluster_visits) {
-    query_parser::QueryWordVector find_in_words;
+  if (cluster->label &&
+      query_parser::QueryParser::DoesQueryMatch(
+          *(cluster->label), find_nodes, &(cluster->label_match_positions))) {
+    total_matching_visit_score += 1.0;
+  }
+
+  for (auto& visit : cluster->visits) {
+    bool match_found = false;
+
+    // Search through the visible elements and highlight match positions.
     GURL gurl = visit.annotated_visit.url_row.url();
+    auto url_for_display_lower = base::i18n::ToLower(visit.url_for_display);
+    match_found |= query_parser::QueryParser::DoesQueryMatch(
+        url_for_display_lower, find_nodes,
+        &visit.url_for_display_match_positions);
+    auto title_lower =
+        base::i18n::ToLower(visit.annotated_visit.url_row.title());
+    match_found |= query_parser::QueryParser::DoesQueryMatch(
+        title_lower, find_nodes, &visit.title_match_positions);
 
-    std::u16string url_lower =
-        base::i18n::ToLower(base::UTF8ToUTF16(gurl.possibly_invalid_spec()));
-    query_parser::QueryParser::ExtractQueryWords(url_lower, &find_in_words);
+    // If we couldn't find it in the visible elements, try a second search
+    // where we put all the text into one bag and try again. We need to do this
+    // to be as exhaustive as History.
+    // TODO(tommycli): Downgrade the score of these matches, or investigate if
+    // we can discard this second pass. The consequence of discarding the second
+    // pass is to omit matches that span both the URL and title.
+    if (!match_found) {
+      query_parser::QueryWordVector find_in_words;
+      std::u16string url_lower =
+          base::i18n::ToLower(base::UTF8ToUTF16(gurl.possibly_invalid_spec()));
+      query_parser::QueryParser::ExtractQueryWords(url_lower, &find_in_words);
+      query_parser::QueryParser::ExtractQueryWords(url_for_display_lower,
+                                                   &find_in_words);
+      query_parser::QueryParser::ExtractQueryWords(title_lower, &find_in_words);
 
-    if (gurl.is_valid()) {
-      // Decode punycode to match IDN.
-      std::u16string ascii = base::ASCIIToUTF16(gurl.host());
-      std::u16string utf = url_formatter::IDNToUnicode(gurl.host());
-      if (ascii != utf)
-        query_parser::QueryParser::ExtractQueryWords(utf, &find_in_words);
+      match_found |=
+          query_parser::QueryParser::DoesQueryMatch(find_in_words, find_nodes);
     }
 
-    std::u16string title_lower =
-        base::i18n::ToLower(visit.annotated_visit.url_row.title());
-    query_parser::QueryParser::ExtractQueryWords(title_lower, &find_in_words);
-
-    if (query_parser::QueryParser::DoesQueryMatch(find_in_words, find_nodes)) {
+    if (match_found) {
       visit.matches_search_query = true;
       DCHECK_GE(visit.score, 0);
       total_matching_visit_score += visit.score;
@@ -83,9 +102,8 @@ float ComputeTotalMatchScore(
 //
 // Note, this should NOT be called for `cluster_visits` with NO matching visits.
 void PromoteMatchingVisitsAboveNonMatchingVisits(
-    std::vector<history::ClusterVisit>* cluster_visits) {
-  DCHECK(cluster_visits);
-  for (auto& visit : *cluster_visits) {
+    std::vector<history::ClusterVisit>& cluster_visits) {
+  for (auto& visit : cluster_visits) {
     if (visit.matches_search_query) {
       // Smash all matching scores into the range that's above the fold.
       visit.score =
@@ -136,9 +154,23 @@ std::string ComputeURLKeywordForLookup(const GURL& url) {
       ComputeURLForDeduping(url));
 }
 
-void StableSortVisits(std::vector<history::ClusterVisit>* visits) {
-  DCHECK(visits);
-  base::ranges::stable_sort(*visits, [](auto& v1, auto& v2) {
+std::u16string ComputeURLForDisplay(const GURL& url, bool trim_after_host) {
+  // Use URL formatting options similar to the omnibox popup. The url_formatter
+  // component does IDN hostname conversion as well.
+  url_formatter::FormatUrlTypes format_types =
+      url_formatter::kFormatUrlOmitDefaults |
+      url_formatter::kFormatUrlOmitHTTPS |
+      url_formatter::kFormatUrlOmitTrivialSubdomains;
+
+  if (trim_after_host)
+    format_types |= url_formatter::kFormatUrlTrimAfterHost;
+
+  return url_formatter::FormatUrl(url, format_types, base::UnescapeRule::SPACES,
+                                  nullptr, nullptr, nullptr);
+}
+
+void StableSortVisits(std::vector<history::ClusterVisit>& visits) {
+  base::ranges::stable_sort(visits, [](auto& v1, auto& v2) {
     if (v1.score != v2.score) {
       // Use v1 > v2 to get higher scored visits BEFORE lower scored visits.
       return v1.score > v2.score;
@@ -151,8 +183,7 @@ void StableSortVisits(std::vector<history::ClusterVisit>* visits) {
 }
 
 void ApplySearchQuery(const std::string& query,
-                      std::vector<history::Cluster>* clusters) {
-  DCHECK(clusters);
+                      std::vector<history::Cluster>& clusters) {
   if (query.empty())
     return;
 
@@ -165,15 +196,15 @@ void ApplySearchQuery(const std::string& query,
   // Move all the passed in `clusters` into `all_clusters`, and start rebuilding
   // `clusters` to only contain the matching ones.
   std::vector<history::Cluster> all_clusters;
-  std::swap(all_clusters, *clusters);
+  std::swap(all_clusters, clusters);
 
   for (auto& cluster : all_clusters) {
     const float total_matching_visit_score =
-        ComputeTotalMatchScore(find_nodes, &cluster.visits);
+        MarkMatchesAndGetScore(find_nodes, &cluster);
     DCHECK_GE(total_matching_visit_score, 0);
     if (total_matching_visit_score > 0 &&
         GetConfig().rescore_visits_within_clusters_for_query) {
-      PromoteMatchingVisitsAboveNonMatchingVisits(&cluster.visits);
+      PromoteMatchingVisitsAboveNonMatchingVisits(cluster.visits);
     }
 
     cluster.search_match_score = total_matching_visit_score;
@@ -186,12 +217,12 @@ void ApplySearchQuery(const std::string& query,
 
     if (cluster.search_match_score > 0) {
       // Move the matching clusters into the final list.
-      clusters->push_back(std::move(cluster));
+      clusters.push_back(std::move(cluster));
     }
   }
 
   if (GetConfig().sort_clusters_within_batch_for_query) {
-    base::ranges::stable_sort(*clusters, [](auto& c1, auto& c2) {
+    base::ranges::stable_sort(clusters, [](auto& c1, auto& c2) {
       // Use c1 > c2 to get higher scored clusters BEFORE lower scored clusters.
       return c1.search_match_score > c2.search_match_score;
     });
@@ -200,37 +231,81 @@ void ApplySearchQuery(const std::string& query,
 
 void CullNonProminentOrDuplicateClusters(
     std::string query,
-    std::vector<history::Cluster>* clusters,
+    std::vector<history::Cluster>& clusters,
     std::set<GURL>* seen_single_visit_cluster_urls) {
-  DCHECK(clusters);
   DCHECK(seen_single_visit_cluster_urls);
   if (query.empty()) {
     // For the empty-query state, only show clusters with
     // `should_show_on_prominent_ui_surfaces` set to true. This restriction is
     // NOT applied when the user is searching for a specific keyword.
-    clusters->erase(base::ranges::remove_if(
-                        *clusters,
-                        [](const history::Cluster& cluster) {
-                          return !cluster.should_show_on_prominent_ui_surfaces;
-                        }),
-                    clusters->end());
+    clusters.erase(base::ranges::remove_if(
+                       clusters,
+                       [](const history::Cluster& cluster) {
+                         return !cluster.should_show_on_prominent_ui_surfaces;
+                       }),
+                   clusters.end());
   } else {
-    clusters->erase(base::ranges::remove_if(
-                        *clusters,
-                        [&](const history::Cluster& cluster) {
-                          // Erase all duplicate single-visit non-prominent
-                          // clusters.
-                          if (!cluster.should_show_on_prominent_ui_surfaces &&
-                              cluster.visits.size() == 1) {
-                            auto [unused_iterator, newly_inserted] =
-                                seen_single_visit_cluster_urls->insert(
-                                    cluster.visits[0].url_for_deduping);
-                            return !newly_inserted;
-                          }
+    clusters.erase(base::ranges::remove_if(
+                       clusters,
+                       [&](const history::Cluster& cluster) {
+                         // Erase all duplicate single-visit non-prominent
+                         // clusters.
+                         if (!cluster.should_show_on_prominent_ui_surfaces &&
+                             cluster.visits.size() == 1) {
+                           auto [unused_iterator, newly_inserted] =
+                               seen_single_visit_cluster_urls->insert(
+                                   cluster.visits[0].url_for_deduping);
+                           return !newly_inserted;
+                         }
 
-                          return false;
-                        }),
-                    clusters->end());
+                         return false;
+                       }),
+                   clusters.end());
+  }
+}
+
+void HideAndCullLowScoringVisits(std::vector<history::Cluster>& clusters) {
+  for (auto& cluster : clusters) {
+    for (size_t i = 0; i < cluster.visits.size(); ++i) {
+      auto& visit = cluster.visits[i];
+      // Even a 0.0 visit shouldn't be hidden if this is the first visit we
+      // encounter. The assumption is that the visits are always ranked by score
+      // in a descending order.
+      // TODO(crbug.com/1313631): Simplify this after removing "Show More" UI.
+      if ((visit.score == 0.0 && i != 0) ||
+          (visit.score < GetConfig().min_score_to_always_show_above_the_fold &&
+           i >= GetConfig().num_visits_to_always_show_above_the_fold)) {
+        visit.hidden = true;
+      }
+    }
+
+    if (GetConfig().drop_hidden_visits) {
+      cluster.visits.erase(
+          base::ranges::remove_if(
+              cluster.visits, [](const auto& visit) { return visit.hidden; }),
+          cluster.visits.end());
+    }
+  }
+}
+
+void CoalesceRelatedSearches(std::vector<history::Cluster>& clusters) {
+  constexpr size_t kMaxRelatedSearches = 5;
+
+  for (auto& cluster : clusters) {
+    for (const auto& visit : cluster.visits) {
+      // Coalesce the unique related searches of this visit into the cluster
+      // until the cap is reached.
+      for (const auto& search_query :
+           visit.annotated_visit.content_annotations.related_searches) {
+        if (cluster.related_searches.size() >= kMaxRelatedSearches) {
+          return;
+        }
+
+        if (!base::Contains(cluster.related_searches, search_query)) {
+          cluster.related_searches.push_back(search_query);
+        }
+      }
+    }
   }
 }
 

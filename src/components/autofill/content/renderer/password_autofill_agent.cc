@@ -590,11 +590,13 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
     DeferMsg(&mojom::PasswordManagerDriver::ShowPasswordSuggestions,
              text_direction, typed_username, options, bounds);
   }
+#if BUILDFLAG(IS_ANDROID)
   void ShowTouchToFill(
-      autofill::mojom::SubmissionReadinessState submission_readiness) override {
+      mojom::SubmissionReadinessState submission_readiness) override {
     DeferMsg(&mojom::PasswordManagerDriver::ShowTouchToFill,
              submission_readiness);
   }
+#endif
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override {
     DeferMsg(&mojom::PasswordManagerDriver::CheckSafeBrowsingReputation,
@@ -686,7 +688,7 @@ PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
 PasswordAutofillAgent::FocusStateNotifier::~FocusStateNotifier() = default;
 
 void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
-    autofill::FieldRendererId focused_field_id,
+    FieldRendererId focused_field_id,
     FocusedFieldType focused_field_type) {
   // Forward the request if the type changed or the field is fillable.
   if (focused_field_id_ != focused_field_id ||
@@ -836,8 +838,23 @@ bool PasswordAutofillAgent::FillSuggestion(
     FillField(&username_element, username);
   }
 
-  if (!password_element.IsNull())
+  if (!password_element.IsNull()) {
     FillPasswordFieldAndSave(&password_element, password);
+
+    // TODO(crbug.com/1319364): As Touch-To-Fill and auto-submission don't
+    // currently support filling single username fields, the code below is
+    // within |!password_element.IsNull()|. Support such fields too and move the
+    // code out the condition.
+    // If the |username_element| is visible/focusable and the |password_element|
+    // is not, trigger submission on the former as the latter unlikely has an
+    // Enter listener.
+    if (!username_element.IsNull() && username_element.IsFocusable() &&
+        !password_element.IsFocusable()) {
+      field_renderer_id_to_submit_ = GetFieldRendererId(username_element);
+    } else {
+      field_renderer_id_to_submit_ = GetFieldRendererId(password_element);
+    }
+  }
 
   element.SetSelectionRange(element.Value().length(), element.Value().length());
 
@@ -1021,6 +1038,7 @@ bool PasswordAutofillAgent::ShouldSuppressKeyboard() {
   return touch_to_fill_state_ == TouchToFillState::kIsShowing;
 }
 
+#if BUILDFLAG(IS_ANDROID)
 bool PasswordAutofillAgent::TryToShowTouchToFill(
     const WebFormControlElement& control_element) {
   if (touch_to_fill_state_ != TouchToFillState::kShouldShow)
@@ -1056,9 +1074,6 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
 
   focused_input_element_ = input_element;
 
-// TODO(crbug.com/1299430): Consider to disable |TryToShowTouchToFill| and
-// |ShowTouchToFill| on Desktop.
-#if BUILDFLAG(IS_ANDROID)
   WebFormElement form = password_element.Form();
   std::unique_ptr<FormData> form_data =
       form.IsNull() ? GetFormDataFromUnownedInputElements()
@@ -1067,14 +1082,11 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
       form_data ? CalculateSubmissionReadiness(*form_data, username_element,
                                                password_element)
                 : mojom::SubmissionReadinessState::kNoInformation);
-#else
-  GetPasswordManagerDriver().ShowTouchToFill(
-      mojom::SubmissionReadinessState::kNoInformation);
-#endif
 
   touch_to_fill_state_ = TouchToFillState::kIsShowing;
   return true;
 }
+#endif
 
 bool PasswordAutofillAgent::ShowSuggestions(
     const WebInputElement& element,
@@ -1557,7 +1569,7 @@ void PasswordAutofillAgent::TriggerFormSubmission() {
   // Find the last interacted element to simulate an enter keystroke at.
   WebFormControlElement form_control = FindFormControlElementByUniqueRendererId(
       render_frame()->GetWebFrame()->GetDocument(),
-      last_updated_field_renderer_id_, last_updated_form_renderer_id_);
+      field_renderer_id_to_submit_);
   if (form_control.IsNull()) {
     // The target field doesn't exist anymore. Don't try to submit it.
     return;
@@ -1565,17 +1577,8 @@ void PasswordAutofillAgent::TriggerFormSubmission() {
 
   // |form_control| can only be |WebInputElement|, not |WebSelectElement|.
   WebInputElement input = form_control.To<WebInputElement>();
-
-  // TODO(crbug.com/1283004): Support filling single username fields too.
-  DCHECK(input.IsPasswordFieldForAutofill())
-      << "Form submission attempt for a non-password element";
-
-  // TODO(crbug.com/1283004): Ideally, |CalculateSubmissionReadiness| should be
-  // called to check all criteria. Use the DCHECK just for a sanity check now
-  // and remove it later.
-  DCHECK(input.IsLastInputElementInForm())
-      << "Form is not ready for submission";
   input.DispatchSimulatedEnter();
+  field_renderer_id_to_submit_ = FieldRendererId();
 }
 #endif
 
@@ -1745,6 +1748,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   all_autofilled_elements_.clear();
   last_updated_field_renderer_id_ = FieldRendererId();
   last_updated_form_renderer_id_ = FormRendererId();
+  field_renderer_id_to_submit_ = FieldRendererId();
   touch_to_fill_state_ = TouchToFillState::kShouldShow;
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   page_passwords_analyser_.Reset();

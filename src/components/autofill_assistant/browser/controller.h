@@ -135,6 +135,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetBrowseModeInvisible(bool invisible) override;
   bool ShouldShowWarning() override;
   ProcessedActionStatusDetailsProto& GetLogInfo() override;
+  bool MustUseBackendData() const override;
 
   // Show the UI if it's not already shown. This is only meaningful while in
   // states where showing the UI is optional, such as RUNNING, in tracking mode.
@@ -294,6 +295,9 @@ class Controller : public ScriptExecutorDelegate,
   void ResetState();
   void SetDirectActionScripts(
       const std::vector<ScriptHandle>& direct_action_scripts);
+
+  // Sets the semantic selector in the DOM annotation service.
+  void SetSemanticSelectorPolicy(SemanticSelectorPolicy policy);
 
   ClientSettings settings_;
   const raw_ptr<Client> client_;

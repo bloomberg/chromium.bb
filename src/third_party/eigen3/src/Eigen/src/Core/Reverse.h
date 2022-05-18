@@ -26,7 +26,7 @@ struct traits<Reverse<MatrixType, Direction> >
   typedef typename traits<MatrixType>::StorageKind StorageKind;
   typedef typename traits<MatrixType>::XprKind XprKind;
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNested_;
+  typedef std::remove_reference_t<MatrixTypeNested> MatrixTypeNested_;
   enum {
     RowsAtCompileTime = MatrixType::RowsAtCompileTime,
     ColsAtCompileTime = MatrixType::ColsAtCompileTime,
@@ -69,7 +69,7 @@ template<typename MatrixType, int Direction> class Reverse
 
     typedef typename internal::dense_xpr_base<Reverse>::type Base;
     EIGEN_DENSE_PUBLIC_INTERFACE(Reverse)
-    typedef typename internal::remove_all<MatrixType>::type NestedExpression;
+    typedef internal::remove_all_t<MatrixType> NestedExpression;
     using Base::IsRowMajor;
 
   protected:
@@ -101,7 +101,7 @@ template<typename MatrixType, int Direction> class Reverse
       return -m_matrix.innerStride();
     }
 
-    EIGEN_DEVICE_FUNC const typename internal::remove_all<typename MatrixType::Nested>::type&
+    EIGEN_DEVICE_FUNC const internal::remove_all_t<typename MatrixType::Nested>&
     nestedExpression() const
     {
       return m_matrix;

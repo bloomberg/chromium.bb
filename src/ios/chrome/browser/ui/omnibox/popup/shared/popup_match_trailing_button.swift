@@ -8,15 +8,45 @@ import SwiftUI
 struct PopupMatchTrailingButton: View {
   enum Dimensions {
     static let extendedTouchTargetDiameter: CGFloat = 44
+    static let trailingButtonIconSize: CGFloat = 17
     static let trailingButtonSize: CGFloat = 24
   }
 
   let match: PopupMatch
   let action: () -> Void
 
+  @Environment(\.popupUIVariation) var uiVariation: PopupUIVariation
+  @Environment(\.layoutDirection) var layoutDirection: LayoutDirection
+
+  @ViewBuilder
+  var image: some View {
+    switch uiVariation {
+    case .one:
+      // Treatment one uses legacy icons.
+      if match.isTabMatch {
+        let uiImage = UIImage(named: "omnibox_popup_tab_match")
+        Image(uiImage: uiImage!)
+          .renderingMode(.template)
+          .flipsForRightToLeftLayoutDirection(true)
+      } else {
+        let uiImage = NativeImage(IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND)
+        Image(uiImage: uiImage!)
+          .renderingMode(.template)
+          .flipsForRightToLeftLayoutDirection(true)
+      }
+    case .two:
+      Image(systemName: match.isTabMatch ? "arrow.right.circle" : "arrow.up.backward")
+        .flipsForRightToLeftLayoutDirection(true)
+    }
+  }
+
   var body: some View {
     Button(action: action) {
-      Image(systemName: match.isTabMatch ? "arrow.right.square" : "arrow.up.backward")
+      image
+        // Make the image know about the environment layout direction as we
+        // override it on the body as a whole.
+        .environment(\.layoutDirection, layoutDirection)
+        .font(.system(size: Dimensions.trailingButtonIconSize, weight: .medium))
         .aspectRatio(contentMode: .fit)
         .frame(
           width: Dimensions.trailingButtonSize, height: Dimensions.trailingButtonSize,
@@ -25,22 +55,22 @@ struct PopupMatchTrailingButton: View {
         .contentShape(
           Circle().size(
             width: Dimensions.extendedTouchTargetDiameter,
-            height: Dimensions.extendedTouchTargetDiameter)
+            height: Dimensions.extendedTouchTargetDiameter
+          )
+          .offset(
+            x: (Dimensions.trailingButtonSize - Dimensions.extendedTouchTargetDiameter) / 2,
+            y: (Dimensions.trailingButtonSize - Dimensions.extendedTouchTargetDiameter) / 2)
         )
     }
     .buttonStyle(.plain)
     // The button shouldn't be an actual accessibility element for
     // VoiceOver.
     .accessibilityHidden(true)
-    // TODO(crbug.com/1312110): This should be `children: .contain` so the
-    // new accessibility element isn't accessible. However, EG currently can't
-    // tap on a non-accessible SwiftUI view in a test.
-    // Create a new accessibility element that is non-accessible so tests
-    // can find the button.
-    .accessibilityElement(children: .ignore)
     .accessibilityIdentifier(
       match.isTabMatch
         ? kOmniboxPopupRowSwitchTabAccessibilityIdentifier
-        : kOmniboxPopupRowAppendAccessibilityIdentifier)
+        : kOmniboxPopupRowAppendAccessibilityIdentifier
+    )
+    .environment(\.layoutDirection, .leftToRight)
   }
 }

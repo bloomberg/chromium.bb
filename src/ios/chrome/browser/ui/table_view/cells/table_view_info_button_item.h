@@ -9,6 +9,8 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+@protocol TableViewInfoButtonItemDelegate;
+
 // TableViewInfoButtonItem is a model class that uses TableViewInfoButtonCell.
 @interface TableViewInfoButtonItem : TableViewItem
 
@@ -35,6 +37,13 @@
 
 // The accessibility hint text string.
 @property(nonatomic, copy) NSString* accessibilityHint;
+
+// Boolean for if the info button is hidden.
+@property(nonatomic, assign) BOOL infoButtonIsHidden;
+
+// Accessibility delegate for custom accessibility actions.
+@property(nonatomic, weak) id<TableViewInfoButtonItemDelegate>
+    accessibilityDelegate;
 
 @end
 

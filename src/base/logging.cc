@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
+#include "base/immediate_crash.h"
 #include "base/pending_task.h"
 #include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"
@@ -140,8 +140,10 @@ namespace logging {
 
 namespace {
 
+#if BUILDFLAG(USE_RUNTIME_VLOG)
 VlogInfo* g_vlog_info = nullptr;
 VlogInfo* g_vlog_info_prev = nullptr;
+#endif  // BUILDFLAG(USE_RUNTIME_VLOG)
 
 const char* const log_severity_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
 static_assert(LOGGING_NUM_SEVERITIES == std::size(log_severity_names),
@@ -415,6 +417,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   g_log_format = settings.log_format;
 #endif
 
+#if BUILDFLAG(USE_RUNTIME_VLOG)
   if (base::CommandLine::InitializedForCurrentProcess()) {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     // Don't bother initializing |g_vlog_info| unless we use one of the
@@ -433,6 +436,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
                        &g_min_log_level);
     }
   }
+#endif  // defined(USE_RUNTIME_VLOG)
 
   g_logging_destination = settings.logging_dest;
 
@@ -497,12 +501,16 @@ bool ShouldCreateLogMessage(int severity) {
 bool ShouldLogToStderr(int severity) {
   if (g_logging_destination & LOG_TO_STDERR)
     return true;
-#if !BUILDFLAG(IS_FUCHSIA)
-  // High-severity logs go to stderr by default, except on Fuchsia.
+
+#if BUILDFLAG(IS_FUCHSIA)
+  // Fuchsia will persist data logged to stdio by a component, so do not emit
+  // logs to stderr unless explicitly configured to do so.
+  return false;
+#else
   if (severity >= kAlwaysPrintErrorLevel)
     return (g_logging_destination & ~LOG_TO_FILE) == LOG_NONE;
-#endif
   return false;
+#endif
 }
 
 int GetVlogVerbosity() {
@@ -511,12 +519,17 @@ int GetVlogVerbosity() {
 
 int GetVlogLevelHelper(const char* file, size_t N) {
   DCHECK_GT(N, 0U);
+
+#if BUILDFLAG(USE_RUNTIME_VLOG)
   // Note: |g_vlog_info| may change on a different thread during startup
   // (but will always be valid or nullptr).
   VlogInfo* vlog_info = g_vlog_info;
   return vlog_info ?
       vlog_info->GetVlogLevel(base::StringPiece(file, N - 1)) :
       GetVlogVerbosity();
+#else
+  return GetVlogVerbosity();
+#endif  // BUILDFLAG(USE_RUNTIME_VLOG)
 }
 
 void SetLogItems(bool enable_process_id, bool enable_thread_id,
@@ -774,8 +787,10 @@ LogMessage::~LogMessage() {
             return OS_LOG_TYPE_ERROR;
           case LOGGING_FATAL:
             return OS_LOG_TYPE_FAULT;
+          case LOGGING_VERBOSE:
+            return OS_LOG_TYPE_DEBUG;
           default:
-            return severity < 0 ? OS_LOG_TYPE_DEBUG : OS_LOG_TYPE_DEFAULT;
+            return OS_LOG_TYPE_DEFAULT;
         }
       }(severity_);
       os_log_with_type(log.get(), os_log_type, "%{public}s",
@@ -1157,6 +1172,12 @@ std::wstring GetLogFileFullPath() {
   return std::wstring();
 }
 #endif
+
+#if !BUILDFLAG(USE_RUNTIME_VLOG)
+int GetDisableAllVLogLevel() {
+  return -1;
+}
+#endif  // !BUILDFLAG(USE_RUNTIME_VLOG)
 
 }  // namespace logging
 

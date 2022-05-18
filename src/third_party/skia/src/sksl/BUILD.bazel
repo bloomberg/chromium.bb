@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 enforce_iwyu_on_package()
 
@@ -9,6 +11,8 @@ filegroup(
     srcs = [
         "generated/sksl_frag.dehydrated.sksl",
         "generated/sksl_gpu.dehydrated.sksl",
+        "generated/sksl_graphite_frag.dehydrated.sksl",
+        "generated/sksl_graphite_vert.dehydrated.sksl",
         "generated/sksl_public.dehydrated.sksl",
         "generated/sksl_rt_shader.dehydrated.sksl",
         "generated/sksl_vert.dehydrated.sksl",
@@ -42,7 +46,7 @@ cc_library(
         ":SkSLThreadContext_src",
         ":SkSLUtil_src",
         "//src/sksl/analysis:SkSLCanExitWithoutReturningValue_src",
-        "//src/sksl/analysis:SkSLCheckProgramUnrolledSize_src",
+        "//src/sksl/analysis:SkSLCheckProgramStructure_src",
         "//src/sksl/analysis:SkSLFinalizationChecks_src",
         "//src/sksl/analysis:SkSLGetLoopUnrollInfo_src",
         "//src/sksl/analysis:SkSLIsConstantExpression_src",
@@ -343,6 +347,7 @@ generated_cc_atom(
         ":SkSLAnalysis_hdr",
         ":SkSLConstantFolder_hdr",
         ":SkSLContext_hdr",
+        ":SkSLProgramSettings_hdr",
         "//include/core:SkTypes_hdr",
         "//include/private:SkSLModifiers_hdr",
         "//include/sksl:SkSLErrorReporter_hdr",
@@ -390,7 +395,6 @@ generated_cc_atom(
         "//include/private:SkSLDefines_hdr",
         "//include/private:SkSLProgramKind_hdr",
         "//include/private:SkTArray_hdr",
-        "//include/private:SkTHash_hdr",
         "//include/sksl:DSLCore_hdr",
         "//include/sksl:DSLExpression_hdr",
         "//include/sksl:DSLLayout_hdr",
@@ -418,6 +422,7 @@ generated_cc_atom(
         "//include/private:SkSLModifiers_hdr",
         "//include/private:SkSLProgramElement_hdr",
         "//include/private:SkSLString_hdr",
+        "//include/private:SkTHash_hdr",
         "//include/sksl:DSLBlock_hdr",
         "//include/sksl:DSLCase_hdr",
         "//include/sksl:DSLFunction_hdr",
@@ -485,7 +490,6 @@ generated_cc_atom(
         "//src/sksl/ir:SkSLFunctionPrototype_hdr",
         "//src/sksl/ir:SkSLIfStatement_hdr",
         "//src/sksl/ir:SkSLIndexExpression_hdr",
-        "//src/sksl/ir:SkSLInlineMarker_hdr",
         "//src/sksl/ir:SkSLInterfaceBlock_hdr",
         "//src/sksl/ir:SkSLLiteral_hdr",
         "//src/sksl/ir:SkSLPostfixExpression_hdr",
@@ -590,7 +594,6 @@ generated_cc_atom(
         "//src/sksl/ir:SkSLFunctionDefinition_hdr",
         "//src/sksl/ir:SkSLIfStatement_hdr",
         "//src/sksl/ir:SkSLIndexExpression_hdr",
-        "//src/sksl/ir:SkSLInlineMarker_hdr",
         "//src/sksl/ir:SkSLLiteral_hdr",
         "//src/sksl/ir:SkSLNop_hdr",
         "//src/sksl/ir:SkSLPostfixExpression_hdr",
@@ -639,8 +642,8 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkSLMangler_hdr",
+        "//include/core:SkString_hdr",
         "//include/core:SkTypes_hdr",
-        "//include/private:SkSLString_hdr",
         "//include/private:SkStringView_hdr",
         "//src/sksl/ir:SkSLSymbolTable_hdr",
     ],
@@ -728,7 +731,6 @@ generated_cc_atom(
         "//include/private:SkSLDefines_hdr",
         "//include/private:SkSLLayout_hdr",
         "//include/private:SkSLModifiers_hdr",
-        "//include/private:SkSLSymbol_hdr",
         "//src/sksl/ir:SkSLSymbolTable_hdr",
     ],
 )
@@ -750,6 +752,7 @@ generated_cc_atom(
         "//include/private:SkSLProgramElement_hdr",
         "//include/private:SkSLProgramKind_hdr",
         "//include/private:SkSLStatement_hdr",
+        "//include/private:SkSLSymbol_hdr",
         "//include/private:SkTArray_hdr",
         "//include/sksl:DSLCore_hdr",
         "//include/sksl:SkSLOperator_hdr",
@@ -780,7 +783,6 @@ generated_cc_atom(
         "//src/sksl/ir:SkSLFunctionPrototype_hdr",
         "//src/sksl/ir:SkSLIfStatement_hdr",
         "//src/sksl/ir:SkSLIndexExpression_hdr",
-        "//src/sksl/ir:SkSLInlineMarker_hdr",
         "//src/sksl/ir:SkSLInterfaceBlock_hdr",
         "//src/sksl/ir:SkSLLiteral_hdr",
         "//src/sksl/ir:SkSLNop_hdr",

@@ -14,8 +14,6 @@ import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
-import com.google.common.base.Optional;
-
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.components.signin.base.AccountCapabilities;
@@ -109,12 +107,6 @@ public interface AccountManagerFacade {
      */
     @MainThread
     Promise<AccountCapabilities> getAccountCapabilities(Account account);
-
-    /**
-     * Gets the boolean for whether the account can offer extended sync promos.
-     * If the result is not yet fetched, the optional will be empty.
-     */
-    Optional<Boolean> canOfferExtendedSyncPromos(Account account);
 
     /**
      * Creates an intent that will ask the user to add a new account to the device. See

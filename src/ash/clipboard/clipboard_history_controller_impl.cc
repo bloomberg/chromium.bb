@@ -102,6 +102,25 @@ void EncodeBitmapToPNG(
   std::move(barrier_callback).Run();
 }
 
+using ClipboardHistoryPasteType =
+    ash::ClipboardHistoryControllerImpl::ClipboardHistoryPasteType;
+bool IsPlainTextPaste(ClipboardHistoryPasteType paste_type) {
+  switch (paste_type) {
+    case ClipboardHistoryPasteType::kPlainTextAccelerator:
+    case ClipboardHistoryPasteType::kPlainTextKeystroke:
+    case ClipboardHistoryPasteType::kPlainTextMouse:
+    case ClipboardHistoryPasteType::kPlainTextTouch:
+    case ClipboardHistoryPasteType::kPlainTextVirtualKeyboard:
+      return true;
+    case ClipboardHistoryPasteType::kRichTextAccelerator:
+    case ClipboardHistoryPasteType::kRichTextKeystroke:
+    case ClipboardHistoryPasteType::kRichTextMouse:
+    case ClipboardHistoryPasteType::kRichTextTouch:
+    case ClipboardHistoryPasteType::kRichTextVirtualKeyboard:
+      return false;
+  }
+}
+
 }  // namespace
 
 // ClipboardHistoryControllerImpl::AcceleratorTarget ---------------------------
@@ -250,9 +269,13 @@ bool ClipboardHistoryControllerImpl::IsMenuShowing() const {
   return context_menu_ && context_menu_->IsRunning();
 }
 
-void ClipboardHistoryControllerImpl::ShowMenuByAccelerator() {
+void ClipboardHistoryControllerImpl::ToggleMenuShownByAccelerator() {
   if (IsMenuShowing()) {
-    ExecuteSelectedMenuItem(ui::EF_COMMAND_DOWN);
+    // Before hiding the menu, paste the selected menu item, or the first item
+    // if none is selected.
+    PasteMenuItemData(context_menu_->GetSelectedMenuItemCommand().value_or(
+                          ClipboardHistoryUtil::kFirstItemCommandId),
+                      ClipboardHistoryPasteType::kRichTextAccelerator);
     return;
   }
 
@@ -553,7 +576,7 @@ bool ClipboardHistoryControllerImpl::PasteClipboardItemById(
           base::BindOnce(
               &ClipboardHistoryControllerImpl::PasteClipboardHistoryItem,
               weak_ptr_factory_.GetWeakPtr(), active_window, item,
-              /*paste_plain_text=*/false));
+              ClipboardHistoryPasteType::kRichTextVirtualKeyboard));
       return true;
     }
   }
@@ -636,16 +659,6 @@ void ClipboardHistoryControllerImpl::OnCachedImageModelUpdated(
     observer.OnClipboardHistoryItemsUpdated(menu_item_ids);
 }
 
-void ClipboardHistoryControllerImpl::ExecuteSelectedMenuItem(int event_flags) {
-  DCHECK(IsMenuShowing());
-
-  auto command = context_menu_->GetSelectedMenuItemCommand();
-
-  // If no menu item is currently selected, we'll fallback to the first item.
-  PasteMenuItemData(command.value_or(ClipboardHistoryUtil::kFirstItemCommandId),
-                    event_flags);
-}
-
 void ClipboardHistoryControllerImpl::ExecuteCommand(int command_id,
                                                     int event_flags) {
   DCHECK(context_menu_);
@@ -657,8 +670,31 @@ void ClipboardHistoryControllerImpl::ExecuteCommand(int command_id,
   Action action = context_menu_->GetActionForCommandId(command_id);
   switch (action) {
     case Action::kPaste:
-      PasteMenuItemData(command_id, event_flags & ui::EF_SHIFT_DOWN);
-      return;
+      // Create a scope for the variables used in this case so that they can be
+      // deallocated from the stack.
+      {
+        bool paste_plain_text = event_flags & ui::EF_SHIFT_DOWN;
+        // There are no specific flags that indicate a paste triggered by a
+        // keystroke, so assume by default that keystroke was the event source
+        // and then check for the other known possibilities. This assumption may
+        // cause pastes from unknown sources to be incorrectly captured as
+        // keystroke pastes, but we do not expect such cases to significantly
+        // alter metrics.
+        ClipboardHistoryPasteType paste_type =
+            paste_plain_text ? ClipboardHistoryPasteType::kPlainTextKeystroke
+                             : ClipboardHistoryPasteType::kRichTextKeystroke;
+        if (event_flags & ui::EF_MOUSE_BUTTON) {
+          paste_type = paste_plain_text
+                           ? ClipboardHistoryPasteType::kPlainTextMouse
+                           : ClipboardHistoryPasteType::kRichTextMouse;
+        } else if (event_flags & ui::EF_FROM_TOUCH) {
+          paste_type = paste_plain_text
+                           ? ClipboardHistoryPasteType::kPlainTextTouch
+                           : ClipboardHistoryPasteType::kRichTextTouch;
+        }
+        PasteMenuItemData(command_id, paste_type);
+        return;
+      }
     case Action::kDelete:
       DeleteItemWithCommandId(command_id);
       return;
@@ -674,8 +710,9 @@ void ClipboardHistoryControllerImpl::ExecuteCommand(int command_id,
   }
 }
 
-void ClipboardHistoryControllerImpl::PasteMenuItemData(int command_id,
-                                                       bool paste_plain_text) {
+void ClipboardHistoryControllerImpl::PasteMenuItemData(
+    int command_id,
+    ClipboardHistoryPasteType paste_type) {
   UMA_HISTOGRAM_ENUMERATION(
       "Ash.ClipboardHistory.ContextMenu.MenuOptionSelected", command_id,
       ClipboardHistoryUtil::kMaxCommandId);
@@ -700,13 +737,13 @@ void ClipboardHistoryControllerImpl::PasteMenuItemData(int command_id,
       FROM_HERE,
       base::BindOnce(&ClipboardHistoryControllerImpl::PasteClipboardHistoryItem,
                      weak_ptr_factory_.GetWeakPtr(), active_window,
-                     selected_item, paste_plain_text));
+                     selected_item, paste_type));
 }
 
 void ClipboardHistoryControllerImpl::PasteClipboardHistoryItem(
     aura::Window* intended_window,
     ClipboardHistoryItem item,
-    bool paste_plain_text) {
+    ClipboardHistoryPasteType paste_type) {
   // It's possible that the window could change or we could enter a disabled
   // mode after posting the `PasteClipboardHistoryItem()` task.
   if (!intended_window || intended_window != window_util::GetActiveWindow() ||
@@ -723,6 +760,7 @@ void ClipboardHistoryControllerImpl::PasteClipboardHistoryItem(
   // we can paste the selected history item.
   ui::DataTransferEndpoint data_dst(ui::EndpointType::kClipboardHistory);
   const auto* current_clipboard_data = clipboard->GetClipboardData(&data_dst);
+  bool paste_plain_text = IsPlainTextPaste(paste_type);
   if (paste_plain_text || !current_clipboard_data ||
       *current_clipboard_data != item.data()) {
     std::unique_ptr<ui::ClipboardData> temp_data;
@@ -762,6 +800,8 @@ void ClipboardHistoryControllerImpl::PasteClipboardHistoryItem(
   host->DeliverEventToSink(&ctrl_release);
 
   ++pastes_to_be_confirmed_;
+
+  base::UmaHistogramEnumeration("Ash.ClipboardHistory.PasteType", paste_type);
 
   for (auto& observer : observers_)
     observer.OnClipboardHistoryPasted();

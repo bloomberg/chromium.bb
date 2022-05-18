@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "GrD3DAMDMemoryAllocator_hdr",
@@ -240,6 +242,7 @@ generated_cc_atom(
         ":GrD3DTextureRenderTarget_hdr",
         ":GrD3DTexture_hdr",
         ":GrD3DUtil_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/gpu:GrBackendSurface_hdr",
         "//include/gpu/d3d:GrD3DBackendContext_hdr",
         "//src/core:SkConvertPixels_hdr",

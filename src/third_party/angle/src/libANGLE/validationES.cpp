@@ -563,7 +563,7 @@ const char *ValidateProgramDrawAdvancedBlendState(const Context *context, Progra
     const State &state = context->getState();
     const BlendEquationBitSet &supportedBlendEquations =
         program->getExecutable().getAdvancedBlendEquations();
-    const DrawBufferMask &enabledDrawBufferMask = state.getBlendStateExt().mEnabledMask;
+    const DrawBufferMask &enabledDrawBufferMask = state.getBlendStateExt().getEnabledMask();
 
     for (size_t blendEnabledBufferIndex : enabledDrawBufferMask)
     {
@@ -2046,7 +2046,7 @@ bool ValidateGenerateMipmapBase(const Context *context,
     TextureTarget baseTarget = (target == TextureType::CubeMap)
                                    ? TextureTarget::CubeMapPositiveX
                                    : NonCubeTextureTypeToTarget(target);
-    const auto &format = *(texture->getFormat(baseTarget, effectiveBaseLevel).info);
+    const auto &format       = *(texture->getFormat(baseTarget, effectiveBaseLevel).info);
     if (format.sizedInternalFormat == GL_NONE || format.compressed || format.depthBits > 0 ||
         format.stencilBits > 0)
     {
@@ -3012,6 +3012,14 @@ bool ValidateStateQuery(const Context *context,
             }
             break;
 
+        case GL_SHADING_RATE_QCOM:
+            if (!context->getExtensions().shadingRateQCOM)
+            {
+                context->validationError(entryPoint, GL_INVALID_ENUM, kExtensionNotEnabled);
+                return false;
+            }
+            break;
+
         default:
             break;
     }
@@ -3598,8 +3606,8 @@ bool ValidateCopyFormatCompatible(const InternalFormat &srcFormatInfo,
     {
         GLenum uncompressedFormat = (!srcFormatInfo.compressed) ? srcFormatInfo.internalFormat
                                                                 : dstFormatInfo.internalFormat;
-        GLenum compressedFormat = (srcFormatInfo.compressed) ? srcFormatInfo.internalFormat
-                                                             : dstFormatInfo.internalFormat;
+        GLenum compressedFormat   = (srcFormatInfo.compressed) ? srcFormatInfo.internalFormat
+                                                               : dstFormatInfo.internalFormat;
 
         return ValidateCopyMixedFormatCompatible(uncompressedFormat, compressedFormat);
     }
@@ -3782,6 +3790,13 @@ bool ValidateCopyTexImageParametersBase(const Context *context,
         std::numeric_limits<GLsizei>::max() - yoffset < height)
     {
         context->validationError(entryPoint, GL_INVALID_VALUE, kOffsetOverflow);
+        return false;
+    }
+
+    if (std::numeric_limits<GLint>::max() - width < x ||
+        std::numeric_limits<GLint>::max() - height < y)
+    {
+        context->validationError(entryPoint, GL_INVALID_VALUE, kIntegerOverflow);
         return false;
     }
 
@@ -4135,17 +4150,17 @@ const char *ValidateDrawStates(const Context *context)
 
     // Advanced blend equation can only be enabled for a single render target.
     const BlendStateExt &blendStateExt = state.getBlendStateExt();
-    if (blendStateExt.mUsesAdvancedBlendEquationMask.any())
+    if (blendStateExt.getUsesAdvancedBlendEquationMask().any())
     {
         const size_t drawBufferCount            = framebuffer->getDrawbufferStateCount();
         uint32_t advancedBlendRenderTargetCount = 0;
 
-        for (size_t drawBufferIndex : blendStateExt.mUsesAdvancedBlendEquationMask)
+        for (size_t drawBufferIndex : blendStateExt.getUsesAdvancedBlendEquationMask())
         {
             if (drawBufferIndex < drawBufferCount &&
                 framebuffer->getDrawBufferState(drawBufferIndex) != GL_NONE &&
-                blendStateExt.mEnabledMask.test(drawBufferIndex) &&
-                blendStateExt.mUsesAdvancedBlendEquationMask.test(drawBufferIndex))
+                blendStateExt.getEnabledMask().test(drawBufferIndex) &&
+                blendStateExt.getUsesAdvancedBlendEquationMask().test(drawBufferIndex))
             {
                 ++advancedBlendRenderTargetCount;
             }

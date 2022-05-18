@@ -29,10 +29,11 @@
 #include "chrome/browser/web_applications/test/web_app_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,7 +55,7 @@ ExternalInstallOptions GetInstallOptions(
     const GURL& url,
     absl::optional<bool> override_previous_user_uninstall =
         absl::optional<bool>()) {
-  ExternalInstallOptions options(std::move(url), DisplayMode::kBrowser,
+  ExternalInstallOptions options(std::move(url), UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
@@ -77,7 +78,7 @@ ExternalInstallOptions GetInstallOptionsWithWebAppInfo(
     const GURL& url,
     absl::optional<bool> override_previous_user_uninstall =
         absl::optional<bool>()) {
-  ExternalInstallOptions options(url, DisplayMode::kBrowser,
+  ExternalInstallOptions options(url, UserDisplayMode::kBrowser,
                                  ExternalInstallSource::kExternalPolicy);
   options.only_use_app_info_factory = true;
   // Static to ensure re-use across multiple function calls for
@@ -281,7 +282,7 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManagerImpl {
               externally_managed_app_manager_impl->registrar(),
               externally_managed_app_manager_impl->ui_manager(),
               externally_managed_app_manager_impl->finalizer(),
-              externally_managed_app_manager_impl->install_manager(),
+              externally_managed_app_manager_impl->command_manager(),
               std::move(install_options)),
           externally_managed_app_manager_impl_(
               externally_managed_app_manager_impl),
@@ -412,7 +413,7 @@ class ExternallyManagedAppManagerImplTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+    command_manager_ = std::make_unique<WebAppCommandManager>(profile());
 
     fake_registry_controller_ =
         std::make_unique<FakeWebAppRegistryController>();
@@ -427,10 +428,15 @@ class ExternallyManagedAppManagerImplTest : public WebAppTest {
     ui_manager_ = std::make_unique<FakeWebAppUiManager>();
 
     externally_managed_app_manager_impl().SetSubsystems(
-        &registrar(), &ui_manager(), &install_finalizer(), &install_manager(),
+        &registrar(), &ui_manager(), &install_finalizer(), &command_manager(),
         &sync_bridge());
 
     controller().Init();
+  }
+
+  void TearDown() override {
+    command_manager_->Shutdown();
+    WebAppTest::TearDown();
   }
 
  protected:
@@ -554,10 +560,10 @@ class ExternallyManagedAppManagerImplTest : public WebAppTest {
 
   FakeInstallFinalizer& install_finalizer() { return *install_finalizer_; }
 
-  WebAppInstallManager& install_manager() { return *install_manager_; }
+  WebAppCommandManager& command_manager() { return *command_manager_; }
 
  private:
-  std::unique_ptr<WebAppInstallManager> install_manager_;
+  std::unique_ptr<WebAppCommandManager> command_manager_;
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<TestExternallyManagedAppManager>
       externally_managed_app_manager_impl_;
@@ -1002,7 +1008,7 @@ TEST_F(ExternallyManagedAppManagerImplTest, Install_AlwaysUpdate) {
       kFooWebAppUrl, webapps::InstallResultCode::kSuccessNewInstall);
 
   auto get_force_reinstall_info = [kFooWebAppUrl]() {
-    ExternalInstallOptions options(kFooWebAppUrl, DisplayMode::kStandalone,
+    ExternalInstallOptions options(kFooWebAppUrl, UserDisplayMode::kStandalone,
                                    ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
     return options;
@@ -1668,7 +1674,7 @@ TEST_F(ExternallyManagedAppManagerImplTest,
     externally_managed_app_manager_impl().SetNextInstallationLaunchURL(
         install_url);
     ExternalInstallOptions install_option(
-        install_url, DisplayMode::kStandalone,
+        install_url, UserDisplayMode::kStandalone,
         ExternalInstallSource::kSystemInstalled);
     const auto& url_and_result =
         InstallAndWait(&externally_managed_app_manager_impl(), install_option);

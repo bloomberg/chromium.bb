@@ -47,7 +47,7 @@ namespace {
 // or why we aren't.
 enum class AttemptingMultipleOverlays {
   kYes = 0,
-  kNoTooFewMaxOverlaysConsidered = 1,
+  kNoFeatureDisabled = 1,
   kNoRequiredOverlay = 2,
   kNoUnsupportedStrategy = 3,
   kMaxValue = kNoUnsupportedStrategy,
@@ -413,7 +413,7 @@ void OverlayProcessorUsingStrategy::UpdateDamageRect(
     const auto& status = it.second;
     if (status.plane_z_order != 0) {
       RecordOverlayDamageRectHistograms(status.plane_z_order > 0,
-                                        status.damage_area_estimate != 0,
+                                        status.damage_area_estimate != 0.f,
                                         damage_rect.IsEmpty());
     }
   }
@@ -496,11 +496,11 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
     // for low latency surfaces (inking like in the google keeps application).
     const bool force_update = it->candidate.overlay_damage_index !=
                                   OverlayCandidate::kInvalidDamageIndex &&
-                              it->candidate.damage_area_estimate != 0;
-    track_data.AddRecord(
-        frame_sequence_number_,
-        static_cast<float>(it->candidate.damage_area_estimate) / display_area,
-        it->candidate.resource_id, tracker_config_, force_update);
+                              it->candidate.damage_area_estimate != 0.f;
+    track_data.AddRecord(frame_sequence_number_,
+                         it->candidate.damage_area_estimate / display_area,
+                         it->candidate.resource_id, tracker_config_,
+                         force_update);
     // Here a series of criteria are considered for wholesale rejection of a
     // candidate. The rational for rejection is usually power improvements but
     // this can indirectly reallocate limited overlay resources to another
@@ -678,10 +678,9 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
 
 bool OverlayProcessorUsingStrategy::ShouldAttemptMultipleOverlays(
     const std::vector<OverlayProposedCandidate>& sorted_candidates) {
-  if (max_overlays_considered_ <= 1) {
-    UMA_HISTOGRAM_ENUMERATION(
-        kShouldAttemptMultipleOverlaysHistogramName,
-        AttemptingMultipleOverlays::kNoTooFewMaxOverlaysConsidered);
+  if (max_overlays_config_ <= 1) {
+    UMA_HISTOGRAM_ENUMERATION(kShouldAttemptMultipleOverlaysHistogramName,
+                              AttemptingMultipleOverlays::kNoFeatureDisabled);
     return false;
   }
 

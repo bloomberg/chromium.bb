@@ -33,19 +33,19 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
 
 namespace history_clusters {
 
 namespace {
 
-constexpr size_t kMaxRelatedSearches = 5;
-
 // Creates a `mojom::VisitPtr` from a `history_clusters::Visit`.
 mojom::URLVisitPtr VisitToMojom(Profile* profile,
                                 const history::ClusterVisit& visit) {
   auto visit_mojom = mojom::URLVisit::New();
   visit_mojom->normalized_url = visit.normalized_url;
+  visit_mojom->url_for_display = base::UTF16ToUTF8(visit.url_for_display);
 
   auto& annotated_visit = visit.annotated_visit;
   visit_mojom->raw_urls.push_back(annotated_visit.url_row.url());
@@ -64,6 +64,21 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
   }
 
   visit_mojom->page_title = base::UTF16ToUTF8(annotated_visit.url_row.title());
+
+  for (const auto& match : visit.title_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->title_match_positions.push_back(std::move(match_mojom));
+  }
+  for (const auto& match : visit.url_for_display_match_positions) {
+    auto match_mojom = mojom::MatchPosition::New();
+    match_mojom->begin = match.first;
+    match_mojom->end = match.second;
+    visit_mojom->url_for_display_match_positions.push_back(
+        std::move(match_mojom));
+  }
+
   visit_mojom->relative_date = base::UTF16ToUTF8(ui::TimeFormat::Simple(
       ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
       base::Time::Now() - annotated_visit.visit_row.visit_time));
@@ -86,6 +101,8 @@ mojom::URLVisitPtr VisitToMojom(Profile* profile,
           visit.normalized_url, template_url_service->search_terms_data())) {
     visit_mojom->annotations.push_back(mojom::Annotation::kSearchResultsPage);
   }
+
+  visit_mojom->hidden = visit.hidden;
 
   if (GetConfig().user_visible_debug) {
     visit_mojom->debug_info["visit_id"] =
@@ -140,50 +157,23 @@ mojom::QueryResultPtr QueryClustersResultToMojom(
     cluster_mojom->id = cluster.cluster_id;
     if (cluster.label) {
       cluster_mojom->label = base::UTF16ToUTF8(*cluster.label);
+      for (const auto& match : cluster.label_match_positions) {
+        auto match_mojom = mojom::MatchPosition::New();
+        match_mojom->begin = match.first;
+        match_mojom->end = match.second;
+        cluster_mojom->label_match_positions.push_back(std::move(match_mojom));
+      }
     }
 
     for (const auto& visit : cluster.visits) {
-      mojom::URLVisitPtr visit_mojom = VisitToMojom(profile, visit);
+      cluster_mojom->visits.push_back(VisitToMojom(profile, visit));
+    }
 
-      // Even a 0.0 visit shouldn't be hidden if this is the first visit we
-      // encounter. The assumption is that the visits are always ranked by score
-      // in a descending order.
-      // TODO(crbug.com/1313631): Simplify this after removing "Show More" UI.
-      if ((visit.score == 0.0 && !cluster_mojom->visits.empty()) ||
-          (visit.score < GetConfig().min_score_to_always_show_above_the_fold &&
-           cluster_mojom->visits.size() >=
-               GetConfig().num_visits_to_always_show_above_the_fold)) {
-        // If the visit is dropped entirely, also skip coalescing its related
-        // searches by continuing the loop.
-        if (GetConfig().drop_hidden_visits) {
-          continue;
-        }
-
-        visit_mojom->hidden = true;
-      }
-
-      cluster_mojom->visits.push_back(std::move(visit_mojom));
-
-      // Coalesce the unique related searches of this visit into the cluster
-      // until the cap is reached.
-      for (const auto& search_query :
-           visit.annotated_visit.content_annotations.related_searches) {
-        if (cluster_mojom->related_searches.size() >= kMaxRelatedSearches) {
-          break;
-        }
-
-        if (base::Contains(cluster_mojom->related_searches, search_query,
-                           [](const mojom::SearchQueryPtr& search_query_mojom) {
-                             return search_query_mojom->query;
-                           })) {
-          continue;
-        }
-
-        auto search_query_mojom = SearchQueryToMojom(profile, search_query);
-        if (search_query_mojom) {
-          cluster_mojom->related_searches.emplace_back(
-              std::move(*search_query_mojom));
-        }
+    for (const auto& related_search : cluster.related_searches) {
+      auto search_query_mojom = SearchQueryToMojom(profile, related_search);
+      if (search_query_mojom) {
+        cluster_mojom->related_searches.emplace_back(
+            std::move(*search_query_mojom));
       }
     }
 

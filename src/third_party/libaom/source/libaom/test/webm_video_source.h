@@ -46,7 +46,7 @@ class WebMVideoSource : public CompressedVideoSource {
     ASSERT_NE(aom_ctx_, nullptr);
     ASSERT_NE(webm_ctx_, nullptr);
     aom_ctx_->file = OpenTestDataFile(file_name_);
-    ASSERT_TRUE(aom_ctx_->file != NULL)
+    ASSERT_NE(aom_ctx_->file, nullptr)
         << "Input file open failed. Filename: " << file_name_;
 
     ASSERT_EQ(file_is_webm(webm_ctx_, aom_ctx_), 1) << "file is not WebM";
@@ -62,7 +62,7 @@ class WebMVideoSource : public CompressedVideoSource {
   void FillFrame() {
     ASSERT_NE(aom_ctx_, nullptr);
     ASSERT_NE(webm_ctx_, nullptr);
-    ASSERT_TRUE(aom_ctx_->file != NULL);
+    ASSERT_NE(aom_ctx_->file, nullptr);
     const int status = webm_read_frame(webm_ctx_, &buf_, &frame_sz_, &buf_sz_);
     ASSERT_GE(status, 0) << "webm_read_frame failed";
     if (status == 1) {
@@ -73,7 +73,7 @@ class WebMVideoSource : public CompressedVideoSource {
   void SeekToNextKeyFrame() {
     ASSERT_NE(aom_ctx_, nullptr);
     ASSERT_NE(webm_ctx_, nullptr);
-    ASSERT_TRUE(aom_ctx_->file != NULL);
+    ASSERT_NE(aom_ctx_->file, nullptr);
     do {
       const int status =
           webm_read_frame(webm_ctx_, &buf_, &frame_sz_, &buf_sz_);

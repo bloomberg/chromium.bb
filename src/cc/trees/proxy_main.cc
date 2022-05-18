@@ -442,6 +442,11 @@ void ProxyMain::DidObserveFirstScrollDelay(
                                                first_scroll_timestamp);
 }
 
+void ProxyMain::ReportEventLatency(
+    std::vector<EventLatencyTracker::LatencyData> latencies) {
+  layer_tree_host_->ReportEventLatency(std::move(latencies));
+}
+
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;
@@ -542,7 +547,7 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
 
   // The impl thread needs to know that it should not issue BeginMainFrame.
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::SetDeferBeginMainFrameOnImpl,
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetDeferBeginMainFrameFromMain,
                                 base::Unretained(proxy_impl_.get()),
                                 defer_main_frame_update));
 }
@@ -758,14 +763,6 @@ void ProxyMain::SetRenderFrameObserver(
       FROM_HERE,
       base::BindOnce(&ProxyImpl::SetRenderFrameObserver,
                      base::Unretained(proxy_impl_.get()), std::move(observer)));
-}
-
-void ProxyMain::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::SetEnableFrameRateThrottling,
-                                base::Unretained(proxy_impl_.get()),
-                                enable_frame_rate_throttling));
 }
 
 uint32_t ProxyMain::GetAverageThroughput() const {

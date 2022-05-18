@@ -798,7 +798,7 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
 
     template<typename T0, typename T1>
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE void _init2(Index rows, Index cols, typename internal::enable_if<Base::SizeAtCompileTime!=2,T0>::type* = 0)
+    EIGEN_STRONG_INLINE void _init2(Index rows, Index cols, std::enable_if_t<Base::SizeAtCompileTime!=2,T0>* = 0)
     {
       const bool t0_is_integer_alike = internal::is_valid_index_type<T0>::value;
       const bool t1_is_integer_alike = internal::is_valid_index_type<T1>::value;
@@ -810,7 +810,7 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
 
     template<typename T0, typename T1>
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE void _init2(const T0& val0, const T1& val1, typename internal::enable_if<Base::SizeAtCompileTime==2,T0>::type* = 0)
+    EIGEN_STRONG_INLINE void _init2(const T0& val0, const T1& val1, std::enable_if_t<Base::SizeAtCompileTime==2,T0>* = 0)
     {
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(PlainObjectBase, 2)
       m_storage.data()[0] = Scalar(val0);
@@ -820,10 +820,10 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     template<typename T0, typename T1>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE void _init2(const Index& val0, const Index& val1,
-                                    typename internal::enable_if<    (!internal::is_same<Index,Scalar>::value)
-                                                                  && (internal::is_same<T0,Index>::value)
-                                                                  && (internal::is_same<T1,Index>::value)
-                                                                  && Base::SizeAtCompileTime==2,T1>::type* = 0)
+                                    std::enable_if_t<    (!internal::is_same<Index,Scalar>::value)
+                                                      && (internal::is_same<T0,Index>::value)
+                                                      && (internal::is_same<T1,Index>::value)
+                                                      && Base::SizeAtCompileTime==2,T1>* = 0)
     {
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(PlainObjectBase, 2)
       m_storage.data()[0] = Scalar(val0);
@@ -834,8 +834,8 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     // then the argument is meant to be the size of the object.
     template<typename T>
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE void _init1(Index size, typename internal::enable_if<    (Base::SizeAtCompileTime!=1 || !internal::is_convertible<T, Scalar>::value)
-                                                                              && ((!internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value || Base::SizeAtCompileTime==Dynamic)),T>::type* = 0)
+    EIGEN_STRONG_INLINE void _init1(Index size, std::enable_if_t<    (Base::SizeAtCompileTime!=1 || !internal::is_convertible<T, Scalar>::value)
+                                                                  && ((!internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value || Base::SizeAtCompileTime==Dynamic)),T>* = 0)
     {
       // NOTE MSVC 2008 complains if we directly put bool(NumTraits<T>::IsInteger) as the EIGEN_STATIC_ASSERT argument.
       const bool is_integer_alike = internal::is_valid_index_type<T>::value;
@@ -848,7 +848,7 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     // We have a 1x1 matrix/array => the argument is interpreted as the value of the unique coefficient (case where scalar type can be implicitly converted)
     template<typename T>
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE void _init1(const Scalar& val0, typename internal::enable_if<Base::SizeAtCompileTime==1 && internal::is_convertible<T, Scalar>::value,T>::type* = 0)
+    EIGEN_STRONG_INLINE void _init1(const Scalar& val0, std::enable_if_t<Base::SizeAtCompileTime==1 && internal::is_convertible<T, Scalar>::value,T>* = 0)
     {
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(PlainObjectBase, 1)
       m_storage.data()[0] = val0;
@@ -858,10 +858,10 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     template<typename T>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE void _init1(const Index& val0,
-                                    typename internal::enable_if<    (!internal::is_same<Index,Scalar>::value)
-                                                                  && (internal::is_same<Index,T>::value)
-                                                                  && Base::SizeAtCompileTime==1
-                                                                  && internal::is_convertible<T, Scalar>::value,T*>::type* = 0)
+                                    std::enable_if_t<    (!internal::is_same<Index,Scalar>::value)
+                                                      && (internal::is_same<Index,T>::value)
+                                                      && Base::SizeAtCompileTime==1
+                                                      && internal::is_convertible<T, Scalar>::value,T*>* = 0)
     {
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(PlainObjectBase, 1)
       m_storage.data()[0] = Scalar(val0);
@@ -914,10 +914,10 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     template<typename T>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE void _init1(const Scalar& val0,
-                                    typename internal::enable_if<    Base::SizeAtCompileTime!=Dynamic
-                                                                  && Base::SizeAtCompileTime!=1
-                                                                  && internal::is_convertible<T, Scalar>::value
-                                                                  && internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value,T>::type* = 0)
+                                    std::enable_if_t<    Base::SizeAtCompileTime!=Dynamic
+                                                      && Base::SizeAtCompileTime!=1
+                                                      && internal::is_convertible<T, Scalar>::value
+                                                      && internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value,T>* = 0)
     {
       Base::setConstant(val0);
     }
@@ -926,12 +926,12 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     template<typename T>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE void _init1(const Index& val0,
-                                    typename internal::enable_if<    (!internal::is_same<Index,Scalar>::value)
-                                                                  && (internal::is_same<Index,T>::value)
-                                                                  && Base::SizeAtCompileTime!=Dynamic
-                                                                  && Base::SizeAtCompileTime!=1
-                                                                  && internal::is_convertible<T, Scalar>::value
-                                                                  && internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value,T*>::type* = 0)
+                                    std::enable_if_t<    (!internal::is_same<Index,Scalar>::value)
+                                                      && (internal::is_same<Index,T>::value)
+                                                      && Base::SizeAtCompileTime!=Dynamic
+                                                      && Base::SizeAtCompileTime!=1
+                                                      && internal::is_convertible<T, Scalar>::value
+                                                      && internal::is_same<typename internal::traits<Derived>::XprKind,ArrayXpr>::value,T*>* = 0)
     {
       Base::setConstant(val0);
     }
@@ -982,7 +982,7 @@ namespace internal {
 template <typename Derived, typename OtherDerived, bool IsVector>
 struct conservative_resize_like_impl
 {
-  static const bool IsRelocatable = std::is_trivially_copyable<typename Derived::Scalar>::value;
+  static constexpr bool IsRelocatable = std::is_trivially_copyable<typename Derived::Scalar>::value;
   static void run(DenseBase<Derived>& _this, Index rows, Index cols)
   {
     if (_this.rows() == rows && _this.cols() == cols) return;

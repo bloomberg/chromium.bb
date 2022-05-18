@@ -17,9 +17,21 @@
 #include "ui/views/widget/widget.h"
 
 namespace arc {
+namespace {
+// I/O time to wait.
+constexpr base::TimeDelta kIORead = base::Milliseconds(50);
+
+// Package names for testing.
+constexpr char kEnabledPackageName[] = "org.chromium.arc.testapp.inputoverlay";
+constexpr char kRandomPackageName[] =
+    "org.chromium.arc.testapp.inputoverlay_no_data";
+
+}  // namespace
 class ArcInputOverlayManagerTest : public exo::test::ExoTestBase {
  public:
-  ArcInputOverlayManagerTest() = default;
+  ArcInputOverlayManagerTest()
+      : exo::test::ExoTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   bool IsInputOverlayEnabled(const aura::Window* window) const {
     return arc_test_input_overlay_manager_->input_overlay_enabled_windows_
@@ -66,6 +78,11 @@ class ArcInputOverlayManagerTest : public exo::test::ExoTestBase {
     arc_test_input_overlay_manager_->OnWindowFocused(gain_focus, lost_focus);
   }
 
+  // TODO(djacobo): Maybe move all tests inside input_overlay namespace.
+  void DismissEducationalDialog(input_overlay::TouchInjector* injector) {
+    injector->GetControllerForTesting()->DismissEducationalViewForTesting();
+  }
+
  protected:
   std::unique_ptr<ArcInputOverlayManager> arc_test_input_overlay_manager_;
 
@@ -89,9 +106,13 @@ TEST_F(ArcInputOverlayManagerTest, TestPropertyChangeAndWindowDestroy) {
   // Test app with input overlay data.
   auto arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
       exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-      "org.chromium.arc.testapp.inputoverlay");
+      kEnabledPackageName);
+  // I/O takes time here.
+  task_environment()->FastForwardBy(kIORead);
   EXPECT_TRUE(IsInputOverlayEnabled(arc_window->GetWindow()));
-  EXPECT_FALSE(GetRegisteredWindow());
+  // Input overlay registers the window after reading the data when the window
+  // is still focused. In the test, the arc_window is considered as focused now.
+  EXPECT_TRUE(GetRegisteredWindow());
   WindowFocus(arc_window->GetWindow(), nullptr);
   EXPECT_TRUE(GetRegisteredWindow());
 
@@ -104,7 +125,7 @@ TEST_F(ArcInputOverlayManagerTest, TestPropertyChangeAndWindowDestroy) {
   auto arc_window_no_data =
       std::make_unique<input_overlay::test::ArcTestWindow>(
           exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-          "org.chromium.arc.testapp.inputoverlay_no_data");
+          kRandomPackageName);
   EXPECT_FALSE(IsInputOverlayEnabled(arc_window_no_data->GetWindow()));
 }
 
@@ -113,7 +134,9 @@ TEST_F(ArcInputOverlayManagerTest, TestInputMethodObsever) {
   ASSERT_FALSE(IsTextInputActive());
   auto arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
       exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-      "org.chromium.arc.testapp.inputoverlay");
+      kEnabledPackageName);
+  // I/O takes time here.
+  task_environment()->FastForwardBy(kIORead);
   WindowFocus(arc_window->GetWindow(), nullptr);
   ui::InputMethod* input_method = GetInputMethod();
   EXPECT_TRUE(GetInputMethod());
@@ -132,18 +155,20 @@ TEST_F(ArcInputOverlayManagerTest, TestInputMethodObsever) {
 TEST_F(ArcInputOverlayManagerTest, TestWindowFocusChange) {
   auto arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
       exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-      "org.chromium.arc.testapp.inputoverlay");
+      kEnabledPackageName);
+  // Add a deley until I/O operations finish.
+  task_environment()->FastForwardBy(kIORead);
   auto arc_window_no_data =
       std::make_unique<input_overlay::test::ArcTestWindow>(
           exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
-          "org.chromium.arc.testapp.inputoverlay_no_data");
+          kRandomPackageName);
   EXPECT_EQ(1, EnabledWindows());
 
   auto* injector = GetTouchInjector(arc_window->GetWindow());
   EXPECT_TRUE(injector);
   // The action number should be adjusted with the data in the
   // org.chromium.arc.testapp.inputoverlay.json.
-  EXPECT_EQ(2, (int)injector->actions().size());
+  EXPECT_EQ(3, (int)injector->actions().size());
 
   EXPECT_TRUE(!GetRegisteredWindow() && !GetDisplayOverlayController());
   WindowFocus(arc_window->GetWindow(), nullptr);
@@ -166,10 +191,15 @@ TEST_F(ArcInputOverlayManagerTest, TestKeyEventSourceRewriterForMultiDisplay) {
   // window.
   EXPECT_FALSE(GetKeyEventSourceRewriter());
   auto arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
-      exo_test_helper(), root_windows[1],
-      "org.chromium.arc.testapp.inputoverlay");
+      exo_test_helper(), root_windows[1], kEnabledPackageName);
+  // I/O takes time here.
+  task_environment()->FastForwardBy(kIORead);
   // arc_window->SetBounds(display1, gfx::Rect(1010, 910, 100, 100));
+  // Make sure to dismiss the educational dialog in beforehand.
+  auto* injector = GetTouchInjector(arc_window->GetWindow());
+  EXPECT_TRUE(injector);
   WindowFocus(arc_window->GetWindow(), nullptr);
+  DismissEducationalDialog(injector);
   EXPECT_TRUE(GetKeyEventSourceRewriter());
   // Simulate the fact that key events are only sent to primary root window
   // when there is no text input focus. Make sure the input overlay window can
@@ -178,12 +208,12 @@ TEST_F(ArcInputOverlayManagerTest, TestKeyEventSourceRewriterForMultiDisplay) {
       std::make_unique<ui::test::EventGenerator>(root_windows[0]);
   input_overlay::test::EventCapturer event_capturer;
   root_windows[1]->AddPostTargetHandler(&event_capturer);
-  event_generator->PressKey(ui::VKEY_A, ui::EF_NONE, 1 /* keyboard id */);
+  event_generator->PressKey(ui::VKEY_A, ui::EF_NONE, /*source_device_id=*/1);
   EXPECT_TRUE(event_capturer.key_events().empty());
-  EXPECT_TRUE(event_capturer.touch_events().size() == 1);
+  EXPECT_EQ(1u, event_capturer.touch_events().size());
   event_generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE, 1);
   EXPECT_TRUE(event_capturer.key_events().empty());
-  EXPECT_TRUE(event_capturer.touch_events().size() == 2);
+  EXPECT_EQ(2u, event_capturer.touch_events().size());
   event_capturer.Clear();
   root_windows[1]->RemovePostTargetHandler(&event_capturer);
   // Move to the primary display.
@@ -198,8 +228,9 @@ TEST_F(ArcInputOverlayManagerTest, TestKeyEventSourceRewriterForMultiDisplay) {
   // shouldn't be |key_event_source_rewriter_|.
   EXPECT_FALSE(GetKeyEventSourceRewriter());
   arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
-      exo_test_helper(), root_windows[0],
-      "org.chromium.arc.testapp.inputoverlay");
+      exo_test_helper(), root_windows[0], kEnabledPackageName);
+  // Add a deley until I/O operations finish.
+  task_environment()->FastForwardBy(kIORead);
   EXPECT_FALSE(GetKeyEventSourceRewriter());
   // Move to the secondary display.
   arc_window->SetBounds(display1, gfx::Rect(10, 10, 100, 100));
@@ -213,8 +244,7 @@ TEST_F(ArcInputOverlayManagerTest, TestKeyEventSourceRewriterForMultiDisplay) {
   // display, there shouldn't be |key_event_source_rewriter_|.
   auto arc_window_no_data =
       std::make_unique<input_overlay::test::ArcTestWindow>(
-          exo_test_helper(), root_windows[1],
-          "org.chromium.arc.testapp.inputoverlay_no_data");
+          exo_test_helper(), root_windows[1], kRandomPackageName);
   WindowFocus(arc_window_no_data->GetWindow(), nullptr);
   EXPECT_FALSE(GetKeyEventSourceRewriter());
   arc_window_no_data.reset();
@@ -225,16 +255,16 @@ TEST_F(ArcInputOverlayManagerTest, TestKeyEventSourceRewriterForMultiDisplay) {
   // registered/not focused, primary window should receive key events.
   root_windows[0]->AddPostTargetHandler(&event_capturer);
   arc_window = std::make_unique<input_overlay::test::ArcTestWindow>(
-      exo_test_helper(), root_windows[1],
-      "org.chromium.arc.testapp.inputoverlay");
+      exo_test_helper(), root_windows[1], kEnabledPackageName);
+  // I/O takes time here.
+  task_environment()->FastForwardBy(kIORead);
   arc_window_no_data = std::make_unique<input_overlay::test::ArcTestWindow>(
-      exo_test_helper(), root_windows[0],
-      "org.chromium.arc.testapp.inputoverlay_no_data");
+      exo_test_helper(), root_windows[0], kRandomPackageName);
   // Focus on window without input overlay.
   WindowFocus(arc_window_no_data->GetWindow(), nullptr);
   event_generator->PressKey(ui::VKEY_A, ui::EF_NONE, 1 /* keyboard id */);
   event_generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE, 1 /* keyboard id */);
-  EXPECT_TRUE(event_capturer.key_events().size() == 2);
+  EXPECT_EQ(2u, event_capturer.key_events().size());
   event_capturer.Clear();
   // Focus input overlay window.
   WindowFocus(arc_window->GetWindow(), arc_window_no_data->GetWindow());

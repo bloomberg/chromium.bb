@@ -100,9 +100,7 @@ ClassicScript* ClassicScript::CreateFromResource(
                            ScriptStreamer::NotStreamingReason::kInvalid);
 
   ParkableString source;
-  const char web_snapshot_prefix[4] = {'+', '+', '+', ';'};
-  if (RuntimeEnabledFeatures::ExperimentalWebSnapshotsEnabled() &&
-      resource->DataHasPrefix(base::span<const char>(web_snapshot_prefix))) {
+  if (resource->IsWebSnapshot()) {
     source = resource->RawSourceText();
   } else {
     source = resource->SourceText();
@@ -152,13 +150,14 @@ ClassicScript::ClassicScript(
     ScriptStreamer::NotStreamingReason not_streaming_reason,
     ScriptCacheConsumer* cache_consumer,
     const String& source_map_url)
-    : Script(fetch_options, SanitizeBaseUrl(base_url, sanitize_script_errors)),
+    : Script(fetch_options,
+             SanitizeBaseUrl(base_url, sanitize_script_errors),
+             source_url,
+             start_position),
       source_text_(TreatNullSourceAsEmpty(source_text)),
-      source_url_(source_url),
       source_location_type_(source_location_type),
       sanitize_script_errors_(sanitize_script_errors),
       cache_handler_(cache_handler),
-      start_position_(start_position),
       streamer_(streamer),
       not_streaming_reason_(not_streaming_reason),
       cache_consumer_(cache_consumer),
@@ -179,24 +178,6 @@ ScriptEvaluationResult ClassicScript::RunScriptOnScriptStateAndReturnValue(
                                              std::move(rethrow_errors));
 }
 
-void ClassicScript::RunScript(LocalDOMWindow* window) {
-  return RunScript(window,
-                   ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
-}
-
-void ClassicScript::RunScript(LocalDOMWindow* window,
-                              ExecuteScriptPolicy policy) {
-  v8::HandleScope handle_scope(window->GetIsolate());
-  RunScriptAndReturnValue(window, policy);
-}
-
-ScriptEvaluationResult ClassicScript::RunScriptAndReturnValue(
-    LocalDOMWindow* window,
-    ExecuteScriptPolicy policy) {
-  return RunScriptOnScriptStateAndReturnValue(
-      ToScriptStateForMainWorld(window->GetFrame()), policy);
-}
-
 ScriptEvaluationResult ClassicScript::RunScriptInIsolatedWorldAndReturnValue(
     LocalDOMWindow* window,
     int32_t world_id) {
@@ -213,23 +194,6 @@ ScriptEvaluationResult ClassicScript::RunScriptInIsolatedWorldAndReturnValue(
   }
   return RunScriptOnScriptStateAndReturnValue(
       script_state, ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
-}
-
-bool ClassicScript::RunScriptOnWorkerOrWorklet(
-    WorkerOrWorkletGlobalScope& global_scope) {
-  DCHECK(global_scope.IsContextThread());
-
-  v8::HandleScope handle_scope(
-      global_scope.ScriptController()->GetScriptState()->GetIsolate());
-  ScriptEvaluationResult result = RunScriptOnScriptStateAndReturnValue(
-      global_scope.ScriptController()->GetScriptState());
-  return result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess;
-}
-
-std::pair<size_t, size_t> ClassicScript::GetClassicScriptSizes() const {
-  size_t cached_metadata_size =
-      CacheHandler() ? CacheHandler()->GetCodeCacheSize() : 0;
-  return std::pair<size_t, size_t>(SourceText().length(), cached_metadata_size);
 }
 
 }  // namespace blink

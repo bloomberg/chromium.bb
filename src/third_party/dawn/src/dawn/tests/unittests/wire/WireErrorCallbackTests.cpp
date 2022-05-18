@@ -12,66 +12,69 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <memory>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::DoAll;
+using testing::Mock;
+using testing::Return;
+using testing::SaveArg;
+using testing::StrEq;
+using testing::StrictMock;
 
 namespace {
 
-    // Mock classes to add expectations on the wire calling callbacks
-    class MockDeviceErrorCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPUErrorType type, const char* message, void* userdata));
-    };
+// Mock classes to add expectations on the wire calling callbacks
+class MockDeviceErrorCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUErrorType type, const char* message, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mockDeviceErrorCallback;
-    void ToMockDeviceErrorCallback(WGPUErrorType type, const char* message, void* userdata) {
-        mockDeviceErrorCallback->Call(type, message, userdata);
-    }
+std::unique_ptr<StrictMock<MockDeviceErrorCallback>> mockDeviceErrorCallback;
+void ToMockDeviceErrorCallback(WGPUErrorType type, const char* message, void* userdata) {
+    mockDeviceErrorCallback->Call(type, message, userdata);
+}
 
-    class MockDevicePopErrorScopeCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPUErrorType type, const char* message, void* userdata));
-    };
+class MockDevicePopErrorScopeCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUErrorType type, const char* message, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockDevicePopErrorScopeCallback>> mockDevicePopErrorScopeCallback;
-    void ToMockDevicePopErrorScopeCallback(WGPUErrorType type,
-                                           const char* message,
-                                           void* userdata) {
-        mockDevicePopErrorScopeCallback->Call(type, message, userdata);
-    }
+std::unique_ptr<StrictMock<MockDevicePopErrorScopeCallback>> mockDevicePopErrorScopeCallback;
+void ToMockDevicePopErrorScopeCallback(WGPUErrorType type, const char* message, void* userdata) {
+    mockDevicePopErrorScopeCallback->Call(type, message, userdata);
+}
 
-    class MockDeviceLoggingCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPULoggingType type, const char* message, void* userdata));
-    };
+class MockDeviceLoggingCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPULoggingType type, const char* message, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockDeviceLoggingCallback>> mockDeviceLoggingCallback;
-    void ToMockDeviceLoggingCallback(WGPULoggingType type, const char* message, void* userdata) {
-        mockDeviceLoggingCallback->Call(type, message, userdata);
-    }
+std::unique_ptr<StrictMock<MockDeviceLoggingCallback>> mockDeviceLoggingCallback;
+void ToMockDeviceLoggingCallback(WGPULoggingType type, const char* message, void* userdata) {
+    mockDeviceLoggingCallback->Call(type, message, userdata);
+}
 
-    class MockDeviceLostCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPUDeviceLostReason reason, const char* message, void* userdata));
-    };
+class MockDeviceLostCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUDeviceLostReason reason, const char* message, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockDeviceLostCallback>> mockDeviceLostCallback;
-    void ToMockDeviceLostCallback(WGPUDeviceLostReason reason,
-                                  const char* message,
-                                  void* userdata) {
-        mockDeviceLostCallback->Call(reason, message, userdata);
-    }
+std::unique_ptr<StrictMock<MockDeviceLostCallback>> mockDeviceLostCallback;
+void ToMockDeviceLostCallback(WGPUDeviceLostReason reason, const char* message, void* userdata) {
+    mockDeviceLostCallback->Call(reason, message, userdata);
+}
 
 }  // anonymous namespace
 
 class WireErrorCallbackTests : public WireTest {
   public:
-    WireErrorCallbackTests() {
-    }
+    WireErrorCallbackTests() {}
     ~WireErrorCallbackTests() override = default;
 
     void SetUp() override {
@@ -232,7 +235,8 @@ TEST_F(WireErrorCallbackTests, PopErrorScopeDeviceInFlightDestroy) {
     wgpuDevicePopErrorScope(device, ToMockDevicePopErrorScopeCallback, this);
     FlushClient();
 
-    // Incomplete callback called in Device destructor. This is resolved after the end of this test.
+    // Incomplete callback called in Device destructor. This is resolved after the end of this
+    // test.
     EXPECT_CALL(*mockDevicePopErrorScopeCallback,
                 Call(WGPUErrorType_Unknown, ValidStringMessage(), this))
         .Times(1);
@@ -271,18 +275,18 @@ TEST_F(WireErrorCallbackTests, PopErrorScopeAfterDisconnect) {
 
 // Empty stack (We are emulating the errors that would be callback-ed from native).
 TEST_F(WireErrorCallbackTests, PopErrorScopeEmptyStack) {
-        WGPUErrorCallback callback;
-        void* userdata;
-        EXPECT_CALL(api, OnDevicePopErrorScope(apiDevice, _, _))
-            .WillOnce(DoAll(SaveArg<1>(&callback), SaveArg<2>(&userdata), Return(true)));
-        wgpuDevicePopErrorScope(device, ToMockDevicePopErrorScopeCallback, this);
-        FlushClient();
+    WGPUErrorCallback callback;
+    void* userdata;
+    EXPECT_CALL(api, OnDevicePopErrorScope(apiDevice, _, _))
+        .WillOnce(DoAll(SaveArg<1>(&callback), SaveArg<2>(&userdata), Return(true)));
+    wgpuDevicePopErrorScope(device, ToMockDevicePopErrorScopeCallback, this);
+    FlushClient();
 
-        EXPECT_CALL(*mockDevicePopErrorScopeCallback,
-                    Call(WGPUErrorType_Validation, StrEq("No error scopes to pop"), this))
-            .Times(1);
-        callback(WGPUErrorType_Validation, "No error scopes to pop", userdata);
-        FlushServer();
+    EXPECT_CALL(*mockDevicePopErrorScopeCallback,
+                Call(WGPUErrorType_Validation, StrEq("No error scopes to pop"), this))
+        .Times(1);
+    callback(WGPUErrorType_Validation, "No error scopes to pop", userdata);
+    FlushServer();
 }
 
 // Test the return wire for device lost callback
@@ -303,3 +307,5 @@ TEST_F(WireErrorCallbackTests, DeviceLostCallback) {
 
     FlushServer();
 }
+
+}  // namespace dawn::wire

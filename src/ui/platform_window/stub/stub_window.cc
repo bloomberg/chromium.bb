@@ -58,6 +58,14 @@ gfx::Rect StubWindow::GetBounds() const {
   return bounds_;
 }
 
+void StubWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  SetBounds(delegate_->ConvertRectToPixels(bounds));
+}
+
+gfx::Rect StubWindow::GetBoundsInDIP() const {
+  return delegate_->ConvertRectToDIP(bounds_);
+}
+
 void StubWindow::SetTitle(const std::u16string& title) {}
 
 void StubWindow::SetCapture() {}
@@ -107,9 +115,9 @@ void StubWindow::MoveCursorTo(const gfx::Point& location) {}
 
 void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
-void StubWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
+void StubWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {}
 
-gfx::Rect StubWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect StubWindow::GetRestoredBoundsInDIP() const {
   return gfx::Rect();
 }
 

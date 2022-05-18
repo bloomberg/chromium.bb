@@ -54,6 +54,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     private @Nullable SigninFirstRunCoordinator mSigninFirstRunCoordinator;
     private boolean mExitFirstRunCalled;
     private boolean mNativeInitialized;
+    private boolean mNativePolicyAndChildStatusLoaded;
     private boolean mAllowCrashUpload;
 
     public SigninFirstRunFragment() {}
@@ -63,7 +64,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         super.onAttach(context);
         getPageDelegate().getPolicyLoadListener().onAvailable(
                 hasPolicies -> notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded());
-        getPageDelegate().getChildAccountStatusListener().onAvailable(
+        getPageDelegate().getChildAccountStatusSupplier().onAvailable(
                 ignored -> notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded());
         if (getPageDelegate().isLaunchedFromCct()) {
             mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(
@@ -221,10 +222,15 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
             mSigninFirstRunCoordinator.destroy();
         }
         mSigninFirstRunCoordinator = coordinator;
+        if (mSigninFirstRunCoordinator != null && mNativePolicyAndChildStatusLoaded) {
+            mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
+                    getPageDelegate().getPolicyLoadListener().get());
+        }
     }
 
     /**
      * Notifies the coordinator that native, policies and child account status has been loaded.
+     * This method may be called multiple times after all 3 wait conditions have been satisfied.
      */
     private void notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded() {
         // This may happen when the native initialized supplier in FirstRunActivity calls back after
@@ -232,12 +238,17 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         if (getPageDelegate() == null) return;
 
         if (mSigninFirstRunCoordinator != null && mNativeInitialized
-                && getPageDelegate().getChildAccountStatusListener().get() != null
+                && getPageDelegate().getChildAccountStatusSupplier().get() != null
                 && getPageDelegate().getPolicyLoadListener().get() != null) {
-            mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
-                    getPageDelegate().getPolicyLoadListener().get());
-            getPageDelegate().recordNativeAndPoliciesLoadedHistogram();
-            mAllowCrashUpload = !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
+            // Only notify once.
+            if (!mNativePolicyAndChildStatusLoaded) {
+                mNativePolicyAndChildStatusLoaded = true;
+                mAllowCrashUpload =
+                        !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
+                mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
+                        getPageDelegate().getPolicyLoadListener().get());
+                getPageDelegate().recordNativePolicyAndChildStatusLoadedHistogram();
+            }
         }
     }
 

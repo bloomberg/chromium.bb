@@ -1,11 +1,14 @@
 import { Colors } from '../../common/util/colors.js';
 import { assert, TypedArrayBufferView } from '../../common/util/util.js';
 
-import { clamp } from './math.js';
+import { clamp, isSubnormalNumber } from './math.js';
 
 /**
  * Encodes a JS `number` into a "normalized" (unorm/snorm) integer representation with `bits` bits.
  * Input must be between -1 and 1 if signed, or 0 and 1 if unsigned.
+ *
+ * MAINTENANCE_TODO: See if performance of texel_data improves if this function is pre-specialized
+ * for a particular `bits`/`signed`.
  */
 export function floatAsNormalizedInteger(float: number, bits: number, signed: boolean): number {
   if (signed) {
@@ -311,7 +314,17 @@ export function uint32ToInt32(u32: number): number {
 }
 
 /** A type of number representable by Scalar. */
-export type ScalarKind = 'f32' | 'f16' | 'u32' | 'u16' | 'u8' | 'i32' | 'i16' | 'i8' | 'bool';
+export type ScalarKind =
+  | 'f64'
+  | 'f32'
+  | 'f16'
+  | 'u32'
+  | 'u16'
+  | 'u8'
+  | 'i32'
+  | 'i16'
+  | 'i8'
+  | 'bool';
 
 /** ScalarType describes the type of WGSL Scalar. */
 export class ScalarType {
@@ -381,6 +394,9 @@ export const TypeI32 = new ScalarType('i32', 4, (buf: Uint8Array, offset: number
 export const TypeU32 = new ScalarType('u32', 4, (buf: Uint8Array, offset: number) =>
   u32(new Uint32Array(buf.buffer, offset)[0])
 );
+export const TypeF64 = new ScalarType('f64', 8, (buf: Uint8Array, offset: number) =>
+  f32(new Float64Array(buf.buffer, offset)[0])
+);
 export const TypeF32 = new ScalarType('f32', 4, (buf: Uint8Array, offset: number) =>
   f32(new Float32Array(buf.buffer, offset)[0])
 );
@@ -406,6 +422,8 @@ export const TypeBool = new ScalarType('bool', 4, (buf: Uint8Array, offset: numb
 /** @returns the ScalarType from the ScalarKind */
 export function scalarType(kind: ScalarKind): ScalarType {
   switch (kind) {
+    case 'f64':
+      return TypeF64;
     case 'f32':
       return TypeF32;
     case 'f16':
@@ -484,12 +502,25 @@ export class Scalar {
       case Infinity:
       case -Infinity:
         return Colors.bold(this.value.toString());
-      default:
-        return Colors.bold(this.value.toString()) + ' (0x' + this.value.toString(16) + ')';
+      default: {
+        const n = this.value as Number;
+        if (n !== null) {
+          return (
+            Colors.bold(this.value.toString()) +
+            `(0x${this.value.toString(16)}, subnormal: ${isSubnormalNumber(n.valueOf())})`
+          );
+        }
+        return Colors.bold(this.value.toString()) + `(0x${this.value.toString(16)})`;
+      }
     }
   }
 }
 
+/** Create an f64 from a numeric value, a JS `number`. */
+export function f64(value: number): Scalar {
+  const arr = new Float32Array([value]);
+  return new Scalar(TypeF64, arr[0], arr);
+}
 /** Create an f32 from a numeric value, a JS `number`. */
 export function f32(value: number): Scalar {
   const arr = new Float32Array([value]);
@@ -663,3 +694,12 @@ export function vec4(x: Scalar, y: Scalar, z: Scalar, w: Scalar) {
 
 /** Value is a Scalar or Vector value. */
 export type Value = Scalar | Vector;
+
+/** @returns if the Value is a float scalar type */
+export function isFloatValue(v: Value): boolean {
+  if (v instanceof Scalar) {
+    const s = v as Scalar;
+    return s.type.kind === s.type.kind || s.type.kind === 'f32' || s.type.kind === 'f16';
+  }
+  return false;
+}

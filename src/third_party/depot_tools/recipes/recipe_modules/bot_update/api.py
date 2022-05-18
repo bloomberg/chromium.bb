@@ -99,6 +99,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       set_output_commit=False,
                       step_test_data=None,
                       enforce_fetch=False,
+                      download_topics=False,
                       **kwargs):
     """
     Args:
@@ -127,6 +128,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
         change in self.m.buildbucket.build.input.gerrit_changes, because
         bot_update module ONLY supports one change. Users may specify a change
         via tryserver.set_change() and explicitly set this flag False.
+      * download_topics: If True, gclient downloads and patches locally from all
+        open Gerrit CLs that have the same topic as the tested patch ref.
     """
     assert not (ignore_input_commit and set_output_commit)
     if assert_one_gerrit_change:
@@ -274,6 +277,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--with_tags')
     if gerrit_no_reset:
       cmd.append('--gerrit_no_reset')
+    if download_topics:
+      cmd.append('--download_topics')
     if enforce_fetch:
       cmd.append('--enforce_fetch')
     if no_fetch_tags:

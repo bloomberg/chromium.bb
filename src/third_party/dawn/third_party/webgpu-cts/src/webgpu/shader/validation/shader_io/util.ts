@@ -54,7 +54,7 @@ export function generateShader({
       param = `${attribute} value : ${type}`;
     }
 
-    // Vertex shaders must always return `builtin(position)`.
+    // Vertex shaders must always return `@builtin(position)`.
     if (stage === 'vertex') {
       retType = `-> @builtin(position) vec4<f32>`;
       retVal = `return vec4<f32>();`;

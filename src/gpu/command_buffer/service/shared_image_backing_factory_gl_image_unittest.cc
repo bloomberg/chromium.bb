@@ -106,10 +106,10 @@ class SharedImageBackingFactoryGLImageTestBase
     GpuPreferences preferences;
     preferences.use_passthrough_cmd_decoder = use_passthrough();
     backing_factory_ = std::make_unique<SharedImageBackingFactoryGLImage>(
-        preferences, workarounds, GpuFeatureInfo(), factory,
+        preferences, workarounds, context_state_->feature_info(), factory,
         &progress_reporter_, /*for_shared_memory_gmbs=*/false);
     backing_factory_shmem_ = std::make_unique<SharedImageBackingFactoryGLImage>(
-        preferences, workarounds, GpuFeatureInfo(), factory,
+        preferences, workarounds, context_state_->feature_info(), factory,
         &progress_reporter_, /*for_shared_memory_gmbs=*/true);
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
@@ -158,7 +158,6 @@ class SharedImageBackingFactoryGLImageTest
       : SharedImageBackingFactoryGLImageTestBase(false) {}
   void SetUp() override {
     GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
     SetUpBase(workarounds, &image_factory_);
   }
 

@@ -12,29 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
-
 #include <array>
+#include <string>
+#include <vector>
+
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TestUtils.h"
 #include "dawn/utils/TextureUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 namespace {
-    using TextureFormat = wgpu::TextureFormat;
-    DAWN_TEST_PARAM_STRUCT(DepthStencilCopyTestParams, TextureFormat);
+using TextureFormat = wgpu::TextureFormat;
+DAWN_TEST_PARAM_STRUCT(DepthStencilCopyTestParams, TextureFormat);
 
-    constexpr std::array<wgpu::TextureFormat, 3> kValidDepthCopyTextureFormats = {
-        wgpu::TextureFormat::Depth16Unorm,
-        wgpu::TextureFormat::Depth32Float,
-        wgpu::TextureFormat::Depth32FloatStencil8,
-    };
+constexpr std::array<wgpu::TextureFormat, 3> kValidDepthCopyTextureFormats = {
+    wgpu::TextureFormat::Depth16Unorm,
+    wgpu::TextureFormat::Depth32Float,
+    wgpu::TextureFormat::Depth32FloatStencil8,
+};
 
-    constexpr std::array<wgpu::TextureFormat, 1> kValidDepthCopyFromBufferFormats = {
-        wgpu::TextureFormat::Depth16Unorm,
-    };
+constexpr std::array<wgpu::TextureFormat, 1> kValidDepthCopyFromBufferFormats = {
+    wgpu::TextureFormat::Depth16Unorm,
+};
 }  // namespace
 
 class DepthStencilCopyTests : public DawnTestWithParams<DepthStencilCopyTestParams> {

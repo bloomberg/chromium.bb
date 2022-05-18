@@ -9,7 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.browser.tab.TabUtils;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
 /**
@@ -33,7 +33,7 @@ public class TabGridThumbnailView extends RoundedCornerImageView {
         int expectedHeight =
                 (int) (measuredWidth * 1.0 / TabUtils.getTabThumbnailAspectRatio(getContext()));
         if ((TabUiFeatureUtilities.isLaunchPolishEnabled()
-                    || ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(getContext()))
+                    || ReturnToChromeUtil.isStartSurfaceEnabled(getContext()))
                 && isPlaceHolder()) {
             measureHeight = expectedHeight;
         }
@@ -52,11 +52,6 @@ public class TabGridThumbnailView extends RoundedCornerImageView {
      * @param isSelected Whether the thumbnail is on a selected tab.
      */
     void setColorThumbnailPlaceHolder(boolean isIncognito, boolean isSelected) {
-        if (!TabUiThemeProvider.themeRefactorEnabled()) {
-            setImageResource(TabUiThemeProvider.getThumbnailPlaceHolderColorResource(isIncognito));
-            return;
-        }
-
         ColorDrawable placeHolder =
                 new ColorDrawable(TabUiThemeProvider.getMiniThumbnailPlaceHolderColor(
                         getContext(), isIncognito, isSelected));

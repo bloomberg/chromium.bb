@@ -57,6 +57,16 @@ extern "C" {
 #define DEFAULT_KF_BOOST_RT 2300
 #define DEFAULT_GF_BOOST_RT 2000
 
+// A passive rate control strategy for screen content type in real-time mode.
+// When it is turned on, the compression performance is improved by
+// 7.8% (overall_psnr), 5.0% (VMAF) on average. Some clips see gains
+// over 20% on metric.
+// The downside is that it does not guarantee frame size.
+// Since RT mode has a tight restriction on buffer overflow control, we
+// turn it off by default.
+#define RT_PASSIVE_STRATEGY 0
+#define MAX_Q_HISTORY 1000
+
 typedef struct {
   int resize_width;
   int resize_height;
@@ -521,6 +531,12 @@ typedef struct {
    * size.
    */
   int rolling_actual_bits;
+
+  /*!
+   * The history of qindex for each frame.
+   * Only used when RT_PASSIVE_STRATEGY = 1.
+   */
+  int q_history[MAX_Q_HISTORY];
 } PRIMARY_RATE_CONTROL;
 
 struct AV1_COMP;

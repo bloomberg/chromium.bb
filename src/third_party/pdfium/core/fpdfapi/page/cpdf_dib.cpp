@@ -374,11 +374,13 @@ bool CPDF_DIB::LoadColorInfo(const CPDF_Dictionary* pFormResources,
   if (!decoder_array.value().empty())
     filter = decoder_array.value().back().first;
 
-  ValidateDictParam(filter);
-  return GetDecodeAndMaskArray(&m_bDefaultDecode, &m_bColorKey);
+  if (!ValidateDictParam(filter))
+    return false;
+
+  return GetDecodeAndMaskArray();
 }
 
-bool CPDF_DIB::GetDecodeAndMaskArray(bool* bDefaultDecode, bool* bColorKey) {
+bool CPDF_DIB::GetDecodeAndMaskArray() {
   if (!m_pColorSpace)
     return false;
 
@@ -397,7 +399,7 @@ bool CPDF_DIB::GetDecodeAndMaskArray(bool* bDefaultDecode, bool* bColorKey) {
       if (m_Family == CPDF_ColorSpace::Family::kIndexed)
         def_max = max_data;
       if (def_min != m_CompData[i].m_DecodeMin || def_max != max)
-        *bDefaultDecode = false;
+        m_bDefaultDecode = false;
     }
   } else {
     for (uint32_t i = 0; i < m_nComponents; i++) {
@@ -426,7 +428,7 @@ bool CPDF_DIB::GetDecodeAndMaskArray(bool* bDefaultDecode, bool* bColorKey) {
         m_CompData[i].m_ColorKeyMax = std::min(max_num, max_data);
       }
     }
-    *bColorKey = true;
+    m_bColorKey = true;
   }
   return true;
 }
@@ -551,7 +553,7 @@ bool CPDF_DIB::CreateDCTDecoder(pdfium::span<const uint8_t> src_span,
     if (m_Family == CPDF_ColorSpace::Family::kLab && m_nComponents != 3)
       return false;
   }
-  if (!GetDecodeAndMaskArray(&m_bDefaultDecode, &m_bColorKey))
+  if (!GetDecodeAndMaskArray())
     return false;
 
   m_bpc = info.bits_per_components;
@@ -904,7 +906,7 @@ void CPDF_DIB::LoadPalette() {
   }
 }
 
-void CPDF_DIB::ValidateDictParam(const ByteString& filter) {
+bool CPDF_DIB::ValidateDictParam(const ByteString& filter) {
   m_bpc = m_bpc_orig;
 
   // Per spec, |m_bpc| should always be 8 for RunLengthDecode, but too many
@@ -912,7 +914,7 @@ void CPDF_DIB::ValidateDictParam(const ByteString& filter) {
 
   if (filter == "JPXDecode") {
     m_bDoBpcCheck = false;
-    return;
+    return true;
   }
 
   if (filter == "CCITTFaxDecode" || filter == "JBIG2Decode") {
@@ -922,8 +924,11 @@ void CPDF_DIB::ValidateDictParam(const ByteString& filter) {
     m_bpc = 8;
   }
 
-  if (!IsAllowedBitsPerComponent(m_bpc))
+  if (!IsAllowedBitsPerComponent(m_bpc)) {
     m_bpc = 0;
+    return false;
+  }
+  return true;
 }
 
 void CPDF_DIB::TranslateScanline24bpp(

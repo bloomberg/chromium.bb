@@ -9,7 +9,6 @@
 
 #include "quiche/quic/core/quic_config.h"
 #include "quiche/quic/core/quic_epoll_clock.h"
-#include "quiche/quic/platform/api/quic_containers.h"
 #include "quiche/quic/platform/api/quic_mutex.h"
 #include "quiche/quic/platform/api/quic_socket_address.h"
 #include "quiche/quic/platform/api/quic_thread.h"
@@ -21,7 +20,8 @@ namespace test {
 // Simple wrapper class to run QuicServer in a dedicated thread.
 class ServerThread : public QuicThread {
  public:
-  ServerThread(QuicServer* server, const QuicSocketAddress& address);
+  ServerThread(std::unique_ptr<QuicServer> server,
+               const QuicSocketAddress& address);
   ServerThread(const ServerThread&) = delete;
   ServerThread& operator=(const ServerThread&) = delete;
 

@@ -3,9 +3,11 @@
 <translationbundle lang="sr">
 <translation id="1143896152279775643">Лозика се чува у Google менаџеру лозинки за <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Помозите нам да побољшамо Chrome-ове функције и учинак</translation>
+<translation id="1462727070346936664">Пријавите се да бисте искористили Chrome на најбољи начин.</translation>
 <translation id="1479202195792305274">Chrome може да вам проверава лозинке када се пријавите помоћу Google налога.</translation>
 <translation id="1493827051843127077">Подесите Chrome као подразумевану апликацију за синхронизовање картица, лозинки и информација о плаћању на свим уређајима</translation>
 <translation id="1504372625950710826">Chrome не може да тражи ажурирања. Проверите интернет везу.</translation>
+<translation id="1511320244449497906">Пријављени сте и синхронизујете податке са налогом којим управља <ph name="DOMAIN" />, при чему његов администратор сада може да подешава посебне смернице за кориснике за тај налог које могу да промене понашање Chrome-а.</translation>
 <translation id="1682483655351012182">Синхронизујте Chrome податке</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1812249337131447686">Помозите нам да побољшамо Chrome слањем статистике коришћења и извештаја о отказивању Google-у</translation>
@@ -64,6 +66,7 @@
 <translation id="5162467219239570114">Chrome је застарео. Ако ажурирање није доступно у <ph name="BEGIN_LINK" />App Store-у<ph name="END_LINK" />, уређај можда не подржава нове верзије Chrome-а.</translation>
 <translation id="5389212809648216794">Google Chrome не може да користи камеру зато што је већ користи друга апликација</translation>
 <translation id="5460571915754665838">4. Изаберите Chrome</translation>
+<translation id="5552137475244467770">Chrome повремено упоређује ваше лозинке са листама које су објављене онлајн. Док то ради, ваше лозинке и корисничка имена су шифровани, па нико не може да их прочита, укључујући Google.</translation>
 <translation id="5639704535586432836">Отворите Подешавања &gt; Приватност &gt; Камера &gt; Google Chrome и укључите камеру.</translation>
 <translation id="5642200033778930880">Google Chrome не може да користи камеру у режиму подељеног приказа</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -107,6 +110,7 @@
 <translation id="7780154209050837198">Да бисте користили Chrome на најбољи начин, пријавите се на Chrome помоћу Google налога.</translation>
 <translation id="7855730255114109580">Google Chrome је актуелан</translation>
 <translation id="8022947259858476807">Подразумевано користите Chrome да бисте отварали линкове, претраживали из виџета и аутоматски попуњавали лозинке у другим апликацијама</translation>
+<translation id="81358522153858150">Chrome сада подржава смернице за корисника за управљани налог</translation>
 <translation id="8160472928944011082">Chrome не може да се ажурира</translation>
 <translation id="8263079278049777200">Пријавите се на овај сајт, Google налог и у Chrome. Синхронизацију можете да укључите касније.</translation>
 <translation id="8357607116237445042">Одаберите да ли ћете обрисати Chrome податке са овог уређаја или их задржати</translation>

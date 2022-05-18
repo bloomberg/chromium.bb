@@ -98,7 +98,6 @@ export class TimelineModelImpl {
   private lastRecalculateStylesEvent!: SDK.TracingModel.Event|null;
   private currentScriptEvent!: SDK.TracingModel.Event|null;
   private eventStack!: SDK.TracingModel.Event[];
-  private knownInputEvents!: Set<string>;
   private browserFrameTracking!: boolean;
   private persistentIds!: boolean;
   private legacyCurrentPage!: any;
@@ -573,7 +572,6 @@ export class TimelineModelImpl {
     this.lastRecalculateStylesEvent = null;
     this.currentScriptEvent = null;
     this.eventStack = [];
-    this.knownInputEvents = new Set();
     this.browserFrameTracking = false;
     this.persistentIds = false;
     this.legacyCurrentPage = null;
@@ -831,40 +829,6 @@ export class TimelineModelImpl {
 
         if (asyncEvent.name === RecordType.Animation) {
           group(TrackType.Animation).push(asyncEvent);
-          continue;
-        }
-
-        if (asyncEvent.hasCategory(TimelineModelImpl.Category.LatencyInfo) ||
-            asyncEvent.name === RecordType.ImplSideFling) {
-          const lastStep = asyncEvent.steps[asyncEvent.steps.length - 1];
-          if (!lastStep) {
-            throw new Error('AsyncEvent.steps access is out of bounds.');
-          }
-          // FIXME: fix event termination on the back-end instead.
-          if (lastStep.phase !== SDK.TracingModel.Phase.AsyncEnd) {
-            continue;
-          }
-          const data = lastStep.args['data'];
-          asyncEvent.causedFrame = Boolean(data && data['INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT']);
-          if (asyncEvent.hasCategory(TimelineModelImpl.Category.LatencyInfo)) {
-            if (lastStep.id && !this.knownInputEvents.has(lastStep.id)) {
-              continue;
-            }
-            if (asyncEvent.name === RecordType.InputLatencyMouseMove && !asyncEvent.causedFrame) {
-              continue;
-            }
-            // Coalesced events are not really been processed, no need to track them.
-            if (data['is_coalesced']) {
-              continue;
-            }
-            const rendererMain = data['INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT'];
-            if (rendererMain) {
-              const time = rendererMain['time'] / 1000;
-              TimelineData.forEvent(asyncEvent.steps[0]).timeWaitingForMainThread =
-                  time - asyncEvent.steps[0].startTime;
-            }
-          }
-          group(TrackType.Input).push(asyncEvent);
           continue;
         }
       }
@@ -1206,14 +1170,6 @@ export class TimelineModelImpl {
   }
 
   private processBrowserEvent(event: SDK.TracingModel.Event): void {
-    if (event.name === RecordType.LatencyInfoFlow) {
-      const frameId = event.args['frameTreeNodeId'];
-      if (typeof frameId === 'number' && frameId === this.mainFrameNodeId && event.bind_id) {
-        this.knownInputEvents.add(event.bind_id);
-      }
-      return;
-    }
-
     if (event.name === RecordType.ResourceWillSendRequest) {
       const requestId = event.args?.data?.requestId;
       if (typeof requestId === 'string') {
@@ -1712,7 +1668,6 @@ export class Track {
 export enum TrackType {
   MainThread = 'MainThread',
   Worker = 'Worker',
-  Input = 'Input',
   Animation = 'Animation',
   Timings = 'Timings',
   Console = 'Console',

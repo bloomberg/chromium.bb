@@ -83,7 +83,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -142,7 +142,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -411,7 +411,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -471,7 +471,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -851,7 +851,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -911,7 +911,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1289,7 +1289,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1348,7 +1348,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1741,7 +1741,8 @@
       }
     ]
   },
-  "Android arm64 Builder (dbg)": {
+  "Android arm64 Builder (dbg)": {},
+  "Android arm64 Builder All Targets (dbg)": {
     "additional_compile_targets": [
       "all"
     ]
@@ -10361,7 +10362,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10428,7 +10429,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10496,7 +10497,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10562,7 +10563,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10623,7 +10624,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10681,7 +10682,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10747,7 +10748,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10813,7 +10814,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10879,7 +10880,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10947,7 +10948,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11014,7 +11015,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11080,7 +11081,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11146,7 +11147,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11213,7 +11214,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11279,7 +11280,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11346,7 +11347,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11412,7 +11413,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11489,7 +11490,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11565,7 +11566,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11637,7 +11638,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11703,7 +11704,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11771,7 +11772,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11840,7 +11841,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11909,7 +11910,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11976,7 +11977,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12044,7 +12045,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12110,7 +12111,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12176,7 +12177,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12242,7 +12243,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12308,7 +12309,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12374,7 +12375,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12440,7 +12441,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12506,7 +12507,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12575,7 +12576,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12641,7 +12642,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12707,7 +12708,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12773,7 +12774,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12839,7 +12840,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12905,7 +12906,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -12971,7 +12972,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13037,7 +13038,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13103,7 +13104,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13170,7 +13171,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13236,7 +13237,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13302,7 +13303,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13368,7 +13369,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13434,7 +13435,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13500,7 +13501,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13567,7 +13568,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13634,7 +13635,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13701,7 +13702,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13767,7 +13768,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13833,7 +13834,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13899,7 +13900,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -13965,7 +13966,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14031,7 +14032,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14097,7 +14098,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14163,7 +14164,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14229,7 +14230,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14295,7 +14296,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14362,7 +14363,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14429,7 +14430,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14496,7 +14497,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14563,7 +14564,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14629,7 +14630,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14696,7 +14697,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14740,6 +14741,78 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "webview_trichrome_cts_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "android_webview/tools/cts_archive",
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
+            },
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "n1-standard-4|e2-standard-4",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android30",
+              "path": ".android_emulator/generic_android30"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android30"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "webview_trichrome_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_cts_tests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "wtf_unittests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -14763,7 +14836,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14829,7 +14902,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14899,7 +14972,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -14966,7 +15039,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15034,7 +15107,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15061,7 +15134,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
         },
         "test": "android_sync_integration_tests",
         "test_id_prefix": "ninja://chrome/test:android_sync_integration_tests/"
@@ -15100,7 +15174,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15161,7 +15235,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15220,7 +15294,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15286,7 +15360,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15352,7 +15426,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15418,7 +15492,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15486,7 +15560,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15553,7 +15627,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15619,7 +15693,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15685,7 +15759,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15752,7 +15826,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15818,7 +15892,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15885,7 +15959,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -15951,7 +16025,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16028,7 +16102,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16104,7 +16178,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16176,7 +16250,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16242,7 +16316,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16309,7 +16383,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16377,7 +16451,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16445,7 +16519,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16512,7 +16586,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16580,7 +16654,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16646,7 +16720,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16713,7 +16787,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16779,7 +16853,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16845,7 +16919,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16911,7 +16985,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -16977,7 +17051,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17043,7 +17117,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17112,7 +17186,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17179,7 +17253,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17245,7 +17319,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17311,7 +17385,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17377,7 +17451,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17443,7 +17517,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17509,7 +17583,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17575,7 +17649,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17641,7 +17715,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17708,7 +17782,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17774,7 +17848,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17840,7 +17914,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17906,7 +17980,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -17972,7 +18046,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18038,7 +18112,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18105,7 +18179,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18173,7 +18247,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18240,7 +18314,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18307,7 +18381,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18373,7 +18447,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18439,7 +18513,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18505,7 +18579,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18571,7 +18645,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18637,7 +18711,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18703,7 +18777,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18769,7 +18843,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18835,7 +18909,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18901,7 +18975,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -18968,7 +19042,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19034,7 +19108,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19101,7 +19175,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19167,7 +19241,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19233,7 +19307,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19300,7 +19374,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19366,7 +19440,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19433,7 +19507,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19477,6 +19551,78 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "webview_trichrome_64_cts_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "android_webview/tools/cts_archive",
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
+            },
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "e2-standard-8",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "webview_trichrome_64_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_64_cts_tests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "webview_ui_test_app_test_apk"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -19500,7 +19646,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19566,7 +19712,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -19632,7 +19778,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24564,7 +24710,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24630,7 +24776,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24696,7 +24842,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24762,7 +24908,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24828,7 +24974,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24894,7 +25040,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -24961,7 +25107,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25032,7 +25178,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25098,7 +25244,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25164,7 +25310,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25230,7 +25376,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25296,7 +25442,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25362,7 +25508,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25429,7 +25575,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25500,7 +25646,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25566,7 +25712,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25632,7 +25778,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25698,7 +25844,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25764,7 +25910,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25830,7 +25976,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25897,7 +26043,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -25968,7 +26114,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26034,7 +26180,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26100,7 +26246,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26166,7 +26312,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26232,7 +26378,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26298,7 +26444,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26364,7 +26510,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26435,7 +26581,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26501,7 +26647,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26567,7 +26713,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26633,7 +26779,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26699,7 +26845,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26765,7 +26911,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26832,7 +26978,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26903,7 +27049,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -26969,7 +27115,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27035,7 +27181,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27101,7 +27247,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27167,7 +27313,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27233,7 +27379,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27300,7 +27446,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27431,7 +27577,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27497,7 +27643,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27563,7 +27709,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27629,7 +27775,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27695,7 +27841,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27761,7 +27907,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -27828,7 +27974,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -31686,7 +31832,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -31756,7 +31902,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -31783,7 +31929,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
         },
         "test": "android_sync_integration_tests",
         "test_id_prefix": "ninja://chrome/test:android_sync_integration_tests/"
@@ -31823,7 +31970,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -31891,7 +32038,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -31959,7 +32106,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32027,7 +32174,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32100,7 +32247,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32167,7 +32314,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32234,7 +32381,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32309,7 +32456,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32383,7 +32530,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32450,7 +32597,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32519,7 +32666,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32588,7 +32735,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32655,7 +32802,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32722,7 +32869,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32792,7 +32939,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32859,7 +33006,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32926,7 +33073,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -32994,7 +33141,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33061,7 +33208,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33128,7 +33275,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33197,7 +33344,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33264,7 +33411,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33331,7 +33478,7 @@
               "device_playstore_version": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33405,7 +33552,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33466,7 +33613,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33523,7 +33670,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33589,7 +33736,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33655,7 +33802,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33721,7 +33868,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33787,7 +33934,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33853,7 +34000,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33920,7 +34067,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -33986,7 +34133,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34052,7 +34199,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34118,7 +34265,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34186,7 +34333,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34253,7 +34400,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34320,7 +34467,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34386,7 +34533,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34452,7 +34599,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34518,7 +34665,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34584,7 +34731,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34650,7 +34797,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34716,7 +34863,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34782,7 +34929,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34848,7 +34995,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34914,7 +35061,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -34980,7 +35127,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35046,7 +35193,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35113,7 +35260,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35179,7 +35326,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35245,7 +35392,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35312,7 +35459,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35379,7 +35526,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35445,7 +35592,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35511,7 +35658,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35577,7 +35724,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35643,7 +35790,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35709,7 +35856,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35775,7 +35922,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35841,7 +35988,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35907,7 +36054,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -35973,7 +36120,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -36039,7 +36186,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -36105,7 +36252,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -36171,7 +36318,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -36237,7 +36384,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -40412,7 +40559,7 @@
           ],
           "quickrun_shards": 40,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 15
+          "shards": 20
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -40799,7 +40946,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -40984,7 +41131,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41051,7 +41198,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41119,7 +41266,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41185,7 +41332,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41246,7 +41393,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41303,7 +41450,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41369,7 +41516,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41435,7 +41582,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41501,7 +41648,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41568,7 +41715,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41635,7 +41782,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41701,7 +41848,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41767,7 +41914,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41834,7 +41981,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41900,7 +42047,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -41967,7 +42114,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42033,7 +42180,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42099,7 +42246,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42173,7 +42320,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "e2-standard-8",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42249,7 +42396,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42321,7 +42468,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42387,7 +42534,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42453,7 +42600,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42521,7 +42668,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42589,7 +42736,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42656,7 +42803,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42723,7 +42870,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42789,7 +42936,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42855,7 +43002,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42921,7 +43068,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -42987,7 +43134,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43053,7 +43200,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43119,7 +43266,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43185,7 +43332,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43254,7 +43401,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43320,7 +43467,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43386,7 +43533,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43452,7 +43599,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43518,7 +43665,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43584,7 +43731,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43650,7 +43797,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43716,7 +43863,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43782,7 +43929,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43848,7 +43995,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43914,7 +44061,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -43980,7 +44127,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44046,7 +44193,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44112,7 +44259,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44178,7 +44325,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44245,7 +44392,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44313,7 +44460,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44379,7 +44526,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44445,7 +44592,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44511,7 +44658,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44577,7 +44724,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44643,7 +44790,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44709,7 +44856,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44775,7 +44922,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44841,7 +44988,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44907,7 +45054,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -44973,7 +45120,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45040,7 +45187,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45107,7 +45254,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45173,7 +45320,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45239,7 +45386,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45305,7 +45452,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45371,7 +45518,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45437,7 +45584,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45494,7 +45641,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -45508,7 +45655,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45576,7 +45723,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45643,7 +45790,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45709,7 +45856,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45775,7 +45922,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45860,7 +46007,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45896,15 +46043,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--client-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -45930,7 +46077,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -45944,7 +46091,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -45981,15 +46128,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--client-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46015,7 +46162,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46029,7 +46176,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46066,16 +46213,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--client-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--client-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android29.textpb"
@@ -46085,11 +46232,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_client_from_96"
+            "weblayer_skew_tests with_client_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_client_from_96",
+        "name": "weblayer_skew_tests with_client_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -46099,8 +46246,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46114,7 +46261,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46146,20 +46293,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_client_from_96"
+        "variant_id": "with_client_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--client-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46199,7 +46346,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46236,15 +46383,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--client-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46284,7 +46431,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46321,15 +46468,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--client-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46369,7 +46516,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46406,15 +46553,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--impl-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46440,7 +46587,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46454,7 +46601,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46491,15 +46638,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--impl-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46525,7 +46672,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46539,7 +46686,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46576,16 +46723,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--impl-version=96",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--impl-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android29.textpb"
@@ -46595,11 +46742,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_impl_from_96"
+            "weblayer_skew_tests with_impl_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_impl_from_96",
+        "name": "weblayer_skew_tests with_impl_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -46609,8 +46756,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46624,7 +46771,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46656,20 +46803,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_impl_from_96"
+        "variant_id": "with_impl_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--impl-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46709,7 +46856,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46746,15 +46893,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--impl-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46794,7 +46941,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46831,15 +46978,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--impl-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46879,7 +47026,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -46920,15 +47067,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--client-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -46954,7 +47101,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -46968,7 +47115,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47005,15 +47152,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--client-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47039,7 +47186,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47053,7 +47200,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47090,16 +47237,16 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--client-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--client-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
@@ -47109,11 +47256,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests_with_chrome with_client_from_96"
+            "weblayer_skew_tests_with_chrome with_client_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests_with_chrome with_client_from_96",
+        "name": "weblayer_skew_tests_with_chrome with_client_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -47123,8 +47270,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47138,7 +47285,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47170,20 +47317,20 @@
         },
         "test": "weblayer_skew_tests_with_chrome",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests_with_chrome/",
-        "variant_id": "with_client_from_96"
+        "variant_id": "with_client_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--client-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47223,7 +47370,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47260,15 +47407,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--client-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47308,7 +47455,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47345,15 +47492,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--client-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47393,7 +47540,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47430,15 +47577,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--impl-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47464,7 +47611,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47478,7 +47625,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47515,15 +47662,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--impl-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47549,7 +47696,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47563,7 +47710,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47600,16 +47747,16 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--impl-version=96",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--impl-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb"
@@ -47619,11 +47766,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests_with_chrome with_impl_from_96"
+            "weblayer_skew_tests_with_chrome with_impl_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests_with_chrome with_impl_from_96",
+        "name": "weblayer_skew_tests_with_chrome with_impl_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -47633,8 +47780,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -47648,7 +47795,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47680,20 +47827,20 @@
         },
         "test": "weblayer_skew_tests_with_chrome",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests_with_chrome/",
-        "variant_id": "with_impl_from_96"
+        "variant_id": "with_impl_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--impl-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47733,7 +47880,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47770,15 +47917,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--impl-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47818,7 +47965,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47855,15 +48002,15 @@
       {
         "args": [
           "--additional-apk=apks/ChromePublic.apk",
-          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/AOSP_SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--impl-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -47903,7 +48050,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -47976,7 +48123,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48012,15 +48159,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--client-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48046,7 +48193,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48060,7 +48207,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48097,15 +48244,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--client-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48131,7 +48278,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48145,7 +48292,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48182,16 +48329,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--client-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--client-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android27.textpb"
@@ -48201,11 +48348,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_client_from_96"
+            "weblayer_skew_tests with_client_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_client_from_96",
+        "name": "weblayer_skew_tests with_client_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -48215,8 +48362,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48230,7 +48377,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48262,20 +48409,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_client_from_96"
+        "variant_id": "with_client_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--client-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48315,7 +48462,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48352,15 +48499,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--client-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48400,7 +48547,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48437,15 +48584,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--client-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48485,7 +48632,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48522,15 +48669,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--impl-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48556,7 +48703,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48570,7 +48717,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48607,15 +48754,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--impl-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48641,7 +48788,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48655,7 +48802,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48692,16 +48839,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--impl-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--impl-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android27.textpb"
@@ -48711,11 +48858,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_impl_from_96"
+            "weblayer_skew_tests with_impl_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_impl_from_96",
+        "name": "weblayer_skew_tests with_impl_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -48725,8 +48872,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -48740,7 +48887,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48772,20 +48919,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_impl_from_96"
+        "variant_id": "with_impl_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--impl-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48825,7 +48972,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48862,15 +49009,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--impl-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48910,7 +49057,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -48947,15 +49094,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--impl-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -48995,7 +49142,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49068,7 +49215,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49104,15 +49251,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--client-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49138,7 +49285,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49152,7 +49299,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49189,15 +49336,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--client-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49223,7 +49370,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49237,7 +49384,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49274,16 +49421,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--client-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--client-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
@@ -49293,11 +49440,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_client_from_96"
+            "weblayer_skew_tests with_client_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_client_from_96",
+        "name": "weblayer_skew_tests with_client_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -49307,8 +49454,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49322,7 +49469,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49354,20 +49501,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_client_from_96"
+        "variant_id": "with_client_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--client-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49407,7 +49554,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49444,15 +49591,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--client-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49492,7 +49639,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49529,15 +49676,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
-          "--client-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--implementation-outdir",
           ".",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--client-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--client-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49577,7 +49724,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49614,15 +49761,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M100/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M100/out/Release",
           "--impl-version=100",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49648,7 +49795,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.133"
+              "revision": "version:100.0.4896.134"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49662,7 +49809,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49699,15 +49846,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M101/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M101/out/Release",
           "--impl-version=101",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49733,7 +49880,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.35"
+              "revision": "version:101.0.4951.68"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49747,7 +49894,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49784,16 +49931,16 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M96/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
-          "--impl-version=96",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M102/out/Release",
+          "--impl-version=102",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
@@ -49803,11 +49950,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_skew_tests with_impl_from_96"
+            "weblayer_skew_tests with_impl_from_102"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_skew_tests with_impl_from_96",
+        "name": "weblayer_skew_tests with_impl_from_102",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -49817,8 +49964,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/weblayer-x86",
-              "location": "weblayer_instrumentation_test_M96",
-              "revision": "version:96.0.4664.141"
+              "location": "weblayer_instrumentation_test_M102",
+              "revision": "version:102.0.5005.51"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -49832,7 +49979,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49864,20 +50011,20 @@
         },
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
-        "variant_id": "with_impl_from_96"
+        "variant_id": "with_impl_from_102"
       },
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M97/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M97/out/Release",
           "--impl-version=97",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -49917,7 +50064,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -49954,15 +50101,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M98/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M98/out/Release",
           "--impl-version=98",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -50002,7 +50149,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -50039,15 +50186,15 @@
       {
         "args": [
           "--additional-apk=apks/WebLayerShellSystemWebView.apk",
-          "--webview-apk-path=apks/SystemWebView.apk",
           "--test-runner-outdir",
           ".",
           "--client-outdir",
           ".",
-          "--implementation-outdir",
-          "../../weblayer_instrumentation_test_M99/out/Release",
           "--test-expectations",
           "../../weblayer/browser/android/javatests/skew/expectations.txt",
+          "--webview-apk-path=apks/SystemWebView.apk",
+          "--implementation-outdir",
+          "../../weblayer_instrumentation_test_M99/out/Release",
           "--impl-version=99",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -50087,7 +50234,7 @@
               "device_os": null,
               "device_type": null,
               "machine_type": "n1-standard-4|e2-standard-4",
-              "os": "Ubuntu-16.04|Ubuntu-18.04",
+              "os": "Ubuntu-18.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -50120,6 +50267,82 @@
         "test": "weblayer_skew_tests",
         "test_id_prefix": "ninja://weblayer/browser/android/javatests:weblayer_skew_tests/",
         "variant_id": "with_impl_from_99"
+      }
+    ]
+  },
+  "android-webview-10-x86-rel-tests": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android29.textpb"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "webview_trichrome_cts_tests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/android_webview/tools/cts_archive",
+              "location": "android_webview/tools/cts_archive",
+              "revision": "7HRNj8Yv_CSQiyCoK8Y4Ld-h1virCHVES9Ed18Z75LkC"
+            },
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "machine_type": "n1-standard-4|e2-standard-4",
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android29",
+              "path": ".android_emulator/generic_android29"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android29"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
+        },
+        "test": "webview_trichrome_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_cts_tests/"
       }
     ]
   }

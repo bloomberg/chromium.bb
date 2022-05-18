@@ -118,7 +118,6 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "crbug/1288469")
     public void testRefreshTokenUpdateWhenDefaultAccountSignsinWithSync() {
         final CoreAccountInfo account1 =
                 mAccountManagerTestRule.addAccountAndWaitForSeeding(TEST_EMAIL1);
@@ -179,7 +178,6 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "crbug/1254405")
     public void testRefreshTokenUpdateWhenSignedInUserAddsNewAccount() {
         final CoreAccountInfo account1 = mAccountManagerTestRule.addTestAccountThenSignin();
         CriteriaHelper.pollUiThread(() -> mObserver.mCallCount == 1);

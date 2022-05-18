@@ -33,12 +33,13 @@
 
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
+#include "quiche/common/platform/api/quiche_export.h"
 
 namespace http2 {
 
 // TODO(jamessynge): Consider sorting the methods by frequency of call, if that
 // helps at all.
-class Http2FrameDecoderListener {
+class QUICHE_EXPORT_PRIVATE Http2FrameDecoderListener {
  public:
   Http2FrameDecoderListener() {}
   virtual ~Http2FrameDecoderListener() {}
@@ -232,8 +233,7 @@ class Http2FrameDecoderListener {
   //   OnAltSvcEnd will called last, after all of the origin and
   //     Alt-Svc-Field-Value have been delivered to the listener.
   virtual void OnAltSvcStart(const Http2FrameHeader& header,
-                             size_t origin_length,
-                             size_t value_length) = 0;
+                             size_t origin_length, size_t value_length) = 0;
 
   // Called when decoding the (optional) origin of an ALTSVC;
   // the field is uninterpreted.
@@ -315,7 +315,8 @@ class Http2FrameDecoderListener {
 };
 
 // Do nothing for each call. Useful for ignoring a frame that is invalid.
-class Http2FrameDecoderNoOpListener : public Http2FrameDecoderListener {
+class QUICHE_EXPORT_PRIVATE Http2FrameDecoderNoOpListener
+    : public Http2FrameDecoderListener {
  public:
   Http2FrameDecoderNoOpListener() {}
   ~Http2FrameDecoderNoOpListener() override {}

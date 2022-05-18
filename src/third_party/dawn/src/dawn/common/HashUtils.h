@@ -15,12 +15,12 @@
 #ifndef SRC_DAWN_COMMON_HASHUTILS_H_
 #define SRC_DAWN_COMMON_HASHUTILS_H_
 
+#include <bitset>
+#include <functional>
+
 #include "dawn/common/Platform.h"
 #include "dawn/common/TypedInteger.h"
 #include "dawn/common/ityp_bitset.h"
-
-#include <bitset>
-#include <functional>
 
 // Wrapper around std::hash to make it a templated function instead of a functor. It is marginally
 // nicer, and avoids adding to the std namespace to add hashing of other types.
@@ -50,7 +50,7 @@ void HashCombine(size_t* hash, const T& value) {
 #elif defined(DAWN_PLATFORM_32_BIT)
     const size_t offset = 0x9e3779b9;
 #else
-#    error "Unsupported platform"
+#error "Unsupported platform"
 #endif
     *hash ^= Hash(value) + offset + (*hash << 6) + (*hash >> 2);
 }
@@ -75,7 +75,7 @@ void HashCombine(size_t* hash, const T& value, const Args&... args) {
 #if defined(_GLIBCXX_DEBUG)
 template <size_t N>
 size_t Hash(const std::bitset<N>& value) {
-    constexpr size_t kWindowSize = sizeof(unsigned long long);
+    constexpr size_t kWindowSize = sizeof(uint64_t);
 
     std::bitset<N> bits = value;
     size_t hash = 0;
@@ -89,13 +89,13 @@ size_t Hash(const std::bitset<N>& value) {
 #endif
 
 namespace std {
-    template <typename Index, size_t N>
-    struct hash<ityp::bitset<Index, N>> {
-      public:
-        size_t operator()(const ityp::bitset<Index, N>& value) const {
-            return Hash(static_cast<const std::bitset<N>&>(value));
-        }
-    };
+template <typename Index, size_t N>
+struct hash<ityp::bitset<Index, N>> {
+  public:
+    size_t operator()(const ityp::bitset<Index, N>& value) const {
+        return Hash(static_cast<const std::bitset<N>&>(value));
+    }
+};
 }  // namespace std
 
 #endif  // SRC_DAWN_COMMON_HASHUTILS_H_

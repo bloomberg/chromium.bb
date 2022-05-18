@@ -27,15 +27,15 @@
 #include "protos/perfetto/trace/ftrace/generic.pbzero.h"
 
 using testing::_;
-using testing::Values;
-using testing::ValuesIn;
-using testing::TestWithParam;
-using testing::Return;
 using testing::AnyNumber;
-using testing::IsNull;
 using testing::Contains;
 using testing::Eq;
+using testing::IsNull;
 using testing::Pointee;
+using testing::Return;
+using testing::TestWithParam;
+using testing::Values;
+using testing::ValuesIn;
 
 namespace perfetto {
 namespace {
@@ -68,7 +68,8 @@ class AllTranslationTableTest : public TestWithParam<const char*> {
 class TranslationTableCreationTest : public TestWithParam<uint16_t> {};
 
 const char* kDevices[] = {
-    "android_seed_N2F62_3.10.49", "android_hammerhead_MRA59G_3.4.0",
+    "android_seed_N2F62_3.10.49",
+    "android_hammerhead_MRA59G_3.4.0",
 };
 
 TEST_P(AllTranslationTableTest, Create) {
@@ -379,7 +380,7 @@ TEST(TranslationTableTest, Getters) {
   std::vector<Event> events;
 
   {
-    Event event;
+    Event event{};
     event.name = "foo";
     event.group = "group_one";
     event.ftrace_event_id = 1;
@@ -387,7 +388,7 @@ TEST(TranslationTableTest, Getters) {
   }
 
   {
-    Event event;
+    Event event{};
     event.name = "bar";
     event.group = "group_one";
     event.ftrace_event_id = 2;
@@ -395,7 +396,7 @@ TEST(TranslationTableTest, Getters) {
   }
 
   {
-    Event event;
+    Event event{};
     event.name = "baz";
     event.group = "group_two";
     event.ftrace_event_id = 100;

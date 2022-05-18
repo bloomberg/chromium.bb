@@ -219,9 +219,15 @@ TEST_P(VisualViewportTest, TestResize) {
   EXPECT_EQ(new_viewport_size, visual_viewport.Size());
 }
 
+#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1313284): Fix this test on Fuchsia and re-enable.
+#define MAYBE_TestVisibleContentRect DISABLED_TestVisibleContentRect
+#else
+#define MAYBE_TestVisibleContentRect TestVisibleContentRect
+#endif
 // Make sure that the visibleContentRect method acurately reflects the scale and
 // scroll location of the viewport with and without scrollbars.
-TEST_P(VisualViewportTest, TestVisibleContentRect) {
+TEST_P(VisualViewportTest, MAYBE_TestVisibleContentRect) {
   USE_NON_OVERLAY_SCROLLBARS();
   InitializeWithDesktopSettings();
 
@@ -1834,6 +1840,10 @@ TEST_P(VisualViewportTest, FractionalMaxScrollOffset) {
 // continuous. crbug.com/453460 was caused by the impl-path not updating the
 // ScrollAnimatorBase class.
 TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
+  // TODO(crbug.com/1322078): Enable this test for scroll unification.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+    return;
+
   InitializeWithDesktopSettings();
   WebView()->MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   NavigateTo("about:blank");

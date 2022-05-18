@@ -1329,6 +1329,10 @@ TEST_F(NetworkContextTest, CertReporting) {
   const char kReportHost[] = "report-uri.preloaded.test";
   const char kReportPath[] = "/pkp";
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
+
   for (bool reporting_enabled : {false, true}) {
     // Server that PKP reports are sent to.
     net::test_server::EmbeddedTestServer report_test_server;
@@ -2624,7 +2628,7 @@ bool SetCookieHelper(NetworkContext* network_context,
   cookie_manager->SetCanonicalCookie(
       *net::CanonicalCookie::CreateUnsafeCookieForTesting(
           key, value, url.host(), "/", base::Time(), base::Time(), base::Time(),
-          true, false, net::CookieSameSite::NO_RESTRICTION,
+          base::Time(), true, false, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_LOW, false),
       url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SetCookieCallback, &run_loop, &result));
@@ -2645,7 +2649,7 @@ TEST_F(NetworkContextTest, CookieManager) {
   bool result = false;
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
       net::COOKIE_PRIORITY_LOW, false);
   cookie_manager_remote->SetCanonicalCookie(
       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
@@ -4166,7 +4170,7 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
                              nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
       net::COOKIE_PRIORITY_LOW, false);
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
@@ -4186,7 +4190,7 @@ TEST_F(NetworkContextTest, CanSetCookieTrueIfCookiesAllowed) {
                              nullptr, TRAFFIC_ANNOTATION_FOR_TESTS);
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       "TestCookie", "1", "www.test.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false, net::CookieSameSite::LAX_MODE,
+      base::Time(), base::Time(), false, false, net::CookieSameSite::LAX_MODE,
       net::COOKIE_PRIORITY_LOW, false);
 
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());

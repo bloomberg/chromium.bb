@@ -101,6 +101,19 @@ TEST(HeaderValidatorTest, ValueHasInvalidChar) {
         v.ValidateSingleHeader("name", absl::string_view("val\0ue", 6));
     EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID, status);
   }
+  {
+    // Test that obs-text is disallowed by default.
+    EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+              v.ValidateSingleHeader("name", "val\xa9ue"));
+    // Test that obs-text is disallowed when configured.
+    v.SetObsTextOption(ObsTextOption::kDisallow);
+    EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+              v.ValidateSingleHeader("name", "val\xa9ue"));
+    // Test that obs-text is allowed when configured.
+    v.SetObsTextOption(ObsTextOption::kAllow);
+    EXPECT_EQ(HeaderValidator::HEADER_OK,
+              v.ValidateSingleHeader("name", "val\xa9ue"));
+  }
 }
 
 TEST(HeaderValidatorTest, StatusHasInvalidChar) {
@@ -413,6 +426,30 @@ TEST(HeaderValidatorTest, Response204) {
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader("x-content", "is not present"));
   EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::RESPONSE));
+}
+
+TEST(HeaderValidatorTest, ResponseWithMultipleIdenticalContentLength) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":status", "200"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("content-length", "13"));
+  EXPECT_EQ(HeaderValidator::HEADER_SKIP,
+            v.ValidateSingleHeader("content-length", "13"));
+}
+
+TEST(HeaderValidatorTest, ResponseWithMultipleDifferingContentLength) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":status", "200"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("content-length", "13"));
+  EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+            v.ValidateSingleHeader("content-length", "17"));
 }
 
 TEST(HeaderValidatorTest, Response204WithContentLengthZero) {

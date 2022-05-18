@@ -6,7 +6,7 @@ namespace Eigen {
     {
       typedef Circulant<ArgType> XprType;
       typedef typename nested_eval<ArgType, XprType::ColsAtCompileTime>::type ArgTypeNested;
-      typedef typename remove_all<ArgTypeNested>::type ArgTypeNestedCleaned;
+      typedef remove_all_t<ArgTypeNested> ArgTypeNestedCleaned;
       typedef typename XprType::CoeffReturnType CoeffReturnType;
 
       enum { 

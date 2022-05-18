@@ -6,14 +6,14 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
-import '../shared_style.js';
+import '../shared_style.css.js';
 import './activity_log_history_item.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getTemplate} from './activity_log_history.html.js';
 
+import {getTemplate} from './activity_log_history.html.js';
 import {ActivityGroup} from './activity_log_history_item.js';
 
 /**
@@ -42,7 +42,7 @@ export interface ActivityLogDelegate {
  * the scripts executed (specified as a stringified JSON array in the args
  * field) as the keys for an activity group instead.
  */
-function getActivityGroupKeysForContentScript_(
+function getActivityGroupKeysForContentScript(
     activity: chrome.activityLogPrivate.ExtensionActivity): string[] {
   assert(
       activity.activityType ===
@@ -63,7 +63,7 @@ function getActivityGroupKeysForContentScript_(
  * is in activity.other.webRequest and we use this to generate more activity
  * group keys if possible.
  */
-function getActivityGroupKeysForWebRequest_(
+function getActivityGroupKeysForWebRequest(
     activity: chrome.activityLogPrivate.ExtensionActivity): Array<string> {
   assert(
       activity.activityType ===
@@ -111,9 +111,9 @@ function groupActivities(
 
     let activityGroupKeys = [activity.apiCall];
     if (isContentScript) {
-      activityGroupKeys = getActivityGroupKeysForContentScript_(activity);
+      activityGroupKeys = getActivityGroupKeysForContentScript(activity);
     } else if (isWebRequest) {
-      activityGroupKeys = getActivityGroupKeysForWebRequest_(activity);
+      activityGroupKeys = getActivityGroupKeysForWebRequest(activity);
     }
 
     for (const key of activityGroupKeys) {

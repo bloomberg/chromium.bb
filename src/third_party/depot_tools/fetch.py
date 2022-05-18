@@ -34,6 +34,7 @@ from distutils import spawn
 
 
 SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_PROTOCOL = 'https'
 
 #################################################
 # Checkout class definitions.
@@ -199,6 +200,12 @@ def handle_args(argv):
     help='Perform shallow clones, don\'t fetch the full git history.')
   parser.add_argument('--force', action='store_true', default=False,
     help='(dangerous) Don\'t look for existing .gclient file.')
+  parser.add_argument(
+    '-p',
+    '--protocol-override',
+    type=str,
+    default=DEFAULT_PROTOCOL,
+    help='Protocol to use to fetch dependencies, defaults to https.')
 
   parser.add_argument('config', type=str,
     help="Project to fetch, e.g. chromium.")

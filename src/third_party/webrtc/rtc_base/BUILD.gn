@@ -75,124 +75,248 @@ rtc_source_set("callback_list") {
   ]
 }
 
-# The subset of rtc_base approved for use outside of libjingle.
-# TODO(bugs.webrtc.org/9838): Create small and focused build targets and remove
-# the old concept of rtc_base and rtc_base_approved.
-rtc_library("rtc_base_approved") {
+rtc_source_set("buffer") {
   visibility = [ "*" ]
+  sources = [ "buffer.h" ]
   deps = [
-    ":atomicops",
     ":checks",
-    ":logging",
-    ":macromagic",
-    ":refcount",
-    ":rtc_event",
-    ":rtc_task_queue",
-    ":safe_compare",
-    ":safe_conversions",
-    ":stringutils",
-    ":timeutils",
     ":type_traits",
+    ":zero_memory",
     "../api:array_view",
-    "../api:scoped_refptr",
-    "../api:sequence_checker",
-    "synchronization:mutex",
-    "system:arch",
-    "system:no_unique_address",
-    "system:rtc_export",
-    "third_party/base64",
   ]
-  absl_deps = [
-    "//third_party/abseil-cpp/absl/base:core_headers",
-    "//third_party/abseil-cpp/absl/numeric:bits",
-    "//third_party/abseil-cpp/absl/strings",
-    "//third_party/abseil-cpp/absl/types:optional",
-  ]
-  public_deps = []  # no-presubmit-check TODO(webrtc:8603)
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+}
 
-  sources = [
-    "bit_buffer.cc",
-    "bit_buffer.h",
-    "buffer.h",
-    "buffer_queue.cc",
-    "buffer_queue.h",
-    "byte_buffer.cc",
-    "byte_buffer.h",
-    "byte_order.h",
-    "copy_on_write_buffer.cc",
-    "copy_on_write_buffer.h",
-    "event_tracer.cc",
-    "event_tracer.h",
-    "location.cc",
-    "location.h",
-    "numerics/histogram_percentile_counter.cc",
-    "numerics/histogram_percentile_counter.h",
-    "numerics/mod_ops.h",
-    "numerics/moving_max_counter.h",
-    "numerics/sample_counter.cc",
-    "numerics/sample_counter.h",
-    "one_time_event.h",
-    "race_checker.cc",
-    "race_checker.h",
-    "random.cc",
-    "random.h",
-    "rate_statistics.cc",
-    "rate_statistics.h",
-    "rate_tracker.cc",
-    "rate_tracker.h",
-    "strong_alias.h",
-    "swap_queue.h",
-    "timestamp_aligner.cc",
-    "timestamp_aligner.h",
-    "trace_event.h",
-    "zero_memory.cc",
-    "zero_memory.h",
-  ]
+rtc_source_set("byte_order") {
+  visibility = [ "*" ]
+  sources = [ "byte_order.h" ]
+  deps = [ "system:arch" ]
+}
 
-  if (is_win) {
-    sources += [
-      "win/get_activation_factory.cc",
-      "win/get_activation_factory.h",
-      "win/hstring.cc",
-      "win/hstring.h",
-      "win/scoped_com_initializer.cc",
-      "win/scoped_com_initializer.h",
-      "win/windows_version.cc",
-      "win/windows_version.h",
-    ]
-    data_deps = [ "//build/win:runtime_libs" ]
-  }
+rtc_source_set("mod_ops") {
+  visibility = [ "*" ]
+  sources = [ "numerics/mod_ops.h" ]
+  deps = [ ":checks" ]
+}
 
-  # These files add a dependency on the Win10 SDK v10.0.10240.
-  if (rtc_enable_win_wgc) {
-    sources += [
-      "win/create_direct3d_device.cc",
-      "win/create_direct3d_device.h",
-    ]
-  }
+rtc_source_set("moving_max_counter") {
+  visibility = [ "*" ]
+  sources = [ "numerics/moving_max_counter.h" ]
+  deps = [ ":checks" ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+}
 
-  if (is_nacl) {
-    public_deps +=  # no-presubmit-check TODO(webrtc:8603)
-        [ "//native_client_sdk/src/libraries/nacl_io" ]
-  }
+rtc_source_set("one_time_event") {
+  visibility = [ "*" ]
+  sources = [ "one_time_event.h" ]
+  deps = [ "synchronization:mutex" ]
+}
 
-  if (is_android) {
-    libs = [ "log" ]
-  }
+rtc_source_set("strong_alias") {
+  visibility = [ "*" ]
+  sources = [ "strong_alias.h" ]
+}
 
-  public_deps += [  # no-presubmit-check TODO(webrtc:8603)
-    ":platform_thread",
-    ":platform_thread_types",
-  ]
+rtc_source_set("swap_queue") {
+  visibility = [ "*" ]
+  sources = [ "swap_queue.h" ]
+  deps = [ ":checks" ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/base:core_headers" ]
 }
 
 rtc_source_set("macromagic") {
   sources = [
     "arraysize.h",
-    "format_macros.h",
     "thread_annotations.h",
   ]
   deps = [ "system:arch" ]
+}
+
+rtc_library("bit_buffer") {
+  visibility = [ "*" ]
+  sources = [
+    "bit_buffer.cc",
+    "bit_buffer.h",
+  ]
+  deps = [ ":checks" ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/numeric:bits" ]
+}
+
+rtc_library("byte_buffer") {
+  visibility = [ "*" ]
+  sources = [
+    "byte_buffer.cc",
+    "byte_buffer.h",
+  ]
+  deps = [
+    ":buffer",
+    ":byte_order",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+}
+
+rtc_library("buffer_queue") {
+  visibility = [ "*" ]
+  sources = [
+    "buffer_queue.cc",
+    "buffer_queue.h",
+  ]
+  deps = [
+    ":buffer",
+    ":macromagic",
+    "../api:sequence_checker",
+    "system:no_unique_address",
+  ]
+}
+
+rtc_library("copy_on_write_buffer") {
+  visibility = [ "*" ]
+  sources = [
+    "copy_on_write_buffer.cc",
+    "copy_on_write_buffer.h",
+  ]
+  deps = [
+    ":buffer",
+    ":checks",
+    ":refcount",
+    ":type_traits",
+    "../api:scoped_refptr",
+    "system:rtc_export",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+}
+
+rtc_library("event_tracer") {
+  visibility = [ "*" ]
+  sources = [
+    "event_tracer.cc",
+    "event_tracer.h",
+    "trace_event.h",
+  ]
+  deps = [
+    ":atomicops",
+    ":checks",
+    ":logging",
+    ":macromagic",
+    ":platform_thread",
+    ":platform_thread_types",
+    ":rtc_event",
+    ":timeutils",
+    "../api:sequence_checker",
+    "synchronization:mutex",
+    "system:rtc_export",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
+}
+
+rtc_library("histogram_percentile_counter") {
+  visibility = [ "*" ]
+  sources = [
+    "numerics/histogram_percentile_counter.cc",
+    "numerics/histogram_percentile_counter.h",
+  ]
+  deps = [ ":checks" ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+}
+
+rtc_library("location") {
+  visibility = [ "*" ]
+  sources = [
+    "location.cc",
+    "location.h",
+  ]
+  deps = [ "system:rtc_export" ]
+}
+
+rtc_library("race_checker") {
+  visibility = [ "*" ]
+  sources = [
+    "race_checker.cc",
+    "race_checker.h",
+  ]
+  deps = [
+    ":checks",
+    ":macromagic",
+    ":platform_thread_types",
+  ]
+}
+
+rtc_library("random") {
+  visibility = [ "*" ]
+  sources = [
+    "random.cc",
+    "random.h",
+  ]
+  deps = [
+    ":checks",
+    ":safe_conversions",
+  ]
+}
+
+rtc_library("rate_statistics") {
+  visibility = [ "*" ]
+  sources = [
+    "rate_statistics.cc",
+    "rate_statistics.h",
+  ]
+  deps = [
+    ":checks",
+    ":logging",
+    ":safe_conversions",
+    "system:rtc_export",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+}
+
+rtc_library("rate_tracker") {
+  visibility = [ "*" ]
+  sources = [
+    "rate_tracker.cc",
+    "rate_tracker.h",
+  ]
+  deps = [
+    ":checks",
+    ":timeutils",
+  ]
+}
+
+rtc_library("sample_counter") {
+  visibility = [ "*" ]
+  sources = [
+    "numerics/sample_counter.cc",
+    "numerics/sample_counter.h",
+  ]
+  deps = [
+    ":checks",
+    ":safe_conversions",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
+}
+
+rtc_library("timestamp_aligner") {
+  visibility = [ "*" ]
+  sources = [
+    "timestamp_aligner.cc",
+    "timestamp_aligner.h",
+  ]
+  deps = [
+    ":checks",
+    ":logging",
+    ":timeutils",
+    "system:rtc_export",
+  ]
+}
+
+rtc_library("zero_memory") {
+  visibility = [ "*" ]
+  sources = [
+    "zero_memory.cc",
+    "zero_memory.h",
+  ]
+  deps = [
+    ":checks",
+    "../api:array_view",
+  ]
 }
 
 rtc_library("platform_thread_types") {
@@ -232,14 +356,6 @@ rtc_library("criticalsection") {
 }
 
 rtc_library("platform_thread") {
-  visibility = [
-    ":rtc_base_approved",
-    ":rtc_task_queue_libevent",
-    ":rtc_task_queue_stdlib",
-    ":rtc_task_queue_win",
-    "../api:sequence_checker",
-    "synchronization:mutex",
-  ]
   sources = [
     "platform_thread.cc",
     "platform_thread.h",
@@ -351,6 +467,7 @@ rtc_library("checks") {
   ]
   deps = [
     ":safe_compare",
+    "../api:scoped_refptr",
     "system:inline",
     "system:rtc_export",
   ]
@@ -370,7 +487,7 @@ rtc_library("rate_limiter") {
   ]
   deps = [
     ":macromagic",
-    ":rtc_base_approved",
+    ":rate_statistics",
     "../system_wrappers",
     "synchronization:mutex",
   ]
@@ -634,7 +751,7 @@ rtc_library("rtc_numerics") {
   ]
   deps = [
     ":checks",
-    ":rtc_base_approved",
+    ":mod_ops",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
@@ -676,8 +793,7 @@ rtc_library("rtc_json") {
   deps = [ ":stringutils" ]
   all_dependent_configs = [ "//third_party/jsoncpp:jsoncpp_config" ]
   if (rtc_build_json) {
-    public_deps =  # no-presubmit-check TODO(webrtc:8603)
-        [ "//third_party/jsoncpp" ]
+    deps += [ "//third_party/jsoncpp" ]
   } else {
     include_dirs = [ "$rtc_jsoncpp_root" ]
 
@@ -699,10 +815,11 @@ rtc_library("net_helpers") {
   }
   if (is_win) {
     deps += [
-      ":rtc_base_approved",
       ":win32",
+      "win:windows_version",
     ]
   }
+  absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
 }
 
 rtc_library("async_resolver_interface") {
@@ -725,8 +842,8 @@ rtc_library("ip_address") {
     "ip_address.h",
   ]
   deps = [
+    ":byte_order",
     ":net_helpers",
-    ":rtc_base_approved",
     ":stringutils",
     "system:rtc_export",
   ]
@@ -743,11 +860,11 @@ rtc_library("socket_address") {
     "socket_address.h",
   ]
   deps = [
+    ":byte_order",
     ":checks",
     ":ip_address",
     ":logging",
     ":net_helpers",
-    ":rtc_base_approved",
     ":safe_conversions",
     ":stringutils",
     "system:rtc_export",
@@ -805,16 +922,19 @@ rtc_library("threading") {
   deps = [
     ":async_resolver_interface",
     ":atomicops",
+    ":byte_order",
     ":checks",
     ":criticalsection",
+    ":event_tracer",
     ":ip_address",
+    ":location",
     ":logging",
     ":macromagic",
     ":network_constants",
     ":null_socket_server",
+    ":platform_thread",
     ":platform_thread_types",
     ":refcount",
-    ":rtc_base_approved",
     ":rtc_event",
     ":rtc_task_queue",
     ":socket_address",
@@ -909,10 +1029,10 @@ if (is_win) {
     ]
 
     deps = [
+      ":byte_order",
       ":checks",
       ":logging",
       ":macromagic",
-      ":rtc_base_approved",
       ":stringutils",
     ]
 
@@ -935,9 +1055,14 @@ rtc_library("rtc_base") {
   deps = [
     ":async_resolver_interface",
     ":async_socket",
+    ":buffer",
+    ":byte_buffer",
+    ":byte_order",
     ":callback_list",
     ":checks",
+    ":copy_on_write_buffer",
     ":ip_address",
+    ":location",
     ":logging",
     ":macromagic",
     ":network_constants",
@@ -953,6 +1078,7 @@ rtc_library("rtc_base") {
     ":stringutils",
     ":threading",
     ":timeutils",
+    ":zero_memory",
     "../api:array_view",
     "../api:field_trials_view",
     "../api:function_view",
@@ -983,7 +1109,6 @@ rtc_library("rtc_base") {
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
-  public_deps = [ ":rtc_base_approved" ]  # no-presubmit-check TODO(webrtc:8603)
   public_configs = []
 
   sources = [
@@ -1234,8 +1359,10 @@ rtc_library("rtc_base_tests_utils") {
   ]
   deps = [
     ":async_socket",
+    ":byte_buffer",
     ":checks",
     ":ip_address",
+    ":location",
     ":logging",
     ":macromagic",
     ":rtc_base",
@@ -1272,8 +1399,8 @@ rtc_library("task_queue_for_test") {
   ]
   deps = [
     ":checks",
+    ":location",
     ":macromagic",
-    ":rtc_base_approved",
     ":rtc_event",
     ":rtc_task_queue",
     "../api/task_queue",
@@ -1313,7 +1440,6 @@ if (rtc_include_tests) {
     deps = [
       ":gunit_helpers",
       ":rtc_base",
-      ":rtc_base_approved",
       ":rtc_event",
       ":rtc_operations_chain",
       ":threading",
@@ -1335,13 +1461,16 @@ if (rtc_include_tests) {
         "socket_unittest.h",
       ]
       deps = [
+        ":buffer",
         ":checks",
         ":gunit_helpers",
         ":ip_address",
+        ":location",
         ":logging",
         ":macromagic",
         ":net_helpers",
         ":null_socket_server",
+        ":platform_thread",
         ":rtc_base",
         ":rtc_base_tests_utils",
         ":socket",
@@ -1409,39 +1538,56 @@ if (rtc_include_tests) {
         "virtual_socket_unittest.cc",
         "zero_memory_unittest.cc",
       ]
-      if (is_win) {
-        sources += [ "win/windows_version_unittest.cc" ]
-      }
       deps = [
         ":atomicops",
+        ":bit_buffer",
         ":bitstream_reader",
         ":bounded_inline_vector",
+        ":buffer",
+        ":buffer_queue",
+        ":byte_buffer",
+        ":byte_order",
         ":checks",
+        ":copy_on_write_buffer",
         ":criticalsection",
         ":divide_round",
+        ":event_tracer",
         ":gunit_helpers",
+        ":histogram_percentile_counter",
         ":ip_address",
+        ":location",
         ":logging",
         ":macromagic",
+        ":mod_ops",
+        ":moving_max_counter",
         ":null_socket_server",
+        ":one_time_event",
+        ":platform_thread",
+        ":random",
         ":rate_limiter",
+        ":rate_statistics",
+        ":rate_tracker",
         ":refcount",
         ":rtc_base",
-        ":rtc_base_approved",
         ":rtc_base_tests_utils",
         ":rtc_event",
         ":rtc_numerics",
         ":rtc_task_queue",
         ":safe_compare",
         ":safe_minmax",
+        ":sample_counter",
         ":sanitizer",
         ":socket",
         ":socket_address",
         ":socket_server",
         ":stringutils",
+        ":strong_alias",
+        ":swap_queue",
         ":testclient",
         ":threading",
+        ":timestamp_aligner",
         ":timeutils",
+        ":zero_memory",
         "../api:array_view",
         "../api:scoped_refptr",
         "../api/numerics",
@@ -1465,6 +1611,10 @@ if (rtc_include_tests) {
         "//third_party/abseil-cpp/absl/strings",
         "//third_party/abseil-cpp/absl/types:optional",
       ]
+
+      if (is_win) {
+        deps += [ "win:windows_version_unittest" ]
+      }
     }
 
     rtc_library("rtc_task_queue_unittests") {
@@ -1473,7 +1623,6 @@ if (rtc_include_tests) {
       sources = [ "task_queue_unittest.cc" ]
       deps = [
         ":gunit_helpers",
-        ":rtc_base_approved",
         ":rtc_base_tests_utils",
         ":rtc_event",
         ":rtc_task_queue",
@@ -1491,7 +1640,6 @@ if (rtc_include_tests) {
       sources = [ "weak_ptr_unittest.cc" ]
       deps = [
         ":gunit_helpers",
-        ":rtc_base_approved",
         ":rtc_base_tests_utils",
         ":rtc_event",
         ":task_queue_for_test",
@@ -1514,7 +1662,6 @@ if (rtc_include_tests) {
         "numerics/sequence_number_util_unittest.cc",
       ]
       deps = [
-        ":rtc_base_approved",
         ":rtc_numerics",
         "../test:test_main",
         "../test:test_support",
@@ -1561,6 +1708,8 @@ if (rtc_include_tests) {
       ]
       deps = [
         ":atomicops",
+        ":buffer",
+        ":buffer_queue",
         ":checks",
         ":gunit_helpers",
         ":ip_address",
@@ -1569,6 +1718,7 @@ if (rtc_include_tests) {
         ":net_helpers",
         ":null_socket_server",
         ":refcount",
+        ":rtc_base",
         ":rtc_base_tests_utils",
         ":rtc_event",
         ":safe_conversions",
@@ -1621,7 +1771,7 @@ if (rtc_include_tests) {
         "//third_party/abseil-cpp/absl/strings",
         "//third_party/abseil-cpp/absl/types:optional",
       ]
-      public_deps = [ ":rtc_base" ]  # no-presubmit-check TODO(webrtc:8603)
+
       if (build_with_chromium) {
         include_dirs = [ "../../boringssl/src/include" ]
       }

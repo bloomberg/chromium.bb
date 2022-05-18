@@ -15,8 +15,8 @@
 #include "src/core/SkUtils.h"
 #include "src/gpu/ganesh/GrRecordingContextPriv.h"
 #include "src/gpu/ganesh/SkGr.h"
-#include "src/gpu/ganesh/text/GrStrikeCache.h"
 #include "src/gpu/ganesh/text/GrTextBlob.h"
+#include "src/text/gpu/StrikeCache.h"
 #include "src/utils/SkUTF.h"
 
 // From Project Guttenberg. This is UTF-8 text.
@@ -46,17 +46,16 @@ class DirectMaskGlyphVertexFillBenchmark : public Benchmark {
         if (canvas) { canvas->getProps(&props); }
 
         auto colorSpace = SkColorSpace::MakeSRGB();
-        SkGlyphRunListPainter painter{props, kUnknown_SkColorType,
-                                      colorSpace.get(), SkStrikeCache::GlobalStrikeCache()};
+        SkGlyphRunListPainter painter{props, colorSpace.get(), SkStrikeCache::GlobalStrikeCache()};
         SkMatrix drawMatrix = view;
         const SkPoint drawOrigin = glyphRunList.origin();
         drawMatrix.preTranslate(drawOrigin.x(), drawOrigin.y());
         GrSDFTControl control{false, props.isUseDeviceIndependentFonts(), 256, 256};
-        fBlob = GrTextBlob::Make(glyphRunList, paint, drawMatrix, false, control, &painter);
+        fBlob = GrTextBlob::Make(glyphRunList, paint, drawMatrix, control, &painter);
 
         const GrAtlasSubRun* subRun = fBlob->testingOnlyFirstSubRun();
         SkASSERT(subRun);
-        subRun->testingOnly_packedGlyphIDToGrGlyph(&fCache);
+        subRun->testingOnly_packedGlyphIDToGlyph(&fCache);
         fVertices.reset(new char[subRun->vertexStride(drawMatrix) * subRun->glyphCount() * 4]);
     }
 
@@ -77,7 +76,7 @@ class DirectMaskGlyphVertexFillBenchmark : public Benchmark {
 
 private:
     sk_sp<GrTextBlob> fBlob;
-    GrStrikeCache fCache;
+    sktext::gpu::StrikeCache fCache;
     std::unique_ptr<char[]> fVertices;
 };
 

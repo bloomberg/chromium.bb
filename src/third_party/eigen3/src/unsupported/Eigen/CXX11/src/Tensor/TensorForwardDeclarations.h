@@ -167,7 +167,7 @@ struct IsTileable {
   // Check that block evaluation is supported and it's a preferred option (at
   // least one sub-expression has much faster block evaluation, e.g.
   // broadcasting).
-  static const bool BlockAccess =
+  static constexpr bool BlockAccess =
       TensorEvaluator<Expression, Device>::BlockAccess &&
       TensorEvaluator<Expression, Device>::PreferBlockAccess;
 

@@ -65,6 +65,7 @@ os = struct(
     LINUX_TRUSTY = os_enum("Ubuntu-14.04", os_category.LINUX),
     LINUX_XENIAL = os_enum("Ubuntu-16.04", os_category.LINUX),
     LINUX_BIONIC = os_enum("Ubuntu-18.04", os_category.LINUX),
+    LINUX_FOCAL = os_enum("Ubuntu-20.04", os_category.LINUX),
     LINUX_DEFAULT = os_enum("Ubuntu-18.04", os_category.LINUX),
     MAC_10_12 = os_enum("Mac-10.12", os_category.MAC),
     MAC_10_13 = os_enum("Mac-10.13", os_category.MAC),
@@ -142,6 +143,7 @@ def _rotation(name):
 sheriff_rotations = struct(
     ANDROID = _rotation("android"),
     CHROMIUM = _rotation("chromium"),
+    FUCHSIA = _rotation("fuchsia"),
     CHROMIUM_CLANG = _rotation("chromium.clang"),
     CHROMIUM_GPU = _rotation("chromium.gpu"),
     IOS = _rotation("ios"),
@@ -165,7 +167,7 @@ xcode = struct(
     # Default Xcode 13 for chromium iOS.
     x13main = xcode_enum("13c100"),
     # A newer Xcode version used on beta bots.
-    x13betabots = xcode_enum("13e5104i"),
+    x13betabots = xcode_enum("13e113"),
     # in use by ios-webkit-tot
     x13wk = xcode_enum("13a1030dwk"),
 )

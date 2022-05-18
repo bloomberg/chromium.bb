@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -52,25 +53,23 @@ class FakeWebAppRegistryController : public SyncInstallDelegate {
   void SetInstallWebAppsAfterSyncDelegate(
       InstallWebAppsAfterSyncDelegate delegate);
 
-  using UninstallWithoutRegistryUpdateFromSyncDelegate =
+  using UninstallFromSyncDelegate =
       base::RepeatingCallback<void(const std::vector<AppId>& web_apps,
                                    RepeatingUninstallCallback callback)>;
-  void SetUninstallWithoutRegistryUpdateFromSyncDelegate(
-      UninstallWithoutRegistryUpdateFromSyncDelegate delegate);
+  void SetUninstallFromSyncDelegate(UninstallFromSyncDelegate delegate);
 
   using RetryIncompleteUninstallsDelegate = base::RepeatingCallback<void(
-      const std::vector<AppId>& apps_to_uninstall)>;
+      const base::flat_set<AppId>& apps_to_uninstall)>;
   void SetRetryIncompleteUninstallsDelegate(
       RetryIncompleteUninstallsDelegate delegate);
 
   // SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
-  void UninstallWithoutRegistryUpdateFromSync(
-      const std::vector<AppId>& web_apps,
-      RepeatingUninstallCallback callback) override;
+  void UninstallFromSync(const std::vector<AppId>& web_apps,
+                         RepeatingUninstallCallback callback) override;
   void RetryIncompleteUninstalls(
-      const std::vector<AppId>& apps_to_uninstall) override;
+      const base::flat_set<AppId>& apps_to_uninstall) override;
 
   void DestroySubsystems();
 
@@ -89,7 +88,7 @@ class FakeWebAppRegistryController : public SyncInstallDelegate {
 
  private:
   InstallWebAppsAfterSyncDelegate install_web_apps_after_sync_delegate_;
-  UninstallWithoutRegistryUpdateFromSyncDelegate
+  UninstallFromSyncDelegate
       uninstall_from_sync_before_registry_update_delegate_;
   RetryIncompleteUninstallsDelegate retry_incomplete_uninstalls_delegate_;
 

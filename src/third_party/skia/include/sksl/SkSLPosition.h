@@ -11,23 +11,21 @@
 #include "include/core/SkTypes.h"
 #include <string_view>
 
-#ifndef __has_builtin
-    #define __has_builtin(x) 0
-#endif
-
 namespace SkSL {
 
 class Position {
 public:
     Position()
         : fStartOffset(-1)
-        , fEndOffset(-1) {}
+        , fLength(0) {}
 
     static Position Range(int startOffset, int endOffset) {
         SkASSERT(startOffset <= endOffset);
+        SkASSERT(startOffset <= 0xFFFFFF);
+        int length = endOffset - startOffset;
         Position result;
         result.fStartOffset = startOffset;
-        result.fEndOffset = endOffset;
+        result.fLength = length <= 0xFF ? length : 0xFF;
         return result;
     }
 
@@ -44,12 +42,12 @@ public:
 
     int endOffset() const {
         SkASSERT(this->valid());
-        return fEndOffset;
+        return fStartOffset + fLength;
     }
 
     // Returns the position from this through, and including the entirety of, end.
     Position rangeThrough(Position end) const {
-        if (fEndOffset == -1 || end.fEndOffset == -1) {
+        if (fStartOffset == -1 || end.fStartOffset == -1) {
             return *this;
         }
         SkASSERTF(this->startOffset() <= end.startOffset() && this->endOffset() <= end.endOffset(),
@@ -60,11 +58,12 @@ public:
 
     // Returns a position representing the character immediately after this position
     Position after() const {
-        return Range(fEndOffset, fEndOffset + 1);
+        int endOffset = this->endOffset();
+        return Range(endOffset, endOffset + 1);
     }
 
     bool operator==(const Position& other) const {
-        return fStartOffset == other.fStartOffset && fEndOffset == other.fEndOffset;
+        return fStartOffset == other.fStartOffset && fLength == other.fLength;
     }
 
     bool operator!=(const Position& other) const {
@@ -88,8 +87,14 @@ public:
     }
 
 private:
-    int32_t fStartOffset;
-    int32_t fEndOffset;
+    int32_t fStartOffset : 24;
+    uint32_t fLength : 8;
+};
+
+struct ForLoopPositions {
+    Position initPosition = Position();
+    Position conditionPosition = Position();
+    Position nextPosition = Position();
 };
 
 } // namespace SkSL

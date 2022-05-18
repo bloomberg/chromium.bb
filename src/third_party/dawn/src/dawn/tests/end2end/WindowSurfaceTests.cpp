@@ -12,30 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdlib>
+#include <memory>
+
 #include "dawn/common/Log.h"
 #include "dawn/common/Platform.h"
 #include "dawn/dawn_proc.h"
 #include "dawn/native/DawnNative.h"
 #include "dawn/tests/DawnTest.h"
 #include "dawn/utils/GLFWUtils.h"
-
-#include <gtest/gtest.h>
-
-#include <cstdlib>
+#include "gtest/gtest.h"
 
 // Include windows.h before GLFW so GLFW's APIENTRY macro doesn't conflict with windows.h's.
 #if defined(DAWN_PLATFORM_WINDOWS)
-#    include "dawn/common/windows_with_undefs.h"
+#include "dawn/common/windows_with_undefs.h"
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
 
 #include "GLFW/glfw3.h"
 
 #if defined(DAWN_USE_X11)
-#    include "dawn/common/xlib_with_undefs.h"
+#include "dawn/common/xlib_with_undefs.h"
 #endif  // defined(DAWN_USE_X11)
 
 #if defined(DAWN_ENABLE_BACKEND_METAL)
-#    include "dawn/utils/ObjCUtils.h"
+#include "dawn/utils/ObjCUtils.h"
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 
 #include "GLFW/glfw3native.h"
@@ -229,7 +229,7 @@ TEST_F(WindowSurfaceInstanceTests, InvalidMetalLayer) {
     wgpu::SurfaceDescriptorFromMetalLayer chainedDescriptor;
     // The CALayer is autoreleased. Releasing it causes a test failure when the Chromium GTest
     // autoreleasepool is emptied.
-    chainedDescriptor.layer = utils::CreateDummyCALayer();
+    chainedDescriptor.layer = utils::CreatePlaceholderCALayer();
 
     wgpu::SurfaceDescriptor descriptor;
     descriptor.nextInChain = &chainedDescriptor;

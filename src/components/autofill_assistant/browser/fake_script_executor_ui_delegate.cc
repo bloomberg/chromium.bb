@@ -92,17 +92,21 @@ void FakeScriptExecutorUiDelegate::SetUserActions(
 
 void FakeScriptExecutorUiDelegate::SetCollectUserDataOptions(
     CollectUserDataOptions* options) {
-  payment_request_options_ = options;
+  collect_user_data_options_ = options;
+}
+
+void FakeScriptExecutorUiDelegate::SetCollectUserDataUiState(bool enabled) {
+  collect_user_data_ui_enabled_ = enabled;
 }
 
 void FakeScriptExecutorUiDelegate::SetLastSuccessfulUserDataOptions(
     std::unique_ptr<CollectUserDataOptions> collect_user_data_options) {
-  last_payment_request_options_ = std::move(collect_user_data_options);
+  last_collect_user_data_options_ = std::move(collect_user_data_options);
 }
 
 const CollectUserDataOptions*
 FakeScriptExecutorUiDelegate::GetLastSuccessfulUserDataOptions() const {
-  return last_payment_request_options_.get();
+  return last_collect_user_data_options_.get();
 }
 
 void FakeScriptExecutorUiDelegate::SetPeekMode(
@@ -157,5 +161,14 @@ void FakeScriptExecutorUiDelegate::ClearPersistentGenericUi() {
 
 void FakeScriptExecutorUiDelegate::SetShowFeedbackChip(
     bool show_feedback_chip) {}
+
+bool FakeScriptExecutorUiDelegate::SupportsExternalActions() {
+  return false;
+}
+
+void FakeScriptExecutorUiDelegate::ExecuteExternalAction(
+    const external::Action& external_action,
+    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+        callback) {}
 
 }  // namespace autofill_assistant

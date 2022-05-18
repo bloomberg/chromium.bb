@@ -15,42 +15,45 @@
 #ifndef SRC_DAWN_NATIVE_ERRORSCOPE_H_
 #define SRC_DAWN_NATIVE_ERRORSCOPE_H_
 
-#include "dawn/native/dawn_platform.h"
-
 #include <string>
 #include <vector>
 
+#include "dawn/native/dawn_platform.h"
+
 namespace dawn::native {
 
-    class ErrorScope {
-      public:
-        wgpu::ErrorType GetErrorType() const;
-        const char* GetErrorMessage() const;
+class ErrorScope {
+  public:
+    wgpu::ErrorType GetErrorType() const;
+    const char* GetErrorMessage() const;
 
-      private:
-        friend class ErrorScopeStack;
-        explicit ErrorScope(wgpu::ErrorFilter errorFilter);
+  private:
+    friend class ErrorScopeStack;
+    explicit ErrorScope(wgpu::ErrorFilter errorFilter);
 
-        wgpu::ErrorType mMatchedErrorType;
-        wgpu::ErrorType mCapturedError = wgpu::ErrorType::NoError;
-        std::string mErrorMessage = "";
-    };
+    wgpu::ErrorType mMatchedErrorType;
+    wgpu::ErrorType mCapturedError = wgpu::ErrorType::NoError;
+    std::string mErrorMessage = "";
+};
 
-    class ErrorScopeStack {
-      public:
-        void Push(wgpu::ErrorFilter errorFilter);
-        ErrorScope Pop();
+class ErrorScopeStack {
+  public:
+    ErrorScopeStack();
+    ~ErrorScopeStack();
 
-        bool Empty() const;
+    void Push(wgpu::ErrorFilter errorFilter);
+    ErrorScope Pop();
 
-        // Pass an error to the scopes in the stack. Returns true if one of the scopes
-        // captured the error. Returns false if the error should be forwarded to the
-        // uncaptured error callback.
-        bool HandleError(wgpu::ErrorType type, const char* message);
+    bool Empty() const;
 
-      private:
-        std::vector<ErrorScope> mScopes;
-    };
+    // Pass an error to the scopes in the stack. Returns true if one of the scopes
+    // captured the error. Returns false if the error should be forwarded to the
+    // uncaptured error callback.
+    bool HandleError(wgpu::ErrorType type, const char* message);
+
+  private:
+    std::vector<ErrorScope> mScopes;
+};
 
 }  // namespace dawn::native
 

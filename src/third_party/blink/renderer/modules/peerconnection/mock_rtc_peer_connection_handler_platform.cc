@@ -227,7 +227,6 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
   std::unique_ptr<RTCRtpReceiverPlatform> Receiver() const override {
     return internal_->Receiver();
   }
-  bool Stopped() const override { return true; }
   webrtc::RtpTransceiverDirection Direction() const override {
     return internal_->direction();
   }
@@ -277,19 +276,9 @@ bool MockRTCPeerConnectionHandlerPlatform::Initialize(
 
 Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
 MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
-                                                  const MediaConstraints&) {
-  return {};
-}
-
-Vector<std::unique_ptr<RTCRtpTransceiverPlatform>>
-MockRTCPeerConnectionHandlerPlatform::CreateOffer(RTCSessionDescriptionRequest*,
                                                   RTCOfferOptionsPlatform*) {
   return {};
 }
-
-void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
-    RTCSessionDescriptionRequest*,
-    const MediaConstraints&) {}
 
 void MockRTCPeerConnectionHandlerPlatform::CreateAnswer(
     RTCSessionDescriptionRequest*,

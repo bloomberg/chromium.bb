@@ -13,8 +13,10 @@
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -93,13 +95,20 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   web_app_install_info_->scope = GURL(web_app_info->scope_url);
   DCHECK(web_app_install_info_->scope.is_valid());
 
+  // The install_url and the start_url seem to be same in this case
+  // as far as ExternallyInstalledWebAppPrefs are concerned.
+  // This is because inside OnWebAppCreated(), the start_url is
+  // passed to the external prefs to be stored as the install_url.
+  web_app_install_info_->install_url = GURL(web_app_info->start_url);
+  DCHECK(web_app_install_info_->install_url.is_valid());
+
   if (web_app_info->theme_color != kInvalidColor) {
     web_app_install_info_->theme_color = SkColorSetA(
         static_cast<SkColor>(web_app_info->theme_color), SK_AlphaOPAQUE);
   }
   web_app_install_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_install_info_->user_display_mode =
-      blink::mojom::DisplayMode::kStandalone;
+      web_app::UserDisplayMode::kStandalone;
 
   is_web_only_twa_ = web_app_info->is_web_only_twa;
   sha256_fingerprint_ = web_app_info->certificate_sha256_fingerprint;
@@ -204,12 +213,13 @@ void ApkWebAppInstaller::DoInstall() {
     // Doesn't overwrite already existing web app with manifest fields from the
     // apk.
     GURL start_url = web_app_install_info_->start_url;
-    provider->install_manager().InstallWebAppFromInfo(
-        std::move(web_app_install_info_),
-        /*overwrite_existing_manifest_fields=*/false,
-        web_app::ForInstallableSite::kYes, webapps::WebappInstallSource::ARC,
-        base::BindOnce(&ApkWebAppInstaller::OnWebAppCreated,
-                       base::Unretained(this), std::move(start_url)));
+    provider->command_manager().ScheduleCommand(
+        std::make_unique<web_app::InstallFromInfoCommand>(
+            std::move(web_app_install_info_), &provider->install_finalizer(),
+            /*overwrite_existing_manifest_fields=*/false,
+            webapps::WebappInstallSource::ARC,
+            base::BindOnce(&ApkWebAppInstaller::OnWebAppCreated,
+                           base::Unretained(this), std::move(start_url))));
   }
 }
 

@@ -79,7 +79,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
         'third_party/blink/public/mojom/loader/transferrable_url_loader',
         'third_party/blink/public/mojom/loader/code_cache',
         'media/mojo/mojom/interface_factory', 'media/mojo/mojom/audio_decoder',
-        'media/mojo/mojom/video_decoder',
+        'media/mojo/mojom/audio_encoder', 'media/mojo/mojom/video_decoder',
         'media/mojo/mojom/media_metrics_provider')
 
     for f in input_api.AffectedFiles(file_filter=source_file_filter):
@@ -130,7 +130,8 @@ def _CommonChecks(input_api, output_api):
             output_api,
             excluded_paths=_EXCLUDED_PATHS,
             maxlen=800,
-            license_header=license_header))
+            license_header=license_header,
+            global_checks=False))
     results.extend(_CheckForWrongMojomIncludes(input_api, output_api))
     return results
 
@@ -243,12 +244,4 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
     results = []
     results.extend(_CommonChecks(input_api, output_api))
-    results.extend(
-        input_api.canned_checks.CheckTreeIsOpen(
-            input_api,
-            output_api,
-            json_url='http://chromium-status.appspot.com/current?format=json'))
-    results.extend(
-        input_api.canned_checks.CheckChangeHasDescription(
-            input_api, output_api))
     return results

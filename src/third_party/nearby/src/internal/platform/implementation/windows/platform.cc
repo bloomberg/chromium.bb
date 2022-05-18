@@ -18,14 +18,16 @@
 #include <shlobj.h>
 #include <windows.h>
 
-#include <xstring>
+#include <memory>
 #include <sstream>
+#include <string>
 
 #include "internal/platform/implementation/shared/count_down_latch.h"
 #include "internal/platform/implementation/shared/file.h"
 #include "internal/platform/implementation/windows/atomic_boolean.h"
 #include "internal/platform/implementation/windows/atomic_reference.h"
 #include "internal/platform/implementation/windows/ble.h"
+#include "internal/platform/implementation/windows/ble_v2.h"
 #include "internal/platform/implementation/windows/bluetooth_adapter.h"
 #include "internal/platform/implementation/windows/bluetooth_classic_medium.h"
 #include "internal/platform/implementation/windows/cancelable.h"
@@ -41,6 +43,7 @@
 #include "internal/platform/implementation/windows/submittable_executor.h"
 #include "internal/platform/implementation/windows/webrtc.h"
 #include "internal/platform/implementation/windows/wifi.h"
+#include "internal/platform/implementation/windows/wifi_hotspot.h"
 #include "internal/platform/implementation/windows/wifi_lan.h"
 
 namespace location {
@@ -212,9 +215,9 @@ std::unique_ptr<BleMedium> ImplementationPlatform::CreateBleMedium(
 }
 
 // TODO(b/184975123): replace with real implementation.
-std::unique_ptr<ble_v2::BleMedium> ImplementationPlatform::CreateBleV2Medium(
-    BluetoothAdapter&) {
-  return nullptr;
+std::unique_ptr<api::ble_v2::BleMedium>
+ImplementationPlatform::CreateBleV2Medium(api::BluetoothAdapter& adapter) {
+  return std::make_unique<windows::BleV2Medium>(adapter);
 }
 
 // TODO(b/184975123): replace with real implementation.
@@ -234,7 +237,7 @@ std::unique_ptr<WifiLanMedium> ImplementationPlatform::CreateWifiLanMedium() {
 
 std::unique_ptr<WifiHotspotMedium>
 ImplementationPlatform::CreateWifiHotspotMedium() {
-  return nullptr;
+  return std::make_unique<windows::WifiHotspotMedium>();
 }
 
 // TODO(b/184975123): replace with real implementation.

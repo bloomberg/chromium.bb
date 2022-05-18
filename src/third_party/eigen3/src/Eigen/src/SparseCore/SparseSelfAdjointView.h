@@ -59,7 +59,7 @@ template<typename MatrixType, unsigned int Mode_> class SparseSelfAdjointView
     typedef typename MatrixType::StorageIndex StorageIndex;
     typedef Matrix<StorageIndex,Dynamic,1> VectorI;
     typedef typename internal::ref_selector<MatrixType>::non_const_type MatrixTypeNested;
-    typedef typename internal::remove_all<MatrixTypeNested>::type MatrixTypeNested_;
+    typedef internal::remove_all_t<MatrixTypeNested> MatrixTypeNested_;
     
     explicit inline SparseSelfAdjointView(MatrixType& matrix) : m_matrix(matrix)
     {
@@ -71,7 +71,7 @@ template<typename MatrixType, unsigned int Mode_> class SparseSelfAdjointView
 
     /** \internal \returns a reference to the nested matrix */
     const MatrixTypeNested_& matrix() const { return m_matrix; }
-    typename internal::remove_reference<MatrixTypeNested>::type& matrix() { return m_matrix; }
+    std::remove_reference_t<MatrixTypeNested>& matrix() { return m_matrix; }
 
     /** \returns an expression of the matrix product between a sparse self-adjoint matrix \c *this and a sparse matrix \a rhs.
       *
@@ -278,7 +278,7 @@ inline void sparse_selfadjoint_time_dense_product(const SparseLhsType& lhs, cons
   EIGEN_ONLY_USED_FOR_DEBUG(alpha);
   
   typedef typename internal::nested_eval<SparseLhsType,DenseRhsType::MaxColsAtCompileTime>::type SparseLhsTypeNested;
-  typedef typename internal::remove_all<SparseLhsTypeNested>::type SparseLhsTypeNestedCleaned;
+  typedef internal::remove_all_t<SparseLhsTypeNested> SparseLhsTypeNestedCleaned;
   typedef evaluator<SparseLhsTypeNestedCleaned> LhsEval;
   typedef typename LhsEval::InnerIterator LhsIterator;
   typedef typename SparseLhsType::Scalar LhsScalar;
@@ -383,7 +383,7 @@ struct product_evaluator<Product<LhsView, Rhs, DefaultProduct>, ProductTag, Spar
   product_evaluator(const XprType& xpr)
     : m_lhs(xpr.lhs()), m_result(xpr.rows(), xpr.cols())
   {
-    ::new (static_cast<Base*>(this)) Base(m_result);
+    internal::construct_at<Base>(this, m_result);
     generic_product_impl<typename Rhs::PlainObject, Rhs, SparseShape, SparseShape, ProductTag>::evalTo(m_result, m_lhs, xpr.rhs());
   }
   
@@ -604,7 +604,7 @@ class SparseSymmetricPermutationProduct
   public:
     typedef Matrix<StorageIndex,Dynamic,1> VectorI;
     typedef typename MatrixType::Nested MatrixTypeNested;
-    typedef typename internal::remove_all<MatrixTypeNested>::type NestedExpression;
+    typedef internal::remove_all_t<MatrixTypeNested> NestedExpression;
     
     SparseSymmetricPermutationProduct(const MatrixType& mat, const Perm& perm)
       : m_matrix(mat), m_perm(perm)

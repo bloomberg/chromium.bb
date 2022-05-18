@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/validation/ValidationTest.h"
+#include <vector>
 
 #include "dawn/tests/MockCallback.h"
+#include "dawn/tests/unittests/validation/ValidationTest.h"
 #include "dawn/utils/ComboRenderBundleEncoderDescriptor.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 namespace {
-    using testing::HasSubstr;
+using testing::HasSubstr;
 }  // anonymous namespace
 
 class UnsafeAPIValidationTest : public ValidationTest {
@@ -39,7 +40,7 @@ class UnsafeAPIValidationTest : public ValidationTest {
 // Check that pipeline overridable constants are disallowed as part of unsafe APIs.
 // TODO(dawn:1041) Remove when implementation for all backend is added
 TEST_F(UnsafeAPIValidationTest, PipelineOverridableConstants) {
-    // Create the dummy compute pipeline.
+    // Create the placeholder compute pipeline.
     wgpu::ComputePipelineDescriptor pipelineDescBase;
     pipelineDescBase.compute.entryPoint = "main";
 

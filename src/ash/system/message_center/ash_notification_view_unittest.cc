@@ -180,8 +180,7 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
     for (int i = 0; i < 1; i++) {
       auto group_child = CreateTestNotification();
       group_child->SetGroupChild();
-      view->AddGroupNotification(*group_child.get(),
-                                 /*newest_first=*/false);
+      view->AddGroupNotification(*group_child.get());
     }
   }
 
@@ -216,6 +215,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
     }
     return static_cast<AshNotificationView*>(
         view->grouped_notifications_container_->children().front());
+  }
+  std::vector<views::View*> GetChildNotifications(AshNotificationView* view) {
+    return view->grouped_notifications_container_->children();
   }
   views::View* GetMainView(AshNotificationView* view) {
     return view->main_view_;
@@ -280,8 +282,8 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   views::Label* title_view() {
     return notification_view_->title_row_->title_view_;
   }
-  views::FlexLayoutView* expand_button_container() {
-    return notification_view_->expand_button_container_;
+  AshNotificationExpandButton* expand_button() {
+    return notification_view_->expand_button_;
   }
   views::LabelButton* turn_off_notifications_button() {
     return notification_view_->turn_off_notifications_button_;
@@ -409,6 +411,14 @@ TEST_F(AshNotificationViewTest, ExpandCollapseBehavior) {
       GetMessageLabelInExpandedState(notification_view())->GetVisible());
 }
 
+TEST_F(AshNotificationViewTest, ManuallyExpandedOrCollapsed) {
+  // Test |manually_expanded_or_collapsed| being set when the toggle is done by
+  // user interaction.
+  EXPECT_FALSE(notification_view()->IsManuallyExpandedOrCollapsed());
+  notification_view()->ToggleExpand();
+  EXPECT_TRUE(notification_view()->IsManuallyExpandedOrCollapsed());
+}
+
 TEST_F(AshNotificationViewTest, GroupedNotificationStartsCollapsed) {
   auto notification = CreateTestNotification();
   notification_view()->UpdateWithNotification(*notification);
@@ -484,6 +494,50 @@ TEST_F(AshNotificationViewTest, GroupedNotificationChildIcon) {
   notification_view()->UpdateWithNotification(*notification.get());
 }
 
+TEST_F(AshNotificationViewTest,
+       GroupedNotificationExpandCollapseStateVisibility) {
+  auto notification = CreateTestNotification();
+  notification_view()->UpdateWithNotification(*notification);
+  MakeNotificationGroupParent(
+      notification_view(),
+      4 * message_center_style::kMaxGroupedNotificationsInCollapsedState);
+
+  // Only the first `kMaxGroupedNotificationsInCollapsedState` grouped
+  // notifications should be visible in the collapsed state.
+  int counter = 0;
+  for (auto* child : GetChildNotifications(notification_view())) {
+    if (counter <
+        message_center_style::kMaxGroupedNotificationsInCollapsedState) {
+      EXPECT_TRUE(child->GetVisible());
+    } else {
+      EXPECT_FALSE(child->GetVisible());
+    }
+    counter++;
+  }
+
+  // All grouped notifications should be visible once the parent is expanded.
+  notification_view()->SetExpanded(true);
+  for (auto* child : GetChildNotifications(notification_view())) {
+    EXPECT_TRUE(child->GetVisible());
+  }
+
+  notification_view()->SetExpanded(false);
+
+  // Going back to collapsed state only the first
+  // `kMaxGroupedNotificationsInCollapsedState` grouped notifications should be
+  // visible.
+  counter = 0;
+  for (auto* child : GetChildNotifications(notification_view())) {
+    if (counter <
+        message_center_style::kMaxGroupedNotificationsInCollapsedState) {
+      EXPECT_TRUE(child->GetVisible());
+    } else {
+      EXPECT_FALSE(child->GetVisible());
+    }
+    counter++;
+  }
+}
+
 TEST_F(AshNotificationViewTest, ExpandButtonVisibility) {
   // Expand button should be shown in any type of notification and hidden in
   // inline settings UI.
@@ -512,7 +566,7 @@ TEST_F(AshNotificationViewTest, LeftContentNotVisibleInGroupedNotifications) {
   EXPECT_TRUE(GetLeftContent(notification_view())->GetVisible());
 
   auto group_child = CreateTestNotification();
-  notification_view()->AddGroupNotification(*group_child.get(), false);
+  notification_view()->AddGroupNotification(*group_child.get());
   EXPECT_FALSE(GetLeftContent(notification_view())->GetVisible());
 
   notification_view()->RemoveGroupNotification(group_child->id());
@@ -594,23 +648,18 @@ TEST_F(AshNotificationViewTest, AppIconAndExpandButtonAlignment) {
   notification_view()->UpdateWithNotification(*notification);
 
   // Make sure that app icon and expand button is vertically aligned in
-  // collapsed mode. Also, the padding of them should be the same.
+  // collapsed mode.
   notification_view()->SetExpanded(false);
   EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
-            expand_button_container()->GetBoundsInScreen().y());
-  EXPECT_EQ(app_icon_view()->GetContentsBounds().y(),
-            expand_button_container()->GetInteriorMargin().top());
+            expand_button()->GetBoundsInScreen().y());
 
   // Make sure that app icon, expand button, and also header row is vertically
-  // aligned in collapsed mode. Also check the padding for app icon and expand
-  // button again.
+  // aligned in expanded mode.
   notification_view()->SetExpanded(true);
   EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
-            expand_button_container()->GetBoundsInScreen().y());
+            expand_button()->GetBoundsInScreen().y());
   EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
             GetHeaderRow(notification_view())->GetBoundsInScreen().y());
-  EXPECT_EQ(app_icon_view()->GetContentsBounds().y(),
-            expand_button_container()->GetInteriorMargin().top());
 }
 
 TEST_F(AshNotificationViewTest, ExpandCollapseAnimationsRecordSmoothness) {

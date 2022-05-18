@@ -15,10 +15,13 @@
 #ifndef SRC_DAWN_TESTS_PERF_TESTS_DAWNPERFTEST_H_
 #define SRC_DAWN_TESTS_PERF_TESTS_DAWNPERFTEST_H_
 
+#include <memory>
+#include <string>
+
 #include "dawn/tests/DawnTest.h"
 
 namespace utils {
-    class Timer;
+class Timer;
 }
 
 class DawnPerfTestPlatform;
@@ -113,8 +116,7 @@ class DawnPerfTestWithParams : public DawnTestWithParams<Params>, public DawnPer
   protected:
     DawnPerfTestWithParams(unsigned int iterationsPerStep, unsigned int maxStepsInFlight)
         : DawnTestWithParams<Params>(),
-          DawnPerfTestBase(this, iterationsPerStep, maxStepsInFlight) {
-    }
+          DawnPerfTestBase(this, iterationsPerStep, maxStepsInFlight) {}
     void SetUp() override {
         DawnTestWithParams<Params>::SetUp();
 

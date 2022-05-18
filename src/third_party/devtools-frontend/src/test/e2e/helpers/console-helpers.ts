@@ -4,7 +4,19 @@
 
 import type * as puppeteer from 'puppeteer';
 
-import {$, $$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
+import {
+  $,
+  $$,
+  assertNotNullOrUndefined,
+  click,
+  getBrowserAndPages,
+  goToResource,
+  pasteText,
+  timeout,
+  waitFor,
+  waitForAria,
+  waitForFunction,
+} from '../../shared/helper.js';
 import {AsyncScope} from '../../shared/async-scope.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
@@ -72,7 +84,7 @@ export async function waitForLastConsoleMessageToHaveContent(expectedTextContent
 
 export async function getConsoleMessages(testName: string, withAnchor = false, callback?: () => Promise<void>) {
   // Ensure Console is loaded before the page is loaded to avoid a race condition.
-  await getCurrentConsoleMessages();
+  await navigateToConsoleTab();
 
   // Have the target load the page.
   await goToResource(`console/${testName}.html`);
@@ -95,9 +107,36 @@ export async function getCurrentConsoleMessages(withAnchor = false, callback?: (
 
   // Ensure all messages are populated.
   await asyncScope.exec(() => frontend.waitForFunction((CONSOLE_FIRST_MESSAGES_SELECTOR: string) => {
-    return Array.from(document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR))
-        .every(message => message.childNodes.length > 0);
-  }, {timeout: 0}, CONSOLE_FIRST_MESSAGES_SELECTOR));
+    const messages = document.querySelectorAll(CONSOLE_FIRST_MESSAGES_SELECTOR);
+    if (messages.length === 0) {
+      return false;
+    }
+    return Array.from(messages).every(message => message.childNodes.length > 0);
+  }, {timeout: 0, polling: 'mutation'}, CONSOLE_FIRST_MESSAGES_SELECTOR));
+
+  const selector = withAnchor ? CONSOLE_MESSAGE_TEXT_AND_ANCHOR_SELECTOR : CONSOLE_FIRST_MESSAGES_SELECTOR;
+
+  // FIXME(crbug/1112692): Refactor test to remove the timeout.
+  await timeout(100);
+
+  // Get the messages from the console.
+  return frontend.evaluate(selector => {
+    return Array.from(document.querySelectorAll(selector)).map(message => message.textContent);
+  }, selector);
+}
+
+export async function maybeGetCurrentConsoleMessages(withAnchor = false, callback?: () => Promise<void>) {
+  const {frontend} = getBrowserAndPages();
+  const asyncScope = new AsyncScope();
+
+  await navigateToConsoleTab();
+
+  // Get console messages that were logged.
+  await waitFor(CONSOLE_MESSAGES_SELECTOR, undefined, asyncScope);
+
+  if (callback) {
+    await callback();
+  }
 
   const selector = withAnchor ? CONSOLE_MESSAGE_TEXT_AND_ANCHOR_SELECTOR : CONSOLE_FIRST_MESSAGES_SELECTOR;
 

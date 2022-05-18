@@ -57,13 +57,14 @@ to help you learn to build and work with the Chromium source code.
 * [User Experience](/user-experience): the design philosophy behind
   many of Chromium's features
 * [Issue Tracking](/issue-tracking): process documentation related to
-  issue tracking and management.
+  issue tracking and management
 * [Contact](/contact): report a bug or a security issue, or get in
   touch with individual members of the team
 * [Security](/Home/chromium-security): learn about Chromium security,
   and how to contact us or get involved
 * [Privacy](/Home/chromium-privacy): information about Chromium
   privacy, how to get more information, and how to contact us
+* [Events](/events): information about Chromium events
 
 #### Life Of A Chromium Developer
 

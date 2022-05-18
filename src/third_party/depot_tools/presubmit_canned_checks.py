@@ -40,10 +40,12 @@ OFF_BY_DEFAULT_LINT_FILTERS = [
 # Justifications for each filter:
 # - build/c++11         : Include file and feature blocklists are
 #                         google3-specific
+# - build/header_guard  : Checked by CheckForIncludeGuards
 # - runtime/references  : No longer banned by Google style guide
 # - whitespace/...      : Most whitespace issues handled by clang-format
 OFF_UNLESS_MANUALLY_ENABLED_LINT_FILTERS = [
     '-build/c++11',
+    '-build/header_guard',
     '-runtime/references',
     '-whitespace/braces',
     '-whitespace/comma',
@@ -584,7 +586,8 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     errors += check_python_long_lines(
         py_file_list, error_formatter=format_error)
   if errors:
-    msg = 'Found lines longer than %s characters (first 5 shown).' % maxlen
+    msg = 'Found %d lines longer than %s characters (first 5 shown).' % (
+           len(errors), maxlen)
     return [output_api.PresubmitPromptWarning(msg, items=errors[:5])]
 
   return []
@@ -1339,7 +1342,7 @@ def CheckSingletonInHeaders(input_api, output_api, source_file_filter=None):
 def PanProjectChecks(input_api, output_api,
                      excluded_paths=None, text_files=None,
                      license_header=None, project_name=None,
-                     owners_check=True, maxlen=80):
+                     owners_check=True, maxlen=80, global_checks=True):
   """Checks that ALL chromium orbit projects should use.
 
   These are checks to be run on all Chromium orbit project, including:
@@ -1354,6 +1357,11 @@ def PanProjectChecks(input_api, output_api,
     text_files: Which file are to be treated as documentation text files.
     license_header: What license header should be on files.
     project_name: What is the name of the project as it appears in the license.
+    global_checks: If True run checks that are unaffected by other options or by
+      the PRESUBMIT script's location, such as CheckChangeHasDescription.
+      global_checks should be passed as False when this function is called from
+      locations other than the project's root PRESUBMIT.py, to avoid redundant
+      checking.
   Returns:
     A list of warning or error objects.
   """
@@ -1377,24 +1385,24 @@ def PanProjectChecks(input_api, output_api,
   snapshot_memory = []
   def snapshot(msg):
     """Measures & prints performance warning if a rule is running slow."""
-    if input_api.sys.version_info.major == 2:
-      dt2 = input_api.time.clock()
-    else:
-      dt2 = input_api.time.process_time()
+    dt2 = input_api.time.time()
     if snapshot_memory:
-      delta_ms = int(1000*(dt2 - snapshot_memory[0]))
-      if delta_ms > 500:
-        print("  %s took a long time: %dms" % (snapshot_memory[1], delta_ms))
+      delta_s = dt2 - snapshot_memory[0]
+      if delta_s > 0.5:
+        print("  %s took a long time: %.1fs" % (snapshot_memory[1], delta_s))
     snapshot_memory[:] = (dt2, msg)
 
   snapshot("checking owners files format")
-  results.extend(input_api.canned_checks.CheckOwnersFormat(
-      input_api, output_api))
+  try:
+    results.extend(input_api.canned_checks.CheckOwnersFormat(
+        input_api, output_api))
 
-  if owners_check:
-    snapshot("checking owners")
-    results.extend(input_api.canned_checks.CheckOwners(
-        input_api, output_api, source_file_filter=None))
+    if owners_check:
+      snapshot("checking owners")
+      results.extend(input_api.canned_checks.CheckOwners(
+          input_api, output_api, source_file_filter=None))
+  except Exception as e:
+    print('Failed to check owners - %s' % str(e))
 
   snapshot("checking long lines")
   results.extend(input_api.canned_checks.CheckLongLines(
@@ -1411,21 +1419,26 @@ def PanProjectChecks(input_api, output_api,
       source_file_filter=sources))
 
   if input_api.is_committing:
-    snapshot("checking was uploaded")
-    results.extend(input_api.canned_checks.CheckChangeWasUploaded(
-        input_api, output_api))
-    snapshot("checking description")
-    results.extend(input_api.canned_checks.CheckChangeHasDescription(
-        input_api, output_api))
-    results.extend(input_api.canned_checks.CheckDoNotSubmitInDescription(
-        input_api, output_api))
+    if global_checks:
+      # These changes verify state that is global to the tree and can therefore
+      # be skipped when run from PRESUBMIT.py scripts deeper in the tree.
+      # Skipping these saves a bit of time and avoids having redundant output.
+      # This was initially designed for use by third_party/blink/PRESUBMIT.py.
+      snapshot("checking was uploaded")
+      results.extend(input_api.canned_checks.CheckChangeWasUploaded(
+          input_api, output_api))
+      snapshot("checking description")
+      results.extend(input_api.canned_checks.CheckChangeHasDescription(
+          input_api, output_api))
+      results.extend(input_api.canned_checks.CheckDoNotSubmitInDescription(
+          input_api, output_api))
+      if input_api.change.scm == 'git':
+        snapshot("checking for commit objects in tree")
+        results.extend(input_api.canned_checks.CheckForCommitObjects(
+            input_api, output_api))
     snapshot("checking do not submit in files")
     results.extend(input_api.canned_checks.CheckDoNotSubmitInFiles(
         input_api, output_api))
-    if input_api.change.scm == 'git':
-      snapshot("checking for commit objects in tree")
-      results.extend(input_api.canned_checks.CheckForCommitObjects(
-          input_api, output_api))
   snapshot("done")
   return results
 

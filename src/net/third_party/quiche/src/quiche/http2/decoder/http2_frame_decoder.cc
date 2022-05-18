@@ -7,9 +7,7 @@
 #include "quiche/http2/decoder/decode_status.h"
 #include "quiche/http2/hpack/varint/hpack_varint_decoder.h"
 #include "quiche/http2/http2_constants.h"
-#include "quiche/http2/platform/api/http2_bug_tracker.h"
-#include "quiche/http2/platform/api/http2_flag_utils.h"
-#include "quiche/http2/platform/api/http2_flags.h"
+#include "quiche/common/platform/api/quiche_bug_tracker.h"
 #include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
@@ -28,7 +26,7 @@ std::ostream& operator<<(std::ostream& out, Http2FrameDecoder::State v) {
   // Since the value doesn't come over the wire, only a programming bug should
   // result in reaching this point.
   int unknown = static_cast<int>(v);
-  HTTP2_BUG(http2_bug_155_1) << "Http2FrameDecoder::State " << unknown;
+  QUICHE_BUG(http2_bug_155_1) << "Http2FrameDecoder::State " << unknown;
   return out << "Http2FrameDecoder::State(" << unknown << ")";
 }
 
@@ -50,7 +48,7 @@ Http2FrameDecoderListener* Http2FrameDecoder::listener() const {
 }
 
 DecodeStatus Http2FrameDecoder::DecodeFrame(DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "Http2FrameDecoder::DecodeFrame state=" << state_;
+  QUICHE_DVLOG(2) << "Http2FrameDecoder::DecodeFrame state=" << state_;
   switch (state_) {
     case State::kStartDecodingHeader:
       if (frame_decoder_state_.StartDecodingFrameHeader(db)) {
@@ -90,17 +88,17 @@ DecodeStatus Http2FrameDecoder::StartDecodingPayload(DecodeBuffer* db) {
   // TODO(jamessynge): Remove OnFrameHeader once done with supporting
   // SpdyFramer's exact states.
   if (!listener()->OnFrameHeader(header)) {
-    HTTP2_DVLOG(2) << "OnFrameHeader rejected the frame, will discard; header: "
-                   << header;
+    QUICHE_DVLOG(2)
+        << "OnFrameHeader rejected the frame, will discard; header: " << header;
     state_ = State::kDiscardPayload;
     frame_decoder_state_.InitializeRemainders();
     return DecodeStatus::kDecodeError;
   }
 
   if (header.payload_length > maximum_payload_size_) {
-    HTTP2_DVLOG(2) << "Payload length is greater than allowed: "
-                   << header.payload_length << " > " << maximum_payload_size_
-                   << "\n   header: " << header;
+    QUICHE_DVLOG(2) << "Payload length is greater than allowed: "
+                    << header.payload_length << " > " << maximum_payload_size_
+                    << "\n   header: " << header;
     state_ = State::kDiscardPayload;
     frame_decoder_state_.InitializeRemainders();
     listener()->OnFrameSizeError(header);
@@ -258,9 +256,7 @@ void Http2FrameDecoder::RetainFlags(uint8_t valid_flags) {
 
 // Clear all of the flags in the frame header; for use with frame types that
 // don't define any flags, such as WINDOW_UPDATE.
-void Http2FrameDecoder::ClearFlags() {
-  frame_decoder_state_.ClearFlags();
-}
+void Http2FrameDecoder::ClearFlags() { frame_decoder_state_.ClearFlags(); }
 
 DecodeStatus Http2FrameDecoder::StartDecodingAltSvcPayload(DecodeBuffer* db) {
   ClearFlags();
@@ -437,15 +433,15 @@ DecodeStatus Http2FrameDecoder::ResumeDecodingWindowUpdatePayload(
 }
 
 DecodeStatus Http2FrameDecoder::DiscardPayload(DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "remaining_payload="
-                 << frame_decoder_state_.remaining_payload_
-                 << "; remaining_padding="
-                 << frame_decoder_state_.remaining_padding_;
+  QUICHE_DVLOG(2) << "remaining_payload="
+                  << frame_decoder_state_.remaining_payload_
+                  << "; remaining_padding="
+                  << frame_decoder_state_.remaining_padding_;
   frame_decoder_state_.remaining_payload_ +=
       frame_decoder_state_.remaining_padding_;
   frame_decoder_state_.remaining_padding_ = 0;
   const size_t avail = frame_decoder_state_.AvailablePayload(db);
-  HTTP2_DVLOG(2) << "avail=" << avail;
+  QUICHE_DVLOG(2) << "avail=" << avail;
   if (avail > 0) {
     frame_decoder_state_.ConsumePayload(avail);
     db->AdvanceCursor(avail);

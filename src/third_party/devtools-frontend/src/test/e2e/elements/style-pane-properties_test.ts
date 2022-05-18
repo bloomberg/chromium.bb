@@ -5,9 +5,30 @@
 import {assert} from 'chai';
 import type * as puppeteer from 'puppeteer';
 
-import {$$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, timeout, waitFor, waitForFunction} from '../../shared/helper.js';
+import {
+  $$,
+  assertNotNullOrUndefined,
+  click,
+  getBrowserAndPages,
+  goToResource,
+  timeout,
+  waitFor,
+  waitForFunction,
+} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {editQueryRuleText, getComputedStylesForDomNode, getDisplayedCSSPropertyNames, getDisplayedStyleRules, getStyleRule, getStyleSectionSubtitles, waitForPartialContentOfSelectedElementsNode, waitForContentOfSelectedElementsNode, waitForElementsStyleSection, waitForPropertyToHighlight, waitForStyleRule} from '../helpers/elements-helpers.js';
+import {
+  editQueryRuleText,
+  getComputedStylesForDomNode,
+  getDisplayedCSSPropertyNames,
+  getDisplayedStyleRules,
+  getStyleRule,
+  getStyleSectionSubtitles,
+  waitForPartialContentOfSelectedElementsNode,
+  waitForContentOfSelectedElementsNode,
+  waitForElementsStyleSection,
+  waitForPropertyToHighlight,
+  waitForStyleRule,
+} from '../helpers/elements-helpers.js';
 
 const PROPERTIES_TO_DELETE_SELECTOR = '#properties-to-delete';
 const PROPERTIES_TO_INSPECT_SELECTOR = '#properties-to-inspect';
@@ -40,7 +61,8 @@ const goToResourceAndWaitForStyleSection = async (path: string) => {
   await timeout(50);
 };
 
-describe('The Styles pane', async () => {
+// Flaky test group
+describe.skip('[crbug.com/1318314]: The Styles pane', async () => {
   it('can display the CSS properties of the selected element', async () => {
     const {frontend} = getBrowserAndPages();
     await goToResourceAndWaitForStyleSection('elements/simple-styled-page.html');
@@ -53,7 +75,10 @@ describe('The Styles pane', async () => {
 
     const h1Rules = await getDisplayedStyleRules();
     // Checking the first h1 rule, that's the authored rule, right after the element style.
-    assert.deepEqual(h1Rules[1], {selectorText: 'body h1', propertyNames: ['color']}, 'The correct rule is displayed');
+    assert.deepEqual(
+        h1Rules[1],
+        {selectorText: 'body h1', propertyData: [{propertyName: 'color', isOverLoaded: false, isInherited: false}]},
+        'The correct rule is displayed');
 
     // Select the H2 element by pressing down.
     const onH2RuleAppeared = waitForStyleRule('h2');
@@ -63,7 +88,13 @@ describe('The Styles pane', async () => {
     const h2Rules = await getDisplayedStyleRules();
     // Checking the first h2 rule, that's the authored rule, right after the element style.
     assert.deepEqual(
-        h2Rules[1], {selectorText: 'h2', propertyNames: ['background-color', 'color']},
+        h2Rules[1], {
+          selectorText: 'h2',
+          propertyData: [
+            {propertyName: 'background-color', isOverLoaded: false, isInherited: false},
+            {propertyName: 'color', isOverLoaded: false, isInherited: false},
+          ],
+        },
         'The correct rule is displayed');
   });
 
@@ -214,18 +245,30 @@ describe('The Styles pane', async () => {
     assert.deepEqual(
         divRules,
         [
-          {selectorText: 'element.style', propertyNames: []},
-          {selectorText: '#properties-to-inspect', propertyNames: ['height']},
-          {selectorText: '#properties-to-inspect', propertyNames: ['color']},
-          {selectorText: '#properties-to-inspect', propertyNames: ['text-align']},
-          {selectorText: '#properties-to-inspect', propertyNames: ['width']},
-          {selectorText: 'div', propertyNames: ['display']},
+          {selectorText: 'element.style', propertyData: []},
+          {
+            selectorText: '#properties-to-inspect',
+            propertyData: [{propertyName: 'height', isOverLoaded: false, isInherited: false}],
+          },
+          {
+            selectorText: '#properties-to-inspect',
+            propertyData: [{propertyName: 'color', isOverLoaded: false, isInherited: false}],
+          },
+          {
+            selectorText: '#properties-to-inspect',
+            propertyData: [{propertyName: 'text-align', isOverLoaded: false, isInherited: false}],
+          },
+          {
+            selectorText: '#properties-to-inspect',
+            propertyData: [{propertyName: 'width', isOverLoaded: false, isInherited: false}],
+          },
+          {selectorText: 'div', propertyData: [{propertyName: 'display', isOverLoaded: false, isInherited: false}]},
         ],
         'The correct rule is displayed');
   });
 
-  // Flaky on mac after introducing pooled frontend instances.
-  it.skipOnPlatforms(['mac'], '[crbug.com/1297458] can edit multiple constructed stylesheets', async () => {
+  // Flaky after introducing pooled frontend instances.
+  it.skip('[crbug.com/1297458] can edit multiple constructed stylesheets', async () => {
     const {frontend} = getBrowserAndPages();
     await goToResourceAndWaitForStyleSection('elements/multiple-constructed-stylesheets.html');
 
@@ -417,39 +460,104 @@ describe('The Styles pane', async () => {
     await onH1RuleAppeared;
 
     const h1Rules = await getDisplayedStyleRules();
-    // The 6 rule blocks for the h1 are:
+    // The 12 rule blocks for the h1 are:
     // 1. Inline styles from the style attribute
     // 2. The h1's user agent styles
-    // 3. The h1's own highlight pseudo
-    // 4. The h1's inherited highlight pseudo
-    // 5. The h1's own selection pseudo
-    // 6. The h1's inherited selection pseudo
-    // And there is no 6th block for the ::first-letter style, since only
+    // 3. Styles that the h1 inherits from the body
+    // 4. The h1's own ::before pseudo
+    // 5. The h1's own ::after pseudo
+    // 6-7. The h1's own highlight(bar) pseudo
+    // 8. The h1's inherited highlight(bar) pseudo
+    // 9-10. The h1's own highlight(foo) pseudo
+    // 11. The h1's own selection pseudo
+    // 12. The h1's inherited selection pseudo
+    // And there is no 13th block for the ::first-letter style, since only
     // highlight pseudos are inherited.
-    assert.strictEqual(h1Rules.length, 6, 'The h1 should have 6 style rule blocks');
+    assert.strictEqual(h1Rules.length, 12, 'The h1 should have 12 style rule blocks');
     assert.deepEqual(
-        h1Rules[2], {selectorText: 'h1::highlight(foo)', propertyNames: ['background-color']},
-        'The h1\'s own highlight pseudo is displayed');
+        h1Rules[2], {
+          selectorText: 'body',
+          propertyData: [
+            {propertyName: 'color', isOverLoaded: false, isInherited: false},
+            {propertyName: 'background-color', isOverLoaded: false, isInherited: true},
+          ],
+        },
+        'The inherited styles from the body are displayed');
     assert.deepEqual(
-        h1Rules[3], {selectorText: 'body::highlight(bar)', propertyNames: ['color']},
-        'The h1\'s inherited highlight pseudo is displayed');
+        h1Rules[3], {
+          selectorText: 'h1::before',
+          propertyData: [{propertyName: 'content', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own ::before pseudo is displayed');
     assert.deepEqual(
-        h1Rules[4], {selectorText: 'h1::selection', propertyNames: ['background-color']},
+        h1Rules[4], {
+          selectorText: 'h1::after',
+          propertyData: [{propertyName: 'content', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own ::after pseudo is displayed');
+    assert.deepEqual(
+        h1Rules[5], {
+          selectorText: 'h1::highlight(bar)',
+          propertyData: [{propertyName: 'background-color', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own highlight(bar) pseudo is displayed (1)');
+    assert.deepEqual(
+        h1Rules[6], {
+          selectorText: 'h1::highlight(foo), h1::highlight(bar)',
+          propertyData: [{propertyName: 'color', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own highlight(bar) pseudo is displayed (2)');
+    assert.deepEqual(
+        h1Rules[7], {
+          selectorText: 'body::highlight(bar)',
+          propertyData: [
+            {propertyName: 'color', isOverLoaded: true, isInherited: false},
+            {propertyName: 'background-color', isOverLoaded: true, isInherited: false},
+          ],
+        },
+        'The h1\'s inherited highlight(bar) pseudo is displayed');
+    assert.deepEqual(
+        h1Rules[8], {
+          selectorText: 'h1::highlight(foo)',
+          propertyData: [{propertyName: 'background-color', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own highlight(foo) pseudo is displayed (1)');
+    assert.deepEqual(
+        h1Rules[9], {
+          selectorText: 'h1::highlight(foo), h1::highlight(bar)',
+          propertyData: [{propertyName: 'color', isOverLoaded: false, isInherited: false}],
+        },
+        'The h1\'s own highlight(foo) pseudo is displayed (2)');
+    assert.deepEqual(
+        h1Rules[10], {
+          selectorText: 'h1::selection',
+          propertyData: [{propertyName: 'background-color', isOverLoaded: false, isInherited: false}],
+        },
         'The h1\'s own selection pseudo is displayed');
     assert.deepEqual(
-        h1Rules[5], {selectorText: 'body::selection', propertyNames: ['text-shadow']},
+        h1Rules[11], {
+          selectorText: 'body::selection',
+          propertyData: [
+            {propertyName: 'text-shadow', isOverLoaded: false, isInherited: false},
+            {propertyName: 'background-color', isOverLoaded: true, isInherited: false},
+          ],
+        },
         'The h1\'s inherited selection pseudo is displayed');
 
     const sidebarSeparators = await waitForFunction(async () => {
       const separators = await $$(SIDEBAR_SEPARATOR_SELECTOR);
-      return separators.length === 4 ? separators : null;
+      return separators.length === 8 ? separators : null;
     });
     assertNotNullOrUndefined(sidebarSeparators);
 
     const layerText = await Promise.all(sidebarSeparators.map(element => element.evaluate(node => node.textContent)));
     assert.deepEqual(layerText, [
-      'Pseudo ::highlight element',
-      'Inherited from ::highlight pseudo of ',
+      'Inherited from ',
+      'Pseudo ::before element',
+      'Pseudo ::after element',
+      'Pseudo ::highlight(bar) element',
+      'Inherited from ::highlight(bar) pseudo of ',
+      'Pseudo ::highlight(foo) element',
       'Pseudo ::selection element',
       'Inherited from ::selection pseudo of ',
     ]);

@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef tessellate_PatchWriter_DEFINED
-#define tessellate_PatchWriter_DEFINED
+#ifndef skgpu_tessellate_PatchWriter_DEFINED
+#define skgpu_tessellate_PatchWriter_DEFINED
 
 #include "include/private/SkColorData.h"
 #include "src/gpu/BufferWriter.h"
@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace skgpu {
+namespace skgpu::tess {
 
 /**
  * PatchWriter writes out tessellation patches, formatted with their specific attribs, to a GPU
@@ -98,6 +98,15 @@ struct AddTrianglesWhenChopping {};
 // This feature turns on automatically ignoring those curves, with the assumption that some other
 // render pass will produce equivalent geometry (e.g. middle-out or inner triangulations).
 struct DiscardFlatCurves {};
+
+// Upload lines as a cubic with {a, a, b, b} for control points, instead of the truly linear cubic
+// of {a, 2/3a + 1/3b, 1/3a + 2/3b, b}. Wang's formula will not return an tight lower bound on the
+// number of segments in this case, but it's convenient to detect in the vertex shader and assume
+// only a single segment is required. This bypasses numerical stability issues in Wang's formula
+// when evaluated on the ideal linear cubic for very large control point coordinates. Other curve
+// types with large coordinates do not need this treatment since they would be pre-chopped and
+// culled to lines.
+struct ReplicateLineEndPoints {};
 
 // *** PatchWriter internals ***
 
@@ -180,6 +189,7 @@ class PatchWriter {
     static constexpr bool kTrackJoinControlPoints   = has_trait<TrackJoinControlPoints>::value;
     static constexpr bool kAddTrianglesWhenChopping = has_trait<AddTrianglesWhenChopping>::value;
     static constexpr bool kDiscardFlatCurves        = has_trait<DiscardFlatCurves>::value;
+    static constexpr bool kReplicateLineEndPoints   = has_trait<ReplicateLineEndPoints>::value;
 
     // NOTE: MSVC 19.24 cannot compile constexpr fold expressions referenced in templates, so
     // extract everything into constexpr bool's instead of using `req_attrib` directly, etc. :(
@@ -228,11 +238,8 @@ class PatchWriter {
 public:
     template <typename... Args> // forwarded to PatchAllocator
     PatchWriter(PatchAttribs attribs,
-                int maxTessellationSegments,
                 Args&&... allocArgs)
             : fAttribs(attribs)
-            , fMaxSegments_pow2(pow2(maxTessellationSegments))
-            , fMaxSegments_pow4(pow2(fMaxSegments_pow2))
             , fCurrMinSegments_pow4(1.f)
             , fPatchAllocator(PatchStride(attribs), std::forward<Args>(allocArgs)...)
             , fJoin(attribs)
@@ -340,9 +347,8 @@ public:
 
     // Write a cubic curve with its four control points.
     AI void writeCubic(float2 p0, float2 p1, float2 p2, float2 p3,
-                       const VectorXform& shaderXform,
-                       float precision = kTessellationPrecision) {
-        float n4 = wangs_formula::cubic_pow4(precision, p0, p1, p2, p3, shaderXform);
+                       const VectorXform& shaderXform) {
+        float n4 = wangs_formula::cubic_pow4(kPrecision, p0, p1, p2, p3, shaderXform);
         if constexpr (kDiscardFlatCurves) {
             if (n4 <= 1.f) {
                 // This cubic only needs one segment (e.g. a line) but we're not filling space with
@@ -354,24 +360,22 @@ public:
             this->writeCubicPatch(p0, p1, p2, p3);
         } else {
             int numPatches = SkScalarCeilToInt(wangs_formula::root4(
-                    std::min(n4, pow4(kMaxTessellationSegmentsPerCurve)) / fMaxSegments_pow4));
+                    std::min(n4, pow4(kMaxSegmentsPerCurve)) / pow4(kMaxParametricSegments)));
             this->chopAndWriteCubics(p0, p1, p2, p3, numPatches);
         }
     }
     AI void writeCubic(const SkPoint pts[4],
-                       const VectorXform& shaderXform,
-                       float precision = kTessellationPrecision) {
+                       const VectorXform& shaderXform) {
         float4 p0p1 = float4::Load(pts);
         float4 p2p3 = float4::Load(pts + 2);
-        this->writeCubic(p0p1.lo, p0p1.hi, p2p3.lo, p2p3.hi, shaderXform, precision);
+        this->writeCubic(p0p1.lo, p0p1.hi, p2p3.lo, p2p3.hi, shaderXform);
     }
 
     // Write a conic curve with three control points and 'w', with the last coord of the last
     // control point signaling a conic by being set to infinity.
     AI void writeConic(float2 p0, float2 p1, float2 p2, float w,
-                       const VectorXform& shaderXform,
-                       float precision = kTessellationPrecision) {
-        float n2 = wangs_formula::conic_pow2(precision, p0, p1, p2, w, shaderXform);
+                       const VectorXform& shaderXform) {
+        float n2 = wangs_formula::conic_pow2(kPrecision, p0, p1, p2, w, shaderXform);
         if constexpr (kDiscardFlatCurves) {
             if (n2 <= 1.f) {
                 // This conic only needs one segment (e.g. a line) but we're not filling space with
@@ -383,25 +387,23 @@ public:
             this->writeConicPatch(p0, p1, p2, w);
         } else {
             int numPatches = SkScalarCeilToInt(sqrtf(
-                    std::min(n2, pow2(kMaxTessellationSegmentsPerCurve)) / fMaxSegments_pow2));
+                    std::min(n2, pow2(kMaxSegmentsPerCurve)) / pow2(kMaxParametricSegments)));
             this->chopAndWriteConics(p0, p1, p2, w, numPatches);
         }
     }
     AI void writeConic(const SkPoint pts[3], float w,
-                       const VectorXform& shaderXform,
-                       float precision = kTessellationPrecision) {
+                       const VectorXform& shaderXform) {
         this->writeConic(skvx::bit_pun<float2>(pts[0]),
                          skvx::bit_pun<float2>(pts[1]),
                          skvx::bit_pun<float2>(pts[2]),
-                         w, shaderXform, precision);
+                         w, shaderXform);
     }
 
     // Write a quadratic curve that automatically converts its three control points into an
     // equivalent cubic.
     AI void writeQuadratic(float2 p0, float2 p1, float2 p2,
-                           const VectorXform& shaderXform,
-                           float precision = kTessellationPrecision) {
-        float n4 = wangs_formula::quadratic_pow4(precision, p0, p1, p2, shaderXform);
+                           const VectorXform& shaderXform) {
+        float n4 = wangs_formula::quadratic_pow4(kPrecision, p0, p1, p2, shaderXform);
         if constexpr (kDiscardFlatCurves) {
             if (n4 <= 1.f) {
                 // This quad only needs one segment (e.g. a line) but we're not filling space with
@@ -413,23 +415,32 @@ public:
             this->writeQuadPatch(p0, p1, p2);
         } else {
             int numPatches = SkScalarCeilToInt(wangs_formula::root4(
-                    std::min(n4, pow4(kMaxTessellationSegmentsPerCurve)) / fMaxSegments_pow4));
+                    std::min(n4, pow4(kMaxSegmentsPerCurve)) / pow4(kMaxParametricSegments)));
             this->chopAndWriteQuads(p0, p1, p2, numPatches);
         }
     }
     AI void writeQuadratic(const SkPoint pts[3],
-                           const VectorXform& shaderXform,
-                           float precision = kTessellationPrecision) {
+                           const VectorXform& shaderXform) {
         this->writeQuadratic(skvx::bit_pun<float2>(pts[0]),
                              skvx::bit_pun<float2>(pts[1]),
                              skvx::bit_pun<float2>(pts[2]),
-                             shaderXform, precision);
+                             shaderXform);
     }
 
     // Write a line that is automatically converted into an equivalent cubic.
     AI void writeLine(float4 p0p1) {
         // No chopping needed, minimum segments is always at least 1
-        this->writeCubicPatch(p0p1.lo, (p0p1.zwxy() - p0p1) * (1/3.f) + p0p1, p0p1.hi);
+        if constexpr (kReplicateLineEndPoints) {
+            // Visually this cubic is still a line, but 't' does not move linearly over the line,
+            // so Wang's formula is more pessimistic. Shaders should avoid evaluating Wang's
+            // formula when a patch has control points in this arrangement.
+            this->writeCubicPatch(p0p1.lo, p0p1.lo, p0p1.hi, p0p1.hi);
+        } else {
+            // In exact math, this cubic structure should have Wang's formula return 0. Due to
+            // floating point math, this isn't always the case, so shaders need some way to restrict
+            // the number of parametric segments if Wang's formula numerically blows up.
+            this->writeCubicPatch(p0p1.lo, (p0p1.zwxy() - p0p1) * (1/3.f) + p0p1, p0p1.hi);
+        }
     }
     AI void writeLine(float2 p0, float2 p1) { this->writeLine({p0, p1}); }
     AI void writeLine(SkPoint p0, SkPoint p1) {
@@ -462,9 +473,27 @@ public:
         }
     }
 
-protected:
-    // TODO: Exposed as protected for StrokeHardwareTessellator's patch writer. Can be made private
-    // if/when the hardware stroker is deleted.
+private:
+    AI void emitPatchAttribs(VertexWriter vertexWriter,
+                             const JoinAttrib& join,
+                             float explicitCurveType) {
+        // NOTE: operator<< overrides automatically handle optional and disabled attribs.
+        vertexWriter << join << fFanPoint << fStrokeParams << fColor << fDepth
+                     << CurveTypeAttrib{fAttribs, explicitCurveType};
+    }
+
+    AI VertexWriter appendPatch() {
+        if constexpr (kTrackJoinControlPoints) {
+            if (fDeferredPatch.fMustDefer) {
+                SkASSERT(!fDeferredPatch.fHasPending);
+                SkASSERT(fPatchAllocator.stride() <= kMaxStride);
+                fDeferredPatch.fHasPending = true;
+                return {fDeferredPatch.fData, fPatchAllocator.stride()};
+            }
+        }
+        return fPatchAllocator.append();
+    }
+
     AI void writePatch(float2 p0, float2 p1, float2 p2, float2 p3, float explicitCurveType) {
         if (VertexWriter vw = this->appendPatch()) {
             // NOTE: fJoin will be undefined if we're writing to a deferred patch. If that's the
@@ -490,27 +519,6 @@ protected:
         }
     }
 
-private:
-    AI void emitPatchAttribs(VertexWriter vertexWriter,
-                             const JoinAttrib& join,
-                             float explicitCurveType) {
-        // NOTE: operator<< overrides automatically handle optional and disabled attribs.
-        vertexWriter << join << fFanPoint << fStrokeParams << fColor << fDepth
-                     << CurveTypeAttrib{fAttribs, explicitCurveType};
-    }
-
-    AI VertexWriter appendPatch() {
-        if constexpr (kTrackJoinControlPoints) {
-            if (fDeferredPatch.fMustDefer) {
-                SkASSERT(!fDeferredPatch.fHasPending);
-                SkASSERT(fPatchAllocator.stride() <= kMaxStride);
-                fDeferredPatch.fHasPending = true;
-                return {fDeferredPatch.fData, fPatchAllocator.stride()};
-            }
-        }
-        return fPatchAllocator.append();
-    }
-
     // Helpers that normalize curves to a generic patch, but do no other work.
     AI void writeCubicPatch(float2 p0, float2 p1, float2 p2, float2 p3) {
         this->writePatch(p0, p1, p2, p3, kCubicCurveType);
@@ -527,11 +535,11 @@ private:
 
     // Returns true if curve can be written w/o needing to chop (e.g. represented by one instance)
     bool curveFitsInMaxSegments(float n4) {
-        if (n4 <= fMaxSegments_pow4) {
+        if (n4 <= pow4(kMaxParametricSegments)) {
             fCurrMinSegments_pow4 = std::max(n4, fCurrMinSegments_pow4);
             return true;
         } else {
-            fCurrMinSegments_pow4 = fMaxSegments_pow4;
+            fCurrMinSegments_pow4 = pow4(kMaxParametricSegments);
             return false;
         }
     }
@@ -675,8 +683,6 @@ private:
     // attribs enabled (e.g. depending on caps or batching).
     const PatchAttribs fAttribs;
 
-    const float fMaxSegments_pow2;
-    const float fMaxSegments_pow4;
     float fCurrMinSegments_pow4;
 
     PatchAllocator fPatchAllocator;
@@ -690,9 +696,9 @@ private:
     DepthAttrib    fDepth;
 };
 
-}  // namespace skgpu
+}  // namespace skgpu::tess
 
 #undef ENABLE_IF
 #undef AI
 
-#endif  // tessellate_PatchWriter_DEFINED
+#endif  // skgpu_tessellate_PatchWriter_DEFINED

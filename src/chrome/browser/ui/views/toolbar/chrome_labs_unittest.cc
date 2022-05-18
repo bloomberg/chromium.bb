@@ -21,12 +21,12 @@
 #include "chrome/browser/ui/views/toolbar/chrome_labs_utils.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_view_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/browser/ui/views/user_education/new_badge_label.h"
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_state.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/user_education/views/new_badge_label.h"
 #include "components/version_info/channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
@@ -593,12 +593,10 @@ TEST_F(ChromeLabsViewControllerTest, SelectDefaultTwiceNoRestart) {
 
 // TODO(crbug.com/1128855)
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(ChromeLabsViewControllerTest, ShowFeedbackPage) {
+// TODO(b/185480535): Fix the test for WebUIFeedback
+TEST_F(ChromeLabsViewControllerTest, DISABLED_ShowFeedbackPage) {
   std::unique_ptr<ChromeLabsViewController> view_controller =
       CreateViewController();
-  // TODO(b/185480535): Fix the test for WebUIFeedback
-  if (base::FeatureList::IsEnabled(features::kWebUIFeedback))
-    GTEST_SKIP() << "Skipped due to crash with webui feedback.";
 
   base::HistogramTester histogram_tester;
 

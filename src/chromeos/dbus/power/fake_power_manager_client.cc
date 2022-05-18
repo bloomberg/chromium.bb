@@ -189,6 +189,8 @@ void FakePowerManagerClient::RequestRestart(
     power_manager::RequestRestartReason reason,
     const std::string& description) {
   ++num_request_restart_calls_;
+  if (restart_callback_)
+    std::move(restart_callback_).Run();
 }
 
 void FakePowerManagerClient::RequestShutdown(
@@ -416,6 +418,10 @@ void FakePowerManagerClient::GetExternalDisplayALSBrightness(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 external_display_als_brightness_enabled_));
 }
+
+// The real implementation of ChargeNowForAdaptiveCharging is just a simple
+// Dbus call without any callback, so there is not much to test for now.
+void FakePowerManagerClient::ChargeNowForAdaptiveCharging() {}
 
 bool FakePowerManagerClient::PopVideoActivityReport() {
   CHECK(!video_activity_reports_.empty());

@@ -1,5 +1,13 @@
 export const description = `
-Execution Tests for the 'countTrailingZeros' builtin function
+Execution tests for the 'countTrailingZeros' builtin function
+
+S is i32 or u32
+T is S or vecN<S>
+@const fn countTrailingZeros(e: T ) -> T
+The number of consecutive 0 bits starting from the least significant bit of e,
+when T is a scalar type.
+Component-wise when T is a vector.
+Also known as "ctz" in some languages.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
@@ -12,21 +20,8 @@ import { builtin } from './builtin.js';
 export const g = makeTestGroup(GPUTest);
 
 g.test('u32')
-  .uniqueId('xxxxxxxxxxxxxxxx')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-countTrailingZeros:
-T is i32, u32, vecN<i32>, or vecN<u32> countTrailingZeros(e: T) -> T
-
-The number of consecutive 0 bits starting from the least significant bit of e, when T is a scalar type.
-Component-wise when T is a vector.
-Also known as "ctz" in some languages.
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`u32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -142,21 +137,8 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   });
 
 g.test('i32')
-  .uniqueId('xxxxxxxxxxxxxxxx')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-countTrailingZeros:
-T is i32, u32, vecN<i32>, or vecN<u32> countTrailingZeros(e: T) -> T
-
-The number of consecutive 0 bits starting from the least significant bit of e, when T is a scalar type.
-Component-wise when T is a vector.
-Also known as "ctz" in some languages.
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`i32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)

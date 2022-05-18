@@ -1,5 +1,5 @@
 URL: https://github.com/google/googletest
-Version: release-1.10.0-224-g23b2a3b1
+Version: release-1.11.0
 License: BSD
 License File: LICENSE
 
@@ -13,21 +13,19 @@ generation.
 
 Local Modifications:
 - Remove everything but:
+  CMakeLists.txt
+  CONTRIBUTORS
   googlemock/
    cmake
    CMakeLists.txt
-   CONTRIBUTORS
    include
-   LICENSE
    README.md
    src
   googletest/
    cmake
    CMakeLists.txt
-   CONTRIBUTORS
    include
-   LICENSE
    README.md
    src
-- Enable kErrorOnUninstantiatedParameterizedTest and
-  kErrorOnUninstantiatedTypeParameterizedTest in gtest.cc
+  LICENSE
+  README.md

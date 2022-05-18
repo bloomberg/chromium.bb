@@ -1,3 +1,11 @@
+bug/tint/1118.wgsl:64:31 warning: 'dpdx' must only be called from uniform control flow
+  normalW = normalize(-(cross(dpdx(x_62), dpdy(x_64))));
+                              ^^^^
+
+bug/tint/1118.wgsl:46:19 note: reading from module-scope private variable 'fClipDistance3' may result in a non-uniform value
+  let x_9 : f32 = fClipDistance3;
+                  ^^^^^^^^^^^^^^
+
 struct Scene {
   vEyePosition : vec4<f32>,
 }
@@ -5,9 +13,9 @@ struct Scene {
 struct Material {
   vDiffuseColor : vec4<f32>,
   vAmbientColor : vec3<f32>,
-  dummy : f32,
+  placeholder : f32,
   vEmissiveColor : vec3<f32>,
-  dummy2 : f32,
+  placeholder2 : f32,
 }
 
 struct Mesh {

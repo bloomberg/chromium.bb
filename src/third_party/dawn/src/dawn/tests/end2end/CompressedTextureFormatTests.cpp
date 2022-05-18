@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TestUtils.h"
 #include "dawn/utils/TextureUtils.h"
@@ -34,8 +35,8 @@ struct CopyConfig {
 };
 
 namespace {
-    using TextureFormat = wgpu::TextureFormat;
-    DAWN_TEST_PARAM_STRUCT(CompressedTextureFormatTestParams, TextureFormat);
+using TextureFormat = wgpu::TextureFormat;
+DAWN_TEST_PARAM_STRUCT(CompressedTextureFormatTestParams, TextureFormat);
 }  // namespace
 
 class CompressedTextureFormatTest : public DawnTestWithParams<CompressedTextureFormatTestParams> {
@@ -60,9 +61,7 @@ class CompressedTextureFormatTest : public DawnTestWithParams<CompressedTextureF
         return {};
     }
 
-    bool IsFormatSupported() const {
-        return mIsFormatSupported;
-    }
+    bool IsFormatSupported() const { return mIsFormatSupported; }
 
     uint32_t BlockWidthInTexels() const {
         ASSERT(IsFormatSupported());
@@ -1162,9 +1161,7 @@ class CompressedTextureFormatSpecificTest : public DawnTest {
         return features;
     }
 
-    bool IsBCFormatSupported() const {
-        return mIsBCFormatSupported;
-    }
+    bool IsBCFormatSupported() const { return mIsBCFormatSupported; }
 
     bool mIsBCFormatSupported = false;
 };

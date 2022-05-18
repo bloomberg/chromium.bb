@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <string>
 
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 namespace {
-    struct CreatePipelineAsyncTask {
-        wgpu::ComputePipeline computePipeline = nullptr;
-        wgpu::RenderPipeline renderPipeline = nullptr;
-        bool isCompleted = false;
-        std::string message;
-    };
+struct CreatePipelineAsyncTask {
+    wgpu::ComputePipeline computePipeline = nullptr;
+    wgpu::RenderPipeline renderPipeline = nullptr;
+    bool isCompleted = false;
+    std::string message;
+};
 }  // anonymous namespace
 
 class CreatePipelineAsyncTest : public DawnTest {
@@ -52,7 +53,7 @@ class CreatePipelineAsyncTest : public DawnTest {
             pass.SetBindGroup(0, bindGroup);
             pass.SetPipeline(currentTask->computePipeline);
 
-            pass.Dispatch(1);
+            pass.DispatchWorkgroups(1);
             pass.End();
 
             commands = encoder.Finish();
@@ -64,9 +65,7 @@ class CreatePipelineAsyncTest : public DawnTest {
         EXPECT_BUFFER_U32_EQ(kExpected, ssbo, 0);
     }
 
-    void ValidateCreateComputePipelineAsync() {
-        ValidateCreateComputePipelineAsync(&task);
-    }
+    void ValidateCreateComputePipelineAsync() { ValidateCreateComputePipelineAsync(&task); }
 
     void ValidateCreateRenderPipelineAsync(CreatePipelineAsyncTask* currentTask) {
         constexpr wgpu::TextureFormat kRenderAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
@@ -105,9 +104,7 @@ class CreatePipelineAsyncTest : public DawnTest {
         EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 255, 0, 255), outputTexture, 0, 0);
     }
 
-    void ValidateCreateRenderPipelineAsync() {
-        ValidateCreateRenderPipelineAsync(&task);
-    }
+    void ValidateCreateRenderPipelineAsync() { ValidateCreateRenderPipelineAsync(&task); }
 
     void DoCreateRenderPipelineAsync(
         const utils::ComboRenderPipelineDescriptor& renderPipelineDescriptor) {
@@ -439,8 +436,7 @@ TEST_P(CreatePipelineAsyncTest, DestroyDeviceBeforeCallbackOfCreateComputePipeli
             task->message = message;
         },
         &task);
-    ExpectDeviceDestruction();
-    device.Destroy();
+    DestroyDevice();
 }
 
 // Verify there is no error when the device is destroyed before the callback of
@@ -473,8 +469,7 @@ TEST_P(CreatePipelineAsyncTest, DestroyDeviceBeforeCallbackOfCreateRenderPipelin
             task->message = message;
         },
         &task);
-    ExpectDeviceDestruction();
-    device.Destroy();
+    DestroyDevice();
 }
 
 // Verify the code path of CreateComputePipelineAsync() to directly return the compute pipeline

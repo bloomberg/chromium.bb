@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_discovery_service/app_discovery_service_factory.h"
 #include "chrome/browser/apps/app_discovery_service/app_discovery_util.h"
 #include "chrome/browser/apps/app_discovery_service/game_extras.h"
+#include "chrome/browser/apps/app_discovery_service/result.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/games/game_result.h"
@@ -80,9 +81,17 @@ GameProvider::GameProvider(Profile* profile,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This call will fail if the app discovery service has not finished
-  // initializing. In that case, we will update when notified via the observer.
-  // TODO(crbug.com/1305880): Add observer once implemented.
+  // initializing. In that case, we will update when notified via the
+  // subscription.
   UpdateIndex();
+
+  DCHECK(app_discovery_service_);
+  // It's safe to use an unretained pointer here due to the nature of
+  // CallbackListSubscription.
+  subscription_ = app_discovery_service_->RegisterForAppUpdates(
+      apps::ResultType::kGameSearchCatalog,
+      base::BindRepeating(&GameProvider::OnIndexUpdatedBySubscription,
+                          base::Unretained(this)));
 }
 
 GameProvider::~GameProvider() = default;
@@ -92,7 +101,6 @@ ash::AppListSearchResultType GameProvider::ResultType() const {
 }
 
 void GameProvider::UpdateIndex() {
-  // TODO(crbug.com/1305880): Replace with kGames once added.
   app_discovery_service_->GetApps(apps::ResultType::kGameSearchCatalog,
                                   base::BindOnce(&GameProvider::OnIndexUpdated,
                                                  weak_factory_.GetWeakPtr()));
@@ -101,6 +109,14 @@ void GameProvider::UpdateIndex() {
 void GameProvider::OnIndexUpdated(const GameIndex& index,
                                   apps::DiscoveryError error) {
   // TODO(crbug.com/1305880): Report the error to UMA.
+  if (!index.empty())
+    game_index_ = index;
+}
+
+void GameProvider::OnIndexUpdatedBySubscription(const GameIndex& index) {
+  // TODO(crbug.com/1305880): Report the error to UMA.
+  // TODO(crbug.com/1305880): Add tests to check that this is called when the
+  // app discovery service notifies its subscribers.
   if (!index.empty())
     game_index_ = index;
 }
@@ -137,6 +153,12 @@ void GameProvider::OnSearchComplete(
 
   SearchProvider::Results results;
   for (size_t i = 0; i < std::min(matches.size(), kMaxResults); ++i) {
+    const apps::Result* result = matches[i].first;
+    if (!result->GetSourceExtras() ||
+        !result->GetSourceExtras()->AsGameExtras()) {
+      // Result was not a game.
+      continue;
+    }
     results.emplace_back(std::make_unique<GameResult>(
         profile_, list_controller_, app_discovery_service_, *matches[i].first,
         matches[i].second, query));

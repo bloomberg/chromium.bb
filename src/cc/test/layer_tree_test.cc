@@ -277,15 +277,18 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->NotifyAllTileTasksCompleted(this);
   }
 
-  void BlockNotifyReadyToActivateForTesting(bool block) override {
+  void BlockNotifyReadyToActivateForTesting(bool block,
+                                            bool notify_if_blocked) override {
     CHECK(task_runner_provider()->ImplThreadTaskRunner())
         << "Not supported for single-threaded mode.";
     block_notify_ready_to_activate_for_testing_ = block;
     if (!block && notify_ready_to_activate_was_blocked_) {
-      task_runner_provider_->ImplThreadTaskRunner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&LayerTreeHostImplForTesting::NotifyReadyToActivate,
-                         base::Unretained(this)));
+      if (notify_if_blocked) {
+        task_runner_provider_->ImplThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&LayerTreeHostImplForTesting::NotifyReadyToActivate,
+                           base::Unretained(this)));
+      }
       notify_ready_to_activate_was_blocked_ = false;
     }
   }
@@ -471,9 +474,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidReceiveCompositorFrameAck();
   }
 
-  void DidScheduleBeginMainFrame() override {
-    test_hooks_->DidScheduleBeginMainFrame();
-  }
   void DidRunBeginMainFrame() override { test_hooks_->DidRunBeginMainFrame(); }
 
   void DidSubmitCompositorFrame() override {}
@@ -486,6 +486,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override {}
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
@@ -609,19 +612,16 @@ class LayerTreeTestLayerTreeFrameSinkClient
     DCHECK(task_runner_provider_->IsImplThread());
     return hooks_->CreateDisplayControllerOnThread();
   }
-  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface(
+  std::unique_ptr<viz::SkiaOutputSurface> CreateSkiaOutputSurface(
       viz::DisplayCompositorMemoryAndTaskController* display_controller)
       override {
     DCHECK(task_runner_provider_->IsImplThread());
-    return hooks_->CreateDisplaySkiaOutputSurfaceOnThread(display_controller);
+    return hooks_->CreateSkiaOutputSurfaceOnThread(display_controller);
   }
 
-  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider)
-      override {
+  std::unique_ptr<viz::OutputSurface> CreateSoftwareOutputSurface() override {
     DCHECK(task_runner_provider_->IsImplThread());
-    return hooks_->CreateDisplayOutputSurfaceOnThread(
-        std::move(compositor_context_provider));
+    return hooks_->CreateSoftwareOutputSurfaceOnThread();
   }
   void DisplayReceivedLocalSurfaceId(
       const viz::LocalSurfaceId& local_surface_id) override {
@@ -1213,21 +1213,15 @@ LayerTreeTest::CreateDisplayControllerOnThread() {
 }
 
 std::unique_ptr<viz::SkiaOutputSurface>
-LayerTreeTest::CreateDisplaySkiaOutputSurfaceOnThread(
+LayerTreeTest::CreateSkiaOutputSurfaceOnThread(
     viz::DisplayCompositorMemoryAndTaskController*) {
   return viz::FakeSkiaOutputSurface::Create3d();
 }
 
 std::unique_ptr<viz::OutputSurface>
-LayerTreeTest::CreateDisplayOutputSurfaceOnThread(
-    scoped_refptr<viz::ContextProvider> compositor_context_provider) {
-  // By default the Display shares a context with the LayerTreeHostImpl.
-  if (use_software_renderer()) {
-    return viz::FakeOutputSurface::CreateSoftware(
-        std::make_unique<viz::SoftwareOutputDevice>());
-  }
-  return viz::FakeOutputSurface::Create3d(
-      std::move(compositor_context_provider));
+LayerTreeTest::CreateSoftwareOutputSurfaceOnThread() {
+  return std::make_unique<viz::FakeSoftwareOutputSurface>(
+      std::make_unique<viz::SoftwareOutputDevice>());
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {

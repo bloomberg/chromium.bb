@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/check.h"
 #include "build/build_config.h"
 
 namespace cc {
@@ -177,6 +178,10 @@ bool FrameInfo::WasSmoothMainUpdateDropped() const {
   }
 
   return false;
+}
+
+bool FrameInfo::WasSmoothMainUpdateExpected() const {
+  return final_state != FrameFinalState::kNoUpdateDesired;
 }
 
 bool FrameInfo::IsScrollPrioritizeFrameDropped() const {

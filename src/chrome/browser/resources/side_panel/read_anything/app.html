@@ -2,7 +2,6 @@
   #container {
     background: var(--google-grey-900);
     color: var(--google-grey-200);
-    font-family: Roboto, Arial, sans-serif;
     font-size: 18px;
     padding:  20px;
   }
@@ -25,10 +24,5 @@
   .calibri {
     font-family: Calibri, 'Times New Roman', serif;
   }
-
 </style>
-<div id="container">
-  <template is="dom-repeat" items="[[paragraphs_]]">
-    <p class$="[[fontName_]]">[[item]]</p>
-  </template>
-</div>
+<div id="container" class$="[[fontName_]]"></div>

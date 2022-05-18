@@ -53,11 +53,11 @@ template<typename Derived> class MapBase<Derived, ReadOnlyAccessors>
     typedef typename internal::traits<Derived>::Scalar Scalar;
     typedef typename internal::packet_traits<Scalar>::type PacketScalar;
     typedef typename NumTraits<Scalar>::Real RealScalar;
-    typedef typename internal::conditional<
-                         bool(internal::is_lvalue<Derived>::value),
-                         Scalar *,
-                         const Scalar *>::type
-                     PointerType;
+    typedef std::conditional_t<
+                bool(internal::is_lvalue<Derived>::value),
+                Scalar *,
+                const Scalar *>
+            PointerType;
 
     using Base::derived;
 //    using Base::RowsAtCompileTime;
@@ -191,7 +191,7 @@ template<typename Derived> class MapBase<Derived, ReadOnlyAccessors>
 
     template<typename T>
     EIGEN_DEVICE_FUNC
-    void checkSanity(typename internal::enable_if<(internal::traits<T>::Alignment>0),void*>::type = 0) const
+    void checkSanity(std::enable_if_t<(internal::traits<T>::Alignment>0),void*> = 0) const
     {
 #if EIGEN_MAX_ALIGN_BYTES>0
       // innerStride() is not set yet when this function is called, so we optimistically assume the lowest plausible value:
@@ -204,7 +204,7 @@ template<typename Derived> class MapBase<Derived, ReadOnlyAccessors>
 
     template<typename T>
     EIGEN_DEVICE_FUNC
-    void checkSanity(typename internal::enable_if<internal::traits<T>::Alignment==0,void*>::type = 0) const
+    void checkSanity(std::enable_if_t<internal::traits<T>::Alignment==0,void*> = 0) const
     {}
 
     PointerType m_data;
@@ -247,11 +247,11 @@ template<typename Derived> class MapBase<Derived, WriteAccessors>
     using Base::rowStride;
     using Base::colStride;
 
-    typedef typename internal::conditional<
+    typedef std::conditional_t<
                     internal::is_lvalue<Derived>::value,
                     Scalar,
                     const Scalar
-                  >::type ScalarWithConstIfNotLvalue;
+                  > ScalarWithConstIfNotLvalue;
 
     EIGEN_DEVICE_FUNC
     inline const Scalar* data() const { return this->m_data; }

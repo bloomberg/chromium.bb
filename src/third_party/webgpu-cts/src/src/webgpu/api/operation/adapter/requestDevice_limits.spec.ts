@@ -60,6 +60,10 @@ g.test('supported_limits')
       device.limits[limit] === value,
       'Devices reported limit should match the required limit'
     );
+    // Explicitly destroy the device so that the tests don't have to wait for garbage collection to
+    // clean it up. Otherwise native resource limits may be hit due to so many devices being created
+    // in a short timeframe.
+    device.destroy();
   });
 
 g.test('better_than_supported')
@@ -162,6 +166,10 @@ g.test('worse_than_default')
         device.limits[limit] === kLimitInfo[limit].default,
         'Devices reported limit should match the default limit'
       );
+      // Explicitly destroy the device so that the tests don't have to wait for garbage collection
+      // to clean it up. Otherwise native resource limits may be hit due to so many devices being
+      // created in a short timeframe.
+      device.destroy();
     } else {
       t.shouldReject('OperationError', adapter.requestDevice({ requiredLimits }));
     }

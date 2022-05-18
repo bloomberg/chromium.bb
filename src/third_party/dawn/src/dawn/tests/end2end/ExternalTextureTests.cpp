@@ -18,30 +18,30 @@
 
 namespace {
 
-    wgpu::Texture Create2DTexture(wgpu::Device device,
-                                  uint32_t width,
-                                  uint32_t height,
-                                  wgpu::TextureFormat format,
-                                  wgpu::TextureUsage usage) {
-        wgpu::TextureDescriptor descriptor;
-        descriptor.dimension = wgpu::TextureDimension::e2D;
-        descriptor.size.width = width;
-        descriptor.size.height = height;
-        descriptor.size.depthOrArrayLayers = 1;
-        descriptor.sampleCount = 1;
-        descriptor.format = format;
-        descriptor.mipLevelCount = 1;
-        descriptor.usage = usage;
-        return device.CreateTexture(&descriptor);
-    }
+wgpu::Texture Create2DTexture(wgpu::Device device,
+                              uint32_t width,
+                              uint32_t height,
+                              wgpu::TextureFormat format,
+                              wgpu::TextureUsage usage) {
+    wgpu::TextureDescriptor descriptor;
+    descriptor.dimension = wgpu::TextureDimension::e2D;
+    descriptor.size.width = width;
+    descriptor.size.height = height;
+    descriptor.size.depthOrArrayLayers = 1;
+    descriptor.sampleCount = 1;
+    descriptor.format = format;
+    descriptor.mipLevelCount = 1;
+    descriptor.usage = usage;
+    return device.CreateTexture(&descriptor);
+}
 
-    class ExternalTextureTests : public DawnTest {
-      protected:
-        static constexpr uint32_t kWidth = 4;
-        static constexpr uint32_t kHeight = 4;
-        static constexpr wgpu::TextureFormat kFormat = wgpu::TextureFormat::RGBA8Unorm;
-        static constexpr wgpu::TextureUsage kSampledUsage = wgpu::TextureUsage::TextureBinding;
-    };
+class ExternalTextureTests : public DawnTest {
+  protected:
+    static constexpr uint32_t kWidth = 4;
+    static constexpr uint32_t kHeight = 4;
+    static constexpr wgpu::TextureFormat kFormat = wgpu::TextureFormat::RGBA8Unorm;
+    static constexpr wgpu::TextureUsage kSampledUsage = wgpu::TextureUsage::TextureBinding;
+};
 }  // anonymous namespace
 
 TEST_P(ExternalTextureTests, CreateExternalTextureSuccess) {
@@ -191,10 +191,15 @@ TEST_P(ExternalTextureTests, SampleMultiplanarExternalTexture) {
         RGBA8 rgba;
     };
 
-    std::array<ConversionExpectation, 4> expectations = {{{0.0f, 0.5f, 0.5f, RGBA8::kBlack},
-                                                          {0.298f, 0.329f, 1.0f, RGBA8::kRed},
-                                                          {0.584f, -0.168f, -0.823f, RGBA8::kGreen},
-                                                          {0.113f, 1.0f, 0.419f, RGBA8::kBlue}}};
+    // Conversion expectations for BT.709 YUV source and sRGB destination.
+    std::array<ConversionExpectation, 7> expectations = {
+        {{0.0, .5, .5, RGBA8::kBlack},
+         {0.2126, 0.4172, 1.0, RGBA8::kRed},
+         {0.7152, 0.1402, 0.0175, RGBA8::kGreen},
+         {0.0722, 1.0, 0.4937, RGBA8::kBlue},
+         {0.6382, 0.3232, 0.6644, {246, 169, 90, 255}},
+         {0.5423, 0.5323, 0.4222, {120, 162, 169, 255}},
+         {0.2345, 0.4383, 0.6342, {126, 53, 33, 255}}}};
 
     for (ConversionExpectation expectation : expectations) {
         // Initialize the texture planes with YUV data

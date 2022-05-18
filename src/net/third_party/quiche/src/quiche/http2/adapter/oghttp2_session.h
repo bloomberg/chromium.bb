@@ -13,6 +13,7 @@
 #include "quiche/http2/adapter/data_source.h"
 #include "quiche/http2/adapter/event_forwarder.h"
 #include "quiche/http2/adapter/header_validator.h"
+#include "quiche/http2/adapter/header_validator_base.h"
 #include "quiche/http2/adapter/http2_protocol.h"
 #include "quiche/http2/adapter/http2_session.h"
 #include "quiche/http2/adapter/http2_util.h"
@@ -68,6 +69,12 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     // in RFC 8441. If true, this endpoint will send the appropriate setting in
     // initial SETTINGS.
     bool allow_extended_connect = true;
+    // Whether to allow `obs-text` (characters from hexadecimal 0x80 to 0xff) in
+    // header field values.
+    bool allow_obs_text = true;
+    // If true, validates header field names and values according to RFC 7230
+    // and RFC 7540.
+    bool validate_http_headers = true;
   };
 
   OgHttp2Session(Http2VisitorInterface& visitor, Options options);
@@ -142,8 +149,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   }
   bool want_write() const override {
     return !fatal_send_error_ &&
-           (!frames_.empty() || !buffered_data_.empty() ||
-            !connection_metadata_.empty() || HasReadyStream() ||
+           (!frames_.empty() || !buffered_data_.empty() || HasReadyStream() ||
             !goaway_rejected_streams_.empty());
   }
   int GetRemoteWindowSize() const override { return connection_send_window_; }
@@ -206,8 +212,6 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   void OnFramePayload(const char* data, size_t len) override;
 
  private:
-  using MetadataSequence = std::vector<std::unique_ptr<MetadataSource>>;
-
   struct QUICHE_EXPORT_PRIVATE StreamState {
     StreamState(int32_t stream_receive_window, int32_t stream_send_window,
                 WindowManager::WindowUpdateListener listener,
@@ -219,7 +223,6 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
     WindowManager window_manager;
     std::unique_ptr<DataFrameSource> outbound_body;
-    MetadataSequence outbound_metadata;
     std::unique_ptr<spdy::SpdyHeaderBlock> trailers;
     void* user_data = nullptr;
     int32_t send_window;
@@ -242,9 +245,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   class QUICHE_EXPORT_PRIVATE PassthroughHeadersHandler
       : public spdy::SpdyHeadersHandlerInterface {
    public:
-    explicit PassthroughHeadersHandler(OgHttp2Session& session,
-                                       Http2VisitorInterface& visitor)
-        : session_(session), visitor_(visitor) {}
+    PassthroughHeadersHandler(OgHttp2Session& session,
+                              Http2VisitorInterface& visitor);
 
     void set_stream_id(Http2StreamId stream_id) {
       stream_id_ = stream_id;
@@ -262,14 +264,18 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     absl::string_view status_header() const {
       QUICHE_DCHECK(type_ == HeaderType::RESPONSE ||
                     type_ == HeaderType::RESPONSE_100);
-      return validator_.status_header();
+      return validator_->status_header();
     }
     absl::optional<size_t> content_length() const {
-      return validator_.content_length();
+      return validator_->content_length();
     }
-    void AllowConnect() { validator_.AllowConnect(); }
+    void AllowConnect() { validator_->AllowConnect(); }
     void SetMaxFieldSize(uint32_t field_size) {
-      validator_.SetMaxFieldSize(field_size);
+      validator_->SetMaxFieldSize(field_size);
+    }
+    void SetAllowObsText(bool allow) {
+      validator_->SetObsTextOption(allow ? ObsTextOption::kAllow
+                                         : ObsTextOption::kDisallow);
     }
     bool CanReceiveBody() const;
 
@@ -280,7 +286,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     Http2VisitorInterface::OnHeaderResult result_ =
         Http2VisitorInterface::HEADER_OK;
     // Validates header blocks according to the HTTP/2 specification.
-    HeaderValidator validator_;
+    std::unique_ptr<HeaderValidatorBase> validator_;
     HeaderType type_ = HeaderType::RESPONSE;
     bool frame_contains_fin_ = false;
   };
@@ -352,7 +358,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Writes DATA frames for stream `stream_id`.
   SendResult WriteForStream(Http2StreamId stream_id);
 
-  SendResult SendMetadata(Http2StreamId stream_id, MetadataSequence& sequence);
+  void SerializeMetadata(Http2StreamId stream_id,
+                         std::unique_ptr<MetadataSource> source);
 
   void SendHeaders(Http2StreamId stream_id, spdy::SpdyHeaderBlock headers,
                    bool end_stream);
@@ -422,6 +429,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
 
+  const Options options_;
+
   // Forwards received events to the session if it can accept them.
   EventForwarder event_forwarder_;
 
@@ -480,12 +489,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   absl::flat_hash_map<Http2StreamId, int> queued_frames_;
   // Includes streams that are currently ready to write trailers.
   absl::flat_hash_set<Http2StreamId> trailers_ready_;
-  // Includes streams that are currently ready to write metadata.
-  absl::flat_hash_set<Http2StreamId> metadata_ready_;
   // Includes streams that will not be written due to receipt of GOAWAY.
   absl::flat_hash_set<Http2StreamId> goaway_rejected_streams_;
-
-  MetadataSequence connection_metadata_;
 
   Http2StreamId next_stream_id_ = 1;
   // The highest received stream ID is the highest stream ID in any frame read
@@ -512,7 +517,6 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
       std::numeric_limits<uint32_t>::max();
   uint32_t max_inbound_concurrent_streams_ =
       std::numeric_limits<uint32_t>::max();
-  const Options options_;
 
   // The HPACK encoder header table capacity that will be applied when
   // acking SETTINGS from the peer. Only contains a value if the peer advertises

@@ -20,8 +20,6 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
       'getEnrollmentLabel',
       'removeEnrollment',
       'changeEnrollmentLabel',
-      'startAuthentication',
-      'endCurrentAuthentication',
     ]);
 
     /** @private {!Array<string>} */
@@ -94,16 +92,6 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
     this.methodCalled('changeEnrollmentLabel', index, newLabel);
     return Promise.resolve(true);
   }
-
-  /** @override */
-  startAuthentication() {
-    this.methodCalled('startAuthentication');
-  }
-
-  /** @override */
-  endCurrentAuthentication() {
-    this.methodCalled('endCurrentAuthentication');
-  }
 }
 
 suite('settings-fingerprint-list', function() {
@@ -147,11 +135,7 @@ suite('settings-fingerprint-list', function() {
     fingerprintList = document.createElement('settings-fingerprint-list');
     document.body.appendChild(fingerprintList);
     flush();
-    return Promise
-        .all([
-          browserProxy.whenCalled('startAuthentication'),
-          browserProxy.whenCalled('getFingerprintsList')
-        ])
+    return Promise.all([browserProxy.whenCalled('getFingerprintsList')])
         .then(function() {
           assertEquals(0, fingerprintList.fingerprints_.length);
           browserProxy.resetResolver('getFingerprintsList');
@@ -159,10 +143,7 @@ suite('settings-fingerprint-list', function() {
   });
 
   test('EnrollingFingerprintLottieAnimation', function() {
-    loadTimeData.overrideValues({
-      fingerprintUnlockEnabled: true,
-      useLottieAnimationForFingerprint: true,
-    });
+    loadTimeData.overrideValues({fingerprintUnlockEnabled: true});
     openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       assertTrue(dialog.$$('#dialog').open);
@@ -171,26 +152,10 @@ suite('settings-fingerprint-list', function() {
     });
   });
 
-  test('EnrollingFingerprintIllustration', function() {
-    loadTimeData.overrideValues({
-      fingerprintUnlockEnabled: true,
-      useLottieAnimationForFingerprint: false,
-    });
-    openDialog();
-    return browserProxy.whenCalled('startEnroll').then(function() {
-      assertTrue(dialog.$$('#dialog').open);
-      assertEquals(FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
-      assertFalse(dialog.$$('#scannerLocation').hidden);
-    });
-  });
-
   // Verify running through the enroll session workflow
   // (settings-setup-fingerprint-dialog) works as expected.
   test('EnrollingFingerprint', function() {
-    loadTimeData.overrideValues({
-      fingerprintUnlockEnabled: true,
-      useLottieAnimationForFingerprint: true,
-    });
+    loadTimeData.overrideValues({fingerprintUnlockEnabled: true});
     openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       assertTrue(dialog.$$('#dialog').open);
@@ -239,11 +204,7 @@ suite('settings-fingerprint-list', function() {
       // and the fingerprint list should have one fingerprint registered.
       dialog.$$('#closeButton').click();
       return flushTasks().then(function() {
-        Promise
-            .all([
-              browserProxy.whenCalled('startAuthentication'),
-              browserProxy.whenCalled('getFingerprintsList')
-            ])
+        Promise.all([browserProxy.whenCalled('getFingerprintsList')])
             .then(function() {
               assertEquals(1, fingerprintList.fingerprints_.length);
             });
@@ -254,10 +215,7 @@ suite('settings-fingerprint-list', function() {
   // Verify enrolling a fingerprint, then enrolling another without closing the
   // dialog works as intended.
   test('EnrollingAnotherFingerprint', function() {
-    loadTimeData.overrideValues({
-      fingerprintUnlockEnabled: true,
-      useLottieAnimationForFingerprint: false,
-    });
+    loadTimeData.overrideValues({fingerprintUnlockEnabled: true});
     openDialog();
     return browserProxy.whenCalled('startEnroll')
         .then(function() {
@@ -294,7 +252,7 @@ suite('settings-fingerprint-list', function() {
           assertTrue(dialog.$$('#dialog').open);
           assertFalse(isVisible(addAnotherButton));
           assertEquals(FingerprintSetupStep.MOVE_FINGER, dialog.step_);
-          assertTrue(dialog.$$('#scannerLocation').hidden);
+          assertTrue(dialog.$$('#scannerLocationLottie').hidden);
           assertFalse(dialog.$$('#arc').hidden);
 
           browserProxy.scanReceived(
@@ -367,10 +325,7 @@ suite('settings-fingerprint-list', function() {
           // Verify that by tapping the exit button we should exit the dialog
           // and the fingerprint list should have zero fingerprints registered.
           dialog.$$('#closeButton').click();
-          return Promise.all([
-            browserProxy.whenCalled('cancelCurrentEnroll'),
-            browserProxy.whenCalled('startAuthentication')
-          ]);
+          return Promise.all([browserProxy.whenCalled('cancelCurrentEnroll')]);
         })
         .then(function() {
           assertEquals(0, fingerprintList.fingerprints_.length);

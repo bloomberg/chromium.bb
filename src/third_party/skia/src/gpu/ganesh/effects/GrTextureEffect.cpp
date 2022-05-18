@@ -58,29 +58,64 @@ GrTextureEffect::Sampling::Sampling(const GrSurfaceProxy& proxy,
         bool contains(Span r) const { return fA <= r.fA && fB >= r.fB; }
     };
     struct Result1D {
-        ShaderMode fShaderMode;
-        Span fShaderSubset;
-        Span fShaderClamp;
-        Wrap fHWWrap;
+        ShaderMode fShaderMode = ShaderMode::kNone;
+        Span fShaderSubset     = {};
+        Span fShaderClamp      = {};
+        Wrap fHWWrap           = Wrap::kClamp;
     };
 
-    auto type = proxy.asTextureProxy()->textureType();
+    auto type   = proxy.asTextureProxy()->textureType();
     auto filter = sampler.filter();
-    auto mm = sampler.mipmapMode();
+    auto mm     = sampler.mipmapMode();
 
-    auto resolve = [&](int size, Wrap wrap, Span subset, Span domain, float linearFilterInset) {
-        Result1D r;
-        bool canDoModeInHW = !alwaysUseShaderTileMode;
+    auto canDoWrapInHW = [&](int size, Wrap wrap) {
+        if (alwaysUseShaderTileMode) {
+            return false;
+        }
         // TODO: Use HW border color when available.
         if (wrap == Wrap::kClampToBorder &&
             (!caps.clampToBorderSupport() || border[0] || border[1] || border[2] || border[3])) {
-            canDoModeInHW = false;
-        } else if (wrap != Wrap::kClamp && !caps.npotTextureTileSupport() && !SkIsPow2(size)) {
-            canDoModeInHW = false;
-        } else if (type != GrTextureType::k2D &&
-                   !(wrap == Wrap::kClamp || wrap == Wrap::kClampToBorder)) {
-            canDoModeInHW = false;
+            return false;
         }
+        if (wrap != Wrap::kClamp && !caps.npotTextureTileSupport() && !SkIsPow2(size)) {
+            return false;
+        }
+        if (type != GrTextureType::k2D &&
+                   !(wrap == Wrap::kClamp || wrap == Wrap::kClampToBorder)) {
+            return false;
+        }
+        return true;
+    };
+
+    SkISize dim = proxy.isFullyLazy() ? SkISize{-1, -1} : proxy.backingStoreDimensions();
+
+    // TODO: Right now if we use shader based subsetting for any reason we just completely drop
+    // aniso. Longer term allow shader subsetting, reusing the special repeat mode LOD selection
+    // logic for mip maps, and simply don't attempt to restrict ansiso's computed samples to the
+    // subset. That is use "subsetting" but not "clamping"/insetting in terms of the shader gen
+    // logic.
+    bool aniso = sampler.isAniso();
+    SkASSERT(!aniso || caps.anisoSupport());
+    if (aniso) {
+        bool anisoSubset = !proxy.backingStoreBoundsRect().contains(subset) &&
+                           (!domain || !subset.contains(*domain));
+        bool needsShaderWrap = !canDoWrapInHW(dim.width(),  sampler.wrapModeX()) ||
+                               !canDoWrapInHW(dim.height(), sampler.wrapModeY());
+        if (needsShaderWrap || anisoSubset) {
+            MipmapMode newMM = proxy.asTextureProxy()->mipmapped() == GrMipmapped::kYes
+                                    ? MipmapMode::kLinear
+                                    : MipmapMode::kNone;
+            sampler = GrSamplerState(sampler.wrapModeX(),
+                                     sampler.wrapModeY(),
+                                     SkFilterMode::kLinear,
+                                     newMM);
+            aniso = false;
+        }
+    }
+
+    auto resolve = [&](int size, Wrap wrap, Span subset, Span domain, float linearFilterInset) {
+        Result1D r;
+        bool canDoModeInHW = canDoWrapInHW(size, wrap);
         if (canDoModeInHW && size > 0 && subset.fA <= 0 && subset.fB >= size) {
             r.fShaderMode = ShaderMode::kNone;
             r.fHWWrap = wrap;
@@ -119,19 +154,27 @@ GrTextureEffect::Sampling::Sampling(const GrSurfaceProxy& proxy,
         return r;
     };
 
-    SkISize dim = proxy.isFullyLazy() ? SkISize{-1, -1} : proxy.backingStoreDimensions();
+    Result1D x, y;
+    if (!aniso) {
+        Span subsetX{subset.fLeft, subset.fRight};
+        auto domainX = domain ? Span{domain->fLeft, domain->fRight}
+                              : Span{SK_FloatNegativeInfinity, SK_FloatInfinity};
+        x = resolve(dim.width(), sampler.wrapModeX(), subsetX, domainX, linearFilterInset.fX);
 
-    Span subsetX{subset.fLeft, subset.fRight};
-    auto domainX = domain ? Span{domain->fLeft, domain->fRight}
-                          : Span{SK_FloatNegativeInfinity, SK_FloatInfinity};
-    auto x = resolve(dim.width(), sampler.wrapModeX(), subsetX, domainX, linearFilterInset.fX);
+        Span subsetY{subset.fTop, subset.fBottom};
+        auto domainY = domain ? Span{domain->fTop, domain->fBottom}
+                              : Span{SK_FloatNegativeInfinity, SK_FloatInfinity};
+        y = resolve(dim.height(), sampler.wrapModeY(), subsetY, domainY, linearFilterInset.fY);
+    } else {
+        x.fHWWrap = sampler.wrapModeX();
+        y.fHWWrap = sampler.wrapModeY();
+    }
 
-    Span subsetY{subset.fTop, subset.fBottom};
-    auto domainY = domain ? Span{domain->fTop, domain->fBottom}
-                          : Span{SK_FloatNegativeInfinity, SK_FloatInfinity};
-    auto y = resolve(dim.height(), sampler.wrapModeY(), subsetY, domainY, linearFilterInset.fY);
-
-    fHWSampler = {x.fHWWrap, y.fHWWrap, filter, mm};
+    fHWSampler = aniso ? GrSamplerState::Aniso(x.fHWWrap,
+                                               y.fHWWrap,
+                                               sampler.maxAniso(),
+                                               proxy.asTextureProxy()->mipmapped())
+                       : GrSamplerState{x.fHWWrap, y.fHWWrap, filter, mm};
     fShaderModes[0] = x.fShaderMode;
     fShaderModes[1] = y.fShaderMode;
     fShaderSubset = {x.fShaderSubset.fA, y.fShaderSubset.fA,

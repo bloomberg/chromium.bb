@@ -433,16 +433,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   bool IsFixedPositionObjectInPagedMedia() const;
 
-  // Takes the given rect, assumed to be in absolute coordinates, and scrolls
-  // this Element and all it's containers such that the child content of this
-  // Element at that rect is visible in the viewport. Returns the new absolute
-  // rect of the target rect after all scrolls are completed, in the coordinate
-  // space of the local root frame.
-  // TODO(nburris): The returned rect is actually in document coordinates, not
-  // root frame coordinates.
-  PhysicalRect ScrollRectToVisible(const PhysicalRect&,
-                                   mojom::blink::ScrollIntoViewParamsPtr);
-
   // Convenience function for getting to the nearest enclosing box of a
   // LayoutObject.
   LayoutBox* EnclosingBox() const;
@@ -2337,18 +2327,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void SetPseudoElementStyle(scoped_refptr<const ComputedStyle>,
                              bool match_parent_size = false);
 
-  // In some cases we modify the ComputedStyle after the style recalc, either
-  // for updating anonymous style or doing layout hacks for special elements
-  // where we update the ComputedStyle during layout.
-  // If the LayoutObject has an associated node, we will SetComputedStyle on
-  // that node with the new ComputedStyle.
-  // ApplyStyleChanges = kNo means we will simply set the member object. If it's
-  // kYes, we will apply any changes from the previously set ComputedStyle to do
-  // visual invalidation etc.
-  //
-  // Do not use unless strictly necessary.
-  void SetModifiedStyleOutsideStyleRecalc(scoped_refptr<const ComputedStyle>,
-                                          ApplyStyleChanges);
+  void SetTextAutoSizedStyle(scoped_refptr<const ComputedStyle>,
+                             ApplyStyleChanges);
 
   // This function returns an enclosing non-anonymous LayoutBlock for this
   // element. This function is not always returning the containing block as
@@ -3136,8 +3116,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   void SetNeedsOverflowRecalc(
       OverflowRecalcType = OverflowRecalcType::kLayoutAndVisualOverflowRecalc);
 
-  void InvalidateClipPathCache();
-
   // Call |SetShouldDoFullPaintInvalidation| for LayoutNG or
   // |SetShouldInvalidateSelection| on all selected children.
   void InvalidateSelectedChildrenOnStyleChange();
@@ -3263,8 +3241,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
         SubtreePaintPropertyUpdateReason reason) {
       layout_object_.AddSubtreePaintPropertyUpdateReason(reason);
     }
-
-    void InvalidateClipPathCache() { layout_object_.InvalidateClipPathCache(); }
 
     void UpdateInsideBlockingTouchEventHandler(bool inside) {
       layout_object_.UpdateInsideBlockingTouchEventHandler(inside);
@@ -3750,8 +3726,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       AncestorSkipInfo* = nullptr) const;
 
   // Returns the first line style declared in CSS. The style may be declared on
-  // an ancestor block (see EnclosingFirstLineStyleBlock()) that applies to this
-  // object. Returns nullptr if there is no applicable first line style.
+  // an ancestor block (see LayoutBlock::FirstLineStyleParentBlock) that applies
+  // to this object. Returns nullptr if there is no applicable first line style.
   // Whether the style applies is based on CSS rules, regardless of whether this
   // object is really in the first line which is unknown before layout.
   const ComputedStyle* FirstLineStyleWithoutFallback() const;

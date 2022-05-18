@@ -15,33 +15,34 @@
 #ifndef SRC_DAWN_NATIVE_D3D12_HEAPALLOCATORD3D12_H_
 #define SRC_DAWN_NATIVE_D3D12_HEAPALLOCATORD3D12_H_
 
+#include <memory>
+
 #include "dawn/native/D3D12Backend.h"
 #include "dawn/native/ResourceHeapAllocator.h"
 #include "dawn/native/d3d12/d3d12_platform.h"
 
 namespace dawn::native::d3d12 {
 
-    class Device;
+class Device;
 
-    // Wrapper to allocate a D3D12 heap.
-    class HeapAllocator : public ResourceHeapAllocator {
-      public:
-        HeapAllocator(Device* device,
-                      D3D12_HEAP_TYPE heapType,
-                      D3D12_HEAP_FLAGS heapFlags,
-                      MemorySegment memorySegment);
-        ~HeapAllocator() override = default;
+// Wrapper to allocate a D3D12 heap.
+class HeapAllocator : public ResourceHeapAllocator {
+  public:
+    HeapAllocator(Device* device,
+                  D3D12_HEAP_TYPE heapType,
+                  D3D12_HEAP_FLAGS heapFlags,
+                  MemorySegment memorySegment);
+    ~HeapAllocator() override = default;
 
-        ResultOrError<std::unique_ptr<ResourceHeapBase>> AllocateResourceHeap(
-            uint64_t size) override;
-        void DeallocateResourceHeap(std::unique_ptr<ResourceHeapBase> allocation) override;
+    ResultOrError<std::unique_ptr<ResourceHeapBase>> AllocateResourceHeap(uint64_t size) override;
+    void DeallocateResourceHeap(std::unique_ptr<ResourceHeapBase> allocation) override;
 
-      private:
-        Device* mDevice;
-        D3D12_HEAP_TYPE mHeapType;
-        D3D12_HEAP_FLAGS mHeapFlags;
-        MemorySegment mMemorySegment;
-    };
+  private:
+    Device* mDevice;
+    D3D12_HEAP_TYPE mHeapType;
+    D3D12_HEAP_FLAGS mHeapFlags;
+    MemorySegment mMemorySegment;
+};
 
 }  // namespace dawn::native::d3d12
 

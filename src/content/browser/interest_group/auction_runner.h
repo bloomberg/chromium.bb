@@ -37,6 +37,9 @@ class InterestGroupManagerImpl;
 
 // An AuctionRunner loads and runs the bidder and seller worklets, along with
 // their reporting phases and produces the result via a callback.
+//
+// All auctions must be created on the same thread. This is just needed because
+// the code to assign unique tracing IDs is not threadsafe.
 class CONTENT_EXPORT AuctionRunner {
  public:
   // TODO(behamilton@google.com): Make this struct more broadly available to
@@ -229,10 +232,34 @@ class CONTENT_EXPORT AuctionRunner {
     BidState(BidState&) = delete;
     BidState& operator=(BidState&) = delete;
 
+    // Populates `trace_id` with a new trace ID and logs the first trace event
+    // for it.
+    void BeginTracing();
+
+    // Logs the final event for `trace_id` and clears it. Automatically called
+    // on destruction so trace events are all closed if an auction is cancelled.
+    void EndTracing();
+
     StorageInterestGroup bidder;
 
     // Holds a reference to the BidderWorklet, once created.
     std::unique_ptr<AuctionWorkletManager::WorkletHandle> worklet_handle;
+
+    // Tracing ID associated with the BidState. A nestable async "Bid" trace
+    // event is started for a bid state during the generate and score bid phase
+    // when the worklet is requested, and ended once the bid is score, or the
+    // bidder worklet fails to bid.
+    //
+    // Additionally, if the BidState is a winner of a component auction, another
+    // "Bid" trace event is created when the top-level auction scores the bid,
+    // and ends when scoring is complete.
+    //
+    // Nested events are logged using this ID both by the Auction and by Mojo
+    // bidder and seller worklets, potentially in another process.
+    //
+    // absl::nullopt means no ID is currently assigned, and there's no pending
+    // event.
+    absl::optional<uint64_t> trace_id;
 
     // True if the worklet successfully made a bid.
     bool made_bid = false;
@@ -695,6 +722,12 @@ class CONTENT_EXPORT AuctionRunner {
                                 const absl::optional<PostAuctionSignals>&
                                     top_level_signals = absl::nullopt);
 
+    // Tracing ID associated with the Auction. A nestable async "Auction" trace
+    // event lasts for the lifetime of `this`. Sequential events that apply to
+    // the entire auction are logged using this ID, including potentially
+    // out-of-process events by bidder and seller worklet reporting methods.
+    const uint64_t trace_id_;
+
     const raw_ptr<AuctionWorkletManager> auction_worklet_manager_;
     const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
@@ -807,9 +840,10 @@ class CONTENT_EXPORT AuctionRunner {
     std::unique_ptr<AuctionWorkletManager::WorkletHandle>
         seller_worklet_handle_;
 
-    // Report URLs from reportResult() and reportWin() methods. Returned to
-    // caller for it to deal with, so the Auction itself can be deleted at the
-    // end of the auction.
+    // Report URLs from reportResult() and reportWin() methods. An auction's
+    // report URL from reportResult() comes before the URL from its reportWin()
+    // method if there is one. Returned to `callback_` to deal with, so the
+    // auction itself can be deleted at the end of the auction.
     std::vector<GURL> report_urls_;
 
     // All errors reported by worklets thus far.
@@ -817,7 +851,7 @@ class CONTENT_EXPORT AuctionRunner {
 
     // Ad Beacon URL mapping generated from reportResult() or reportWin() from
     // this auction and its components. Destination is relative to this auction.
-    // Returned to the caller for it to deal with, so the Auction itself can be
+    // Returned to `callback_` to deal with, so the Auction itself can be
     // deleted at the end of the auction.
     ReportingMetadata ad_beacon_map_;
 

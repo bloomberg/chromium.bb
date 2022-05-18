@@ -31,22 +31,22 @@ class TupleImpl<N, T1, Ts...> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   
   // Default constructor, enable if all types are default-constructible.
-  template<typename U1 = T1, typename EnableIf = typename std::enable_if<
+  template<typename U1 = T1, typename EnableIf = std::enable_if_t<
       std::is_default_constructible<U1>::value
       && reduce_all<std::is_default_constructible<Ts>::value...>::value
-    >::type>
+    >>
   EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC
   TupleImpl() : head_{}, tail_{} {}
  
   // Element constructor.
   template<typename U1, typename... Us, 
            // Only enable if...
-           typename EnableIf = typename std::enable_if<
+           typename EnableIf = std::enable_if_t<
               // the number of input arguments match, and ...
               sizeof...(Us) == sizeof...(Ts) && (
                 // this does not look like a copy/move constructor.
                 N > 1 || std::is_convertible<U1, T1>::value)
-           >::type>
+           >>
   EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC
   TupleImpl(U1&& arg1, Us&&... args) 
     : head_(std::forward<U1>(arg1)), tail_(std::forward<Us>(args)...) {}
@@ -253,9 +253,9 @@ get(TupleImpl<sizeof...(Types), Types...>& tuple) {
  * \return concatenated tuple.
  */
 template<typename... Tuples,
-          typename EnableIf = typename std::enable_if<
+          typename EnableIf = std::enable_if_t<
             internal::reduce_all<
-              is_tuple<typename std::decay<Tuples>::type>::value...>::value>::type>
+              is_tuple<typename std::decay<Tuples>::type>::value...>::value>>
 EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 typename tuple_cat_impl<sizeof...(Tuples), typename std::decay<Tuples>::type...>::ReturnType
 tuple_cat(Tuples&&... tuples) {

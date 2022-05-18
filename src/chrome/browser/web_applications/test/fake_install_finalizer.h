@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/flat_set.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -41,15 +42,14 @@ class FakeInstallFinalizer final : public WebAppInstallFinalizer {
       WebAppManagement::Type source,
       webapps::WebappUninstallSource uninstall_surface,
       UninstallWebAppCallback callback) override;
-  void UninstallWithoutRegistryUpdateFromSync(
-      const std::vector<AppId>& web_apps,
-      RepeatingUninstallCallback callback) override;
+  void UninstallFromSync(const std::vector<AppId>& web_apps,
+                         RepeatingUninstallCallback callback) override;
   bool CanUserUninstallWebApp(const AppId& app_id) const override;
   void UninstallWebApp(const AppId& app_id,
                        webapps::WebappUninstallSource uninstall_source,
                        UninstallWebAppCallback callback) override;
   void RetryIncompleteUninstalls(
-      const std::vector<AppId>& apps_to_uninstall) override;
+      const base::flat_set<AppId>& apps_to_uninstall) override;
   bool WasPreinstalledWebAppUninstalled(const AppId& app_id) const override;
   bool CanReparentTab(const AppId& app_id,
                       bool shortcut_created) const override;

@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_url_data_source.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -166,6 +167,19 @@ gfx::Rect UnittestingSystemAppDelegate::GetDefaultBounds(
   }
   return gfx::Rect();
 }
+Browser* UnittestingSystemAppDelegate::LaunchAndNavigateSystemWebApp(
+    Profile* profile,
+    WebAppProvider* provider,
+    const GURL& url,
+    const apps::AppLaunchParams& params) const {
+  if (launch_and_navigate_system_web_apps_) {
+    return launch_and_navigate_system_web_apps_.Run(profile, provider, url,
+                                                    params);
+  }
+  return SystemWebAppDelegate::LaunchAndNavigateSystemWebApp(profile, provider,
+                                                             url, params);
+}
+
 bool UnittestingSystemAppDelegate::IsAppEnabled() const {
   return is_app_enabled;
 }
@@ -244,6 +258,10 @@ void UnittestingSystemAppDelegate::SetDefaultBounds(
     base::RepeatingCallback<gfx::Rect(Browser*)> lambda) {
   get_default_bounds_ = std::move(lambda);
 }
+void UnittestingSystemAppDelegate::SetLaunchAndNavigateSystemWebApp(
+    LaunchAndNavigateSystemWebAppCallback lambda) {
+  launch_and_navigate_system_web_apps_ = std::move(lambda);
+}
 void UnittestingSystemAppDelegate::SetIsAppEnabled(bool value) {
   is_app_enabled = value;
 }
@@ -307,7 +325,7 @@ std::unique_ptr<WebAppInstallInfo> GenerateWebAppInstallInfoForTestApp() {
   info->title = u"Test System App";
   info->theme_color = 0xFF00FF00;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
-  info->user_display_mode = DisplayMode::kStandalone;
+  info->user_display_mode = UserDisplayMode::kStandalone;
   return info;
 }
 
@@ -479,7 +497,7 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
             info->title = u"Test System App";
             info->theme_color = 0xFF00FF00;
             info->display_mode = blink::mojom::DisplayMode::kStandalone;
-            info->user_display_mode = DisplayMode::kStandalone;
+            info->user_display_mode = UserDisplayMode::kStandalone;
             return info;
           })));
   auto factory = std::make_unique<TestSystemWebAppWebUIControllerFactory>(
@@ -623,6 +641,22 @@ TestSystemWebAppInstallation::SetUpAppWithShortcuts() {
       new TestSystemWebAppInstallation(std::move(delegate)));
 }
 
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppThatAbortsLaunch() {
+  std::unique_ptr<UnittestingSystemAppDelegate> delegate =
+      std::make_unique<UnittestingSystemAppDelegate>(
+          SystemAppType::OS_FEEDBACK, "Test",
+          GURL("chrome://test-system-app/pwa.html"),
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
+  delegate->SetLaunchAndNavigateSystemWebApp(base::BindRepeating(
+      [](Profile*, WebAppProvider*, const GURL&,
+         const apps::AppLaunchParams&) -> Browser* { return nullptr; }));
+
+  return base::WrapUnique(
+      new TestSystemWebAppInstallation(std::move(delegate)));
+}
+
 namespace {
 enum SystemWebAppWindowConfig {
   SINGLE_WINDOW,
@@ -644,7 +678,7 @@ CreateSystemAppDelegateWithWindowConfig(
         info->title = u"Test System App";
         info->theme_color = 0xFF00FF00;
         info->display_mode = blink::mojom::DisplayMode::kStandalone;
-        info->user_display_mode = DisplayMode::kStandalone;
+        info->user_display_mode = UserDisplayMode::kStandalone;
         return info;
       }));
 

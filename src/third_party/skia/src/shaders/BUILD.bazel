@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_library(
     name = "srcs",
@@ -210,6 +212,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkLocalMatrixShader_hdr",
+        "//src/core:SkKeyHelpers_hdr",
         "//src/core:SkMatrixProvider_hdr",
         "//src/core:SkTLazy_hdr",
         "//src/core:SkVM_hdr",

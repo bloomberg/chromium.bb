@@ -4,11 +4,10 @@
 
 #include "base/allocator/partition_allocator/partition_lock.h"
 
-#include "base/allocator/partition_allocator/base/migration_adapter.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/migration_adapter.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/test/bind.h"
-#include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

@@ -634,7 +634,7 @@ template<typename Xpr, int NbEvaluations,
          >
 struct local_nested_eval_wrapper
 {
-  static const bool NeedExternalBuffer = false;
+  static constexpr bool NeedExternalBuffer = false;
   typedef typename Xpr::Scalar Scalar;
   typedef typename nested_eval<Xpr,NbEvaluations>::type ObjectType;
   ObjectType object;
@@ -650,7 +650,7 @@ struct local_nested_eval_wrapper
 template<typename Xpr, int NbEvaluations>
 struct local_nested_eval_wrapper<Xpr,NbEvaluations,true>
 {
-  static const bool NeedExternalBuffer = true;
+  static constexpr bool NeedExternalBuffer = true;
   typedef typename Xpr::Scalar Scalar;
   typedef typename plain_object_eval<Xpr>::type PlainObject;
   typedef Map<PlainObject,EIGEN_DEFAULT_ALIGN_BYTES> ObjectType;
@@ -1149,6 +1149,38 @@ inline int queryTopLevelCacheSize()
   queryCacheSizes(l1,l2,l3);
   return (std::max)(l2,l3);
 }
+
+
+
+/** \internal
+ * This wraps C++20's std::construct_at, using placement new instead if it is not available.
+ */
+
+#if EIGEN_COMP_CXXVER >= 20
+using std::construct_at;
+#else
+template<class T, class... Args>
+EIGEN_DEVICE_FUNC T* construct_at( T* p, Args&&... args )
+{
+  return ::new (const_cast<void*>(static_cast<const volatile void*>(p)))
+    T(std::forward<Args>(args)...);
+}
+#endif
+
+/** \internal
+ * This wraps C++17's std::destroy_at.  If it's not available it calls the destructor.
+ * The wrapper is not a full replacement for C++20's std::destroy_at as it cannot
+ * be applied to std::array.
+ */
+#if EIGEN_COMP_CXXVER >= 17
+using std::destroy_at;
+#else
+template<class T>
+EIGEN_DEVICE_FUNC void destroy_at(T* p)
+{
+  p->~T();
+}
+#endif
 
 } // end namespace internal
 

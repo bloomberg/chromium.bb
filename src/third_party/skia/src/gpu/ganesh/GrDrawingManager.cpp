@@ -165,91 +165,61 @@ bool GrDrawingManager::flush(
     GrOnFlushResourceProvider onFlushProvider(this);
 
     // Prepare any onFlush op lists (e.g. atlases).
-    if (!fOnFlushCBObjects.empty()) {
-        fFlushingRenderTaskIDs.reserve_back(fDAG.count());
-        for (const auto& task : fDAG) {
-            if (task) {
-                task->gatherIDs(&fFlushingRenderTaskIDs);
+    bool preFlushSuccessful = true;
+    for (GrOnFlushCallbackObject* onFlushCBObject : fOnFlushCBObjects) {
+        preFlushSuccessful &= onFlushCBObject->preFlush(&onFlushProvider);
+    }
+
+    bool cachePurgeNeeded = false;
+
+    if (preFlushSuccessful) {
+        bool usingReorderedDAG = false;
+        GrResourceAllocator resourceAllocator(dContext);
+        if (fReduceOpsTaskSplitting) {
+            usingReorderedDAG = this->reorderTasks(&resourceAllocator);
+            if (!usingReorderedDAG) {
+                resourceAllocator.reset();
             }
         }
-
-        for (GrOnFlushCallbackObject* onFlushCBObject : fOnFlushCBObjects) {
-            onFlushCBObject->preFlush(&onFlushProvider, SkMakeSpan(fFlushingRenderTaskIDs));
-        }
-        for (const auto& onFlushRenderTask : fOnFlushRenderTasks) {
-            onFlushRenderTask->makeClosed(fContext);
-#ifdef SK_DEBUG
-            // OnFlush callbacks are invoked during flush, and are therefore expected to handle
-            // resource allocation & usage on their own. (No deferred or lazy proxies!)
-            onFlushRenderTask->visitTargetAndSrcProxies_debugOnly(
-                    [](GrSurfaceProxy* p, GrMipmapped mipMapped) {
-                SkASSERT(!p->asTextureProxy() || !p->asTextureProxy()->texPriv().isDeferred());
-                SkASSERT(!p->isLazy());
-                if (p->requiresManualMSAAResolve()) {
-                    // The onFlush callback is responsible for ensuring MSAA gets resolved.
-                    SkASSERT(p->asRenderTargetProxy() && !p->asRenderTargetProxy()->isMSAADirty());
-                }
-                if (GrMipmapped::kYes == mipMapped) {
-                    // The onFlush callback is responsible for regenerating mips if needed.
-                    SkASSERT(p->asTextureProxy() && !p->asTextureProxy()->mipmapsAreDirty());
-                }
-            });
-#endif
-            onFlushRenderTask->prepare(&flushState);
-        }
-    }
-
-    bool usingReorderedDAG = false;
-    GrResourceAllocator resourceAllocator(dContext);
-    if (fReduceOpsTaskSplitting) {
-        usingReorderedDAG = this->reorderTasks(&resourceAllocator);
-        if (!usingReorderedDAG) {
-            resourceAllocator.reset();
-        }
-    }
 
 #if 0
-    // Enable this to print out verbose GrOp information
-    SkDEBUGCODE(SkDebugf("onFlush renderTasks (%d):\n", fOnFlushRenderTasks.count()));
-    for (const auto& onFlushRenderTask : fOnFlushRenderTasks) {
-        SkDEBUGCODE(onFlushRenderTask->dump(/* printDependencies */ true);)
-    }
-    SkDEBUGCODE(SkDebugf("Normal renderTasks (%d):\n", fDAG.count()));
-    for (const auto& task : fDAG) {
-        SkDEBUGCODE(task->dump(/* printDependencies */ true);)
-    }
+        // Enable this to print out verbose GrOp information
+        SkDEBUGCODE(SkDebugf("RenderTasks (%d):\n", fDAG.count()));
+        for (const auto& task : fDAG) {
+            SkDEBUGCODE(task->dump(/* printDependencies */ true);)
+        }
 #endif
 
-    if (!resourceAllocator.failedInstantiation()) {
-        if (!usingReorderedDAG) {
-            for (const auto& task : fDAG) {
-                SkASSERT(task);
-                task->gatherProxyIntervals(&resourceAllocator);
+        if (!resourceAllocator.failedInstantiation()) {
+            if (!usingReorderedDAG) {
+                for (const auto& task : fDAG) {
+                    SkASSERT(task);
+                    task->gatherProxyIntervals(&resourceAllocator);
+                }
+                resourceAllocator.planAssignment();
             }
-            resourceAllocator.planAssignment();
+            resourceAllocator.assign();
         }
-        resourceAllocator.assign();
+
+        cachePurgeNeeded = !resourceAllocator.failedInstantiation() &&
+                           this->executeRenderTasks(&flushState);
     }
-    bool flushed = !resourceAllocator.failedInstantiation() &&
-                    this->executeRenderTasks(&flushState);
     this->removeRenderTasks();
 
     gpu->executeFlushInfo(proxies, access, info, newState);
 
     // Give the cache a chance to purge resources that become purgeable due to flushing.
-    if (flushed) {
+    if (cachePurgeNeeded) {
         resourceCache->purgeAsNeeded();
-        flushed = false;
+        cachePurgeNeeded = false;
     }
     for (GrOnFlushCallbackObject* onFlushCBObject : fOnFlushCBObjects) {
-        onFlushCBObject->postFlush(fTokenTracker.nextTokenToFlush(),
-                                   SkMakeSpan(fFlushingRenderTaskIDs));
-        flushed = true;
+        onFlushCBObject->postFlush(fTokenTracker.nextTokenToFlush());
+        cachePurgeNeeded = true;
     }
-    if (flushed) {
+    if (cachePurgeNeeded) {
         resourceCache->purgeAsNeeded();
     }
-    fFlushingRenderTaskIDs.reset();
     fFlushing = false;
 
     return true;
@@ -303,21 +273,6 @@ bool GrDrawingManager::executeRenderTasks(GrOpFlushState* flushState) {
     static constexpr int kMaxRenderTasksBeforeFlush = 100;
     int numRenderTasksExecuted = 0;
 
-    // Execute the onFlush renderTasks first, if any.
-    for (sk_sp<GrRenderTask>& onFlushRenderTask : fOnFlushRenderTasks) {
-        if (!onFlushRenderTask->execute(flushState)) {
-            SkDebugf("WARNING: onFlushRenderTask failed to execute.\n");
-        }
-        SkASSERT(onFlushRenderTask->unique());
-        onFlushRenderTask->disown(this);
-        onFlushRenderTask = nullptr;
-        if (++numRenderTasksExecuted >= kMaxRenderTasksBeforeFlush) {
-            flushState->gpu()->submitToGpu(false);
-            numRenderTasksExecuted = 0;
-        }
-    }
-    fOnFlushRenderTasks.reset();
-
     // Execute the normal op lists.
     for (const auto& renderTask : fDAG) {
         SkASSERT(renderTask);
@@ -358,10 +313,6 @@ void GrDrawingManager::removeRenderTasks() {
     }
     fDAG.reset();
     fLastRenderTasks.reset();
-    for (const sk_sp<GrRenderTask>& onFlushRenderTask : fOnFlushRenderTasks) {
-        onFlushRenderTask->disown(this);
-    }
-    fOnFlushRenderTasks.reset();
 }
 
 void GrDrawingManager::sortTasks() {
@@ -700,8 +651,7 @@ void GrDrawingManager::closeActiveOpsTask() {
 
 #if SK_GPU_V1
 sk_sp<skgpu::v1::OpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfaceView,
-                                                       sk_sp<GrArenas> arenas,
-                                                       bool flushTimeOpsTask) {
+                                                       sk_sp<GrArenas> arenas) {
     SkDEBUGCODE(this->validate());
     SkASSERT(fContext);
 
@@ -714,13 +664,9 @@ sk_sp<skgpu::v1::OpsTask> GrDrawingManager::newOpsTask(GrSurfaceProxyView surfac
 
     SkASSERT(this->getLastRenderTask(opsTask->target(0)) == opsTask.get());
 
-    if (flushTimeOpsTask) {
-        fOnFlushRenderTasks.push_back(opsTask);
-    } else {
-        this->appendTask(opsTask);
+    this->appendTask(opsTask);
 
-        fActiveOpsTask = opsTask.get();
-    }
+    fActiveOpsTask = opsTask.get();
 
     SkDEBUGCODE(this->validate());
     return opsTask;

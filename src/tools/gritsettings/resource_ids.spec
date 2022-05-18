@@ -132,6 +132,10 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1380],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/profile_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1385],
+  },
   "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
     "structures": [1390],
   },
@@ -183,6 +187,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/history/history_resources.grd": {
     "META": {"sizes": {"includes": [40]}},
     "includes": [1620],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/identity_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1621],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -252,7 +260,7 @@
     "includes": [1930],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/side_panel_resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+    "META": {"sizes": {"includes": [20],}},
     "includes": [1935],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
@@ -297,6 +305,10 @@
     "META": {"sizes": {"includes": [10]}},
     "includes": [2120],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_gallery/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2130],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2140],
@@ -304,7 +316,7 @@
   # END chrome/browser section.
 
   # START chrome/ WebUI resources section
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/federated_learning/resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/browsing_topics/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2160],
   },
@@ -356,8 +368,8 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [2360],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/media/webrtc_logs_resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/media/resources.grd": {
+    "META": {"sizes": {"includes": [20],}},
     "includes": [2380],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/net_internals/resources.grd": {
@@ -460,7 +472,7 @@
     "META": {"sizes": {"includes": [100],}},
     "includes": [2910],
   },
-  "ash/resources/ash_resources.grd": {
+  "chromeos/ash/resources/ash_resources.grd": {
     "includes": [2915],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/camera_app_ui/ash_camera_app_resources.grd": {
@@ -575,7 +587,7 @@
     "includes": [3330],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/personalization_app/resources/ash_personalization_app_resources.grd": {
-    "META": {"sizes": {"includes": [120],}},
+    "META": {"sizes": {"includes": [200],}},
     "includes": [3340],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd": {
@@ -766,16 +778,9 @@
 
   # START "everything else" section.
   # Everything but chrome/, chromeos/, components/, content/, and ios/
-  "android_webview/ui/aw_resources.grd": {
+  "ash/app_list/resources/app_list_resources.grd": {
     # Big alignment at start of section.
     "META": {"join": 2, "align": 100},
-    "includes": [3900],
-  },
-  "android_webview/ui/aw_strings.grd": {
-    "messages": [3920],
-  },
-
-  "ash/app_list/resources/app_list_resources.grd": {
     "structures": [3940],
   },
   "ash/ash_strings.grd": {
@@ -932,7 +937,7 @@
     "structures": [4880],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_generated_resources.grd": {
-    "META": {"sizes": {"includes": [800]}},
+    "META": {"sizes": {"includes": [900]}},
     "includes": [4900],
   },
   "weblayer/weblayer_resources.grd": {

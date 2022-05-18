@@ -34,8 +34,10 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/common/bitmap_cursor.h"
@@ -79,6 +81,8 @@ namespace ui {
 namespace {
 
 constexpr float kDefaultCursorScale = 1.f;
+
+constexpr uint32_t kAugmentedSurfaceNotSupportedVersion = 0;
 
 struct PopupPosition {
   gfx::Rect anchor_rect;
@@ -988,7 +992,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
-  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_TRUE(restored_bounds.IsEmpty());
   gfx::Rect bounds = window_->GetBounds();
 
@@ -999,7 +1003,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   SendConfigureEvent(xdg_surface_, maximized_bounds.width(),
                      maximized_bounds.height(), 1, states.get());
   Sync();
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(bounds, restored_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -1015,7 +1019,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximize) {
   Sync();
   bounds = window_->GetBounds();
   EXPECT_EQ(bounds, restored_bounds);
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
@@ -1026,7 +1030,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   SendConfigureEvent(xdg_surface_, 0, 0, 1, states.get());
   Sync();
 
-  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
   gfx::Rect bounds = window_->GetBounds();
 
@@ -1037,7 +1041,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   SendConfigureEvent(xdg_surface_, fullscreen_bounds.width(),
                      fullscreen_bounds.height(), 2, states.get());
   Sync();
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(bounds, restored_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -1053,7 +1057,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterFullscreen) {
   Sync();
   bounds = window_->GetBounds();
   EXPECT_EQ(bounds, restored_bounds);
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
@@ -1062,7 +1066,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
 
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
-  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
   gfx::Rect bounds = window_->GetBounds();
 
@@ -1073,7 +1077,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(xdg_surface_, maximized_bounds.width(),
                      maximized_bounds.height(), 1, states.get());
   Sync();
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(bounds, restored_bounds);
 
   const gfx::Rect fullscreen_bounds = gfx::Rect(0, 0, 1280, 720);
@@ -1083,7 +1087,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(xdg_surface_, fullscreen_bounds.width(),
                      fullscreen_bounds.height(), 2, states.get());
   Sync();
-  gfx::Rect fullscreen_restore_bounds = window_->GetRestoredBoundsInPixels();
+  gfx::Rect fullscreen_restore_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, fullscreen_restore_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(maximized_bounds)));
@@ -1094,7 +1098,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   SendConfigureEvent(xdg_surface_, maximized_bounds.width(),
                      maximized_bounds.height(), 3, states.get());
   Sync();
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, fullscreen_restore_bounds);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(current_bounds)));
@@ -1110,7 +1114,7 @@ TEST_P(WaylandWindowTest, RestoreBoundsAfterMaximizeAndFullscreen) {
   Sync();
   bounds = window_->GetBounds();
   EXPECT_EQ(bounds, restored_bounds);
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
@@ -1133,7 +1137,7 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
   Sync();
 
   // Restored bounds should keep empty value.
-  gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 
   // Second case is when Wayland sends a configure event with 1, 1 height and
@@ -1143,7 +1147,7 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
   Sync();
 
   // Restored bounds should keep empty value.
-  restored_bounds = window_->GetRestoredBoundsInPixels();
+  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
@@ -1178,7 +1182,7 @@ TEST_P(WaylandWindowTest, UpdateWindowRegion) {
   EXPECT_EQ(mock_surface->input_region(), maximized_bounds);
 
   // Restore.
-  const gfx::Rect restored_bounds = window_->GetRestoredBoundsInPixels();
+  const gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).Times(1);
   EXPECT_CALL(*mock_surface, SetInputRegion(_)).Times(1);
   window_->Restore();
@@ -2706,10 +2710,8 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(
-      std::move(interface_ptr), {}, false, true, false,
-      /*supports_non_backed_solid_color_buffers*/ false,
-      /*supports_subpixel_accurate_position*/ false);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
+                                  false, kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id1 = 1;
@@ -2741,14 +2743,10 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   SendConfigureEvent(mock_surface->xdg_surface(), 100, 100, 1, states.get());
 
   // Commit a frame with only background.
-  std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlays;
-  ui::ozone::mojom::WaylandOverlayConfigPtr background{
-      ui::ozone::mojom::WaylandOverlayConfig::New()};
-  background->z_order = INT32_MIN;
-  background->transform = gfx::OVERLAY_TRANSFORM_NONE;
-  background->buffer_id = buffer_id1;
-  background->surface_scale_factor = 1;
-  background->opacity = 1.f;
+  std::vector<wl::WaylandOverlayConfig> overlays;
+  wl::WaylandOverlayConfig background;
+  background.z_order = INT32_MIN;
+  background.buffer_id = buffer_id1;
   overlays.push_back(std::move(background));
   buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u,
                                       std::move(overlays));
@@ -2775,13 +2773,9 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
 
   // Commit a frame with only the primary_plane.
   overlays.clear();
-  ui::ozone::mojom::WaylandOverlayConfigPtr primary{
-      ui::ozone::mojom::WaylandOverlayConfig::New()};
-  primary->z_order = 0;
-  primary->transform = gfx::OVERLAY_TRANSFORM_NONE;
-  primary->buffer_id = buffer_id2;
-  primary->surface_scale_factor = 1;
-  primary->opacity = 1.f;
+  wl::WaylandOverlayConfig primary;
+  primary.z_order = 0;
+  primary.buffer_id = buffer_id2;
   overlays.push_back(std::move(primary));
   buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u,
                                       std::move(overlays));
@@ -2911,12 +2905,19 @@ TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
 
     auto* test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
     if (use_explicit_grab) {
       EXPECT_NE(test_popup->grab_serial(), button_release_serial);
       EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
     } else {
       EXPECT_EQ(test_popup->grab_serial(), 0U);
     }
+#else
+    // crbug.com/1320528: Lacros uses explicit grab always.
+    EXPECT_NE(test_popup->grab_serial(), button_release_serial);
+    EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 }
 
@@ -2969,11 +2970,14 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
     auto* test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
 
+    // crbug.com/1320528: Lacros uses explicit grab always.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
     // Unless the use-wayland-explicit-grab switch is set, touch events are the
     // exception, i.e: the serial sent before the "up" event (latest) cannot be
     // used, otherwise, some compositors may dismiss popups.
     if (!use_explicit_grab)
       EXPECT_EQ(test_popup->grab_serial(), 0U);
+#endif
 
     popup->Hide();
 
@@ -2991,20 +2995,23 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
     test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
 
-    uint32_t expected_serial = touch_down_serial;
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    uint32_t expected_serial = touch_down_serial;
     auto env = base::Environment::Create();
     if (base::nix::GetDesktopEnvironment(env.get()) ==
         base::nix::DESKTOP_ENVIRONMENT_GNOME) {
       // We do not grab with touch events on gnome shell.
       expected_serial = 0u;
     }
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
     if (use_explicit_grab) {
       EXPECT_EQ(test_popup->grab_serial(), expected_serial);
     } else {
       EXPECT_EQ(test_popup->grab_serial(), 0U);
     }
+#else
+    // crbug.com/1320528: Lacros uses explicit grab always.
+    EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 }
 
@@ -3288,10 +3295,8 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(
-      std::move(interface_ptr), {}, false, true, false,
-      /*supports_non_backed_solid_color_buffers*/ false,
-      /*supports_subpixel_accurate_position*/ false);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
+                                  false, kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id = 1;

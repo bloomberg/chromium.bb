@@ -127,7 +127,7 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window_);
 
-  const SplitViewController::SnapPosition snap_position =
+  SplitViewController::SnapPosition snap_position =
       ::ash::GetSnapPositionForLocation(
           Shell::GetPrimaryRootWindow(), location_in_screen,
           start_location_in_screen_,
@@ -139,6 +139,9 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
           /*vertical_edge_inset=*/area.height() *
                   kHighlightScreenPrimaryAxisRatio +
               kHighlightScreenEdgePaddingDp);
+  if (ShouldPreventSnapToTheEdge(location_in_screen))
+    snap_position = SplitViewController::SnapPosition::NONE;
+
   split_view_drag_indicators_->SetWindowDraggingState(
       SplitViewDragIndicators::ComputeWindowDraggingState(
           true, SplitViewDragIndicators::WindowDraggingState::kFromTop,
@@ -164,16 +167,20 @@ void TabDragDropDelegate::OnNewBrowserWindowCreated(
     const gfx::Point& location_in_screen,
     aura::Window* new_window) {
   auto is_lacros = IsLacrosWindow(source_window_);
-  if (!new_window && is_lacros &&
-      !crosapi::lacros_startup_state::IsLacrosPrimaryEnabled()) {
-    LOG(ERROR)
-        << "New browser window creation for tab detaching failed.\n"
-        << "Check whether about:flags#lacros-primary is enabled or "
-        << "--enable-features=LacrosPrimary is passed in when launching Ash";
+
+  // https://crbug.com/1286203:
+  // It's possible new window is created when the dragged WebContents
+  // closes itself during the drag session.
+  if (!new_window) {
+    if (is_lacros && !crosapi::lacros_startup_state::IsLacrosPrimaryEnabled()) {
+      LOG(ERROR)
+          << "New browser window creation for tab detaching failed.\n"
+          << "Check whether about:flags#lacros-primary is enabled or "
+          << "--enable-features=LacrosPrimary is passed in when launching Ash";
+    }
     return;
   }
 
-  DCHECK(new_window) << "New browser window creation for tab detaching failed.";
   const gfx::Rect area =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window_);
@@ -190,6 +197,8 @@ void TabDragDropDelegate::OnNewBrowserWindowCreated(
           /*vertical_edge_inset=*/area.height() *
                   kHighlightScreenPrimaryAxisRatio +
               kHighlightScreenEdgePaddingDp);
+  if (ShouldPreventSnapToTheEdge(location_in_screen))
+    snap_position_in_snapping_zone = SplitViewController::SnapPosition::NONE;
 
   if (snap_position_in_snapping_zone == SplitViewController::SnapPosition::NONE)
     RestoreSourceWindowBounds();
@@ -249,6 +258,16 @@ void TabDragDropDelegate::OnNewBrowserWindowCreated(
   WindowState::Get(new_window)
       ->set_snap_action_source(WindowSnapActionSource::kDragTabToSnap);
   split_view_controller->SnapWindow(source_window_, opposite_position);
+}
+
+bool TabDragDropDelegate::ShouldPreventSnapToTheEdge(
+    const gfx::Point& location_in_screen) {
+  SplitViewController* const split_view_controller =
+      SplitViewController::Get(source_window_);
+  return !split_view_controller->InSplitViewMode() &&
+         split_view_controller->IsLayoutHorizontal(source_window_) &&
+         location_in_screen.y() <
+             Shell::Get()->shell_delegate()->GetBrowserWebUITabStripHeight();
 }
 
 void TabDragDropDelegate::UpdateSourceWindowBoundsIfNecessary(

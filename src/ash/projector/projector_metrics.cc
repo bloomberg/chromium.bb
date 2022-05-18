@@ -8,6 +8,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -26,6 +27,12 @@ constexpr char kProjectorCreationFlowErrorHistogramName[] =
 
 constexpr char kProjectorTranscriptsCountHistogramName[] =
     "Ash.Projector.TranscriptsCount";
+
+constexpr char kProjectorPendingScreencastBatchIOTaskDurationHistogramName[] =
+    "Ash.Projector.PendingScreencastBatchIOTaskDuration";
+
+constexpr char kProjectorPendingScreencastChangeIntervalHistogramName[] =
+    "Ash.Projector.PendingScreencastChangeInterval";
 
 // Appends the proper suffix to |prefix| based on whether the user is in tablet
 // mode or not.
@@ -74,6 +81,24 @@ void RecordCreationFlowError(int message_id) {
   }
   base::UmaHistogramEnumeration(
       GetHistogramName(kProjectorCreationFlowErrorHistogramName), error);
+}
+
+ASH_EXPORT void RecordPendingScreencastBatchIOTaskDuration(
+    const base::TimeDelta duration) {
+  // We don't normally expect the duration is longer than 10s. If this limit is
+  // exceeded, then the metric would fall into an overflow bucket.
+  base::UmaHistogramTimes(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName, duration);
+}
+
+ASH_EXPORT void RecordPendingScreencastChangeInterval(
+    const base::TimeDelta interval) {
+  // The interval doesn't include the change between last finished uploading to
+  // new start uploading. We don't normally expect the interval is longer than
+  // 10s. If this limit is exceeded, then the metric would fall into an overflow
+  // bucket.
+  base::UmaHistogramTimes(
+      kProjectorPendingScreencastChangeIntervalHistogramName, interval);
 }
 
 }  // namespace ash

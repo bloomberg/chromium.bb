@@ -77,6 +77,10 @@
 #include "crypto/sha2.h"
 #include "ui/display/types/display_constants.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -565,7 +569,7 @@ ArcSessionManager::ArcSessionManager(
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->AddObserver(this);
   ResetStabilityMetrics();
-  chromeos::ConciergeClient::Get()->AddVmObserver(this);
+  ash::ConciergeClient::Get()->AddVmObserver(this);
   arc_dlc_installer_ = std::make_unique<ArcDlcInstaller>();
 }
 
@@ -573,7 +577,7 @@ ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_dlc_installer_.reset();
 
-  chromeos::ConciergeClient::Get()->RemoveVmObserver(this);
+  ash::ConciergeClient::Get()->RemoveVmObserver(this);
 
   if (chromeos::SessionManagerClient::Get())
     chromeos::SessionManagerClient::Get()->RemoveObserver(this);
@@ -829,8 +833,9 @@ void ArcSessionManager::SetUserInfo() {
   arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);
 }
 
-void ArcSessionManager::TrimVmMemory(TrimVmMemoryCallback callback) {
-  arc_session_runner_->TrimVmMemory(std::move(callback));
+void ArcSessionManager::TrimVmMemory(TrimVmMemoryCallback callback,
+                                     int page_limit) {
+  arc_session_runner_->TrimVmMemory(std::move(callback), page_limit);
 }
 
 std::string ArcSessionManager::GetSerialNumber() const {

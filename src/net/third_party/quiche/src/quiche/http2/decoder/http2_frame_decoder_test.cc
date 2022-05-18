@@ -11,13 +11,12 @@
 
 #include "absl/strings/string_view.h"
 #include "quiche/http2/http2_constants.h"
-#include "quiche/http2/platform/api/http2_flags.h"
-#include "quiche/http2/platform/api/http2_logging.h"
 #include "quiche/http2/test_tools/frame_parts.h"
 #include "quiche/http2/test_tools/frame_parts_collector_listener.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/random_decoder_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
+#include "quiche/http2/test_tools/verify_macros.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 using ::testing::AssertionSuccess;
 
@@ -35,7 +34,7 @@ namespace {
 class Http2FrameDecoderTest : public RandomDecoderTest {
  protected:
   DecodeStatus StartDecoding(DecodeBuffer* db) override {
-    HTTP2_DVLOG(2) << "StartDecoding, db->Remaining=" << db->Remaining();
+    QUICHE_DVLOG(2) << "StartDecoding, db->Remaining=" << db->Remaining();
     collector_.Reset();
     PrepareDecoder();
 
@@ -52,7 +51,7 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
   }
 
   DecodeStatus ResumeDecoding(DecodeBuffer* db) override {
-    HTTP2_DVLOG(2) << "ResumeDecoding, db->Remaining=" << db->Remaining();
+    QUICHE_DVLOG(2) << "ResumeDecoding, db->Remaining=" << db->Remaining();
     DecodeStatus status = decoder_->DecodeFrame(db);
     if (status != DecodeStatus::kDecodeInProgress) {
       // Keep track of this so that a concrete test can verify that both fast
@@ -94,8 +93,8 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
   }
 
   AssertionResult VerifyCollected(const FrameParts& expected) {
-    VERIFY_FALSE(collector_.IsInProgress());
-    VERIFY_EQ(1u, collector_.size());
+    HTTP2_VERIFY_FALSE(collector_.IsInProgress());
+    HTTP2_VERIFY_EQ(1u, collector_.size());
     return expected.VerifyEquals(*collector_.frame(0));
   }
 
@@ -112,18 +111,17 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
   // payload will be decoded several times with different partitionings
   // of the payload, and after each the validator will be called.
   AssertionResult DecodePayloadAndValidateSeveralWays(
-      absl::string_view payload,
-      const FrameParts& expected) {
+      absl::string_view payload, const FrameParts& expected) {
     auto validator = [&expected, this](const DecodeBuffer& /*input*/,
                                        DecodeStatus status) -> AssertionResult {
-      VERIFY_EQ(status, DecodeStatus::kDecodeDone);
+      HTTP2_VERIFY_EQ(status, DecodeStatus::kDecodeDone);
       return VerifyCollected(expected);
     };
     ResetDecodeSpeedCounters();
-    VERIFY_SUCCESS(DecodePayloadAndValidateSeveralWays(
+    HTTP2_VERIFY_SUCCESS(DecodePayloadAndValidateSeveralWays(
         payload, ValidateDoneAndEmpty(validator)));
-    VERIFY_GT(fast_decode_count_, 0u);
-    VERIFY_GT(slow_decode_count_, 0u);
+    HTTP2_VERIFY_GT(fast_decode_count_, 0u);
+    HTTP2_VERIFY_GT(slow_decode_count_, 0u);
 
     // Repeat with more input; it should stop without reading that input.
     std::string next_frame = Random().RandString(10);
@@ -131,26 +129,24 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
     input += next_frame;
 
     ResetDecodeSpeedCounters();
-    VERIFY_SUCCESS(DecodePayloadAndValidateSeveralWays(
+    HTTP2_VERIFY_SUCCESS(DecodePayloadAndValidateSeveralWays(
         payload, ValidateDoneAndOffset(payload.size(), validator)));
-    VERIFY_GT(fast_decode_count_, 0u);
-    VERIFY_GT(slow_decode_count_, 0u);
+    HTTP2_VERIFY_GT(fast_decode_count_, 0u);
+    HTTP2_VERIFY_GT(slow_decode_count_, 0u);
 
     return AssertionSuccess();
   }
 
   template <size_t N>
   AssertionResult DecodePayloadAndValidateSeveralWays(
-      const char (&buf)[N],
-      const FrameParts& expected) {
+      const char (&buf)[N], const FrameParts& expected) {
     return DecodePayloadAndValidateSeveralWays(absl::string_view(buf, N),
                                                expected);
   }
 
   template <size_t N>
   AssertionResult DecodePayloadAndValidateSeveralWays(
-      const char (&buf)[N],
-      const Http2FrameHeader& header) {
+      const char (&buf)[N], const Http2FrameHeader& header) {
     return DecodePayloadAndValidateSeveralWays(absl::string_view(buf, N),
                                                FrameParts(header));
   }
@@ -160,7 +156,7 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
                                               const FrameParts& expected) {
     auto validator = [&expected, this](const DecodeBuffer& /*input*/,
                                        DecodeStatus status) -> AssertionResult {
-      VERIFY_EQ(status, DecodeStatus::kDecodeError);
+      HTTP2_VERIFY_EQ(status, DecodeStatus::kDecodeError);
       return VerifyCollected(expected);
     };
     ResetDecodeSpeedCounters();
@@ -180,8 +176,7 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
 
   template <size_t N>
   AssertionResult DecodePayloadExpectingFrameSizeError(
-      const char (&buf)[N],
-      const Http2FrameHeader& header) {
+      const char (&buf)[N], const Http2FrameHeader& header) {
     return DecodePayloadExpectingFrameSizeError(buf, FrameParts(header));
   }
 
@@ -839,10 +834,10 @@ TEST_F(Http2FrameDecoderTest, BeyondMaximum) {
   expected.SetHasFrameSizeError(true);
   auto validator = [&expected, this](const DecodeBuffer& input,
                                      DecodeStatus status) -> AssertionResult {
-    VERIFY_EQ(status, DecodeStatus::kDecodeError);
+    HTTP2_VERIFY_EQ(status, DecodeStatus::kDecodeError);
     // The decoder detects this error after decoding the header, and without
     // trying to decode the payload.
-    VERIFY_EQ(input.Offset(), Http2FrameHeader::EncodedSize());
+    HTTP2_VERIFY_EQ(input.Offset(), Http2FrameHeader::EncodedSize());
     return VerifyCollected(expected);
   };
   ResetDecodeSpeedCounters();

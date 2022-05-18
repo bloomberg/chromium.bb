@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TextureUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
@@ -21,8 +22,8 @@
 constexpr static uint32_t kSize = 4;
 
 namespace {
-    using TextureFormat = wgpu::TextureFormat;
-    DAWN_TEST_PARAM_STRUCT(ReadOnlyDepthStencilAttachmentTestsParams, TextureFormat);
+using TextureFormat = wgpu::TextureFormat;
+DAWN_TEST_PARAM_STRUCT(ReadOnlyDepthStencilAttachmentTestsParams, TextureFormat);
 }  // namespace
 
 class ReadOnlyDepthStencilAttachmentTests
@@ -56,9 +57,7 @@ class ReadOnlyDepthStencilAttachmentTests
         }
     }
 
-    bool IsFormatSupported() const {
-        return mIsFormatSupported;
-    }
+    bool IsFormatSupported() const { return mIsFormatSupported; }
 
     wgpu::RenderPipeline CreateRenderPipeline(wgpu::TextureAspect aspect,
                                               wgpu::TextureFormat format,

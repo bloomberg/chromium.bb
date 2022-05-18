@@ -15,11 +15,12 @@
 #ifndef SRC_DAWN_COMMON_SLABALLOCATOR_H_
 #define SRC_DAWN_COMMON_SLABALLOCATOR_H_
 
-#include "dawn/common/PlacementAllocated.h"
-
 #include <cstdint>
 #include <type_traits>
 #include <utility>
+
+#include "dawn/common/Numeric.h"
+#include "dawn/common/PlacementAllocated.h"
 
 // The SlabAllocator allocates objects out of one or more fixed-size contiguous "slabs" of memory.
 // This makes it very quick to allocate and deallocate fixed-size objects because the allocator only
@@ -165,10 +166,9 @@ template <typename T>
 class SlabAllocator : public SlabAllocatorImpl {
   public:
     SlabAllocator(size_t totalObjectBytes,
-                  uint32_t objectSize = sizeof(T),
-                  uint32_t objectAlignment = alignof(T))
-        : SlabAllocatorImpl(totalObjectBytes / objectSize, objectSize, objectAlignment) {
-    }
+                  uint32_t objectSize = u32_sizeof<T>,
+                  uint32_t objectAlignment = u32_alignof<T>)
+        : SlabAllocatorImpl(totalObjectBytes / objectSize, objectSize, objectAlignment) {}
 
     template <typename... Args>
     T* Allocate(Args&&... args) {
@@ -176,9 +176,7 @@ class SlabAllocator : public SlabAllocatorImpl {
         return new (ptr) T(std::forward<Args>(args)...);
     }
 
-    void Deallocate(T* object) {
-        SlabAllocatorImpl::Deallocate(object);
-    }
+    void Deallocate(T* object) { SlabAllocatorImpl::Deallocate(object); }
 };
 
 #endif  // SRC_DAWN_COMMON_SLABALLOCATOR_H_

@@ -174,6 +174,7 @@ cc_library(
     name = "time_utils",
     hdrs = ["time_utils.h"],
     copts = tf_profiler_copts(),
+    visibility = [":friends"],
     deps = [
         ":math_utils",
         "//tensorflow/core:lib",
@@ -322,7 +323,6 @@ cc_library(
     copts = tf_profiler_copts(),
     visibility = [":friends"],
     deps = [
-        ":time_utils",
         ":timespan",
         "//tensorflow/core:lib",
         "//tensorflow/core:lib_internal",
@@ -480,7 +480,7 @@ tf_cc_test(
         ":kernel_stats_utils",
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
-        "//tensorflow/core/profiler/internal/gpu:cupti_collector_header",
+        "//tensorflow/core/profiler/backends/gpu:cupti_collector_header",
         "//tensorflow/core/profiler/protobuf:kernel_stats_proto_cc",
     ],
 )

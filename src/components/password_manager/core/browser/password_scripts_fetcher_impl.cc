@@ -79,6 +79,12 @@ base::flat_set<ParsingResult> ParseDomainSpecificParamaters(
       warnings.insert(ParsingResult::kInvalidUrl);
       continue;
     }
+
+    if (url.SchemeIs(url::kHttpScheme)) {
+      // Http schemes are not supported.
+      continue;
+    }
+
     supported_domains.insert(std::make_pair(url::Origin::Create(url), version));
   }
 
@@ -296,6 +302,18 @@ base::Value::Dict PasswordScriptsFetcherImpl::GetDebugInformationForInternals()
   result.Set("engine", "gstatic lookup");
   result.Set("script_list_url", scripts_list_url_);
   return result;
+}
+
+base::Value::List PasswordScriptsFetcherImpl::GetCacheEntries() const {
+  base::Value::List cache_entries;
+
+  for (const auto& [origin, version] : password_change_domains_) {
+    base::Value::Dict entry;
+    entry.Set("url", origin.Serialize());
+    cache_entries.Append(std::move(entry));
+  }
+
+  return cache_entries;
 }
 
 }  // namespace password_manager

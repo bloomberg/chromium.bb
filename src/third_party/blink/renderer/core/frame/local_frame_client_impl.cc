@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
-#include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -188,8 +187,7 @@ WebContentCaptureClient* LocalFrameClientImpl::GetWebContentCaptureClient()
 void LocalFrameClientImpl::DidCommitDocumentReplacementNavigation(
     DocumentLoader* loader) {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidCommitDocumentReplacementNavigation(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader));
+    web_frame_->Client()->DidCommitDocumentReplacementNavigation(loader);
   }
 }
 
@@ -508,7 +506,7 @@ void LocalFrameClientImpl::BeginNavigation(
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
     const String& href_translate,
-    const absl::optional<WebImpression>& impression,
+    const absl::optional<Impression>& impression,
     const LocalFrameToken* initiator_frame_token,
     std::unique_ptr<SourceLocation> source_location,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
@@ -770,21 +768,9 @@ void LocalFrameClientImpl::SelectorMatchChanged(
   }
 }
 
-DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
-    LocalFrame* frame,
-    WebNavigationType navigation_type,
-    std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<PolicyContainer> policy_container,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
-  DCHECK(frame);
-  WebDocumentLoaderImpl* document_loader =
-      MakeGarbageCollected<WebDocumentLoaderImpl>(frame, navigation_type,
-                                                  std::move(navigation_params),
-                                                  std::move(policy_container));
-  document_loader->SetExtraData(std::move(extra_data));
-  if (web_frame_->Client())
-    web_frame_->Client()->DidCreateDocumentLoader(document_loader);
-  return document_loader;
+void LocalFrameClientImpl::DidCreateDocumentLoader(
+    DocumentLoader* document_loader) {
+  web_frame_->Client()->DidCreateDocumentLoader(document_loader);
 }
 
 String LocalFrameClientImpl::UserAgentOverride() {
@@ -1052,9 +1038,17 @@ void LocalFrameClientImpl::FocusedElementChanged(Element* element) {
 }
 
 void LocalFrameClientImpl::OnMainFrameIntersectionChanged(
-    const gfx::Rect& intersection_rect) {
+    const gfx::Rect& main_frame_intersection_rect) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->OnMainFrameIntersectionChanged(intersection_rect);
+  web_frame_->Client()->OnMainFrameIntersectionChanged(
+      main_frame_intersection_rect);
+}
+
+void LocalFrameClientImpl::OnMainFrameViewportRectangleChanged(
+    const gfx::Rect& main_frame_viewport_rect) {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->OnMainFrameViewportRectangleChanged(
+      main_frame_viewport_rect);
 }
 
 void LocalFrameClientImpl::OnOverlayPopupAdDetected() {

@@ -20,30 +20,27 @@
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::AddEmptyEntryPoint);
 
+using namespace tint::number_suffixes;  // NOLINT
+
 namespace tint::transform {
 
 AddEmptyEntryPoint::AddEmptyEntryPoint() = default;
 
 AddEmptyEntryPoint::~AddEmptyEntryPoint() = default;
 
-bool AddEmptyEntryPoint::ShouldRun(const Program* program,
-                                   const DataMap&) const {
-  for (auto* func : program->AST().Functions()) {
-    if (func->IsEntryPoint()) {
-      return false;
+bool AddEmptyEntryPoint::ShouldRun(const Program* program, const DataMap&) const {
+    for (auto* func : program->AST().Functions()) {
+        if (func->IsEntryPoint()) {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
-void AddEmptyEntryPoint::Run(CloneContext& ctx,
-                             const DataMap&,
-                             DataMap&) const {
-  ctx.dst->Func(ctx.dst->Symbols().New("unused_entry_point"), {},
-                ctx.dst->ty.void_(), {},
-                {ctx.dst->Stage(ast::PipelineStage::kCompute),
-                 ctx.dst->WorkgroupSize(1)});
-  ctx.Clone();
+void AddEmptyEntryPoint::Run(CloneContext& ctx, const DataMap&, DataMap&) const {
+    ctx.dst->Func(ctx.dst->Symbols().New("unused_entry_point"), {}, ctx.dst->ty.void_(), {},
+                  {ctx.dst->Stage(ast::PipelineStage::kCompute), ctx.dst->WorkgroupSize(1_i)});
+    ctx.Clone();
 }
 
 }  // namespace tint::transform

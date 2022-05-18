@@ -22,7 +22,9 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
   def setUp(self):
     super(EvaluatorTest, self).setUp()
     self.maxDiff = None
-    self.job = job_module.Job.New((), ())
+    with mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+                    mock.MagicMock(return_value=["a"])):
+      self.job = job_module.Job.New((), ())
 
   def testPopulateWorks(self):
     self.PopulateSimpleBisectionGraph(self.job)
@@ -101,12 +103,12 @@ class EvaluatorTest(bisection_test_util.BisectionTestBase):
                             'git_hash': commit
                         }]
                     }): values for commit, values in (
-                        ('commit_0', range(10)),
-                        ('commit_1', range(1, 11)),
-                        ('commit_2', range(2, 12)),
-                        ('commit_3', range(3, 13)),
-                        ('commit_4', range(3, 13)),
-                        ('commit_5', range(3, 13)),
+                        ('commit_0', list(range(10))),
+                        ('commit_1', list(range(1, 11))),
+                        ('commit_2', list(range(2, 12))),
+                        ('commit_3', list(range(3, 13))),
+                        ('commit_4', list(range(3, 13))),
+                        ('commit_5', list(range(3, 13))),
                     )
                 })))
 

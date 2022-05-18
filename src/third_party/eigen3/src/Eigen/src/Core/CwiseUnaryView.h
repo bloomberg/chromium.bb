@@ -23,7 +23,7 @@ struct traits<CwiseUnaryView<ViewOp, MatrixType, StrideType> >
                      ViewOp(const typename traits<MatrixType>::Scalar&)
                    >::type Scalar;
   typedef typename MatrixType::Nested MatrixTypeNested;
-  typedef typename remove_all<MatrixTypeNested>::type MatrixTypeNested_;
+  typedef remove_all_t<MatrixTypeNested> MatrixTypeNested_;
   enum {
     FlagsLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
     Flags = traits<MatrixTypeNested_>::Flags & (RowMajorBit | FlagsLvalueBit | DirectAccessBit), // FIXME DirectAccessBit should not be handled by expressions
@@ -69,7 +69,7 @@ class CwiseUnaryView : public CwiseUnaryViewImpl<ViewOp, MatrixType, StrideType,
     typedef typename CwiseUnaryViewImpl<ViewOp, MatrixType, StrideType, typename internal::traits<MatrixType>::StorageKind>::Base Base;
     EIGEN_GENERIC_PUBLIC_INTERFACE(CwiseUnaryView)
     typedef typename internal::ref_selector<MatrixType>::non_const_type MatrixTypeNested;
-    typedef typename internal::remove_all<MatrixType>::type NestedExpression;
+    typedef internal::remove_all_t<MatrixType> NestedExpression;
 
     explicit EIGEN_DEVICE_FUNC inline CwiseUnaryView(MatrixType& mat, const ViewOp& func = ViewOp())
       : m_matrix(mat), m_functor(func) {}
@@ -85,11 +85,11 @@ class CwiseUnaryView : public CwiseUnaryViewImpl<ViewOp, MatrixType, StrideType,
     EIGEN_DEVICE_FUNC const ViewOp& functor() const { return m_functor; }
 
     /** \returns the nested expression */
-    EIGEN_DEVICE_FUNC const typename internal::remove_all<MatrixTypeNested>::type&
+    EIGEN_DEVICE_FUNC const internal::remove_all_t<MatrixTypeNested>&
     nestedExpression() const { return m_matrix; }
 
     /** \returns the nested expression */
-    EIGEN_DEVICE_FUNC typename internal::remove_reference<MatrixTypeNested>::type&
+    EIGEN_DEVICE_FUNC std::remove_reference_t<MatrixTypeNested>&
     nestedExpression() { return m_matrix; }
 
   protected:

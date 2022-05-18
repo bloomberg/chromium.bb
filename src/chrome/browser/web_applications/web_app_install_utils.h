@@ -10,7 +10,10 @@
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_params.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
@@ -34,6 +37,7 @@ enum class WebappUninstallSource;
 namespace web_app {
 
 class WebApp;
+class WebAppRegistrar;
 
 enum class ForInstallableSite {
   kYes,
@@ -115,6 +119,27 @@ void MaybeUnregisterOsUninstall(const WebApp* web_app,
                                 WebAppManagement::Type source_installing,
                                 OsIntegrationManager& os_integration_manager);
 
+// Updates |web_app| using |web_app_info|
+void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
+                             WebApp& web_app);
+
+// Possibly updates |options| to disable OS-integrations based on the
+// configuration of the given app.
+void MaybeDisableOsIntegration(const WebAppRegistrar* app_registrar,
+                               const AppId& app_id,
+                               InstallOsHooksOptions* options);
+
+// Returns true if web app is allowed to update its identity (name and/or icon).
+bool CanWebAppUpdateIdentity(const WebApp* web_app);
+
+// Update |web_app_info| using |install_params|.
+void ApplyParamsToWebAppInstallInfo(const WebAppInstallParams& install_params,
+                                    WebAppInstallInfo& web_app_info);
+
+// Update |options| using |install_params|.
+void ApplyParamsToFinalizeOptions(
+    const WebAppInstallParams& install_params,
+    WebAppInstallFinalizer::FinalizeOptions& options);
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_UTILS_H_

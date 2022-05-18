@@ -49,6 +49,10 @@ extern const char kAutoSignInEnabledGMS[];
 // mapped to `kCredentialEnableService` will be applied.
 extern const char kOfferToSavePasswordsEnabledGMS[];
 
+// Boolean value indicating whether the regular prefs were migrated to UPM
+// settings.
+extern const char kSettingsMigratedToUPM[];
+
 // Integer value which indicates the version used to migrate passwords from
 // built in storage to Google Mobile Services.
 extern const char kCurrentMigrationVersionToGoogleMobileServices[];
@@ -60,6 +64,12 @@ extern const char kTimeOfLastMigrationAttempt[];
 // Boolean value that indicated the need of data migration between the two
 // backends due to sync settings change.
 extern const char kRequiresMigrationAfterSyncStatusChange[];
+
+// Boolean value indicating if the user has clicked on the "Password Manager"
+// item in settings after switching to the Unified Password Manager. A "New"
+// label is shown for the users who have not clicked on this item yet.
+// TODO(crbug.com/1217070): Remove this once the feature is rolled out.
+extern const char kPasswordsPrefWithNewLabelUsed[];
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -128,6 +138,15 @@ extern const char kPasswordDismissCompromisedAlertEnabled[];
 // used to fill a form, in microseconds since Windows epoch.
 extern const char kProfileStoreDateLastUsedForFilling[];
 extern const char kAccountStoreDateLastUsedForFilling[];
+
+// A list of ongoing PasswordChangeSuccessTracker flows that is persisted in
+// case Chrome is temporarily shut down while, e.g., a user retrieves a
+// password reset email.
+extern const char kPasswordChangeSuccessTrackerFlows[];
+
+// Integer indicating the format version of the list saved under
+// |kPasswordChangeSuccessTrackerFlows|.
+extern const char kPasswordChangeSuccessTrackerVersion[];
 
 }  // namespace prefs
 }  // namespace password_manager

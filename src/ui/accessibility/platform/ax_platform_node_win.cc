@@ -235,18 +235,6 @@ constexpr float kDefaultSmallChangeValue = 1.0f;
 // cursor keys are used to scroll a webpage.
 constexpr float kSmallScrollIncrement = 40.0f;
 
-void AppendTextToString(const std::wstring& extra_text, std::wstring* string) {
-  if (extra_text.empty())
-    return;
-
-  if (string->empty()) {
-    *string = extra_text;
-    return;
-  }
-
-  *string += L". " + extra_text;
-}
-
 // Helper function to GetPatternProviderFactoryMethod that, given a node,
 // will return a pattern interface through result based on the provided type T.
 template <typename T>
@@ -1072,15 +1060,15 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
 
     case ax::mojom::Role::kLayoutTable:
       return {UIALocalizationStrategy::kDeferToControlType,
-              UIA_TableControlTypeId, L"grid"};
+              UIA_GroupControlTypeId, L"group"};
 
     case ax::mojom::Role::kLayoutTableCell:
       return {UIALocalizationStrategy::kDeferToControlType,
-              UIA_DataItemControlTypeId, L"gridcell"};
+              UIA_GroupControlTypeId, L"group"};
 
     case ax::mojom::Role::kLayoutTableRow:
-      return {UIALocalizationStrategy::kDeferToAriaRole,
-              UIA_DataItemControlTypeId, L"row"};
+      return {UIALocalizationStrategy::kDeferToAriaRole, UIA_GroupControlTypeId,
+              L"group"};
 
     case ax::mojom::Role::kLink:
       return {UIALocalizationStrategy::kDeferToControlType,
@@ -1777,7 +1765,6 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name_bstr) {
 
   bool has_name = target->HasStringAttribute(ax::mojom::StringAttribute::kName);
   std::wstring name = base::UTF8ToWide(target->GetName());
-  AugmentNameWithImageAnnotationIfApplicable(&name);
 
   if (name.empty() && !has_name)
     return S_FALSE;
@@ -2532,36 +2519,6 @@ int AXPlatformNodeWin::GetAnnotationTypeImpl() const {
     }
     default:
       return AnnotationType_Unknown;
-  }
-}
-
-void AXPlatformNodeWin::AugmentNameWithImageAnnotationIfApplicable(
-    std::wstring* name) const {
-  auto status = GetData().GetImageAnnotationStatus();
-  switch (status) {
-    case ax::mojom::ImageAnnotationStatus::kNone:
-    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
-    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
-    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
-      break;
-
-    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
-    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
-      AppendTextToString(
-          base::UTF16ToWide(
-              GetDelegate()->GetLocalizedStringForImageAnnotationStatus(
-                  status)),
-          name);
-      break;
-
-    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
-      AppendTextToString(base::UTF8ToWide(GetStringAttribute(
-                             ax::mojom::StringAttribute::kImageAnnotation)),
-                         name);
-      break;
   }
 }
 
@@ -7094,10 +7051,6 @@ bool AXPlatformNodeWin::IsNameExposed() const {
   }
 }
 
-bool AXPlatformNodeWin::IsPlatformDocumentWithContent() const {
-  return IsPlatformDocument() && GetChildCount();
-}
-
 bool AXPlatformNodeWin::IsUIAControl() const {
   // UIA provides multiple "views": raw, content and control. We only want to
   // populate the content and control views with items that make sense to
@@ -7116,7 +7069,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       // text to be effectively repeated.
       auto* ancestor = FromNativeViewAccessible(GetDelegate()->GetParent());
       while (ancestor) {
-        if (IsCellOrTableHeader(ancestor->GetRole()))
+        if (IsUIACellOrTableHeader(ancestor->GetRole()))
           return false;
         switch (ancestor->GetRole()) {
           case ax::mojom::Role::kListItem:
@@ -7158,7 +7111,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     // The control view also includes noninteractive UI items that contribute
     // to the logical structure of the UI.
     if (IsControl(GetRole()) || ComputeUIALandmarkType() ||
-        IsTableLike(GetRole()) || IsList(GetRole())) {
+        IsUIATableLike(GetRole()) || IsList(GetRole())) {
       return true;
     }
     if (IsImage(GetRole())) {
@@ -7638,7 +7591,6 @@ HRESULT AXPlatformNodeWin::GetStringAttributeAsBstr(
 
 HRESULT AXPlatformNodeWin::GetNameAsBstr(BSTR* value_bstr) const {
   std::wstring str = base::UTF8ToWide(GetName());
-  AugmentNameWithImageAnnotationIfApplicable(&str);
 
   *value_bstr = SysAllocString(str.c_str());
   DCHECK(*value_bstr);
@@ -7861,13 +7813,13 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
 
     case UIA_GridPatternId:
-      if (IsTableLike(GetRole())) {
+      if (IsUIATableLike(GetRole())) {
         return &PatternProvider<IGridProvider>;
       }
       break;
 
     case UIA_GridItemPatternId:
-      if (IsCellOrTableHeader(GetRole())) {
+      if (IsUIACellOrTableHeader(GetRole())) {
         return &PatternProvider<IGridItemProvider>;
       }
       break;
@@ -7912,7 +7864,12 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       // headers, we should expose the Table pattern on all table-like roles.
       // This will allow clients to detect such constructs as tables and expose
       // row/column counts and navigation along with Table semantics.
-      if (IsTableLike(GetRole()))
+      //
+      // On UIA, we don't want to expose the ITableProvider for layout tables
+      // because it can cause extraneous, confusing announcements for users. We
+      // initially exposed it, but decided to re-evaluate our decision after
+      // hearing from users.
+      if (IsUIATableLike(GetRole()))
         return &PatternProvider<ITableProvider>;
       break;
 
@@ -7923,8 +7880,14 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       // headers, we should expose the Table pattern on all table-like roles.
       // This will allow clients to detect such constructs as tables and expose
       // row/column counts and navigation along with Table semantics.
-      if (IsCellOrTableHeader(GetRole()))
+      //
+      // On UIA, we don't want to expose the ITableProvider for layout tables
+      // because it can cause extraneous, confusing announcements for users. We
+      // initially exposed it, but decided to re-evaluate our decision after
+      // hearing from users.
+      if (IsUIACellOrTableHeader(GetRole())) {
         return &PatternProvider<ITableProvider>;
+      }
       break;
 
     case UIA_TextChildPatternId:

@@ -65,6 +65,22 @@ message AndroidBatteryMetric {
 
 // End of protos/perfetto/metrics/android/batt_metric.proto
 
+// Begin of protos/perfetto/metrics/android/binder_metric.proto
+
+// This metric provides per-process Binder statistics for traces with binder_driver enabled
+// Specifically, transactions are categorized and counted
+message AndroidBinderMetric {
+  message PerProcessBreakdown {
+    optional string process_name = 1;
+    optional uint32 pid = 2;
+    optional string slice_name = 3;
+    optional uint32 count = 4;
+  }
+
+  repeated PerProcessBreakdown process_breakdown = 1;
+}
+// End of protos/perfetto/metrics/android/binder_metric.proto
+
 // Begin of protos/perfetto/metrics/android/camera_metric.proto
 
 message AndroidCameraMetric {
@@ -953,9 +969,43 @@ message AndroidNetworkMetric {
     optional int64 avg_freq_khz = 5;
   }
 
+  message NetTxActionStatistic {
+    // SoftIrq NET_TX action count.
+    optional int64 count = 1;
+
+    // SoftIrq NET_TX action was running in millisecond.
+    optional double runtime_ms = 2;
+
+    // SoftIrq NET_TX action average running time.
+    optional double avg_runtime_ms = 3;
+
+    // CPU megacycles (i.e. cycles divided by 1e6).
+    optional int64 mcycles = 4;
+
+    // Average weighted CPU frequency by the time the NET_TX Action
+    // running at each frequency.
+    optional int64 avg_freq_khz = 5;
+  }
+
+  message IpiActionStatistic {
+    // SoftIrq IPI action count.
+    optional int64 count = 1;
+
+    // SoftIrq IPI action was running in millisecond.
+    optional double runtime_ms = 2;
+
+    // SoftIrq IPI action average running time.
+    optional double avg_runtime_ms = 3;
+  }
+
   message CoreNetRxActionStatistic {
     optional uint32 id = 1;
     optional NetRxActionStatistic net_rx_action_statistic = 2;
+  }
+
+  message CoreNetTxActionStatistic {
+    optional uint32 id = 1;
+    optional NetTxActionStatistic net_tx_action_statistic = 2;
   }
 
   message NetRxAction {
@@ -967,6 +1017,19 @@ message AndroidNetworkMetric {
 
     // The average packet time moves through the kernel stack.
     optional double avg_interstack_latency_ms = 3;
+  }
+
+  message NetTxAction {
+    // Total NET_TX action statistics.
+    optional NetTxActionStatistic total = 1;
+
+    // Per core NET_TX action statistics.
+    repeated CoreNetTxActionStatistic core = 2;
+  }
+
+  message IpiAction {
+    // Total IPI action statistics.
+    optional IpiActionStatistic total = 1;
   }
 
   // Network device metrics.
@@ -981,6 +1044,12 @@ message AndroidNetworkMetric {
   // Kfree Skb rate (i.e. kfree_skb count divided by the packet count from all
   // net devices).
   optional double kfree_skb_rate = 4;
+
+  // SoftIrq NET_TX action metrics.
+  optional NetTxAction net_tx_action = 5;
+
+  // SoftIrq IPI action metrics.
+  optional IpiAction ipi_action = 6;
 }
 
 // End of protos/perfetto/metrics/android/network_metric.proto
@@ -1388,37 +1457,6 @@ message AndroidTaskNames {
 
 // End of protos/perfetto/metrics/android/task_names.proto
 
-// Begin of protos/perfetto/metrics/android/thread_time_in_state_metric.proto
-
-message AndroidThreadTimeInStateMetric {
-  message MetricsByCoreType {
-    optional int32 time_in_state_cpu = 5;
-    optional string core_type = 1;
-
-    optional int64 runtime_ms = 2;
-    // CPU megacycles (i.e. cycles divided by 1e6).
-    optional int64 mcycles = 3;
-    // Power cost as predicted by the power profile.
-    optional double power_profile_mah = 4;
-  }
-
-  message Thread {
-    optional string name = 1;
-    optional bool main_thread = 3;
-    repeated MetricsByCoreType metrics_by_core_type = 2;
-  }
-
-  message Process {
-    optional AndroidProcessMetadata metadata = 1;
-    repeated MetricsByCoreType metrics_by_core_type = 2;
-    repeated Thread threads = 3;
-  }
-
-  repeated Process processes = 1;
-}
-
-// End of protos/perfetto/metrics/android/thread_time_in_state_metric.proto
-
 // Begin of protos/perfetto/metrics/android/trace_quality.proto
 
 // Metric which checks the data in the trace processor tables is "reasonble"
@@ -1502,7 +1540,7 @@ message TraceAnalysisStats {
 
 // Root message for all Perfetto-based metrics.
 //
-// Next id: 46
+// Next id: 47
 message TraceMetrics {
   reserved 4, 10, 13, 14, 16, 19;
 
@@ -1563,7 +1601,8 @@ message TraceMetrics {
 
   optional AndroidTaskNames android_task_names = 23;
 
-  optional AndroidThreadTimeInStateMetric android_thread_time_in_state = 24;
+  // Deprecated was AndroidThreadTimeInStateMetric
+  reserved 24;
 
   // Metric associated with surfaceflinger.
   optional AndroidSurfaceflingerMetric android_surfaceflinger = 25;
@@ -1623,6 +1662,9 @@ message TraceMetrics {
 
   // Summary of other concurrent trace recording.
   optional AndroidOtherTracesMetric android_other_traces = 45;
+
+  // Per-process Binder transaction metrics.
+  optional AndroidBinderMetric android_binder = 46;
 
   // Demo extensions.
   extensions 450 to 499;

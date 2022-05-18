@@ -107,6 +107,10 @@ void Scheduler::NotifyReadyToActivate() {
   ProcessScheduledActions();
 }
 
+bool Scheduler::IsReadyToActivate() {
+  return state_machine_.IsReadyToActivate();
+}
+
 void Scheduler::NotifyReadyToDraw() {
   // Future work might still needed for crbug.com/352894.
   state_machine_.NotifyReadyToDraw();
@@ -211,11 +215,6 @@ void Scheduler::NotifyReadyToCommit(
       std::move(details));
   state_machine_.NotifyReadyToCommit();
   ProcessScheduledActions();
-}
-
-void Scheduler::DidCommit() {
-  compositor_timing_history_->DidCommit();
-  compositor_frame_reporting_controller_->DidCommit();
 }
 
 void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
@@ -881,15 +880,20 @@ void Scheduler::ProcessScheduledActions() {
         state_machine_.WillNotifyBeginMainFrameNotExpectedSoon();
         BeginMainFrameNotExpectedSoon();
         break;
-      case SchedulerStateMachine::Action::COMMIT: {
-        bool commit_has_no_updates = false;
-        state_machine_.WillCommit(commit_has_no_updates);
+      case SchedulerStateMachine::Action::COMMIT:
+        state_machine_.WillCommit(/*commit_had_no_updates=*/false);
         compositor_timing_history_->WillCommit();
         compositor_frame_reporting_controller_->WillCommit();
         client_->ScheduledActionCommit();
+        compositor_timing_history_->DidCommit();
+        compositor_frame_reporting_controller_->DidCommit();
+        state_machine_.DidCommit();
         last_commit_origin_frame_args_ = last_dispatched_begin_main_frame_args_;
         break;
-      }
+      case SchedulerStateMachine::Action::POST_COMMIT:
+        client_->ScheduledActionPostCommit();
+        state_machine_.DidPostCommit();
+        break;
       case SchedulerStateMachine::Action::ACTIVATE_SYNC_TREE:
         compositor_timing_history_->WillActivate();
         compositor_frame_reporting_controller_->WillActivate();

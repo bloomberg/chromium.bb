@@ -15,16 +15,17 @@
 #ifndef SRC_DAWN_TESTS_PERF_TESTS_DAWNPERFTESTPLATFORM_H_
 #define SRC_DAWN_TESTS_PERF_TESTS_DAWNPERFTESTPLATFORM_H_
 
-#include "dawn/platform/DawnPlatform.h"
-
 #include <memory>
 #include <mutex>
+#include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>
 
+#include "dawn/platform/DawnPlatform.h"
+
 namespace utils {
-    class Timer;
+class Timer;
 }
 
 class DawnPerfTestPlatform : public dawn::platform::Platform {
@@ -33,15 +34,17 @@ class DawnPerfTestPlatform : public dawn::platform::Platform {
     // See https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU
     // Only a subset of the properties are implemented.
     struct TraceEvent final {
-        TraceEvent() {
-        }
+        TraceEvent() {}
         TraceEvent(char phaseIn,
                    dawn::platform::TraceCategory categoryIn,
                    const char* nameIn,
                    uint64_t idIn,
                    double timestampIn)
-            : phase(phaseIn), category(categoryIn), name(nameIn), id(idIn), timestamp(timestampIn) {
-        }
+            : phase(phaseIn),
+              category(categoryIn),
+              name(nameIn),
+              id(idIn),
+              timestamp(timestampIn) {}
 
         char phase = 0;
         dawn::platform::TraceCategory category;

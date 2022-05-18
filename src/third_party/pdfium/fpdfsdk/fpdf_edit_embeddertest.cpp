@@ -2499,6 +2499,92 @@ TEST_F(FPDFEditEmbedderTest, TextFontProperties) {
     ASSERT_STREQ("x", font_name.data());
   }
 
+  {
+    // FPDFFont_GetFontData() positive testing.
+    constexpr size_t kExpectedSize = 8268;
+    std::vector<uint8_t> buf;
+    size_t buf_bytes_required = 123;
+    ASSERT_TRUE(FPDFFont_GetFontData(font, nullptr, 0, &buf_bytes_required));
+    ASSERT_EQ(kExpectedSize, buf_bytes_required);
+
+    buf.resize(kExpectedSize);
+    EXPECT_EQ("495800b8e56e2d37f3bc48a1b52db952", GenerateMD5Base16(buf));
+    buf_bytes_required = 234;
+    // Test with buffer that is too small. Make sure `buf` is unchanged.
+    EXPECT_TRUE(FPDFFont_GetFontData(font, buf.data(), buf.size() - 1,
+                                     &buf_bytes_required));
+    EXPECT_EQ("495800b8e56e2d37f3bc48a1b52db952", GenerateMD5Base16(buf));
+    EXPECT_EQ(kExpectedSize, buf_bytes_required);
+
+    // Test with buffer of the correct size.
+    buf_bytes_required = 234;
+    EXPECT_TRUE(FPDFFont_GetFontData(font, buf.data(), buf.size(),
+                                     &buf_bytes_required));
+    EXPECT_EQ("1a67be75f719b6c476804d85bb9e4844", GenerateMD5Base16(buf));
+    EXPECT_EQ(kExpectedSize, buf_bytes_required);
+
+    // FPDFFont_GetFontData() negative testing.
+    EXPECT_FALSE(FPDFFont_GetFontData(nullptr, nullptr, 0, nullptr));
+    EXPECT_FALSE(FPDFFont_GetFontData(font, nullptr, 0, nullptr));
+
+    buf_bytes_required = 345;
+    EXPECT_FALSE(
+        FPDFFont_GetFontData(nullptr, nullptr, 0, &buf_bytes_required));
+    EXPECT_EQ(345u, buf_bytes_required);
+
+    EXPECT_FALSE(
+        FPDFFont_GetFontData(nullptr, buf.data(), buf.size(), nullptr));
+    EXPECT_FALSE(FPDFFont_GetFontData(font, buf.data(), buf.size(), nullptr));
+
+    buf_bytes_required = 345;
+    EXPECT_FALSE(FPDFFont_GetFontData(nullptr, buf.data(), buf.size(),
+                                      &buf_bytes_required));
+    EXPECT_EQ(345u, buf_bytes_required);
+  }
+  {
+    ASSERT_EQ(1, FPDFFont_GetIsEmbedded(font));
+    ASSERT_EQ(-1, FPDFFont_GetIsEmbedded(nullptr));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbedderTest, NoEmbeddedFontData) {
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  ASSERT_EQ(2, FPDFPage_CountObjects(page));
+
+  // Since hello_world.pdf does not embed any font data, FPDFFont_GetFontData()
+  // will return the substitution font data. Since pdfium_embeddertest is
+  // hermetic, this first object consistently maps to Tinos-Regular.ttf.
+  constexpr size_t kTinosRegularSize = 469968;
+  FPDF_PAGEOBJECT text = FPDFPage_GetObject(page, 0);
+  ASSERT_TRUE(text);
+  FPDF_FONT font = FPDFTextObj_GetFont(text);
+  ASSERT_TRUE(font);
+  std::vector<uint8_t> buf;
+  buf.resize(kTinosRegularSize);
+  size_t buf_bytes_required;
+  ASSERT_TRUE(
+      FPDFFont_GetFontData(font, buf.data(), buf.size(), &buf_bytes_required));
+  EXPECT_EQ(kTinosRegularSize, buf_bytes_required);
+  EXPECT_EQ("2b019558f2c2de0b7cbc0a6e64b20599", GenerateMD5Base16(buf));
+  EXPECT_EQ(0, FPDFFont_GetIsEmbedded(font));
+
+  // Similarly, the second object consistently maps to Arimo-Regular.ttf.
+  constexpr size_t kArimoRegularSize = 436180;
+  text = FPDFPage_GetObject(page, 1);
+  ASSERT_TRUE(text);
+  font = FPDFTextObj_GetFont(text);
+  ASSERT_TRUE(font);
+  buf.resize(kArimoRegularSize);
+  ASSERT_TRUE(
+      FPDFFont_GetFontData(font, buf.data(), buf.size(), &buf_bytes_required));
+  EXPECT_EQ(kArimoRegularSize, buf_bytes_required);
+  EXPECT_EQ("7ac02a544211773d9636e056e9da6c35", GenerateMD5Base16(buf));
+  EXPECT_EQ(0, FPDFFont_GetIsEmbedded(font));
+
   UnloadPage(page);
 }
 
@@ -3873,18 +3959,16 @@ TEST_F(FPDFEditEmbedderTest, GetImageData) {
 
   // Check that the raw image data has the correct length and hash value.
   unsigned long len = FPDFImageObj_GetImageDataRaw(obj, nullptr, 0);
-  std::vector<char> buf(len);
+  std::vector<uint8_t> buf(len);
   EXPECT_EQ(4091u, FPDFImageObj_GetImageDataRaw(obj, buf.data(), len));
-  EXPECT_EQ("f73802327d2e88e890f653961bcda81a",
-            GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()), len));
+  EXPECT_EQ("f73802327d2e88e890f653961bcda81a", GenerateMD5Base16(buf));
 
   // Check that the decoded image data has the correct length and hash value.
   len = FPDFImageObj_GetImageDataDecoded(obj, nullptr, 0);
   buf.clear();
   buf.resize(len);
   EXPECT_EQ(28776u, FPDFImageObj_GetImageDataDecoded(obj, buf.data(), len));
-  EXPECT_EQ(kEmbeddedImage33Checksum,
-            GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()), len));
+  EXPECT_EQ(kEmbeddedImage33Checksum, GenerateMD5Base16(buf));
 
   // Retrieve an image object with DCTDecode-encoded data stream.
   obj = FPDFPage_GetObject(page, 37);
@@ -3895,8 +3979,7 @@ TEST_F(FPDFEditEmbedderTest, GetImageData) {
   buf.clear();
   buf.resize(len);
   EXPECT_EQ(4370u, FPDFImageObj_GetImageDataRaw(obj, buf.data(), len));
-  EXPECT_EQ("6aae1f3710335023a9e12191be66b64b",
-            GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()), len));
+  EXPECT_EQ("6aae1f3710335023a9e12191be66b64b", GenerateMD5Base16(buf));
 
   // Check that the decoded image data has the correct length and hash value,
   // which should be the same as those of the raw data, since this image is
@@ -3905,8 +3988,7 @@ TEST_F(FPDFEditEmbedderTest, GetImageData) {
   buf.clear();
   buf.resize(len);
   EXPECT_EQ(4370u, FPDFImageObj_GetImageDataDecoded(obj, buf.data(), len));
-  EXPECT_EQ("6aae1f3710335023a9e12191be66b64b",
-            GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()), len));
+  EXPECT_EQ("6aae1f3710335023a9e12191be66b64b", GenerateMD5Base16(buf));
 
   UnloadPage(page);
 }

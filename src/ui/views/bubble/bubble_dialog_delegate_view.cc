@@ -532,7 +532,8 @@ BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
   frame->SetFootnoteView(DisownFootnoteView());
 
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color());
+      std::make_unique<BubbleBorder>(arrow(), GetShadow());
+  border->SetColor(color());
   if (CustomShadowsSupported() && GetParams().round_corners)
     border->SetCornerRadius(GetCornerRadius());
 
@@ -889,10 +890,12 @@ void BubbleDialogDelegate::UpdateColorsFromTheme() {
 
   // When there's an opaque layer, the bubble border background won't show
   // through, so explicitly paint a background color.
-  contents_view->SetBackground(
-      contents_view->layer() && contents_view->layer()->fills_bounds_opaquely()
-          ? CreateSolidBackground(color())
-          : nullptr);
+  const bool contents_layer_opaque =
+      contents_view->layer() && contents_view->layer()->fills_bounds_opaquely();
+  contents_view->SetBackground(contents_layer_opaque ||
+                                       force_create_contents_background_
+                                   ? CreateSolidBackground(color())
+                                   : nullptr);
 }
 
 void BubbleDialogDelegate::OnBubbleWidgetVisibilityChanged(bool visible) {

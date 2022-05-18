@@ -1,3 +1,11 @@
+bug/dawn/947.wgsl:59:20 warning: 'textureSample' must only be called from uniform control flow
+    var srcColor = textureSample(myTexture, mySampler, texcoord);
+                   ^^^^^^^^^^^^^
+
+bug/dawn/947.wgsl:54:15 note: reading from user-defined input 'texcoord' may result in a non-uniform value
+        clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
+              ^^^^^^^^
+
 #version 310 es
 
 layout(location = 0) out vec2 texcoords_1;
@@ -30,6 +38,7 @@ VertexOutputs vs_main(uint VertexIndex) {
 }
 
 void main() {
+  gl_PointSize = 1.0;
   VertexOutputs inner_result = vs_main(uint(gl_VertexID));
   texcoords_1 = inner_result.texcoords;
   gl_Position = inner_result.position;

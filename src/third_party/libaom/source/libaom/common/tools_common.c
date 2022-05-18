@@ -252,7 +252,7 @@ void aom_img_write(const aom_image_t *img, FILE *file) {
   }
 }
 
-int aom_img_read(aom_image_t *img, FILE *file) {
+bool aom_img_read(aom_image_t *img, FILE *file) {
   int plane;
 
   for (plane = 0; plane < 3; ++plane) {
@@ -264,12 +264,12 @@ int aom_img_read(aom_image_t *img, FILE *file) {
     int y;
 
     for (y = 0; y < h; ++y) {
-      if (fread(buf, 1, w, file) != (size_t)w) return 0;
+      if (fread(buf, 1, w, file) != (size_t)w) return false;
       buf += stride;
     }
   }
 
-  return 1;
+  return true;
 }
 
 // TODO(dkovalev) change sse_to_psnr signature: double -> int64_t

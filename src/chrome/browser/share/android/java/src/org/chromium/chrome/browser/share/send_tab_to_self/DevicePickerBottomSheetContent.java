@@ -39,7 +39,6 @@ import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,19 +56,17 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     private final Profile mProfile;
     private final String mUrl;
     private final String mTitle;
-    private final long mNavigationTime;
 
     private static final int ACCOUNT_AVATAR_SIZE_DP = 24;
 
-    public DevicePickerBottomSheetContent(Context context, String url, String title,
-            long navigationTime, BottomSheetController controller) {
+    public DevicePickerBottomSheetContent(
+            Context context, String url, String title, BottomSheetController controller) {
         mContext = context;
         mController = controller;
         mProfile = Profile.getLastUsedRegularProfile();
         mAdapter = new DevicePickerBottomSheetAdapter(mProfile);
         mUrl = url;
         mTitle = title;
-        mNavigationTime = navigationTime;
 
         createToolbarView();
         createContentView();
@@ -83,8 +80,8 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createContentView() {
-        List<TargetDeviceInfo> targetDeviceList = new ArrayList<TargetDeviceInfo>();
-        SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(mProfile, targetDeviceList);
+        List<TargetDeviceInfo> targetDeviceList =
+                SendTabToSelfAndroidBridge.getAllTargetDeviceInfos(mProfile);
 
         // First check if sharing is unavailable, e.g. because there are no target devices. If so,
         // show |sharingUnavailableView|, modulo adjusting the strings and the visibility of the
@@ -229,8 +226,7 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         MetricsRecorder.recordDeviceClickedInShareSheet();
         TargetDeviceInfo targetDeviceInfo = mAdapter.getItem(position);
 
-        SendTabToSelfAndroidBridge.addEntry(
-                mProfile, mUrl, mTitle, mNavigationTime, targetDeviceInfo.cacheGuid);
+        SendTabToSelfAndroidBridge.addEntry(mProfile, mUrl, mTitle, targetDeviceInfo.cacheGuid);
 
         Resources res = mContext.getResources();
 

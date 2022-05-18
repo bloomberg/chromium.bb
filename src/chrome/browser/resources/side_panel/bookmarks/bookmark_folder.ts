@@ -4,7 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/cr_elements/mwb_element_shared_style.js';
+import 'chrome://resources/cr_elements/mwb_element_shared_style.css.js';
 
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {DomRepeatEvent, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -86,7 +86,7 @@ export class BookmarkFolderElement extends PolymerElement {
 
     event.preventDefault();
     event.stopPropagation();
-    this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
+    this.bookmarksApi_.openBookmark(event.model.item.id!, this.depth, {
       middleButton: true,
       altKey: event.altKey,
       ctrlKey: event.ctrlKey,
@@ -99,7 +99,7 @@ export class BookmarkFolderElement extends PolymerElement {
       event: DomRepeatEvent<chrome.bookmarks.BookmarkTreeNode, MouseEvent>) {
     event.preventDefault();
     event.stopPropagation();
-    this.bookmarksApi_.openBookmark(event.model.item.url!, this.depth, {
+    this.bookmarksApi_.openBookmark(event.model.item.id!, this.depth, {
       middleButton: false,
       altKey: event.altKey,
       ctrlKey: event.ctrlKey,

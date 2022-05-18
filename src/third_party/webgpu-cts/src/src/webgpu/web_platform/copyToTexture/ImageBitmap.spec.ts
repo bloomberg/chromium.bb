@@ -101,7 +101,6 @@ g.test('from_ImageData')
   - Valid dest alphaMode
   - Valid 'flipY' config in 'GPUImageCopyExternalImage' (named 'srcDoFlipYDuringCopy' in cases)
   - TODO(#913): color space tests need to be added
-  - TODO: Add error tolerance for rgb10a2unorm dst texture format
 
   And the expected results are all passed.
   `
@@ -180,7 +179,9 @@ g.test('from_ImageData')
       },
       texelViewExpected,
       { width, height, depthOrArrayLayers: 1 },
-      { maxDiffULPsForFloatFormat: 0, maxDiffULPsForNormFormat: 0 }
+      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
+      // allow diffs of 1ULP since that's the generally-appropriate threshold.
+      { maxDiffULPsForFloatFormat: 1, maxDiffULPsForNormFormat: 1 }
     );
   });
 
@@ -210,7 +211,6 @@ g.test('from_canvas')
   - Valid dest alphaMode
   - Valid 'flipY' config in 'GPUImageCopyExternalImage' (named 'srcDoFlipYDuringCopy' in cases)
   - TODO(#913): color space tests need to be added
-  - TODO: Add error tolerance for rgb10a2unorm dst texture format
 
   And the expected results are all passed.
   `
@@ -315,6 +315,8 @@ g.test('from_canvas')
       },
       texelViewExpected,
       { width, height, depthOrArrayLayers: 1 },
-      { maxDiffULPsForFloatFormat: 0, maxDiffULPsForNormFormat: 0 }
+      // 1.0 and 0.6 are representable precisely by all formats except rgb10a2unorm, but
+      // allow diffs of 1ULP since that's the generally-appropriate threshold.
+      { maxDiffULPsForFloatFormat: 1, maxDiffULPsForNormFormat: 1 }
     );
   });

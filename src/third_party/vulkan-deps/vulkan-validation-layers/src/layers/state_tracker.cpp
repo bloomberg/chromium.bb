@@ -1168,6 +1168,18 @@ void ValidationStateTracker::CreateDevice(const VkDeviceCreateInfo *pCreateInfo)
         if (image_2d_view_of_3d_features) {
             enabled_features.image_2d_view_of_3d_features = *image_2d_view_of_3d_features;
         }
+
+        const auto graphics_pipeline_library_features =
+            LvlFindInChain<VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT>(pCreateInfo->pNext);
+        if (graphics_pipeline_library_features) {
+            enabled_features.graphics_pipeline_library_features = *graphics_pipeline_library_features;
+        }
+
+        const auto shader_subgroup_uniform_control_flow_features =
+            LvlFindInChain<VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR>(pCreateInfo->pNext);
+        if (shader_subgroup_uniform_control_flow_features) {
+            enabled_features.shader_subgroup_uniform_control_flow_features = *shader_subgroup_uniform_control_flow_features;
+        }
     }
 
     // Store physical device properties and physical device mem limits into CoreChecks structs
@@ -1376,6 +1388,9 @@ void ValidationStateTracker::CreateDevice(const VkDeviceCreateInfo *pCreateInfo)
                                    &phys_dev_props->conservative_rasterization_props);
     GetPhysicalDeviceExtProperties(physical_device, dev_ext.vk_ext_subgroup_size_control,
                                    &phys_dev_props->subgroup_size_control_props);
+    if (api_version >= VK_API_VERSION_1_1) {
+        GetPhysicalDeviceExtProperties(physical_device, &phys_dev_props->subgroup_properties);
+    }
 
     if (IsExtEnabled(dev_ext.vk_nv_cooperative_matrix)) {
         // Get the needed cooperative_matrix properties

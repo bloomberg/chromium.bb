@@ -878,18 +878,19 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     return node;
   }
 
-  async revealAndSelectNode(node: SDK.DOMModel.DOMNode, focus: boolean, omitHighlight?: boolean): Promise<void> {
+  async revealAndSelectNode(nodeToReveal: SDK.DOMModel.DOMNode, focus: boolean, omitHighlight?: boolean):
+      Promise<void> {
     this.omitDefaultSelection = true;
 
-    node = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
-        node :
-        this.leaveUserAgentShadowDOM(node);
+    const node = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
+        nodeToReveal :
+        this.leaveUserAgentShadowDOM(nodeToReveal);
     if (!omitHighlight) {
       node.highlightForTwoSeconds();
     }
 
     if (this.accessibilityTreeView) {
-      void this.accessibilityTreeView.revealAndSelectNode(node);
+      void this.accessibilityTreeView.revealAndSelectNode(nodeToReveal);
     }
 
     await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);
@@ -931,7 +932,7 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
       stylePaneWrapperElement.style.setProperty('left', `${- 1 * largeLength}px`);
       stylePaneWrapperElement.style.setProperty('padding-left', `${largeLength}px`);
       stylePaneWrapperElement.style.setProperty('width', `calc(100% + ${largeLength}px)`);
-      stylePaneWrapperElement.style.setProperty('position', 'fixed');
+      stylePaneWrapperElement.style.setProperty('position', 'absolute');
 
       stylePaneWrapperElement.window().addEventListener('blur', uninstallHackBound);
       stylePaneWrapperElement.window().addEventListener('contextmenu', uninstallHackBound, true);
@@ -1029,7 +1030,7 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     };
 
     this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(
-        () => UI.ViewManager.ViewManager.instance().showView('elements'));
+        () => UI.ViewManager.ViewManager.instance().showView('elements'), 'Styles-pane-sidebar', false, true);
     const tabbedPane = this.sidebarPaneView.tabbedPane();
     if (this.splitMode !== _splitMode.Vertical) {
       this.splitWidget.installResizer(tabbedPane.headerElement());

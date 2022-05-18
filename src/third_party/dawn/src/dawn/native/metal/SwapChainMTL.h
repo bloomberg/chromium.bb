@@ -24,43 +24,45 @@
 
 namespace dawn::native::metal {
 
-    class Device;
-    class Texture;
+class Device;
+class Texture;
 
-    class OldSwapChain final : public OldSwapChainBase {
-      public:
-        static Ref<OldSwapChain> Create(Device* deivce, const SwapChainDescriptor* descriptor);
+class OldSwapChain final : public OldSwapChainBase {
+  public:
+    static Ref<OldSwapChain> Create(Device* deivce, const SwapChainDescriptor* descriptor);
 
-      protected:
-        OldSwapChain(Device* device, const SwapChainDescriptor* descriptor);
-        ~OldSwapChain() override;
-        TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
-        MaybeError OnBeforePresent(TextureViewBase* view) override;
-    };
+  protected:
+    OldSwapChain(Device* device, const SwapChainDescriptor* descriptor);
+    ~OldSwapChain() override;
+    TextureBase* GetNextTextureImpl(const TextureDescriptor* descriptor) override;
+    MaybeError OnBeforePresent(TextureViewBase* view) override;
+};
 
-    class SwapChain final : public NewSwapChainBase {
-      public:
-        static ResultOrError<Ref<SwapChain>> Create(Device* device,
-                                                    Surface* surface,
-                                                    NewSwapChainBase* previousSwapChain,
-                                                    const SwapChainDescriptor* descriptor);
-        ~SwapChain() override;
+class SwapChain final : public NewSwapChainBase {
+  public:
+    static ResultOrError<Ref<SwapChain>> Create(Device* device,
+                                                Surface* surface,
+                                                NewSwapChainBase* previousSwapChain,
+                                                const SwapChainDescriptor* descriptor);
 
-      private:
-        void DestroyImpl() override;
+    SwapChain(DeviceBase* device, Surface* surface, const SwapChainDescriptor* descriptor);
+    ~SwapChain() override;
 
-        using NewSwapChainBase::NewSwapChainBase;
-        MaybeError Initialize(NewSwapChainBase* previousSwapChain);
+  private:
+    void DestroyImpl() override;
 
-        NSRef<CAMetalLayer> mLayer;
+    using NewSwapChainBase::NewSwapChainBase;
+    MaybeError Initialize(NewSwapChainBase* previousSwapChain);
 
-        NSPRef<id<CAMetalDrawable>> mCurrentDrawable;
-        Ref<Texture> mTexture;
+    NSRef<CAMetalLayer> mLayer;
 
-        MaybeError PresentImpl() override;
-        ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
-        void DetachFromSurfaceImpl() override;
-    };
+    NSPRef<id<CAMetalDrawable>> mCurrentDrawable;
+    Ref<Texture> mTexture;
+
+    MaybeError PresentImpl() override;
+    ResultOrError<Ref<TextureViewBase>> GetCurrentTextureViewImpl() override;
+    void DetachFromSurfaceImpl() override;
+};
 
 }  // namespace dawn::native::metal
 

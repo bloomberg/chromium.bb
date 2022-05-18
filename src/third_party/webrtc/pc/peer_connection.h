@@ -55,7 +55,6 @@
 #include "p2p/base/port_allocator.h"
 #include "p2p/base/transport_description.h"
 #include "pc/channel_interface.h"
-#include "pc/channel_manager.h"
 #include "pc/connection_context.h"
 #include "pc/data_channel_controller.h"
 #include "pc/data_channel_utils.h"
@@ -84,6 +83,10 @@
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/weak_ptr.h"
+
+namespace cricket {
+class ChannelManager;
+}
 
 namespace webrtc {
 
@@ -340,7 +343,6 @@ class PeerConnection : public PeerConnectionInternal,
   const RtpTransmissionManager* rtp_manager() const override {
     return rtp_manager_.get();
   }
-  cricket::ChannelManager* channel_manager();
 
   JsepTransportController* transport_controller_s() override {
     RTC_DCHECK_RUN_ON(signaling_thread());
@@ -427,8 +429,10 @@ class PeerConnection : public PeerConnectionInternal,
   bool SetupDataChannelTransport_n(const std::string& mid) override
       RTC_RUN_ON(network_thread());
   void TeardownDataChannelTransport_n() override RTC_RUN_ON(network_thread());
-  cricket::ChannelInterface* GetChannel(const std::string& mid)
-      RTC_RUN_ON(network_thread());
+
+  const FieldTrialsView& trials() const override { return *trials_; }
+
+  bool ConfiguredForMedia() const;
 
   // Functions made public for testing.
   void ReturnHistogramVeryQuicklyForTesting() {
@@ -436,8 +440,6 @@ class PeerConnection : public PeerConnectionInternal,
     return_histogram_very_quickly_ = true;
   }
   void RequestUsagePatternReportForTesting();
-
-  const FieldTrialsView& trials() override { return context_->trials(); }
 
  protected:
   // Available for rtc::scoped_refptr creation
@@ -493,11 +495,6 @@ class PeerConnection : public PeerConnectionInternal,
       RTC_RUN_ON(signaling_thread());
 
   void OnNegotiationNeeded();
-
-  // Returns the specified SCTP DataChannel in sctp_data_channels_,
-  // or nullptr if not found.
-  SctpDataChannel* FindDataChannelBySid(int sid) const
-      RTC_RUN_ON(signaling_thread());
 
   // Called when first configuring the port allocator.
   struct InitializePortAllocatorResult {
@@ -596,7 +593,17 @@ class PeerConnection : public PeerConnectionInternal,
                      int64_t packet_time_us)>
   InitializeRtcpCallback();
 
+  cricket::ChannelManager* channel_manager() {
+    return context_->channel_manager();
+  }
+
   const rtc::scoped_refptr<ConnectionContext> context_;
+  // Field trials active for this PeerConnection is the first of:
+  // a) Specified in PeerConnectionDependencies (owned).
+  // b) Accessed via ConnectionContext (e.g PeerConnectionFactoryDependencies>
+  // c) Created as Default (FieldTrialBasedConfig).
+  const webrtc::AlwaysValidPointer<const FieldTrialsView, FieldTrialBasedConfig>
+      trials_;
   const PeerConnectionFactoryInterface::Options options_;
   PeerConnectionObserver* observer_ RTC_GUARDED_BY(signaling_thread()) =
       nullptr;

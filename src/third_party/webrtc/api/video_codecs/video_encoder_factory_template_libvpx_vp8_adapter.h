@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
+#include "modules/video_coding/codecs/vp8/vp8_scalability.h"
 
 namespace webrtc {
 struct LibvpxVp8EncoderTemplateAdapter {
@@ -27,9 +28,8 @@ struct LibvpxVp8EncoderTemplateAdapter {
     return VP8Encoder::Create();
   }
 
-  static bool IsScalabilityModeSupported(
-      const absl::string_view scalability_mode) {
-    return VP8Encoder::SupportsScalabilityMode(scalability_mode);
+  static bool IsScalabilityModeSupported(ScalabilityMode scalability_mode) {
+    return VP8SupportsScalabilityMode(scalability_mode);
   }
 };
 }  // namespace webrtc

@@ -166,17 +166,21 @@ AccuracyTipBubbleView::AccuracyTipBubbleView(
   permissions::PermissionRequestManager* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
   if (permission_request_manager) {
-    scoped_observation_.Observe(permission_request_manager);
+    permission_request_manager->AddObserver(this);
   }
 
   Layout();
   SizeToContents();
 }
 
-AccuracyTipBubbleView::~AccuracyTipBubbleView() = default;
-
-void AccuracyTipBubbleView::OnWidgetClosing(views::Widget* widget) {
-  scoped_observation_.Reset();
+AccuracyTipBubbleView::~AccuracyTipBubbleView() {
+  if (web_contents()) {
+    permissions::PermissionRequestManager* permission_request_manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
+    if (permission_request_manager) {
+      permission_request_manager->RemoveObserver(this);
+    }
+  }
 }
 
 void AccuracyTipBubbleView::OnWidgetDestroying(views::Widget* widget) {

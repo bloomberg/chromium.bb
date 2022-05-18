@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
@@ -41,6 +42,8 @@
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section_interface.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -75,6 +78,50 @@ PaintLayer* FindFirstStickyBetween(LayoutObject* from, LayoutObject* to) {
   }
   return nullptr;
 }
+
+bool HasIfcAncestorWithinContainingBlock(const LayoutObject& positioned,
+                                         const LayoutObject& containing_block) {
+  for (const LayoutObject* parent = positioned.Parent(); parent;
+       parent = parent->Parent()) {
+    if (const auto* block_flow = DynamicTo<LayoutBlockFlow>(parent)) {
+      // TODO(tkent): The following check is not correct, and we assume BFCs as
+      // IFCs in many cases. We need to use the logic in
+      // NGBlockNode::FirstChild() and IsInlineFormattingContextRoot().
+      if (block_flow->ChildrenInline())
+        return true;
+    }
+    if (parent == &containing_block)
+      return false;
+  }
+  return false;
+}
+
+void MarkBoxForRelayoutAfterSplit(LayoutBoxModelObject* box) {
+  // FIXME: The table code should handle that automatically. If not,
+  // we should fix it and remove the table part checks.
+  if (box->IsTable()) {
+    // Because we may have added some sections with already computed column
+    // structures, we need to sync the table structure with them now. This
+    // avoids crashes when adding new cells to the table.
+    ToInterface<LayoutNGTableInterface>(box)->ForceSectionsRecalc();
+  } else if (box->IsTableSection()) {
+    ToInterface<LayoutNGTableSectionInterface>(box)->SetNeedsCellRecalc();
+  }
+
+  box->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+      layout_invalidation_reason::kAnonymousBlockChange);
+}
+
+void CollapseLoneAnonymousBlockChild(LayoutBox* parent, LayoutObject* child) {
+  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
+  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(parent);
+  if (!child->IsAnonymousBlock() || !child_block_flow)
+    return;
+  if (!parent_block_flow)
+    return;
+  parent_block_flow->CollapseAnonymousBlockChild(child_block_flow);
+}
+
 }  // namespace
 
 // The HashMap for storing continuation pointers.
@@ -232,8 +279,6 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     // that if the HasLayer() value changed, then all of this was already set in
     // CreateLayerAfterStyleChange() or DestroyLayer().
     SetNeedsPaintPropertyUpdate();
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
   }
 
   if (old_style && Parent()) {
@@ -358,25 +403,6 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     SetNeedsPaintPropertyUpdate();
   }
 
-  if (old_style && HasLayer() && !Layer()->SelfNeedsRepaint() &&
-      diff.TransformChanged()) {
-    // PaintLayerPainter::PaintLayerWithAdjustedRoot skips painting of a layer
-    // whose transform is not invertible, so we need to repaint the layer when
-    // invertible status changes.
-    TransformationMatrix old_transform;
-    TransformationMatrix new_transform;
-    old_style->ApplyTransform(
-        old_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-        ComputedStyle::kExcludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    StyleRef().ApplyTransform(
-        new_transform, LayoutSize(), ComputedStyle::kExcludeTransformOrigin,
-        ComputedStyle::kExcludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    if (old_transform.IsInvertible() != new_transform.IsInvertible())
-      Layer()->SetNeedsRepaint();
-  }
-
   // We can't squash across a layout containment boundary. So, if the
   // containment changes, we need to update the compositing inputs.
   if (old_style &&
@@ -384,6 +410,88 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
           ShouldApplyLayoutContainment() &&
       Layer()) {
     Layer()->SetNeedsCompositingInputsUpdate();
+  }
+
+  if ((IsOutOfFlowPositioned() || IsRelPositioned()) && Parent())
+    DisallowDeferredShapingIfNegativePositioned();
+}
+
+void LayoutBoxModelObject::InsertedIntoTree() {
+  LayoutObject::InsertedIntoTree();
+  if (IsOutOfFlowPositioned() || IsRelPositioned())
+    DisallowDeferredShapingIfNegativePositioned();
+}
+
+void LayoutBoxModelObject::DisallowDeferredShapingIfNegativePositioned() const {
+  DCHECK(IsOutOfFlowPositioned() || IsRelPositioned());
+  DCHECK(Parent());
+  if (!RuntimeEnabledFeatures::DeferredShapingEnabled() ||
+      !GetFrameView()->DefaultAllowDeferredShaping())
+    return;
+  // For positioned boxes,
+  //  - if its vertical position can be above the containing block, or
+  //  - if its horizontal position depends on containing IFCs,
+  // we need precise positions/sizes of all prior boxes. So we give up applying
+  // Deferred Shaping in the entire frame.
+  // https://docs.google.com/document/d/1DKyzB0-bhYDIS8fHMTOvHCK99a-QUQLfyxk83Kh7fgo/edit?pli=1#heading=h.lyoqtzi7df9t
+
+  // Wikipedia uses "position:absolute; top:-9999px" to hide accessibility text.
+  // We don't want to disable Deferred Shaping due to it.
+  constexpr float kInvisibleVerticalPosition = -9999.0;
+
+  const Length& top = StyleRef().Top();
+  bool negative_vertical_position = false;
+  if (top.IsCalculated()) {
+    negative_vertical_position = true;
+  } else if (top.IsFixed() || top.IsPercent()) {
+    if (top.Value() <= kInvisibleVerticalPosition)
+      return;
+    if (top.Value() < 0)
+      negative_vertical_position = true;
+  }
+  const Length& bottom = StyleRef().Bottom();
+  negative_vertical_position =
+      negative_vertical_position || (top.IsAuto() && !bottom.IsAuto());
+
+  const auto* containing_block = ContainingBlock();
+  const bool clipping_containing_block =
+      containing_block->StyleRef().OverflowY() != EOverflow::kVisible ||
+      containing_block->ShouldApplyPaintContainment();
+
+  if (IsOutOfFlowPositioned()) {
+    // If this box is not clipped by containing_block and
+    // negative_vertical_position is true, the box might be painted above
+    // containing_block. We need the precise position of the containing_block.
+    if (!clipping_containing_block && negative_vertical_position) {
+      GetFrameView()->DisallowDeferredShaping();
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kDeferredShapingDisabledByPositioned);
+      return;
+    }
+
+    // If neither |left| nor |right| is specified and |top| and/or |bottom| is
+    // specified, the horizontal position of this box depends on a containing
+    // inline layout.  We should not defer containing IFCs.
+    if (StyleRef().Left().IsAuto() && StyleRef().Right().IsAuto() &&
+        (!top.IsAuto() || !bottom.IsAuto())) {
+      if (HasIfcAncestorWithinContainingBlock(*this, *containing_block)) {
+        GetFrameView()->DisallowDeferredShaping();
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kDeferredShapingDisabledByPositioned);
+        return;
+      }
+    }
+    return;
+  }
+
+  DCHECK(IsRelPositioned());
+  // If this box is not clipped by containing_block and
+  // negative_vertical_position is true, the box might be painted above
+  // containing_block. We need the precise position of the containing_block.
+  if (!clipping_containing_block && negative_vertical_position) {
+    GetFrameView()->DisallowDeferredShaping();
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kDeferredShapingDisabledByPositioned);
   }
 }
 
@@ -1368,6 +1476,65 @@ void LayoutBoxModelObject::MoveChildrenTo(
   }
 }
 
+LayoutObject* LayoutBoxModelObject::SplitAnonymousBoxesAroundChild(
+    LayoutObject* before_child) {
+  NOT_DESTROYED();
+  LayoutBox* box_at_top_of_new_branch = nullptr;
+
+  while (before_child->Parent() != this) {
+    auto* box_to_split = To<LayoutBox>(before_child->Parent());
+    if (box_to_split->SlowFirstChild() != before_child &&
+        box_to_split->IsAnonymous()) {
+      // We have to split the parent box into two boxes and move children
+      // from |beforeChild| to end into the new post box.
+      LayoutBox* post_box = CreateAnonymousBoxToSplit(box_to_split);
+      post_box->SetChildrenInline(box_to_split->ChildrenInline());
+      auto* parent_box = To<LayoutBoxModelObject>(box_to_split->Parent());
+      // We need to invalidate the |parentBox| before inserting the new node
+      // so that the table paint invalidation logic knows the structure is
+      // dirty. See for example LayoutTableCell:localVisualRect().
+      MarkBoxForRelayoutAfterSplit(parent_box);
+      parent_box->VirtualChildren()->InsertChildNode(
+          parent_box, post_box, box_to_split->NextSibling());
+      box_to_split->MoveChildrenTo(post_box, before_child, nullptr, true);
+
+      LayoutObject* child = post_box->SlowFirstChild();
+      DCHECK(child);
+      if (child && !child->NextSibling())
+        CollapseLoneAnonymousBlockChild(post_box, child);
+      child = box_to_split->SlowFirstChild();
+      DCHECK(child);
+      if (child && !child->NextSibling())
+        CollapseLoneAnonymousBlockChild(box_to_split, child);
+
+      MarkBoxForRelayoutAfterSplit(box_to_split);
+      MarkBoxForRelayoutAfterSplit(post_box);
+      box_at_top_of_new_branch = post_box;
+
+      before_child = post_box;
+    } else {
+      before_child = box_to_split;
+    }
+  }
+
+  // Splitting the box means the left side of the container chain will lose any
+  // percent height descendants below |boxAtTopOfNewBranch| on the right hand
+  // side.
+  if (box_at_top_of_new_branch) {
+    box_at_top_of_new_branch->ClearPercentHeightDescendants();
+    MarkBoxForRelayoutAfterSplit(this);
+  }
+
+  DCHECK_EQ(before_child->Parent(), this);
+  return before_child;
+}
+
+LayoutBox* LayoutBoxModelObject::CreateAnonymousBoxToSplit(
+    const LayoutBox* box_to_split) const {
+  NOT_DESTROYED();
+  return box_to_split->CreateAnonymousBoxWithSameTypeAs(this);
+}
+
 bool LayoutBoxModelObject::BackgroundTransfersToView(
     const ComputedStyle* document_element_style) const {
   NOT_DESTROYED();
@@ -1392,15 +1559,12 @@ bool LayoutBoxModelObject::BackgroundTransfersToView(
   DCHECK(document_element_style);
   if (document_element_style->HasBackground())
     return false;
-
   if (GetNode() != GetDocument().FirstBodyElement())
     return false;
-
-  if (RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled()) {
-    return !document_element_style->ShouldApplyAnyContainment(
-               *document_element) &&
-           !StyleRef().ShouldApplyAnyContainment(*To<Element>(GetNode()));
-  }
+  if (document_element_style->ShouldApplyAnyContainment(*document_element))
+    return false;
+  if (StyleRef().ShouldApplyAnyContainment(*To<Element>(GetNode())))
+    return false;
   return true;
 }
 

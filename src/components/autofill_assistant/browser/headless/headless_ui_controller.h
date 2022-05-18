@@ -19,7 +19,10 @@ namespace autofill_assistant {
 
 class HeadlessUiController : public ScriptExecutorUiDelegate {
  public:
-  HeadlessUiController();
+  // The |action_extension_delegate| parameter can be null but if an extension
+  // action is requested it will cause the script to fail.
+  explicit HeadlessUiController(
+      ExternalActionDelegate* action_extension_delegate);
 
   // Overrides ScriptExecutorUiDelegate
   void SetStatusMessage(const std::string& message) override;
@@ -68,10 +71,19 @@ class HeadlessUiController : public ScriptExecutorUiDelegate {
 
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void SetCollectUserDataUiState(bool enabled) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
                                             collect_user_data_options) override;
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
       const override;
+  bool SupportsExternalActions() override;
+  void ExecuteExternalAction(
+      const external::Action& info,
+      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+          callback) override;
+
+ private:
+  const raw_ptr<ExternalActionDelegate> action_extension_delegate_;
 };
 
 }  // namespace autofill_assistant

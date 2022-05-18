@@ -8,12 +8,16 @@ from __future__ import absolute_import
 
 import logging
 import json
-import webapp2
 
 from dashboard.pinpoint.models import job as job_module
 from dashboard.common import utils
 
 from google.appengine.datastore import datastore_query
+
+if utils.IsRunningFlask():
+  from flask import make_response, request
+else:
+  import webapp2
 
 _BATCH_FETCH_TIMEOUT = 200
 _MAX_JOBS_TO_FETCH = 100
@@ -29,23 +33,39 @@ class InvalidInput(Error):
   pass
 
 
-class Jobs(webapp2.RequestHandler):
-  """Shows an overview of recent anomalies for perf sheriffing."""
+if utils.IsRunningFlask():
 
-  def get(self):
+  def JobsHandlerGet():
     try:
-      self.response.out.write(
+      return make_response(
           json.dumps(
               _GetJobs(
-                  self.request.get_all('o'),
-                  self.request.get_all('filter'),
-                  self.request.get('prev_cursor', ''),
-                  self.request.get('next_cursor', ''),
+                  request.args.getlist('o'),
+                  request.args.getlist('filter'),
+                  request.args.get('prev_cursor', ''),
+                  request.args.get('next_cursor', ''),
               )))
     except InvalidInput as e:
-      self.response.set_status(400)
       logging.exception(e)
-      self.response.out.write(json.dumps({'error': str(e)}))
+      return make_response(json.dumps({'error': str(e)}), 400)
+else:
+
+  class Jobs(webapp2.RequestHandler):
+
+    def get(self):
+      try:
+        self.response.out.write(
+            json.dumps(
+                _GetJobs(
+                    self.request.get_all('o'),
+                    self.request.get_all('filter'),
+                    self.request.get('prev_cursor', ''),
+                    self.request.get('next_cursor', ''),
+                )))
+      except InvalidInput as e:
+        self.response.set_status(400)
+        logging.exception(e)
+        self.response.out.write(json.dumps({'error': str(e)}))
 
 
 def _GetJobs(options, query_filter, prev_cursor='', next_cursor=''):
@@ -66,10 +86,11 @@ def _GetJobs(options, query_filter, prev_cursor='', next_cursor=''):
         yield p
 
   has_filter = False
+  has_user_filter = False
   has_batch_filter = False
   for f in _ParseExpressions():
     if f.startswith('user='):
-      has_filter = True
+      has_user_filter = True
       query = query.filter(job_module.Job.user == f[len('user='):])
     elif f.startswith('configuration='):
       has_filter = True
@@ -87,9 +108,9 @@ def _GetJobs(options, query_filter, prev_cursor='', next_cursor=''):
       query = query.filter(job_module.Job.batch_id == batch_id)
 
   if (has_filter or has_batch_filter) and (prev_cursor or next_cursor):
-    raise InvalidInput('pagination not supported for filtered queries')
+    raise InvalidInput('pagination not supported for non-user filtered queries')
 
-  if has_filter and has_batch_filter:
+  if (has_filter or has_user_filter) and has_batch_filter:
     raise InvalidInput('batch ids are mutually exclusive with job filters')
 
   page_size = _MAX_JOBS_TO_FETCH
@@ -147,8 +168,11 @@ def _GetJobs(options, query_filter, prev_cursor='', next_cursor=''):
 
   def _FixupEmails(j):
     """ Replace the service account used by monorail with a meaningful alias """
+    service_account_emails = [
+        utils.ServiceAccountEmail(), utils.LEGACY_SERVICE_ACCOUNT
+    ]
     user = j.get('user')
-    if user and user == service_account_email:
+    if user and user in service_account_emails:
       j['user'] = 'chromeperf (automation)'
     return j
 

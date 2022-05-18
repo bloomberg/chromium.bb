@@ -346,12 +346,7 @@ static AOM_INLINE void collect_mv_stats_tile(MV_STATS *mv_stats,
 }
 
 void av1_collect_mv_stats(AV1_COMP *cpi, int current_q) {
-  MV_STATS *mv_stats;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  mv_stats = &cpi->mv_stats;
-#else
-  mv_stats = &cpi->ppi->mv_stats;
-#endif
+  MV_STATS *mv_stats = &cpi->mv_stats;
   const AV1_COMMON *cm = &cpi->common;
   const int tile_cols = cm->tiles.cols;
   const int tile_rows = cm->tiles.rows;
@@ -416,12 +411,7 @@ static AOM_INLINE int get_smart_mv_prec(AV1_COMP *cpi, const MV_STATS *mv_stats,
 void av1_pick_and_set_high_precision_mv(AV1_COMP *cpi, int qindex) {
   int use_hp = qindex < HIGH_PRECISION_MV_QTHRESH;
 #if !CONFIG_REALTIME_ONLY
-  MV_STATS *mv_stats;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  mv_stats = &cpi->mv_stats;
-#else
-  mv_stats = &cpi->ppi->mv_stats;
-#endif
+  MV_STATS *mv_stats = &cpi->mv_stats;
 #endif  // !CONFIG_REALTIME_ONLY
 
   if (cpi->sf.hl_sf.high_precision_mv_usage == QTR_ONLY) {

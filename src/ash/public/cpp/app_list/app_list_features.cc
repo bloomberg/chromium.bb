@@ -46,9 +46,11 @@ const base::Feature kDynamicSearchUpdateAnimation{
 const base::Feature kLauncherLacrosIntegration{
     "LauncherLacrosIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFeedbackOnContinueSectionRemove{
-    "FeedbackOnContinueSectionRemove", base::FEATURE_ENABLED_BY_DEFAULT};
+    "FeedbackOnContinueSectionRemove", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCompactBubbleLauncher{"CompactBubbleLauncher",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLauncherPlayStoreSearch{"LauncherPlayStoreSearch",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAppRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppRanker);
@@ -150,6 +152,10 @@ bool IsFeedbackOnContinueSectionRemoveEnabled() {
 
 bool IsCompactBubbleLauncherEnabled() {
   return base::FeatureList::IsEnabled(kCompactBubbleLauncher);
+}
+
+bool IsLauncherPlayStoreSearchEnabled() {
+  return base::FeatureList::IsEnabled(kLauncherPlayStoreSearch);
 }
 
 }  // namespace app_list_features

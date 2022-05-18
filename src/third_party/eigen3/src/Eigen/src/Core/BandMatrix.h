@@ -102,9 +102,9 @@ class BandMatrixBase : public EigenBase<Derived>
                      : min_size_prefer_dynamic(RowsAtCompileTime, ColsAtCompileTime - ActualIndex))
       };
       typedef Block<CoefficientsType,1, DiagonalSize> BuildType;
-      typedef typename internal::conditional<Conjugate,
+      typedef std::conditional_t<Conjugate,
                  CwiseUnaryOp<internal::scalar_conjugate_op<Scalar>,BuildType >,
-                 BuildType>::type Type;
+                 BuildType> Type;
     };
 
     /** \returns a vector expression of the \a N -th sub or super diagonal */

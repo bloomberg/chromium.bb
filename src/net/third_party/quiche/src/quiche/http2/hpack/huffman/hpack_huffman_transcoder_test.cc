@@ -11,7 +11,7 @@
 #include "quiche/http2/decoder/decode_status.h"
 #include "quiche/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "quiche/http2/hpack/huffman/hpack_huffman_encoder.h"
-#include "quiche/http2/tools/random_decoder_test.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
 #include "quiche/common/platform/api/quiche_test.h"
 #include "quiche/common/quiche_text_utils.h"
 
@@ -72,19 +72,18 @@ class HpackHuffmanTranscoderTest : public RandomDecoderTest {
   }
 
   AssertionResult TranscodeAndValidateSeveralWays(
-      absl::string_view plain,
-      absl::string_view expected_huffman) {
+      absl::string_view plain, absl::string_view expected_huffman) {
     size_t encoded_size = HuffmanSize(plain);
     std::string encoded;
     HuffmanEncode(plain, encoded_size, &encoded);
-    VERIFY_EQ(encoded_size, encoded.size());
+    HTTP2_VERIFY_EQ(encoded_size, encoded.size());
     if (!expected_huffman.empty() || plain.empty()) {
-      VERIFY_EQ(encoded, expected_huffman);
+      HTTP2_VERIFY_EQ(encoded, expected_huffman);
     }
     input_bytes_expected_ = encoded.size();
     auto validator = [plain, this]() -> AssertionResult {
-      VERIFY_EQ(output_buffer_.size(), plain.size());
-      VERIFY_EQ(output_buffer_, plain);
+      HTTP2_VERIFY_EQ(output_buffer_.size(), plain.size());
+      HTTP2_VERIFY_EQ(output_buffer_, plain);
       return AssertionSuccess();
     };
     DecodeBuffer db(encoded);

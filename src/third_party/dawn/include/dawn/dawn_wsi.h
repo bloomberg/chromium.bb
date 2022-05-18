@@ -15,7 +15,7 @@
 #ifndef INCLUDE_DAWN_DAWN_WSI_H_
 #define INCLUDE_DAWN_DAWN_WSI_H_
 
-#include <dawn/webgpu.h>
+#include "dawn/webgpu.h"
 
 // Error message (or nullptr if there was no error)
 typedef const char* DawnSwapChainError;
@@ -65,7 +65,7 @@ struct DawnWSIContextD3D12 {
 #endif
 
 #if defined(DAWN_ENABLE_BACKEND_METAL) && defined(__OBJC__)
-#    import <Metal/Metal.h>
+#import <Metal/Metal.h>
 
 struct DawnWSIContextMetal {
     id<MTLDevice> device = nil;

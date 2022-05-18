@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
@@ -646,14 +647,6 @@ DAWN_INSTANTIATE_TEST(VertexStateTest,
                       OpenGLBackend(),
                       OpenGLESBackend(),
                       VulkanBackend());
-
-// TODO for the input state:
-//  - Add more vertex formats
-//  - Add checks that the stride is enough to contain all attributes
-//  - Add checks stride less than some limit
-//  - Add checks for alignement of vertex buffers and attributes if needed
-//  - Check for attribute narrowing
-//  - Check that the input state and the pipeline vertex input types match
 
 class OptionalVertexStateTest : public DawnTest {};
 

@@ -120,7 +120,7 @@ std::complex<double> RandomToTypeUniform<std::complex<double> >(uint64_t* state,
 
 template <typename T> class UniformRandomGenerator {
  public:
-  static const bool PacketAccess = true;
+  static constexpr bool PacketAccess = true;
 
   // Uses the given "seed" if non-zero, otherwise uses a random seed.
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE UniformRandomGenerator(
@@ -234,7 +234,7 @@ std::complex<double> RandomToTypeNormal<std::complex<double> >(uint64_t* state, 
 
 template <typename T> class NormalRandomGenerator {
  public:
-  static const bool PacketAccess = true;
+  static constexpr bool PacketAccess = true;
 
   // Uses the given "seed" if non-zero, otherwise uses a random seed.
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE NormalRandomGenerator(uint64_t seed = 0) {

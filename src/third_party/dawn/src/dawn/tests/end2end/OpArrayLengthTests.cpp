@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <string>
 
 #include "dawn/common/Assert.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 class OpArrayLengthTest : public DawnTest {
   protected:
-    void SetUp() {
+    void SetUp() override {
         DawnTest::SetUp();
 
         // Create buffers of various size to check the length() implementation
@@ -143,7 +144,7 @@ TEST_P(OpArrayLengthTest, Compute) {
     pass.SetPipeline(pipeline);
     pass.SetBindGroup(0, mBindGroup);
     pass.SetBindGroup(1, resultBindGroup);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
     pass.End();
 
     wgpu::CommandBuffer commands = encoder.Finish();

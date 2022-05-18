@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "GrAAConvexTessellator_hdr",
@@ -151,7 +153,6 @@ generated_cc_atom(
         "//include/core:SkMatrix_hdr",
         "//include/core:SkRect_hdr",
         "//include/core:SkTypes_hdr",
-        "//include/private:SkTo_hdr",
     ],
 )
 

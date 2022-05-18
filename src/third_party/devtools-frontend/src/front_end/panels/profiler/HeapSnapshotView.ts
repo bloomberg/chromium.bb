@@ -44,7 +44,14 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {HeapSnapshotSortableDataGrid} from './HeapSnapshotDataGrids.js';
-import {AllocationDataGrid, HeapSnapshotSortableDataGridEvents, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotContainmentDataGrid} from './HeapSnapshotDataGrids.js';
+import {
+  AllocationDataGrid,
+  HeapSnapshotSortableDataGridEvents,
+  HeapSnapshotConstructorsDataGrid,
+  HeapSnapshotDiffDataGrid,
+  HeapSnapshotRetainmentDataGrid,
+  HeapSnapshotContainmentDataGrid,
+} from './HeapSnapshotDataGrids.js';
 import type {AllocationGridNode, HeapSnapshotGridNode} from './HeapSnapshotGridNodes.js';
 import {HeapSnapshotGenericObjectNode} from './HeapSnapshotGridNodes.js';
 import type {HeapSnapshotProxy} from './HeapSnapshotProxy.js';
@@ -53,7 +60,12 @@ import type {IdsRangeChangedEvent} from './HeapTimelineOverview.js';
 import {HeapTimelineOverview, Events, Samples} from './HeapTimelineOverview.js';
 import * as ModuleUIStrings from './ModuleUIStrings.js';
 import type {DataDisplayDelegate} from './ProfileHeader.js';
-import {Events as ProfileHeaderEvents, ProfileEvents as ProfileTypeEvents, ProfileHeader, ProfileType} from './ProfileHeader.js';
+import {
+  Events as ProfileHeaderEvents,
+  ProfileEvents as ProfileTypeEvents,
+  ProfileHeader,
+  ProfileType,
+} from './ProfileHeader.js';
 import {ProfileSidebarTreeElement} from './ProfileSidebarTreeElement.js';
 import {instance} from './ProfileTypeRegistry.js';
 
@@ -376,6 +388,7 @@ export class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayD
       const retainmentViewHeader = document.createElement('div');
       retainmentViewHeader.classList.add('heap-snapshot-view-resizer');
       const retainingPathsTitleDiv = retainmentViewHeader.createChild('div', 'title');
+      retainmentViewHeader.createChild('div', 'verticalResizerIcon');
       const retainingPathsTitle = retainingPathsTitleDiv.createChild('span');
       retainingPathsTitle.textContent = i18nString(UIStrings.retainers);
 
@@ -1123,6 +1136,7 @@ export class AllocationPerspective extends Perspective {
     const resizer = document.createElement('div');
     resizer.classList.add('heap-snapshot-view-resizer');
     const title = resizer.createChild('div', 'title').createChild('span');
+    resizer.createChild('div', 'verticalResizerIcon');
     title.textContent = i18nString(UIStrings.liveObjects);
     this.allocationSplitWidget.hideDefaultResizer();
     this.allocationSplitWidget.installResizer(resizer);
@@ -1890,7 +1904,8 @@ export class HeapAllocationStackView extends UI.Widget.Widget {
       const target = this.heapProfilerModel ? this.heapProfilerModel.target() : null;
       const options = {columnNumber: frame.column - 1, inlineFrameIndex: 0};
       const urlElement = this.linkifier.linkifyScriptLocation(
-          target, String(frame.scriptId) as Protocol.Runtime.ScriptId, frame.scriptName, frame.line - 1, options);
+          target, String(frame.scriptId) as Protocol.Runtime.ScriptId,
+          frame.scriptName as Platform.DevToolsPath.UrlString, frame.line - 1, options);
       frameDiv.appendChild(urlElement);
       stackFrameToURLElement.set(frameDiv, urlElement);
       frameDiv.addEventListener('contextmenu', this.onContextMenu.bind(this, urlElement));

@@ -102,11 +102,35 @@ void TransmissionControlBlock::MaybeSendForwardTsn(SctpPacket::Builder& builder,
   }
 }
 
+void TransmissionControlBlock::MaybeSendFastRetransmit() {
+  if (!retransmission_queue_.has_data_to_be_fast_retransmitted()) {
+    return;
+  }
+
+  // https://datatracker.ietf.org/doc/html/rfc4960#section-7.2.4
+  // "Determine how many of the earliest (i.e., lowest TSN) DATA chunks marked
+  // for retransmission will fit into a single packet, subject to constraint of
+  // the path MTU of the destination transport address to which the packet is
+  // being sent.  Call this value K. Retransmit those K DATA chunks in a single
+  // packet.  When a Fast Retransmit is being performed, the sender SHOULD
+  // ignore the value of cwnd and SHOULD NOT delay retransmission for this
+  // single packet."
+
+  SctpPacket::Builder builder(peer_verification_tag_, options_);
+  auto chunks = retransmission_queue_.GetChunksForFastRetransmit(
+      builder.bytes_remaining());
+  for (auto& [tsn, data] : chunks) {
+    if (capabilities_.message_interleaving) {
+      builder.Add(IDataChunk(tsn, std::move(data), false));
+    } else {
+      builder.Add(DataChunk(tsn, std::move(data), false));
+    }
+  }
+  packet_sender_.Send(builder);
+}
+
 void TransmissionControlBlock::SendBufferedPackets(SctpPacket::Builder& builder,
                                                    TimeMs now) {
-  // FORWARD-TSNs are sent as separate packets to avoid bugs.webrtc.org/12961.
-  MaybeSendForwardTsn(builder, now);
-
   for (int packet_idx = 0;
        packet_idx < options_.max_burst && retransmission_queue_.can_send_data();
        ++packet_idx) {
@@ -131,6 +155,7 @@ void TransmissionControlBlock::SendBufferedPackets(SctpPacket::Builder& builder,
         builder.Add(data_tracker_.CreateSelectiveAck(
             reassembly_queue_.remaining_bytes()));
       }
+      MaybeSendForwardTsn(builder, now);
       absl::optional<ReConfigChunk> reconfig =
           stream_reset_handler_.MakeStreamResetRequest();
       if (reconfig.has_value()) {

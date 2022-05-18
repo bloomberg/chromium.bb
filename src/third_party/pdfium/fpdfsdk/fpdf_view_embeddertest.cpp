@@ -24,7 +24,6 @@
 #include "testing/utils/hash.h"
 #include "testing/utils/path_service.h"
 #include "third_party/base/check.h"
-#include "third_party/base/cxx17_backports.h"
 
 using pdfium::kManyRectanglesChecksum;
 
@@ -1106,9 +1105,9 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
       {"postamble", 11u, "6b79e25da35d86634ea27c38f64cf243"},
   };
 
-  ASSERT_EQ(static_cast<int>(pdfium::size(kExpectedResults)),
+  ASSERT_EQ(static_cast<int>(std::size(kExpectedResults)),
             FPDF_GetXFAPacketCount(document()));
-  for (size_t i = 0; i < pdfium::size(kExpectedResults); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedResults); ++i) {
     char name_buffer[20] = {};
     ASSERT_EQ(strlen(kExpectedResults[i].name) + 1,
               FPDF_GetXFAPacketName(document(), i, nullptr, 0));
@@ -1124,9 +1123,8 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
     EXPECT_TRUE(FPDF_GetXFAPacketContent(document(), i, data_buffer.data(),
                                          data_buffer.size(), &buflen));
     EXPECT_EQ(kExpectedResults[i].content_length, buflen);
-    EXPECT_STREQ(
-        kExpectedResults[i].content_checksum,
-        GenerateMD5Base16(data_buffer.data(), data_buffer.size()).c_str());
+    EXPECT_STREQ(kExpectedResults[i].content_checksum,
+                 GenerateMD5Base16(data_buffer).c_str());
   }
 
   // Test bad parameters.
@@ -1134,16 +1132,16 @@ TEST_F(FPDFViewEmbedderTest, GetXFAArrayData) {
 
   EXPECT_EQ(0u, FPDF_GetXFAPacketName(nullptr, 0, nullptr, 0));
   EXPECT_EQ(0u, FPDF_GetXFAPacketName(document(), -1, nullptr, 0));
-  EXPECT_EQ(0u, FPDF_GetXFAPacketName(
-                    document(), pdfium::size(kExpectedResults), nullptr, 0));
+  EXPECT_EQ(0u, FPDF_GetXFAPacketName(document(), std::size(kExpectedResults),
+                                      nullptr, 0));
 
   unsigned long buflen = 123;
   EXPECT_FALSE(FPDF_GetXFAPacketContent(nullptr, 0, nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
   EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), -1, nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
-  EXPECT_FALSE(FPDF_GetXFAPacketContent(
-      document(), pdfium::size(kExpectedResults), nullptr, 0, &buflen));
+  EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), std::size(kExpectedResults),
+                                        nullptr, 0, &buflen));
   EXPECT_EQ(123u, buflen);
   EXPECT_FALSE(FPDF_GetXFAPacketContent(document(), 0, nullptr, 0, nullptr));
 }
@@ -1166,9 +1164,8 @@ TEST_F(FPDFViewEmbedderTest, GetXFAStreamData) {
   EXPECT_TRUE(FPDF_GetXFAPacketContent(document(), 0, data_buffer.data(),
                                        data_buffer.size(), &buflen));
   EXPECT_EQ(121u, buflen);
-  EXPECT_STREQ(
-      "8f912eaa1e66c9341cb3032ede71e147",
-      GenerateMD5Base16(data_buffer.data(), data_buffer.size()).c_str());
+  EXPECT_STREQ("8f912eaa1e66c9341cb3032ede71e147",
+               GenerateMD5Base16(data_buffer).c_str());
 }
 
 TEST_F(FPDFViewEmbedderTest, GetXFADataForNoForm) {

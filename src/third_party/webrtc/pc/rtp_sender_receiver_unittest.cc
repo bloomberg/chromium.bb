@@ -181,9 +181,6 @@ class RtpSenderReceiverTest
 
     voice_channel_->SetRtpTransport(nullptr);
     video_channel_->SetRtpTransport(nullptr);
-
-    channel_manager_->DestroyChannel(voice_channel_);
-    channel_manager_->DestroyChannel(video_channel_);
   }
 
   std::unique_ptr<webrtc::RtpTransportInternal> CreateDtlsSrtpTransport() {
@@ -224,7 +221,7 @@ class RtpSenderReceiverTest
     audio_rtp_sender_ =
         AudioRtpSender::Create(worker_thread_, audio_track_->id(), nullptr,
                                set_streams_observer.get());
-    ASSERT_TRUE(audio_rtp_sender_->SetTrack(audio_track_));
+    ASSERT_TRUE(audio_rtp_sender_->SetTrack(audio_track_.get()));
     EXPECT_CALL(*set_streams_observer, OnSetStreams());
     audio_rtp_sender_->SetStreams({local_stream_->id()});
     audio_rtp_sender_->SetMediaChannel(voice_media_channel_);
@@ -288,7 +285,7 @@ class RtpSenderReceiverTest
         std::make_unique<MockSetStreamsObserver>();
     video_rtp_sender_ = VideoRtpSender::Create(
         worker_thread_, video_track_->id(), set_streams_observer.get());
-    ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_));
+    ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_.get()));
     EXPECT_CALL(*set_streams_observer, OnSetStreams());
     video_rtp_sender_->SetStreams({local_stream_->id()});
     video_rtp_sender_->SetMediaChannel(video_media_channel_);
@@ -533,8 +530,8 @@ class RtpSenderReceiverTest
   cricket::FakeMediaEngine* media_engine_;
   std::unique_ptr<cricket::ChannelManager> channel_manager_;
   cricket::FakeCall fake_call_;
-  cricket::VoiceChannel* voice_channel_;
-  cricket::VideoChannel* video_channel_;
+  std::unique_ptr<cricket::VoiceChannel> voice_channel_;
+  std::unique_ptr<cricket::VideoChannel> video_channel_;
   cricket::FakeVoiceMediaChannel* voice_media_channel_;
   cricket::FakeVideoMediaChannel* video_media_channel_;
   rtc::scoped_refptr<AudioRtpSender> audio_rtp_sender_;
@@ -733,7 +730,7 @@ TEST_F(RtpSenderReceiverTest, AudioSenderWithoutTrackAndSsrc) {
       AudioTrack::Create(kAudioTrackId, nullptr);
 
   // Track but no SSRC.
-  EXPECT_TRUE(audio_rtp_sender_->SetTrack(track));
+  EXPECT_TRUE(audio_rtp_sender_->SetTrack(track.get()));
   VerifyVoiceChannelNoInput();
 
   // SSRC but no track.
@@ -748,7 +745,7 @@ TEST_F(RtpSenderReceiverTest, VideoSenderWithoutTrackAndSsrc) {
   CreateVideoRtpSenderWithNoTrack();
 
   // Track but no SSRC.
-  EXPECT_TRUE(video_rtp_sender_->SetTrack(video_track_));
+  EXPECT_TRUE(video_rtp_sender_->SetTrack(video_track_.get()));
   VerifyVideoChannelNoInput();
 
   // SSRC but no track.
@@ -764,7 +761,7 @@ TEST_F(RtpSenderReceiverTest, AudioSenderEarlyWarmupSsrcThenTrack) {
   rtc::scoped_refptr<AudioTrackInterface> track =
       AudioTrack::Create(kAudioTrackId, nullptr);
   audio_rtp_sender_->SetSsrc(kAudioSsrc);
-  audio_rtp_sender_->SetTrack(track);
+  audio_rtp_sender_->SetTrack(track.get());
   VerifyVoiceChannelInput();
 
   DestroyAudioRtpSender();
@@ -776,7 +773,7 @@ TEST_F(RtpSenderReceiverTest, AudioSenderEarlyWarmupTrackThenSsrc) {
   CreateAudioRtpSenderWithNoTrack();
   rtc::scoped_refptr<AudioTrackInterface> track =
       AudioTrack::Create(kAudioTrackId, nullptr);
-  audio_rtp_sender_->SetTrack(track);
+  audio_rtp_sender_->SetTrack(track.get());
   audio_rtp_sender_->SetSsrc(kAudioSsrc);
   VerifyVoiceChannelInput();
 
@@ -789,7 +786,7 @@ TEST_F(RtpSenderReceiverTest, VideoSenderEarlyWarmupSsrcThenTrack) {
   AddVideoTrack();
   CreateVideoRtpSenderWithNoTrack();
   video_rtp_sender_->SetSsrc(kVideoSsrc);
-  video_rtp_sender_->SetTrack(video_track_);
+  video_rtp_sender_->SetTrack(video_track_.get());
   VerifyVideoChannelInput();
 
   DestroyVideoRtpSender();
@@ -800,7 +797,7 @@ TEST_F(RtpSenderReceiverTest, VideoSenderEarlyWarmupSsrcThenTrack) {
 TEST_F(RtpSenderReceiverTest, VideoSenderEarlyWarmupTrackThenSsrc) {
   AddVideoTrack();
   CreateVideoRtpSenderWithNoTrack();
-  video_rtp_sender_->SetTrack(video_track_);
+  video_rtp_sender_->SetTrack(video_track_.get());
   video_rtp_sender_->SetSsrc(kVideoSsrc);
   VerifyVideoChannelInput();
 
@@ -903,7 +900,7 @@ TEST_F(RtpSenderReceiverTest, AudioSenderInitParametersMovedAfterNegotiation) {
       std::make_unique<MockSetStreamsObserver>();
   audio_rtp_sender_ = AudioRtpSender::Create(
       worker_thread_, audio_track_->id(), nullptr, set_streams_observer.get());
-  ASSERT_TRUE(audio_rtp_sender_->SetTrack(audio_track_));
+  ASSERT_TRUE(audio_rtp_sender_->SetTrack(audio_track_.get()));
   EXPECT_CALL(*set_streams_observer, OnSetStreams());
   audio_rtp_sender_->SetStreams({local_stream_->id()});
 
@@ -1094,7 +1091,7 @@ TEST_F(RtpSenderReceiverTest, VideoSenderInitParametersMovedAfterNegotiation) {
       std::make_unique<MockSetStreamsObserver>();
   video_rtp_sender_ = VideoRtpSender::Create(worker_thread_, video_track_->id(),
                                              set_streams_observer.get());
-  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_));
+  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_.get()));
   EXPECT_CALL(*set_streams_observer, OnSetStreams());
   video_rtp_sender_->SetStreams({local_stream_->id()});
 
@@ -1135,7 +1132,7 @@ TEST_F(RtpSenderReceiverTest,
       std::make_unique<MockSetStreamsObserver>();
   video_rtp_sender_ = VideoRtpSender::Create(worker_thread_, video_track_->id(),
                                              set_streams_observer.get());
-  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_));
+  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_.get()));
   EXPECT_CALL(*set_streams_observer, OnSetStreams());
   video_rtp_sender_->SetStreams({local_stream_->id()});
 
@@ -1524,7 +1521,7 @@ TEST_F(RtpSenderReceiverTest,
   video_track_->set_content_hint(VideoTrackInterface::ContentHint::kDetailed);
   video_rtp_sender_ = VideoRtpSender::Create(worker_thread_, video_track_->id(),
                                              set_streams_observer.get());
-  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_));
+  ASSERT_TRUE(video_rtp_sender_->SetTrack(video_track_.get()));
   EXPECT_CALL(*set_streams_observer, OnSetStreams());
   video_rtp_sender_->SetStreams({local_stream_->id()});
   video_rtp_sender_->SetMediaChannel(video_media_channel_);

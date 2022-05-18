@@ -60,9 +60,10 @@ import * as timertick from './camera/timertick.js';
 import {VideoEncoderOptions} from './camera/video_encoder_options.js';
 import {CropDocument} from './crop_document.js';
 import {Dialog} from './dialog.js';
+import {OptionPanel} from './option_panel.js';
 import {PTZPanel} from './ptz_panel.js';
 import * as review from './review.js';
-import {PrimarySettings} from './settings.js';
+import {PrimarySettings} from './settings/primary.js';
 import {View} from './view.js';
 import {WarningType} from './warning.js';
 
@@ -80,7 +81,7 @@ export class Camera extends View implements CameraViewUI {
   /**
    * Layout handler for the camera view.
    */
-  private readonly layoutHandler = new Layout();
+  private readonly layoutHandler: Layout;
 
   private readonly scanOptions: ScanOptions;
 
@@ -119,19 +120,22 @@ export class Camera extends View implements CameraViewUI {
 
   constructor(
       protected readonly resultSaver: ResultSaver,
-      private readonly cameraManager: CameraManager,
+      protected readonly cameraManager: CameraManager,
       readonly perfLogger: PerfLogger,
   ) {
     super(ViewName.CAMERA);
 
     this.subViews = [
       new PrimarySettings(this.cameraManager),
+      new OptionPanel(),
       new PTZPanel(),
       this.review,
       this.cropDocument,
       this.docModeDialogView,
       new View(ViewName.FLASH),
     ];
+
+    this.layoutHandler = new Layout(this.cameraManager);
 
     this.scanOptions = new ScanOptions(this.cameraManager);
 
@@ -250,6 +254,9 @@ export class Camera extends View implements CameraViewUI {
           state.set(state.State.MODE_SWITCHING, true);
           const isSuccess = await this.cameraManager.switchMode(mode);
           state.set(state.State.MODE_SWITCHING, false, {hasError: !isSuccess});
+          if (isSuccess) {
+            this.focusShutterButton();
+          }
         }
       });
     }
@@ -356,13 +363,8 @@ export class Camera extends View implements CameraViewUI {
     // to take document photo with space key as shortcut. See b/196907822.
     const checkRefocus = () => {
       if (!state.get(state.State.CAMERA_CONFIGURING) && state.get(Mode.SCAN) &&
-          this.scanOptions.isDocumentModeEanbled() &&
-          nav.isTopMostView(this.name)) {
-        for (const btn of dom.getAll('button.shutter', HTMLButtonElement)) {
-          if (btn.offsetParent !== null) {
-            btn.focus();
-          }
-        }
+          this.scanOptions.isDocumentModeEanbled()) {
+        this.focusShutterButton();
       }
     };
     state.addObserver(state.State.CAMERA_CONFIGURING, checkRefocus);
@@ -373,27 +375,46 @@ export class Camera extends View implements CameraViewUI {
     return this.subViews;
   }
 
-  override focus(): void {
-    (async () => {
-      await this.cameraReady.wait();
-
-      // Check the view is still on the top after await.
-      if (!nav.isTopMostView(ViewName.CAMERA)) {
-        return;
+  private focusShutterButton(): void {
+    if (!nav.isTopMostView(this.name)) {
+      return;
+    }
+    // Avoid focusing invisible shutters.
+    for (const btn of dom.getAll('button.shutter', HTMLButtonElement)) {
+      if (btn.offsetParent !== null) {
+        btn.focus();
       }
+    }
+  }
 
-      if (newFeatureToast.isShowing()) {
-        newFeatureToast.focus();
-        return;
-      }
+  private async defaultFocus(): Promise<void> {
+    await this.cameraReady.wait();
 
-      // Avoid focusing invisible shutters.
-      for (const btn of dom.getAll('button.shutter', HTMLButtonElement)) {
-        if (btn.offsetParent !== null) {
-          btn.focus();
-        }
-      }
-    })();
+    // Check the view is still on the top after await.
+    if (!nav.isTopMostView(ViewName.CAMERA)) {
+      return;
+    }
+
+    if (newFeatureToast.isShowing()) {
+      newFeatureToast.focus();
+      return;
+    }
+
+    this.focusShutterButton();
+  }
+
+  override onShownAsTop(): void {
+    this.defaultFocus();
+  }
+
+  override onUncoveredAsTop(viewName: ViewName): void {
+    if ([ViewName.SETTINGS, ViewName.OPTION_PANEL].includes(viewName)) {
+      // Don't refocus on shutter button when coming back from setting menu.
+      super.onUncoveredAsTop(viewName);
+    } else {
+      this.setFocusable();
+      this.defaultFocus();
+    }
   }
 
   /**
@@ -411,7 +432,8 @@ export class Camera extends View implements CameraViewUI {
 
     state.set(state.State.TAKING, true);
     this.shutterType = shutterType;
-    this.focus();  // Refocus the visible shutter button for ChromeVox.
+    // Refocus the visible shutter button for ChromeVox.
+    this.focusShutterButton();
     this.take = (async () => {
       let hasError = false;
       try {
@@ -445,7 +467,8 @@ export class Camera extends View implements CameraViewUI {
           hasError,
           facing: this.getFacing(),
         });
-        this.focus();  // Refocus the visible shutter button for ChromeVox.
+        // Refocus the visible shutter button for ChromeVox.
+        this.focusShutterButton();
       }
     })();
     return this.take;
@@ -479,6 +502,8 @@ export class Camera extends View implements CameraViewUI {
       resolution,
       shutterType: this.shutterType,
       isVideoSnapshot: true,
+      resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+      aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
     });
     try {
       const name = (new Filenamer(timestamp)).newImageName();
@@ -500,6 +525,18 @@ export class Camera extends View implements CameraViewUI {
   async onPhotoCaptureDone(pendingPhotoResult: Promise<PhotoResult>):
       Promise<void> {
     state.set(PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, true);
+
+    if (this.cameraManager.preferSquarePhoto()) {
+      pendingPhotoResult = (async () => {
+        const photoResult = await pendingPhotoResult;
+        const croppedBlob = await util.cropSquare(photoResult.blob);
+        return {
+          ...photoResult,
+          blob: croppedBlob,
+        };
+      })();
+    }
+
     try {
       const {resolution, blob, timestamp, metadata} =
           await this.checkPhotoResult(pendingPhotoResult);
@@ -509,6 +546,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
+        resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
 
       try {
@@ -542,6 +581,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
+        resolutionLevel: this.cameraManager.getPhotoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
 
       // Save reference.
@@ -653,6 +694,10 @@ export class Camera extends View implements CameraViewUI {
             shutterType: this.shutterType,
             docResult,
             docFixType: fixType,
+            resolutionLevel: this.cameraManager.getPhotoResolutionLevel(
+                originImage.resolution),
+            aspectRatioSet:
+                this.cameraManager.getAspectRatioSet(originImage.resolution),
           });
         };
 
@@ -782,6 +827,8 @@ export class Camera extends View implements CameraViewUI {
         duration,
         shutterType: this.shutterType,
         gifResult,
+        resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
     };
 
@@ -827,6 +874,8 @@ export class Camera extends View implements CameraViewUI {
         resolution,
         shutterType: this.shutterType,
         everPaused,
+        resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
       });
       await this.resultSaver.finishSaveVideo(videoSaver);
       state.set(

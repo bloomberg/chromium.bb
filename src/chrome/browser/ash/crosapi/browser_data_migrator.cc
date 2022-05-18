@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -54,7 +55,7 @@ uint64_t DiskCheck(const base::FilePath& profile_data_dir) {
       GetTargetItems(profile_data_dir, ItemType::kDeletable);
 
   int64_t required_size = need_copy_items.total_size;
-  if (!base::FeatureList::IsEnabled(kLacrosMoveProfileMigration))
+  if (!base::FeatureList::IsEnabled(ash::features::kLacrosMoveProfileMigration))
     required_size += lacros_items.total_size;
   required_size -= deletable_items.total_size;
 
@@ -219,6 +220,20 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
   // Check if lacros is enabled. If not immediately return.
   if (!crosapi::browser_util::IsLacrosEnabledForMigration(user,
                                                           policy_init_state)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSafeMode)) {
+      // Skip clearing of flags if in safe mode to make sure
+      // that the migrator does not wipe Lacros user data dir due to unexpected
+      // Ash crashes. Specifically this avoids the following scenario: Ash
+      // experiences a crash loop due to some experimental flag -> experimental
+      // flags get dropped including ones to enable Lacros -> Lacros is
+      // disabled and migration completion flags gets cleared -> on next login
+      // migration is run and wipes existing user data.
+      LOG(WARNING) << "Lacros is disabled but safe mode is enabled so skipping "
+                      "clearing of prefs.";
+      return false;
+    }
+
     // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
     // this log message.
     LOG(WARNING)
@@ -355,7 +370,8 @@ void BrowserDataMigratorImpl::Migrate(MigrateCallback callback) {
   DCHECK(GetMigrationStep(local_state_) == MigrationStep::kRestartCalled);
   SetMigrationStep(local_state_, MigrationStep::kStarted);
 
-  if (base::FeatureList::IsEnabled(kLacrosMoveProfileMigration) ||
+  if (base::FeatureList::IsEnabled(
+          ash::features::kLacrosMoveProfileMigration) ||
       MoveMigrator::ResumeRequired(local_state_, user_id_hash_)) {
     LOG(WARNING) << "Initializing MoveMigrator.";
     migrator_delegate_ = std::make_unique<MoveMigrator>(

@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/feature_discovery_metric_util.h"
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
+
 namespace ash::feature_discovery {
 
 namespace {
@@ -16,8 +18,17 @@ const char kMockFeatureName[] = "kMockFeature";
 
 }  // namespace
 
-const std::array<TrackableFeatureInfo, 1> kTrackableFeatureArray{
-    TrackableFeatureInfo{TrackableFeature::kMockFeature, kMockFeatureName,
-                         kMockFeatureHistogram}};
+const std::array<TrackableFeatureInfo, static_cast<int>(TrackableFeature::kMax)>
+    kTrackableFeatureArray{
+        TrackableFeatureInfo{TrackableFeature::kMockFeature, kMockFeatureName,
+                             kMockFeatureHistogram},
+        TrackableFeatureInfo{
+            TrackableFeature::kAppListReorderAfterEducationNudge,
+            "AppListReorderAfterEducationNudge",
+            kAppListSortDiscoveryDurationAfterNudge},
+        TrackableFeatureInfo{
+            TrackableFeature::kAppListReorderAfterSessionActivation,
+            "AppListReorderAfterSessionActivation",
+            kAppListSortDiscoveryDurationAfterActivation}};
 
 }  // namespace ash::feature_discovery

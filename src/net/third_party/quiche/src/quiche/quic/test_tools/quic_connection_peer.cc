@@ -60,10 +60,28 @@ QuicTime::Delta QuicConnectionPeer::GetHandshakeTimeout(
 }
 
 // static
+QuicTime::Delta QuicConnectionPeer::GetBandwidthUpdateTimeout(
+    QuicConnection* connection) {
+  return connection->idle_network_detector_.bandwidth_update_timeout_;
+}
+
+// static
+void QuicConnectionPeer::DisableBandwidthUpdate(QuicConnection* connection) {
+  if (connection->idle_network_detector_.bandwidth_update_timeout_
+          .IsInfinite()) {
+    return;
+  }
+  connection->idle_network_detector_.bandwidth_update_timeout_ =
+      QuicTime::Delta::Infinite();
+  connection->idle_network_detector_.SetAlarm();
+}
+
+// static
 void QuicConnectionPeer::SetPerspective(QuicConnection* connection,
                                         Perspective perspective) {
   connection->perspective_ = perspective;
   QuicFramerPeer::SetPerspective(&connection->framer_, perspective);
+  connection->ping_manager_.perspective_ = perspective;
 }
 
 // static
@@ -101,7 +119,7 @@ void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
 void QuicConnectionPeer::SetCurrentPacket(QuicConnection* connection,
                                           absl::string_view current_packet) {
   connection->current_packet_data_ = current_packet.data();
-  connection->last_size_ = current_packet.size();
+  connection->last_received_packet_info_.length = current_packet.size();
 }
 
 // static
@@ -128,6 +146,9 @@ QuicAlarm* QuicConnectionPeer::GetAckAlarm(QuicConnection* connection) {
 
 // static
 QuicAlarm* QuicConnectionPeer::GetPingAlarm(QuicConnection* connection) {
+  if (GetQuicReloadableFlag(quic_use_ping_manager2)) {
+    return connection->ping_manager_.alarm_.get();
+  }
   return connection->ping_alarm_.get();
 }
 
@@ -219,7 +240,7 @@ QuicEncryptedPacket* QuicConnectionPeer::GetConnectionClosePacket(
 // static
 QuicPacketHeader* QuicConnectionPeer::GetLastHeader(
     QuicConnection* connection) {
-  return &connection->last_header_;
+  return &connection->last_received_packet_info_.header;
 }
 
 // static
@@ -300,12 +321,6 @@ bool QuicConnectionPeer::SupportsReleaseTime(QuicConnection* connection) {
 QuicConnection::PacketContent QuicConnectionPeer::GetCurrentPacketContent(
     QuicConnection* connection) {
   return connection->current_packet_content_;
-}
-
-// static
-void QuicConnectionPeer::SetLastHeaderFormat(QuicConnection* connection,
-                                             PacketHeaderFormat format) {
-  connection->last_header_.form = format;
 }
 
 // static
@@ -519,7 +534,7 @@ QuicConnectionPeer::MakeSelfIssuedConnectionIdManager(
 // static
 void QuicConnectionPeer::SetLastDecryptedLevel(QuicConnection* connection,
                                                EncryptionLevel level) {
-  connection->last_decrypted_packet_level_ = level;
+  connection->last_received_packet_info_.decrypted_level = level;
 }
 
 // static

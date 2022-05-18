@@ -5,6 +5,7 @@
 package org.chromium.components.browser_ui.modaldialog;
 
 import android.text.TextUtils;
+import android.view.View;
 
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -32,6 +33,8 @@ public class ModalDialogViewBinder
             view.setMessageParagraph2(model.get(ModalDialogProperties.MESSAGE_PARAGRAPH_2));
         } else if (ModalDialogProperties.CUSTOM_VIEW == propertyKey) {
             view.setCustomView(model.get(ModalDialogProperties.CUSTOM_VIEW));
+        } else if (ModalDialogProperties.CUSTOM_BUTTON_BAR_VIEW == propertyKey) {
+            view.setCustomButtonBar(model.get(ModalDialogProperties.CUSTOM_BUTTON_BAR_VIEW));
         } else if (ModalDialogProperties.POSITIVE_BUTTON_TEXT == propertyKey) {
             assert checkFilterTouchConsistency(model);
             view.setButtonText(ModalDialogProperties.ButtonType.POSITIVE,
@@ -76,10 +79,15 @@ public class ModalDialogViewBinder
             // Intentionally left empty since this is a property used for the dialog container.
         } else if (ModalDialogProperties.BUTTON_STYLES == propertyKey) {
             assert checkFilledButtonConsistency(model);
+            assert checkCustomButtonsConsistency(model);
             // Intentionally left empty since this is only read once before the dialog is inflated.
         } else if (ModalDialogProperties.FULLSCREEN_DIALOG == propertyKey
-                || ModalDialogProperties.DIALOG_WHEN_LARGE == propertyKey) {
-            view.setIgnoreWidthConstraints(true);
+                || ModalDialogProperties.DIALOG_WHEN_LARGE == propertyKey
+                || ModalDialogProperties.EXCEED_MAX_HEIGHT == propertyKey) {
+            boolean ignoreWidthConstraints = model.get(ModalDialogProperties.FULLSCREEN_DIALOG)
+                    || model.get(ModalDialogProperties.DIALOG_WHEN_LARGE);
+            boolean ignoreHeightConstraint = model.get(ModalDialogProperties.EXCEED_MAX_HEIGHT);
+            view.setIgnoreConstraints(ignoreWidthConstraints, ignoreHeightConstraint);
             assert !(model.get(ModalDialogProperties.FULLSCREEN_DIALOG)
                     && model.get(ModalDialogProperties.DIALOG_WHEN_LARGE))
                 : "Both FULLSCREEN_DIALOG and DIALOG_WHEN_LARGE cannot be set to true.";
@@ -119,5 +127,15 @@ public class ModalDialogViewBinder
         }
 
         return true;
+    }
+
+    /**
+     * Checks that BUTTON_STYLES isn't present together with CUSTOM_BUTTON_BAR_VIEW because the
+     * custom button bar overrides the default positive and negative buttons..
+     */
+    private static boolean checkCustomButtonsConsistency(PropertyModel model) {
+        int styles = model.get(ModalDialogProperties.BUTTON_STYLES);
+        View customButtons = model.get(ModalDialogProperties.CUSTOM_BUTTON_BAR_VIEW);
+        return styles == 0 || customButtons == null;
     }
 }

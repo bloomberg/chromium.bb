@@ -56,6 +56,7 @@ import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/opengraph/metadata.mojom";
 import "third_party/blink/public/mojom/widget/platform_widget.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
@@ -320,7 +321,7 @@ interface LocalFrameHost {
   HadStickyUserActivationBeforeNavigationChanged(bool has_gesture);
 
   // Sent by a local root to request scrolling in its parent process.
-  ScrollRectToVisibleInParentFrame(gfx.mojom.Rect rect_to_scroll,
+  ScrollRectToVisibleInParentFrame(gfx.mojom.RectF rect_to_scroll,
                                    ScrollIntoViewParams params);
 
   // Sent by a local root to continue bubbling a logical scroll in its parent
@@ -847,6 +848,11 @@ interface LocalFrame {
   // the document of this frame doesn't have the HTMLLinkElement.
   GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
 
+  // Requests the OpenGraph metadata for the page. See https://ogp.me/. If the
+  // page has no OpenGraph tags that are understood by this implementation, or
+  // if it has no OpenGraph tags at all, an empty OpenGraphMetadata is returned.
+  GetOpenGraphMetadata() => (blink.mojom.OpenGraphMetadata metadata);
+
   // Updates navigation.entries() when restoring from bfcache.
   // navigation.entries() represents a subset of the back/forward list visible
   // to this frame, and that subset may have changed while the page was in
@@ -1091,7 +1097,7 @@ interface RemoteFrame {
 
   // Sent to the remote frame placeholder in the parent process to request
   // scrolling.
-  ScrollRectToVisible(gfx.mojom.Rect rect, ScrollIntoViewParams params);
+  ScrollRectToVisible(gfx.mojom.RectF rect, ScrollIntoViewParams params);
 
   // Notifies this remote frame that its corresponding document has started
   // loading.

@@ -15,6 +15,11 @@
 #ifndef SRC_DAWN_NATIVE_VULKAN_BACKENDVK_H_
 #define SRC_DAWN_NATIVE_VULKAN_BACKENDVK_H_
 
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "dawn/native/BackendConnection.h"
 
 #include "dawn/common/DynamicLib.h"
@@ -25,61 +30,74 @@
 
 namespace dawn::native::vulkan {
 
-    enum class ICD {
-        None,
-        SwiftShader,
-    };
+enum class ICD {
+    None,
+    SwiftShader,
+};
 
-    // VulkanInstance holds the reference to the Vulkan library, the VkInstance, VkPhysicalDevices
-    // on that instance, Vulkan functions loaded from the library, and global information
-    // gathered from the instance. VkPhysicalDevices bound to the VkInstance are bound to the GPU
-    // and GPU driver, keeping them active. It is RefCounted so that (eventually) when all adapters
-    // on an instance are no longer in use, the instance is deleted. This can be particuarly useful
-    // when we create multiple instances to selectively discover ICDs (like only
-    // SwiftShader/iGPU/dGPU/eGPU), and only one physical device on one instance remains in use. We
-    // can delete the VkInstances that are not in use to avoid holding the discrete GPU active.
-    class VulkanInstance : public RefCounted {
-      public:
-        static ResultOrError<Ref<VulkanInstance>> Create(const InstanceBase* instance, ICD icd);
-        ~VulkanInstance();
+class Device;
 
-        const VulkanFunctions& GetFunctions() const;
-        VkInstance GetVkInstance() const;
-        const VulkanGlobalInfo& GetGlobalInfo() const;
-        const std::vector<VkPhysicalDevice>& GetPhysicalDevices() const;
+// VulkanInstance holds the reference to the Vulkan library, the VkInstance, VkPhysicalDevices
+// on that instance, Vulkan functions loaded from the library, and global information
+// gathered from the instance. VkPhysicalDevices bound to the VkInstance are bound to the GPU
+// and GPU driver, keeping them active. It is RefCounted so that (eventually) when all adapters
+// on an instance are no longer in use, the instance is deleted. This can be particuarly useful
+// when we create multiple instances to selectively discover ICDs (like only
+// SwiftShader/iGPU/dGPU/eGPU), and only one physical device on one instance remains in use. We
+// can delete the VkInstances that are not in use to avoid holding the discrete GPU active.
+class VulkanInstance : public RefCounted {
+  public:
+    static ResultOrError<Ref<VulkanInstance>> Create(const InstanceBase* instance, ICD icd);
+    ~VulkanInstance() override;
 
-      private:
-        VulkanInstance();
+    const VulkanFunctions& GetFunctions() const;
+    VkInstance GetVkInstance() const;
+    const VulkanGlobalInfo& GetGlobalInfo() const;
+    const std::vector<VkPhysicalDevice>& GetPhysicalDevices() const;
 
-        MaybeError Initialize(const InstanceBase* instance, ICD icd);
-        ResultOrError<VulkanGlobalKnobs> CreateVkInstance(const InstanceBase* instance);
+    // TODO(dawn:831): This set of functions guards may need to be adjusted when Dawn is updated
+    // to support multithreading.
+    void StartListeningForDeviceMessages(Device* device);
+    void StopListeningForDeviceMessages(Device* device);
+    bool HandleDeviceMessage(std::string deviceDebugPrefix, std::string message);
 
-        MaybeError RegisterDebugUtils();
+  private:
+    VulkanInstance();
 
-        DynamicLib mVulkanLib;
-        VulkanGlobalInfo mGlobalInfo = {};
-        VkInstance mInstance = VK_NULL_HANDLE;
-        VulkanFunctions mFunctions;
+    MaybeError Initialize(const InstanceBase* instance, ICD icd);
+    ResultOrError<VulkanGlobalKnobs> CreateVkInstance(const InstanceBase* instance);
 
-        VkDebugUtilsMessengerEXT mDebugUtilsMessenger = VK_NULL_HANDLE;
+    MaybeError RegisterDebugUtils();
 
-        std::vector<VkPhysicalDevice> mPhysicalDevices;
-    };
+    DynamicLib mVulkanLib;
+    VulkanGlobalInfo mGlobalInfo = {};
+    VkInstance mInstance = VK_NULL_HANDLE;
+    VulkanFunctions mFunctions;
 
-    class Backend : public BackendConnection {
-      public:
-        explicit Backend(InstanceBase* instance);
-        ~Backend() override;
+    VkDebugUtilsMessengerEXT mDebugUtilsMessenger = VK_NULL_HANDLE;
 
-        MaybeError Initialize();
+    std::vector<VkPhysicalDevice> mPhysicalDevices;
 
-        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
-            const AdapterDiscoveryOptionsBase* optionsBase) override;
+    // Devices keep the VulkanInstance alive, so as long as devices remove themselves from this
+    // map on destruction the pointers it contains should remain valid.
+    std::unordered_map<std::string, Device*> mMessageListenerDevices;
+    std::mutex mMessageListenerDevicesMutex;
+};
 
-      private:
-        ityp::array<ICD, Ref<VulkanInstance>, 2> mVulkanInstances = {};
-    };
+class Backend : public BackendConnection {
+  public:
+    explicit Backend(InstanceBase* instance);
+    ~Backend() override;
+
+    MaybeError Initialize();
+
+    std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+    ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
+        const AdapterDiscoveryOptionsBase* optionsBase) override;
+
+  private:
+    ityp::array<ICD, Ref<VulkanInstance>, 2> mVulkanInstances = {};
+};
 
 }  // namespace dawn::native::vulkan
 

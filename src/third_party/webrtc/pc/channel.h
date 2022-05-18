@@ -83,7 +83,7 @@ class BaseChannel : public ChannelInterface,
               rtc::Thread* network_thread,
               rtc::Thread* signaling_thread,
               std::unique_ptr<MediaChannel> media_channel,
-              const std::string& mid,
+              absl::string_view mid,
               bool srtp_required,
               webrtc::CryptoOptions crypto_options,
               rtc::UniqueRandomIdGenerator* ssrc_generator);
@@ -157,6 +157,14 @@ class BaseChannel : public ChannelInterface,
 
   MediaChannel* media_channel() const override {
     return media_channel_.get();
+  }
+  VideoMediaChannel* video_media_channel() const override {
+    RTC_CHECK(false) << "Attempt to fetch video channel from non-video";
+    return nullptr;
+  }
+  VoiceMediaChannel* voice_media_channel() const override {
+    RTC_CHECK(false) << "Attempt to fetch voice channel from non-voice";
+    return nullptr;
   }
 
  protected:
@@ -353,7 +361,7 @@ class VoiceChannel : public BaseChannel {
                rtc::Thread* network_thread,
                rtc::Thread* signaling_thread,
                std::unique_ptr<VoiceMediaChannel> channel,
-               const std::string& mid,
+               absl::string_view mid,
                bool srtp_required,
                webrtc::CryptoOptions crypto_options,
                rtc::UniqueRandomIdGenerator* ssrc_generator);
@@ -362,6 +370,10 @@ class VoiceChannel : public BaseChannel {
   // downcasts a MediaChannel
   VoiceMediaChannel* media_channel() const override {
     return static_cast<VoiceMediaChannel*>(BaseChannel::media_channel());
+  }
+
+  VoiceMediaChannel* voice_media_channel() const override {
+    return static_cast<VoiceMediaChannel*>(media_channel());
   }
 
   cricket::MediaType media_type() const override {
@@ -395,7 +407,7 @@ class VideoChannel : public BaseChannel {
                rtc::Thread* network_thread,
                rtc::Thread* signaling_thread,
                std::unique_ptr<VideoMediaChannel> media_channel,
-               const std::string& mid,
+               absl::string_view mid,
                bool srtp_required,
                webrtc::CryptoOptions crypto_options,
                rtc::UniqueRandomIdGenerator* ssrc_generator);
@@ -406,11 +418,13 @@ class VideoChannel : public BaseChannel {
     return static_cast<VideoMediaChannel*>(BaseChannel::media_channel());
   }
 
+  VideoMediaChannel* video_media_channel() const override {
+    return static_cast<cricket::VideoMediaChannel*>(media_channel());
+  }
+
   cricket::MediaType media_type() const override {
     return cricket::MEDIA_TYPE_VIDEO;
   }
-
-  void FillBitrateInfo(BandwidthEstimationInfo* bwe_info);
 
  private:
   // overrides from BaseChannel

@@ -1039,3 +1039,18 @@ export const kLimits = keysOf(kLimitInfo);
 export function viewCompatible(a: GPUTextureFormat, b: GPUTextureFormat): boolean {
   return a === b || a + '-srgb' === b || b + '-srgb' === a;
 }
+
+export function getFeaturesForFormats<T>(
+  formats: readonly (T & (GPUTextureFormat | undefined))[]
+): readonly (GPUFeatureName | undefined)[] {
+  return Array.from(new Set(formats.map(f => (f ? kTextureFormatInfo[f].feature : undefined))));
+}
+
+export function filterFormatsByFeature<T>(
+  feature: GPUFeatureName | undefined,
+  formats: readonly (T & (GPUTextureFormat | undefined))[]
+): readonly (T & (GPUTextureFormat | undefined))[] {
+  return formats.filter(f => f === undefined || kTextureFormatInfo[f].feature === feature);
+}
+
+export const kFeaturesForFormats = getFeaturesForFormats(kTextureFormats);

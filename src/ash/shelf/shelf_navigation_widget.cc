@@ -17,7 +17,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/highlight_border.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
@@ -35,9 +34,11 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/view.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -145,7 +146,8 @@ class BoundsAnimationReporter : public gfx::AnimationDelegate {
 
 class BackgroundLayerDelegate : public ui::LayerDelegate {
  public:
-  explicit BackgroundLayerDelegate(ui::Layer* layer) : layer_(layer) {}
+  BackgroundLayerDelegate(ui::Layer* layer, views::View* shelf_view)
+      : layer_(layer), shelf_view_(shelf_view) {}
   BackgroundLayerDelegate(const BackgroundLayerDelegate&) = delete;
   BackgroundLayerDelegate& operator=(const BackgroundLayerDelegate&) = delete;
   ~BackgroundLayerDelegate() override {}
@@ -162,22 +164,23 @@ class BackgroundLayerDelegate : public ui::LayerDelegate {
     gfx::Canvas* canvas = recorder.canvas();
 
     // Get the corner radius from `layer_`.
-    const int corner_radius = layer_->rounded_corner_radii().upper_left();
+    gfx::RoundedCornersF corner_radii = layer_->rounded_corner_radii();
 
     // cc::PaintFlags flags for the background.
     cc::PaintFlags flags;
     flags.setColor(background_color_);
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawRoundRect(gfx::Rect(layer_->size()), corner_radius, flags);
+    canvas->DrawRoundRect(gfx::Rect(layer_->size()), corner_radii.upper_left(),
+                          flags);
 
     // Don't draw highlight border if the shelf widget is showing.
     if (!Shell::Get()->IsInTabletMode() || ShelfConfig::Get()->is_in_app())
       return;
 
-    HighlightBorder::PaintBorderToCanvas(
-        canvas, gfx::Rect(layer_->size()), corner_radius,
-        HighlightBorder::Type::kHighlightBorder2, false);
+    views::HighlightBorder::PaintBorderToCanvas(
+        canvas, *shelf_view_, gfx::Rect(layer_->size()), corner_radii,
+        views::HighlightBorder::Type::kHighlightBorder2, false);
   }
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -186,6 +189,8 @@ class BackgroundLayerDelegate : public ui::LayerDelegate {
   }
 
   ui::Layer* const layer_;
+  views::View* const shelf_view_;
+
   // The background color of `layer_`. Note that this value has to be updated by
   // SetBackgroundColor() and the default value should never be drawn.
   SkColor background_color_ = SK_ColorRED;
@@ -361,8 +366,8 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
   SetOwnedByWidget(true);
 
   if (features::IsDarkLightModeEnabled()) {
-    background_delegate_ =
-        std::make_unique<BackgroundLayerDelegate>(&opaque_background_);
+    background_delegate_ = std::make_unique<BackgroundLayerDelegate>(
+        &opaque_background_, shelf_view);
     opaque_background_.set_delegate(background_delegate_.get());
     opaque_background_.SetFillsBoundsOpaquely(false);
   }
@@ -431,7 +436,7 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
 
   // The opaque background does not show up when there are two buttons.
   gfx::Rect opaque_background_bounds =
-      GetFirstButtonBounds(shelf_->IsHorizontalAlignment());
+      GetMirroredRect(GetFirstButtonBounds(shelf_->IsHorizontalAlignment()));
   opaque_background_.SetBounds(opaque_background_bounds);
   opaque_background_.SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
@@ -804,15 +809,20 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
 }
 
 gfx::Rect ShelfNavigationWidget::CalculateClipRectAfterRTL() const {
-  gfx::Rect bounds_before_rtl;
+  gfx::Rect clip_bounds;
   if (Shell::Get()->IsInTabletMode()) {
-    bounds_before_rtl =
-        gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
+    clip_bounds = gfx::Rect(CalculateIdealSize(/*only_visible_area=*/true));
   } else {
-    bounds_before_rtl = gfx::Rect(target_bounds_.size());
+    clip_bounds = gfx::Rect(target_bounds_.size());
   }
 
-  return GetRootView()->GetMirroredRect(bounds_before_rtl);
+  // Bounds will be used to set a layer clip rect, and thus need to be modified
+  // for RTL - avoid using `GetMirroredRect()` method, as it would use the
+  // current widget/root view bounds instead of target bounds.
+  if (base::i18n::IsRTL()) {
+    clip_bounds.set_x(target_bounds_.width() - clip_bounds.right());
+  }
+  return clip_bounds;
 }
 
 gfx::Size ShelfNavigationWidget::CalculateIdealSize(
@@ -820,18 +830,24 @@ gfx::Size ShelfNavigationWidget::CalculateIdealSize(
   if (!ShelfConfig::Get()->shelf_controls_shown())
     return gfx::Size();
 
-  int control_button_number;
+  int controls_space = 0;
+  const int control_size = ShelfConfig::Get()->control_size();
+
   if (Shell::Get()->IsInTabletMode() && !only_visible_area) {
     // There are home button and back button. So the maximum is 2.
-    control_button_number = 2;
+    controls_space = control_size * 2 + ShelfConfig::Get()->button_spacing();
   } else {
-    control_button_number = CalculateButtonCount();
+    // Use CalculatePreferredSize here to take the launcher nudge label into
+    // consider.
+    controls_space += IsHomeButtonShown()
+                          ? GetHomeButton()->CalculatePreferredSize().width()
+                          : 0;
+    controls_space +=
+        IsBackButtonShown(shelf_->IsHorizontalAlignment()) ? control_size : 0;
+    controls_space +=
+        (CalculateButtonCount() - 1) * ShelfConfig::Get()->button_spacing();
   }
 
-  const int control_size = ShelfConfig::Get()->control_size();
-  int controls_space =
-      control_button_number * control_size +
-      (control_button_number - 1) * ShelfConfig::Get()->button_spacing();
   const int major_axis_spacing =
       2 * ShelfConfig::Get()->control_button_edge_spacing(
               shelf_->IsHorizontalAlignment());

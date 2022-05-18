@@ -174,11 +174,11 @@ const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
 // Name of a dictionary field indicating whether the destinations are managed by
 // the PrinterTypeDenyList enterprise policy.
 const char kDestinationsManaged[] = "destinationsManaged";
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 // Name of a dictionary field indicating whether the user's Drive directory is
 // mounted.
 const char kIsDriveMounted[] = "isDriveMounted";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 // Name of a dictionary pref holding the policy value for whether the
 // "Print as image" option should be available to the user in the Print Preview
@@ -205,7 +205,7 @@ UserActionBuckets DetermineUserAction(const base::Value::Dict& settings) {
     return UserActionBuckets::kOpenInMacPreview;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (settings.FindBool(kSettingPrintToGoogleDrive).value_or(false)) {
     return UserActionBuckets::kPrintToGoogleDriveCros;
   }
@@ -718,7 +718,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::Value::List& args) {
     print_render_frame_->SetPrintPreviewUI(
         print_preview_ui()->BindPrintPreviewUI());
   }
-  print_render_frame_->PrintPreview(base::Value(settings.Clone()));
+  print_render_frame_->PrintPreview(settings.Clone());
   last_preview_settings_ = std::move(settings);
 }
 

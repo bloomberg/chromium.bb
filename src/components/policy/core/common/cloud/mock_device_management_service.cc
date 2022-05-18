@@ -149,6 +149,17 @@ FakeDeviceManagementService::CaptureRequest(
 }
 
 FakeDeviceManagementService::JobAction
+FakeDeviceManagementService::CaptureTimeout(base::TimeDelta* timeout) {
+  return [timeout](DeviceManagementService::JobForTesting job) mutable {
+    if (job.IsActive()) {
+      auto to = job.GetConfigurationForTesting()->GetTimeoutDuration();
+      if (to)
+        *timeout = to.value();
+    }
+  };
+}
+
+FakeDeviceManagementService::JobAction
 FakeDeviceManagementService::SendJobResponseAsync(int net_error,
                                                   int response_code,
                                                   const std::string& response,
@@ -270,6 +281,10 @@ void FakeJobConfiguration::SetShouldRetryResponse(
   should_retry_response_ = method;
 }
 
+void FakeJobConfiguration::SetTimeoutDuration(base::TimeDelta timeout) {
+  timeout_ = timeout;
+}
+
 DeviceManagementService::Job::RetryMethod FakeJobConfiguration::ShouldRetry(
     int response_code,
     const std::string& response_body) {
@@ -286,9 +301,9 @@ void FakeJobConfiguration::OnURLLoadComplete(DeviceManagementService::Job* job,
                                              int net_error,
                                              int response_code,
                                              const std::string& response_body) {
-  DeviceManagementStatus code =
+  DeviceManagementStatus status =
       MapNetErrorAndResponseCodeToDMStatus(net_error, response_code);
-  std::move(callback_).Run(job, code, net_error, response_body);
+  std::move(callback_).Run(job, status, net_error, response_body);
 }
 
 }  // namespace policy

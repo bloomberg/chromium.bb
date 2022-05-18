@@ -32,6 +32,8 @@ CreateDirectCompositionSurfaceSettings(
   settings.disable_nv12_dynamic_textures =
       workarounds.disable_nv12_dynamic_textures;
   settings.disable_vp_scaling = workarounds.disable_vp_scaling;
+  settings.disable_vp_super_resolution =
+      workarounds.disable_vp_super_resolution;
   settings.use_angle_texture_offset = features::IsUsingSkiaRenderer();
   settings.force_root_surface_full_damage =
       features::IsUsingSkiaRenderer() &&
@@ -56,7 +58,8 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       auto settings = CreateDirectCompositionSurfaceSettings(
           delegate->GetFeatureInfo()->workarounds());
       auto dc_surface = base::MakeRefCounted<gl::DirectCompositionSurfaceWin>(
-          surface_handle, std::move(vsync_callback), settings);
+          gl::GLSurfaceEGL::GetGLDisplayEGL(), surface_handle,
+          std::move(vsync_callback), settings);
       if (!dc_surface->Initialize(gl::GLSurfaceFormat()))
         return nullptr;
       delegate->DidCreateAcceleratedSurfaceChildWindow(surface_handle,
@@ -65,7 +68,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     } else {
       surface = gl::InitializeGLSurface(
           base::MakeRefCounted<gl::NativeViewGLSurfaceEGL>(
-              surface_handle,
+              gl::GLSurfaceEGL::GetGLDisplayEGL(), surface_handle,
               std::make_unique<gl::VSyncProviderWin>(surface_handle)));
       if (!surface)
         return nullptr;

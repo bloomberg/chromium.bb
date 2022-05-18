@@ -2045,8 +2045,7 @@ TEST_F(
 
       // Wait for it to be fully refreshed (liblouis loads the new tables, our
       // translators are re-created).
-      await BrailleBackground.getInstance()
-          .getTranslatorManager()
+      await BrailleBackground.instance.getTranslatorManager()
           .loadTablesForTest();
 
       // Fake an available display.
@@ -2056,14 +2055,12 @@ TEST_F(
       // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
       // contracted braille).
       localStorage['brailleTable'] = 'en-ueb-g2';
-      BrailleBackground.getInstance().getTranslatorManager().refresh(
+      BrailleBackground.instance.getTranslatorManager().refresh(
           localStorage['brailleTable']);
       // Wait for it to be fully refreshed (liblouis loads the new tables, our
       // translators are re-created).
       await new Promise(r => {
-        BrailleBackground.getInstance()
-            .getTranslatorManager()
-            .addChangeListener(r);
+        BrailleBackground.instance.getTranslatorManager().addChangeListener(r);
       });
 
       async function waitForBrailleDots(expectedDots) {
@@ -2187,29 +2184,33 @@ TEST_F('ChromeVoxEditingTest', 'TablesWithEmptyCells', async function() {
   `;
   const root = await this.runWithLoadedTree(site);
   await this.focusFirstTextField(root);
-
   const textField = root.find({role: RoleType.TEXT_FIELD});
+  const table = textField.lastChild;
+  const [row1, row2] = table.children;
+  const [cell11, cell12] = row1.children;
+  const [cell21, cell22] = row2.children;
+
   mockFeedback.expectSpeech('Text area')
-      .call(this.press(KeyCode.HOME, {ctrl: true}))
-      .call(this.press(KeyCode.RIGHT))
-      .call(this.press(KeyCode.RIGHT))
-      .call(this.press(KeyCode.RIGHT))
-      // This first cell is on a new line.
-      .expectSpeech('\n', 'row 1 column 1')
-      .call(this.press(KeyCode.RIGHT))
+      .call(() => textField.setSelection(0, 1))
+      .expectSpeech('A', 'selected')
+
       // Non-breaking spaces (\u00a0) get preprocessed later by TtsBackground
       // to ' '. This comes as part of speak line output in
       // AutomationRichEditableText.
-      .expectSpeech('\u00a0')
-      .call(this.press(KeyCode.RIGHT))
+      .call(doCmd('nativeNextCharacter'))
+      .call(() => textField.setSelection(1, 1))
+      .expectSpeech('\u00a0', 'row 1 column 1')
+
+      .call(doCmd('nativeNextCharacter'))
+      .call(() => cell12.setSelection(0, 0))
       .expectSpeech('\u00a0', 'row 1 column 2')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('\u00a0')
-      .call(this.press(KeyCode.RIGHT))
+
+      .call(doCmd('nativeNextCharacter'))
+      .call(() => cell21.setSelection(0, 0))
       .expectSpeech('\u00a0', 'row 2 column 1')
-      .call(this.press(KeyCode.RIGHT))
-      .expectSpeech('\u00a0')
-      .call(this.press(KeyCode.RIGHT))
+
+      .call(doCmd('nativeNextCharacter'))
+      .call(() => cell22.setSelection(0, 0))
       .expectSpeech('\u00a0', 'row 2 column 2')
 
       .replay();

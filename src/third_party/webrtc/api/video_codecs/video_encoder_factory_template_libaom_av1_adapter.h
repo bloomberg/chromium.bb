@@ -14,8 +14,8 @@
 #include <memory>
 #include <vector>
 
+#include "modules/video_coding/codecs/av1/av1_svc_config.h"
 #include "modules/video_coding/codecs/av1/libaom_av1_encoder.h"
-#include "modules/video_coding/svc/create_scalability_structure.h"
 
 namespace webrtc {
 struct LibaomAv1EncoderTemplateAdapter {
@@ -28,10 +28,8 @@ struct LibaomAv1EncoderTemplateAdapter {
     return CreateLibaomAv1Encoder();
   }
 
-  static bool IsScalabilityModeSupported(absl::string_view scalability_mode) {
-    // For libaom AV1, the scalability mode is supported if we can create the
-    // scalability structure.
-    return ScalabilityStructureConfig(scalability_mode) != absl::nullopt;
+  static bool IsScalabilityModeSupported(ScalabilityMode scalability_mode) {
+    return LibaomAv1EncoderSupportsScalabilityMode(scalability_mode);
   }
 };
 

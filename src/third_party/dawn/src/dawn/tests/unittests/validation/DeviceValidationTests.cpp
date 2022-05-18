@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/validation/ValidationTest.h"
+#include <utility>
 
 #include "dawn/native/Device.h"
 #include "dawn/native/dawn_platform.h"
+#include "dawn/tests/unittests/validation/ValidationTest.h"
 
 using ::testing::HasSubstr;
 
 class RequestDeviceValidationTest : public ValidationTest {
   protected:
-    void SetUp() {
+    void SetUp() override {
         DAWN_SKIP_TEST_IF(UsesWire());
         ValidationTest::SetUp();
     }

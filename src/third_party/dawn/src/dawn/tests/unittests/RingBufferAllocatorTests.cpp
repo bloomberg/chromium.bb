@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <limits>
 
 #include "dawn/native/RingBufferAllocator.h"
+#include "gtest/gtest.h"
 
-using namespace dawn::native;
+namespace dawn::native {
 
 constexpr uint64_t RingBufferAllocator::kInvalidOffset;
 
@@ -172,3 +173,5 @@ TEST(RingBufferAllocatorTests, RingBufferOverflow) {
     ASSERT_EQ(allocator.Allocate(std::numeric_limits<uint64_t>::max(), ExecutionSerial(1)),
               RingBufferAllocator::kInvalidOffset);
 }
+
+}  // namespace dawn::native

@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_METRICS_POWER_POWER_METRICS_REPORTER_H_
 #define CHROME_BROWSER_METRICS_POWER_POWER_METRICS_REPORTER_H_
 
-#include <stdint.h>
 #include <memory>
 #include <utility>
 
-#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/power/battery_level_provider.h"
+#include "chrome/browser/metrics/power/power_metrics.h"
+#include "chrome/browser/metrics/power/process_monitor.h"
+#include "chrome/browser/metrics/power/usage_scenario.h"
 #include "chrome/browser/metrics/usage_scenario/usage_scenario_data_store.h"
 #include "chrome/browser/metrics/usage_scenario/usage_scenario_tracker.h"
-#include "chrome/browser/performance_monitor/process_monitor.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -35,16 +35,13 @@
 // only cover a few seconds and it is only possible to correctly analyze a trace
 // if it covers the full interval associated with the trigger metric.
 //
-// This class should be created shortly after
-// performance_monitor::ProcessMonitor.
+// This class should be created shortly after ProcessMonitor.
 //
 // Previous histograms reported by this class:
 // - Main screen brightness, removed by https://crrev.com/c/3431905
 // Historical data: go/chrome-historical-power-histograms
-class PowerMetricsReporter
-    : public performance_monitor::ProcessMonitor::Observer {
+class PowerMetricsReporter : public ProcessMonitor::Observer {
  public:
-  using ProcessMonitor = performance_monitor::ProcessMonitor;
 #if BUILDFLAG(IS_MAC)
   using CoalitionResourceUsageRate = power_metrics::CoalitionResourceUsageRate;
 #endif  // BUILDFLAG(IS_MAC)
@@ -62,10 +59,14 @@ class PowerMetricsReporter
   // PowerMetricsReporter. |battery_level_provider| is used to obtain the
   // battery level.
   explicit PowerMetricsReporter(
+      ProcessMonitor* process_monitor,
       UsageScenarioDataStore* short_usage_scenario_data_store = nullptr,
-      UsageScenarioDataStore* long_usage_scenario_data_store = nullptr,
+      UsageScenarioDataStore* long_usage_scenario_data_store = nullptr
+#if HAS_BATTERY_LEVEL_PROVIDER_IMPL()
+      ,
       std::unique_ptr<BatteryLevelProvider> battery_level_provider =
           BatteryLevelProvider::Create()
+#endif  // HAS_BATTERY_LEVEL_PROVIDER_IMPL()
 #if BUILDFLAG(IS_MAC)
           ,
       std::unique_ptr<CoalitionResourceUsageProvider>
@@ -77,6 +78,7 @@ class PowerMetricsReporter
   PowerMetricsReporter& operator=(const PowerMetricsReporter& rhs) = delete;
   ~PowerMetricsReporter() override;
 
+#if HAS_BATTERY_LEVEL_PROVIDER_IMPL()
   BatteryLevelProvider::BatteryState& battery_state_for_testing() {
     return battery_state_;
   }
@@ -89,95 +91,16 @@ class PowerMetricsReporter
   // |callback| is called synchronously if the first battery state is already
   // available.
   void OnFirstSampleForTesting(base::OnceClosure callback);
+#endif  // HAS_BATTERY_LEVEL_PROVIDER_IMPL()
 
   static int64_t GetBucketForSampleForTesting(base::TimeDelta value);
-  static std::vector<const char*> GetLongIntervalSuffixesForTesting(
-      const UsageScenarioDataStore::IntervalData& interval_data);
-
-  // Contains data to determine when and how to generate histograms and trace
-  // events for a usage scenario.
-  struct ScenarioParams {
-    const char* histogram_suffix;
-    // CPU usage threshold to emit a "high CPU" trace event.
-    double short_interval_cpu_threshold;
-    const char* trace_event_title;
-  };
-
-#if BUILDFLAG(IS_MAC)
-  // Returns params to use for histograms and trace events related to a short
-  // interval described by `short_interval_data`. `pre_interval_data` describes
-  // a long interval ending simultaneously with the short interval.
-  //
-  // `pre_interval_data` is required to decide whether "_Recent" is appended to
-  // the ".ZeroWindow" or ".AllTabsHidden_NoVideoCaptureOrAudio" suffixes.
-  // Appending "_Recent" is useful  to isolate cases where the scenario changed
-  // recently (e.g. CPU usage in a short interval with zero window might be
-  // affected by cleanup tasks from recently closed tabs).
-  static const PowerMetricsReporter::ScenarioParams&
-  GetShortIntervalScenarioParams(
-      const UsageScenarioDataStore::IntervalData& short_interval_data,
-      const UsageScenarioDataStore::IntervalData& pre_interval_data);
-#endif  // BUILDFLAG(IS_MAC)
 
  protected:
-  // Any change to this enum should be reflected in the corresponding enums.xml
-  // and ukm.xml
-  enum class BatteryDischargeMode {
-    kDischarging = 0,
-    kPluggedIn = 1,
-    kStateChanged = 2,
-    kChargeLevelUnavailable = 3,
-    kNoBattery = 4,
-    kBatteryLevelIncreased = 5,
-    kInvalidInterval = 6,
-    kMacFullyCharged = 7,
-    kMaxValue = kMacFullyCharged
-  };
-
-  struct BatteryDischarge {
-    PowerMetricsReporter::BatteryDischargeMode mode;
-    // Discharge rate in 1/10000 of full capacity per minute.
-    absl::optional<int64_t> rate;
-  };
-
-  static void ReportLongIntervalHistograms(
-      const UsageScenarioDataStore::IntervalData& interval_data,
-      const ProcessMonitor::Metrics& aggregated_process_metrics,
-      base::TimeDelta interval_duration,
-      BatteryDischarge battery_discharge
 #if BUILDFLAG(IS_MAC)
-      ,
-      const absl::optional<CoalitionResourceUsageRate>&
-          coalition_resource_usage_rate
-#endif
-  );
-
-#if BUILDFLAG(IS_MAC)
-  static void ReportShortIntervalHistograms(
-      const char* scenario_suffix,
-      absl::optional<CoalitionResourceUsageRate> coalition_resource_usage_rate);
-
   // Emit trace event when CPU usage is high for 10 secondes or more.
   void MaybeEmitHighCPUTraceEvent(
       const ScenarioParams& short_interval_scenario_params,
-      absl::optional<CoalitionResourceUsageRate> coalition_resource_usage_rate);
-#endif  // BUILDFLAG(IS_MAC)
-
-  // Report battery metrics to histograms with |suffixes|.
-  static void ReportBatteryHistograms(base::TimeDelta interval_duration,
-                                      BatteryDischarge battery_discharge,
-                                      const std::vector<const char*>& suffixes);
-
-  // Report aggregated process metrics to histograms with |suffixes|.
-  static void ReportAggregatedProcessMetricsHistograms(
-      const ProcessMonitor::Metrics& aggregated_process_metrics,
-      const std::vector<const char*>& suffixes);
-
-#if BUILDFLAG(IS_MAC)
-  // Report resource coalition metrics to histograms with |suffixes|.
-  static void ReportResourceCoalitionHistograms(
-      const power_metrics::CoalitionResourceUsageRate& rate,
-      const std::vector<const char*>& suffixes);
+      const CoalitionResourceUsageRate& coalition_resource_usage_rate);
 #endif  // BUILDFLAG(IS_MAC)
 
  private:
@@ -185,26 +108,31 @@ class PowerMetricsReporter
   void OnAggregatedMetricsSampled(
       const ProcessMonitor::Metrics& aggregated_process_metrics) override;
 
+#if HAS_BATTERY_LEVEL_PROVIDER_IMPL()
   void OnFirstBatteryStateSampled(
       const BatteryLevelProvider::BatteryState& battery_state);
   void OnBatteryAndAggregatedProcessMetricsSampled(
       const ProcessMonitor::Metrics& aggregated_process_metrics,
+      base::TimeDelta interval_duration,
       base::TimeTicks battery_sample_begin_time,
-      const BatteryLevelProvider::BatteryState& battery_state);
+      const BatteryLevelProvider::BatteryState& new_battery_state);
 
   // Report the UKMs for the past interval.
-  void ReportUKMs(const UsageScenarioDataStore::IntervalData& interval_data,
-                  const ProcessMonitor::Metrics& aggregated_process_metrics,
-                  base::TimeDelta interval_duration,
-                  BatteryDischarge battery_discharge) const;
+  static void ReportUKMs(
+      const UsageScenarioDataStore::IntervalData& interval_data,
+      const ProcessMonitor::Metrics& aggregated_process_metrics,
+      base::TimeDelta interval_duration,
+      BatteryDischarge battery_discharge);
+#endif  // HAS_BATTERY_LEVEL_PROVIDER_IMPL()
 
-  // Computes and returns the battery discharge mode and rate during the
-  // interval, and reset |battery_state_| to the current state. If the discharge
-  // rate isn't valid, the returned value is nullopt and the reason is indicated
-  // per BatteryDischargeMode.
-  BatteryDischarge GetBatteryDischargeDuringInterval(
-      const BatteryLevelProvider::BatteryState& new_battery_state,
-      base::TimeDelta interval_duration);
+  // Called when the long interval (and the short one on Mac) ends.
+  void ReportMetrics(base::TimeDelta interval_duration,
+                     const ProcessMonitor::Metrics& aggregated_process_metrics
+#if HAS_BATTERY_LEVEL_PROVIDER_IMPL()
+                     ,
+                     BatteryDischarge battery_discharge
+#endif
+  );
 
 #if BUILDFLAG(IS_MAC)
   // Invoked at the beginning of a "short" interval (~10 seconds before
@@ -214,6 +142,8 @@ class PowerMetricsReporter
   void OnIOPMPowerSourceSamplingEvent();
 #endif  // BUILDFLAG(IS_MAC)
 
+  raw_ptr<ProcessMonitor> process_monitor_;
+
   // Track usage scenarios over 10-seconds and 2-minutes intervals. In
   // production, the data stores are obtained from the trackers, but in tests
   // they may be mocks injected via the constructor.
@@ -222,10 +152,12 @@ class PowerMetricsReporter
   std::unique_ptr<UsageScenarioTracker> long_usage_scenario_tracker_;
   raw_ptr<UsageScenarioDataStore> long_usage_scenario_data_store_;
 
+#if HAS_BATTERY_LEVEL_PROVIDER_IMPL()
   std::unique_ptr<BatteryLevelProvider> battery_level_provider_;
 
   BatteryLevelProvider::BatteryState battery_state_{0, 0, absl::nullopt, false,
                                                     base::TimeTicks::Now()};
+#endif  // HAS_BATTERY_LEVEL_PROVIDER_IMPL()
 
   base::TimeTicks interval_begin_;
 

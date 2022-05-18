@@ -32,10 +32,10 @@ rtc_library("video_capture_module") {
     "../../api/video:video_rtp_headers",
     "../../common_video",
     "../../media:rtc_media_base",
+    "../../rtc_base:event_tracer",
     "../../rtc_base:logging",
     "../../rtc_base:macromagic",
     "../../rtc_base:refcount",
-    "../../rtc_base:rtc_base_approved",
     "../../rtc_base:stringutils",
     "../../rtc_base:timeutils",
     "../../rtc_base/synchronization:mutex",
@@ -55,8 +55,8 @@ if (!build_with_chromium) {
       "../../rtc_base:checks",
       "../../rtc_base:logging",
       "../../rtc_base:macromagic",
+      "../../rtc_base:platform_thread",
       "../../rtc_base:refcount",
-      "../../rtc_base:rtc_base_approved",
       "../../rtc_base:stringutils",
       "../../rtc_base/synchronization:mutex",
       "../../system_wrappers",
@@ -65,9 +65,11 @@ if (!build_with_chromium) {
     if (is_linux || is_chromeos) {
       sources = [
         "linux/device_info_linux.cc",
-        "linux/device_info_linux.h",
+        "linux/device_info_v4l2.cc",
+        "linux/device_info_v4l2.h",
         "linux/video_capture_linux.cc",
-        "linux/video_capture_linux.h",
+        "linux/video_capture_v4l2.cc",
+        "linux/video_capture_v4l2.h",
       ]
       deps += [ "../../media:rtc_media_base" ]
     }
@@ -140,7 +142,6 @@ if (!build_with_chromium) {
         "../../api/video:video_frame",
         "../../api/video:video_rtp_headers",
         "../../common_video",
-        "../../rtc_base:rtc_base_approved",
         "../../rtc_base:timeutils",
         "../../rtc_base/synchronization:mutex",
         "../../system_wrappers",

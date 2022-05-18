@@ -76,155 +76,6 @@ public class ContextualSearchUma {
         int NUM_ENTRIES = 2;
     }
 
-    // Constants used to log UMA "enum" histograms about the panel's state transitions.
-    // Entry code: first entry into CLOSED.
-    @IntDef({EnterClosedFrom.OTHER, EnterClosedFrom.PEEKED_BACK_PRESS,
-            EnterClosedFrom.PEEKED_BASE_PAGE_SCROLL, EnterClosedFrom.PEEKED_TEXT_SELECT_TAP,
-            EnterClosedFrom.EXPANDED_BACK_PRESS, EnterClosedFrom.EXPANDED_BASE_PAGE_TAP,
-            EnterClosedFrom.EXPANDED_FLING, EnterClosedFrom.MAXIMIZED_BACK_PRESS,
-            EnterClosedFrom.MAXIMIZED_FLING, EnterClosedFrom.MAXIMIZED_TAB_PROMOTION,
-            EnterClosedFrom.MAXIMIZED_SERP_NAVIGATION})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface EnterClosedFrom {
-        int OTHER = 0;
-        int PEEKED_BACK_PRESS = 1;
-        int PEEKED_BASE_PAGE_SCROLL = 2;
-        int PEEKED_TEXT_SELECT_TAP = 3;
-        int EXPANDED_BACK_PRESS = 4;
-        int EXPANDED_BASE_PAGE_TAP = 5;
-        int EXPANDED_FLING = 6;
-        int MAXIMIZED_BACK_PRESS = 7;
-        int MAXIMIZED_FLING = 8;
-        int MAXIMIZED_TAB_PROMOTION = 9;
-        int MAXIMIZED_SERP_NAVIGATION = 10;
-        int NUM_ENTRIES = 11;
-    }
-
-    // Entry code: first entry into PEEKED.
-    @IntDef({EnterPeekedFrom.OTHER, EnterPeekedFrom.CLOSED_TEXT_SELECT_TAP,
-            EnterPeekedFrom.CLOSED_EXT_SELECT_LONG_PRESS, EnterPeekedFrom.PEEKED_TEXT_SELECT_TAP,
-            EnterPeekedFrom.PEEKED_TEXT_SELECT_LONG_PRESS, EnterPeekedFrom.EXPANDED_SEARCH_BAR_TAP,
-            EnterPeekedFrom.EXPANDED_SWIPE, EnterPeekedFrom.EXPANDED_FLING,
-            EnterPeekedFrom.MAXIMIZED_SWIPE, EnterPeekedFrom.MAXIMIZED_FLING})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface EnterPeekedFrom {
-        int OTHER = 0;
-        int CLOSED_TEXT_SELECT_TAP = 1;
-        int CLOSED_EXT_SELECT_LONG_PRESS = 2;
-        int PEEKED_TEXT_SELECT_TAP = 3;
-        int PEEKED_TEXT_SELECT_LONG_PRESS = 4;
-        int EXPANDED_SEARCH_BAR_TAP = 5;
-        int EXPANDED_SWIPE = 6;
-        int EXPANDED_FLING = 7;
-        int MAXIMIZED_SWIPE = 8;
-        int MAXIMIZED_FLING = 9;
-        int NUM_ENTRIES = 10;
-    }
-
-    // Entry code: first entry into EXPANDED.
-    @IntDef({EnterExpandedFrom.OTHER, EnterExpandedFrom.PEEKED_SEARCH_BAR_TAP,
-            EnterExpandedFrom.PEEKED_SWIPE, EnterExpandedFrom.PEEKED_FLING,
-            EnterExpandedFrom.MAXIMIZED_SWIPE, EnterExpandedFrom.MAXIMIZED_FLING})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface EnterExpandedFrom {
-        int OTHER = 0;
-        int PEEKED_SEARCH_BAR_TAP = 1;
-        int PEEKED_SWIPE = 2;
-        int PEEKED_FLING = 3;
-        int MAXIMIZED_SWIPE = 4;
-        int MAXIMIZED_FLING = 5;
-        int NUM_ENTRIES = 6;
-    }
-
-    // Entry code: first entry into MAXIMIZED.
-    @IntDef({EnterMaximizedFrom.OTHER, EnterMaximizedFrom.PEEKED_SWIPE,
-            EnterMaximizedFrom.PEEKED_FLING, EnterMaximizedFrom.EXPANDED_SWIPE,
-            EnterMaximizedFrom.EXPANDED_FLING, EnterMaximizedFrom.EXPANDED_SERP_NAVIGATION})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface EnterMaximizedFrom {
-        int OTHER = 0;
-        int PEEKED_SWIPE = 1;
-        int PEEKED_FLING = 2;
-        int EXPANDED_SWIPE = 3;
-        int EXPANDED_FLING = 4;
-        int EXPANDED_SERP_NAVIGATION = 5;
-        int NUM_ENTRIES = 6;
-    }
-
-    // Exit code: first exit from CLOSED (or UNDEFINED).
-    @IntDef({ExitClosedTo.OTHER, ExitClosedTo.PEEKED_TEXT_SELECT_TAP,
-            ExitClosedTo.PEEKED_TEXT_SELECT_LONG_PRESS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ExitClosedTo {
-        int OTHER = 0;
-        int PEEKED_TEXT_SELECT_TAP = 1;
-        int PEEKED_TEXT_SELECT_LONG_PRESS = 2;
-        int NUM_ENTRIES = 3;
-    }
-
-    // Exit code: first exit from PEEKED.
-    @IntDef({ExitPeekedTo.OTHER, ExitPeekedTo.CLOSED_BACK_PRESS,
-            ExitPeekedTo.CLOSED_BASE_PAGE_SCROLL, ExitPeekedTo.CLOSED_TEXT_SELECT_TAP,
-            ExitPeekedTo.PEEKED_TEXT_SELECT_TAP, ExitPeekedTo.PEEKED_TEXT_SELECT_LONG_PRESS,
-            ExitPeekedTo.EXPANDED_SEARCH_BAR_TAP, ExitPeekedTo.EXPANDED_SWIPE,
-            ExitPeekedTo.EXPANDED_FLING, ExitPeekedTo.MAXIMIZED_SWIPE,
-            ExitPeekedTo.MAXIMIZED_FLING})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ExitPeekedTo {
-        int OTHER = 0;
-        int CLOSED_BACK_PRESS = 1;
-        int CLOSED_BASE_PAGE_SCROLL = 2;
-        int CLOSED_TEXT_SELECT_TAP = 3;
-        int PEEKED_TEXT_SELECT_TAP = 4;
-        int PEEKED_TEXT_SELECT_LONG_PRESS = 5;
-        int EXPANDED_SEARCH_BAR_TAP = 6;
-        int EXPANDED_SWIPE = 7;
-        int EXPANDED_FLING = 8;
-        int MAXIMIZED_SWIPE = 9;
-        int MAXIMIZED_FLING = 10;
-        int NUM_ENTRIES = 11;
-    }
-
-    // Exit code: first exit from EXPANDED.
-    @IntDef({ExitExpandedTo.OTHER, ExitExpandedTo.CLOSED_BACK_PRESS,
-            ExitExpandedTo.CLOSED_BASE_PAGE_TAP, ExitExpandedTo.CLOSED_FLING,
-            ExitExpandedTo.PEEKED_SEARCH_BAR_TAP, ExitExpandedTo.PEEKED_SWIPE,
-            ExitExpandedTo.PEEKED_FLING, ExitExpandedTo.MAXIMIZED_SWIPE,
-            ExitExpandedTo.MAXIMIZED_FLING, ExitExpandedTo.MAXIMIZED_SERP_NAVIGATION})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ExitExpandedTo {
-        int OTHER = 0;
-        int CLOSED_BACK_PRESS = 1;
-        int CLOSED_BASE_PAGE_TAP = 2;
-        int CLOSED_FLING = 3;
-        int PEEKED_SEARCH_BAR_TAP = 4;
-        int PEEKED_SWIPE = 5;
-        int PEEKED_FLING = 6;
-        int MAXIMIZED_SWIPE = 7;
-        int MAXIMIZED_FLING = 8;
-        int MAXIMIZED_SERP_NAVIGATION = 9;
-        int NUM_ENTRIES = 10;
-    }
-
-    // Exit code: first exit from MAXIMIZED.
-    @IntDef({ExitMaximizedTo.OTHER, ExitMaximizedTo.CLOSED_BACK_PRESS, ExitMaximizedTo.CLOSED_FLING,
-            ExitMaximizedTo.CLOSED_TAB_PROMOTION, ExitMaximizedTo.CLOSED_SERP_NAVIGATION,
-            ExitMaximizedTo.PEEKED_SWIPE, ExitMaximizedTo.PEEKED_FLING,
-            ExitMaximizedTo.EXPANDED_SWIPE, ExitMaximizedTo.EXPANDED_FLING})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ExitMaximizedTo {
-        int OTHER = 0;
-        int CLOSED_BACK_PRESS = 1;
-        int CLOSED_FLING = 2;
-        int CLOSED_TAB_PROMOTION = 3;
-        int CLOSED_SERP_NAVIGATION = 4;
-        int PEEKED_SWIPE = 5;
-        int PEEKED_FLING = 6;
-        int EXPANDED_SWIPE = 7;
-        int EXPANDED_FLING = 8;
-        int NUM_ENTRIES = 9;
-    }
-
     // Constants used to log UMA "enum" histograms with details about whether search results
     // were seen, and what the original triggering gesture was.
     @IntDef({ResultsByGesture.SEEN_FROM_TAP, ResultsByGesture.NOT_SEEN_FROM_TAP,
@@ -253,40 +104,6 @@ public class ContextualSearchUma {
         int NUM_ENTRIES = 4;
     }
 
-    // Constants used to log UMA "enum" histograms with details about whether search results
-    // were seen, and what the original triggering gesture was.
-    @IntDef({Promo.ENABLED_FROM_TAP, Promo.DISABLED_FROM_TAP, Promo.UNDECIDED_FROM_TAP,
-            Promo.ENABLED_FROM_LONG_PRESS, Promo.DISABLED_FROM_LONG_PRESS,
-            Promo.UNDECIDED_FROM_LONG_PRESS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface Promo {
-        int ENABLED_FROM_TAP = 0;
-        int DISABLED_FROM_TAP = 1;
-        int UNDECIDED_FROM_TAP = 2;
-        int ENABLED_FROM_LONG_PRESS = 3;
-        int DISABLED_FROM_LONG_PRESS = 4;
-        int UNDECIDED_FROM_LONG_PRESS = 5;
-        int NUM_ENTRIES = 6;
-    }
-
-    // Constants used to log UMA "enum" histograms for HTTP / HTTPS.
-    @IntDef({Protocol.IS_HTTP, Protocol.NOT_HTTP})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface Protocol {
-        int IS_HTTP = 0;
-        int NOT_HTTP = 1;
-        int NUM_ENTRIES = 2;
-    }
-
-    // Constants used to log UMA "enum" histograms for single / multi-word.
-    @IntDef({ResolvedGranularity.SINGLE_WORD, ResolvedGranularity.MULTI_WORD})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface ResolvedGranularity {
-        int SINGLE_WORD = 0;
-        int MULTI_WORD = 1;
-        int NUM_ENTRIES = 2;
-    }
-
     // Constants used to log UMA "enum" histograms for Quick Answers.
     @IntDef({QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_SEEN,
             QuickAnswerSeen.ACTIVATED_WAS_AN_ANSWER_NOT_SEEN,
@@ -302,28 +119,6 @@ public class ContextualSearchUma {
         int NOT_ACTIVATED_SEEN = 4;
         int NOT_ACTIVATED_NOT_SEEN = 5;
         int NUM_ENTRIES = 6;
-    }
-
-    // Constants for "Bar Overlap" with triggering gesture, and whether the results were seen.
-    @IntDef({BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_TAP,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS,
-            BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface BarOverlapResults {
-        int BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 0;
-        int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 1;
-        int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP = 2;
-        int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP = 3;
-        int BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 4;
-        int BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 5;
-        int NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS = 6;
-        int NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS = 7;
-        int NUM_ENTRIES = 8;
     }
 
     // Constants for quick action intent resolution histogram.
@@ -377,184 +172,6 @@ public class ContextualSearchUma {
 
     // TODO(donnd): switch from using Maps to some method that does not require creation of a key.
 
-    // Entry code map: first entry into CLOSED.
-    private static final Map<StateChangeKey, Integer> ENTER_CLOSED_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.BACK_PRESS),
-                EnterClosedFrom.PEEKED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.BASE_PAGE_SCROLL),
-                EnterClosedFrom.PEEKED_BASE_PAGE_SCROLL);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_TAP),
-                EnterClosedFrom.PEEKED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.BACK_PRESS),
-                EnterClosedFrom.EXPANDED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.BASE_PAGE_TAP),
-                EnterClosedFrom.EXPANDED_BASE_PAGE_TAP);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.FLING),
-                EnterClosedFrom.EXPANDED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.BACK_PRESS),
-                EnterClosedFrom.MAXIMIZED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.FLING),
-                EnterClosedFrom.MAXIMIZED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.TAB_PROMOTION),
-                EnterClosedFrom.MAXIMIZED_TAB_PROMOTION);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SERP_NAVIGATION),
-                EnterClosedFrom.MAXIMIZED_SERP_NAVIGATION);
-        ENTER_CLOSED_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Entry code map: first entry into PEEKED.
-    private static final Map<StateChangeKey, Integer> ENTER_PEEKED_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        // Note: we don't distinguish entering PEEKED from UNDEFINED / CLOSED.
-        codes.put(new StateChangeKey(PanelState.UNDEFINED, StateChangeReason.TEXT_SELECT_TAP),
-                EnterPeekedFrom.CLOSED_TEXT_SELECT_TAP);
-        codes.put(
-                new StateChangeKey(PanelState.UNDEFINED, StateChangeReason.TEXT_SELECT_LONG_PRESS),
-                EnterPeekedFrom.CLOSED_EXT_SELECT_LONG_PRESS);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.TEXT_SELECT_TAP),
-                EnterPeekedFrom.CLOSED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.TEXT_SELECT_LONG_PRESS),
-                EnterPeekedFrom.CLOSED_EXT_SELECT_LONG_PRESS);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_TAP),
-                EnterPeekedFrom.PEEKED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_LONG_PRESS),
-                EnterPeekedFrom.PEEKED_TEXT_SELECT_LONG_PRESS);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SEARCH_BAR_TAP),
-                EnterPeekedFrom.EXPANDED_SEARCH_BAR_TAP);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SWIPE),
-                EnterPeekedFrom.EXPANDED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.FLING),
-                EnterPeekedFrom.EXPANDED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SWIPE),
-                EnterPeekedFrom.MAXIMIZED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.FLING),
-                EnterPeekedFrom.MAXIMIZED_FLING);
-        ENTER_PEEKED_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Entry code map: first entry into EXPANDED.
-    private static final Map<StateChangeKey, Integer> ENTER_EXPANDED_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SEARCH_BAR_TAP),
-                EnterExpandedFrom.PEEKED_SEARCH_BAR_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SWIPE),
-                EnterExpandedFrom.PEEKED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.FLING),
-                EnterExpandedFrom.PEEKED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SWIPE),
-                EnterExpandedFrom.MAXIMIZED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.FLING),
-                EnterExpandedFrom.MAXIMIZED_FLING);
-        ENTER_EXPANDED_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Entry code map: first entry into MAXIMIZED.
-    private static final Map<StateChangeKey, Integer> ENTER_MAXIMIZED_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SWIPE),
-                EnterMaximizedFrom.PEEKED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.FLING),
-                EnterMaximizedFrom.PEEKED_FLING);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SWIPE),
-                EnterMaximizedFrom.EXPANDED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.FLING),
-                EnterMaximizedFrom.EXPANDED_FLING);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SERP_NAVIGATION),
-                EnterMaximizedFrom.EXPANDED_SERP_NAVIGATION);
-        ENTER_MAXIMIZED_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Exit code map: first exit from CLOSED.
-    private static final Map<StateChangeKey, Integer> EXIT_CLOSED_TO_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_TAP),
-                ExitClosedTo.PEEKED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_LONG_PRESS),
-                ExitClosedTo.PEEKED_TEXT_SELECT_LONG_PRESS);
-        EXIT_CLOSED_TO_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Exit code map: first exit from PEEKED.
-    private static final Map<StateChangeKey, Integer> EXIT_PEEKED_TO_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BACK_PRESS),
-                ExitPeekedTo.CLOSED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BASE_PAGE_SCROLL),
-                ExitPeekedTo.CLOSED_BASE_PAGE_SCROLL);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BASE_PAGE_TAP),
-                ExitPeekedTo.CLOSED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_TAP),
-                ExitPeekedTo.PEEKED_TEXT_SELECT_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.TEXT_SELECT_LONG_PRESS),
-                ExitPeekedTo.PEEKED_TEXT_SELECT_LONG_PRESS);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SEARCH_BAR_TAP),
-                ExitPeekedTo.EXPANDED_SEARCH_BAR_TAP);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SWIPE),
-                ExitPeekedTo.EXPANDED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.FLING),
-                ExitPeekedTo.EXPANDED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SWIPE),
-                ExitPeekedTo.MAXIMIZED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.FLING),
-                ExitPeekedTo.MAXIMIZED_FLING);
-        EXIT_PEEKED_TO_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Exit code map: first exit from EXPANDED.
-    private static final Map<StateChangeKey, Integer> EXIT_EXPANDED_TO_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BACK_PRESS),
-                ExitExpandedTo.CLOSED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BASE_PAGE_TAP),
-                ExitExpandedTo.CLOSED_BASE_PAGE_TAP);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.FLING),
-                ExitExpandedTo.CLOSED_FLING);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SEARCH_BAR_TAP),
-                ExitExpandedTo.PEEKED_SEARCH_BAR_TAP);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SWIPE),
-                ExitExpandedTo.PEEKED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.FLING),
-                ExitExpandedTo.PEEKED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SWIPE),
-                ExitExpandedTo.MAXIMIZED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.FLING),
-                ExitExpandedTo.MAXIMIZED_FLING);
-        codes.put(new StateChangeKey(PanelState.MAXIMIZED, StateChangeReason.SERP_NAVIGATION),
-                ExitExpandedTo.MAXIMIZED_SERP_NAVIGATION);
-        EXIT_EXPANDED_TO_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // Exit code map: first exit from MAXIMIZED.
-    private static final Map<StateChangeKey, Integer> EXIT_MAXIMIZED_TO_STATE_CHANGE_CODES;
-    static {
-        Map<StateChangeKey, Integer> codes = new HashMap<StateChangeKey, Integer>();
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.BACK_PRESS),
-                ExitMaximizedTo.CLOSED_BACK_PRESS);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.FLING),
-                ExitMaximizedTo.CLOSED_FLING);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.TAB_PROMOTION),
-                ExitMaximizedTo.CLOSED_TAB_PROMOTION);
-        codes.put(new StateChangeKey(PanelState.CLOSED, StateChangeReason.SERP_NAVIGATION),
-                ExitMaximizedTo.CLOSED_SERP_NAVIGATION);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.SWIPE),
-                ExitMaximizedTo.PEEKED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.PEEKED, StateChangeReason.FLING),
-                ExitMaximizedTo.PEEKED_FLING);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.SWIPE),
-                ExitMaximizedTo.EXPANDED_SWIPE);
-        codes.put(new StateChangeKey(PanelState.EXPANDED, StateChangeReason.FLING),
-                ExitMaximizedTo.EXPANDED_FLING);
-        EXIT_MAXIMIZED_TO_STATE_CHANGE_CODES = Collections.unmodifiableMap(codes);
-    }
-
     // "Seen by gesture" code map: logged on first exit from expanded panel, or promo,
     // broken down by gesture.
     private static final Map<Pair<Boolean, Boolean>, Integer> SEEN_BY_GESTURE_CODES;
@@ -569,26 +186,6 @@ public class ContextualSearchUma {
         codes.put(new Pair<Boolean, Boolean>(unseen, LONG_PRESS),
                 ResultsByGesture.NOT_SEEN_FROM_LONG_PRESS);
         SEEN_BY_GESTURE_CODES = Collections.unmodifiableMap(codes);
-    }
-
-    // "Promo outcome by gesture" code map: logged on exit from promo, broken down by gesture.
-    private static final Map<Pair<Integer, Boolean>, Integer> PROMO_BY_GESTURE_CODES;
-    static {
-        Map<Pair<Integer, Boolean>, Integer> codes =
-                new HashMap<Pair<Integer, Boolean>, Integer>();
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.ENABLED, TAP),
-                Promo.ENABLED_FROM_TAP);
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.DISABLED, TAP),
-                Promo.DISABLED_FROM_TAP);
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.UNINITIALIZED, TAP),
-                Promo.UNDECIDED_FROM_TAP);
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.ENABLED, LONG_PRESS),
-                Promo.ENABLED_FROM_LONG_PRESS);
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.DISABLED, LONG_PRESS),
-                Promo.DISABLED_FROM_LONG_PRESS);
-        codes.put(new Pair<Integer, Boolean>(ContextualSearchPreference.UNINITIALIZED, LONG_PRESS),
-                Promo.UNDECIDED_FROM_LONG_PRESS);
-        PROMO_BY_GESTURE_CODES = Collections.unmodifiableMap(codes);
     }
 
     /**
@@ -676,26 +273,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs whether the Search Term was single or multiword.
-     * @param isSingleWord Whether the resolved search term is a single word or not.
-     */
-    public static void logSearchTermResolvedWords(boolean isSingleWord) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchResolvedTermWords",
-                isSingleWord ? ResolvedGranularity.SINGLE_WORD : ResolvedGranularity.MULTI_WORD,
-                ResolvedGranularity.NUM_ENTRIES);
-    }
-
-    /**
-     * Logs whether the base page was using the HTTP protocol or not.
-     * @param isHttpBasePage Whether the base page was using the HTTP protocol or not (should
-     *        be false for HTTPS or other URIs).
-     */
-    public static void logBasePageProtocol(boolean isHttpBasePage) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBasePageProtocol",
-                isHttpBasePage ? Protocol.IS_HTTP : Protocol.NOT_HTTP, Protocol.NUM_ENTRIES);
-    }
-
-    /**
      * Logs changes to the Contextual Search preference, aside from those resulting from the first
      * run flow.
      * @param enabled Whether the preference is being enabled or disabled.
@@ -721,29 +298,6 @@ public class ContextualSearchUma {
      */
     public static void logPromoCardChoice(boolean enabled) {
         RecordHistogram.recordBooleanHistogram("Search.ContextualSearchPromoCardChoice", enabled);
-    }
-
-    /**
-     * Logs the outcome of the Promo.
-     * Logs multiple histograms; with and without the originating gesture.
-     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
-     * @param wasMandatory Whether the Promo was mandatory.
-     */
-    public static void logPromoOutcome(boolean wasTap, boolean wasMandatory) {
-        int preferenceCode = getPreferenceValue();
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchFirstRunFlowOutcome",
-                preferenceCode, ContextualSearchPreference.NUM_ENTRIES);
-
-        int preferenceByGestureCode = getPromoByGestureStateCode(preferenceCode, wasTap);
-        if (wasMandatory) {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Search.ContextualSearchMandatoryPromoOutcomeByGesture",
-                    preferenceByGestureCode, Promo.NUM_ENTRIES);
-        } else {
-            RecordHistogram.recordEnumeratedHistogram(
-                    "Search.ContextualSearchPromoOutcomeByGesture", preferenceByGestureCode,
-                    Promo.NUM_ENTRIES);
-        }
     }
 
     /**
@@ -938,41 +492,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the whether the panel was seen and the type of the trigger and if Bar nearly overlapped.
-     * If the panel was seen, logs the duration of the panel view into a BarOverlap or BarNoOverlap
-     * duration histogram.
-     * @param wasPanelSeen Whether the panel was seen.
-     * @param wasTap Whether the gesture was a Tap or not.
-     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
-     */
-    public static void logBarOverlapResultsSeen(
-            boolean wasPanelSeen, boolean wasTap, boolean wasBarOverlap) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBarOverlapSeen",
-                getBarOverlapEnum(wasBarOverlap, wasPanelSeen, wasTap),
-                BarOverlapResults.NUM_ENTRIES);
-    }
-
-    /**
-     * Logs the duration of the panel viewed in its Peeked state before being opened.
-     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
-     * @param panelPeekDurationMs The duration that the panel was peeking before being opened
-     *        by the user.
-     */
-    public static void logBarOverlapPeekDuration(boolean wasBarOverlap, long panelPeekDurationMs) {
-        String histogram = wasBarOverlap ? "Search.ContextualSearchBarOverlap.PeekDuration"
-                                         : "Search.ContextualSearchBarNoOverlap.PeekDuration";
-        RecordHistogram.recordMediumTimesHistogram(histogram, panelPeekDurationMs);
-    }
-
-    /**
-     * Log whether the UX was suppressed due to Bar overlap.
-     * @param wasSuppressed Whether showing the UX was suppressed.
-     */
-    public static void logBarOverlapSuppression(boolean wasSuppressed) {
-        RecordHistogram.recordBooleanHistogram("Search.ContextualSearchBarOverlap", wasSuppressed);
-    }
-
-    /**
      * Logs the length of the selection in two histograms, one when results were seen and one when
      * results were not seen.
      * @param wasPanelSeen Whether the panel was seen.
@@ -995,129 +514,6 @@ public class ContextualSearchUma {
     public static void logSelectionLengthSuppression(boolean wasSuppressed) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearchSelectionLengthSuppression", wasSuppressed);
-    }
-
-    /**
-     * Logs the location of a Tap and whether the panel was seen and the type of the
-     * trigger.
-     * @param wasPanelSeen Whether the panel was seen.
-     * @param wasTap Whether the gesture was a Tap or not.
-     * @param triggerLocationDps The trigger location from the top of the screen.
-     */
-    public static void logScreenTopTapLocation(
-            boolean wasPanelSeen, boolean wasTap, int triggerLocationDps) {
-        // We only log Tap locations for the screen top.
-        if (!wasTap) return;
-        String histogram = wasPanelSeen ? "Search.ContextualSearchTopLocationSeen"
-                                        : "Search.ContextualSearchTopLocationNotSeen";
-        int min = 1;
-        int max = 250;
-        int numBuckets = 50;
-        RecordHistogram.recordCustomCountHistogram(
-                histogram, triggerLocationDps, min, max, numBuckets);
-    }
-
-    /**
-     * Log whether the UX was suppressed due to a Tap too close to the screen top.
-     * @param wasSuppressed Whether showing the UX was suppressed.
-     */
-    public static void logScreenTopTapSuppression(boolean wasSuppressed) {
-        RecordHistogram.recordBooleanHistogram(
-                "Search.ContextualSearchScreenTopSuppressed", wasSuppressed);
-    }
-
-    /**
-     * Logs whether results were seen based on the duration of the Tap, for both short and long
-     * durations.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isTapShort Whether this tap was "short" in duration.
-     */
-    public static void logTapDurationSeen(boolean wasSearchContentViewSeen, boolean isTapShort) {
-        if (isTapShort) {
-            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapShortDurationSeen",
-                    wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN,
-                    Results.NUM_ENTRIES);
-        } else {
-            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapLongDurationSeen",
-                    wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN,
-                    Results.NUM_ENTRIES);
-        }
-    }
-
-    /**
-     * Logs the duration of a Tap in ms into custom histograms to profile the duration of seen
-     * and not seen taps.
-     * @param wasPanelSeen Whether the panel was seen.
-     * @param durationMs The duration of the tap gesture.
-     */
-    public static void logTapDuration(boolean wasPanelSeen, int durationMs) {
-        int min = 1;
-        int max = 1000;
-        int numBuckets = 100;
-
-        if (wasPanelSeen) {
-            RecordHistogram.recordCustomCountHistogram(
-                    "Search.ContextualSearchTapDurationSeen", durationMs, min, max, numBuckets);
-        } else {
-            RecordHistogram.recordCustomCountHistogram(
-                    "Search.ContextualSearchTapDurationNotSeen", durationMs, min, max, numBuckets);
-        }
-    }
-
-    /**
-     * Log whether results were seen due to a Tap on a short word.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isTapOnShortWord Whether this tap was on a "short" word.
-     */
-    public static void logTapShortWordSeen(
-            boolean wasSearchContentViewSeen, boolean isTapOnShortWord) {
-        if (!isTapOnShortWord) return;
-
-        // We just record CTR of short words.
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapShortWordSeen",
-                wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
-    }
-
-    /**
-     * Log whether results were seen due to a Tap on a long word.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isTapOnLongWord Whether this tap was on a long word.
-     */
-    public static void logTapLongWordSeen(
-            boolean wasSearchContentViewSeen, boolean isTapOnLongWord) {
-        if (!isTapOnLongWord) return;
-
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapLongWordSeen",
-                wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
-    }
-
-    /**
-     * Log whether results were seen due to a Tap that was on the middle of a word.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isTapOnWordMiddle Whether this tap was on the middle of a word.
-     */
-    public static void logTapOnWordMiddleSeen(
-            boolean wasSearchContentViewSeen, boolean isTapOnWordMiddle) {
-        if (!isTapOnWordMiddle) return;
-
-        // We just record CTR of words tapped in the "middle".
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchTapOnWordMiddleSeen",
-                wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
-    }
-
-    /**
-     * Log whether results were seen due to a Tap on what we've recognized as a probable entity.
-     * @param wasSearchContentViewSeen If the panel was opened.
-     * @param isWordAnEntity Whether this tap was on a word that's an entity.
-     */
-    public static void logTapOnEntitySeen(
-            boolean wasSearchContentViewSeen, boolean isWordAnEntity) {
-        if (isWordAnEntity) {
-            // We just record CTR of probable entity words.
-            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchEntitySeen",
-                    wasSearchContentViewSeen ? Results.SEEN : Results.NOT_SEEN,
-                    Results.NUM_ENTRIES);
-        }
     }
 
     /**
@@ -1224,45 +620,6 @@ public class ContextualSearchUma {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchQuickAnswerSeen",
                 getQuickAnswerSeenValue(didActivate, didAnswer, wasSearchContentViewSeen),
                 QuickAnswerSeen.NUM_ENTRIES);
-    }
-
-    /**
-     * Logs how a state was entered for the first time within a Contextual Search.
-     * @param fromState The state to transition from.
-     * @param toState The state to transition to.
-     * @param reason The reason for the state transition.
-     */
-    public static void logFirstStateEntry(
-            @PanelState int fromState, @PanelState int toState, @StateChangeReason int reason) {
-        int code;
-        switch (toState) {
-            case PanelState.CLOSED:
-                code = getStateChangeCode(
-                        fromState, reason, ENTER_CLOSED_STATE_CHANGE_CODES, EnterClosedFrom.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchEnterClosed", code, EnterClosedFrom.NUM_ENTRIES);
-                break;
-            case PanelState.PEEKED:
-                code = getStateChangeCode(
-                        fromState, reason, ENTER_PEEKED_STATE_CHANGE_CODES, EnterPeekedFrom.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchEnterPeeked", code, EnterPeekedFrom.NUM_ENTRIES);
-                break;
-            case PanelState.EXPANDED:
-                code = getStateChangeCode(fromState, reason, ENTER_EXPANDED_STATE_CHANGE_CODES,
-                        EnterExpandedFrom.OTHER);
-                RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchEnterExpanded",
-                        code, EnterExpandedFrom.NUM_ENTRIES);
-                break;
-            case PanelState.MAXIMIZED:
-                code = getStateChangeCode(fromState, reason, ENTER_MAXIMIZED_STATE_CHANGE_CODES,
-                        EnterMaximizedFrom.OTHER);
-                RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchEnterMaximized",
-                        code, EnterMaximizedFrom.NUM_ENTRIES);
-                break;
-            default:
-                break;
-        }
     }
 
     /**
@@ -1392,70 +749,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs how a state was exited for the first time within a Contextual Search.
-     * @param fromState The state to transition from.
-     * @param toState The state to transition to.
-     * @param reason The reason for the state transition.
-     */
-    public static void logFirstStateExit(
-            @PanelState int fromState, @PanelState int toState, @StateChangeReason int reason) {
-        int code;
-        switch (fromState) {
-            case PanelState.UNDEFINED:
-            case PanelState.CLOSED:
-                code = getStateChangeCode(
-                        toState, reason, EXIT_CLOSED_TO_STATE_CHANGE_CODES, ExitClosedTo.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchExitClosed", code, ExitClosedTo.NUM_ENTRIES);
-                break;
-            case PanelState.PEEKED:
-                code = getStateChangeCode(
-                        toState, reason, EXIT_PEEKED_TO_STATE_CHANGE_CODES, ExitPeekedTo.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchExitPeeked", code, ExitPeekedTo.NUM_ENTRIES);
-                break;
-            case PanelState.EXPANDED:
-                code = getStateChangeCode(
-                        toState, reason, EXIT_EXPANDED_TO_STATE_CHANGE_CODES, ExitExpandedTo.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchExitExpanded", code, ExitExpandedTo.NUM_ENTRIES);
-                break;
-            case PanelState.MAXIMIZED:
-                code = getStateChangeCode(toState, reason, EXIT_MAXIMIZED_TO_STATE_CHANGE_CODES,
-                        ExitMaximizedTo.OTHER);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Search.ContextualSearchExitMaximized", code, ExitMaximizedTo.NUM_ENTRIES);
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Logs the number of impressions and CTR for the previous week for the current user.
-     * @param previousWeekImpressions The number of times the user saw the Contextual Search Bar.
-     * @param previousWeekCtr The CTR expressed as a percentage.
-     */
-    public static void logPreviousWeekCtr(int previousWeekImpressions, int previousWeekCtr) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchPreviousWeekImpressions", previousWeekImpressions);
-        RecordHistogram.recordPercentageHistogram(
-                "Search.ContextualSearchPreviousWeekCtr", previousWeekCtr);
-    }
-
-    /**
-     * Logs the number of impressions and CTR for previous 28-day period for the current user.
-     * @param previous28DayImpressions The number of times the user saw the Contextual Search Bar.
-     * @param previous28DayCtr The CTR expressed as a percentage.
-     */
-    public static void logPrevious28DayCtr(int previous28DayImpressions, int previous28DayCtr) {
-        RecordHistogram.recordCount1MHistogram(
-                "Search.ContextualSearchPrevious28DayImpressions", previous28DayImpressions);
-        RecordHistogram.recordPercentageHistogram(
-                "Search.ContextualSearchPrevious28DayCtr", previous28DayCtr);
-    }
-
-    /**
      * Logs a duration since the outcomes (and associated timestamp) were saved in persistent
      * storage.
      * @param durationMs The duration to log, in milliseconds.
@@ -1467,37 +760,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Get the encoded value to use for the Bar Overlap histogram by encoding all the input
-     * parameters.
-     * @param didBarOverlap Whether the selection overlapped the Bar position.
-     * @param wasPanelSeen Whether the panel content was seen.
-     * @param wasTap Whether the gesture was a Tap.
-     * @return The value for the enum histogram.
-     */
-    private static @BarOverlapResults int getBarOverlapEnum(
-            boolean didBarOverlap, boolean wasPanelSeen, boolean wasTap) {
-        if (wasTap) {
-            if (didBarOverlap) {
-                return wasPanelSeen ? BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_TAP
-                                    : BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
-            } else {
-                return wasPanelSeen ? BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_TAP
-                                    : BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_TAP;
-            }
-        } else {
-            if (didBarOverlap) {
-                return wasPanelSeen
-                        ? BarOverlapResults.BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS
-                        : BarOverlapResults.BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
-            } else {
-                return wasPanelSeen
-                        ? BarOverlapResults.NO_BAR_OVERLAP_RESULTS_SEEN_FROM_LONG_PRESS
-                        : BarOverlapResults.NO_BAR_OVERLAP_RESULTS_NOT_SEEN_FROM_LONG_PRESS;
-            }
-        }
-    }
-
-    /**
      * Logs whether Contextual Cards data was shown. Should be logged on tap if Contextual
      * Cards integration is enabled.
      * @param shown Whether Contextual Cards data was shown in the Bar.
@@ -1505,16 +767,6 @@ public class ContextualSearchUma {
     public static void logContextualCardsDataShown(boolean shown) {
         RecordHistogram.recordBooleanHistogram(
                 "Search.ContextualSearchContextualCardsIntegration.DataShown", shown);
-    }
-
-    /**
-     * Logs whether results were seen when Contextual Cards data was shown.
-     * @param wasSeen Whether the search results were seen.
-     */
-    public static void logContextualCardsResultsSeen(boolean wasSeen) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Search.ContextualSearchContextualCardsIntegration.ResultsSeen",
-                wasSeen ? Results.SEEN : Results.NOT_SEEN, Results.NUM_ENTRIES);
     }
 
     /**
@@ -1683,20 +935,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Gets the state-change code for the given parameters by doing a lookup in the given map.
-     * @param state The panel state.
-     * @param reason The reason the state changed.
-     * @param stateChangeCodes The map of state and reason to code.
-     * @param defaultCode The code to return if the given values are not found in the map.
-     * @return The code to write into an enum histogram, based on the given map.
-     */
-    private static int getStateChangeCode(@PanelState int state, @StateChangeReason int reason,
-            Map<StateChangeKey, Integer> stateChangeCodes, int defaultCode) {
-        Integer code = stateChangeCodes.get(new StateChangeKey(state, reason));
-        return code != null ? code : defaultCode;
-    }
-
-    /**
      * Gets the panel-seen code for the given parameters by doing a lookup in the seen-by-gesture
      * map.
      * @param wasPanelSeen Whether the panel was seen.
@@ -1705,17 +943,6 @@ public class ContextualSearchUma {
      */
     private static int getPanelSeenByGestureStateCode(boolean wasPanelSeen, boolean wasTap) {
         return SEEN_BY_GESTURE_CODES.get(new Pair<Boolean, Boolean>(wasPanelSeen, wasTap));
-    }
-
-    /**
-     * Gets the promo-outcome code for the given parameter by doing a lookup in the
-     * promo-by-gesture map.
-     * @param preferenceValue The code for the current preference value.
-     * @param wasTap Whether the gesture that originally caused the panel to show was a Tap.
-     * @return The code to write into a promo-outcome histogram.
-     */
-    private static int getPromoByGestureStateCode(int preferenceValue, boolean wasTap) {
-        return PROMO_BY_GESTURE_CODES.get(new Pair<Integer, Boolean>(preferenceValue, wasTap));
     }
 
     /**

@@ -169,7 +169,7 @@ g.test('texture_binding')
         ],
       })
     );
-    pass.dispatch(kTextureSize, kTextureSize);
+    pass.dispatchWorkgroups(kTextureSize, kTextureSize);
     pass.end();
     t.device.queue.submit([commandEncoder.finish()]);
 

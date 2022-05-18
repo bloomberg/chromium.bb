@@ -1996,6 +1996,11 @@ def SimpleTFDeviceAssignmentPass : Pass<"tf-simple-device-assignment", "mlir::fu
   }];
 }
 
+def TFDeviceAssignmentByFuncAttrPass : Pass<"tf-device-assignment-by-func-attr", "mlir::func::FuncOp"> {
+  let summary = "Device assignment in TF dialect using the device specified in the function attribute.";
+  let constructor = "TF::CreateTFDeviceAssignmentByFuncAttrPass()";
+}
+
 def LayoutAssignmentPass : Pass<"tf-layout-assignment", "mlir::func::FuncOp"> {
   let summary = "Layout assignment pass.";
   let constructor = "TF::CreateLayoutAssignmentPass()";
@@ -2111,7 +2116,7 @@ def TPUDynamicLayoutPass : Pass<"tf-tpu-dynamic-layout-pass", "ModuleOp"> {
   }];
 }
 
-def DeviceIndexSelectorPass : Pass<"tf-device-index-selector", "FuncOp"> {
+def DeviceIndexSelectorPass : Pass<"tf-device-index-selector", "mlir::func::FuncOp"> {
   let summary = "Fold tf.DeviceIndex to constant.";
   let constructor = "TF::CreateDeviceIndexSelectorPass()";
 }

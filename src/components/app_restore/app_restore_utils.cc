@@ -5,7 +5,6 @@
 #include "components/app_restore/app_restore_utils.h"
 
 #include "ash/constants/app_types.h"
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/desk_template_read_handler.h"
@@ -27,10 +26,8 @@ static int32_t session_id_counter = kArcSessionIdOffsetForRestoredLaunching;
 // Always use the full restore ARC data if ARC apps for desks templates is not
 // enabled.
 bool ShouldUseFullRestoreArcData() {
-  return ash::features::AreDesksTemplatesEnabled()
-             ? full_restore::FullRestoreReadHandler::GetInstance()
-                   ->IsFullRestoreRunning()
-             : true;
+  return full_restore::FullRestoreReadHandler::GetInstance()
+      ->IsFullRestoreRunning();
 }
 
 }  // namespace
@@ -221,21 +218,6 @@ const std::string GetLacrosWindowId(aura::Window* window) {
 int32_t GetLacrosRestoreWindowId(const std::string& lacros_window_id) {
   return full_restore::FullRestoreReadHandler::GetInstance()
       ->GetLacrosRestoreWindowId(lacros_window_id);
-}
-
-void OnLacrosWindowAdded(aura::Window* const window,
-                         uint32_t browser_session_id,
-                         uint32_t restored_browser_session_id,
-                         bool is_browser_app) {
-  if (!IsLacrosWindow(window))
-    return;
-
-  full_restore::FullRestoreReadHandler::GetInstance()
-      ->OnLacrosBrowserWindowAdded(window, restored_browser_session_id);
-
-  full_restore::FullRestoreSaveHandler::GetInstance()
-      ->OnLacrosBrowserWindowAdded(window, browser_session_id,
-                                   restored_browser_session_id, is_browser_app);
 }
 
 }  // namespace app_restore

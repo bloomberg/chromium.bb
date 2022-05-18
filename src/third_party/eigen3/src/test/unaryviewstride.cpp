@@ -17,9 +17,8 @@ template<int OuterStride,int InnerStride,typename VectorType> void unaryview_str
   VectorType vec = VectorType::Random(rows, cols);
 
   struct view_op {
-    EIGEN_EMPTY_STRUCT_CTOR(view_op)
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const Scalar& 
+    EIGEN_STRONG_INLINE const Scalar&
       operator()(const Scalar& v) const { return v; }
   };
 

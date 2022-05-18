@@ -60,6 +60,8 @@ else()
   ei_add_property(EIGEN_MISSING_BACKENDS "MPFR C++, ")
 endif()
 
+ei_add_test(NNLS)
+
 ei_add_test(sparse_extra   "" "")
 
 find_package(FFTW)

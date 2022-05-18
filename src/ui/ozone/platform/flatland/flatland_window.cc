@@ -139,6 +139,15 @@ void FlatlandWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
 }
 
+gfx::Rect FlatlandWindow::GetBoundsInDIP() const {
+  return window_delegate_->ConvertRectToDIP(bounds_);
+}
+
+void FlatlandWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  // This path should only be reached in tests.
+  bounds_ = window_delegate_->ConvertRectToPixels(bounds);
+}
+
 void FlatlandWindow::SetTitle(const std::u16string& title) {
   NOTIMPLEMENTED();
 }
@@ -247,11 +256,11 @@ void FlatlandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-void FlatlandWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+void FlatlandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect FlatlandWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect FlatlandWindow::GetRestoredBoundsInDIP() const {
   NOTIMPLEMENTED();
   return gfx::Rect();
 }

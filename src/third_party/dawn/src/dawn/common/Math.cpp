@@ -14,20 +14,21 @@
 
 #include "dawn/common/Math.h"
 
-#include "dawn/common/Assert.h"
-#include "dawn/common/Platform.h"
-
 #include <algorithm>
 #include <cmath>
 #include <limits>
 
+#include "dawn/common/Assert.h"
+#include "dawn/common/Platform.h"
+
 #if defined(DAWN_COMPILER_MSVC)
-#    include <intrin.h>
+#include <intrin.h>
 #endif
 
 uint32_t ScanForward(uint32_t bits) {
     ASSERT(bits != 0);
 #if defined(DAWN_COMPILER_MSVC)
+    // NOLINTNEXTLINE(runtime/int)
     unsigned long firstBitIndex = 0ul;
     unsigned char ret = _BitScanForward(&firstBitIndex, bits);
     ASSERT(ret != 0);
@@ -40,6 +41,7 @@ uint32_t ScanForward(uint32_t bits) {
 uint32_t Log2(uint32_t value) {
     ASSERT(value != 0);
 #if defined(DAWN_COMPILER_MSVC)
+    // NOLINTNEXTLINE(runtime/int)
     unsigned long firstBitIndex = 0ul;
     unsigned char ret = _BitScanReverse(&firstBitIndex, value);
     ASSERT(ret != 0);
@@ -52,12 +54,14 @@ uint32_t Log2(uint32_t value) {
 uint32_t Log2(uint64_t value) {
     ASSERT(value != 0);
 #if defined(DAWN_COMPILER_MSVC)
-#    if defined(DAWN_PLATFORM_64_BIT)
+#if defined(DAWN_PLATFORM_64_BIT)
+    // NOLINTNEXTLINE(runtime/int)
     unsigned long firstBitIndex = 0ul;
     unsigned char ret = _BitScanReverse64(&firstBitIndex, value);
     ASSERT(ret != 0);
     return firstBitIndex;
-#    else   // defined(DAWN_PLATFORM_64_BIT)
+#else   // defined(DAWN_PLATFORM_64_BIT)
+    // NOLINTNEXTLINE(runtime/int)
     unsigned long firstBitIndex = 0ul;
     if (_BitScanReverse(&firstBitIndex, value >> 32)) {
         return firstBitIndex + 32;
@@ -65,10 +69,10 @@ uint32_t Log2(uint64_t value) {
     unsigned char ret = _BitScanReverse(&firstBitIndex, value & 0xFFFFFFFF);
     ASSERT(ret != 0);
     return firstBitIndex;
-#    endif  // defined(DAWN_PLATFORM_64_BIT)
-#else       // defined(DAWN_COMPILER_MSVC)
+#endif  // defined(DAWN_PLATFORM_64_BIT)
+#else   // defined(DAWN_COMPILER_MSVC)
     return 63 - static_cast<uint32_t>(__builtin_clzll(value));
-#endif      // defined(DAWN_COMPILER_MSVC)
+#endif  // defined(DAWN_COMPILER_MSVC)
 }
 
 uint64_t NextPowerOfTwo(uint64_t n) {

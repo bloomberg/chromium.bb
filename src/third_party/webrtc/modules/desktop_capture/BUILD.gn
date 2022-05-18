@@ -61,6 +61,8 @@ if (rtc_include_tests) {
       "../../api:scoped_refptr",
       "../../rtc_base:checks",
       "../../rtc_base:logging",
+      "../../rtc_base:platform_thread",
+      "../../rtc_base:random",
       "../../rtc_base:timeutils",
     ]
     if (rtc_desktop_capture_supported) {
@@ -69,7 +71,6 @@ if (rtc_include_tests) {
         ":primitives",
         ":screen_drawer",
         "../../rtc_base",
-        "../../rtc_base:rtc_base_approved",
         "../../rtc_base/third_party/base64",
         "../../system_wrappers",
         "../../test:test_support",
@@ -81,6 +82,10 @@ if (rtc_include_tests) {
         "window_finder_unittest.cc",
       ]
       public_configs = [ ":x11_config" ]
+
+      if (is_win) {
+        deps += [ "../../rtc_base/win:windows_version" ]
+      }
     }
   }
 
@@ -105,6 +110,24 @@ if (rtc_include_tests) {
       "test_utils.h",
       "test_utils_unittest.cc",
     ]
+    deps = [
+      ":desktop_capture",
+      ":desktop_capture_mock",
+      ":primitives",
+      "../../rtc_base:checks",
+      "../../rtc_base:logging",
+      "../../rtc_base:macromagic",
+      "../../rtc_base:random",
+      "../../rtc_base:timeutils",
+
+      # TODO(bugs.webrtc.org/9987): Remove this dep on rtc_base:rtc_base once
+      # rtc_base:threading is fully defined.
+      "../../rtc_base:rtc_base",
+      "../../rtc_base:threading",
+      "../../system_wrappers",
+      "../../test:test_support",
+    ]
+
     if (is_win) {
       sources += [
         "win/cursor_unittest.cc",
@@ -116,24 +139,12 @@ if (rtc_include_tests) {
         "win/test_support/test_window.h",
         "win/window_capture_utils_unittest.cc",
       ]
+      deps += [
+        "../../rtc_base/win:scoped_com_initializer",
+        "../../rtc_base/win:windows_version",
+      ]
     }
-    deps = [
-      ":desktop_capture",
-      ":desktop_capture_mock",
-      ":primitives",
-      "../../rtc_base:checks",
-      "../../rtc_base:logging",
-      "../../rtc_base:macromagic",
-      "../../rtc_base:timeutils",
 
-      # TODO(bugs.webrtc.org/9987): Remove this dep on rtc_base:rtc_base once
-      # rtc_base:threading is fully defined.
-      "../../rtc_base:rtc_base",
-      "../../rtc_base:rtc_base_approved",
-      "../../rtc_base:threading",
-      "../../system_wrappers",
-      "../../test:test_support",
-    ]
     if (rtc_desktop_capture_supported) {
       sources += [
         "screen_capturer_helper_unittest.cc",
@@ -184,7 +195,6 @@ if (rtc_include_tests) {
       "../../api:scoped_refptr",
       "../../rtc_base:checks",
       "../../rtc_base:logging",
-      "../../rtc_base:rtc_base_approved",
       "../../system_wrappers",
     ]
 
@@ -208,7 +218,6 @@ if (rtc_include_tests) {
 
     deps = [
       ":primitives",
-      "../../rtc_base:rtc_base_approved",
       "../../test:test_support",
     ]
   }
@@ -320,8 +329,8 @@ if (is_mac) {
       "../../api:sequence_checker",
       "../../rtc_base",
       "../../rtc_base:checks",
+      "../../rtc_base:event_tracer",
       "../../rtc_base:logging",
-      "../../rtc_base:rtc_base_approved",
       "../../rtc_base:timeutils",
       "../../rtc_base/system:rtc_export",
       "../../sdk:helpers_objc",
@@ -485,8 +494,10 @@ rtc_library("desktop_capture_generic") {
     "../../api:sequence_checker",
     "../../rtc_base",  # TODO(kjellander): Cleanup in bugs.webrtc.org/3806.
     "../../rtc_base:checks",
+    "../../rtc_base:event_tracer",
     "../../rtc_base:logging",
     "../../rtc_base:macromagic",
+    "../../rtc_base:random",
     "../../rtc_base:refcount",
     "../../rtc_base:stringutils",
     "../../rtc_base:timeutils",
@@ -559,8 +570,10 @@ rtc_library("desktop_capture_generic") {
       "dxgi.lib",
     ]
     deps += [
-      "../../rtc_base:rtc_base_approved",
       "../../rtc_base:win32",
+      "../../rtc_base/win:create_direct3d_device",
+      "../../rtc_base/win:get_activation_factory",
+      "../../rtc_base/win:windows_version",
     ]
   }
 
@@ -574,9 +587,7 @@ rtc_library("desktop_capture_generic") {
     deps += [ "../../rtc_base:sanitizer" ]
   }
 
-  if (build_with_mozilla) {
-    deps += [ "../../rtc_base:rtc_base_approved" ]
-  } else {
+  if (!build_with_mozilla) {
     deps += [ "//third_party/libyuv" ]
   }
 
@@ -592,8 +603,10 @@ rtc_library("desktop_capture_generic") {
       "linux/wayland/egl_dmabuf.h",
       "linux/wayland/mouse_cursor_monitor_pipewire.cc",
       "linux/wayland/mouse_cursor_monitor_pipewire.h",
+      "linux/wayland/portal_request_response.h",
       "linux/wayland/scoped_glib.cc",
       "linux/wayland/scoped_glib.h",
+      "linux/wayland/screen_capture_portal_interface.cc",
       "linux/wayland/screen_capture_portal_interface.h",
       "linux/wayland/screencast_portal.cc",
       "linux/wayland/screencast_portal.h",
@@ -635,6 +648,8 @@ rtc_library("desktop_capture_generic") {
       "win/wgc_desktop_frame.cc",
       "win/wgc_desktop_frame.h",
     ]
+    libs += [ "dwmapi.lib" ]
+    deps += [ "../../rtc_base/win:hstring" ]
   }
 }
 

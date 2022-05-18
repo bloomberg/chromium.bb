@@ -9,18 +9,18 @@
 #include <string>
 
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
-#include "quiche/http2/decoder/payload_decoders/payload_decoder_base_test_util.h"
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
-#include "quiche/http2/http2_structures_test_util.h"
-#include "quiche/http2/platform/api/http2_logging.h"
 #include "quiche/http2/test_tools/frame_parts.h"
 #include "quiche/http2/test_tools/frame_parts_collector.h"
+#include "quiche/http2/test_tools/http2_frame_builder.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/http2_frame_builder.h"
-#include "quiche/http2/tools/random_decoder_test.h"
+#include "quiche/http2/test_tools/http2_structures_test_util.h"
+#include "quiche/http2/test_tools/payload_decoder_base_test_util.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
+#include "quiche/common/platform/api/quiche_expect_bug.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 namespace http2 {
 namespace test {
@@ -42,42 +42,41 @@ namespace {
 
 struct Listener : public FramePartsCollector {
   void OnDataStart(const Http2FrameHeader& header) override {
-    HTTP2_VLOG(1) << "OnDataStart: " << header;
+    QUICHE_VLOG(1) << "OnDataStart: " << header;
     StartFrame(header)->OnDataStart(header);
   }
 
   void OnDataPayload(const char* data, size_t len) override {
-    HTTP2_VLOG(1) << "OnDataPayload: len=" << len;
+    QUICHE_VLOG(1) << "OnDataPayload: len=" << len;
     CurrentFrame()->OnDataPayload(data, len);
   }
 
   void OnDataEnd() override {
-    HTTP2_VLOG(1) << "OnDataEnd";
+    QUICHE_VLOG(1) << "OnDataEnd";
     EndFrame()->OnDataEnd();
   }
 
   void OnPadLength(size_t pad_length) override {
-    HTTP2_VLOG(1) << "OnPadLength: " << pad_length;
+    QUICHE_VLOG(1) << "OnPadLength: " << pad_length;
     CurrentFrame()->OnPadLength(pad_length);
   }
 
   void OnPadding(const char* padding, size_t skipped_length) override {
-    HTTP2_VLOG(1) << "OnPadding: " << skipped_length;
+    QUICHE_VLOG(1) << "OnPadding: " << skipped_length;
     CurrentFrame()->OnPadding(padding, skipped_length);
   }
 
   void OnPaddingTooLong(const Http2FrameHeader& header,
                         size_t missing_length) override {
-    HTTP2_VLOG(1) << "OnPaddingTooLong: " << header
-                  << "    missing_length: " << missing_length;
+    QUICHE_VLOG(1) << "OnPaddingTooLong: " << header
+                   << "    missing_length: " << missing_length;
     EndFrame()->OnPaddingTooLong(header, missing_length);
   }
 };
 
 class DataPayloadDecoderTest
-    : public AbstractPaddablePayloadDecoderTest<DataPayloadDecoder,
-                                                DataPayloadDecoderPeer,
-                                                Listener> {
+    : public AbstractPaddablePayloadDecoderTest<
+          DataPayloadDecoder, DataPayloadDecoderPeer, Listener> {
  protected:
   AssertionResult CreateAndDecodeDataOfSize(size_t data_size) {
     Reset();
@@ -97,8 +96,7 @@ class DataPayloadDecoderTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(VariousPadLengths,
-                         DataPayloadDecoderTest,
+INSTANTIATE_TEST_SUITE_P(VariousPadLengths, DataPayloadDecoderTest,
                          ::testing::Values(0, 1, 2, 3, 4, 254, 255, 256));
 
 TEST_P(DataPayloadDecoderTest, VariousDataPayloadSizes) {

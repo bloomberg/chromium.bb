@@ -123,6 +123,9 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_SpirvDeprecated_Workgroup
 static const char DECORATE_UNUSED *kVUID_BestPractices_ImageCreateFlags = "UNASSIGNED-BestPractices-ImageCreateFlags";
 static const char DECORATE_UNUSED *kVUID_BestPractices_TransitionUndefinedToReadOnly =
     "UNASSIGNED-BestPractices-TransitionUndefinedToReadOnly";
+static const char DECORATE_UNUSED *kVUID_BestPractices_SemaphoreCount = "UNASSIGNED-BestPractices-SemaphoreCount";
+static const char DECORATE_UNUSED *kVUID_BestPractices_EmptyDescriptorPool =
+    "UNASSIGNED-BestPractices-EmptyDescriptorPool";
 
 // Arm-specific best practice
 static const char DECORATE_UNUSED *kVUID_BestPractices_AllocateDescriptorSets_SuboptimalReuse =

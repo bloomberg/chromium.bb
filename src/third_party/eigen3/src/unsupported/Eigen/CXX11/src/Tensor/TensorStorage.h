@@ -41,10 +41,10 @@ template<typename T, typename FixedDimensions, int Options_>
 class TensorStorage
 {
  private:
-  static const std::size_t Size = FixedDimensions::total_size;
+  static constexpr std::size_t Size = FixedDimensions::total_size;
 
   // Allocate an array of size at least one to prevent compiler warnings.
-  static const std::size_t MinSize = max_n_1<Size>::size;
+  static constexpr std::size_t MinSize = max_n_1<Size>::size;
   EIGEN_ALIGN_MAX T m_data[MinSize];
 
  public:
@@ -57,16 +57,13 @@ class TensorStorage
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE const T *data() const { return m_data; }
 
-  static EIGEN_DEVICE_FUNC
-  EIGEN_STRONG_INLINE const FixedDimensions& dimensions()
-  {
-    static const FixedDimensions* singleton_dimensions = new FixedDimensions();
-    return *singleton_dimensions;
-  }
+  EIGEN_DEVICE_FUNC
+  EIGEN_STRONG_INLINE const FixedDimensions dimensions() const { return FixedDimensions(); }
 
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE DenseIndex size() const { return Size; }
 };
+
 
 // pure dynamic
 template<typename T, typename IndexType, int NumIndices_, int Options_>

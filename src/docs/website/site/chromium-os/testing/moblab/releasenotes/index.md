@@ -17,6 +17,19 @@ title: MobLab Release Notes
 *   [Wyvern (puff) OS Recovery
             Image](https://storage.googleapis.com/moblab-recovery-images/chromeos_13904.81.0_puff-moblab_recovery_stable-channel_mp-v3.bin.zip)
 
+# Apr 22nd 2022: Moblab Update
+**You should reboot your Moblab when next not running tests to get this latest version of the software.**
+
+You should reboot your Moblab to get the latest version of the software. Make
+sure no tests are running or scheduled. This update only includes an update to
+the Moblab software; after the update you will be running Moblab version
+R-2.15.2.
+
+**Highlights**
+
+*   Fix for running tests on builds later than R102-14667.0.0
+
+
 # Mar 14th 2022: Moblab Update
 **You should reboot your Moblab when next not running tests to get this latest version of the software.**
 

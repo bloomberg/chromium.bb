@@ -24,16 +24,16 @@ namespace tint::ast {
 
 FloatLiteralExpression::FloatLiteralExpression(ProgramID pid,
                                                const Source& src,
-                                               float val)
-    : Base(pid, src), value(val) {}
+                                               double val,
+                                               Suffix suf)
+    : Base(pid, src), value(val), suffix(suf) {}
 
 FloatLiteralExpression::~FloatLiteralExpression() = default;
 
-const FloatLiteralExpression* FloatLiteralExpression::Clone(
-    CloneContext* ctx) const {
-  // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source);
-  return ctx->dst->create<FloatLiteralExpression>(src, value);
+const FloatLiteralExpression* FloatLiteralExpression::Clone(CloneContext* ctx) const {
+    // Clone arguments outside of create() call to have deterministic ordering
+    auto src = ctx->Clone(source);
+    return ctx->dst->create<FloatLiteralExpression>(src, value, suffix);
 }
 
 }  // namespace tint::ast

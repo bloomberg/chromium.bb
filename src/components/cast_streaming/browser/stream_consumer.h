@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -40,6 +39,9 @@ class StreamConsumer final : public openscreen::cast::Receiver::Consumer {
                  mojo::ScopedDataPipeProducerHandle data_pipe,
                  FrameReceivedCB frame_received_cb,
                  base::RepeatingClosure on_new_frame);
+  StreamConsumer(StreamConsumer&& old_consumer,
+                 openscreen::cast::Receiver* receiver,
+                 mojo::ScopedDataPipeProducerHandle data_pipe);
   ~StreamConsumer() override;
 
   StreamConsumer(const StreamConsumer&) = delete;
@@ -47,11 +49,9 @@ class StreamConsumer final : public openscreen::cast::Receiver::Consumer {
 
   // Informs the StreamConsumer that a new frame should be read asynchronously.
   // Eventually, the |frame_received_cb_| will be called with the data for this
-  // frame.
-  void ReadFrame();
-
-  // Returns a WeakPtr associated with this instance;
-  base::WeakPtr<StreamConsumer> GetWeakPtr();
+  // frame. |no_frames_available_cb| will be called if no frames are immediately
+  // available when this callback first tries to read them.
+  void ReadFrame(base::OnceClosure no_frames_available_cb);
 
  private:
   // Maximum frame size that OnFramesReady() can accept.
@@ -94,10 +94,10 @@ class StreamConsumer final : public openscreen::cast::Receiver::Consumer {
 
   bool is_read_pending_ = false;
 
+  base::OnceClosure no_frames_available_cb_;
+
   // Closure called on every new frame.
   base::RepeatingClosure on_new_frame_;
-
-  base::WeakPtrFactory<StreamConsumer> weak_factory_;
 };
 
 }  // namespace cast_streaming

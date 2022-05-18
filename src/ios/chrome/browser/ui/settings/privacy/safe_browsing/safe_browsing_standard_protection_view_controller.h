@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/settings_controller_protocol.h"
 
 @class SafeBrowsingStandardProtectionViewController;
+@protocol SafeBrowsingStandardProtectionViewControllerDelegate;
 
 // Delegate used for presentation events related to the view controller.
 @protocol SafeBrowsingStandardProtectionViewControllerPresentationDelegate
@@ -25,10 +26,17 @@
     : SettingsRootTableViewController <SafeBrowsingStandardProtectionConsumer,
                                        SettingsControllerProtocol>
 
+// Navigation controller.
+@property(nonatomic, strong) UINavigationController* navigationController;
+
 // Presentation delegate.
 @property(nonatomic, weak)
     id<SafeBrowsingStandardProtectionViewControllerPresentationDelegate>
         presentationDelegate;
+// Model delegate.
+@property(nonatomic, weak)
+    id<SafeBrowsingStandardProtectionViewControllerDelegate>
+        modelDelegate;
 
 @end
 

@@ -61,25 +61,27 @@ std::string DefaultNamesProvider::GenerateNameInternal() {
 }
 
 PeerParamsPreprocessor::PeerParamsPreprocessor()
-    : peer_names_provider("peer_", kDefaultNames) {}
+    : peer_names_provider_("peer_", kDefaultNames) {}
 
 void PeerParamsPreprocessor::SetDefaultValuesForMissingParams(
     PeerConfigurerImpl& peer) {
-  auto* p = peer.params();
-  peer_names_provider.MaybeSetName(p->name);
-  DefaultNamesProvider video_stream_names_provider(*p->name +
+  Params* params = peer.params();
+  ConfigurableParams* configurable_params = peer.configurable_params();
+  peer_names_provider_.MaybeSetName(params->name);
+  DefaultNamesProvider video_stream_names_provider(*params->name +
                                                    "_auto_video_stream_label_");
-  for (VideoConfig& video_config : p->video_configs) {
-    video_stream_names_provider.MaybeSetName(video_config.stream_label);
+  for (VideoConfig& config : configurable_params->video_configs) {
+    video_stream_names_provider.MaybeSetName(config.stream_label);
   }
-  if (p->audio_config) {
+  if (params->audio_config) {
     DefaultNamesProvider audio_stream_names_provider(
-        *p->name + "_auto_audio_stream_label_");
-    audio_stream_names_provider.MaybeSetName(p->audio_config->stream_label);
+        *params->name + "_auto_audio_stream_label_");
+    audio_stream_names_provider.MaybeSetName(
+        params->audio_config->stream_label);
   }
 
-  if (p->video_codecs.empty()) {
-    p->video_codecs.push_back(
+  if (params->video_codecs.empty()) {
+    params->video_codecs.push_back(
         PeerConnectionE2EQualityTestFixture::VideoCodecConfig(
             cricket::kVp8CodecName));
   }
@@ -93,21 +95,17 @@ void PeerParamsPreprocessor::ValidateParams(const PeerConfigurerImpl& peer) {
 
   {
     RTC_CHECK(p.name);
-    bool inserted = peer_names.insert(p.name.value()).second;
+    bool inserted = peer_names_.insert(p.name.value()).second;
     RTC_CHECK(inserted) << "Duplicate name=" << p.name.value();
   }
 
-  if (p.audio_config) {
-    media_streams_count++;
-  }
-  media_streams_count += p.video_configs.size();
-
   // Validate that all video stream labels are unique and sync groups are
   // valid.
-  for (const VideoConfig& video_config : p.video_configs) {
+  for (const VideoConfig& video_config :
+       peer.configurable_params().video_configs) {
     RTC_CHECK(video_config.stream_label);
     bool inserted =
-        video_labels.insert(video_config.stream_label.value()).second;
+        video_labels_.insert(video_config.stream_label.value()).second;
     RTC_CHECK(inserted) << "Duplicate video_config.stream_label="
                         << video_config.stream_label.value();
 
@@ -124,7 +122,7 @@ void PeerParamsPreprocessor::ValidateParams(const PeerConfigurerImpl& peer) {
     // more than two streams is supported.
     if (video_config.sync_group.has_value()) {
       bool sync_group_inserted =
-          video_sync_groups.insert(video_config.sync_group.value()).second;
+          video_sync_groups_.insert(video_config.sync_group.value()).second;
       RTC_CHECK(sync_group_inserted)
           << "Sync group shouldn't consist of more than two streams (one "
              "video and one audio). Duplicate video_config.sync_group="
@@ -137,29 +135,28 @@ void PeerParamsPreprocessor::ValidateParams(const PeerConfigurerImpl& peer) {
         RTC_CHECK_LT(*video_config.simulcast_config->target_spatial_index,
                      video_config.simulcast_config->simulcast_streams_count);
       }
-      RTC_CHECK(!video_config.max_encode_bitrate_bps)
-          << "Setting max encode bitrate is not implemented for simulcast.";
-      RTC_CHECK(!video_config.min_encode_bitrate_bps)
-          << "Setting min encode bitrate is not implemented for simulcast.";
-      if (p.video_codecs[0].name == cricket::kVp8CodecName &&
-          !video_config.simulcast_config->encoding_params.empty()) {
+      if (!video_config.encoding_params.empty()) {
         RTC_CHECK_EQ(video_config.simulcast_config->simulcast_streams_count,
-                     video_config.simulcast_config->encoding_params.size())
+                     video_config.encoding_params.size())
             << "|encoding_params| have to be specified for each simulcast "
-            << "stream in |simulcast_config|.";
+            << "stream in |video_config|.";
       }
+    } else {
+      RTC_CHECK_LE(video_config.encoding_params.size(), 1)
+          << "|encoding_params| has multiple values but simulcast is not "
+             "enabled.";
     }
   }
   if (p.audio_config) {
     bool inserted =
-        audio_labels.insert(p.audio_config->stream_label.value()).second;
+        audio_labels_.insert(p.audio_config->stream_label.value()).second;
     RTC_CHECK(inserted) << "Duplicate audio_config.stream_label="
                         << p.audio_config->stream_label.value();
     // TODO(bugs.webrtc.org/4762): remove this check after synchronization of
     // more than two streams is supported.
     if (p.audio_config->sync_group.has_value()) {
       bool sync_group_inserted =
-          audio_sync_groups.insert(p.audio_config->sync_group.value()).second;
+          audio_sync_groups_.insert(p.audio_config->sync_group.value()).second;
       RTC_CHECK(sync_group_inserted)
           << "Sync group shouldn't consist of more than two streams (one "
              "video and one audio). Duplicate audio_config.sync_group="

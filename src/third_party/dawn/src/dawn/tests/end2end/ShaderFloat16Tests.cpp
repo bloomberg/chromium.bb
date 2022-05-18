@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <vector>
+
 #include "dawn/common/Math.h"
 #include "dawn/tests/DawnTest.h"
-
 #include "dawn/utils/WGPUHelpers.h"
 
 class ShaderFloat16Tests : public DawnTest {
@@ -28,9 +29,7 @@ class ShaderFloat16Tests : public DawnTest {
         return {wgpu::FeatureName::DawnShaderFloat16};
     }
 
-    bool IsShaderFloat16Supported() const {
-        return mIsShaderFloat16Supported;
-    }
+    bool IsShaderFloat16Supported() const { return mIsShaderFloat16Supported; }
 
     bool mIsShaderFloat16Supported = false;
 };
@@ -161,7 +160,7 @@ TEST_P(ShaderFloat16Tests, DISABLED_Basic16BitFloatFeaturesTest) {
     wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
     pass.SetPipeline(pipeline);
     pass.SetBindGroup(0, bindGroup);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
     pass.End();
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);

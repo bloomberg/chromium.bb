@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -231,18 +232,6 @@ void WebAppProvider::Shutdown() {
 }
 
 void WebAppProvider::StartImpl() {
-  if (!skip_awaiting_extension_system_) {
-    // Basically the WebAppUiManagerImpl is dependent on ExtensionSystem
-    // initialization.
-    // TODO(crbug.com/1201878): Make WebAppUiManagerImpl lazily check
-    // ExtensionSystem readiness.
-    WaitForExtensionSystemReady();
-  } else {
-    OnExtensionSystemReady();
-  }
-}
-
-void WebAppProvider::OnExtensionSystemReady() {
   StartSyncBridge();
 }
 
@@ -302,7 +291,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
         std::move(protocol_handler_manager), std::move(url_handler_manager));
   }
 
-  command_manager_ = std::make_unique<WebAppCommandManager>();
+  command_manager_ = std::make_unique<WebAppCommandManager>(profile);
 
   registrar_ = std::move(registrar);
   sync_bridge_ = std::move(sync_bridge);
@@ -328,7 +317,7 @@ void WebAppProvider::ConnectSubsystems() {
       sync_bridge_.get());
   externally_managed_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
-      install_manager_.get(), sync_bridge_.get());
+      command_manager_.get(), sync_bridge_.get());
   preinstalled_web_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(),
       externally_managed_app_manager_.get());
@@ -346,6 +335,7 @@ void WebAppProvider::ConnectSubsystems() {
                                          ui_manager_.get(),
                                          icon_manager_.get());
 
+  command_manager_->SetSubsystems(install_manager_.get());
   connected_ = true;
 }
 
@@ -356,6 +346,9 @@ void WebAppProvider::StartSyncBridge() {
 
 void WebAppProvider::OnSyncBridgeReady() {
   DCHECK(!on_registry_ready_.is_signaled());
+
+  ExternallyInstalledWebAppPrefs::MigrateExternalPrefData(profile_->GetPrefs(),
+                                                          sync_bridge_.get());
 
   registrar_->Start();
   install_finalizer_->Start();
@@ -381,6 +374,7 @@ void WebAppProvider::CheckIsConnected() const {
 // static
 void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  UserUninstalledPreinstalledWebAppPrefs::RegisterProfilePrefs(registry);
   ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
   PreinstalledWebAppManager::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);

@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
@@ -1251,10 +1252,8 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return RoleFromLayoutObjectOrNode();
 
   // Treat <iframe>, <frame> and <fencedframe> the same.
-  if (IsA<HTMLIFrameElement>(*GetNode()) || IsA<HTMLFrameElement>(*GetNode()) ||
-      IsA<HTMLFencedFrameElement>(*GetNode())) {
+  if (IsFrame(GetNode()))
     return ax::mojom::blink::Role::kIframe;
-  }
 
   // There should only be one banner/contentInfo per page. If header/footer are
   // being used within an article or section then it should not be exposed as
@@ -1506,7 +1505,7 @@ bool AXNodeObject::IsLoaded() const {
   if (!GetDocument())
     return false;
 
-  if (GetDocument()->Parser())
+  if (!GetDocument()->IsLoadCompleted())
     return false;
 
   // Check for a navigation API single-page app navigation in progress.
@@ -1835,6 +1834,18 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
     return To<HTMLSelectElement>(element)->PopupIsVisible()
                ? kExpandedExpanded
                : kExpandedCollapsed;
+  }
+
+  // For buttons that contain the |togglepopup|, |showpopup|, or |hidepopup|
+  // popup triggering attributes, and the pointed-to element is a valid popup
+  // with type kPopup, then set aria-expanded=false when the popup is hidden,
+  // and aria-expanded=true when it is showing.
+  if (auto* button = DynamicTo<HTMLButtonElement>(element)) {
+    if (auto* popup = button->togglePopupElement()) {
+      if (popup->PopupType() == PopupValueType::kPopup) {
+        return popup->popupOpen() ? kExpandedExpanded : kExpandedCollapsed;
+      }
+    }
   }
 
   if (IsA<HTMLSummaryElement>(*element)) {
@@ -3257,7 +3268,7 @@ String AXNodeObject::TextAlternative(
   // points to itself. The easiest way to check this is by testing whether this
   // node has already been visited.
   if (recursive && !visited.Contains(this)) {
-    String value_for_name = GetValueContributionToName();
+    String value_for_name = GetValueContributionToName(visited);
     if (!value_for_name.IsNull())
       return value_for_name;
   }
@@ -3938,17 +3949,18 @@ void AXNodeObject::AddImageMapChildren() {
 }
 
 void AXNodeObject::AddPopupChildren() {
-  if (!AXObjectCache().UseAXMenuList()) {
-    auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
-    if (html_select_element && html_select_element->UsesMenuList())
+  auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
+  if (html_select_element) {
+    if (!AXObjectCache().UseAXMenuList() && html_select_element->UsesMenuList())
       AddChildAndCheckIncluded(html_select_element->PopupRootAXObject());
     return;
   }
 
   auto* html_input_element = DynamicTo<HTMLInputElement>(GetNode());
-  if (!html_input_element)
+  if (html_input_element) {
+    AddChildAndCheckIncluded(html_input_element->PopupRootAXObject());
     return;
-  AddChildAndCheckIncluded(html_input_element->PopupRootAXObject());
+  }
 }
 
 bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
@@ -3963,11 +3975,35 @@ bool AXNodeObject::CanAddLayoutChild(LayoutObject& child) {
   // pseudo element.
   DCHECK(child.GetNode()->IsPseudoElement());
 
-  // Only add this inner pseudo element if it hasn't been added elsewhere.
-  // An example is ::before with ::first-letter.
-  AXObject* ax_preexisting = AXObjectCache().Get(&child);
-  return !ax_preexisting || !ax_preexisting->CachedParentObject() ||
-         ax_preexisting->CachedParentObject() == this;
+  // ---------------------------------------------------------------------------
+  // Under certain circumstances the LayoutTreeBuilderTraversal and LayoutObject
+  // trees do not match, e.g. for the combination of ::before/::after and
+  // ::marker pseudo elements in legacy layout.
+  // In this case, there is a danger that the AXObject created for |child| will
+  // be added in two places.Unfortunately, this requires a slow check.
+  // For more info, see discussion here:
+  // https://crrev.com/c/chromium/src/+/3591572/9/third_party/blink/renderer/modules/accessibility/ax_node_object.cc#3973
+  // TODO(accessibility) Remove this once legacy layout is completely removed,
+  // as this problem will go away.
+  AXObject* ax_dom_parent = AXObjectCache().GetWithoutInvalidation(
+      LayoutTreeBuilderTraversal::Parent(*child.GetNode()));
+  if (ax_dom_parent &&
+      !ax_dom_parent->ShouldUseLayoutObjectTraversalForChildren()) {
+    DCHECK_NE(ax_dom_parent, this);
+    for (Node* child_node =
+             LayoutTreeBuilderTraversal::FirstChild(*ax_dom_parent->GetNode());
+         child_node;
+         child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
+      if (child_node == child.GetNode()) {
+        // Different AX parent would have the same AX child (via
+        // LayoutTreeBuilderTraversal).
+        return false;
+      }
+    }
+  }
+  // ---------------------------------------------------------------------------
+
+  return true;
 }
 
 #if DCHECK_IS_ON()
@@ -4560,7 +4596,7 @@ bool AXNodeObject::OnNativeFocusAction() {
     return OnNativeClickAction();
   }
 
-  element->focus();
+  element->Focus();
   return true;
 }
 
@@ -5707,7 +5743,7 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
   return ToTextControl(node)->StrippedPlaceholder();
 }
 
-String AXNodeObject::GetValueContributionToName() const {
+String AXNodeObject::GetValueContributionToName(AXObjectSet& visited) const {
   if (IsTextField())
     return SlowGetValueForControlIncludingContentEditable();
 
@@ -5728,9 +5764,11 @@ String AXNodeObject::GetValueContributionToName() const {
     AXObjectVector selected_options;
     SelectedOptions(selected_options);
     for (const auto& child : selected_options) {
-      if (accumulated_text.length())
-        accumulated_text.Append(" ");
-      accumulated_text.Append(child->ComputedName());
+      if (visited.insert(child).is_new_entry) {
+        if (accumulated_text.length())
+          accumulated_text.Append(" ");
+        accumulated_text.Append(child->ComputedName());
+      }
     }
     return accumulated_text.ToString();
   }

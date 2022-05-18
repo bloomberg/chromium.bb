@@ -12,26 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <memory>
+#include <utility>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/client/ClientMemoryTransferService_mock.h"
 #include "dawn/wire/server/ServerMemoryTransferService_mock.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::Eq;
+using testing::InvokeWithoutArgs;
+using testing::Mock;
+using testing::Pointee;
+using testing::Return;
+using testing::StrictMock;
+using testing::WithArg;
 
 namespace {
 
-    // Mock class to add expectations on the wire calling callbacks
-    class MockBufferMapCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
-    };
+// Mock class to add expectations on the wire calling callbacks
+class MockBufferMapCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockBufferMapCallback>> mockBufferMapCallback;
-    void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
-        mockBufferMapCallback->Call(status, userdata);
-    }
+std::unique_ptr<StrictMock<MockBufferMapCallback>> mockBufferMapCallback;
+void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
+    mockBufferMapCallback->Call(status, userdata);
+}
 
 }  // anonymous namespace
 
@@ -43,14 +53,13 @@ namespace {
 // and for mocking failures. The helpers are designed such that for a given run of a test,
 // a Serialization expection has a corresponding Deserialization expectation for which the
 // serialized data must match.
-// There are tests which check for Success for every mapping operation which mock an entire mapping
-// operation from map to unmap, and add all MemoryTransferService expectations.
-// Tests which check for errors perform the same mapping operations but insert mocked failures for
+// There are tests which check for Success for every mapping operation which mock an entire
+// mapping operation from map to unmap, and add all MemoryTransferService expectations. Tests
+// which check for errors perform the same mapping operations but insert mocked failures for
 // various mapping or MemoryTransferService operations.
 class WireMemoryTransferServiceTests : public WireTest {
   public:
-    WireMemoryTransferServiceTests() {
-    }
+    WireMemoryTransferServiceTests() {}
     ~WireMemoryTransferServiceTests() override = default;
 
     client::MemoryTransferService* GetClientMemoryTransferService() override {
@@ -311,8 +320,8 @@ class WireMemoryTransferServiceTests : public WireTest {
     // mUpdatedBufferContent| after all writes are flushed.
     static uint32_t mUpdatedBufferContent;
 
-    testing::StrictMock<dawn::wire::server::MockMemoryTransferService> serverMemoryTransferService;
-    testing::StrictMock<dawn::wire::client::MockMemoryTransferService> clientMemoryTransferService;
+    StrictMock<dawn::wire::server::MockMemoryTransferService> serverMemoryTransferService;
+    StrictMock<dawn::wire::client::MockMemoryTransferService> clientMemoryTransferService;
 };
 
 uint32_t WireMemoryTransferServiceTests::mBufferContent = 1337;
@@ -659,7 +668,8 @@ TEST_F(WireMemoryTransferServiceTests, BufferMapWriteError) {
     WGPUBuffer buffer;
     WGPUBuffer apiBuffer;
 
-    // The client should create and serialize a WriteHandle on buffer creation with MapWrite usage.
+    // The client should create and serialize a WriteHandle on buffer creation with MapWrite
+    // usage.
     ClientWriteHandle* clientHandle = ExpectWriteHandleCreation(false);
     ExpectWriteHandleSerialization(clientHandle);
 
@@ -712,7 +722,8 @@ TEST_F(WireMemoryTransferServiceTests, BufferMapWriteDeserializeWriteHandleFailu
     WGPUBuffer buffer;
     WGPUBuffer apiBuffer;
 
-    // The client should create and serialize a WriteHandle on buffer creation with MapWrite usage.
+    // The client should create and serialize a WriteHandle on buffer creation with MapWrite
+    // usage.
     ClientWriteHandle* clientHandle = ExpectWriteHandleCreation(false);
     ExpectWriteHandleSerialization(clientHandle);
 
@@ -980,7 +991,8 @@ TEST_F(WireMemoryTransferServiceTests, MappedAtCreationDestroyBeforeUnmap) {
 // Test a buffer with mappedAtCreation and MapRead usage destroy WriteHandle on unmap and switch
 // data pointer to ReadHandle
 TEST_F(WireMemoryTransferServiceTests, MappedAtCreationAndMapReadSuccess) {
-    // The client should create and serialize a ReadHandle and a WriteHandle on createBufferMapped.
+    // The client should create and serialize a ReadHandle and a WriteHandle on
+    // createBufferMapped.
     ClientReadHandle* clientReadHandle = ExpectReadHandleCreation();
     ExpectReadHandleSerialization(clientReadHandle);
     ClientWriteHandle* clientWriteHandle = ExpectWriteHandleCreation(true);
@@ -1050,3 +1062,5 @@ TEST_F(WireMemoryTransferServiceTests, MappedAtCreationAndMapWriteSuccess) {
     EXPECT_CALL(clientMemoryTransferService, OnWriteHandleDestroy(clientHandle)).Times(1);
     EXPECT_CALL(serverMemoryTransferService, OnWriteHandleDestroy(serverHandle)).Times(1);
 }
+
+}  // namespace dawn::wire

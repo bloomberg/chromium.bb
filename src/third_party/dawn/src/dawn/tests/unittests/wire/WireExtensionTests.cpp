@@ -14,13 +14,17 @@
 
 #include "dawn/tests/unittests/wire/WireTest.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::Invoke;
+using testing::NotNull;
+using testing::Return;
+using testing::Unused;
 
 class WireExtensionTests : public WireTest {
   public:
-    WireExtensionTests() {
-    }
+    WireExtensionTests() {}
     ~WireExtensionTests() override = default;
 };
 
@@ -239,3 +243,5 @@ TEST_F(WireExtensionTests, ValidAndInvalidSTypeInChain) {
             }));
     FlushClient();
 }
+
+}  // namespace dawn::wire

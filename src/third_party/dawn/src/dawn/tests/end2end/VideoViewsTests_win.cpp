@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "VideoViewsTests.h"
-
-#include "dawn/common/Assert.h"
-#include "dawn/native/D3D12Backend.h"
-
 #include <d3d11.h>
 #include <d3d12.h>
 #include <dxgi1_4.h>
 #include <wrl/client.h>
 
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "VideoViewsTests.h"
+#include "dawn/common/Assert.h"
+#include "dawn/native/D3D12Backend.h"
+
 using Microsoft::WRL::ComPtr;
 
 class PlatformTextureWin : public VideoViewsTestBackend::PlatformTexture {
   public:
-    explicit PlatformTextureWin(wgpu::Texture&& texture) : PlatformTexture(std::move(texture)) {
-    }
+    explicit PlatformTextureWin(wgpu::Texture&& texture) : PlatformTexture(std::move(texture)) {}
     ~PlatformTextureWin() override = default;
 
-    bool CanWrapAsWGPUTexture() override {
-        return true;
-    }
+    bool CanWrapAsWGPUTexture() override { return true; }
 };
 
 class VideoViewsTestBackendWin : public VideoViewsTestBackend {
@@ -170,8 +170,7 @@ class VideoViewsTestBackendWin : public VideoViewsTestBackend {
     }
 
     void DestroyVideoTextureForTest(
-        std::unique_ptr<VideoViewsTestBackend::PlatformTexture>&& PlatformTexture) override {
-    }
+        std::unique_ptr<VideoViewsTestBackend::PlatformTexture>&& PlatformTexture) override {}
 
     WGPUDevice mWGPUDevice = nullptr;
     ComPtr<ID3D11Device> mD3d11Device;

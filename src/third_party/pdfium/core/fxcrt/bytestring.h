@@ -23,7 +23,6 @@
 #include "core/fxcrt/string_view_template.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -36,11 +35,10 @@ class ByteString {
   using const_iterator = const CharType*;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  static ByteString FormatInteger(int i) WARN_UNUSED_RESULT;
-  static ByteString FormatFloat(float f) WARN_UNUSED_RESULT;
-  static ByteString Format(const char* pFormat, ...) WARN_UNUSED_RESULT;
-  static ByteString FormatV(const char* pFormat,
-                            va_list argList) WARN_UNUSED_RESULT;
+  [[nodiscard]] static ByteString FormatInteger(int i);
+  [[nodiscard]] static ByteString FormatFloat(float f);
+  [[nodiscard]] static ByteString Format(const char* pFormat, ...);
+  [[nodiscard]] static ByteString FormatV(const char* pFormat, va_list argList);
 
   ByteString();
   ByteString(const ByteString& other);
@@ -241,6 +239,12 @@ inline bool operator!=(ByteStringView lhs, const ByteString& rhs) {
 inline bool operator<(const char* lhs, const ByteString& rhs) {
   return rhs.Compare(lhs) > 0;
 }
+inline bool operator<(const ByteStringView& lhs, const ByteString& rhs) {
+  return rhs.Compare(lhs) > 0;
+}
+inline bool operator<(const ByteStringView& lhs, const char* rhs) {
+  return lhs < ByteStringView(rhs);
+}
 
 inline ByteString operator+(ByteStringView str1, ByteStringView str2) {
   return ByteString(str1, str2);
@@ -255,7 +259,7 @@ inline ByteString operator+(ByteStringView str1, char ch) {
   return ByteString(str1, ByteStringView(ch));
 }
 inline ByteString operator+(char ch, ByteStringView str2) {
-  return ByteString(ch, str2);
+  return ByteString(ByteStringView(ch), str2);
 }
 inline ByteString operator+(const ByteString& str1, const ByteString& str2) {
   return ByteString(str1.AsStringView(), str2.AsStringView());
@@ -264,7 +268,7 @@ inline ByteString operator+(const ByteString& str1, char ch) {
   return ByteString(str1.AsStringView(), ByteStringView(ch));
 }
 inline ByteString operator+(char ch, const ByteString& str2) {
-  return ByteString(ch, str2.AsStringView());
+  return ByteString(ByteStringView(ch), str2.AsStringView());
 }
 inline ByteString operator+(const ByteString& str1, const char* str2) {
   return ByteString(str1.AsStringView(), str2);

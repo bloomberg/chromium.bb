@@ -38,7 +38,13 @@ struct rate_hist {
 struct rate_hist *init_rate_histogram(const aom_codec_enc_cfg_t *cfg,
                                       const aom_rational_t *fps) {
   int i;
-  struct rate_hist *hist = malloc(sizeof(*hist));
+  struct rate_hist *hist = calloc(1, sizeof(*hist));
+
+  if (hist == NULL || cfg == NULL || fps == NULL || fps->num == 0 ||
+      fps->den == 0) {
+    destroy_rate_histogram(hist);
+    return NULL;
+  }
 
   // Determine the number of samples in the buffer. Use the file's framerate
   // to determine the number of frames in rc_buf_sz milliseconds, with an
@@ -81,7 +87,11 @@ void update_rate_histogram(struct rate_hist *hist,
                       (uint64_t)cfg->g_timebase.num /
                       (uint64_t)cfg->g_timebase.den;
 
-  int idx = hist->frames++ % hist->samples;
+  int idx;
+
+  if (hist == NULL || cfg == NULL || pkt == NULL) return;
+
+  idx = hist->frames++ % hist->samples;
   hist->pts[idx] = now;
   hist->sz[idx] = (int)pkt->data.frame.sz;
 
@@ -117,8 +127,13 @@ void update_rate_histogram(struct rate_hist *hist,
 static int merge_hist_buckets(struct hist_bucket *bucket, int max_buckets,
                               int *num_buckets) {
   int small_bucket = 0, merge_bucket = INT_MAX, big_bucket = 0;
-  int buckets = *num_buckets;
+  int buckets;
   int i;
+
+  assert(bucket != NULL);
+  assert(num_buckets != NULL);
+
+  buckets = *num_buckets;
 
   /* Find the extrema for this list of buckets */
   big_bucket = small_bucket = 0;
@@ -181,6 +196,10 @@ static void show_histogram(const struct hist_bucket *bucket, int buckets,
                            int total, int scale) {
   int width1, width2;
   int i;
+
+  if (!buckets) return;
+  assert(bucket != NULL);
+  assert(buckets > 0);
 
   switch ((int)(log(bucket[buckets - 1].high) / log(10)) + 1) {
     case 1:
@@ -260,6 +279,8 @@ void show_rate_histogram(struct rate_hist *hist, const aom_codec_enc_cfg_t *cfg,
                          int max_buckets) {
   int i, scale;
   int buckets = 0;
+
+  if (hist == NULL || cfg == NULL) return;
 
   for (i = 0; i < RATE_BINS; i++) {
     if (hist->bucket[i].low == INT_MAX) continue;

@@ -16,23 +16,12 @@ syntax = "proto3";
 
 package cast.v2;
 
-import "proto/bindings/api_bindings.proto";
-import "proto/bindings/cast_channel.proto";
-import "proto/common/application_config.proto";
-import "proto/common/service_info.proto";
-import "proto/v2/url_rewrite.proto";
-import "proto/web/message_channel.proto";
-
 option optimize_for = LITE_RUNTIME;
 
 // This service is implemented by the CastCore and used by Cast application in
 // Runtime to report status and request additional application information. This
 // service is scoped per application.
 service CoreApplicationService {
-  // Returns application config. Idempotent call. Errors are signaled through
-  // the gRPC status code.
-  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
-
   // Notifies Cast Core on the application state changes. The callback must be
   // called by the Runtime whenever the internal state of the application
   // changes. Cast Core may discard any resources associated with the
@@ -43,20 +32,6 @@ service CoreApplicationService {
   // GetWebUIResource request
   rpc GetWebUIResource(GetWebUIResourceRequest)
       returns (GetWebUIResourceResponse);
-}
-
-message GetConfigRequest {
-  // Cast session ID.
-  string cast_session_id = 1;
-}
-
-message GetConfigResponse {
-  // Cast application config.
-  cast.common.ApplicationConfig application_config = 1;
-  // Initial rules to rewrite URL headers.
-  UrlRequestRewriteRules url_rewrite_rules = 2;
-  // CastMedia service info for this application in CastCore.
-  cast.common.ServiceInfo cast_media_service_info = 3;
 }
 
 // Contains information about an application status in the runtime.

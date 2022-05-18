@@ -20,10 +20,12 @@
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/utils/SkOSPath.h"
 #include "src/utils/SkShaderUtils.h"
 
 #include <fstream>
 #include <limits.h>
+#include <list>
 #include <optional>
 #include <stdarg.h>
 #include <stdio.h>
@@ -47,24 +49,6 @@ enum class ResultCode {
     kOutputError = 3,
 };
 
-// Given the path to a file (e.g. 'src/sksl/sksl_gpu.sksl') and the expected prefix and suffix
-// (e.g. 'sksl_' and '.sksl'), returns the "base name" of the file (in this case, 'gpu').
-// If no match, returns the empty string.
-static std::string base_name(const std::string& fpPath, const char* prefix, const char* suffix) {
-    std::string result;
-    const char* end = &*fpPath.end();
-    const char* fileName = end;
-    // back up until we find a slash
-    while (fileName != fpPath && '/' != *(fileName - 1) && '\\' != *(fileName - 1)) {
-        --fileName;
-    }
-    if (!strncmp(fileName, prefix, strlen(prefix)) &&
-        !strncmp(end - strlen(suffix), suffix, strlen(suffix))) {
-        result.append(fileName + strlen(prefix), end - fileName - strlen(prefix) - strlen(suffix));
-    }
-    return result;
-}
-
 /**
  * Displays a usage banner; used when the command line arguments don't make sense.
  */
@@ -76,19 +60,8 @@ static void show_usage() {
  * Handle a single input.
  */
 ResultCode processCommand(const std::vector<std::string>& paths) {
-    if (paths.size() != 2) {
+    if (paths.size() < 2) {
         show_usage();
-        return ResultCode::kInputError;
-    }
-
-    const std::string& outputPath = paths[0];
-    const std::string& inputPath = paths[1];
-    SkSL::ProgramKind kind = SkSL::ProgramKind::kFragment;
-
-    std::ifstream in(inputPath);
-    std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    if (in.rdstate()) {
-        printf("error reading '%s'\n", inputPath.c_str());
         return ResultCode::kInputError;
     }
 
@@ -103,27 +76,49 @@ ResultCode processCommand(const std::vector<std::string>& paths) {
     settings.fRTFlipSet     = 0;
     settings.fRTFlipBinding = 0;
 
-    // Load in the input file as a module.
-    SkSL::FileOutputStream out(outputPath.c_str());
+    // Load in each input as a module, from right to left.
+    // Each module inherits the symbols from its parent module.
     SkSL::Compiler compiler(caps);
-    if (!out.isValid()) {
-        printf("error writing '%s'\n", outputPath.c_str());
-        return ResultCode::kOutputError;
-    }
-    SkSL::LoadedModule module =
-            compiler.loadModule(kind, SkSL::Compiler::MakeModulePath(inputPath.c_str()),
-                                /*base=*/nullptr, /*dehydrate=*/true);
+    std::list<SkSL::LoadedModule> modules;
+    std::shared_ptr<SkSL::SymbolTable> inheritedSymbols = nullptr;
+    for (int inputIdx = paths.size() - 1; inputIdx >= 1; --inputIdx) {
+        const std::string& modulePath = paths[inputIdx];
+        std::ifstream in(modulePath);
+        std::string text((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+        if (in.rdstate()) {
+            printf("error reading '%s'\n", modulePath.c_str());
+            return ResultCode::kInputError;
+        }
 
-    // Dehydrate the input file into a buffer.
+        modules.push_front(compiler.loadModule(SkSL::ProgramKind::kFragment,
+                                               SkSL::Compiler::MakeModulePath(modulePath.c_str()),
+                                               /*base=*/inheritedSymbols,
+                                               /*dehydrate=*/inheritedSymbols == nullptr));
+        inheritedSymbols = modules.front().fSymbols;
+    }
+
+    // Dehydrate the leftmost input file into a buffer.
+    const std::string& inputPath = paths[1];
+    SkSL::LoadedModule& module = modules.front();
     SkSL::Dehydrator dehydrator;
     dehydrator.write(*module.fSymbols);
     dehydrator.write(module.fElements);
-    std::string baseName = base_name(inputPath, "", ".sksl");
+    SkString baseName = SkOSPath::Basename(inputPath.c_str());
+    if (int extension = baseName.findLastOf('.'); extension > 0) {
+        baseName.resize(extension);
+    }
+
     SkSL::StringStream buffer;
     dehydrator.finish(buffer);
     const std::string& data = buffer.str();
 
     // Emit the dehydrated data into our output file.
+    const std::string& outputPath = paths[0];
+    SkSL::FileOutputStream out(outputPath.c_str());
+    if (!out.isValid()) {
+        printf("error writing '%s'\n", outputPath.c_str());
+        return ResultCode::kOutputError;
+    }
     out.printf("static uint8_t SKSL_INCLUDE_%s[] = {", baseName.c_str());
     for (size_t i = 0; i < data.length(); ++i) {
         out.printf("%s%d,", dehydrator.prefixAtOffset(i), uint8_t(data[i]));

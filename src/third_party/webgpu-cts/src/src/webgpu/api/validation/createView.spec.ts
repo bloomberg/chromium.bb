@@ -9,7 +9,9 @@ import {
   kTextureFormatInfo,
   kTextureFormats,
   kTextureViewDimensions,
+  kFeaturesForFormats,
   viewCompatible,
+  filterFormatsByFeature,
 } from '../../capability_info.js';
 import { kResourceStates } from '../../gpu_test.js';
 import {
@@ -31,14 +33,23 @@ g.test('format')
   )
   .params(u =>
     u
-      .combine('textureFormat', kTextureFormats)
+      .combine('textureFormatFeature', kFeaturesForFormats)
+      .combine('viewFormatFeature', kFeaturesForFormats)
       .beginSubcases()
-      .combine('viewFormat', [undefined, ...kTextureFormats])
+      .expand('textureFormat', ({ textureFormatFeature }) =>
+        filterFormatsByFeature(textureFormatFeature, kTextureFormats)
+      )
+      .expand('viewFormat', ({ viewFormatFeature }) =>
+        filterFormatsByFeature(viewFormatFeature, [undefined, ...kTextureFormats])
+      )
       .combine('useViewFormatList', [false, true])
   )
+  .beforeAllSubcases(t => {
+    const { textureFormatFeature, viewFormatFeature } = t.params;
+    t.selectDeviceOrSkipTestCase([textureFormatFeature, viewFormatFeature]);
+  })
   .fn(async t => {
     const { textureFormat, viewFormat, useViewFormatList } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase([textureFormat, viewFormat]);
     const { blockWidth, blockHeight } = kTextureFormatInfo[textureFormat];
 
     const compatible = viewFormat === undefined || viewCompatible(textureFormat, viewFormat);
@@ -108,9 +119,12 @@ g.test('aspect')
       .combine('format', kTextureFormats)
       .combine('aspect', kTextureAspects)
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceForTextureFormatOrSkipTestCase(format);
+  })
   .fn(async t => {
     const { format, aspect } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase(format);
     const info = kTextureFormatInfo[format];
 
     const texture = t.device.createTexture({

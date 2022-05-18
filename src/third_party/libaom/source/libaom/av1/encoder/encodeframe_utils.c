@@ -1322,7 +1322,8 @@ void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   uint8_t *last_src_y = cpi->last_source->y_buffer;
   int last_src_ystride = cpi->last_source->y_stride;
   const int offset = cpi->source->y_stride * (mi_row << 2) + (mi_col << 2);
-  uint64_t avg_source_sse_threshold = 100000;        // ~5*5*(64*64)
+  uint64_t avg_source_sse_threshold[2] = { 100000,   // ~5*5*(64*64)
+                                           36000 };  // ~3*3*(64*64)
   uint64_t avg_source_sse_threshold_high = 1000000;  // ~15*15*(64*64)
   uint64_t sum_sq_thresh = 10000;  // sum = sqrt(thresh / 64*64)) ~1.5
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -1333,13 +1334,18 @@ void av1_source_content_sb(AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
   last_src_y += offset;
   tmp_variance = cpi->ppi->fn_ptr[bsize].vf(src_y, src_ystride, last_src_y,
                                             last_src_ystride, &tmp_sse);
+  // rd thresholds
+  if (tmp_sse < avg_source_sse_threshold[1])
+    x->content_state_sb.source_sad_rd = kLowSad;
 
+  // nonrd thresholds
   if (tmp_sse == 0)
-    x->content_state_sb.source_sad = kZeroSad;
-  else if (tmp_sse < avg_source_sse_threshold)
-    x->content_state_sb.source_sad = kLowSad;
+    x->content_state_sb.source_sad_nonrd = kZeroSad;
+  else if (tmp_sse < avg_source_sse_threshold[0])
+    x->content_state_sb.source_sad_nonrd = kLowSad;
   else if (tmp_sse > avg_source_sse_threshold_high)
-    x->content_state_sb.source_sad = kHighSad;
+    x->content_state_sb.source_sad_nonrd = kHighSad;
+
   // Detect large lighting change.
   // Note: tmp_sse - tmp_variance = ((sum * sum) >> 12)
   if (tmp_sse > 0) {

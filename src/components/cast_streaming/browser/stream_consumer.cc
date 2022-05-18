@@ -21,8 +21,7 @@ StreamConsumer::StreamConsumer(openscreen::cast::Receiver* receiver,
                     mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                     base::SequencedTaskRunnerHandle::Get()),
       frame_duration_(frame_duration),
-      on_new_frame_(std::move(on_new_frame)),
-      weak_factory_{this} {
+      on_new_frame_(std::move(on_new_frame)) {
   DCHECK(receiver_);
   receiver_->SetConsumer(this);
   MojoResult result =
@@ -35,18 +34,29 @@ StreamConsumer::StreamConsumer(openscreen::cast::Receiver* receiver,
   }
 }
 
+StreamConsumer::StreamConsumer(StreamConsumer&& other,
+                               openscreen::cast::Receiver* receiver,
+                               mojo::ScopedDataPipeProducerHandle data_pipe)
+    : StreamConsumer(receiver,
+                     other.frame_duration_,
+                     std::move(data_pipe),
+                     std::move(other.frame_received_cb_),
+                     std::move(other.on_new_frame_)) {
+  if (other.is_read_pending_) {
+    ReadFrame(std::move(other.no_frames_available_cb_));
+  }
+}
+
 StreamConsumer::~StreamConsumer() {
   receiver_->SetConsumer(nullptr);
 }
 
-void StreamConsumer::ReadFrame() {
+void StreamConsumer::ReadFrame(base::OnceClosure no_frames_available_cb) {
   DCHECK(!is_read_pending_);
+  DCHECK(!no_frames_available_cb_);
   is_read_pending_ = true;
+  no_frames_available_cb_ = std::move(no_frames_available_cb);
   MaybeSendNextFrame();
-}
-
-base::WeakPtr<StreamConsumer> StreamConsumer::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 void StreamConsumer::CloseDataPipeOnError() {
@@ -93,9 +103,13 @@ void StreamConsumer::MaybeSendNextFrame() {
 
   const int current_frame_buffer_size = receiver_->AdvanceToNextFrame();
   if (current_frame_buffer_size == openscreen::cast::Receiver::kNoFramesReady) {
+    if (no_frames_available_cb_) {
+      std::move(no_frames_available_cb_).Run();
+    }
     return;
   }
 
+  no_frames_available_cb_.Reset();
   on_new_frame_.Run();
 
   void* buffer = nullptr;

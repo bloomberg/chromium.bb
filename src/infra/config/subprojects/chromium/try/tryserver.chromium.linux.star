@@ -75,7 +75,7 @@ try_.builder(
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
-                "//fuchsia/release:fuchsia_sizes",
+                "//tools/fuchsia/size_tests:fuchsia_sizes",
             ],
             "compile_targets": [
                 "fuchsia_sizes",
@@ -131,19 +131,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "fuchsia-fyi-arm64-dbg",
-)
-
-try_.builder(
-    name = "fuchsia-fyi-arm64-femu",
-)
-
-try_.builder(
     name = "fuchsia-fyi-arm64-rel",
-)
-
-try_.builder(
-    name = "fuchsia-fyi-x64-dbg",
 )
 
 try_.builder(
@@ -222,6 +210,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-bfcache-rel",
+    mirrors = [
+        "ci/linux-bfcache-rel",
+    ],
 )
 
 try_.builder(
@@ -229,7 +220,28 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-blink-v8-sandbox-future-rel",
+    mirrors = ["ci/linux-blink-v8-sandbox-future-rel"],
+)
+
+try_.builder(
     name = "linux-blink-web-tests-force-accessibility-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+    ),
 )
 
 try_.builder(
@@ -255,10 +267,16 @@ try_.builder(
 
 try_.builder(
     name = "linux-extended-tracing-rel",
+    mirrors = [
+        "ci/linux-extended-tracing-rel",
+    ],
 )
 
 try_.builder(
     name = "linux-gcc-rel",
+    mirrors = [
+        "ci/linux-gcc-rel",
+    ],
     goma_backend = None,
 )
 
@@ -339,6 +357,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -408,6 +429,9 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_archive_rel_ng",
+    mirrors = [
+        "ci/linux-archive-rel",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -440,6 +464,16 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux_chromium_chromeos_msan_focal",
+    mirrors = [
+        "ci/Linux ChromiumOS MSan Focal",
+    ],
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
+try_.builder(
     name = "linux_chromium_chromeos_msan_rel_ng",
     goma_jobs = goma.jobs.J150,
 )
@@ -452,6 +486,13 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_clobber_rel_ng",
+    mirrors = [
+        "ci/linux-archive-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(
@@ -507,6 +548,16 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux_chromium_msan_focal",
+    mirrors = [
+        "ci/Linux MSan Focal",
+    ],
+    execution_timeout = 16 * time.hour,
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_FOCAL,
+)
+
+try_.builder(
     name = "linux_chromium_msan_rel_ng",
     execution_timeout = 6 * time.hour,
     goma_jobs = goma.jobs.J150,
@@ -528,6 +579,9 @@ try_.compilator_builder(
 
 try_.builder(
     name = "linux_chromium_ubsan_rel_ng",
+    mirrors = [
+        "ci/linux-ubsan-vptr",
+    ],
 )
 
 try_.builder(
@@ -572,14 +626,16 @@ try_.builder(
     # This builder produces the clang binaries used on all builders. Since it
     # uses the system's sysroot when compiling, the builder needs to run on the
     # OS version that's the oldest used on any bot.
-    # TODO(crbug.com/1199405): Move this to bionic once _all_ builders have
-    # migrated.
-    os = os.LINUX_TRUSTY,
+    os = os.LINUX_BIONIC,
+    notifies = ["chrome-rust-toolchain"],
 )
 
 try_.builder(
     name = "linux_vr",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/VR Linux",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

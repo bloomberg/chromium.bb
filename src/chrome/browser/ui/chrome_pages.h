@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
 
@@ -86,6 +86,7 @@ enum FeedbackSource {
   kFeedbackSourceConnectivityDiagnostics,
   kFeedbackSourceProjectorApp,
   kFeedbackSourceDesksTemplates,
+  kFeedbackSourceFilesApp,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -165,6 +166,7 @@ void ShowSearchEngineSettings(Browser* browser);
 void ShowWebStore(Browser* browser);
 void ShowPrivacySandboxSettings(Browser* browser);
 void ShowPrivacySandboxAdPersonalization(Browser* browser);
+void ShowPrivacySandboxLearnMore(Browser* browser);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows the enterprise management info page in a browser tab.

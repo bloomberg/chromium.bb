@@ -266,7 +266,8 @@ the next client restart.
 ## Sync Integration Checklist
 
 Before starting any integration work, please reach out to us at
-chrome-sync-dev@google.com and share your plans / design doc!
+chrome-sync-dev@google.com and share your plans / design doc! If you're a
+Googler, see the server-side [checklist][internal_integration_page] too.
 
 *   Define your specifics proto in [`//components/sync/protocol/`][protocol].
 *   Add it to the [proto value conversions][conversions] files.
@@ -275,21 +276,22 @@ chrome-sync-dev@google.com and share your plans / design doc!
     Reach out to chrome-sync-dev@google.com for details.
 *   Add it to the [`ModelType`][ModelType] enum and
     [`kModelTypeInfoMap`][info_map].
-*   Register a [`ModelTypeController`][ModelTypeController] for your type in
-    [`SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers`][CreateCommonDataTypeControllers] or platform-specific equivalent in
-    [`ChromeSyncClient::CreateDataTypeControllers`][CreateDataTypeControllers].
-*   Add your KeyedService dependency to
-    [`SyncServiceFactory`][SyncServiceFactory].
+*   Add to the `SyncModelTypes` enum in [`enums.xml`][enums] and to the
+    `SyncModelType` suffix in [`histograms.xml`][histograms].
 *   Add an field for encrypted data to [`NigoriSpecifics`][NigoriSpecifics].
 *   If your type should have its own toggle in sync settings, add an entry to
     the [`UserSelectableType`][UserSelectableType] enum, add a
     [preference][pref_names] for tracking whether your type is enabled, and
     map your type to the pref in [`GetPrefNameForType`][GetPrefName].
 *   Otherwise, if your type should be included in an existing toggle in sync
-    settings, add it in [`GetUserSelectableTypeInfo`]
-    [GetUserSelectableTypeInfo].
-*   Add to the `SyncModelTypes` enum in [`enums.xml`][enums] and to the
-    `SyncModelType` suffix in [`histograms.xml`][histograms].
+    settings, add it in
+    [`GetUserSelectableTypeInfo`][GetUserSelectableTypeInfo].
+*   Register a [`ModelTypeController`][ModelTypeController] for your type in
+    [`SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers`][CreateCommonDataTypeControllers]
+    or platform-specific equivalent in
+    [`ChromeSyncClient::CreateDataTypeControllers`][CreateDataTypeControllers].
+*   Add your KeyedService dependency to
+    [`SyncServiceFactory`][SyncServiceFactory].
 
 [protocol]: https://cs.chromium.org/chromium/src/components/sync/protocol/
 [ModelType]: https://cs.chromium.org/chromium/src/components/sync/base/model_type.h
@@ -307,6 +309,7 @@ chrome-sync-dev@google.com and share your plans / design doc!
 [enums]: https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml
 [histograms]: https://cs.chromium.org/chromium/src/tools/metrics/histograms/histograms.xml
 [DataTypeHistogram]: https://cs.chromium.org/chromium/src/components/sync/base/data_type_histogram.h
+[internal_integration_page]: https://goto.corp.google.com/chrome-sync-add-new-data-type
 
 ## Testing
 

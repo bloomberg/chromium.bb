@@ -292,6 +292,15 @@ TEST (EncodeMbAuxTest, WelsCalculateSingleCtr4x4_mmi) {
   FREE_MEMORY (iDctS);
 }
 #endif
+#ifdef HAVE_LASX
+TEST (EncodeMbAuxTest, WelsDctT4_lasx) {
+  TestDctT4 (WelsDctT4_lasx);
+}
+
+TEST (EncodeMbAuxTest, WelsDctFourT4_lasx) {
+  TestDctFourT4 (WelsDctFourT4_lasx);
+}
+#endif
 
 void copy (uint8_t* pDst, int32_t iDStride, uint8_t* pSrc, int32_t iSStride, int32_t iWidth, int32_t iHeight) {
   for (int i = 0; i < iHeight; i++)
@@ -337,6 +346,12 @@ GENERATE_UT_FOR_COPY (8, 8, WelsCopy8x8_msa);
 GENERATE_UT_FOR_COPY (8, 16, WelsCopy8x16_msa);
 GENERATE_UT_FOR_COPY (16, 8, WelsCopy16x8_msa);
 GENERATE_UT_FOR_COPY (16, 16, WelsCopy16x16_msa);
+#endif
+
+#ifdef HAVE_LSX
+GENERATE_UT_FOR_COPY (8, 8, WelsCopy8x8_lsx);
+GENERATE_UT_FOR_COPY (16, 16, WelsCopy16x16_lsx);
+GENERATE_UT_FOR_COPY (16, 16, WelsCopy16x16NotAligned_lsx);
 #endif
 
 namespace {
@@ -563,6 +578,18 @@ TEST (EncodeMbAuxTest, WelsQuantFour4x4Max_mmi) {
     TestWelsQuantFour4x4Max (WelsQuantFour4x4Max_mmi);
 }
 #endif //HAVE_MMI
+
+#ifdef HAVE_LSX
+TEST (EncodeMbAuxTest, WelsQuantFour4x4_lsx) {
+  if (WelsCPUFeatureDetect (0) & WELS_CPU_LSX)
+    TestWelsQuantFour4x4 (WelsQuantFour4x4_lsx);
+}
+TEST (EncodeMbAuxTest, WelsQuantFour4x4Max_lsx) {
+  if (WelsCPUFeatureDetect (0) & WELS_CPU_LSX)
+    TestWelsQuantFour4x4Max (WelsQuantFour4x4Max_lsx);
+}
+#endif //HAVE_LSX
+
 int32_t WelsHadamardQuant2x2SkipAnchor (int16_t* rs, int16_t ff,  int16_t mf) {
   int16_t pDct[4], s[4];
   int16_t threshold = ((1 << 16) - 1) / mf - ff;

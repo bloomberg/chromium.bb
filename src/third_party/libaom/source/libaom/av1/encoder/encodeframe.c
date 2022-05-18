@@ -465,7 +465,7 @@ static void get_estimated_pred(AV1_COMP *cpi, const TileInfo *const tile,
 static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
                                        TileDataEnc *tile_data, TokenExtra **tp,
                                        const int mi_row, const int mi_col,
-                                       const int seg_skip) {
+                                       const int seg_skip, PC_TREE *pc_root) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   const SPEED_FEATURES *const sf = &cpi->sf;
@@ -474,24 +474,12 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
                       get_mi_grid_idx(&cm->mi_params, mi_row, mi_col);
   const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
 
-  // Grade the temporal variation of the sb, the grade will be used to decide
-  // fast mode search strategy for coding blocks
-  if (sf->rt_sf.source_metrics_sb_nonrd &&
-      cpi->svc.number_spatial_layers <= 1 &&
-      cm->current_frame.frame_type != KEY_FRAME) {
-    if (!cpi->sf.rt_sf.check_scene_detection || cpi->rc.frame_source_sad > 0)
-      av1_source_content_sb(cpi, x, mi_row, mi_col);
-    else
-      x->content_state_sb.source_sad = kZeroSad;
-  }
 #if CONFIG_RT_ML_PARTITIONING
   if (sf->part_sf.partition_search_type == ML_BASED_PARTITION) {
-    PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
     RD_STATS dummy_rdc;
     get_estimated_pred(cpi, tile_info, x, mi_row, mi_col);
     av1_nonrd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                              BLOCK_64X64, &dummy_rdc, 1, INT64_MAX, pc_root);
-    av1_free_pc_tree_recursive(pc_root, av1_num_planes(cm), 0, 0);
     return;
   }
 #endif
@@ -510,9 +498,6 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
   assert(sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip ||
          sf->part_sf.partition_search_type == VAR_BASED_PARTITION);
   set_cb_offsets(td->mb.cb_offset, 0, 0);
-
-  // Adjust and encode the superblock
-  PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
 
   // Initialize the flag to skip cdef to 1.
   if (sf->rt_sf.skip_cdef_sb) {
@@ -550,7 +535,6 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
       }
     }
   }
-  av1_free_pc_tree_recursive(pc_root, av1_num_planes(cm), 0, 0);
 }
 
 // This function initializes the stats for encode_rd_sb.
@@ -602,6 +586,7 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   (void)gather_tpl_data;
 #endif
 
+  x->txfm_search_params.mode_eval_type = DEFAULT_EVAL;
   reset_mb_rd_record(x->txfm_search_info.mb_rd_record);
   av1_zero(x->picked_ref_frames_mask);
   av1_invalid_rd_stats(rd_cost);
@@ -773,6 +758,36 @@ static AOM_INLINE int delay_wait_for_top_right_sb(const AV1_COMP *const cpi) {
     return 0;
 }
 
+/*!\brief Determine whether grading content is needed based on sf and frame stat
+ *
+ * \ingroup partition_search
+ * \callgraph
+ * \callergraph
+ */
+// TODO(any): consolidate sfs to make interface cleaner
+static AOM_INLINE void grade_source_content_sb(AV1_COMP *cpi,
+                                               MACROBLOCK *const x, int mi_row,
+                                               int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+  bool calc_src_content = false;
+
+  if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
+      cpi->svc.number_spatial_layers <= 1 &&
+      cm->current_frame.frame_type != KEY_FRAME) {
+    if (!cpi->sf.rt_sf.check_scene_detection || cpi->rc.frame_source_sad > 0)
+      calc_src_content = true;
+    else
+      x->content_state_sb.source_sad_nonrd = kZeroSad;
+  } else if ((cpi->sf.rt_sf.var_part_based_on_qidx >= 1) &&
+             (cm->width * cm->height <= 352 * 288)) {
+    if (cpi->rc.frame_source_sad > 0)
+      calc_src_content = true;
+    else
+      x->content_state_sb.source_sad_rd = kZeroSad;
+  }
+  if (calc_src_content) av1_source_content_sb(cpi, x, mi_row, mi_col);
+}
+
 /*!\brief Encode a superblock row by breaking it into superblocks
  *
  * \ingroup partition_search
@@ -817,6 +832,11 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   reset_thresh_freq_fact(x);
 
+  // Preallocate the pc_tree for realtime coding to reduce the cost of memory
+  // allocation
+  PC_TREE *const rt_pc_root =
+      use_nonrd_mode ? av1_alloc_pc_tree_node(sb_size) : NULL;
+
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
@@ -851,7 +871,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     x->color_sensitivity_sb[1] = 0;
     x->color_sensitivity[0] = 0;
     x->color_sensitivity[1] = 0;
-    x->content_state_sb.source_sad = kMedSad;
+    x->content_state_sb.source_sad_nonrd = kMedSad;
+    x->content_state_sb.source_sad_rd = kMedSad;
     x->content_state_sb.lighting_change = 0;
     x->content_state_sb.low_sumdiff = 0;
     x->force_zeromv_skip = 0;
@@ -881,9 +902,14 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     init_src_var_info_of_4x4_sub_blocks(cpi, x->src_var_info_of_4x4_sub_blocks,
                                         sb_size);
 
+    // Grade the temporal variation of the sb, the grade will be used to decide
+    // fast mode search strategy for coding blocks
+    grade_source_content_sb(cpi, x, mi_row, mi_col);
+
     // encode the superblock
     if (use_nonrd_mode) {
-      encode_nonrd_sb(cpi, td, tile_data, tp, mi_row, mi_col, seg_skip);
+      encode_nonrd_sb(cpi, td, tile_data, tp, mi_row, mi_col, seg_skip,
+                      rt_pc_root);
     } else {
       encode_rd_sb(cpi, td, tile_data, tp, mi_row, mi_col, seg_skip);
     }
@@ -899,6 +925,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     enc_row_mt->sync_write_ptr(row_mt_sync, sb_row, sb_col_in_tile,
                                sb_cols_in_tile);
   }
+
+  av1_free_pc_tree_recursive(rt_pc_root, av1_num_planes(cm), 0, 0);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, encode_sb_row_time);
 #endif
@@ -1620,7 +1648,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   assert(oxcf->txfm_cfg.enable_tx64 || tx_search_type != USE_LARGESTALL);
   features->tx_mode = select_tx_mode(cm, tx_search_type);
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Retain the frame level probability update conditions for parallel frames.
   // These conditions will be consumed during postencode stage to update the
   // probability.
@@ -1638,7 +1665,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
          cpi->sf.interp_sf.adaptive_interp_filter_search == 2 &&
          features->interp_filter == SWITCHABLE);
   }
-#endif
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats ||
       ((cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh !=
@@ -1659,8 +1685,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         const int new_prob =
             sum ? MAX_TX_TYPE_PROB * cpi->td.rd_counts.tx_type_used[i][j] / sum
                 : (j ? 0 : MAX_TX_TYPE_PROB);
-#if CONFIG_FRAME_PARALLEL_ENCODE
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
         if (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE) {
           if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] ==
               0) {
@@ -1682,7 +1707,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           }
           update_txtype_frameprobs = 0;
         }
-#endif  // CONFIG_FPMT_TEST
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
         // Track the frame probabilities of parallel encode frames to update
         // during postencode stage.
         if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
@@ -1690,7 +1715,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           cpi->frame_new_probs[cpi->num_frame_recode]
               .tx_type_probs[update_type][i][j] = new_prob;
         }
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
         if (update_txtype_frameprobs) {
           int prob =
               (frame_probs->tx_type_probs[update_type][i][j] + new_prob) >> 1;
@@ -1720,8 +1744,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 
       const int new_prob =
           sum ? 128 * cpi->td.rd_counts.obmc_used[i][1] / sum : 0;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
       if (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE) {
         if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] == 0) {
           temp_frame_probs_simulation->obmc_probs[update_type][i] =
@@ -1737,7 +1760,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         }
         update_obmc_frameprobs = 0;
       }
-#endif  // CONFIG_FPMT_TEST
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
       // Track the frame probabilities of parallel encode frames to update
       // during postencode stage.
       if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
@@ -1745,7 +1768,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         cpi->frame_new_probs[cpi->num_frame_recode].obmc_probs[update_type][i] =
             new_prob;
       }
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
       if (update_obmc_frameprobs) {
         frame_probs->obmc_probs[update_type][i] =
             (frame_probs->obmc_probs[update_type][i] + new_prob) >> 1;
@@ -1761,8 +1783,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     int sum = 0;
     for (i = 0; i < 2; i++) sum += cpi->td.rd_counts.warped_used[i];
     const int new_prob = sum ? 128 * cpi->td.rd_counts.warped_used[1] / sum : 0;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
     if (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE) {
       if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] == 0) {
         temp_frame_probs_simulation->warped_probs[update_type] =
@@ -1778,7 +1799,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       }
       update_warp_frameprobs = 0;
     }
-#endif  // CONFIG_FPMT_TEST
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
     // Track the frame probabilities of parallel encode frames to update
     // during postencode stage.
     if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
@@ -1786,7 +1807,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cpi->frame_new_probs[cpi->num_frame_recode].warped_probs[update_type] =
           new_prob;
     }
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
     if (update_warp_frameprobs) {
       frame_probs->warped_probs[update_type] =
           (frame_probs->warped_probs[update_type] + new_prob) >> 1;
@@ -1813,8 +1833,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
         const int new_prob =
             sum ? 1536 * cpi->td.counts->switchable_interp[i][j] / sum
                 : (j ? 0 : 1536);
-#if CONFIG_FRAME_PARALLEL_ENCODE
-#if CONFIG_FPMT_TEST
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
         if (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE) {
           if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] ==
               0) {
@@ -1836,7 +1855,7 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           }
           update_interpfilter_frameprobs = 0;
         }
-#endif  // CONFIG_FPMT_TEST
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
         // Track the frame probabilities of parallel encode frames to update
         // during postencode stage.
         if (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0) {
@@ -1844,7 +1863,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
           cpi->frame_new_probs[cpi->num_frame_recode]
               .switchable_interp_probs[update_type][i][j] = new_prob;
         }
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
         if (update_interpfilter_frameprobs) {
           int prob = (frame_probs->switchable_interp_probs[update_type][i][j] +
                       new_prob) >>

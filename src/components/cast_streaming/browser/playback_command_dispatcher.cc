@@ -24,7 +24,8 @@ PlaybackCommandDispatcher::PlaybackCommandDispatcher(
   // Create a muxer using the "real" media::mojom::Renderer instance that
   // connects to the remote media::Renderer.
   mojo::Remote<media::mojom::Renderer> renderer;
-  control_configuration->SetPlaybackController(
+  control_configuration_ = std::move(control_configuration);
+  control_configuration_->SetPlaybackController(
       renderer.BindNewPipeAndPassReceiver(),
       base::BindOnce(&PlaybackCommandDispatcher::OnSetPlaybackControllerDone,
                      weak_factory_.GetWeakPtr()));
@@ -35,8 +36,14 @@ PlaybackCommandDispatcher::PlaybackCommandDispatcher(
   // pass commands to the |muxer_|.
   mojo::Remote<media::mojom::Renderer> translators_renderer;
   RegisterCommandSource(translators_renderer.BindNewPipeAndPassReceiver());
-  call_translator_ = std::make_unique<remoting::RendererRpcCallTranslator>(
-      std::move(translators_renderer));
+
+  auto message_processor_callback = base::BindRepeating(
+      &PlaybackCommandDispatcher::SendRemotingRpcMessageToRemote,
+      weak_factory_.GetWeakPtr());
+  renderer_call_translator_ =
+      std::make_unique<remoting::RendererRpcCallTranslator>(
+          std::move(message_processor_callback),
+          std::move(translators_renderer));
 }
 
 PlaybackCommandDispatcher::~PlaybackCommandDispatcher() {
@@ -53,41 +60,85 @@ void PlaybackCommandDispatcher::OnRemotingSessionNegotiated(
   DCHECK(messenger);
 
   messenger_ = messenger;
-  handle_ = messenger_->GetUniqueHandle();
+  RegisterHandleForCallbacks(
+      openscreen::cast::RpcMessenger::kAcquireRendererHandle);
+  RegisterHandleForCallbacks(
+      openscreen::cast::RpcMessenger::kAcquireDemuxerHandle);
 
-  // Include the |handle_| in the callback so that it will persist even upon
-  // re-negotiation.
-  auto message_processor_callback = base::BindPostTask(
-      task_runner_,
+  renderer_call_translator_->set_handle(AcquireHandle());
+  demuxer_stream_handler_ = std::make_unique<remoting::RpcDemuxerStreamHandler>(
+      this,
+      base::BindRepeating(&PlaybackCommandDispatcher::AcquireHandle,
+                          base::Unretained(this)),
       base::BindRepeating(
           &PlaybackCommandDispatcher::SendRemotingRpcMessageToRemote,
-          weak_factory_.GetWeakPtr(), handle_),
-      FROM_HERE);
-  call_translator_->SetMessageProcessor(std::move(message_processor_callback));
+          base::Unretained(this)));
+}
 
-  auto message_receiver_callback = base::BindPostTask(
-      task_runner_,
-      base::BindRepeating(
-          &PlaybackCommandDispatcher::ProcessRemotingRpcMessageFromRemote,
-          weak_factory_.GetWeakPtr()),
-      FROM_HERE);
-  messenger_->RegisterMessageReceiverCallback(
-      handle_, [cb = std::move(message_receiver_callback)](
-                   std::unique_ptr<openscreen::cast::RpcMessage> message) {
-        cb.Run(std::move(message));
-      });
+void PlaybackCommandDispatcher::ConfigureRemotingAsync(
+    Dispatcher* dispatcher,
+    const openscreen::cast::ReceiverSession* session,
+    openscreen::cast::ReceiverSession::ConfiguredReceivers receivers) {
+  DCHECK(dispatcher);
+  DCHECK(session);
+  DCHECK(demuxer_stream_handler_);
+  DCHECK(!streaming_init_info_);
+
+  streaming_dispatcher_ = dispatcher;
+  receiver_session_ = session;
+
+  absl::optional<StreamingInitializationInfo::AudioStreamInfo>
+      audio_stream_info;
+  if (receivers.audio_receiver) {
+    auto no_buffers_cb = base::BindPostTask(
+        task_runner_,
+        base::BindRepeating(
+            &remoting::RpcDemuxerStreamHandler::RequestMoreAudioBuffers,
+            demuxer_stream_handler_->GetWeakPtr()),
+        FROM_HERE);
+    auto error_cb = base::BindPostTask(
+        task_runner_,
+        base::BindRepeating(&remoting::RpcDemuxerStreamHandler::OnAudioError,
+                            demuxer_stream_handler_->GetWeakPtr()),
+        FROM_HERE);
+    audio_stream_info.emplace(media::AudioDecoderConfig(),
+                              receivers.audio_receiver,
+                              std::move(no_buffers_cb), std::move(error_cb));
+  }
+
+  absl::optional<StreamingInitializationInfo::VideoStreamInfo>
+      video_stream_info;
+  if (receivers.video_receiver) {
+    auto no_buffers_cb = base::BindPostTask(
+        task_runner_,
+        base::BindRepeating(
+            &remoting::RpcDemuxerStreamHandler::RequestMoreVideoBuffers,
+            demuxer_stream_handler_->GetWeakPtr()),
+        FROM_HERE);
+    auto error_cb = base::BindPostTask(
+        task_runner_,
+        base::BindRepeating(&remoting::RpcDemuxerStreamHandler::OnVideoError,
+                            demuxer_stream_handler_->GetWeakPtr()),
+        FROM_HERE);
+    video_stream_info.emplace(media::VideoDecoderConfig(),
+                              receivers.video_receiver,
+                              std::move(no_buffers_cb), std::move(error_cb));
+  }
+
+  streaming_init_info_.emplace(receiver_session_, std::move(audio_stream_info),
+                               std::move(video_stream_info));
 }
 
 void PlaybackCommandDispatcher::OnRemotingSessionEnded() {
-  if (messenger_) {
-    messenger_->UnregisterMessageReceiverCallback(handle_);
-    messenger_ = nullptr;
-  }
+  demuxer_stream_handler_.reset();
+  messenger_ = nullptr;
+  streaming_init_info_ = absl::nullopt;
 }
 
 void PlaybackCommandDispatcher::SendRemotingRpcMessageToRemote(
     openscreen::cast::RpcMessenger::Handle handle,
     std::unique_ptr<openscreen::cast::RpcMessage> message) {
+  DCHECK_NE(handle, openscreen::cast::RpcMessenger::kInvalidHandle);
   DCHECK(message);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -104,12 +155,52 @@ void PlaybackCommandDispatcher::ProcessRemotingRpcMessageFromRemote(
   DCHECK(message);
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(rwkeane): Handle DemuxerStream messages too.
-  if (!remoting::DispatchInitializationRpcCall(message.get(), this) &&
-      !remoting::DispatchRendererRpcCall(message.get(),
-                                         call_translator_.get())) {
-    LOG(ERROR) << "Unhandled RPC Message for command " << message->proc();
+  const bool did_dispatch_as_initialization_call =
+      remoting::DispatchInitializationRpcCall(message.get(), this);
+  if (did_dispatch_as_initialization_call) {
+    return;
   }
+
+  const bool did_dispatch_as_renderer_call =
+      renderer_call_translator_ &&
+      remoting::DispatchRendererRpcCall(message.get(),
+                                        renderer_call_translator_.get());
+  if (did_dispatch_as_renderer_call) {
+    return;
+  }
+
+  const bool did_dispatch_as_demuxer_stream_callback =
+      demuxer_stream_handler_ &&
+      remoting::DispatchDemuxerStreamCBRpcCall(message.get(),
+                                               demuxer_stream_handler_.get());
+  if (did_dispatch_as_demuxer_stream_callback) {
+    return;
+  }
+
+  LOG(ERROR) << "Unhandled RPC Message for command " << message->proc();
+}
+
+openscreen::cast::RpcMessenger::Handle
+PlaybackCommandDispatcher::AcquireHandle() {
+  DCHECK(messenger_);
+  auto handle = messenger_->GetUniqueHandle();
+  RegisterHandleForCallbacks(handle);
+  return handle;
+}
+
+void PlaybackCommandDispatcher::RegisterHandleForCallbacks(
+    openscreen::cast::RpcMessenger::Handle handle) {
+  DCHECK(messenger_);
+  messenger_->RegisterMessageReceiverCallback(
+      handle, [ptr = weak_factory_.GetWeakPtr()](
+                  std::unique_ptr<openscreen::cast::RpcMessage> message) {
+        if (!ptr) {
+          DVLOG(1)
+              << "Message receiver has been invalidated. Dropping message.";
+          return;
+        }
+        ptr->ProcessRemotingRpcMessageFromRemote(std::move(message));
+      });
 }
 
 void PlaybackCommandDispatcher::OnSetPlaybackControllerDone() {
@@ -121,17 +212,79 @@ void PlaybackCommandDispatcher::OnSetPlaybackControllerDone() {
 }
 
 void PlaybackCommandDispatcher::RpcAcquireRendererAsync(AcquireRendererCB cb) {
-  acquire_renderer_cb_ = base::BindOnce(std::move(cb), handle_);
+  DCHECK(renderer_call_translator_);
+  const auto handle = renderer_call_translator_->handle();
+
+  DCHECK_NE(handle, openscreen::cast::RpcMessenger::kInvalidHandle);
+  acquire_renderer_cb_ = base::BindOnce(std::move(cb), handle);
 
   if (has_set_playback_controller_call_returned_) {
     std::move(acquire_renderer_cb_).Run();
   }
 }
 
-void PlaybackCommandDispatcher::OnRpcAcquireDemuxer(int audio_stream_handle,
-                                                    int video_stream_handle) {
-  // TODO(rwkeane): Handle DemuxerStreams.
-  NOTIMPLEMENTED();
+void PlaybackCommandDispatcher::OnRpcAcquireDemuxer(
+    openscreen::cast::RpcMessenger::Handle audio_stream_handle,
+    openscreen::cast::RpcMessenger::Handle video_stream_handle) {
+  if (demuxer_stream_handler_) {
+    demuxer_stream_handler_->OnRpcAcquireDemuxer(audio_stream_handle,
+                                                 video_stream_handle);
+  }
+}
+
+void PlaybackCommandDispatcher::OnNewAudioConfig(
+    media::AudioDecoderConfig config) {
+  DCHECK(streaming_init_info_);
+  DCHECK(streaming_dispatcher_);
+  if (!streaming_init_info_->audio_stream_info) {
+    LOG(ERROR) << "Received Audio config for a remoting session where audio is "
+                  "not supported";
+    return;
+  }
+
+  streaming_init_info_->audio_stream_info->config = std::move(config);
+  MaybeStartStreamingSession();
+}
+
+void PlaybackCommandDispatcher::OnNewVideoConfig(
+    media::VideoDecoderConfig config) {
+  DCHECK(streaming_init_info_);
+  DCHECK(streaming_dispatcher_);
+  if (!streaming_init_info_->video_stream_info) {
+    LOG(ERROR) << "Received Video config for a remoting session where video is "
+                  "not supported";
+    return;
+  }
+
+  streaming_init_info_->video_stream_info->config = std::move(config);
+  MaybeStartStreamingSession();
+}
+
+void PlaybackCommandDispatcher::MaybeStartStreamingSession() {
+  DCHECK(streaming_init_info_);
+  const bool is_audio_config_ready =
+      !streaming_init_info_->audio_stream_info ||
+      !streaming_init_info_->audio_stream_info->config.Matches(
+          media::AudioDecoderConfig());
+  const bool is_video_config_ready =
+      !streaming_init_info_->video_stream_info ||
+      !streaming_init_info_->video_stream_info->config.Matches(
+          media::VideoDecoderConfig());
+  if (!is_audio_config_ready || !is_video_config_ready) {
+    return;
+  }
+
+  DCHECK(demuxer_stream_handler_);
+  if (streaming_init_info_->audio_stream_info) {
+    demuxer_stream_handler_->RequestMoreAudioBuffers();
+  }
+  if (streaming_init_info_->video_stream_info) {
+    demuxer_stream_handler_->RequestMoreVideoBuffers();
+  }
+
+  // |streaming_init_info_| is intentionally copied here.
+  DCHECK(streaming_dispatcher_);
+  streaming_dispatcher_->StartStreamingSession(streaming_init_info_.value());
 }
 
 }  // namespace cast_streaming

@@ -12,38 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <memory>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::InvokeWithoutArgs;
+using testing::Mock;
+using testing::Return;
+using testing::StrictMock;
 
 namespace {
 
-    // Mock class to add expectations on the wire calling callbacks
-    class MockCompilationInfoCallback {
-      public:
-        MOCK_METHOD(void,
-                    Call,
-                    (WGPUCompilationInfoRequestStatus status,
-                     const WGPUCompilationInfo* info,
-                     void* userdata));
-    };
+// Mock class to add expectations on the wire calling callbacks
+class MockCompilationInfoCallback {
+  public:
+    MOCK_METHOD(void,
+                Call,
+                (WGPUCompilationInfoRequestStatus status,
+                 const WGPUCompilationInfo* info,
+                 void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockCompilationInfoCallback>> mockCompilationInfoCallback;
-    void ToMockGetCompilationInfoCallback(WGPUCompilationInfoRequestStatus status,
-                                          const WGPUCompilationInfo* info,
-                                          void* userdata) {
-        mockCompilationInfoCallback->Call(status, info, userdata);
-    }
+std::unique_ptr<StrictMock<MockCompilationInfoCallback>> mockCompilationInfoCallback;
+void ToMockGetCompilationInfoCallback(WGPUCompilationInfoRequestStatus status,
+                                      const WGPUCompilationInfo* info,
+                                      void* userdata) {
+    mockCompilationInfoCallback->Call(status, info, userdata);
+}
 
 }  // anonymous namespace
 
 class WireShaderModuleTests : public WireTest {
   public:
-    WireShaderModuleTests() {
-    }
+    WireShaderModuleTests() {}
     ~WireShaderModuleTests() override = default;
 
     void SetUp() override {
@@ -122,8 +127,8 @@ TEST_F(WireShaderModuleTests, GetCompilationInfo) {
     FlushServer();
 }
 
-// Test that calling GetCompilationInfo then disconnecting the wire calls the callback with a device
-// loss.
+// Test that calling GetCompilationInfo then disconnecting the wire calls the callback with a
+// device loss.
 TEST_F(WireShaderModuleTests, GetCompilationInfoBeforeDisconnect) {
     wgpuShaderModuleGetCompilationInfo(shaderModule, ToMockGetCompilationInfoCallback, nullptr);
 
@@ -233,3 +238,5 @@ TEST_F(WireShaderModuleTests, GetCompilationInfoInsideCallbackBeforeDestruction)
         .Times(1 + testData.numRequests);
     wgpuShaderModuleRelease(shaderModule);
 }
+
+}  // namespace dawn::wire

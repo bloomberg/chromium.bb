@@ -15,26 +15,22 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_COMPUTEPIPELINEMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_COMPUTEPIPELINEMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/ComputePipeline.h"
 #include "dawn/native/Device.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class ComputePipelineMock : public ComputePipelineBase {
-      public:
-        ComputePipelineMock(DeviceBase* device) : ComputePipelineBase(device) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->ComputePipelineBase::DestroyImpl();
-            });
-        }
-        ~ComputePipelineMock() override = default;
+class ComputePipelineMock : public ComputePipelineBase {
+  public:
+    explicit ComputePipelineMock(DeviceBase* device);
+    ~ComputePipelineMock() override;
 
-        MOCK_METHOD(MaybeError, Initialize, (), (override));
-        MOCK_METHOD(size_t, ComputeContentHash, (), (override));
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(MaybeError, Initialize, (), (override));
+    MOCK_METHOD(size_t, ComputeContentHash, (), (override));
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
 }  // namespace dawn::native
 

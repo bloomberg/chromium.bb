@@ -36,7 +36,10 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
-import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult, SyncInformation} from './InspectorFrontendHostAPI.js';
+import type {
+  CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor,
+  InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult,
+  SyncInformation} from './InspectorFrontendHostAPI.js';
 import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
@@ -51,10 +54,12 @@ const str_ = i18n.i18n.registerUIStrings('core/host/InspectorFrontendHost.ts', U
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 const MAX_RECORDED_HISTOGRAMS_SIZE = 100;
+const OVERRIDES_FILE_SYSTEM_PATH = '/overrides' as Platform.DevToolsPath.RawPathString;
 
 export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   readonly #urlsBeingSaved: Map<Platform.DevToolsPath.RawPathString|Platform.DevToolsPath.UrlString, string[]>;
   events!: Common.EventTarget.EventTarget<EventTypes>;
+  #fileSystem: FileSystem|null = null;
 
   recordedEnumeratedHistograms: {actionName: EnumeratedHistogram, actionCode: number}[] = [];
   recordedPerformanceHistograms: {histogramName: string, duration: number}[] = [];
@@ -210,13 +215,40 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   addFileSystem(type?: string): void {
+    const onFileSystem = (fs: FileSystem): void => {
+      this.#fileSystem = fs;
+      const fileSystem = {
+        fileSystemName: 'sandboxedRequestedFileSystem',
+        fileSystemPath: OVERRIDES_FILE_SYSTEM_PATH,
+        rootURL: 'filesystem:devtools://devtools/isolated/',
+        type: 'overrides',
+      };
+      this.events.dispatchEventToListeners(Events.FileSystemAdded, {fileSystem});
+    };
+    window.webkitRequestFileSystem(window.TEMPORARY, 1024 * 1024, onFileSystem);
   }
 
   removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void {
+    const removalCallback = (entries: Entry[]): void => {
+      entries.forEach(entry => {
+        if (entry.isDirectory) {
+          (entry as DirectoryEntry).removeRecursively(() => {});
+        } else if (entry.isFile) {
+          entry.remove(() => {});
+        }
+      });
+    };
+
+    if (this.#fileSystem) {
+      this.#fileSystem.root.createReader().readEntries(removalCallback);
+    }
+
+    this.#fileSystem = null;
+    this.events.dispatchEventToListeners(Events.FileSystemRemoved, OVERRIDES_FILE_SYSTEM_PATH);
   }
 
   isolatedFileSystem(fileSystemId: string, registeredName: string): FileSystem|null {
-    return null;
+    return this.#fileSystem;
   }
 
   loadNetworkResource(

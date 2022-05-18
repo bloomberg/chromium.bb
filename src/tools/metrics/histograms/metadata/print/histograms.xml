@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.InitialDisplayTime" units="ms"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>thestig@chromium.org</owner>
   <owner>dhoss@chromium.org</owner>
   <summary>
@@ -98,7 +98,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.Initialization.GetPrinters.Local"
-    enum="PrintPreviewInitializationEvents" expires_after="2022-08-14">
+    enum="PrintPreviewInitializationEvents" expires_after="2022-10-16">
   <owner>gavinwill@chromium.org</owner>
   <owner>chrome-print@google.com</owner>
   <owner>cros-peripherals@google.com</owner>
@@ -152,7 +152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.NumberOfPrinters" units="units"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>thestig@chromium.org</owner>
   <owner>dhoss@chromium.org</owner>
   <summary>
@@ -161,7 +161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.PrintDocumentType"
-    enum="PrintPreviewPrintDocumentTypeBuckets" expires_after="2022-08-21">
+    enum="PrintPreviewPrintDocumentTypeBuckets" expires_after="2022-10-23">
   <owner>rbpotter@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -172,6 +172,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PrintPreview.PrinterStatus.AttemptedPrintWithErrorStatus"
     enum="Boolean" expires_after="2022-10-04">
+  <obsolete>
+    Data no longer needed 2022-05.
+  </obsolete>
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -182,6 +185,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PrintPreview.PrinterStatus.AttemptedPrintWithGoodStatus"
     enum="Boolean" expires_after="2022-10-04">
+  <obsolete>
+    Data no longer needed 2022-05.
+  </obsolete>
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -192,6 +198,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PrintPreview.PrinterStatus.AttemptedPrintWithUnknownStatus"
     enum="Boolean" expires_after="2022-06-15">
+  <obsolete>
+    Data no longer needed 2022-05.
+  </obsolete>
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -297,7 +306,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrintPreview.UserAction" enum="PrintPreviewUserActionType"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>

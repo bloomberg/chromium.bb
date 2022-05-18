@@ -45,7 +45,13 @@ import {DebuggerPausedMessage} from './DebuggerPausedMessage.js';
 import sourcesPanelStyles from './sourcesPanel.css.js';
 
 import type {NavigatorView} from './NavigatorView.js';
-import {ContentScriptsNavigatorView, FilesNavigatorView, NetworkNavigatorView, OverridesNavigatorView, SnippetsNavigatorView} from './SourcesNavigator.js';
+import {
+  ContentScriptsNavigatorView,
+  FilesNavigatorView,
+  NetworkNavigatorView,
+  OverridesNavigatorView,
+  SnippetsNavigatorView,
+} from './SourcesNavigator.js';
 import {Events, SourcesView} from './SourcesView.js';
 import {ThreadsSidebarPane} from './ThreadsSidebarPane.js';
 import {UISourceCodeFrame} from './UISourceCodeFrame.js';
@@ -437,6 +443,14 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
 
   searchableView(): UI.SearchableView.SearchableView {
     return this.sourcesViewInternal.searchableView();
+  }
+
+  toggleNavigatorSidebar(): void {
+    this.editorView.toggleSidebar();
+  }
+
+  toggleDebuggerSidebar(): void {
+    this.splitWidget.toggleSidebar();
   }
 
   private debuggerPaused(event: Common.EventTarget.EventTargetEvent<SDK.DebuggerModel.DebuggerModel>): void {
@@ -1285,18 +1299,18 @@ export class RevealingActionDelegate implements UI.ActionRegistration.ActionDele
   }
 }
 
-let debuggingActionDelegateInstance: DebuggingActionDelegate;
+let actionDelegateInstance: ActionDelegate;
 
-export class DebuggingActionDelegate implements UI.ActionRegistration.ActionDelegate {
+export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
   static instance(opts: {
     forceNew: boolean|null,
-  } = {forceNew: null}): DebuggingActionDelegate {
+  } = {forceNew: null}): ActionDelegate {
     const {forceNew} = opts;
-    if (!debuggingActionDelegateInstance || forceNew) {
-      debuggingActionDelegateInstance = new DebuggingActionDelegate();
+    if (!actionDelegateInstance || forceNew) {
+      actionDelegateInstance = new ActionDelegate();
     }
 
-    return debuggingActionDelegateInstance;
+    return actionDelegateInstance;
   }
   handleAction(context: UI.Context.Context, actionId: string): boolean {
     const panel = SourcesPanel.instance();
@@ -1338,6 +1352,14 @@ export class DebuggingActionDelegate implements UI.ActionRegistration.ActionDele
                 executionContext, message, text, /* useCommandLineAPI */ true);
           }
         }
+        return true;
+      }
+      case 'sources.toggle-navigator-sidebar': {
+        panel.toggleNavigatorSidebar();
+        return true;
+      }
+      case 'sources.toggle-debugger-sidebar': {
+        panel.toggleDebuggerSidebar();
         return true;
       }
     }

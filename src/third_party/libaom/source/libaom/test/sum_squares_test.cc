@@ -48,7 +48,7 @@ class SumSquaresTest : public ::testing::TestWithParam<TestFuncs> {
     params_ = this->GetParam();
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<int16_t *>(aom_memalign(16, 256 * 256 * 2));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
 
   virtual void TearDown() { aom_free(src_); }
@@ -259,8 +259,8 @@ class SSETest : public ::testing::TestWithParam<SSETestParam> {
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<uint8_t *>(aom_memalign(32, 256 * 256 * 2));
     ref_ = reinterpret_cast<uint8_t *>(aom_memalign(32, 256 * 256 * 2));
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(ref_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(ref_, nullptr);
   }
 
   virtual void TearDown() {
@@ -445,7 +445,7 @@ class SSE_Sum_Test : public ::testing::TestWithParam<SSE_SumTestParam> {
     width_ = GET_PARAM(1);
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<int16_t *>(aom_memalign(32, 256 * 256 * 2));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
 
   virtual void TearDown() { aom_free(src_); }
@@ -588,7 +588,7 @@ class Lowbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<uint8_t *>(
         aom_memalign(16, 512 * 512 * sizeof(uint8_t)));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
 
   virtual void TearDown() { aom_free(src_); }
@@ -716,7 +716,7 @@ class Highbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<uint16_t *>(
         aom_memalign(16, 512 * 512 * sizeof(uint16_t)));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
 
   virtual void TearDown() { aom_free(src_); }

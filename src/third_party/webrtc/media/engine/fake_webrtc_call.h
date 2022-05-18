@@ -110,9 +110,8 @@ class FakeAudioReceiveStream final : public webrtc::AudioReceiveStream {
   }
 
  private:
-  const webrtc::ReceiveStream::RtpConfig& rtp_config() const override {
-    return config_.rtp;
-  }
+  bool transport_cc() const override { return config_.rtp.transport_cc; }
+  uint32_t remote_ssrc() const override { return config_.rtp.remote_ssrc; }
   void Start() override { started_ = true; }
   void Stop() override { started_ = false; }
   bool IsRunning() const override { return started_; }
@@ -127,6 +126,8 @@ class FakeAudioReceiveStream final : public webrtc::AudioReceiveStream {
   void SetFrameDecryptor(rtc::scoped_refptr<webrtc::FrameDecryptorInterface>
                              frame_decryptor) override;
   void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
+  const std::vector<webrtc::RtpExtension>& GetRtpExtensions() const override;
+  webrtc::RtpHeaderExtensionMap GetRtpExtensionMap() const override;
 
   webrtc::AudioReceiveStream::Stats GetStats(
       bool get_and_clear_legacy_stats) const override;
@@ -265,10 +266,8 @@ class FakeVideoReceiveStream final : public webrtc::VideoReceiveStream {
  private:
   // webrtc::VideoReceiveStream implementation.
   void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
-
-  const webrtc::ReceiveStream::RtpConfig& rtp_config() const override {
-    return config_.rtp;
-  }
+  webrtc::RtpHeaderExtensionMap GetRtpExtensionMap() const override;
+  bool transport_cc() const override { return config_.rtp.transport_cc; }
 
   void Start() override;
   void Stop() override;
@@ -294,15 +293,15 @@ class FakeVideoReceiveStream final : public webrtc::VideoReceiveStream {
 class FakeFlexfecReceiveStream final : public webrtc::FlexfecReceiveStream {
  public:
   explicit FakeFlexfecReceiveStream(
-      const webrtc::FlexfecReceiveStream::Config& config);
+      const webrtc::FlexfecReceiveStream::Config config);
 
   void SetRtpExtensions(std::vector<webrtc::RtpExtension> extensions) override;
-
-  const webrtc::ReceiveStream::RtpConfig& rtp_config() const override {
-    return config_.rtp;
-  }
+  webrtc::RtpHeaderExtensionMap GetRtpExtensionMap() const override;
+  bool transport_cc() const override { return config_.rtp.transport_cc; }
 
   const webrtc::FlexfecReceiveStream::Config& GetConfig() const;
+
+  uint32_t remote_ssrc() const { return config_.rtp.remote_ssrc; }
 
  private:
   webrtc::FlexfecReceiveStream::Stats GetStats() const override;
@@ -383,7 +382,7 @@ class FakeCall final : public webrtc::Call, public webrtc::PacketReceiver {
       webrtc::VideoReceiveStream* receive_stream) override;
 
   webrtc::FlexfecReceiveStream* CreateFlexfecReceiveStream(
-      const webrtc::FlexfecReceiveStream::Config& config) override;
+      const webrtc::FlexfecReceiveStream::Config config) override;
   void DestroyFlexfecReceiveStream(
       webrtc::FlexfecReceiveStream* receive_stream) override;
 

@@ -65,7 +65,7 @@ rtc_source_set("datagram_transport_interface") {
   deps = [
     "..:array_view",
     "..:rtc_error",
-    "../../rtc_base:rtc_base_approved",
+    "../../rtc_base:copy_on_write_buffer",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
@@ -99,11 +99,12 @@ rtc_source_set("stun_types") {
 
   deps = [
     "../../api:array_view",
+    "../../rtc_base:byte_buffer",
+    "../../rtc_base:byte_order",
     "../../rtc_base:checks",
     "../../rtc_base:ip_address",
     "../../rtc_base:logging",
     "../../rtc_base:rtc_base",
-    "../../rtc_base:rtc_base_approved",
     "../../rtc_base:socket_address",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
@@ -141,8 +142,9 @@ if (rtc_include_tests) {
     deps = [
       ":stun_types",
       "../../rtc_base",
+      "../../rtc_base:byte_buffer",
+      "../../rtc_base:byte_order",
       "../../rtc_base:macromagic",
-      "../../rtc_base:rtc_base_approved",
       "../../rtc_base:socket_address",
       "../../test:test_support",
       "//testing/gtest",

@@ -12,6 +12,10 @@
 
 class SkShaderCodeDictionary;
 
+namespace SkSL {
+struct ShaderCaps;
+}
+
 namespace skgpu::graphite {
 
 // TODO: This class needs to be thread safe. In the current version there is no thread safety and

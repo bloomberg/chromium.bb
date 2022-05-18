@@ -25,14 +25,23 @@ enum class Channel;
 namespace ash {
 namespace device_activity {
 
+// Fields used in setting device active metadata, that are explicitly
+// required from outside of ASH_CHROME due to the dependency limitations
+// on chrome browser.
+struct COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) ChromeDeviceMetadataParameters {
+  version_info::Channel chromeos_channel;
+  MarketSegment market_segment;
+};
+
 // Base class for device active use cases.
 class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
  public:
-  DeviceActiveUseCase(const std::string& psm_device_active_secret,
-                      version_info::Channel chromeos_channel,
-                      const std::string& use_case_pref_key,
-                      private_membership::rlwe::RlweUseCase psm_use_case,
-                      PrefService* local_state);
+  DeviceActiveUseCase(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      const std::string& use_case_pref_key,
+      private_membership::rlwe::RlweUseCase psm_use_case,
+      PrefService* local_state);
   DeviceActiveUseCase(const DeviceActiveUseCase&) = delete;
   DeviceActiveUseCase& operator=(const DeviceActiveUseCase&) = delete;
   virtual ~DeviceActiveUseCase();
@@ -55,7 +64,11 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
   // timestamp from the local state pref.
   base::Time GetLastKnownPingTimestamp() const;
 
+  // Set the last known ping timestamp in local state pref.
   void SetLastKnownPingTimestamp(base::Time new_ts);
+
+  // Return true if the |use_case_pref_key_| is not Unix Epoch (default value).
+  bool IsLastKnownPingTimestampSet() const;
 
   // Retrieve the PSM use case.
   // The PSM dataset on the serverside is segmented by the PSM use case.
@@ -104,6 +117,9 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
   // Retrieve the ChromeOS release channel.
   Channel GetChromeOSChannel() const;
 
+  // Retrieve the ChromeOS device market segment.
+  MarketSegment GetMarketSegment() const;
+
  private:
   // Field is used to identify a fixed window of time for device active
   // counting. Privacy compliance is guaranteed by retrieving the
@@ -122,9 +138,9 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
   // This secret is used to generate a PSM identifier for the reporting window.
   const std::string psm_device_active_secret_;
 
-  // |ChromeBrowserMainPartsAsh| passes the ChromeOS channel through the class
-  // constructor.
-  const version_info::Channel chromeos_channel_;
+  // Creates a copy of chrome parameters, which is owned throughout
+  // |DeviceActiveUseCase| object lifetime.
+  const ChromeDeviceMetadataParameters chrome_passed_device_params_;
 
   // Key used to query the local state pref for the last ping timestamp by use
   // case.

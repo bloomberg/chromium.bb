@@ -293,6 +293,12 @@ const char kCryptohomeRecoveryReauthUrl[] = "cryptohome-recovery-reauth-url";
 // Controls if AuthSession API should be used when interacting with cryptohomed.
 const char kCryptohomeUseAuthSession[] = "cryptohome-use-authsession";
 
+// Forces cryptohome to create new users using old (ecryptfs) encryption.
+// This switch can be used to set up configurations that can be used to
+// test encryption migration scenarios.
+const char kCryptohomeUseOldEncryptionForTesting[] =
+    "cryptohome-use-old-encryption-for-testing";
+
 // Indicates that the wallpaper images specified by
 // kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
 // downloadable from Google).
@@ -395,10 +401,6 @@ const char kEnableArcVm[] = "enable-arcvm";
 
 // Enables ARCVM realtime VCPU feature.
 const char kEnableArcVmRtVcpu[] = "enable-arcvm-rt-vcpu";
-
-// Enables testing the selfie camera feature of Capture Mode using fake cameras.
-// Used only in tests and the emulator.
-const char kEnableCaptureModeFakeCameras[] = "enable-capture-mode-fake-cameras";
 
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
@@ -625,11 +627,6 @@ const char kInstallLogFastUploadForTests[] =
 // When specified, Chrome OS will install a System Extension from the specified
 // directory. For now, only one extension can be specified.
 const char kInstallSystemExtension[] = "install-system-extension";
-
-// If set, the Chrome settings will not expose the option to enable crostini
-// unless the enable-experimental-kernel-vm-support flag is set in
-// chrome://flags
-const char kKernelnextRestrictVMs[] = "kernelnext-restrict-vms";
 
 // When this flag is set, the lacros-availability policy is ignored.
 const char kLacrosAvailabilityIgnore[] = "lacros-availability-ignore";
@@ -872,11 +869,6 @@ bool IsAuthSessionCryptohomeEnabled() {
 
 bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
-}
-
-bool AreCaptureModeFakeCamerasEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableCaptureModeFakeCameras);
 }
 
 bool IsRevenBranding() {

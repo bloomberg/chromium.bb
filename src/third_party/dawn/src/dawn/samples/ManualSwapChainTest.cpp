@@ -51,20 +51,22 @@
 //    - TODO can't be tested yet: check cycling the same window over multiple devices.
 //    - TODO can't be tested yet: check cycling the same window over multiple formats.
 
+#include <algorithm>
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "GLFW/glfw3.h"
 #include "dawn/common/Assert.h"
 #include "dawn/common/Log.h"
+#include "dawn/dawn_proc.h"
+#include "dawn/native/DawnNative.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/GLFWUtils.h"
 #include "dawn/utils/ScopedAutoreleasePool.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <dawn/dawn_proc.h>
-#include <dawn/native/DawnNative.h>
-#include <dawn/webgpu_cpp.h>
-#include "GLFW/glfw3.h"
-
-#include <memory>
-#include <unordered_map>
+#include "dawn/webgpu_cpp.h"
 
 struct WindowData {
     GLFWwindow* window = nullptr;
@@ -265,7 +267,7 @@ int main(int argc, const char* argv[]) {
     }
 
     // Choose an adapter we like.
-    // TODO: allow switching the window between devices.
+    // TODO(dawn:269): allow switching the window between devices.
     DawnProcTable procs = dawn::native::GetProcs();
     dawnProcSetProcs(&procs);
 

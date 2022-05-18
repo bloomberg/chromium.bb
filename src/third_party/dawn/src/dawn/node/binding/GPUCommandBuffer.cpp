@@ -14,24 +14,24 @@
 
 #include "src/dawn/node/binding/GPUCommandBuffer.h"
 
+#include <utility>
+
 #include "src/dawn/node/utils/Debug.h"
 
 namespace wgpu::binding {
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // wgpu::bindings::GPUCommandBuffer
-    ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// wgpu::bindings::GPUCommandBuffer
+////////////////////////////////////////////////////////////////////////////////
 
-    GPUCommandBuffer::GPUCommandBuffer(wgpu::CommandBuffer cmd_buf) : cmd_buf_(std::move(cmd_buf)) {
-    }
+GPUCommandBuffer::GPUCommandBuffer(wgpu::CommandBuffer cmd_buf) : cmd_buf_(std::move(cmd_buf)) {}
 
-    std::variant<std::string, interop::UndefinedType> GPUCommandBuffer::getLabel(Napi::Env) {
-        UNIMPLEMENTED();
-    }
+std::string GPUCommandBuffer::getLabel(Napi::Env) {
+    UNIMPLEMENTED();
+}
 
-    void GPUCommandBuffer::setLabel(Napi::Env,
-                                    std::variant<std::string, interop::UndefinedType> value) {
-        UNIMPLEMENTED();
-    }
+void GPUCommandBuffer::setLabel(Napi::Env, std::string value) {
+    UNIMPLEMENTED();
+}
 
 }  // namespace wgpu::binding

@@ -23,21 +23,33 @@ extern const base::FeatureParam<bool> kPrivacySandboxSettings3ConsentRequired;
 // 3 APIs will become active. Only one of this and the above consent feature
 // should be enabled at any one time.
 extern const base::FeatureParam<bool> kPrivacySandboxSettings3NoticeRequired;
+// Determines whether the user will be shown a new version of the notice UI.
+// The notice will be shown only if `kPrivacySandboxSettings3NoticeRequired` is
+// true. This parameter only determines which UI version will be shown.
+extern const base::FeatureParam<bool> kPrivacySandboxSettings3NewNotice;
 
 // Feature parameters which should exclusively be used for testing purposes.
 // Enabling any of these parameters may result in the Privacy Sandbox prefs
 // (unsynced) entering an unexpected state, requiring profile deletion to
 // resolve.
 extern const base::FeatureParam<bool>
-    kPrivacySandboxSettings3DisableDialogForTesting;
-extern const base::FeatureParam<bool>
     kPrivacySandboxSettings3ForceShowConsentForTesting;
 extern const base::FeatureParam<bool>
     kPrivacySandboxSettings3ForceShowNoticeForTesting;
 extern const base::FeatureParam<bool>
     kPrivacySandboxSettings3ShowSampleDataForTesting;
+// This parameter will suppress all Privacy Sandbox prompts, but is supersceeded
+// by the kDisablePrivacySandboxPrompts feature below, and will be removed when
+// the PrivacySandboxSettings3 feature is fully launched & solidified.
+extern const base::FeatureParam<bool>
+    kPrivacySandboxSettings3DisableDialogForTesting;
 
 extern const base::Feature kOverridePrivacySandboxSettingsLocalTesting;
+
+// Disables any Privacy Sandbox related prompts. Should only be used for testing
+// purposes. This feature is used to support external automated testing using
+// Chrome, where additional prompts break behavior expectations.
+extern const base::Feature kDisablePrivacySandboxPrompts;
 
 }  // namespace privacy_sandbox
 

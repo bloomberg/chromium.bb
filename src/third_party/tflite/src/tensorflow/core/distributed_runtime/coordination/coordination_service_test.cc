@@ -41,11 +41,20 @@ limitations under the License.
 namespace tensorflow {
 namespace {
 using ::testing::EqualsProto;
+using ::testing::IsEmpty;
+using ::testing::UnorderedElementsAre;
 using ::testing::proto::IgnoringRepeatedFieldOrdering;
 
 constexpr absl::Duration kHeartbeatTimeout = absl::Seconds(2);
 constexpr absl::Duration kShutdownBarrierTimeout = absl::Seconds(1);
 constexpr char kCoordinationServiceType[] = "standalone";
+
+KeyValueEntry CreateKv(const std::string& key, const std::string& value) {
+  KeyValueEntry kv;
+  kv.set_key(key);
+  kv.set_value(value);
+  return kv;
+}
 
 class TestCoordinationClient : public CoordinationClient {
  public:
@@ -84,6 +93,7 @@ class TestCoordinationClient : public CoordinationClient {
   UNIMPLEMENTED(ReportErrorToService);
   UNIMPLEMENTED(InsertKeyValue);
   UNIMPLEMENTED(GetKeyValue);
+  UNIMPLEMENTED(GetKeyValueDir);
   UNIMPLEMENTED(DeleteKeyValue);
   UNIMPLEMENTED(Barrier);
   UNIMPLEMENTED(CancelBarrier);
@@ -434,6 +444,82 @@ TEST_F(CoordinateTwoTasksTest, TestSetGetValues) {
       "/path/to/key1",
       [&](const StatusOr<std::string>& status_or_value) { n2.Notify(); });
   EXPECT_FALSE(n2.HasBeenNotified());
+}
+
+TEST_F(CoordinateTwoTasksTest, GetKeyValueDir_SingleValueInDirectory) {
+  EnableCoordinationService();
+  KeyValueEntry kv = CreateKv("dir/path", "value0");
+  TF_ASSERT_OK(coord_service_->InsertKeyValue(kv.key(), kv.value()));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, UnorderedElementsAre(EqualsProto(kv)));
+}
+
+TEST_F(CoordinateTwoTasksTest, GetKeyValueDir_MultipleValuesInDirectory) {
+  EnableCoordinationService();
+  KeyValueEntry kv = CreateKv("dir/path", "value0");
+  KeyValueEntry kv2 = CreateKv("dir/path2", "value1");
+  // Placed in nested subdirectory.
+  KeyValueEntry kv_sub = CreateKv("dir/sub_dir/path", "value_sub");
+  TF_ASSERT_OK(coord_service_->InsertKeyValue(kv.key(), kv.value()));
+  TF_ASSERT_OK(coord_service_->InsertKeyValue(kv2.key(), kv2.value()));
+  TF_ASSERT_OK(coord_service_->InsertKeyValue(kv_sub.key(), kv_sub.value()));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, UnorderedElementsAre(EqualsProto(kv), EqualsProto(kv2),
+                                           EqualsProto(kv_sub)));
+}
+
+TEST_F(CoordinateTwoTasksTest, GetKeyValueDir_Empty_ReturnsEmptyList) {
+  EnableCoordinationService();
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, IsEmpty());
+}
+
+TEST_F(CoordinateTwoTasksTest, GetKeyValueDir_WrongDir_ReturnsEmptyList) {
+  EnableCoordinationService();
+  // Wrong directory.
+  TF_ASSERT_OK(coord_service_->InsertKeyValue("dir0/path", "value0"));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, IsEmpty());
+}
+
+TEST_F(CoordinateTwoTasksTest, GetKeyValueDir_WrongDirPrefix_ReturnsEmptyList) {
+  EnableCoordinationService();
+  // Check that we don't match with nested subdirectories with the wrong prefix.
+  TF_ASSERT_OK(coord_service_->InsertKeyValue("wrong_dir/dir/path", "value0"));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, IsEmpty());
+}
+
+TEST_F(CoordinateTwoTasksTest,
+       GetKeyValueDir_NonDirectoryPrefix_ReturnsEmptyList) {
+  EnableCoordinationService();
+  // Wrong directory.
+  TF_ASSERT_OK(coord_service_->InsertKeyValue("dir_key", "value0"));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, IsEmpty());
+}
+
+TEST_F(CoordinateTwoTasksTest,
+       GetKeyValueDir_NonDirectoryKey_ReturnsEmptyList) {
+  EnableCoordinationService();
+  // Insert same key that is not a directory.
+  TF_ASSERT_OK(coord_service_->InsertKeyValue("dir", "value0"));
+
+  std::vector<KeyValueEntry> result = coord_service_->GetKeyValueDir("dir");
+
+  EXPECT_THAT(result, IsEmpty());
 }
 
 }  // namespace
@@ -1070,5 +1156,35 @@ TEST_F(CoordinateTwoTasksTest,
   // Other task is alerted that shutdown has been initiated without it.
   Status other_task_status = client_1_.GetStatus();
   EXPECT_TRUE(errors::IsInternal(other_task_status)) << other_task_status;
+}
+
+TEST_F(CoordinateTwoTasksTest,
+       ShutdownWithBarrier_BarrierFailsWithoutClientConnection_ServiceStops) {
+  EnableCoordinationService(/*has_service_to_client_connection=*/false,
+                            /*enable_shutdown_barrier=*/true);
+  TF_EXPECT_OK(coord_service_->RegisterTask(task_0_, incarnation_0_));
+  TF_EXPECT_OK(coord_service_->RegisterTask(task_1_, incarnation_1_));
+  Status barrier_status;
+
+  absl::Notification n;
+  coord_service_->ShutdownTaskAsync(task_0_, [&n, &barrier_status](Status s) {
+    barrier_status = s;
+    n.Notify();
+  });
+  // Block until barrier times out.
+  n.WaitForNotification();
+  // Provide time for coordination service to shut down after barrier timeout.
+  Env::Default()->SleepForMicroseconds(
+      absl::ToInt64Microseconds(absl::Seconds(1)));
+
+  EXPECT_TRUE(errors::IsDeadlineExceeded(barrier_status)) << barrier_status;
+
+  // Service stops because no service-to-client connection is available for
+  // error propagation.
+  // Task 1 still sends unexpected heartbeat because it doesn't know that
+  // service has stopped yet, which should fail.
+  Status s = coord_service_->RecordHeartbeat(task_1_, incarnation_1_);
+
+  EXPECT_TRUE(errors::IsInvalidArgument(s)) << s;
 }
 }  // namespace tensorflow

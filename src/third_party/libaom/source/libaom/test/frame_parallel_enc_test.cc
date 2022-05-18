@@ -22,11 +22,11 @@
 namespace {
 
 #if (CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST && !CONFIG_REALTIME_ONLY)
-class AVxFrameParallelEncodeTest
+class AVxFrameParallelThreadEncodeTest
     : public ::libaom_test::CodecTestWith3Params<int, int, int>,
       public ::libaom_test::EncoderTest {
  protected:
-  AVxFrameParallelEncodeTest()
+  AVxFrameParallelThreadEncodeTest()
       : EncoderTest(GET_PARAM(0)), encoder_initialized_(false),
         set_cpu_used_(GET_PARAM(1)), tile_cols_(GET_PARAM(2)),
         tile_rows_(GET_PARAM(3)) {
@@ -36,7 +36,7 @@ class AVxFrameParallelEncodeTest
     cfg.allow_lowbitdepth = 1;
     decoder_ = codec_->CreateDecoder(cfg, 0);
   }
-  virtual ~AVxFrameParallelEncodeTest() { delete decoder_; }
+  virtual ~AVxFrameParallelThreadEncodeTest() { delete decoder_; }
 
   virtual void SetUp() {
     InitializeConfig(::libaom_test::kTwoPassGood);
@@ -150,43 +150,46 @@ class AVxFrameParallelEncodeTest
   std::vector<std::string> md5_dec_;
 };
 
-class AVxFrameParallelEncodeHDResTestLarge : public AVxFrameParallelEncodeTest {
-};
+class AVxFrameParallelThreadEncodeHDResTestLarge
+    : public AVxFrameParallelThreadEncodeTest {};
 
-TEST_P(AVxFrameParallelEncodeHDResTestLarge, FrameParallelEncodeTest) {
+TEST_P(AVxFrameParallelThreadEncodeHDResTestLarge,
+       FrameParallelThreadEncodeTest) {
   ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
   cfg_.rc_target_bitrate = 500;
   DoTest(&video);
 }
 
-class AVxFrameParallelEncodeLowResTestLarge
-    : public AVxFrameParallelEncodeTest {};
+class AVxFrameParallelThreadEncodeLowResTestLarge
+    : public AVxFrameParallelThreadEncodeTest {};
 
-TEST_P(AVxFrameParallelEncodeLowResTestLarge, FrameParallelEncodeTest) {
+TEST_P(AVxFrameParallelThreadEncodeLowResTestLarge,
+       FrameParallelThreadEncodeTest) {
   ::libaom_test::YUVVideoSource video("hantro_collage_w352h288.yuv",
                                       AOM_IMG_FMT_I420, 352, 288, 30, 1, 0, 60);
   cfg_.rc_target_bitrate = 200;
   DoTest(&video);
 }
 
-class AVxFrameParallelEncodeLowResTest : public AVxFrameParallelEncodeTest {};
+class AVxFrameParallelThreadEncodeLowResTest
+    : public AVxFrameParallelThreadEncodeTest {};
 
-TEST_P(AVxFrameParallelEncodeLowResTest, FrameParallelEncodeTest) {
+TEST_P(AVxFrameParallelThreadEncodeLowResTest, FrameParallelThreadEncodeTest) {
   ::libaom_test::YUVVideoSource video("hantro_collage_w352h288.yuv",
                                       AOM_IMG_FMT_I420, 352, 288, 30, 1, 0, 60);
   cfg_.rc_target_bitrate = 200;
   DoTest(&video);
 }
 
-AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeHDResTestLarge,
+AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelThreadEncodeHDResTestLarge,
                            ::testing::Values(2, 3, 4, 5, 6),
                            ::testing::Values(0, 1, 2), ::testing::Values(0, 1));
 
-AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeLowResTestLarge,
+AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelThreadEncodeLowResTestLarge,
                            ::testing::Values(2, 3), ::testing::Values(0, 1, 2),
                            ::testing::Values(0, 1));
 
-AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeLowResTest,
+AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelThreadEncodeLowResTest,
                            ::testing::Values(4, 5, 6), ::testing::Values(1),
                            ::testing::Values(0));
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE &&

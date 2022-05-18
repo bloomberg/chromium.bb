@@ -226,6 +226,9 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::COOKIES:
       icon = &vector_icons::kCookieIcon;
       break;
+    case ContentSettingsType::FEDERATED_IDENTITY_API:
+      icon = &vector_icons::kAccountCircleIcon;
+      break;
     case ContentSettingsType::IMAGES:
       icon = &vector_icons::kPhotoIcon;
       break;
@@ -251,7 +254,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &vector_icons::kFileDownloadIcon;
       break;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
       icon = &vector_icons::kProtectedContentIcon;
       break;

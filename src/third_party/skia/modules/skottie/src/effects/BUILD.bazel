@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "BlackAndWhiteEffect_src",
@@ -39,6 +41,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Effects_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/core:SkPictureRecorder_hdr",
         "//include/effects:SkRuntimeEffect_hdr",
         "//include/private:SkNx_hdr",
@@ -97,6 +100,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Effects_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/core:SkPictureRecorder_hdr",
         "//include/effects:SkColorMatrix_hdr",
         "//include/effects:SkImageFilters_hdr",
@@ -169,6 +173,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Effects_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/effects:SkRuntimeEffect_hdr",
         "//include/utils:SkRandom_hdr",
         "//modules/skottie/src:Adapter_hdr",
@@ -388,6 +393,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Effects_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/effects:SkRuntimeEffect_hdr",
         "//include/private:SkMalloc_hdr",
         "//modules/skottie/src:Adapter_hdr",
@@ -403,6 +409,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Effects_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/core:SkM44_hdr",
         "//include/core:SkPictureRecorder_hdr",
         "//include/effects:SkRuntimeEffect_hdr",

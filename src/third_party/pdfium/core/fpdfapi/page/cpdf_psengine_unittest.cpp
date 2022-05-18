@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/fpdfapi/page/cpdf_psengine.h"
+
+#include <iterator>
 #include <limits>
 
-#include "core/fpdfapi/page/cpdf_psengine.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -71,7 +72,7 @@ TEST(CPDF_PSProc, AddOperator) {
 
   CPDF_PSProc proc;
   EXPECT_EQ(0U, proc.num_operators());
-  for (size_t i = 0; i < pdfium::size(kTestData); ++i) {
+  for (size_t i = 0; i < std::size(kTestData); ++i) {
     ByteStringView word(kTestData[i].name);
     proc.AddOperatorForTesting(word);
     ASSERT_EQ(i + 1, proc.num_operators());
@@ -102,12 +103,15 @@ TEST(CPDF_PSEngine, Basic) {
   EXPECT_FLOAT_EQ(5.0f, DoOperator1(&engine, -5, PSOP_ABS));
 }
 
-TEST(CPDF_PSEngine, IDivByZero) {
+TEST(CPDF_PSEngine, DivByZero) {
   CPDF_PSEngine engine;
 
   // Integer divide by zero is defined as resulting in 0.
   EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 100, 0.0, PSOP_IDIV));
   EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 100, 0.0, PSOP_MOD));
+
+  // floating divide by zero is defined as resulting in 0.
+  EXPECT_FLOAT_EQ(0.0f, DoOperator2(&engine, 100, 0.0, PSOP_DIV));
 }
 
 TEST(CPDF_PSEngine, Ceiling) {

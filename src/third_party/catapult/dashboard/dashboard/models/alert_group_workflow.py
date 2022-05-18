@@ -399,7 +399,10 @@ class AlertGroupWorkflow(object):
         issue.get('comments') or [], key=lambda c: c["id"], reverse=True):
       if c.get('updates', {}).get('status') in ('WontFix', 'Fixed', 'Verified',
                                                 'Invalid', 'Duplicate', 'Done'):
-        closed_by_pinpoint = (c.get('author') == self._service_account())
+        closed_by_pinpoint = (
+            c.get('author') in [
+                self._service_account(), utils.LEGACY_SERVICE_ACCOUNT
+            ])
         break
 
     has_new_regression = any(a.auto_bisect_enable
@@ -778,9 +781,15 @@ class AlertGroupWorkflow(object):
 
   def _NewPinpointRequest(self, alert):
     start_git_hash = pinpoint_request.ResolveToGitHash(
-        alert.start_revision, alert.benchmark_name, crrev=self._crrev)
+        alert.start_revision - 1, alert.benchmark_name, crrev=self._crrev)
     end_git_hash = pinpoint_request.ResolveToGitHash(
         alert.end_revision, alert.benchmark_name, crrev=self._crrev)
+    logging.info(
+        """
+        Making new pinpoint request. Alert start revision: %s; end revision: %s.
+         Pinpoint start hash (one position back): %s, end hash: %s'
+         """, alert.start_revision, alert.end_revision, start_git_hash,
+        end_git_hash)
 
     # Pinpoint also requires you specify which isolate target to run the
     # test, so we derive that from the suite name. Eventually, this would

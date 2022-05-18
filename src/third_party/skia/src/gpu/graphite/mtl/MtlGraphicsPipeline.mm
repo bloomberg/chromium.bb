@@ -170,10 +170,6 @@ std::string get_sksl_vs(const GraphicsPipelineDesc& desc) {
         sksl += emit_SKSL_uniforms(1, "Step", step->uniforms());
     }
 
-    // TODO: This is only needed for tessellation path renderers and should be handled using a
-    // helper function injector that the SkSL built-in code snippets can use.
-    sksl += wangs_formula::as_sksl().c_str();
-
     // Vertex shader function declaration
     sksl += "void main() {\n";
     // Vertex shader body
@@ -443,7 +439,8 @@ static MTLRenderPipelineColorAttachmentDescriptor* create_color_attachment(
 
 std::string GetMtlUniforms(int bufferID,
                            const char* name,
-                           const std::vector<SkPaintParamsKey::BlockReader>& readers) {
+                           const std::vector<SkPaintParamsKey::BlockReader>& readers,
+                           bool needsLocalCoords) {
     size_t numUniforms = 0;
     for (auto r : readers) {
         numUniforms += r.entry()->fUniforms.size();
@@ -457,7 +454,15 @@ std::string GetMtlUniforms(int bufferID,
 
     std::string result = get_uniform_header(bufferID, name);
     for (int i = 0; i < (int) readers.size(); ++i) {
+        SkSL::String::appendf(&result,
+                              "// %s\n",
+                              readers[i].entry()->fName);
         result += get_uniforms(readers[i].entry()->fUniforms, &offset, i);
+    }
+    if (needsLocalCoords) {
+        static constexpr SkUniform kDev2LocalUniform[] = {{ "dev2LocalUni", SkSLType::kFloat4x4 }};
+        result += "// NeedsLocalCoords\n";
+        result += get_uniforms(SkSpan<const SkUniform>(kDev2LocalUniform, 1), &offset, -1);
     }
     result.append("};\n\n");
 
@@ -507,7 +512,7 @@ sk_sp<MtlGraphicsPipeline> MtlGraphicsPipeline::Make(
     ShaderErrorHandler* errorHandler = DefaultShaderErrorHandler();
     if (!SkSLToMSL(gpu,
                    get_sksl_vs(pipelineDesc),
-                   SkSL::ProgramKind::kVertex,
+                   SkSL::ProgramKind::kGraphiteVertex,
                    settings,
                    &msl[kVertex_ShaderType],
                    &inputs[kVertex_ShaderType],
@@ -519,7 +524,7 @@ sk_sp<MtlGraphicsPipeline> MtlGraphicsPipeline::Make(
     auto dict = resourceProvider->shaderCodeDictionary();
     if (!SkSLToMSL(gpu,
                    get_sksl_fs(dict, pipelineDesc, &blendInfo),
-                   SkSL::ProgramKind::kFragment,
+                   SkSL::ProgramKind::kGraphiteFragment,
                    settings,
                    &msl[kFragment_ShaderType],
                    &inputs[kFragment_ShaderType],
@@ -549,16 +554,17 @@ sk_sp<MtlGraphicsPipeline> MtlGraphicsPipeline::Make(
     // TODO: I *think* this gets cleaned up by the pipelineDescriptor?
     (*psoDescriptor).vertexDescriptor = create_vertex_descriptor(pipelineDesc.renderStep());
 
-    MtlTextureInfo mtlTexInfo;
-    renderPassDesc.fColorAttachment.fTextureInfo.getMtlTextureInfo(&mtlTexInfo);
-
-    auto mtlColorAttachment = create_color_attachment((MTLPixelFormat)mtlTexInfo.fFormat,
+    const MtlTextureSpec& mtlColorSpec =
+            renderPassDesc.fColorAttachment.fTextureInfo.mtlTextureSpec();
+    auto mtlColorAttachment = create_color_attachment((MTLPixelFormat)mtlColorSpec.fFormat,
                                                       blendInfo);
-
     (*psoDescriptor).colorAttachments[0] = mtlColorAttachment;
 
-    renderPassDesc.fDepthStencilAttachment.fTextureInfo.getMtlTextureInfo(&mtlTexInfo);
-    MTLPixelFormat depthStencilFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
+    (*psoDescriptor).sampleCount = renderPassDesc.fColorAttachment.fTextureInfo.numSamples();
+
+    const MtlTextureSpec& mtlDSSpec =
+            renderPassDesc.fDepthStencilAttachment.fTextureInfo.mtlTextureSpec();
+    MTLPixelFormat depthStencilFormat = (MTLPixelFormat)mtlDSSpec.fFormat;
     if (MtlFormatIsStencil(depthStencilFormat)) {
         (*psoDescriptor).stencilAttachmentPixelFormat = depthStencilFormat;
     } else {

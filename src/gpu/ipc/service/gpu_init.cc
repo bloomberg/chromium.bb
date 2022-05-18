@@ -125,7 +125,7 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info,
 #endif
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CASTOS)
 bool CanAccessDeviceFile(const GPUInfo& gpu_info) {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   if (gpu_info.gpu.vendor_id != 0x10de ||  // NVIDIA
@@ -143,7 +143,7 @@ bool CanAccessDeviceFile(const GPUInfo& gpu_info) {
   return true;
 #endif
 }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CASTOS)
 
 class GpuWatchdogInit {
  public:
@@ -210,7 +210,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // SwiftShader needs to wait until creating a context.
   bool needs_more_info = true;
   uint64_t system_device_id = 0;
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CASTOS)
   needs_more_info = false;
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
@@ -247,33 +247,38 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
                                               command_line, &needs_more_info);
   }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // GPU picking is only effective with ANGLE/Metal backend on Mac and
   // on Windows.
-  GPUInfo::GPUDevice preferred_gpu;
-  bool force_integrated_gpu =
+  bool force_low_power_gpu =
       gpu_feature_info_.IsWorkaroundEnabled(FORCE_LOW_POWER_GPU);
-  bool force_discrete_gpu =
+  bool force_high_performance_gpu =
       gpu_feature_info_.IsWorkaroundEnabled(FORCE_HIGH_PERFORMANCE_GPU);
 #if BUILDFLAG(IS_MAC)
   // Default to the integrated gpu on a multi-gpu Mac.
-  if (!force_discrete_gpu)
-    force_integrated_gpu = true;
-#endif  // BUILDFLAG(IS_MAC)
-  if (force_discrete_gpu && gpu_info_.GetDiscreteGpu(&preferred_gpu)) {
-#if BUILDFLAG(IS_MAC)
+  if (!force_high_performance_gpu)
+    force_low_power_gpu = true;
+
+  GPUInfo::GPUDevice preferred_gpu;
+  if (force_high_performance_gpu && gpu_info_.GetDiscreteGpu(&preferred_gpu)) {
     system_device_id = preferred_gpu.register_id;
-#elif BUILDFLAG(IS_WIN)
-    system_device_id = CHROME_LUID_to_uint64_t(preferred_gpu.luid);
-#endif
-  } else if (force_integrated_gpu &&
+  } else if (force_low_power_gpu &&
              gpu_info_.GetIntegratedGpu(&preferred_gpu)) {
-#if BUILDFLAG(IS_MAC)
     system_device_id = preferred_gpu.register_id;
-#elif BUILDFLAG(IS_WIN)
-    system_device_id = CHROME_LUID_to_uint64_t(preferred_gpu.luid);
-#endif
   }
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)
+#elif BUILDFLAG(IS_WIN)
+  GPUInfo::GPUDevice* preferred_gpu = nullptr;
+  if (force_high_performance_gpu) {
+    preferred_gpu =
+        gpu_info_.GetGpuByPreference(gl::GpuPreference::kHighPerformance);
+  } else if (force_low_power_gpu) {
+    preferred_gpu = gpu_info_.GetGpuByPreference(gl::GpuPreference::kLowPower);
+  }
+  if (preferred_gpu)
+    system_device_id = CHROME_LUID_to_uint64_t(preferred_gpu->luid);
+#endif
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CASTOS)
 
   gpu_info_.in_process_gpu = false;
   gl_use_swiftshader_ = false;
@@ -494,6 +499,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (!gl_disabled) {
     if (!gl_use_swiftshader_) {
       if (!CollectGraphicsInfo(&gpu_info_)) {
+        VLOG(1) << "gpu::CollectGraphicsInfo failed";
         return false;
       }
 
@@ -528,8 +534,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
           // Collect GPU info, so we can use blocklist to disable vulkan if it
           // is needed.
           GPUInfo gpu_info;
-          if (!CollectGraphicsInfo(&gpu_info))
+          if (!CollectGraphicsInfo(&gpu_info)) {
+            VLOG(1) << "gpu::CollectGraphicsInfo failed";
             return false;
+          }
           auto gpu_feature_info = ComputeGpuFeatureInfo(
               gpu_info, gpu_preferences_, command_line, nullptr);
           gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
@@ -604,8 +612,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // Collect GPU process info
   if (!gl_disabled) {
-    if (!CollectGpuExtraInfo(&gpu_extra_info_, gpu_preferences))
+    if (!CollectGpuExtraInfo(&gpu_extra_info_, gpu_preferences)) {
+      VLOG(1) << "gpu::CollectGpuExtraInfo failed";
       return false;
+    }
   }
 
   if (!gl_disabled) {
@@ -776,7 +786,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   ui::OzonePlatform::InitializeForGPU(params);
 #endif
   bool needs_more_info = true;
-#if !BUILDFLAG(IS_CHROMECAST)
+#if !BUILDFLAG(IS_CASTOS)
   needs_more_info = false;
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
@@ -794,7 +804,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     InitializeSwitchableGPUs(
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
-#endif  // !BUILDFLAG(IS_CHROMECAST)
+#endif  // !BUILDFLAG(IS_CASTOS)
 
   gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
       command_line, gpu_feature_info_,

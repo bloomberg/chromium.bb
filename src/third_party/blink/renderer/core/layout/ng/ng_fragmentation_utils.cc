@@ -69,6 +69,8 @@ EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
 
 bool IsForcedBreakValue(const NGConstraintSpace& constraint_space,
                         EBreakBetween break_value) {
+  if (constraint_space.ShouldIgnoreForcedBreaks())
+    return false;
   if (break_value == EBreakBetween::kColumn)
     return constraint_space.BlockFragmentationType() == kFragmentColumn;
   // TODO(mstensho): The innermost fragmentation type doesn't tell us everything
@@ -268,6 +270,20 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
 
   if (parent_space.IsInsideBalancedColumns())
     builder->SetIsInsideBalancedColumns();
+
+  // We lack the required machinery to resume layout inside out-of-flow
+  // positioned elements during regular layout. OOFs are handled by regular
+  // layout during the initial column balacning pass, while it's handled
+  // specially during actual layout - at the outermost fragmentation context in
+  // NGOutOfFlowLayoutPart (so this is only an issue when calculating the
+  // initial column block-size). So just disallow breaks (we only need to worry
+  // about forced breaks, as soft breaks are impossible in the initial column
+  // balancing pass). This might result in over-stretched columns in some
+  // strange cases, but probably something we can live with.
+  if ((parent_space.IsInitialColumnBalancingPass() &&
+       child.IsOutOfFlowPositioned()) ||
+      parent_space.ShouldIgnoreForcedBreaks())
+    builder->SetShouldIgnoreForcedBreaks();
 
   if (parent_space.IsInColumnBfc() && !is_new_fc)
     builder->SetIsInColumnBfc();
@@ -712,7 +728,7 @@ void PropagateSpaceShortage(const NGConstraintSpace& space,
   if (block_size_override) {
     space_shortage = fragmentainer_block_offset + block_size_override.value() -
                      space.FragmentainerBlockSize();
-  } else if (layout_result->MinimalSpaceShortage() == LayoutUnit::Max()) {
+  } else if (!layout_result->MinimalSpaceShortage()) {
     // Calculate space shortage: Figure out how much more space would have been
     // sufficient to make the child fragment fit right here in the current
     // fragmentainer. If layout aborted, though, we can't propagate anything.
@@ -726,7 +742,7 @@ void PropagateSpaceShortage(const NGConstraintSpace& space,
     // However, if space shortage was reported inside the child, use that. If we
     // broke inside the child, we didn't complete layout, so calculating space
     // shortage for the child as a whole would be impossible and pointless.
-    space_shortage = layout_result->MinimalSpaceShortage();
+    space_shortage = *layout_result->MinimalSpaceShortage();
   }
 
   // TODO(mstensho): Turn this into a DCHECK, when the engine is ready for

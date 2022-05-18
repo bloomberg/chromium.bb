@@ -1,13 +1,25 @@
 export const description = `
-Execution Tests for the 'abs' builtin function
+Execution tests for the 'abs' builtin function
+
+S is AbstractInt, i32, or u32
+T is S or vecN<S>
+@const fn abs(e: T ) -> T
+The absolute value of e. Component-wise when T is a vector. If e is a signed
+integral scalar type and evaluates to the largest negative value, then the
+result is e. If e is an unsigned integral type, then the result is e.
+
+S is AbstractFloat, f32, f16
+T is S or vecN<S>
+@const fn abs(e: T ) -> T
+Returns the absolute value of e (e.g. e with a positive sign bit).
+Component-wise when T is a vector.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
-import { anyOf, correctlyRoundedThreshold } from '../../../../../util/compare.js';
-import { kBit, kValue } from '../../../../../util/constants.js';
+import { correctlyRoundedMatch } from '../../../../../util/compare.js';
+import { kBit } from '../../../../../util/constants.js';
 import {
-  f32,
   f32Bits,
   i32Bits,
   TypeF32,
@@ -15,24 +27,26 @@ import {
   TypeU32,
   u32Bits,
 } from '../../../../../util/conversion.js';
-import { Config, run } from '../../expression.js';
+import { fullF32Range } from '../../../../../util/math.js';
+import { Case, Config, makeUnaryF32Case, run } from '../../expression.js';
 
 import { builtin } from './builtin.js';
 
 export const g = makeTestGroup(GPUTest);
 
-g.test('u32')
-  .uniqueId('59ff84968a839124')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-scalar case, unsigned abs:
-abs(e: T ) -> T
-T is u32 or vecN<u32>. Result is e.
-This is provided for symmetry with abs for signed integers.
-Component-wise when T is a vector.
-`
+g.test('abstract_int')
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`abstract int tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
+  .unimplemented();
+
+g.test('u32')
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`unsigned int tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -80,18 +94,8 @@ Component-wise when T is a vector.
   });
 
 g.test('i32')
-  .uniqueId('d8fc581d17db6ae8')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-signed abs:
-abs(e: T ) -> T
-T is i32 or vecN<i32>. The result is the absolute value of e.
-Component-wise when T is a vector.
-If e evaluates to the largest negative value, then the result is e.
-(GLSLstd450SAbs)
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`signed int tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -99,7 +103,7 @@ If e evaluates to the largest negative value, then the result is e.
   )
   .fn(async t => {
     const cfg: Config = t.params;
-    cfg.cmpFloats = correctlyRoundedThreshold();
+    cfg.cmpFloats = correctlyRoundedMatch();
 
     run(t, builtin('abs'), [TypeI32], TypeI32, cfg, [
       // Min and max i32
@@ -144,20 +148,19 @@ If e evaluates to the largest negative value, then the result is e.
     ]);
   });
 
-g.test('f32')
-  .uniqueId('2c1782b6a8dec8cb')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-float abs:
-abs(e: T ) -> T
-T is f32 or vecN<f32>
-Returns the absolute value of e (e.g. e with a positive sign bit).
-Component-wise when T is a vector. (GLSLstd450Fabs)
-
-TODO(sarahM0): Check if this is needed (or if it has to fail). If yes add other values. [1]
-`
+g.test('abstract_float')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`abstract float tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
+  .unimplemented();
+
+g.test('f32')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`float 32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -165,94 +168,27 @@ TODO(sarahM0): Check if this is needed (or if it has to fail). If yes add other 
   )
   .fn(async t => {
     const cfg: Config = t.params;
-    cfg.cmpFloats = correctlyRoundedThreshold();
+    cfg.cmpFloats = correctlyRoundedMatch();
 
-    run(t, builtin('abs'), [TypeF32], TypeF32, cfg, [
-      // Min and Max f32
-      { input: f32Bits(kBit.f32.negative.max), expected: f32Bits(0x0080_0000) },
-      { input: f32Bits(kBit.f32.negative.min), expected: f32Bits(0x7f7f_ffff) },
-      { input: f32Bits(kBit.f32.positive.min), expected: f32Bits(kBit.f32.positive.min) },
-      { input: f32Bits(kBit.f32.positive.max), expected: f32Bits(kBit.f32.positive.max) },
+    const makeCase = (x: number): Case => {
+      return makeUnaryF32Case(x, Math.abs);
+    };
 
-      // Subnormal f32
-      // [1] If needed add other values.
-      {
-        input: f32Bits(kBit.f32.subnormal.positive.max),
-        expected: anyOf(f32Bits(kBit.f32.subnormal.positive.max), f32(0)),
-      },
-      {
-        input: f32Bits(kBit.f32.subnormal.positive.min),
-        expected: anyOf(f32Bits(kBit.f32.subnormal.positive.min), f32(0)),
-      },
-
-      // Infinity f32
+    const cases: Array<Case> = [
       { input: f32Bits(kBit.f32.infinity.negative), expected: f32Bits(kBit.f32.infinity.positive) },
       { input: f32Bits(kBit.f32.infinity.positive), expected: f32Bits(kBit.f32.infinity.positive) },
+      ...fullF32Range().map(x => makeCase(x)),
+    ];
 
-      // Powers of 2.0: -2.0^i: -1 >= i >= -31
-      { input: f32(kValue.negPowTwo.toMinus1), expected: f32(kValue.powTwo.toMinus1) },
-      { input: f32(kValue.negPowTwo.toMinus2), expected: f32(kValue.powTwo.toMinus2) },
-      { input: f32(kValue.negPowTwo.toMinus3), expected: f32(kValue.powTwo.toMinus3) },
-      { input: f32(kValue.negPowTwo.toMinus4), expected: f32(kValue.powTwo.toMinus4) },
-      { input: f32(kValue.negPowTwo.toMinus5), expected: f32(kValue.powTwo.toMinus5) },
-      { input: f32(kValue.negPowTwo.toMinus6), expected: f32(kValue.powTwo.toMinus6) },
-      { input: f32(kValue.negPowTwo.toMinus7), expected: f32(kValue.powTwo.toMinus7) },
-      { input: f32(kValue.negPowTwo.toMinus8), expected: f32(kValue.powTwo.toMinus8) },
-      { input: f32(kValue.negPowTwo.toMinus9), expected: f32(kValue.powTwo.toMinus9) },
-      { input: f32(kValue.negPowTwo.toMinus10), expected: f32(kValue.powTwo.toMinus10) },
-      { input: f32(kValue.negPowTwo.toMinus11), expected: f32(kValue.powTwo.toMinus11) },
-      { input: f32(kValue.negPowTwo.toMinus12), expected: f32(kValue.powTwo.toMinus12) },
-      { input: f32(kValue.negPowTwo.toMinus13), expected: f32(kValue.powTwo.toMinus13) },
-      { input: f32(kValue.negPowTwo.toMinus14), expected: f32(kValue.powTwo.toMinus14) },
-      { input: f32(kValue.negPowTwo.toMinus15), expected: f32(kValue.powTwo.toMinus15) },
-      { input: f32(kValue.negPowTwo.toMinus16), expected: f32(kValue.powTwo.toMinus16) },
-      { input: f32(kValue.negPowTwo.toMinus17), expected: f32(kValue.powTwo.toMinus17) },
-      { input: f32(kValue.negPowTwo.toMinus18), expected: f32(kValue.powTwo.toMinus18) },
-      { input: f32(kValue.negPowTwo.toMinus19), expected: f32(kValue.powTwo.toMinus19) },
-      { input: f32(kValue.negPowTwo.toMinus20), expected: f32(kValue.powTwo.toMinus20) },
-      { input: f32(kValue.negPowTwo.toMinus21), expected: f32(kValue.powTwo.toMinus21) },
-      { input: f32(kValue.negPowTwo.toMinus22), expected: f32(kValue.powTwo.toMinus22) },
-      { input: f32(kValue.negPowTwo.toMinus23), expected: f32(kValue.powTwo.toMinus23) },
-      { input: f32(kValue.negPowTwo.toMinus24), expected: f32(kValue.powTwo.toMinus24) },
-      { input: f32(kValue.negPowTwo.toMinus25), expected: f32(kValue.powTwo.toMinus25) },
-      { input: f32(kValue.negPowTwo.toMinus26), expected: f32(kValue.powTwo.toMinus26) },
-      { input: f32(kValue.negPowTwo.toMinus27), expected: f32(kValue.powTwo.toMinus27) },
-      { input: f32(kValue.negPowTwo.toMinus28), expected: f32(kValue.powTwo.toMinus28) },
-      { input: f32(kValue.negPowTwo.toMinus29), expected: f32(kValue.powTwo.toMinus29) },
-      { input: f32(kValue.negPowTwo.toMinus30), expected: f32(kValue.powTwo.toMinus30) },
-      { input: f32(kValue.negPowTwo.toMinus31), expected: f32(kValue.powTwo.toMinus31) },
-
-      // Powers of 2.0: -2.0^i: 1 <= i <= 31
-      { input: f32(kValue.negPowTwo.to1), expected: f32(kValue.powTwo.to1) },
-      { input: f32(kValue.negPowTwo.to2), expected: f32(kValue.powTwo.to2) },
-      { input: f32(kValue.negPowTwo.to3), expected: f32(kValue.powTwo.to3) },
-      { input: f32(kValue.negPowTwo.to4), expected: f32(kValue.powTwo.to4) },
-      { input: f32(kValue.negPowTwo.to5), expected: f32(kValue.powTwo.to5) },
-      { input: f32(kValue.negPowTwo.to6), expected: f32(kValue.powTwo.to6) },
-      { input: f32(kValue.negPowTwo.to7), expected: f32(kValue.powTwo.to7) },
-      { input: f32(kValue.negPowTwo.to8), expected: f32(kValue.powTwo.to8) },
-      { input: f32(kValue.negPowTwo.to9), expected: f32(kValue.powTwo.to9) },
-      { input: f32(kValue.negPowTwo.to10), expected: f32(kValue.powTwo.to10) },
-      { input: f32(kValue.negPowTwo.to11), expected: f32(kValue.powTwo.to11) },
-      { input: f32(kValue.negPowTwo.to12), expected: f32(kValue.powTwo.to12) },
-      { input: f32(kValue.negPowTwo.to13), expected: f32(kValue.powTwo.to13) },
-      { input: f32(kValue.negPowTwo.to14), expected: f32(kValue.powTwo.to14) },
-      { input: f32(kValue.negPowTwo.to15), expected: f32(kValue.powTwo.to15) },
-      { input: f32(kValue.negPowTwo.to16), expected: f32(kValue.powTwo.to16) },
-      { input: f32(kValue.negPowTwo.to17), expected: f32(kValue.powTwo.to17) },
-      { input: f32(kValue.negPowTwo.to18), expected: f32(kValue.powTwo.to18) },
-      { input: f32(kValue.negPowTwo.to19), expected: f32(kValue.powTwo.to19) },
-      { input: f32(kValue.negPowTwo.to20), expected: f32(kValue.powTwo.to20) },
-      { input: f32(kValue.negPowTwo.to21), expected: f32(kValue.powTwo.to21) },
-      { input: f32(kValue.negPowTwo.to22), expected: f32(kValue.powTwo.to22) },
-      { input: f32(kValue.negPowTwo.to23), expected: f32(kValue.powTwo.to23) },
-      { input: f32(kValue.negPowTwo.to24), expected: f32(kValue.powTwo.to24) },
-      { input: f32(kValue.negPowTwo.to25), expected: f32(kValue.powTwo.to25) },
-      { input: f32(kValue.negPowTwo.to26), expected: f32(kValue.powTwo.to26) },
-      { input: f32(kValue.negPowTwo.to27), expected: f32(kValue.powTwo.to27) },
-      { input: f32(kValue.negPowTwo.to28), expected: f32(kValue.powTwo.to28) },
-      { input: f32(kValue.negPowTwo.to29), expected: f32(kValue.powTwo.to29) },
-      { input: f32(kValue.negPowTwo.to30), expected: f32(kValue.powTwo.to30) },
-      { input: f32(kValue.negPowTwo.to31), expected: f32(kValue.powTwo.to31) },
-    ]);
+    run(t, builtin('abs'), [TypeF32], TypeF32, cfg, cases);
   });
+
+g.test('f16')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`f16 tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
+  )
+  .unimplemented();

@@ -269,6 +269,18 @@ MetricsStateManager::MetricsStateManager(
         metrics::structured::NeutrinoDevicesLocation::kMetricsStateManager);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ForceClientIdCreation();
+  } else {
+#if BUILDFLAG(IS_ANDROID)
+    // If on start up we determine that the client has not given their consent
+    // to report their metrics, the new sampling trial should be used to
+    // determine whether the client is sampled in or out (if the user ever
+    // enables metrics reporting). This covers users that are going through
+    // the first run, as well as users that have metrics reporting disabled.
+    //
+    // See crbug/1306481 and the comment above |kUsePostFREFixSamplingTrial| in
+    // components/metrics/metrics_pref_names.cc for more details.
+    local_state_->SetBoolean(metrics::prefs::kUsePostFREFixSamplingTrial, true);
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
 #if !BUILDFLAG(IS_WIN)
@@ -518,6 +530,10 @@ void MetricsStateManager::ForceClientIdCreation() {
   BackUpCurrentClientInfo();
 }
 
+void MetricsStateManager::SetExternalClientId(const std::string& id) {
+  external_client_id_ = id;
+}
+
 void MetricsStateManager::CheckForClonedInstall() {
   cloned_install_detector_.CheckForClonedInstall(local_state_);
 }
@@ -580,6 +596,9 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
   registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
+#if BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kUsePostFREFixSamplingTrial, false);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   EntropyState::RegisterPrefs(registry);
   ClonedInstallDetector::RegisterPrefs(registry);

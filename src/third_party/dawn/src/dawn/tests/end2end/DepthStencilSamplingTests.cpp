@@ -12,30 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <utility>
+#include <vector>
+
 #include "dawn/common/Assert.h"
 #include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 namespace {
-    using TextureFormat = wgpu::TextureFormat;
-    DAWN_TEST_PARAM_STRUCT(DepthStencilSamplingTestParams, TextureFormat);
+using TextureFormat = wgpu::TextureFormat;
+DAWN_TEST_PARAM_STRUCT(DepthStencilSamplingTestParams, TextureFormat);
 
-    constexpr wgpu::CompareFunction kCompareFunctions[] = {
-        wgpu::CompareFunction::Never,        wgpu::CompareFunction::Less,
-        wgpu::CompareFunction::LessEqual,    wgpu::CompareFunction::Greater,
-        wgpu::CompareFunction::GreaterEqual, wgpu::CompareFunction::Equal,
-        wgpu::CompareFunction::NotEqual,     wgpu::CompareFunction::Always,
-    };
+constexpr wgpu::CompareFunction kCompareFunctions[] = {
+    wgpu::CompareFunction::Never,        wgpu::CompareFunction::Less,
+    wgpu::CompareFunction::LessEqual,    wgpu::CompareFunction::Greater,
+    wgpu::CompareFunction::GreaterEqual, wgpu::CompareFunction::Equal,
+    wgpu::CompareFunction::NotEqual,     wgpu::CompareFunction::Always,
+};
 
-    // Test a "normal" ref value between 0 and 1; as well as negative and > 1 refs.
-    constexpr float kCompareRefs[] = {-0.1, 0.4, 1.2};
+// Test a "normal" ref value between 0 and 1; as well as negative and > 1 refs.
+constexpr float kCompareRefs[] = {-0.1, 0.4, 1.2};
 
-    // Test 0, below the ref, equal to, above the ref, and 1.
-    const std::vector<float> kNormalizedTextureValues = {0.0, 0.3, 0.4, 0.5, 1.0};
+// Test 0, below the ref, equal to, above the ref, and 1.
+const std::vector<float> kNormalizedTextureValues = {0.0, 0.3, 0.4, 0.5, 1.0};
 
-    // Test the limits, and some values in between.
-    const std::vector<uint32_t> kStencilValues = {0, 1, 38, 255};
+// Test the limits, and some values in between.
+const std::vector<uint32_t> kStencilValues = {0, 1, 38, 255};
 
 }  // anonymous namespace
 
@@ -382,7 +385,7 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
                 wgpu::ComputePassEncoder pass = commandEncoder.BeginComputePass();
                 pass.SetPipeline(pipeline);
                 pass.SetBindGroup(0, bindGroup);
-                pass.Dispatch(1);
+                pass.DispatchWorkgroups(1);
                 pass.End();
             }
 
@@ -423,8 +426,7 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
         using StencilData = std::array<uint32_t, 4>;
 
       public:
-        ExtraStencilComponentsExpectation(uint32_t expected) : mExpected(expected) {
-        }
+        explicit ExtraStencilComponentsExpectation(uint32_t expected) : mExpected(expected) {}
 
         ~ExtraStencilComponentsExpectation() override = default;
 
@@ -580,7 +582,7 @@ class DepthStencilSamplingTest : public DawnTestWithParams<DepthStencilSamplingT
                 wgpu::ComputePassEncoder pass = commandEncoder.BeginComputePass();
                 pass.SetPipeline(pipeline);
                 pass.SetBindGroup(0, bindGroup);
-                pass.Dispatch(1);
+                pass.DispatchWorkgroups(1);
                 pass.End();
             }
 
@@ -720,7 +722,7 @@ TEST_P(DepthStencilSamplingTest, SampleDepthAndStencilRender) {
             wgpu::ComputePassEncoder pass = commandEncoder.BeginComputePass();
             pass.SetPipeline(pipeline);
             pass.SetBindGroup(0, bindGroup);
-            pass.Dispatch(1);
+            pass.DispatchWorkgroups(1);
             pass.End();
         }
 

@@ -40,6 +40,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -58,7 +59,6 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
 #include "net/base/ip_address.h"
@@ -5007,7 +5007,8 @@ TEST_F(URLRequestTestHTTP, RedirectEscaping) {
   std::string destination_escaped =
       destination_base.spec() + "#%E2%98%83_%E2%98%83_%E0%E0";
   GURL original_url = http_test_server()->GetURL(
-      "/server-redirect?" + EscapeQueryParamValue(destination_url, false));
+      "/server-redirect?" +
+      base::EscapeQueryParamValue(destination_url, false));
   TestDelegate d;
   std::unique_ptr<URLRequest> req(default_context().CreateRequest(
       original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -6176,6 +6177,9 @@ const char kPKPHost[] = "with-report-uri-pkp.preloaded.test";
 
 // Tests that reports get sent on PKP violations when a report-uri is set.
 TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   GURL report_uri(kPKPReportUri);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -6208,6 +6212,8 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
   auto context = context_builder->Build();
   MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
+  context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
+      true);
   context->transport_security_state()->SetReportSender(&mock_report_sender);
 
   IsolationInfo isolation_info = IsolationInfo::CreateTransient();
@@ -6242,6 +6248,9 @@ TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
 // Tests that reports do not get sent on requests to static pkp hosts that
 // don't have pin violations.
 TEST_F(URLRequestTestHTTP, ProcessPKPWithNoViolation) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
@@ -6271,6 +6280,8 @@ TEST_F(URLRequestTestHTTP, ProcessPKPWithNoViolation) {
   auto context = context_builder->Build();
   MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
+  context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
+      true);
   context->transport_security_state()->SetReportSender(&mock_report_sender);
 
   // Now send a request that does not trigger the violation.
@@ -6297,6 +6308,9 @@ TEST_F(URLRequestTestHTTP, ProcessPKPWithNoViolation) {
 }
 
 TEST_F(URLRequestTestHTTP, PKPBypassRecorded) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
       net::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
@@ -6327,6 +6341,8 @@ TEST_F(URLRequestTestHTTP, PKPBypassRecorded) {
   auto context = context_builder->Build();
   MockCertificateReportSender mock_report_sender;
   context->transport_security_state()->EnableStaticPinsForTesting();
+  context->transport_security_state()->SetPinningListAlwaysTimelyForTesting(
+      true);
   context->transport_security_state()->SetReportSender(&mock_report_sender);
 
   TestDelegate d;
@@ -9056,8 +9072,7 @@ TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
         network_layer->OnSuspend();
         std::unique_ptr<HttpTransactionFactory> factory =
             std::make_unique<HttpCache>(std::move(network_layer),
-                                        HttpCache::DefaultBackend::InMemory(0),
-                                        /*is_main_cache=*/false);
+                                        HttpCache::DefaultBackend::InMemory(0));
         return factory;
       }));
   auto context = context_builder->Build();
@@ -9763,6 +9778,9 @@ TEST_F(HTTPSRequestTest, HTTPSPreloadedHSTSTest) {
 // This tests that cached HTTPS page loads do not cause any updates to the
 // TransportSecurityState.
 TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
   // The actual problem -- CERT_MISMATCHED_NAME in this case -- doesn't
@@ -9788,6 +9806,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
       *context->transport_security_state();
 
   transport_security_state.EnableStaticPinsForTesting();
+  transport_security_state.SetPinningListAlwaysTimelyForTesting(true);
 
   TransportSecurityState::STSState static_sts_state;
   TransportSecurityState::PKPState static_pkp_state;
@@ -11906,6 +11925,7 @@ TEST_F(HTTPSLocalCRLSetTest, InterceptionBlockedAllowOverrideOnHSTS) {
   ASSERT_TRUE(context->transport_security_state());
   TransportSecurityState& security_state = *context->transport_security_state();
   security_state.EnableStaticPinsForTesting();
+  security_state.SetPinningListAlwaysTimelyForTesting(true);
   SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
   // Connect to the test server and see the certificate error flagged, but

@@ -12,27 +12,7 @@
 #include "src/gpu/ganesh/GrAppliedClip.h"
 #include "src/gpu/ganesh/GrOpFlushState.h"
 #include "src/gpu/ganesh/GrRecordingContextPriv.h"
-#include "src/gpu/ganesh/tessellate/shaders/GrStrokeTessellationShader.h"
-
-namespace {
-
-bool can_use_hardware_tessellation(int numVerbs, const GrPipeline& pipeline, const GrCaps& caps) {
-    if (!caps.shaderCaps()->tessellationSupport() ||
-        !caps.shaderCaps()->infinitySupport() /* The hw tessellation shaders use infinity. */) {
-        return false;
-    }
-    if (pipeline.usesLocalCoords()) {
-        // Our back door for HW tessellation shaders isn't currently capable of passing varyings to
-        // the fragment shader, so if the processors have varyings, we need to use instanced draws
-        // instead.
-        return false;
-    }
-    // Only use hardware tessellation if we're drawing a somewhat large number of verbs. Otherwise
-    // we seem to be better off using instanced draws.
-    return numVerbs >= caps.minStrokeVerbsForHwTessellation();
-}
-
-} // anonymous namespace
+#include "src/gpu/ganesh/tessellate/GrStrokeTessellationShader.h"
 
 namespace skgpu::v1 {
 
@@ -111,7 +91,7 @@ GrOp::CombineResult StrokeTessellateOp::onCombineIfPossible(GrOp* grOp, SkArenaA
 
     auto combinedAttribs = fPatchAttribs | op->fPatchAttribs;
     if (!(combinedAttribs & PatchAttribs::kStrokeParams) &&
-        !StrokeParams::StrokesHaveEqualParams(this->headStroke(), op->headStroke())) {
+        !tess::StrokesHaveEqualParams(this->headStroke(), op->headStroke())) {
         // The paths have different stroke properties. We will need to enable dynamic stroke if we
         // still decide to combine them.
         if (this->headStroke().isHairlineStyle()) {
@@ -186,30 +166,13 @@ void StrokeTessellateOp::prePrepareTessellator(GrTessellationShader::ProgramArgs
     auto* pipeline = GrTessellationShader::MakePipeline(args, fAAType, std::move(clip),
                                                         std::move(fProcessors));
 
-    GrStrokeTessellationShader::Mode shaderMode;
-    int maxParametricSegments_log2;
-    if (can_use_hardware_tessellation(fTotalCombinedVerbCnt, *pipeline, caps)) {
-        // Only use hardware tessellation if we're drawing a somewhat large number of verbs.
-        // Otherwise we seem to be better off using instanced draws.
-        fTessellator = arena->make<StrokeHardwareTessellator>(
-                fPatchAttribs, caps.shaderCaps()->maxTessellationSegments());
-        shaderMode = GrStrokeTessellationShader::Mode::kHardwareTessellation;
-        // This sets a limit on the number of binary search iterations inside the shader, so we
-        // round up to the next log2 to guarantee it makes enough.
-        maxParametricSegments_log2 = SkNextLog2(caps.shaderCaps()->maxTessellationSegments());
-    } else {
-        fTessellator = arena->make<StrokeFixedCountTessellator>(fPatchAttribs);
-        shaderMode = GrStrokeTessellationShader::Mode::kFixedCount;
-        maxParametricSegments_log2 = StrokeFixedCountTessellator::kMaxParametricSegments_log2;
-    }
-
-    fTessellationShader = args.fArena->make<GrStrokeTessellationShader>(*caps.shaderCaps(),
-                                                                        shaderMode,
-                                                                        fPatchAttribs,
-                                                                        fViewMatrix,
-                                                                        this->headStroke(),
-                                                                        this->headColor(),
-                                                                        maxParametricSegments_log2);
+    fTessellator = arena->make<StrokeTessellator>(fPatchAttribs);
+    fTessellationShader = args.fArena->make<GrStrokeTessellationShader>(
+            *caps.shaderCaps(),
+            fPatchAttribs,
+            fViewMatrix,
+            this->headStroke(),
+            this->headColor());
 
     auto fillStencil = &GrUserStencilSettings::kUnused;
     if (fNeedsStencil) {
@@ -250,18 +213,10 @@ void StrokeTessellateOp::onPrepare(GrOpFlushState* flushState) {
                                     &flushState->caps()}, flushState->detachAppliedClip());
     }
     SkASSERT(fTessellator);
-    std::array<float, 2> matrixMinMaxScales;
-    if (!fViewMatrix.getMinMaxScales(matrixMinMaxScales.data())) {
-        matrixMinMaxScales.fill(1);
-    }
-    int fixedEdgeCount = fTessellator->prepare(flushState,
-                                               fViewMatrix,
-                                               matrixMinMaxScales,
-                                               &fPathStrokeList,
-                                               fTotalCombinedVerbCnt);
-    if (!fTessellationShader->willUseTessellationShaders()) {
-        fTessellationShader->setFixedCountNumTotalEdges(fixedEdgeCount);
-    }
+    fTessellator->prepare(flushState,
+                          fViewMatrix,
+                          &fPathStrokeList,
+                          fTotalCombinedVerbCnt);
 }
 
 void StrokeTessellateOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {

@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
+#include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "base/callback_list.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -256,6 +256,11 @@ class ASH_EXPORT DesksBarView : public views::View,
   int GetAdjustedUncroppedScrollPosition(int position) const;
 
   void OnDesksTemplatesButtonPressed();
+
+  // If the `DesksCloseAll` flag is enabled, this function cycles through
+  // `mini_views_` and updates the tooltip for each mini view's combine desks
+  // button.
+  void MaybeUpdateCombineDesksTooltips();
 
   // Scrollview callbacks.
   void OnContentsScrolled();

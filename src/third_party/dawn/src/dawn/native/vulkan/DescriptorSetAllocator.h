@@ -15,6 +15,9 @@
 #ifndef SRC_DAWN_NATIVE_VULKAN_DESCRIPTORSETALLOCATOR_H_
 #define SRC_DAWN_NATIVE_VULKAN_DESCRIPTORSETALLOCATOR_H_
 
+#include <map>
+#include <vector>
+
 #include "dawn/common/SerialQueue.h"
 #include "dawn/common/vulkan_platform.h"
 #include "dawn/native/Error.h"
@@ -22,54 +25,51 @@
 #include "dawn/native/ObjectBase.h"
 #include "dawn/native/vulkan/DescriptorSetAllocation.h"
 
-#include <map>
-#include <vector>
-
 namespace dawn::native::vulkan {
 
-    class BindGroupLayout;
+class BindGroupLayout;
 
-    class DescriptorSetAllocator : public ObjectBase {
-        using PoolIndex = uint32_t;
-        using SetIndex = uint16_t;
+class DescriptorSetAllocator : public ObjectBase {
+    using PoolIndex = uint32_t;
+    using SetIndex = uint16_t;
 
-      public:
-        static Ref<DescriptorSetAllocator> Create(
-            BindGroupLayout* layout,
-            std::map<VkDescriptorType, uint32_t> descriptorCountPerType);
+  public:
+    static Ref<DescriptorSetAllocator> Create(
+        BindGroupLayout* layout,
+        std::map<VkDescriptorType, uint32_t> descriptorCountPerType);
 
-        ResultOrError<DescriptorSetAllocation> Allocate();
-        void Deallocate(DescriptorSetAllocation* allocationInfo);
-        void FinishDeallocation(ExecutionSerial completedSerial);
+    ResultOrError<DescriptorSetAllocation> Allocate();
+    void Deallocate(DescriptorSetAllocation* allocationInfo);
+    void FinishDeallocation(ExecutionSerial completedSerial);
 
-      private:
-        DescriptorSetAllocator(BindGroupLayout* layout,
-                               std::map<VkDescriptorType, uint32_t> descriptorCountPerType);
-        ~DescriptorSetAllocator();
+  private:
+    DescriptorSetAllocator(BindGroupLayout* layout,
+                           std::map<VkDescriptorType, uint32_t> descriptorCountPerType);
+    ~DescriptorSetAllocator() override;
 
-        MaybeError AllocateDescriptorPool();
+    MaybeError AllocateDescriptorPool();
 
-        BindGroupLayout* mLayout;
+    BindGroupLayout* mLayout;
 
-        std::vector<VkDescriptorPoolSize> mPoolSizes;
-        SetIndex mMaxSets;
+    std::vector<VkDescriptorPoolSize> mPoolSizes;
+    SetIndex mMaxSets;
 
-        struct DescriptorPool {
-            VkDescriptorPool vkPool;
-            std::vector<VkDescriptorSet> sets;
-            std::vector<SetIndex> freeSetIndices;
-        };
-
-        std::vector<PoolIndex> mAvailableDescriptorPoolIndices;
-        std::vector<DescriptorPool> mDescriptorPools;
-
-        struct Deallocation {
-            PoolIndex poolIndex;
-            SetIndex setIndex;
-        };
-        SerialQueue<ExecutionSerial, Deallocation> mPendingDeallocations;
-        ExecutionSerial mLastDeallocationSerial = ExecutionSerial(0);
+    struct DescriptorPool {
+        VkDescriptorPool vkPool;
+        std::vector<VkDescriptorSet> sets;
+        std::vector<SetIndex> freeSetIndices;
     };
+
+    std::vector<PoolIndex> mAvailableDescriptorPoolIndices;
+    std::vector<DescriptorPool> mDescriptorPools;
+
+    struct Deallocation {
+        PoolIndex poolIndex;
+        SetIndex setIndex;
+    };
+    SerialQueue<ExecutionSerial, Deallocation> mPendingDeallocations;
+    ExecutionSerial mLastDeallocationSerial = ExecutionSerial(0);
+};
 
 }  // namespace dawn::native::vulkan
 

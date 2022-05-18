@@ -15,34 +15,28 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_TEXTUREMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_TEXTUREMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/Device.h"
 #include "dawn/native/Texture.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class TextureMock : public TextureBase {
-      public:
-        TextureMock(DeviceBase* device, TextureBase::TextureState state)
-            : TextureBase(device, state) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->TextureBase::DestroyImpl();
-            });
-        }
-        ~TextureMock() override = default;
+class TextureMock : public TextureBase {
+  public:
+    TextureMock(DeviceBase* device, TextureBase::TextureState state);
+    ~TextureMock() override;
 
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
-    class TextureViewMock : public TextureViewBase {
-      public:
-        TextureViewMock(TextureBase* texture) : TextureViewBase(texture) {
-        }
-        ~TextureViewMock() override = default;
+class TextureViewMock : public TextureViewBase {
+  public:
+    explicit TextureViewMock(TextureBase* texture);
+    ~TextureViewMock() override;
 
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
 }  // namespace dawn::native
 

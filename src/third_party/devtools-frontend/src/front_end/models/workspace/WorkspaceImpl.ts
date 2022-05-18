@@ -183,7 +183,7 @@ export abstract class ProjectStore implements Project {
     const oldPath = uiSourceCode.url();
     const newPath = uiSourceCode.parentURL() ?
         Common.ParsedURL.ParsedURL.urlFromParentUrlAndName(uiSourceCode.parentURL(), newName) :
-        encodeURIComponent(newName) as Platform.DevToolsPath.UrlString;
+        Common.ParsedURL.ParsedURL.preEncodeSpecialCharactersInPath(newName) as Platform.DevToolsPath.UrlString;
     const value = this.uiSourceCodesMap.get(oldPath) as {
       uiSourceCode: UISourceCode,
       index: number,
@@ -257,6 +257,24 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes
   uiSourceCode(projectId: string, url: Platform.DevToolsPath.UrlString): UISourceCode|null {
     const project = this.projectsInternal.get(projectId);
     return project ? project.uiSourceCodeForURL(url) : null;
+  }
+
+  // This method explicitly awaits the UISourceCode if not yet
+  // available.
+  uiSourceCodeForURLPromise(url: Platform.DevToolsPath.UrlString): Promise<UISourceCode> {
+    const uiSourceCode = this.uiSourceCodeForURL(url);
+    if (uiSourceCode) {
+      return Promise.resolve(uiSourceCode);
+    }
+    return new Promise(resolve => {
+      const descriptor = this.addEventListener(Events.UISourceCodeAdded, event => {
+        const uiSourceCode = event.data;
+        if (uiSourceCode.url() === url) {
+          this.removeEventListener(Events.UISourceCodeAdded, descriptor.listener);
+          resolve(uiSourceCode);
+        }
+      });
+    });
   }
 
   uiSourceCodeForURL(url: Platform.DevToolsPath.UrlString): UISourceCode|null {

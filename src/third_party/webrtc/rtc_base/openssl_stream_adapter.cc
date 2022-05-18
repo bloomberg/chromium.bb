@@ -841,6 +841,8 @@ void OpenSSLStreamAdapter::SetTimeout(int delay_ms) {
             RTC_LOG(LS_INFO) << "DTLS retransmission";
           } else if (res < 0) {
             RTC_LOG(LS_INFO) << "DTLSv1_handle_timeout() return -1";
+            Error("DTLSv1_handle_timeout", res, -1, true);
+            return webrtc::TimeDelta::PlusInfinity();
           }
           ContinueSSL();
         } else {
@@ -956,7 +958,7 @@ int OpenSSLStreamAdapter::ContinueSSL() {
   return 0;
 }
 
-void OpenSSLStreamAdapter::Error(const char* context,
+void OpenSSLStreamAdapter::Error(absl::string_view context,
                                  int err,
                                  uint8_t alert,
                                  bool signal) {

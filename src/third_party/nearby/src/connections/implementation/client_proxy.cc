@@ -157,13 +157,6 @@ std::string ClientProxy::GetAdvertisingServiceId() const {
   return advertising_info_.service_id;
 }
 
-std::string ClientProxy::GetServiceId() const {
-  MutexLock lock(&mutex_);
-  if (IsAdvertising()) return advertising_info_.service_id;
-  if (IsDiscovering()) return discovery_info_.service_id;
-  return "idle_service_id";
-}
-
 void ClientProxy::StartedDiscovery(
     const std::string& service_id, Strategy strategy,
     const DiscoveryListener& listener,
@@ -733,7 +726,7 @@ void ClientProxy::ScheduleClearLocalHighVisModeCacheEndpointIdAlarm() {
                     << "; local_high_vis_mode_cache_endpoint_id_="
                     << local_high_vis_mode_cache_endpoint_id_;
   clear_local_high_vis_mode_cache_endpoint_id_alarm_ =
-      CancelableAlarm(
+      std::make_unique<CancelableAlarm>(
           "clear_high_power_endpoint_id_cache",
           [this]() {
             MutexLock lock(&mutex_);
@@ -749,9 +742,10 @@ void ClientProxy::ScheduleClearLocalHighVisModeCacheEndpointIdAlarm() {
 }
 
 void ClientProxy::CancelClearLocalHighVisModeCacheEndpointIdAlarm() {
-  if (clear_local_high_vis_mode_cache_endpoint_id_alarm_.IsValid()) {
-    clear_local_high_vis_mode_cache_endpoint_id_alarm_.Cancel();
-    clear_local_high_vis_mode_cache_endpoint_id_alarm_ = CancelableAlarm();
+  if (clear_local_high_vis_mode_cache_endpoint_id_alarm_ &&
+      clear_local_high_vis_mode_cache_endpoint_id_alarm_->IsValid()) {
+    clear_local_high_vis_mode_cache_endpoint_id_alarm_->Cancel();
+    clear_local_high_vis_mode_cache_endpoint_id_alarm_.reset();
   }
 }
 

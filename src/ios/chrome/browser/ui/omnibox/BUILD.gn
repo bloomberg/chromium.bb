@@ -87,6 +87,7 @@ source_set("omnibox_util") {
     "//components/omnibox/browser",
     "//components/security_state/core",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/icons:symbols",
   ]
   public_deps = [
     ":omnibox_icon_type_constants",
@@ -102,7 +103,10 @@ source_set("omnibox_icon_type_constants") {
     "omnibox_icon_type.h",
     "omnibox_icon_type.mm",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui/icons:symbols",
+  ]
 }
 
 source_set("omnibox_internal") {
@@ -135,6 +139,7 @@ source_set("omnibox_internal") {
     "web_omnibox_edit_controller_impl.mm",
   ]
   deps = [
+    ":features",
     ":omnibox",
     ":omnibox_popup_shared",
     ":omnibox_util",
@@ -294,4 +299,13 @@ bundle_data("resources_unit_tests") {
   sources = [ "//ios/chrome/test/data/omnibox/selected_ranges.txt" ]
   outputs = [ "{{bundle_resources_dir}}/" +
               "ios/chrome/test/data/omnibox/{{source_file_part}}" ]
+}
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "omnibox_ui_features.cc",
+    "omnibox_ui_features.h",
+  ]
+  public_deps = [ "//base" ]
 }

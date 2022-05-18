@@ -104,7 +104,7 @@ TEST_P(LevelTest, TestTargetLevelApi) {
 TEST_P(LevelTest, TestTargetLevel19) {
   std::unique_ptr<libaom_test::VideoSource> video;
   video.reset(new libaom_test::Y4mVideoSource("park_joy_90p_8_420.y4m", 0, 10));
-  ASSERT_TRUE(video.get() != NULL);
+  ASSERT_NE(video, nullptr);
   // Level index 19 corresponding to level 6.3.
   target_level_ = 19;
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));

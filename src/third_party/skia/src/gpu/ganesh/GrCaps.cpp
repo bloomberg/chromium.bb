@@ -56,7 +56,6 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fReadPixelsRowBytesSupport = false;
     fShouldCollapseSrcOverToSrcWhenAble = false;
     fMustSyncGpuDuringAbandon = true;
-    fDriverDisableMSAAClipAtlas = false;
     fDisableTessellationPathRenderer = false;
 
     fBlendEquationSupport = kBasic_BlendEquationSupport;
@@ -80,7 +79,6 @@ GrCaps::GrCaps(const GrContextOptions& options) {
     fBufferMapThreshold = options.fBufferMapThreshold;
     fAvoidStencilBuffers = false;
     fAvoidWritePixelsFastPath = false;
-    fRequiresManualFBBarrierAfterTessellatedStencilDraw = false;
     fNativeDrawIndexedIndirectIsBroken = false;
     fAvoidReorderingRenderTasks = false;
     fAvoidDithering = false;
@@ -111,11 +109,9 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     fShaderCaps->applyOptionsOverrides(options);
     this->onApplyOptionsOverrides(options);
     if (options.fDisableDriverCorrectnessWorkarounds) {
-        SkASSERT(!fDriverDisableMSAAClipAtlas);
         SkASSERT(!fDisableTessellationPathRenderer);
         SkASSERT(!fAvoidStencilBuffers);
         SkASSERT(!fAvoidWritePixelsFastPath);
-        SkASSERT(!fRequiresManualFBBarrierAfterTessellatedStencilDraw);
         SkASSERT(!fNativeDrawIndexedIndirectIsBroken);
         SkASSERT(!fAdvBlendEqDisableFlags);
         SkASSERT(!fPerformColorClearsAsDraws);
@@ -142,9 +138,6 @@ void GrCaps::applyOptionsOverrides(const GrContextOptions& options) {
     if (options.fDisallowWriteAndTransferPixelRowBytes) {
         fWritePixelsRowBytesSupport = false;
         fTransferPixelsToRowBytesSupport = false;
-    }
-    if (options.fAlwaysPreferHardwareTessellation) {
-        fMinPathVerbsForHwTessellation = fMinStrokeVerbsForHwTessellation = 0;
     }
 #endif
     if (options.fSuppressMipmapSupport) {
@@ -238,8 +231,6 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Write pixels row bytes support", fWritePixelsRowBytesSupport);
     writer->appendBool("Transfer pixels to row bytes support", fTransferPixelsToRowBytesSupport);
     writer->appendBool("Read pixels row bytes support", fReadPixelsRowBytesSupport);
-    writer->appendBool("Disable msaa clip mask atlas on current driver [workaround]",
-                       fDriverDisableMSAAClipAtlas);
     writer->appendBool("Disable TessellationPathRenderer current driver [workaround]",
                        fDisableTessellationPathRenderer);
     writer->appendBool("Clamp-to-border", fClampToBorderSupport);
@@ -247,8 +238,6 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Prefer VRAM Use over flushes [workaround]", fPreferVRAMUseOverFlushes);
     writer->appendBool("Avoid stencil buffers [workaround]", fAvoidStencilBuffers);
     writer->appendBool("Avoid writePixels fast path [workaround]", fAvoidWritePixelsFastPath);
-    writer->appendBool("Requires manual FB barrier after tessellated stencilDraw [workaround]",
-                       fRequiresManualFBBarrierAfterTessellatedStencilDraw);
     writer->appendBool("Native draw indexed indirect is broken [workaround]",
                        fNativeDrawIndexedIndirectIsBroken);
     writer->appendBool("Avoid DAG reordering [workaround]", fAvoidReorderingRenderTasks);
@@ -264,8 +253,6 @@ void GrCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendS32("Max Preferred Render Target Size", fMaxPreferredRenderTargetSize);
     writer->appendS32("Max Window Rectangles", fMaxWindowRectangles);
     writer->appendS32("Sample Count for Internal MSAA", fInternalMultisampleCount);
-    writer->appendS32("Min Path Verbs for HW Tessellation", fMinPathVerbsForHwTessellation);
-    writer->appendS32("Min Stroke Verbs for HW Tessellation", fMinStrokeVerbsForHwTessellation);
 
     static const char* kBlendEquationSupportNames[] = {
         "Basic",

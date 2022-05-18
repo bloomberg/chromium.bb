@@ -12,6 +12,7 @@
 
 #include "fuzz.h"
 #include "jsontest.h"
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <functional>
@@ -24,6 +25,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using CharReaderPtr = std::unique_ptr<Json::CharReader>;
 
@@ -347,6 +349,17 @@ JSONTEST_FIXTURE_LOCAL(ValueTest, resizeArray) {
     JSONTEST_ASSERT_EQUAL(array.size(), 0);
   }
 }
+
+JSONTEST_FIXTURE_LOCAL(ValueTest, resizePopulatesAllMissingElements) {
+  Json::ArrayIndex n = 10;
+  Json::Value v;
+  v.resize(n);
+  JSONTEST_ASSERT_EQUAL(n, v.size());
+  JSONTEST_ASSERT_EQUAL(n, std::distance(v.begin(), v.end()));
+  for (const Json::Value& e : v)
+    JSONTEST_ASSERT_EQUAL(e, Json::Value{});
+}
+
 JSONTEST_FIXTURE_LOCAL(ValueTest, getArrayValue) {
   Json::Value array;
   for (Json::ArrayIndex i = 0; i < 5; i++)
@@ -2002,6 +2015,34 @@ JSONTEST_FIXTURE_LOCAL(ValueTest, precision) {
   b.settings_["precisionType"] = "decimal";
   v = 0.256345694873740545068;
   expected = "0.3";
+  result = Json::writeString(b, v);
+  JSONTEST_ASSERT_STRING_EQUAL(expected, result);
+
+  b.settings_["precision"] = 0;
+  b.settings_["precisionType"] = "decimal";
+  v = 123.56345694873740545068;
+  expected = "124";
+  result = Json::writeString(b, v);
+  JSONTEST_ASSERT_STRING_EQUAL(expected, result);
+
+  b.settings_["precision"] = 1;
+  b.settings_["precisionType"] = "decimal";
+  v = 1230.001;
+  expected = "1230.0";
+  result = Json::writeString(b, v);
+  JSONTEST_ASSERT_STRING_EQUAL(expected, result);
+
+  b.settings_["precision"] = 0;
+  b.settings_["precisionType"] = "decimal";
+  v = 1230.001;
+  expected = "1230";
+  result = Json::writeString(b, v);
+  JSONTEST_ASSERT_STRING_EQUAL(expected, result);
+
+  b.settings_["precision"] = 0;
+  b.settings_["precisionType"] = "decimal";
+  v = 1231.5;
+  expected = "1232";
   result = Json::writeString(b, v);
   JSONTEST_ASSERT_STRING_EQUAL(expected, result);
 
@@ -3914,6 +3955,15 @@ JSONTEST_FIXTURE_LOCAL(MemberTemplateIs, BehavesSameAsNamedIs) {
     JSONTEST_ASSERT_EQUAL(j.is<double>(), j.isDouble());
     JSONTEST_ASSERT_EQUAL(j.is<Json::String>(), j.isString());
   }
+}
+
+class VersionTest : public JsonTest::TestCase {};
+
+JSONTEST_FIXTURE_LOCAL(VersionTest, VersionNumbersMatch) {
+  std::ostringstream vstr;
+  vstr << JSONCPP_VERSION_MAJOR << '.' << JSONCPP_VERSION_MINOR << '.'
+       << JSONCPP_VERSION_PATCH;
+  JSONTEST_ASSERT_EQUAL(vstr.str(), std::string(JSONCPP_VERSION_STRING));
 }
 
 #if defined(__GNUC__)

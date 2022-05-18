@@ -4,6 +4,7 @@
 
 #include "chromeos/components/quick_answers/understanding/intent_generator.h"
 
+#include <cctype>
 #include <map>
 
 #include "base/i18n/break_iterator.h"
@@ -125,6 +126,14 @@ bool IsPreferredLanguage(const std::string& detected_language) {
   return false;
 }
 
+bool HasDigits(const std::string& word) {
+  for (const auto& character : word) {
+    if (std::isdigit(character))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 IntentGenerator::IntentGenerator(base::WeakPtr<SpellChecker> spell_checker,
@@ -191,7 +200,11 @@ void IntentGenerator::MaybeLoadTextClassifier(
 void IntentGenerator::CheckSpellingCallback(const QuickAnswersRequest& request,
                                             bool correctness) {
   // Generate dictionary intent if the selected word passed spell check.
-  if (correctness) {
+  // The dictionaries treat digits as valid words, while we will not be able to
+  // grab any useful information from the Search server for words like that.
+  // Thus we filter out the words containing digits. We still fallback to the
+  // text classifier for unit conversion intent.
+  if (correctness && !HasDigits(request.selected_text)) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kDictionary,
                         QuickAnswersState::Get()->application_locale()));
@@ -303,20 +316,22 @@ void IntentGenerator::MaybeGenerateTranslationIntent(
 
 void IntentGenerator::LanguageDetectorCallback(
     const QuickAnswersRequest& request,
-    absl::optional<std::string> detected_language) {
+    absl::optional<std::string> detected_locale) {
   language_detector_.reset();
 
   auto device_language =
       l10n_util::GetLanguage(QuickAnswersState::Get()->application_locale());
+  auto detected_language = detected_locale.has_value()
+                               ? l10n_util::GetLanguage(detected_locale.value())
+                               : std::string();
 
   // Generate translation intent if the detected language is different to the
   // system language and is not one of the preferred languages.
-  if (detected_language.has_value() &&
-      detected_language.value() != device_language &&
-      !IsPreferredLanguage(detected_language.value())) {
+  if (!detected_language.empty() && detected_language != device_language &&
+      !IsPreferredLanguage(detected_language)) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kTranslation,
-                        device_language, detected_language.value()));
+                        device_language, detected_language));
     return;
   }
 

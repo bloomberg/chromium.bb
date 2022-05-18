@@ -1,4 +1,8 @@
+load("//bazel:macros.bzl", "exports_files_legacy")
+
 licenses(["notice"])
+
+exports_files_legacy()
 
 # This rule is a convenient way to build all the task drivers and copy them all into a single
 # place as a tar folder. Otherwise, we would need to run many separate bazel build commands and
@@ -13,6 +17,7 @@ licenses(["notice"])
 genrule(
     name = "all_task_drivers",
     srcs = [
+        "//infra/bots/task_drivers/bazel_build",
         "//infra/bots/task_drivers/bazel_check_includes",
         "//infra/bots/task_drivers/check_generated_bazel_files",
         "//infra/bots/task_drivers/codesize",

@@ -2542,7 +2542,7 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx) {
     if (priv->cfg.g_usage == ALLINTRA) {
       priv->extra_cfg.enable_cdef = 0;
     }
-    av1_initialize_enc();
+    av1_initialize_enc(priv->cfg.g_usage, priv->cfg.rc_end_usage);
 
     res = validate_config(priv, &priv->cfg, &priv->extra_cfg);
 
@@ -3536,6 +3536,7 @@ static aom_codec_err_t encoder_set_option(aom_codec_alg_priv_t *ctx,
 #endif
 
   argv[0] = aom_malloc(len * sizeof(argv[1][0]));
+  if (!argv[0]) return AOM_CODEC_MEM_ERROR;
   snprintf(argv[0], len, "--%s=%s", name, value);
   struct arg arg;
   aom_codec_err_t err = AOM_CODEC_OK;
@@ -4186,21 +4187,22 @@ static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
       2000,  // rc_two_pass_vbrmax_section
 
       // keyframing settings (kf)
-      0,            // fwd_kf_enabled
-      AOM_KF_AUTO,  // kf_mode
-      0,            // kf_min_dist
-      9999,         // kf_max_dist
-      0,            // sframe_dist
-      1,            // sframe_mode
-      0,            // large_scale_tile
-      0,            // monochrome
-      0,            // full_still_picture_hdr
-      0,            // save_as_annexb
-      0,            // tile_width_count
-      0,            // tile_height_count
-      { 0 },        // tile_widths
-      { 0 },        // tile_heights
-      0,            // use_fixed_qp_offsets
+      0,                       // fwd_kf_enabled
+      AOM_KF_AUTO,             // kf_mode
+      0,                       // kf_min_dist
+      9999,                    // kf_max_dist
+      0,                       // sframe_dist
+      1,                       // sframe_mode
+      0,                       // large_scale_tile
+      0,                       // monochrome
+      0,                       // full_still_picture_hdr
+      0,                       // save_as_annexb
+      0,                       // tile_width_count
+      0,                       // tile_height_count
+      { 0 },                   // tile_widths
+      { 0 },                   // tile_heights
+      0,                       // use_fixed_qp_offsets
+      { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
       { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
   },
@@ -4256,21 +4258,22 @@ static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
       2000,  // rc_two_pass_vbrmax_section
 
       // keyframing settings (kf)
-      0,            // fwd_kf_enabled
-      AOM_KF_AUTO,  // kf_mode
-      0,            // kf_min_dist
-      9999,         // kf_max_dist
-      0,            // sframe_dist
-      1,            // sframe_mode
-      0,            // large_scale_tile
-      0,            // monochrome
-      0,            // full_still_picture_hdr
-      0,            // save_as_annexb
-      0,            // tile_width_count
-      0,            // tile_height_count
-      { 0 },        // tile_widths
-      { 0 },        // tile_heights
-      0,            // use_fixed_qp_offsets
+      0,                       // fwd_kf_enabled
+      AOM_KF_AUTO,             // kf_mode
+      0,                       // kf_min_dist
+      9999,                    // kf_max_dist
+      0,                       // sframe_dist
+      1,                       // sframe_mode
+      0,                       // large_scale_tile
+      0,                       // monochrome
+      0,                       // full_still_picture_hdr
+      0,                       // save_as_annexb
+      0,                       // tile_width_count
+      0,                       // tile_height_count
+      { 0 },                   // tile_widths
+      { 0 },                   // tile_heights
+      0,                       // use_fixed_qp_offsets
+      { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
       { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
   },
@@ -4326,21 +4329,22 @@ static const aom_codec_enc_cfg_t encoder_usage_cfg[] = {
       2000,  // rc_two_pass_vbrmax_section
 
       // keyframing settings (kf)
-      0,                // fwd_kf_enabled
-      AOM_KF_DISABLED,  // kf_mode
-      0,                // kf_min_dist
-      0,                // kf_max_dist
-      0,                // sframe_dist
-      1,                // sframe_mode
-      0,                // large_scale_tile
-      0,                // monochrome
-      0,                // full_still_picture_hdr
-      0,                // save_as_annexb
-      0,                // tile_width_count
-      0,                // tile_height_count
-      { 0 },            // tile_widths
-      { 0 },            // tile_heights
-      0,                // use_fixed_qp_offsets
+      0,                       // fwd_kf_enabled
+      AOM_KF_DISABLED,         // kf_mode
+      0,                       // kf_min_dist
+      0,                       // kf_max_dist
+      0,                       // sframe_dist
+      1,                       // sframe_mode
+      0,                       // large_scale_tile
+      0,                       // monochrome
+      0,                       // full_still_picture_hdr
+      0,                       // save_as_annexb
+      0,                       // tile_width_count
+      0,                       // tile_height_count
+      { 0 },                   // tile_widths
+      { 0 },                   // tile_heights
+      0,                       // use_fixed_qp_offsets
+      { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
       { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
   },

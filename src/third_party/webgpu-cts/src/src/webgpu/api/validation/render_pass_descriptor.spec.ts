@@ -598,14 +598,18 @@ g.test('depth_stencil_attachment')
   - stencilLoadOp and stencilStoreOp must be provided iff the format has a stencil aspect and stencilReadOnly is not true.
   `
   )
-  .paramsSubcasesOnly(u =>
+  .params(u =>
     u //
       .combine('format', kDepthStencilFormats)
+      .beginSubcases()
       .combine('depthReadOnly', [false, true])
       .combine('stencilReadOnly', [false, true])
       .combine('setDepthLoadStoreOp', [false, true])
       .combine('setStencilLoadStoreOp', [false, true])
   )
+  .beforeAllSubcases(t => {
+    t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
+  })
   .fn(async t => {
     const {
       format,
@@ -614,7 +618,6 @@ g.test('depth_stencil_attachment')
       setDepthLoadStoreOp,
       setStencilLoadStoreOp,
     } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase(format);
 
     let isValid = true;
     const info = kTextureFormatInfo[format];
