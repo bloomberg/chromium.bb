@@ -105,7 +105,11 @@ DesktopFrameWithCursor::DesktopFrameWithCursor(
 
   if (!previous_cursor_rect.equals(cursor_rect_)) {
     mutable_updated_region()->AddRect(cursor_rect_);
-    mutable_updated_region()->AddRect(previous_cursor_rect);
+
+    // Only add the previous cursor if it is inside the frame.
+    // (it can be outside the frame if the desktop has been resized).
+    if (original_frame_->rect().ContainsRect(previous_cursor_rect))
+      mutable_updated_region()->AddRect(previous_cursor_rect);
   } else if (cursor_changed) {
     mutable_updated_region()->AddRect(cursor_rect_);
   }
@@ -218,7 +222,7 @@ void DesktopAndCursorComposer::OnCaptureResult(
         !desktop_capturer_->IsOccluded(cursor_position_)) {
       DesktopVector relative_position =
           cursor_position_.subtract(frame->top_left());
-#if defined(WEBRTC_MAC)
+#if defined(WEBRTC_MAC) || defined(CHROMEOS)
       // On OSX, the logical(DIP) and physical coordinates are used mixingly.
       // For example, the captured cursor has its size in physical pixels(2x)
       // and location in logical(DIP) pixels on Retina monitor. This will cause

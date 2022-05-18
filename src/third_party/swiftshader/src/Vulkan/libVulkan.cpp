@@ -110,25 +110,6 @@ void logBuildVersionInformation()
 }
 #endif  // __ANDROID__ && ENABLE_BUILD_VERSION_OUTPUT
 
-// setReactorDefaultConfig() sets the default configuration for Vulkan's use of
-// Reactor.
-void setReactorDefaultConfig()
-{
-	auto swConfig = sw::getConfiguration();
-	auto cfg = rr::Config::Edit()
-	               .set(rr::Optimization::Level::Default)
-	               .clearOptimizationPasses()
-	               .add(rr::Optimization::Pass::ScalarReplAggregates)
-	               .add(rr::Optimization::Pass::SCCP)
-	               .add(rr::Optimization::Pass::CFGSimplification)
-	               .add(rr::Optimization::Pass::EarlyCSEPass)
-	               .add(rr::Optimization::Pass::CFGSimplification)
-	               .add(rr::Optimization::Pass::InstructionCombining)
-	               .setDebugConfig(sw::getReactorDebugConfig(swConfig));
-
-	rr::Nucleus::adjustDefaultConfig(cfg);
-}
-
 std::shared_ptr<marl::Scheduler> getOrCreateScheduler()
 {
 	struct Scheduler
@@ -159,7 +140,6 @@ void initializeLibrary()
 #if defined(__ANDROID__) && defined(ENABLE_BUILD_VERSION_OUTPUT)
 		logBuildVersionInformation();
 #endif  // __ANDROID__ && ENABLE_BUILD_VERSION_OUTPUT
-		setReactorDefaultConfig();
 		return true;
 	}();
 	(void)doOnce;
@@ -1064,9 +1044,6 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES:
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES:
-			break;
-		// FIXME(b/228307968): dEQP mistakenly considers VK_EXT_shader_image_atomic_int64 promoted to Vulkan 1.2 (https://gitlab.khronos.org/Tracker/vk-gl-cts/-/issues/3631)
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT:
 			break;
 		default:
 			// "the [driver] must skip over, without processing (other than reading the sType and pNext members) any structures in the chain with sType values not defined by [supported extenions]"

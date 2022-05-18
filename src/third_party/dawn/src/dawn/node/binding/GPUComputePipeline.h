@@ -15,34 +15,33 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPUCOMPUTEPIPELINE_H_
 #define SRC_DAWN_NODE_BINDING_GPUCOMPUTEPIPELINE_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
 
-    // GPUComputePipeline is an implementation of interop::GPUComputePipeline that wraps a
-    // wgpu::ComputePipeline.
-    class GPUComputePipeline final : public interop::GPUComputePipeline {
-      public:
-        GPUComputePipeline(wgpu::ComputePipeline pipeline);
+// GPUComputePipeline is an implementation of interop::GPUComputePipeline that wraps a
+// wgpu::ComputePipeline.
+class GPUComputePipeline final : public interop::GPUComputePipeline {
+  public:
+    explicit GPUComputePipeline(wgpu::ComputePipeline pipeline);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::ComputePipeline&() const {
-            return pipeline_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::ComputePipeline&() const { return pipeline_; }
 
-        // interop::GPUComputePipeline interface compliance
-        interop::Interface<interop::GPUBindGroupLayout> getBindGroupLayout(Napi::Env,
-                                                                           uint32_t index) override;
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPUComputePipeline interface compliance
+    interop::Interface<interop::GPUBindGroupLayout> getBindGroupLayout(Napi::Env,
+                                                                       uint32_t index) override;
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::ComputePipeline pipeline_;
-    };
+  private:
+    wgpu::ComputePipeline pipeline_;
+};
 
 }  // namespace wgpu::binding
 

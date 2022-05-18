@@ -40,12 +40,15 @@
 #include "call/call.h"
 #include "call/rtp_transport_controller_send_factory_interface.h"
 #include "p2p/base/port_allocator.h"
-#include "pc/channel_manager.h"
 #include "pc/connection_context.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
+
+namespace cricket {
+class ChannelManager;
+}
 
 namespace rtc {
 class BasicNetworkManager;
@@ -100,8 +103,6 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
     return context_->sctp_transport_factory();
   }
 
-  virtual cricket::ChannelManager* channel_manager();
-
   rtc::Thread* signaling_thread() const {
     // This method can be called on a different thread when the factory is
     // created in CreatePeerConnectionFactory().
@@ -115,7 +116,9 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
     return options_;
   }
 
-  const FieldTrialsView& trials() const { return context_->trials(); }
+  const FieldTrialsView& field_trials() const {
+    return context_->field_trials();
+  }
 
  protected:
   // Constructor used by the static Create() method. Modifies the dependencies.
@@ -133,12 +136,17 @@ class PeerConnectionFactory : public PeerConnectionFactoryInterface {
   rtc::Thread* network_thread() const { return context_->network_thread(); }
 
   bool IsTrialEnabled(absl::string_view key) const;
+
+  cricket::ChannelManager* channel_manager() {
+    return context_->channel_manager();
+  }
   const cricket::ChannelManager* channel_manager() const {
     return context_->channel_manager();
   }
 
   std::unique_ptr<RtcEventLog> CreateRtcEventLog_w();
-  std::unique_ptr<Call> CreateCall_w(RtcEventLog* event_log);
+  std::unique_ptr<Call> CreateCall_w(RtcEventLog* event_log,
+                                     const FieldTrialsView& field_trials);
 
   rtc::scoped_refptr<ConnectionContext> context_;
   PeerConnectionFactoryInterface::Options options_

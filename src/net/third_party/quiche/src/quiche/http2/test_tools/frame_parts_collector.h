@@ -14,14 +14,16 @@
 #include <vector>
 
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
-#include "quiche/http2/decoder/http2_frame_decoder_listener_test_util.h"
 #include "quiche/http2/http2_structures.h"
 #include "quiche/http2/test_tools/frame_parts.h"
+#include "quiche/http2/test_tools/http2_frame_decoder_listener_test_util.h"
+#include "quiche/common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace test {
 
-class FramePartsCollector : public FailingHttp2FrameDecoderListener {
+class QUICHE_NO_EXPORT FramePartsCollector
+    : public FailingHttp2FrameDecoderListener {
  public:
   FramePartsCollector();
   ~FramePartsCollector() override;

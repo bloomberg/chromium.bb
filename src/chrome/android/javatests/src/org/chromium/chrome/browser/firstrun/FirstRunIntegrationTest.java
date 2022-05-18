@@ -4,8 +4,14 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
 import android.accounts.Account;
@@ -14,12 +20,14 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
 
 import androidx.annotation.IdRes;
 import androidx.test.filters.MediumTest;
@@ -73,6 +81,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.policy.AbstractAppRestrictionsProvider;
 import org.chromium.components.search_engines.TemplateUrl;
@@ -352,7 +361,7 @@ public class FirstRunIntegrationTest {
     }
 
     private void unblockOnFlowIsKnown() {
-        Mockito.verify(mAccountManagerFacade).getAccounts();
+        Mockito.verify(mAccountManagerFacade, atLeastOnce()).getAccounts();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mAccountsPromise.fulfill(Collections.emptyList()));
     }
@@ -752,7 +761,8 @@ public class FirstRunIntegrationTest {
         sharedPreferencesManager.writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
         sharedPreferencesManager.writeBoolean(
-                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, allowedCrashUpLoad);
+                ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER,
+                allowedCrashUpLoad);
         setHasAppRestrictionForMock(false);
         FirstRunActivity freActivity = launchFirstRunActivity();
 
@@ -896,6 +906,35 @@ public class FirstRunIntegrationTest {
         unblockOnFlowIsKnown();
         clickThroughFirstRun(firstRunActivity, testCase);
         verifyUrlEquals(TEST_URL, waitAndGetUriFromChromeActivity(ChromeTabbedActivity.class));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
+    @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
+    public void testSigninFirstRunPageShownBeforeChildStatusFetch() throws Exception {
+        // ChildAccountStatusSupplier uses AppRestrictions to quickly detect non-supervised cases,
+        // so pretend there are AppRestrictions set by FamilyLink.
+        setHasAppRestrictionForMock(true);
+        blockOnFlowIsKnown();
+        initializePreferences(new FirstRunPagesTestCase());
+
+        FirstRunActivity firstRunActivity = launchFirstRunActivity();
+        new FirstRunNavigationHelper(firstRunActivity).ensureTermsOfServiceIsCurrentPage();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ProgressBar progressBar =
+                    ((SigninFirstRunFragment) firstRunActivity.getCurrentFragmentForTesting())
+                            .getView()
+                            .findViewById(R.id.fre_native_and_policy_load_progress_spinner);
+            // Replace the progress bar with a dummy to allow other checks. Currently the
+            // progress bar cannot be stopped otherwise due to some espresso issues (crbug/1115067).
+            progressBar.setIndeterminateDrawable(
+                    new ColorDrawable(SemanticColorUtils.getDefaultBgColor(firstRunActivity)));
+        });
+
+        onView(withId(R.id.fre_logo)).check(matches(isDisplayed()));
+        onView(withId(R.id.fre_native_and_policy_load_progress_spinner))
+                .check(matches(isDisplayed()));
     }
 
     @Test

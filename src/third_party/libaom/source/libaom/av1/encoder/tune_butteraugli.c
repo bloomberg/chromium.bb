@@ -209,7 +209,7 @@ void av1_setup_butteraugli_source(AV1_COMP *cpi) {
   if (dst->buffer_alloc_sz == 0) {
     aom_alloc_frame_buffer(
         dst, width, height, ss_x, ss_y, cm->seq_params->use_highbitdepth,
-        cpi->oxcf.border_in_pixels, cm->features.byte_alignment);
+        cpi->oxcf.border_in_pixels, cm->features.byte_alignment, 0);
   }
   av1_copy_and_extend_frame(cpi->source, dst);
 
@@ -218,7 +218,7 @@ void av1_setup_butteraugli_source(AV1_COMP *cpi) {
     aom_alloc_frame_buffer(
         resized_dst, width / resize_factor, height / resize_factor, ss_x, ss_y,
         cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-        cm->features.byte_alignment);
+        cm->features.byte_alignment, 0);
   }
   av1_resize_and_extend_frame_nonnormative(cpi->source, resized_dst, bit_depth,
                                            av1_num_planes(cm));
@@ -241,7 +241,7 @@ void av1_setup_butteraugli_rdmult_and_restore_source(AV1_COMP *cpi, double K) {
   aom_alloc_frame_buffer(
       &resized_recon, width / resize_factor, height / resize_factor, ss_x, ss_y,
       cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-      cm->features.byte_alignment);
+      cm->features.byte_alignment, 0);
   copy_img(&cpi->common.cur_frame->buf, &resized_recon, width / resize_factor,
            height / resize_factor);
 

@@ -245,6 +245,7 @@ class WebLocalFrame : public WebFrame {
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
       const viz::FrameSinkId& frame_sink_id,
       bool is_for_nested_main_frame = false,
+      bool is_for_scalable_page = true,
       bool hidden = false);
 
   // Returns the frame identified by the given name.  This method supports
@@ -594,9 +595,9 @@ class WebLocalFrame : public WebFrame {
   // have the flag "allow-downloads" set.
   virtual bool IsAllowedToDownload() const = 0;
 
-  // Returns true if a frame is a subframe and it is cross-origin to the main
-  // frame.
-  virtual bool IsCrossOriginToMainFrame() const = 0;
+  // Returns true if a frame is a subframe or an embedded main frame and it is
+  // cross-origin with respect to the outermost main frame.
+  virtual bool IsCrossOriginToOutermostMainFrame() const = 0;
 
   // Find-in-page -----------------------------------------------------------
 
@@ -929,6 +930,7 @@ class WebLocalFrame : public WebFrame {
       CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase> widget,
       const viz::FrameSinkId& frame_sink_id,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       bool hidden) = 0;
 };
 

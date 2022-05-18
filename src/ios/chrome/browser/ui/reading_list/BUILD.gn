@@ -48,6 +48,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
+    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/menu",
@@ -169,6 +170,7 @@ source_set("unit_tests") {
   sources = [
     "reading_list_list_item_factory_unittest.mm",
     "reading_list_mediator_unittest.mm",
+    "reading_list_table_view_item_unittest.mm",
     "text_badge_view_unittest.mm",
   ]
   deps = [
@@ -186,8 +188,11 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
+    "//ios/chrome/browser/net:crurl",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/cells:cells",
     "//ios/chrome/test/fakes",
     "//ios/web",
     "//ios/web/public/test",

@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -271,14 +272,7 @@ TEST_F(WebViewUnitTest, TestWebViewAttachDetachWebContents) {
   web_view()->SetWebContents(web_contents1.get());
   // Layout() is normally async, call it now to ensure visibility is updated.
   web_view()->Layout();
-#if defined(USE_AURA)
   EXPECT_EQ(1, observer1.shown_count());
-#else
-  // On Mac, setting the web contents adds a WebContentsViewCocoa
-  // to the view hierarchy. The window change (from nil to non-nil)
-  // generates one more web contents visibility update that Aura.
-  EXPECT_EQ(2, observer1.shown_count());
-#endif
 
   // Nothing else should change.
   EXPECT_EQ(1, observer1.hidden_count());

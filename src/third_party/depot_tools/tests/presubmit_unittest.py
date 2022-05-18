@@ -1409,7 +1409,7 @@ class InputApiUnittest(PresubmitTestsBase):
   def testDefaultOverrides(self):
     input_api = presubmit.InputApi(
         self.fake_change, './PRESUBMIT.py', False, None, False)
-    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 24)
+    self.assertEqual(len(input_api.DEFAULT_FILES_TO_CHECK), 25)
     self.assertEqual(len(input_api.DEFAULT_FILES_TO_SKIP), 12)
 
     input_api.DEFAULT_FILES_TO_CHECK = (r'.+\.c$',)
@@ -1449,10 +1449,12 @@ class InputApiUnittest(PresubmitTestsBase):
     change = presubmit.GitChange(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     input_api = presubmit.InputApi(
-        change, './PRESUBMIT.py', False, None, False)
+        change, os.path.join(self.fake_root_dir, 'PRESUBMIT.py'), False, None,
+        False)
     # Sample usage of overriding the default white and black lists.
     got_files = input_api.AffectedSourceFiles(
         lambda x: input_api.FilterSourceFile(x, files_to_check, files_to_skip))
+
     self.assertEqual(len(got_files), 2)
     self.assertEqual(got_files[0].LocalPath(), 'eeaee')
     self.assertEqual(got_files[1].LocalPath(), 'eecaee')
@@ -1473,6 +1475,8 @@ class InputApiUnittest(PresubmitTestsBase):
     change = presubmit.Change(
         'mychange', '', self.fake_root_dir, files, 0, 0, None)
     affected_files = change.AffectedFiles()
+    # Validate that normpath strips trailing path separators.
+    self.assertEqual('isdir', normpath('isdir/'))
     # Local paths should remain the same
     self.assertEqual(affected_files[0].LocalPath(), normpath('isdir'))
     self.assertEqual(affected_files[1].LocalPath(), normpath('isdir/blat.cc'))
@@ -1494,16 +1498,18 @@ class InputApiUnittest(PresubmitTestsBase):
         change=change, presubmit_path=presubmit_path,
         is_committing=True, gerrit_obj=None, verbose=False)
     paths_from_api = api.AbsoluteLocalPaths()
-    self.assertEqual(len(paths_from_api), 2)
-    for absolute_paths in [paths_from_change, paths_from_api]:
-      self.assertEqual(
-          absolute_paths[0],
-          presubmit.normpath(os.path.join(
-              self.fake_root_dir, 'isdir')))
-      self.assertEqual(
-          absolute_paths[1],
-          presubmit.normpath(os.path.join(
-              self.fake_root_dir, 'isdir', 'blat.cc')))
+    self.assertEqual(len(paths_from_api), 1)
+    self.assertEqual(
+        paths_from_change[0],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir')))
+    self.assertEqual(
+        paths_from_change[1],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir',
+                                        'blat.cc')))
+    self.assertEqual(
+        paths_from_api[0],
+        presubmit.normpath(os.path.join(self.fake_root_dir, 'isdir',
+                                        'blat.cc')))
 
   def testDeprecated(self):
     change = presubmit.Change(

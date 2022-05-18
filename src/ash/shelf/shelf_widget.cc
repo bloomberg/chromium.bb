@@ -32,7 +32,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/highlight_border.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
@@ -44,9 +43,13 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -97,8 +100,12 @@ class HideAnimationObserver : public ui::ImplicitAnimationObserver {
 class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
                                      public ui::LayerDelegate {
  public:
-  ShelfBackgroundLayerDelegate(Shelf* shelf, bool draw_highlight_border)
-      : shelf_(shelf), draw_highlight_border_(draw_highlight_border) {}
+  ShelfBackgroundLayerDelegate(Shelf* shelf,
+                               views::View* owner_view,
+                               bool draw_highlight_border)
+      : shelf_(shelf),
+        owner_view_(owner_view),
+        draw_highlight_border_(draw_highlight_border) {}
 
   ShelfBackgroundLayerDelegate(const ShelfBackgroundLayerDelegate&) = delete;
   ShelfBackgroundLayerDelegate& operator=(const ShelfBackgroundLayerDelegate&) =
@@ -131,7 +138,7 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
 
   // Sets the highlight border type to use if shelf uses highlight border.
   // No-op if `draw_highlight_border_` is false.
-  void SetBorderType(HighlightBorder::Type type) {
+  void SetBorderType(views::HighlightBorder::Type type) {
     if (!draw_highlight_border_)
       return;
 
@@ -175,9 +182,15 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
     if (login_shelf_view_ && login_shelf_view_->GetVisible())
       return;
 
-    HighlightBorder::PaintBorderToCanvas(canvas, gfx::Rect(layer()->size()),
-                                         corner_radius_, highlight_border_type_,
-                                         false);
+    if (corner_radius_ > 0) {
+      views::HighlightBorder::PaintBorderToCanvas(
+          canvas, *owner_view_, gfx::Rect(layer()->size()),
+          gfx::RoundedCornersF(corner_radius_), highlight_border_type_, false);
+    } else {
+      // If the shelf corners are not rounded, only paint the highlight border
+      // on the inner edge of the shelf to separate the shelf and the work area.
+      PaintEdgeToCanvas(canvas);
+    }
   }
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -185,14 +198,86 @@ class ShelfBackgroundLayerDelegate : public ui::LayerOwner,
     layer()->SchedulePaint(gfx::Rect(layer()->size()));
   }
 
+  void PaintEdgeToCanvas(gfx::Canvas* canvas) {
+    SkColor inner_color = views::HighlightBorder::GetHighlightColor(
+        *owner_view_, highlight_border_type_, /*use_light_colors=*/false);
+    SkColor outer_color = views::HighlightBorder::GetBorderColor(
+        *owner_view_, highlight_border_type_, /*use_light_colors=*/false);
+
+    const int border_thickness = views::kHighlightBorderThickness;
+    const float half_thickness = border_thickness / 2.0f;
+
+    cc::PaintFlags flags;
+    flags.setStrokeWidth(border_thickness);
+    flags.setColor(outer_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setAntiAlias(true);
+
+    // Scale bounds and corner radius with device scale factor to make sure
+    // border bounds match content bounds but keep border stroke width the same.
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float dsf = canvas->UndoDeviceScaleFactor();
+    const gfx::RectF pixel_bounds =
+        gfx::ConvertRectToPixels(gfx::Rect(layer()->size()), dsf);
+
+    // The points that are used to draw the highlighted edge.
+    gfx::PointF start_point, end_point;
+
+    switch (shelf_->alignment()) {
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
+        start_point = gfx::PointF(pixel_bounds.origin());
+        end_point = gfx::PointF(pixel_bounds.top_right());
+        start_point.Offset(0, half_thickness);
+        end_point.Offset(0, half_thickness);
+        break;
+      case ShelfAlignment::kLeft:
+        start_point = gfx::PointF(pixel_bounds.top_right());
+        end_point = gfx::PointF(pixel_bounds.bottom_right());
+        start_point.Offset(-half_thickness, 0);
+        end_point.Offset(-half_thickness, 0);
+        break;
+      case ShelfAlignment::kRight:
+        start_point = gfx::PointF(pixel_bounds.origin());
+        end_point = gfx::PointF(pixel_bounds.bottom_left());
+        start_point.Offset(half_thickness, 0);
+        end_point.Offset(half_thickness, 0);
+        break;
+    }
+
+    // Draw the outer line.
+    canvas->DrawLine(start_point, end_point, flags);
+
+    switch (shelf_->alignment()) {
+      case ShelfAlignment::kBottom:
+      case ShelfAlignment::kBottomLocked:
+        start_point.Offset(0, border_thickness);
+        end_point.Offset(0, border_thickness);
+        break;
+      case ShelfAlignment::kLeft:
+        start_point.Offset(-border_thickness, 0);
+        end_point.Offset(-border_thickness, 0);
+        break;
+      case ShelfAlignment::kRight:
+        start_point.Offset(border_thickness, 0);
+        end_point.Offset(border_thickness, 0);
+        break;
+    }
+
+    // Draw the inner line.
+    flags.setColor(inner_color);
+    canvas->DrawLine(start_point, end_point, flags);
+  }
+
   Shelf* const shelf_;
+  views::View* const owner_view_;
   const bool draw_highlight_border_;
 
   LoginShelfView* login_shelf_view_ = nullptr;
   SkColor background_color_;
   float corner_radius_ = 0.0f;
-  HighlightBorder::Type highlight_border_type_ =
-      HighlightBorder::Type::kHighlightBorder1;
+  views::HighlightBorder::Type highlight_border_type_ =
+      views::HighlightBorder::Type::kHighlightBorder1;
 };
 
 }  // namespace
@@ -322,6 +407,7 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget, Shelf* shelf)
     : shelf_widget_(shelf_widget),
       opaque_background_(
           shelf,
+          this,
           /*draw_highlight_border=*/features::IsDarkLightModeEnabled()),
       animating_background_(ui::LAYER_SOLID_COLOR),
       animating_drag_handle_(ui::LAYER_SOLID_COLOR) {
@@ -852,10 +938,10 @@ void ShelfWidget::OnHotseatStateChanged(HotseatState old_state,
 
   if (new_state == HotseatState::kExtended) {
     delegate_view_->opaque_background()->SetBorderType(
-        HighlightBorder::Type::kHighlightBorder2);
+        views::HighlightBorder::Type::kHighlightBorder2);
   } else {
     delegate_view_->opaque_background()->SetBorderType(
-        HighlightBorder::Type::kHighlightBorder1);
+        views::HighlightBorder::Type::kHighlightBorder1);
   }
 }
 

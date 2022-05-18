@@ -104,14 +104,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromTabSwitcher"));
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromMachineLogon"));
@@ -144,6 +136,10 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
       VLOG(1) << "Signin_Signin_From* user action is not recorded "
               << "for access point " << static_cast<int>(access_point);
+      break;
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromSendTabToSelfPromo"));
       break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
@@ -190,14 +186,6 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
       base::RecordAction(base::UserMetricsAction(
           "Signin_SigninWithDefault_FromNTPContentSuggestions"));
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninWithDefault_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninWithDefault_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -221,6 +209,7 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
     case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
     case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
       NOTREACHED() << "Signin_SigninWithDefault_From* user actions"
                    << " are not recorded for access_point "
                    << static_cast<int>(access_point)
@@ -271,14 +260,6 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
       base::RecordAction(base::UserMetricsAction(
           "Signin_SigninNotDefault_FromNTPContentSuggestions"));
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNotDefault_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNotDefault_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -302,6 +283,7 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
     case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
     case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)
@@ -356,14 +338,6 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
           "Signin_SigninNewAccountNoExistingAccount_FromNTPContentSuggestions"));  // NOLINT(whitespace/line_length)
       // clang-format on
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountNoExistingAccount_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountNoExistingAccount_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -387,6 +361,7 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
     case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
     case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountNoExistingAccount_From*| user actions should
       // not be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -444,14 +419,6 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
       base::RecordAction(base::UserMetricsAction(
           "Signin_SigninNewAccountExistingAccount_FromNTPContentSuggestions"));
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountExistingAccount_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(base::UserMetricsAction(
-          "Signin_SigninNewAccountExistingAccount_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -475,6 +442,7 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
     case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
     case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountExistingAccount_From*| user actions should not
       // be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -857,14 +825,6 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Impression_FromTabSwitcher"));
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromSaveCardBubble"));
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromManageCardsBubble"));
-      break;
     case AccessPoint::ACCESS_POINT_GOOGLE_SERVICES_SETTINGS:
       base::RecordAction(base::UserMetricsAction(
           "Signin_Impression_FromGoogleServicesSettings"));
@@ -876,6 +836,10 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
       base::RecordAction(
           base::UserMetricsAction("Signin_Impression_FromUserManager"));
+      break;
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromSendTabToSelfPromo"));
       break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_CONTENT_AREA:
@@ -984,24 +948,6 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
             "Signin_ImpressionWithNoAccount_FromNTPContentSuggestions"));
       }
       break;
-    case AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE:
-      if (with_account) {
-        base::RecordAction(base::UserMetricsAction(
-            "Signin_ImpressionWithAccount_FromSaveCardBubble"));
-      } else {
-        base::RecordAction(base::UserMetricsAction(
-            "Signin_ImpressionWithNoAccount_FromSaveCardBubble"));
-      }
-      break;
-    case AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE:
-      if (with_account) {
-        base::RecordAction(base::UserMetricsAction(
-            "Signin_ImpressionWithAccount_FromManageCardsBubble"));
-      } else {
-        base::RecordAction(base::UserMetricsAction(
-            "Signin_ImpressionWithNoAccount_FromManageCardsBubble"));
-      }
-      break;
     case AccessPoint::ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case AccessPoint::ACCESS_POINT_START_PAGE:
     case AccessPoint::ACCESS_POINT_NTP_LINK:
@@ -1025,6 +971,7 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
     case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
     case AccessPoint::ACCESS_POINT_SIGNIN_INTERCEPT_FIRST_RUN_EXPERIENCE:
+    case AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)

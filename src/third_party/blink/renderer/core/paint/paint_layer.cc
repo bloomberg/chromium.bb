@@ -724,8 +724,6 @@ bool PaintLayer::UpdateSize() {
   } else if (LayoutBox* box = GetLayoutBox()) {
     size_ = box->Size();
   }
-  if (old_size != size_)
-    MarkAncestorChainForFlagsUpdate();
 
   return old_size != size_;
 }
@@ -1197,6 +1195,7 @@ void PaintLayer::AppendSingleFragmentForHitTesting(
       if (const auto* layout_box = GetLayoutBox())
         fragment.physical_fragment = layout_box->GetPhysicalFragment(0);
     }
+    fragment.fragment_idx = 0;
   }
 
   ClipRectsContext clip_rects_context(this, fragment.fragment_data,
@@ -2219,13 +2218,6 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
   return rect;
 }
 
-PhysicalRect PaintLayer::ClippedLocalBoundingBox(
-    const PaintLayer& ancestor_layer) const {
-  return Intersection(LocalBoundingBox(),
-                      Clipper(GeometryMapperOption::kUseGeometryMapper)
-                          .LocalClipRect(ancestor_layer));
-}
-
 PhysicalRect PaintLayer::PhysicalBoundingBox(
     const PaintLayer* ancestor_layer) const {
   PhysicalOffset offset_from_root;
@@ -2359,6 +2351,8 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   // Self-painting change can change the compositing container chain;
   // invalidate the new chain in addition to the old one.
   MarkCompositingContainerChainForNeedsRepaint();
+  if (SelfOrDescendantNeedsCullRectUpdate())
+    MarkCompositingContainerChainForNeedsCullRectUpdate();
 
   if (is_self_painting_layer)
     SetNeedsVisualOverflowRecalc();
@@ -2434,8 +2428,18 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   has_filter_that_moves_pixels_ = ComputeHasFilterThatMovesPixels();
 
-  if (PaintLayerStackingNode::StyleDidChange(*this, old_style))
+  if (PaintLayerStackingNode::StyleDidChange(*this, old_style)) {
+    // The compositing container (see: |PaintLayer::CompositingContainer()|) may
+    // have changed so we need to ensure |descendant_needs_repaint_| and
+    // |descendant_needs_cull_rect_update_| are propagated up the new
+    // compositing chain.
+    if (SelfOrDescendantNeedsRepaint())
+      MarkCompositingContainerChainForNeedsRepaint();
+    if (SelfOrDescendantNeedsCullRectUpdate())
+      MarkCompositingContainerChainForNeedsCullRectUpdate();
+
     MarkAncestorChainForFlagsUpdate();
+  }
 
   if (RequiresScrollableArea()) {
     DCHECK(scrollable_area_);
@@ -2445,10 +2449,6 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   // Overlay scrollbars can make this layer self-painting so we need
   // to recompute the bit once scrollbars have been updated.
   UpdateSelfPaintingLayer();
-
-  // HasAlphaChanged can affect whether a composited layer is opaque.
-  if (diff.NeedsLayout() || diff.HasAlphaChanged())
-    MarkAncestorChainForFlagsUpdate();
 
   // A scroller that changes background color might become opaque or not
   // opaque, which in turn affects whether it can be composited on low-DPI

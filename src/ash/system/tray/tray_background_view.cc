@@ -42,6 +42,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -139,7 +140,7 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   absl::optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
     bounds.Inset(gfx::InsetsF(insets_));
-    return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
+    return gfx::RRectF(bounds, tray_background_view_->GetRoundedCorners());
   }
 
  private:
@@ -218,7 +219,7 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf,
     // Note the ink drop style is ignored.
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       shelf_(shelf),
-      tray_container_(new TrayContainer(shelf)),
+      tray_container_(new TrayContainer(shelf, this)),
       is_active_(false),
       separator_visible_(true),
       visible_preferred_(false),
@@ -239,11 +240,9 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf,
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
 
-  views::FocusRing* const focus_ring = views::FocusRing::Get(this);
-  focus_ring->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRingColor));
-  focus_ring->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
-      this, kTrayBackgroundFocusPadding));
+  views::FocusRing::Get(this)->SetPathGenerator(
+      std::make_unique<HighlightPathGenerator>(this,
+                                               kTrayBackgroundFocusPadding));
   SetFocusPainter(nullptr);
 
   views::HighlightPathGenerator::Install(
@@ -301,6 +300,37 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
 
 bool TrayBackgroundView::IsShowingMenu() const {
   return context_menu_runner_ && context_menu_runner_->IsRunning();
+}
+
+gfx::RoundedCornersF TrayBackgroundView::GetRoundedCorners() {
+  const float radius = ShelfConfig::Get()->control_border_radius();
+  if (shelf_->IsHorizontalAlignment()) {
+    gfx::RoundedCornersF start_rounded = {
+        radius, kUnifiedTrayNonRoundedSideRadius,
+        kUnifiedTrayNonRoundedSideRadius, radius};
+    gfx::RoundedCornersF end_rounded = {kUnifiedTrayNonRoundedSideRadius,
+                                        radius, radius,
+                                        kUnifiedTrayNonRoundedSideRadius};
+    switch (corner_behavior_) {
+      case kAllRounded:
+        return {radius, radius, radius, radius};
+      case kStartRounded:
+        return base::i18n::IsRTL() ? end_rounded : start_rounded;
+      case kEndRounded:
+        return base::i18n::IsRTL() ? start_rounded : end_rounded;
+    }
+  }
+
+  switch (corner_behavior_) {
+    case kAllRounded:
+      return {radius, radius, radius, radius};
+    case kStartRounded:
+      return {radius, radius, kUnifiedTrayNonRoundedSideRadius,
+              kUnifiedTrayNonRoundedSideRadius};
+    case kEndRounded:
+      return {kUnifiedTrayNonRoundedSideRadius,
+              kUnifiedTrayNonRoundedSideRadius, radius, radius};
+  }
 }
 
 void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
@@ -462,6 +492,9 @@ void TrayBackgroundView::OnThemeChanged() {
   StyleUtil::ConfigureInkDropAttributes(this, StyleUtil::kBaseColor |
                                                   StyleUtil::kInkDropOpacity |
                                                   StyleUtil::kHighlightOpacity);
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
@@ -500,43 +533,7 @@ void TrayBackgroundView::UpdateAfterStatusAreaCollapseChange() {
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
 
 void TrayBackgroundView::UpdateBackground() {
-  const float radius = ShelfConfig::Get()->control_border_radius();
-  gfx::RoundedCornersF rounded_corners;
-  if (shelf_->IsHorizontalAlignment()) {
-    gfx::RoundedCornersF start_rounded = {
-        radius, kUnifiedTrayNonRoundedSideRadius,
-        kUnifiedTrayNonRoundedSideRadius, radius};
-    gfx::RoundedCornersF end_rounded = {kUnifiedTrayNonRoundedSideRadius,
-                                        radius, radius,
-                                        kUnifiedTrayNonRoundedSideRadius};
-    switch (corner_behavior_) {
-      case kAllRounded:
-        rounded_corners = {radius, radius, radius, radius};
-        break;
-      case kStartRounded:
-        rounded_corners = base::i18n::IsRTL() ? end_rounded : start_rounded;
-        break;
-      case kEndRounded:
-        rounded_corners = base::i18n::IsRTL() ? start_rounded : end_rounded;
-        break;
-    }
-  } else {
-    switch (corner_behavior_) {
-      case kAllRounded:
-        rounded_corners = {radius, radius, radius, radius};
-        break;
-      case kStartRounded:
-        rounded_corners = {radius, radius, kUnifiedTrayNonRoundedSideRadius,
-                           kUnifiedTrayNonRoundedSideRadius};
-        break;
-      case kEndRounded:
-        rounded_corners = {kUnifiedTrayNonRoundedSideRadius,
-                           kUnifiedTrayNonRoundedSideRadius, radius, radius};
-        break;
-    }
-  }
-
-  layer()->SetRoundedCornerRadius(rounded_corners);
+  layer()->SetRoundedCornerRadius(GetRoundedCorners());
   layer()->SetIsFastRoundedCorner(true);
   layer()->SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());

@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+load("//bazel:macros.bzl", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 enforce_iwyu_on_package()
 
@@ -17,6 +19,7 @@ generated_cc_atom(
         "//src/sksl:SkSLBuiltinTypes_hdr",
         "//src/sksl:SkSLCompiler_hdr",
         "//src/sksl:SkSLContext_hdr",
+        "//src/sksl:SkSLProgramSettings_hdr",
         "//src/sksl:SkSLThreadContext_hdr",
         "//src/sksl/analysis:SkSLProgramVisitor_hdr",
         "//src/sksl/ir:SkSLExpression_hdr",
@@ -89,6 +92,7 @@ generated_cc_atom(
         ":SkSLTransform_hdr",
         "//include/private:SkSLProgramElement_hdr",
         "//include/private:SkSLStatement_hdr",
+        "//include/private:SkTArray_hdr",
         "//src/sksl/ir:SkSLFunctionDefinition_hdr",
         "//src/sksl/ir:SkSLIfStatement_hdr",
         "//src/sksl/ir:SkSLNop_hdr",

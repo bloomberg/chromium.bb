@@ -7,15 +7,15 @@
 #include <stddef.h>
 
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
-#include "quiche/http2/decoder/payload_decoders/payload_decoder_base_test_util.h"
 #include "quiche/http2/http2_constants.h"
-#include "quiche/http2/http2_structures_test_util.h"
-#include "quiche/http2/platform/api/http2_logging.h"
 #include "quiche/http2/test_tools/frame_parts.h"
 #include "quiche/http2/test_tools/frame_parts_collector.h"
+#include "quiche/http2/test_tools/http2_frame_builder.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/http2_frame_builder.h"
-#include "quiche/http2/tools/random_decoder_test.h"
+#include "quiche/http2/test_tools/http2_structures_test_util.h"
+#include "quiche/http2/test_tools/payload_decoder_base_test_util.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/platform/api/quiche_test.h"
 
 namespace http2 {
@@ -37,20 +37,19 @@ namespace {
 struct Listener : public FramePartsCollector {
   void OnPriorityFrame(const Http2FrameHeader& header,
                        const Http2PriorityFields& priority_fields) override {
-    HTTP2_VLOG(1) << "OnPriority: " << header << "; " << priority_fields;
+    QUICHE_VLOG(1) << "OnPriority: " << header << "; " << priority_fields;
     StartAndEndFrame(header)->OnPriorityFrame(header, priority_fields);
   }
 
   void OnFrameSizeError(const Http2FrameHeader& header) override {
-    HTTP2_VLOG(1) << "OnFrameSizeError: " << header;
+    QUICHE_VLOG(1) << "OnFrameSizeError: " << header;
     FrameError(header)->OnFrameSizeError(header);
   }
 };
 
 class PriorityPayloadDecoderTest
     : public AbstractPayloadDecoderTest<PriorityPayloadDecoder,
-                                        PriorityPayloadDecoderPeer,
-                                        Listener> {
+                                        PriorityPayloadDecoderPeer, Listener> {
  protected:
   Http2PriorityFields RandPriorityFields() {
     Http2PriorityFields fields;

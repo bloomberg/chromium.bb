@@ -13,7 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_test.h"
-#include "extensions/browser/browsertest_util.h"
+#include "extensions/browser/background_script_executor.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_host_registry.h"
@@ -44,12 +44,8 @@ class ActionAPIInteractiveUITest : public ExtensionApiTest {
   // `extension`, and waits for a corresponding test success notification.
   void RunScriptTest(const std::string& script, const Extension& extension) {
     ResultCatcher result_catcher;
-    base::RunLoop run_loop;
-    auto callback = [&run_loop](base::Value value) { run_loop.Quit(); };
-    browsertest_util::ExecuteScriptInServiceWorker(
-        profile(), extension.id(), script,
-        base::BindLambdaForTesting(callback));
-    run_loop.Run();
+    BackgroundScriptExecutor::ExecuteScriptAsync(profile(), extension.id(),
+                                                 script);
     EXPECT_TRUE(result_catcher.GetNextResult()) << result_catcher.message();
   }
 

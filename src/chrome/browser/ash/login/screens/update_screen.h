@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -69,7 +70,7 @@ class UpdateScreen : public BaseScreen,
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
-  UpdateScreen(UpdateView* view,
+  UpdateScreen(base::WeakPtr<UpdateView> view,
                ErrorScreen* error_screen,
                const ScreenExitCallback& exit_callback);
 
@@ -77,10 +78,6 @@ class UpdateScreen : public BaseScreen,
   UpdateScreen& operator=(const UpdateScreen&) = delete;
 
   ~UpdateScreen() override;
-
-  // Called when the being destroyed. This should call Unbind() on the
-  // associated View if this class is destroyed before it.
-  void OnViewDestroyed(UpdateView* view);
 
   base::OneShotTimer* GetShowTimerForTesting();
   base::OneShotTimer* GetErrorMessageTimerForTesting();
@@ -165,7 +162,10 @@ class UpdateScreen : public BaseScreen,
   // Set update status message.
   void SetUpdateStatusMessage(int percent, base::TimeDelta time_left);
 
-  UpdateView* view_;
+  // Determines if the device is in EU zone to show info about opt out.
+  static bool CheckIfOptOutIsEnabled();
+
+  base::WeakPtr<UpdateView> view_;
   ErrorScreen* error_screen_;
   ScreenExitCallback exit_callback_;
 
@@ -187,6 +187,17 @@ class UpdateScreen : public BaseScreen,
   bool hide_progress_on_exit_ = false;
   // True if it is possible for user to skip update check.
   bool cancel_update_shortcut_enabled_ = false;
+
+  // Determines if we should show additional info during update or right after
+  // check for update is done.
+  bool is_opt_out_enabled_ = false;
+
+  // EU country list.
+  inline static constexpr auto kEUCountriesSet =
+      base::MakeFixedFlatSet<base::StringPiece>(
+          {"at", "be", "bg", "hr", "cy", "cz", "dk", "ee", "fi",
+           "fr", "de", "gr", "hu", "ie", "it", "lv", "lt", "lu",
+           "mt", "nl", "pl", "pt", "ro", "sk", "si", "es", "se"});
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
 

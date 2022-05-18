@@ -32,23 +32,23 @@ finally:
 
 def compile_src(out_dir):
     # First, clean the output directory so deleted files are pruned from old builds.
-    shutil.rmtree(out_dir)
+    shutil.rmtree(out_dir, ignore_errors=True)
 
     run_tsc_ignore_errors([
-        '--project',
-        os.path.join(webgpu_cts_root_dir, 'tsconfig.json'),
-        '--outDir',
+        "--project",
+        os.path.join(webgpu_cts_root_dir, "tsconfig.json"),
+        "--outDir",
         out_dir,
-        '--noEmit',
-        'false',
-        '--noEmitOnError',
-        'false',
-        '--declaration',
-        'false',
-        '--sourceMap',
-        'false',
-        '--target',
-        'ES2017',
+        "--noEmit",
+        "false",
+        "--noEmitOnError",
+        "false",
+        "--declaration",
+        "false",
+        "--sourceMap",
+        "false",
+        "--target",
+        "ES2017",
     ])
 
 
@@ -56,46 +56,46 @@ def compile_src_for_node(out_dir, additional_args=None, clean=True):
     additional_args = additional_args or []
     if clean:
         # First, clean the output directory so deleted files are pruned from old builds.
-        shutil.rmtree(out_dir)
+        shutil.rmtree(out_dir, ignore_errors=True)
 
     args = [
-        '--project',
-        os.path.join(webgpu_cts_root_dir, 'node.tsconfig.json'),
-        '--outDir',
+        "--project",
+        os.path.join(webgpu_cts_root_dir, "node.tsconfig.json"),
+        "--outDir",
         out_dir,
-        '--noEmit',
-        'false',
-        '--noEmitOnError',
-        'false',
-        '--declaration',
-        'false',
-        '--sourceMap',
-        'false',
-        '--target',
-        'ES6',
+        "--noEmit",
+        "false",
+        "--noEmitOnError",
+        "false",
+        "--declaration",
+        "false",
+        "--sourceMap",
+        "false",
+        "--target",
+        "ES6",
     ]
     args.extend(additional_args)
 
     run_tsc_ignore_errors(args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print('Usage: compile_src.py GEN_DIR')
+        print("Usage: compile_src.py GEN_DIR")
         sys.exit(1)
 
     gen_dir = sys.argv[1]
 
     # Compile the CTS src.
-    compile_src(os.path.join(gen_dir, 'src'))
-    compile_src_for_node(os.path.join(gen_dir, 'src-node'))
+    compile_src(os.path.join(gen_dir, "src"))
+    compile_src_for_node(os.path.join(gen_dir, "src-node"))
 
-    # Run gen_listings.js to overwrite the dummy src/webgpu/listings.js created
+    # Run gen_listings.js to overwrite the placeholder src/webgpu/listings.js created
     # from transpiling src/
     RunNode([
-        os.path.join(gen_dir, 'src-node', 'common', 'tools',
-                     'gen_listings.js'),
-        '--no-validate',
-        os.path.join(gen_dir, 'src'),
-        os.path.join(gen_dir, 'src-node', 'webgpu'),
+        os.path.join(gen_dir, "src-node", "common", "tools",
+                     "gen_listings.js"),
+        "--no-validate",
+        os.path.join(gen_dir, "src"),
+        os.path.join(gen_dir, "src-node", "webgpu"),
     ])

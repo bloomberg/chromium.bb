@@ -22,9 +22,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "ash/grit/ash_resources.h"
-#include "ash/grit/ash_resources_map.h"
 #include "base/feature_list.h"
+#include "chromeos/ash/grit/ash_resources.h"
+#include "chromeos/ash/grit/ash_resources_map.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/grit/chromeos_resources_map.h"
 #include "ui/chromeos/styles/cros_styles.h"  // nogncheck
@@ -61,7 +61,7 @@ const std::set<int> GetContentResourceIds() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const std::set<int> GetChromeosMojoResourceIds() {
   return std::set<int>{
-      IDR_BLUETOOTH_CONFIG_MOJOM_LITE_JS,
+      IDR_BLUETOOTH_CONFIG_MOJOM_WEBUI_JS,
       IDR_IP_ADDRESS_MOJOM_HTML,
       IDR_IP_ADDRESS_MOJOM_LITE_JS,
       IDR_IP_ADDRESS_MOJOM_WEBUI_JS,
@@ -74,8 +74,10 @@ const std::set<int> GetChromeosMojoResourceIds() {
       IDR_NETWORK_CONFIG_TYPES_MOJOM_WEBUI_JS,
       IDR_NETWORK_DIAGNOSTICS_MOJOM_HTML,
       IDR_NETWORK_DIAGNOSTICS_MOJOM_LITE_JS,
+      IDR_NETWORK_DIAGNOSTICS_MOJOM_WEBUI_JS,
       IDR_NETWORK_HEALTH_MOJOM_HTML,
       IDR_NETWORK_HEALTH_MOJOM_LITE_JS,
+      IDR_NETWORK_HEALTH_MOJOM_WEBUI_JS,
   };
 }
 

@@ -64,20 +64,14 @@ ci/Win10 FYI x64 Release XR Perf (NVIDIA)
 ci/Win10 FYI x86 Release (NVIDIA)
 ci/Win10 x64 Debug (NVIDIA)
 ci/Win10 x64 Release (NVIDIA)
-ci/Win7 FYI Release (AMD)
-ci/Win7 FYI Release (NVIDIA)
-ci/Win7 FYI x64 Release (NVIDIA)
 ci/gpu-fyi-chromeos-jacuzzi-exp
 ci/gpu-fyi-chromeos-octopus-exp
 ci/gpu-fyi-chromeos-zork-exp
 ci/linux-swangle-chromium-x64
-ci/linux-swangle-tot-angle-x64
 ci/linux-swangle-tot-swiftshader-x64
 ci/linux-swangle-x64
 ci/mac-swangle-chromium-x64
 ci/win-swangle-chromium-x86
-ci/win-swangle-tot-angle-x64
-ci/win-swangle-tot-angle-x86
 ci/win-swangle-tot-swiftshader-x64
 ci/win-swangle-tot-swiftshader-x86
 ci/win-swangle-x64

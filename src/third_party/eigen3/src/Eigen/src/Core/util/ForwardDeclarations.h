@@ -106,7 +106,7 @@ template<int Value = Dynamic> class OuterStride;
 template<typename MatrixType, int MapOptions=Unaligned, typename StrideType = Stride<0,0> > class Map;
 template<typename Derived> class RefBase;
 template<typename PlainObjectType, int Options = 0,
-         typename StrideType = typename internal::conditional<PlainObjectType::IsVectorAtCompileTime,InnerStride<1>,OuterStride<> >::type > class Ref;
+         typename StrideType = typename std::conditional_t<PlainObjectType::IsVectorAtCompileTime,InnerStride<1>,OuterStride<> > > class Ref;
 template<typename ViewOp,    typename MatrixType, typename StrideType = Stride<0,0>>         class CwiseUnaryView;
 
 template<typename Derived> class TriangularBase;

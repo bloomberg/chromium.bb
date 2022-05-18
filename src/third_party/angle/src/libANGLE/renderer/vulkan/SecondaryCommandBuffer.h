@@ -78,8 +78,15 @@ enum class CommandID : uint16_t
     ResetEvent,
     ResetQueryPool,
     ResolveImage,
+    SetBlendConstants,
+    SetDepthBias,
     SetEvent,
+    SetFragmentShadingRate,
+    SetLineWidth,
     SetScissor,
+    SetStencilCompareMask,
+    SetStencilReference,
+    SetStencilWriteMask,
     SetViewport,
     WaitEvents,
     WriteTimestamp,
@@ -410,6 +417,20 @@ struct ResolveImageParams
 };
 VERIFY_4_BYTE_ALIGNMENT(ResolveImageParams)
 
+struct SetBlendConstantsParams
+{
+    float blendConstants[4];
+};
+VERIFY_4_BYTE_ALIGNMENT(SetBlendConstantsParams)
+
+struct SetDepthBiasParams
+{
+    float depthBiasConstantFactor;
+    float depthBiasClamp;
+    float depthBiasSlopeFactor;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetDepthBiasParams)
+
 struct SetEventParams
 {
     VkEvent event;
@@ -417,11 +438,45 @@ struct SetEventParams
 };
 VERIFY_4_BYTE_ALIGNMENT(SetEventParams)
 
+struct SetFragmentShadingRateParams
+{
+    uint16_t fragmentWidth;
+    uint16_t fragmentHeight;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetFragmentShadingRateParams)
+
+struct SetLineWidthParams
+{
+    float lineWidth;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetLineWidthParams)
+
 struct SetScissorParams
 {
     VkRect2D scissor;
 };
 VERIFY_4_BYTE_ALIGNMENT(SetScissorParams)
+
+struct SetStencilCompareMaskParams
+{
+    uint16_t compareFrontMask;
+    uint16_t compareBackMask;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetStencilCompareMaskParams)
+
+struct SetStencilReferenceParams
+{
+    uint16_t frontReference;
+    uint16_t backReference;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetStencilReferenceParams)
+
+struct SetStencilWriteMaskParams
+{
+    uint16_t writeFrontMask;
+    uint16_t writeBackMask;
+};
+VERIFY_4_BYTE_ALIGNMENT(SetStencilWriteMaskParams)
 
 struct SetViewportParams
 {
@@ -670,9 +725,24 @@ class SecondaryCommandBuffer final : angle::NonCopyable
                       uint32_t regionCount,
                       const VkImageResolve *regions);
 
+    void setBlendConstants(const float blendConstants[4]);
+    void setDepthBias(float depthBiasConstantFactor,
+                      float depthBiasClamp,
+                      float depthBiasSlopeFactor);
     void setEvent(VkEvent event, VkPipelineStageFlags stageMask);
 
+    void setFragmentShadingRate(const VkExtent2D *fragmentSize,
+                                VkFragmentShadingRateCombinerOpKHR ops[2]);
+
+    void setLineWidth(float lineWidth);
+
     void setScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *scissors);
+
+    void setStencilCompareMask(uint32_t compareFrontMask, uint32_t compareBackMask);
+
+    void setStencilReference(uint32_t frontReference, uint32_t backReference);
+
+    void setStencilWriteMask(uint32_t writeFrontMask, uint32_t writeBackMask);
 
     void setViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *viewports);
 
@@ -1442,11 +1512,57 @@ ANGLE_INLINE void SecondaryCommandBuffer::resolveImage(const Image &srcImage,
     paramStruct->region             = regions[0];
 }
 
+ANGLE_INLINE void SecondaryCommandBuffer::setBlendConstants(const float blendConstants[4])
+{
+    SetBlendConstantsParams *paramStruct =
+        initCommand<SetBlendConstantsParams>(CommandID::SetBlendConstants);
+    for (uint32_t channel = 0; channel < 4; ++channel)
+    {
+        paramStruct->blendConstants[channel] = blendConstants[channel];
+    }
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setDepthBias(float depthBiasConstantFactor,
+                                                       float depthBiasClamp,
+                                                       float depthBiasSlopeFactor)
+{
+    SetDepthBiasParams *paramStruct      = initCommand<SetDepthBiasParams>(CommandID::SetDepthBias);
+    paramStruct->depthBiasConstantFactor = depthBiasConstantFactor;
+    paramStruct->depthBiasClamp          = depthBiasClamp;
+    paramStruct->depthBiasSlopeFactor    = depthBiasSlopeFactor;
+}
+
 ANGLE_INLINE void SecondaryCommandBuffer::setEvent(VkEvent event, VkPipelineStageFlags stageMask)
 {
     SetEventParams *paramStruct = initCommand<SetEventParams>(CommandID::SetEvent);
     paramStruct->event          = event;
     paramStruct->stageMask      = stageMask;
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setFragmentShadingRate(
+    const VkExtent2D *fragmentSize,
+    VkFragmentShadingRateCombinerOpKHR ops[2])
+{
+    ASSERT(fragmentSize != nullptr);
+
+    // Supported parameter values -
+    // 1. CombinerOp needs to be VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR
+    // 2. The largest fragment size supported is 4x4
+    ASSERT(ops[0] == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR);
+    ASSERT(ops[1] == VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR);
+    ASSERT(fragmentSize->width <= 4);
+    ASSERT(fragmentSize->height <= 4);
+
+    SetFragmentShadingRateParams *paramStruct =
+        initCommand<SetFragmentShadingRateParams>(CommandID::SetFragmentShadingRate);
+    paramStruct->fragmentWidth  = static_cast<uint16_t>(fragmentSize->width);
+    paramStruct->fragmentHeight = static_cast<uint16_t>(fragmentSize->height);
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setLineWidth(float lineWidth)
+{
+    SetLineWidthParams *paramStruct = initCommand<SetLineWidthParams>(CommandID::SetLineWidth);
+    paramStruct->lineWidth          = lineWidth;
 }
 
 ANGLE_INLINE void SecondaryCommandBuffer::setScissor(uint32_t firstScissor,
@@ -1458,6 +1574,33 @@ ANGLE_INLINE void SecondaryCommandBuffer::setScissor(uint32_t firstScissor,
     ASSERT(scissors != nullptr);
     SetScissorParams *paramStruct = initCommand<SetScissorParams>(CommandID::SetScissor);
     paramStruct->scissor          = scissors[0];
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setStencilCompareMask(uint32_t compareFrontMask,
+                                                                uint32_t compareBackMask)
+{
+    SetStencilCompareMaskParams *paramStruct =
+        initCommand<SetStencilCompareMaskParams>(CommandID::SetStencilCompareMask);
+    paramStruct->compareFrontMask = static_cast<uint16_t>(compareFrontMask);
+    paramStruct->compareBackMask  = static_cast<uint16_t>(compareBackMask);
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setStencilReference(uint32_t frontReference,
+                                                              uint32_t backReference)
+{
+    SetStencilReferenceParams *paramStruct =
+        initCommand<SetStencilReferenceParams>(CommandID::SetStencilReference);
+    paramStruct->frontReference = static_cast<uint16_t>(frontReference);
+    paramStruct->backReference  = static_cast<uint16_t>(backReference);
+}
+
+ANGLE_INLINE void SecondaryCommandBuffer::setStencilWriteMask(uint32_t writeFrontMask,
+                                                              uint32_t writeBackMask)
+{
+    SetStencilWriteMaskParams *paramStruct =
+        initCommand<SetStencilWriteMaskParams>(CommandID::SetStencilWriteMask);
+    paramStruct->writeFrontMask = static_cast<uint16_t>(writeFrontMask);
+    paramStruct->writeBackMask  = static_cast<uint16_t>(writeBackMask);
 }
 
 ANGLE_INLINE void SecondaryCommandBuffer::setViewport(uint32_t firstViewport,

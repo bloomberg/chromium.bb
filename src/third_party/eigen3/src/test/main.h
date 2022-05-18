@@ -302,9 +302,8 @@ namespace Eigen
     #endif //EIGEN_EXCEPTIONS
 
   #elif !defined(__CUDACC__) && !defined(__HIPCC__) && !defined(SYCL_DEVICE_ONLY) // EIGEN_DEBUG_ASSERTS
-    // see bug 89. The copy_bool here is working around a bug in gcc <= 4.3
     #define eigen_assert(a) \
-      if( (!Eigen::internal::copy_bool(a)) && (!no_more_assert) )\
+      if( (!(a)) && (!no_more_assert) )       \
       {                                       \
         Eigen::no_more_assert = true;         \
         if(report_on_cerr_on_assert_failure)  \
@@ -409,7 +408,7 @@ bool test_is_equal(const T& actual, const U& expected, bool expect_equal=true);
 namespace Eigen {
 
 template<typename T1,typename T2>
-typename internal::enable_if<internal::is_same<T1,T2>::value,bool>::type
+std::enable_if_t<internal::is_same<T1,T2>::value,bool>
 is_same_type(const T1&, const T2&)
 {
   return true;
@@ -425,7 +424,9 @@ template<> inline long double test_precision<std::complex<long double> >() { ret
 
 #define EIGEN_TEST_SCALAR_TEST_OVERLOAD(TYPE)                             \
   inline bool test_isApprox(TYPE a, TYPE b)                               \
-  { return internal::isApprox(a, b, test_precision<TYPE>()); }            \
+  { return numext::equal_strict(a, b) ||                                  \
+      ((numext::isnan)(a) && (numext::isnan)(b)) ||                       \
+      (internal::isApprox(a, b, test_precision<TYPE>())); }               \
   inline bool test_isCwiseApprox(TYPE a, TYPE b, bool exact)              \
   { return numext::equal_strict(a, b) ||                                  \
       ((numext::isnan)(a) && (numext::isnan)(b)) ||                       \
@@ -548,7 +549,7 @@ typename T1::RealScalar test_relative_error(const SparseMatrixBase<T1> &a, const
 }
 
 template<typename T1,typename T2>
-typename NumTraits<typename NumTraits<T1>::Real>::NonInteger test_relative_error(const T1 &a, const T2 &b, typename internal::enable_if<internal::is_arithmetic<typename NumTraits<T1>::Real>::value, T1>::type* = 0)
+typename NumTraits<typename NumTraits<T1>::Real>::NonInteger test_relative_error(const T1 &a, const T2 &b, std::enable_if_t<internal::is_arithmetic<typename NumTraits<T1>::Real>::value, T1>* = 0)
 {
   typedef typename NumTraits<typename NumTraits<T1>::Real>::NonInteger RealScalar;
   return numext::sqrt(RealScalar(numext::abs2(a-b))/(numext::mini)(RealScalar(numext::abs2(a)),RealScalar(numext::abs2(b))));
@@ -580,7 +581,7 @@ typename NumTraits<typename T::Scalar>::Real get_test_precision(const T&, const 
 }
 
 template<typename T>
-typename NumTraits<T>::Real get_test_precision(const T&,typename internal::enable_if<internal::is_arithmetic<typename NumTraits<T>::Real>::value, T>::type* = 0)
+typename NumTraits<T>::Real get_test_precision(const T&,std::enable_if_t<internal::is_arithmetic<typename NumTraits<T>::Real>::value, T>* = 0)
 {
   return test_precision<typename NumTraits<T>::Real>();
 }

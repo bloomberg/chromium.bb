@@ -171,10 +171,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                            bool supports_replacement_only,
                            TURLsAndMeaningfulLengths* matches);
 
-  // Looks up |keyword| and returns the element it maps to.  Returns NULL if
-  // the keyword was not found.
-  // The caller should not try to delete the returned pointer; the data store
-  // retains ownership of it.
+  // Looks up |keyword| and returns the best TemplateURL for it.  Returns
+  // nullptr if the keyword was not found. The caller should not try to delete
+  // the returned pointer; the data store retains ownership of it.
   TemplateURL* GetTemplateURLForKeyword(const std::u16string& keyword);
   const TemplateURL* GetTemplateURLForKeyword(
       const std::u16string& keyword) const;
@@ -185,10 +184,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid);
   const TemplateURL* GetTemplateURLForGUID(const std::string& sync_guid) const;
 
-  // Returns the first TemplateURL found with a URL using the specified |host|,
-  // or NULL if there are no such TemplateURLs
+  // Returns the best TemplateURL found with a URL using the specified |host|,
+  // or nullptr if there are no such TemplateURLs.
   TemplateURL* GetTemplateURLForHost(const std::string& host);
   const TemplateURL* GetTemplateURLForHost(const std::string& host) const;
+
+  // Returns the number of TemplateURLs that match `host`. Used for logging.
+  // Caller must ensure TemplateURLService is loaded before calling this.
+  // TODO(crbug.com/1322216): Delete after bug is fixed.
+  size_t GetTemplateURLCountForHostForLogging(const std::string& host) const;
 
   // Adds a new TemplateURL to this model.
   //
@@ -683,6 +687,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns the TemplateURL corresponding to |prepopulated_id|, if any.
   TemplateURL* FindPrepopulatedTemplateURL(int prepopulated_id);
+
+  // Returns the TemplateURL corresponding to |starter_pack_id|, if any.
+  TemplateURL* FindStarterPackTemplateURL(int starter_pack_id);
 
   // Returns the TemplateURL associated with |extension_id|, if any.
   TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,

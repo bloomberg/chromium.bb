@@ -1034,6 +1034,99 @@ func Any(scope *Scope, input tf.Output, axis tf.Output, optional ...AnyAttr) (ou
 	return op.Output(0)
 }
 
+// ApproxTopKAttr is an optional argument to ApproxTopK.
+type ApproxTopKAttr func(optionalAttr)
+
+// ApproxTopKReductionDimension sets the optional reduction_dimension attribute to value.
+//
+// value: Integer dimension along which to search. Default: -1.
+// If not specified, defaults to -1
+func ApproxTopKReductionDimension(value int64) ApproxTopKAttr {
+	return func(m optionalAttr) {
+		m["reduction_dimension"] = value
+	}
+}
+
+// ApproxTopKRecallTarget sets the optional recall_target attribute to value.
+//
+// value: Recall target for the approximation. Range in (0,1]
+// If not specified, defaults to 0.95
+func ApproxTopKRecallTarget(value float32) ApproxTopKAttr {
+	return func(m optionalAttr) {
+		m["recall_target"] = value
+	}
+}
+
+// ApproxTopKIsMaxK sets the optional is_max_k attribute to value.
+//
+// value: When true, computes max-k; otherwise computes min-k.
+// If not specified, defaults to true
+func ApproxTopKIsMaxK(value bool) ApproxTopKAttr {
+	return func(m optionalAttr) {
+		m["is_max_k"] = value
+	}
+}
+
+// ApproxTopKReductionInputSizeOverride sets the optional reduction_input_size_override attribute to value.
+//
+// value: When set to a positive value, it overrides the size determined by
+// `input[reduction_dim]` for evaluating the recall. This option is useful when
+// the given `input` is only a subset of the overall computation in SPMD or
+// distributed pipelines, where the true input size cannot be deferred by the
+// `input` shape.
+// If not specified, defaults to -1
+func ApproxTopKReductionInputSizeOverride(value int64) ApproxTopKAttr {
+	return func(m optionalAttr) {
+		m["reduction_input_size_override"] = value
+	}
+}
+
+// ApproxTopKAggregateToTopk sets the optional aggregate_to_topk attribute to value.
+//
+// value: When true, aggregates approximate results to top-k. When false, returns the
+// approximate results. The number of the approximate results is implementation
+// defined and is greater equals to the specified `k`.
+// If not specified, defaults to true
+func ApproxTopKAggregateToTopk(value bool) ApproxTopKAttr {
+	return func(m optionalAttr) {
+		m["aggregate_to_topk"] = value
+	}
+}
+
+// Returns min/max k values and their indices of the input operand in an approximate manner.
+//
+// Returns min/max k values and their indices of the input operand in an approximate manner.
+//
+// Arguments:
+//	input: Array to search. Must be at least 1-D of the floating type
+//	k: Specifies the number of min/max-k.
+//
+// Returns:
+//	values: The min/max k values along the `reduction_dimension` of the `input` operand.
+// The dimension are the same as the `input` operand except for the
+// `reduction_dimension`: when `aggregate_to_topk` is true, the reduction
+// dimension is `k`; otherwise, it is greater equals to `k` where the size is
+// implementation-defined.
+//	indices: The indices of `values` along the `reduction_dimension` of the `input` operand.
+func ApproxTopK(scope *Scope, input tf.Output, k int64, optional ...ApproxTopKAttr) (values tf.Output, indices tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	attrs := map[string]interface{}{"k": k}
+	for _, a := range optional {
+		a(attrs)
+	}
+	opspec := tf.OpSpec{
+		Type: "ApproxTopK",
+		Input: []tf.Input{
+			input,
+		},
+		Attrs: attrs,
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0), op.Output(1)
+}
+
 // ApproximateEqualAttr is an optional argument to ApproximateEqual.
 type ApproximateEqualAttr func(optionalAttr)
 
@@ -6165,6 +6258,20 @@ func ConcatenateDataset(scope *Scope, input_dataset tf.Output, another_dataset t
 	return op.Output(0)
 }
 
+// An op that sets up the centralized structures for a distributed TPU system.
+//
+// Returns A vector containing the global TPU id of each TPU on the host.
+func ConfigureAndInitializeGlobalTPU(scope *Scope) (output tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	opspec := tf.OpSpec{
+		Type: "ConfigureAndInitializeGlobalTPU",
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0)
+}
+
 // ConfigureDistributedTPUAttr is an optional argument to ConfigureDistributedTPU.
 type ConfigureDistributedTPUAttr func(optionalAttr)
 
@@ -8890,31 +8997,42 @@ func DataFormatVecPermuteDstFormat(value string) DataFormatVecPermuteAttr {
 
 // Permute input tensor from `src_format` to `dst_format`.
 //
-// Input tensor must be a vector of size 4, or a 4x2 tensor.
+// Given source and destination format strings of length n=4 or 5, the input
+// tensor must be a vector of size n or n-2, or a 2D tensor of shape
+// (n, 2) or (n-2, 2).
 //
-// For example, with `src_format` of `NHWC`, `dst_format` of `NCHW`, and inputs:
+// If the first dimension of the input tensor is n-2, it is assumed that
+// non-spatial dimensions are omitted (i.e `N`, `C`).
+//
+// For example, with `src_format` of `NHWC`, `dst_format` of `NCHW`, and input:
 // ```
 // [1, 2, 3, 4]
 // ```
-// and
-// ```
-// [[1, 2, 3, 4],
-//  [5, 6, 7, 8]]
-// ```
-// , the outputs will be (respectively):
+// , the output will be:
 // ```
 // [1, 4, 2, 3]
 // ```
-// and
+// With `src_format` of `NDHWC`, `dst_format` of `NCDHW`, and input:
 // ```
-// [[1, 4, 2, 3],
-//  [5, 8, 6, 7]]
+// [[1, 6], [2, 7], [3, 8], [4, 9], [5, 10]]
+// ```
+// , the output will be:
+// ```
+// [[1, 6], [5, 10], [2, 7], [3, 8], [4, 9]]
+// ```
+// With `src_format` of `NHWC`, `dst_format` of `NCHW`, and input:
+// ```
+// [1, 2]
+// ```
+// , the output will be:
+// ```
+// [1, 2]
 // ```
 //
 // Arguments:
-//	x: Vector of size 4 or Tensor of shape (4, 2) in source data format.
+//	x: Tensor of rank 1 or 2 in source data format.
 //
-// Returns Vector of size 4 or Tensor of shape (4, 2) in destination data format.
+// Returns Tensor of rank 1 or 2 in destination data format.
 func DataFormatVecPermute(scope *Scope, x tf.Output, optional ...DataFormatVecPermuteAttr) (y tf.Output) {
 	if scope.Err() != nil {
 		return
@@ -33133,6 +33251,14 @@ func RangeDatasetMetadata(value string) RangeDatasetAttr {
 	}
 }
 
+// RangeDatasetReplicateOnSplit sets the optional replicate_on_split attribute to value.
+// If not specified, defaults to false
+func RangeDatasetReplicateOnSplit(value bool) RangeDatasetAttr {
+	return func(m optionalAttr) {
+		m["replicate_on_split"] = value
+	}
+}
+
 // Creates a dataset with a range of values. Corresponds to python's xrange.
 //
 // Arguments:
@@ -40458,6 +40584,20 @@ func ShutdownDistributedTPU(scope *Scope) (o *tf.Operation) {
 	return scope.AddOperation(opspec)
 }
 
+// An op that shuts down the TPU system.
+//
+// Returns A boolean that indicates if the shut down process succeeds.
+func ShutdownTPUSystem(scope *Scope) (success tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	opspec := tf.OpSpec{
+		Type: "ShutdownTPUSystem",
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0)
+}
+
 // Computes sigmoid of `x` element-wise.
 //
 // Specifically, `y = 1 / (1 + exp(-x))`.
@@ -45491,6 +45631,42 @@ func StatelessSampleDistortedBoundingBox(scope *Scope, image_size tf.Output, bou
 	return op.Output(0), op.Output(1), op.Output(2)
 }
 
+// Randomly and deterministically shuffles a tensor along its first dimension.
+//
+// The tensor is shuffled along dimension 0, such that each `value[j]` is mapped
+// to one and only one `output[i]`. For example, a mapping that might occur for a
+// 3x2 tensor is:
+//
+// ```
+// [[1, 2],       [[5, 6],
+//  [3, 4],  ==>   [1, 2],
+//  [5, 6]]        [3, 4]]
+// ```
+//
+// The outputs are a deterministic function of `value`, `key`, `counter` and `alg`.
+//
+// Arguments:
+//	value: The tensor to be shuffled.
+//	key: Key for the counter-based RNG algorithm (shape uint64[1]).
+//	counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+//	alg: The RNG algorithm (shape int32[]).
+//
+// Returns A tensor of same shape and type as `value`, shuffled along its first
+// dimension.
+func StatelessShuffle(scope *Scope, value tf.Output, key tf.Output, counter tf.Output, alg tf.Output) (output tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	opspec := tf.OpSpec{
+		Type: "StatelessShuffle",
+		Input: []tf.Input{
+			value, key, counter, alg,
+		},
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0)
+}
+
 // StatelessTruncatedNormalAttr is an optional argument to StatelessTruncatedNormal.
 type StatelessTruncatedNormalAttr func(optionalAttr)
 
@@ -47508,6 +47684,26 @@ func TPUReshardVariables(scope *Scope, vars []tf.Output, new_format_key tf.Outpu
 	return scope.AddOperation(opspec)
 }
 
+// Round-robin load balancing on TPU cores.
+//
+// A load balancing op that round-robins among TPU cores.
+//
+// This op round-robins between the integers in [0, NumTPUCoresVisiblePerHost]. It
+// is useful for interfacing with TensorFlow ops that take as input a TPU core on
+// which to execute computations, such as `TPUPartitionedCall`.
+//
+// device_ordinal: An integer in [0, NumTPUCoresVisiblePerHost].
+func TPURoundRobin(scope *Scope) (device_ordinal tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	opspec := tf.OpSpec{
+		Type: "TPURoundRobin",
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0)
+}
+
 // TakeDatasetAttr is an optional argument to TakeDataset.
 type TakeDatasetAttr func(optionalAttr)
 
@@ -49261,6 +49457,14 @@ func TensorSliceDatasetMetadata(value string) TensorSliceDatasetAttr {
 	}
 }
 
+// TensorSliceDatasetReplicateOnSplit sets the optional replicate_on_split attribute to value.
+// If not specified, defaults to false
+func TensorSliceDatasetReplicateOnSplit(value bool) TensorSliceDatasetAttr {
+	return func(m optionalAttr) {
+		m["replicate_on_split"] = value
+	}
+}
+
 // Creates a dataset that emits each dim-0 slice of `components` once.
 func TensorSliceDataset(scope *Scope, components []tf.Output, output_shapes []tf.Shape, optional ...TensorSliceDatasetAttr) (handle tf.Output) {
 	if scope.Err() != nil {
@@ -49956,6 +50160,30 @@ func TopKWithUnique(scope *Scope, input tf.Output, k int64) (topk tf.Output, top
 	}
 	op := scope.AddOperation(opspec)
 	return op.Output(0), op.Output(1)
+}
+
+// Converts XRT's uid handles to TensorFlow-friendly input format.
+//
+// Converts a uid handle for a compiled program into a vector of proto keys.
+//
+// XRT compile ops return uids, and the TensorFlow execute op takes a proto
+// key. This op enables a client to compile on TPU using XRT and execute using the
+// standard TensorFlow execute op.
+//
+// 'uid' is the input handle.
+// 'proto_keys' is a vector of proto keys, one for each core program.
+func TpuHandleToProtoKey(scope *Scope, uid tf.Output) (proto_keys tf.Output) {
+	if scope.Err() != nil {
+		return
+	}
+	opspec := tf.OpSpec{
+		Type: "TpuHandleToProtoKey",
+		Input: []tf.Input{
+			uid,
+		},
+	}
+	op := scope.AddOperation(opspec)
+	return op.Output(0)
 }
 
 // Shuffle dimensions of x according to a permutation.
@@ -51261,72 +51489,6 @@ func UnravelIndex(scope *Scope, indices tf.Output, dims tf.Output) (output tf.Ou
 		Input: []tf.Input{
 			indices, dims,
 		},
-	}
-	op := scope.AddOperation(opspec)
-	return op.Output(0)
-}
-
-// UnsortedSegmentJoinAttr is an optional argument to UnsortedSegmentJoin.
-type UnsortedSegmentJoinAttr func(optionalAttr)
-
-// UnsortedSegmentJoinSeparator sets the optional separator attribute to value.
-//
-// value: The separator to use when joining.
-// If not specified, defaults to ""
-func UnsortedSegmentJoinSeparator(value string) UnsortedSegmentJoinAttr {
-	return func(m optionalAttr) {
-		m["separator"] = value
-	}
-}
-
-// Joins the elements of `inputs` based on `segment_ids`.
-//
-// Computes the string join along segments of a tensor.
-// Given `segment_ids` with rank `N` and `data` with rank `N+M`:
-//
-//     `output[i, k1...kM] = strings.join([data[j1...jN, k1...kM])`
-//
-// where the join is over all [j1...jN] such that segment_ids[j1...jN] = i.
-// Strings are joined in row-major order.
-//
-// For example:
-//
-// ```python
-// inputs = [['Y', 'q', 'c'], ['Y', '6', '6'], ['p', 'G', 'a']]
-// output_array = string_ops.unsorted_segment_join(inputs=inputs,
-//                                                 segment_ids=[1, 0, 1],
-//                                                 num_segments=2,
-//                                                 separator=':'))
-// # output_array ==> [['Y', '6', '6'], ['Y:p', 'q:G', 'c:a']]
-//
-//
-// inputs = ['this', 'is', 'a', 'test']
-// output_array = string_ops.unsorted_segment_join(inputs=inputs,
-//                                                 segment_ids=[0, 0, 0, 0],
-//                                                 num_segments=1,
-//                                                 separator=':'))
-// # output_array ==> ['this:is:a:test']
-// ```
-//
-// Arguments:
-//	inputs: The input to be joined.
-//	segment_ids: A tensor whose shape is a prefix of data.shape.  Negative segment ids are not
-// supported.
-//	num_segments: A scalar.
-func UnsortedSegmentJoin(scope *Scope, inputs tf.Output, segment_ids tf.Output, num_segments tf.Output, optional ...UnsortedSegmentJoinAttr) (output tf.Output) {
-	if scope.Err() != nil {
-		return
-	}
-	attrs := map[string]interface{}{}
-	for _, a := range optional {
-		a(attrs)
-	}
-	opspec := tf.OpSpec{
-		Type: "UnsortedSegmentJoin",
-		Input: []tf.Input{
-			inputs, segment_ids, num_segments,
-		},
-		Attrs: attrs,
 	}
 	op := scope.AddOperation(opspec)
 	return op.Output(0)

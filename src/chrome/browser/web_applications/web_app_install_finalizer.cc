@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -33,7 +36,6 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -138,7 +140,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
   if (webapps::InstallableMetrics::IsUserInitiatedInstallSource(
           options.install_surface) ||
       !existing_web_app) {
-    web_app->SetUserDisplayMode(web_app_info.user_display_mode);
+    DCHECK(web_app_info.user_display_mode.has_value());
+    web_app->SetUserDisplayMode(*web_app_info.user_display_mode);
   }
 
   // `WebApp::chromeos_data` has a default value already. Only override if the
@@ -166,6 +169,17 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetIsFromSyncAndPendingInstallation(false);
   web_app->SetParentAppId(options.parent_app_id);
   web_app->SetInstallSourceForMetrics(options.install_surface);
+
+  DCHECK(!(source == WebAppManagement::Type::kSync &&
+           web_app_info.is_placeholder));
+  if (source != WebAppManagement::Type::kSync) {
+    web_app->AddPlaceholderInfoToManagementExternalConfigMap(
+        source, web_app_info.is_placeholder);
+    if (web_app_info.install_url.is_valid()) {
+      web_app->AddInstallURLToManagementExternalConfigMap(
+          source, web_app_info.install_url);
+    }
+  }
 
   if (!options.locally_installed) {
     DCHECK(!(options.add_to_applications_menu || options.add_to_desktop ||
@@ -262,6 +276,12 @@ void WebAppInstallFinalizer::UninstallWebApp(
   if (app->IsPreinstalledApp()) {
     UpdateBoolWebAppPref(profile_->GetPrefs(), app_id,
                          kWasExternalAppUninstalledByUser, true);
+    // Update the default uninstalled web_app prefs if it is a preinstalled app
+    // but being removed by user.
+    UserUninstalledPreinstalledWebAppPrefs(profile_->GetPrefs())
+        .Add(app_id, app->management_to_external_config_map()
+                         .at(WebAppManagement::kDefault)
+                         .install_urls);
   }
 
   // UninstallWebApp can wipe out an app with multiple sources. This
@@ -274,14 +294,13 @@ void WebAppInstallFinalizer::UninstallWebApp(
   UninstallWebAppInternal(app_id, webapp_uninstall_source, std::move(callback));
 }
 
-void WebAppInstallFinalizer::UninstallWithoutRegistryUpdateFromSync(
+void WebAppInstallFinalizer::UninstallFromSync(
     const std::vector<AppId>& web_apps,
     RepeatingUninstallCallback callback) {
   DCHECK(started_);
 
   for (auto& app_id : web_apps) {
     if (base::Contains(pending_uninstalls_, app_id)) {
-      pending_uninstalls_[app_id]->StopAppRegistryModification();
       continue;
     }
     auto uninstall_task = std::make_unique<WebAppUninstallJob>(
@@ -291,28 +310,28 @@ void WebAppInstallFinalizer::UninstallWithoutRegistryUpdateFromSync(
         app_id,
         url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
         webapps::WebappUninstallSource::kSync,
-        WebAppUninstallJob::ModifyAppRegistry::kNo,
         base::BindOnce(&WebAppInstallFinalizer::OnUninstallComplete,
                        weak_ptr_factory_.GetWeakPtr(), app_id,
-                       webapps::WebappUninstallSource::kStartupCleanup,
+                       webapps::WebappUninstallSource::kSync,
                        base::BindOnce(callback, app_id)));
     pending_uninstalls_[app_id] = std::move(uninstall_task);
   }
 }
 
 void WebAppInstallFinalizer::RetryIncompleteUninstalls(
-    const std::vector<AppId>& apps_to_uninstall) {
+    const base::flat_set<AppId>& apps_to_uninstall) {
   for (const AppId& app_id : apps_to_uninstall) {
     if (base::Contains(pending_uninstalls_, app_id))
       continue;
     auto uninstall_task = std::make_unique<WebAppUninstallJob>(
         os_integration_manager_, sync_bridge_, icon_manager_, registrar_,
         install_manager_, this, translation_manager_, profile_->GetPrefs());
+    const WebApp* web_app = registrar_->GetAppById(app_id);
+    if (!web_app)
+      continue;
     uninstall_task->Start(
-        app_id,
-        url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
+        app_id, url::Origin::Create(web_app->start_url()),
         webapps::WebappUninstallSource::kStartupCleanup,
-        WebAppUninstallJob::ModifyAppRegistry::kYes,
         base::BindOnce(&WebAppInstallFinalizer::OnUninstallComplete,
                        weak_ptr_factory_.GetWeakPtr(), app_id,
                        webapps::WebappUninstallSource::kStartupCleanup,
@@ -332,7 +351,7 @@ bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
   // Reparent the web contents into its own window only if that is the
   // app's launch type.
   DCHECK(registrar_);
-  if (registrar_->GetAppUserDisplayMode(app_id) == DisplayMode::kBrowser)
+  if (registrar_->GetAppUserDisplayMode(app_id) == UserDisplayMode::kBrowser)
     return false;
 
   return ui_manager_->CanReparentAppTabToWindow(app_id, shortcut_created);
@@ -425,7 +444,7 @@ void WebAppInstallFinalizer::UninstallWebAppInternal(
       install_manager_, this, translation_manager_, profile_->GetPrefs());
   uninstall_task->Start(
       app_id, url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
-      uninstall_source, WebAppUninstallJob::ModifyAppRegistry::kYes,
+      uninstall_source,
       base::BindOnce(&WebAppInstallFinalizer::OnUninstallComplete,
                      weak_ptr_factory_.GetWeakPtr(), app_id, uninstall_source,
                      std::move(callback)));

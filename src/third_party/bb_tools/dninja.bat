@@ -23,4 +23,5 @@
 :: (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 :: OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+set PATH="%PATH%;%~dp0"
 "C:\Program Files (x86)\IncrediBuild\BuildConsole.exe" /ShowCmd /profile="%~dp0dninja-profile.xml" /COMMAND="%~dp0ninja.exe %*"

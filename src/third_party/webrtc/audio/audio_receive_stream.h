@@ -83,7 +83,7 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
   // webrtc::AudioReceiveStream implementation.
   void Start() override;
   void Stop() override;
-  const RtpConfig& rtp_config() const override { return config_.rtp; }
+  bool transport_cc() const override;
   bool IsRunning() const override;
   void SetDepacketizerToDecoderFrameTransformer(
       rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer)
@@ -95,6 +95,8 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
   void SetFrameDecryptor(rtc::scoped_refptr<webrtc::FrameDecryptorInterface>
                              frame_decryptor) override;
   void SetRtpExtensions(std::vector<RtpExtension> extensions) override;
+  const std::vector<RtpExtension>& GetRtpExtensions() const override;
+  RtpHeaderExtensionMap GetRtpExtensionMap() const override;
 
   webrtc::AudioReceiveStream::Stats GetStats(
       bool get_and_clear_legacy_stats) const override;
@@ -128,13 +130,16 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
 
   uint32_t local_ssrc() const;
 
-  uint32_t remote_ssrc() const {
+  uint32_t remote_ssrc() const override {
     // The remote_ssrc member variable of config_ will never change and can be
     // considered const.
     return config_.rtp.remote_ssrc;
   }
 
-  const webrtc::AudioReceiveStream::Config& config() const;
+  // Returns a reference to the currently set sync group of the stream.
+  // Must be called on the packet delivery thread.
+  const std::string& sync_group() const;
+
   const AudioSendStream* GetAssociatedSendStreamForTesting() const;
 
   // TODO(tommi): Remove this method.

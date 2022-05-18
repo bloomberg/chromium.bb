@@ -35,7 +35,8 @@ template<typename T, T... nn>
 struct numeric_list { constexpr static std::size_t count = sizeof...(nn); };
 
 template<typename T, T n, T... nn>
-struct numeric_list<T, n, nn...> { static const std::size_t count = sizeof...(nn) + 1; const static T first_value = n; };
+struct numeric_list<T, n, nn...> { static constexpr std::size_t count = sizeof...(nn) + 1;
+                                   static constexpr T first_value = n; };
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
 /* numeric list constructors

@@ -18,7 +18,7 @@
 #include "libANGLE/renderer/ProgramImpl.h"
 #include "libANGLE/renderer/d3d/DynamicHLSL.h"
 #include "libANGLE/renderer/d3d/RendererD3D.h"
-#include "platform/FeaturesD3D.h"
+#include "platform/FeaturesD3D_autogen.h"
 
 namespace rx
 {
@@ -357,7 +357,6 @@ class ProgramD3D : public ProgramImpl
     bool hasNamedUniform(const std::string &name);
 
     bool usesVertexID() const { return mUsesVertexID; }
-    size_t getNumPixelShaderOutputs() const { return mPixelShaderOutputLayoutCache.size(); }
 
   private:
     // These forward-declared tasks are used for multi-thread shader compiles.

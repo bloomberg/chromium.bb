@@ -12,32 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <limits>
+#include <memory>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::InvokeWithoutArgs;
+using testing::Mock;
+using testing::Return;
+using testing::StrictMock;
 
 namespace {
 
-    // Mock class to add expectations on the wire calling callbacks
-    class MockBufferMapCallback {
-      public:
-        MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
-    };
+// Mock class to add expectations on the wire calling callbacks
+class MockBufferMapCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUBufferMapAsyncStatus status, void* userdata));
+};
 
-    std::unique_ptr<StrictMock<MockBufferMapCallback>> mockBufferMapCallback;
-    void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
-        mockBufferMapCallback->Call(status, userdata);
-    }
+std::unique_ptr<StrictMock<MockBufferMapCallback>> mockBufferMapCallback;
+void ToMockBufferMapCallback(WGPUBufferMapAsyncStatus status, void* userdata) {
+    mockBufferMapCallback->Call(status, userdata);
+}
 
 }  // anonymous namespace
 
 class WireBufferMappingTests : public WireTest {
   public:
-    WireBufferMappingTests() {
-    }
+    WireBufferMappingTests() {}
     ~WireBufferMappingTests() override = default;
 
     void SetUp() override {
@@ -87,8 +93,7 @@ class WireBufferMappingTests : public WireTest {
 // Tests specific to mapping for reading
 class WireBufferMappingReadTests : public WireBufferMappingTests {
   public:
-    WireBufferMappingReadTests() {
-    }
+    WireBufferMappingReadTests() {}
     ~WireBufferMappingReadTests() override = default;
 
     void SetUp() override {
@@ -143,8 +148,8 @@ TEST_F(WireBufferMappingReadTests, ErrorWhileMappingForRead) {
     EXPECT_EQ(nullptr, wgpuBufferGetConstMappedRange(buffer, 0, kBufferSize));
 }
 
-// Check that the map read callback is called with UNKNOWN when the buffer is destroyed before the
-// request is finished
+// Check that the map read callback is called with UNKNOWN when the buffer is destroyed before
+// the request is finished
 TEST_F(WireBufferMappingReadTests, DestroyBeforeReadRequestEnd) {
     wgpuBufferMapAsync(buffer, WGPUMapMode_Read, 0, kBufferSize, ToMockBufferMapCallback, nullptr);
 
@@ -168,8 +173,8 @@ TEST_F(WireBufferMappingReadTests, DestroyBeforeReadRequestEnd) {
     FlushServer();
 }
 
-// Check the map read callback is called with "UnmappedBeforeCallback" when the map request would
-// have worked, but Unmap was called
+// Check the map read callback is called with "UnmappedBeforeCallback" when the map request
+// would have worked, but Unmap was called
 TEST_F(WireBufferMappingReadTests, UnmapCalledTooEarlyForRead) {
     wgpuBufferMapAsync(buffer, WGPUMapMode_Read, 0, kBufferSize, ToMockBufferMapCallback, nullptr);
 
@@ -212,14 +217,15 @@ TEST_F(WireBufferMappingReadTests, UnmapCalledTooEarlyForReadButServerSideError)
 
     FlushClient();
 
-    // The callback should be called with the server-side error and not the UnmappedBeforeCallback.
+    // The callback should be called with the server-side error and not the
+    // UnmappedBeforeCallback.
     EXPECT_CALL(*mockBufferMapCallback, Call(WGPUBufferMapAsyncStatus_Error, _)).Times(1);
 
     FlushServer();
 }
 
-// Check the map read callback is called with "DestroyedBeforeCallback" when the map request would
-// have worked, but Destroy was called
+// Check the map read callback is called with "DestroyedBeforeCallback" when the map request
+// would have worked, but Destroy was called
 TEST_F(WireBufferMappingReadTests, DestroyCalledTooEarlyForRead) {
     wgpuBufferMapAsync(buffer, WGPUMapMode_Read, 0, kBufferSize, ToMockBufferMapCallback, nullptr);
 
@@ -255,14 +261,15 @@ TEST_F(WireBufferMappingReadTests, DestroyCalledTooEarlyForReadButServerSideErro
         .WillOnce(InvokeWithoutArgs(
             [&]() { api.CallBufferMapAsyncCallback(apiBuffer, WGPUBufferMapAsyncStatus_Error); }));
 
-    // Oh no! We are calling Destroy too early! However the callback gets fired only after we get
-    // an answer from the server that the mapAsync call was an error.
+    // Oh no! We are calling Destroy too early! However the callback gets fired only after we
+    // get an answer from the server that the mapAsync call was an error.
     wgpuBufferDestroy(buffer);
     EXPECT_CALL(api, BufferDestroy(apiBuffer));
 
     FlushClient();
 
-    // The callback should be called with the server-side error and not the DestroyedBeforCallback..
+    // The callback should be called with the server-side error and not the
+    // DestroyedBeforCallback..
     EXPECT_CALL(*mockBufferMapCallback, Call(WGPUBufferMapAsyncStatus_Error, _)).Times(1);
 
     FlushServer();
@@ -356,8 +363,7 @@ TEST_F(WireBufferMappingReadTests, DestroyInsideMapReadCallback) {
 // Tests specific to mapping for writing
 class WireBufferMappingWriteTests : public WireBufferMappingTests {
   public:
-    WireBufferMappingWriteTests() {
-    }
+    WireBufferMappingWriteTests() {}
     ~WireBufferMappingWriteTests() override = default;
 
     void SetUp() override {
@@ -447,8 +453,8 @@ TEST_F(WireBufferMappingWriteTests, DestroyBeforeWriteRequestEnd) {
     FlushServer();
 }
 
-// Check the map write callback is called with "UnmappedBeforeCallback" when the map request would
-// have worked, but Unmap was called
+// Check the map write callback is called with "UnmappedBeforeCallback" when the map request
+// would have worked, but Unmap was called
 TEST_F(WireBufferMappingWriteTests, UnmapCalledTooEarlyForWrite) {
     wgpuBufferMapAsync(buffer, WGPUMapMode_Write, 0, kBufferSize, ToMockBufferMapCallback, nullptr);
 
@@ -530,8 +536,8 @@ TEST_F(WireBufferMappingWriteTests, UnmapInsideMapWriteCallback) {
     FlushClient();
 }
 
-// Test that the MapWriteCallback isn't fired twice the buffer external refcount reaches 0 in the
-// callback
+// Test that the MapWriteCallback isn't fired twice the buffer external refcount reaches 0 in
+// the callback
 TEST_F(WireBufferMappingWriteTests, DestroyInsideMapWriteCallback) {
     wgpuBufferMapAsync(buffer, WGPUMapMode_Write, 0, kBufferSize, ToMockBufferMapCallback, nullptr);
 
@@ -674,8 +680,8 @@ TEST_F(WireBufferMappingTests, MappedAtCreationThenMapFailure) {
     FlushClient();
 }
 
-// Check that trying to create a buffer of size MAX_SIZE_T is an error handling in the client and
-// never gets to the server-side.
+// Check that trying to create a buffer of size MAX_SIZE_T is an error handling in the client
+// and never gets to the server-side.
 TEST_F(WireBufferMappingTests, MaxSizeMappableBufferOOMDirectly) {
     size_t kOOMSize = std::numeric_limits<size_t>::max();
     WGPUBuffer apiBuffer = api.GetNewBuffer();
@@ -810,3 +816,5 @@ TEST_F(WireBufferMappingWriteTests, MapInsideCallbackBeforeDestruction) {
         .Times(1 + testData.numRequests);
     wgpuBufferRelease(buffer);
 }
+
+}  // namespace dawn::wire

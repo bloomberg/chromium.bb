@@ -46,8 +46,8 @@ class QuaternionBase : public RotationBase<Derived, 3>
   typedef typename NumTraits<Scalar>::Real RealScalar;
   typedef typename internal::traits<Derived>::Coefficients Coefficients;
   typedef typename Coefficients::CoeffReturnType CoeffReturnType;
-  typedef typename internal::conditional<bool(internal::traits<Derived>::Flags&LvalueBit),
-                                        Scalar&, CoeffReturnType>::type NonConstCoeffReturnType;
+  typedef std::conditional_t<bool(internal::traits<Derived>::Flags&LvalueBit),
+                                  Scalar&, CoeffReturnType> NonConstCoeffReturnType;
 
 
   enum {
@@ -200,14 +200,14 @@ class QuaternionBase : public RotationBase<Derived, 3>
 
   template<typename NewScalarType>
   EIGEN_DEVICE_FUNC inline
-  typename internal::enable_if<internal::is_same<Scalar,NewScalarType>::value,const Derived&>::type cast() const
+  std::enable_if_t<internal::is_same<Scalar,NewScalarType>::value,const Derived&> cast() const
   {
     return derived();
   }
 
   template<typename NewScalarType>
   EIGEN_DEVICE_FUNC inline
-  typename internal::enable_if<!internal::is_same<Scalar,NewScalarType>::value,Quaternion<NewScalarType> >::type cast() const
+  std::enable_if_t<!internal::is_same<Scalar,NewScalarType>::value,Quaternion<NewScalarType> > cast() const
   {
     return Quaternion<NewScalarType>(coeffs().template cast<NewScalarType>());
   }

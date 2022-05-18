@@ -31,6 +31,8 @@
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/web/element.h"
+#include "components/autofill_assistant/browser/web/element_finder_result.h"
+#include "components/autofill_assistant/browser/web/element_finder_result_type.h"
 #include "components/autofill_assistant/browser/web/selector_observer.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -875,21 +877,21 @@ void WebController::FindElement(const Selector& selector,
                                 ElementFinder::Callback callback) {
   RunElementFinder(/* start_element= */ ElementFinderResult::EmptyResult(),
                    selector,
-                   strict_mode ? ElementFinder::ResultType::kExactlyOneMatch
-                               : ElementFinder::ResultType::kAnyMatch,
+                   strict_mode ? ElementFinderResultType::kExactlyOneMatch
+                               : ElementFinderResultType::kAnyMatch,
                    std::move(callback));
 }
 
 void WebController::FindAllElements(const Selector& selector,
                                     ElementFinder::Callback callback) {
   RunElementFinder(/* start_element= */ ElementFinderResult::EmptyResult(),
-                   selector, ElementFinder::ResultType::kMatchArray,
+                   selector, ElementFinderResultType::kMatchArray,
                    std::move(callback));
 }
 
 void WebController::RunElementFinder(const ElementFinderResult& start_element,
                                      const Selector& selector,
-                                     ElementFinder::ResultType result_type,
+                                     ElementFinderResultType result_type,
                                      ElementFinder::Callback callback) {
   auto finder = std::make_unique<ElementFinder>(
       web_contents_, devtools_client_.get(), user_data_, log_info_,
@@ -915,13 +917,11 @@ void WebController::OnFindElementResult(
 
 ClientStatus WebController::ObserveSelectors(
     const std::vector<SelectorObserver::ObservableSelector>& selectors,
-    base::TimeDelta timeout_ms,
-    base::TimeDelta periodic_check_interval,
-    base::TimeDelta extra_timeout,
+    const SelectorObserver::Settings& settings,
     SelectorObserver::Callback callback) {
   auto observer = std::make_unique<SelectorObserver>(
-      selectors, timeout_ms, periodic_check_interval, extra_timeout,
-      web_contents_, devtools_client_.get(), user_data_, std::move(callback));
+      selectors, settings, web_contents_, devtools_client_.get(), user_data_,
+      std::move(callback));
   auto* ptr = observer.get();
   pending_workers_.emplace_back(std::move(observer));
   return ptr->Start(base::BindOnce(&WebController::OnSelectorObserverFinished,

@@ -258,7 +258,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetContentSettingsClient(WebContentSettingsClient*) override;
   void ReloadImage(const WebNode&) override;
   bool IsAllowedToDownload() const override;
-  bool IsCrossOriginToMainFrame() const override;
+  bool IsCrossOriginToOutermostMainFrame() const override;
   bool FindForTesting(int identifier,
                       const WebString& search_text,
                       bool match_case,
@@ -546,6 +546,7 @@ class CORE_EXPORT WebLocalFrameImpl final
           mojo_widget,
       const viz::FrameSinkId& frame_sink_id,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       bool hidden) override;
 
   HitTestResult HitTestResultForVisualViewportPos(const gfx::Point&);

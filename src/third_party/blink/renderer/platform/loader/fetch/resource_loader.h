@@ -177,6 +177,9 @@ class PLATFORM_EXPORT ResourceLoader final
 
   // ResponseBodyLoaderClient implementation.
   void DidReceiveData(base::span<const char> data) override;
+  void DidReceiveDecodedData(
+      const String& data,
+      std::unique_ptr<ParkableStringImpl::SecureDigest> digest) override;
   void DidFinishLoadingBody() override;
   void DidFailLoadingBody() override;
   void DidCancelLoadingBody() override;
@@ -279,6 +282,9 @@ class PLATFORM_EXPORT ResourceLoader final
       feature_handle_for_scheduler_;
 
   base::TimeTicks response_end_time_for_error_cases_;
+
+  base::TimeTicks request_start_time_;
+  base::TimeTicks code_cache_arrival_time_;
 };
 
 }  // namespace blink

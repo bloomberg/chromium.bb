@@ -17,6 +17,7 @@
 #include "ash/system/model/clock_observer.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/power/adaptive_charging_controller.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/supervised/supervised_icon_string.h"
 #include "ash/system/time/calendar_metrics.h"
@@ -32,6 +33,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -76,7 +78,10 @@ void ConfigureLabel(views::Label* label, SkColor color) {
 
 // Returns whether SmartChargingUI should be used.
 bool UseSmartChargingUI() {
-  return ash::features::IsAdaptiveChargingEnabled();
+  return ash::features::IsAdaptiveChargingEnabled() &&
+         Shell::Get()
+             ->adaptive_charging_controller()
+             ->is_adaptive_delaying_charge();
 }
 
 // A view that shows current date in short format e.g. "Mon, Mar 12". It updates
@@ -244,8 +249,10 @@ END_METADATA
 class BatteryLabelView : public BatteryInfoViewBase {
  public:
   METADATA_HEADER(BatteryLabelView);
-  explicit BatteryLabelView(UnifiedSystemTrayController* controller)
-      : BatteryInfoViewBase(controller) {
+  BatteryLabelView(UnifiedSystemTrayController* controller,
+                   bool use_smart_charging_ui)
+      : BatteryInfoViewBase(controller),
+        use_smart_charging_ui_(use_smart_charging_ui) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal));
 
@@ -282,9 +289,10 @@ class BatteryLabelView : public BatteryInfoViewBase {
     percentage_->SetText(percentage_text);
     status_->SetText(status_text);
 
-    percentage_->SetVisible(!percentage_text.empty() && !UseSmartChargingUI());
-    separator_->SetVisible(!percentage_text.empty() && !UseSmartChargingUI() &&
-                           !status_text.empty());
+    percentage_->SetVisible(!percentage_text.empty() &&
+                            !use_smart_charging_ui_);
+    separator_->SetVisible(!percentage_text.empty() &&
+                           !use_smart_charging_ui_ && !status_text.empty());
     status_->SetVisible(!status_text.empty());
 
     percentage_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
@@ -294,6 +302,8 @@ class BatteryLabelView : public BatteryInfoViewBase {
   views::Label* percentage_ = nullptr;
   views::Label* separator_ = nullptr;
   views::Label* status_ = nullptr;
+
+  const bool use_smart_charging_ui_;
 };
 BEGIN_METADATA(BatteryLabelView, BatteryInfoViewBase)
 END_METADATA
@@ -311,6 +321,12 @@ class BatteryIconView : public BatteryInfoViewBase {
     SetLayoutManager(std::move(layout));
 
     battery_image_ = AddChildView(std::make_unique<views::ImageView>());
+    if (features::IsDarkLightModeEnabled()) {
+      // The battery icon requires its own layer to properly render the masked
+      // outline of the badge within the battery icon.
+      battery_image_->SetPaintToLayer();
+      battery_image_->layer()->SetFillsBoundsOpaquely(false);
+    }
     ConfigureIcon();
 
     percentage_ = AddChildView(std::make_unique<views::Label>());
@@ -439,7 +455,7 @@ class EnterpriseManagedView : public ManagedStateView,
   ~EnterpriseManagedView() override;
 
   // EnterpriseDomainObserver:
-  void OnEnterpriseDomainChanged() override;
+  void OnDeviceEnterpriseInfoChanged() override;
   void OnEnterpriseAccountDomainChanged() override;
 
   // SessionObserver:
@@ -472,7 +488,7 @@ EnterpriseManagedView::~EnterpriseManagedView() {
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-void EnterpriseManagedView::OnEnterpriseDomainChanged() {
+void EnterpriseManagedView::OnDeviceEnterpriseInfoChanged() {
   Update();
 }
 
@@ -583,10 +599,12 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
   if (PowerStatus::Get()->IsBatteryPresent()) {
     separator_ = AddChildView(std::make_unique<views::Separator>());
     separator_->SetPreferredHeight(kUnifiedSystemInfoHeight);
-    if (UseSmartChargingUI()) {
+
+    const bool use_smart_charging_ui = UseSmartChargingUI();
+    if (use_smart_charging_ui)
       AddChildView(std::make_unique<BatteryIconView>(controller));
-    }
-    AddChildView(std::make_unique<BatteryLabelView>(controller));
+    AddChildView(
+        std::make_unique<BatteryLabelView>(controller, use_smart_charging_ui));
   }
 
   auto* spacing = AddChildView(std::make_unique<views::View>());

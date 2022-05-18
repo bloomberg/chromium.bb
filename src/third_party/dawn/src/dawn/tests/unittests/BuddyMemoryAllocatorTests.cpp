@@ -12,37 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <memory>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "dawn/native/BuddyMemoryAllocator.h"
 #include "dawn/native/PooledResourceMemoryAllocator.h"
 #include "dawn/native/ResourceHeapAllocator.h"
+#include "gtest/gtest.h"
 
-#include <set>
-#include <vector>
+namespace dawn::native {
 
-using namespace dawn::native;
-
-class DummyResourceHeapAllocator : public ResourceHeapAllocator {
+class PlaceholderResourceHeapAllocator : public ResourceHeapAllocator {
   public:
     ResultOrError<std::unique_ptr<ResourceHeapBase>> AllocateResourceHeap(uint64_t size) override {
         return std::make_unique<ResourceHeapBase>();
     }
-    void DeallocateResourceHeap(std::unique_ptr<ResourceHeapBase> allocation) override {
-    }
+    void DeallocateResourceHeap(std::unique_ptr<ResourceHeapBase> allocation) override {}
 };
 
-class DummyBuddyResourceAllocator {
+class PlaceholderBuddyResourceAllocator {
   public:
-    DummyBuddyResourceAllocator(uint64_t maxBlockSize, uint64_t memorySize)
-        : mAllocator(maxBlockSize, memorySize, &mHeapAllocator) {
-    }
+    PlaceholderBuddyResourceAllocator(uint64_t maxBlockSize, uint64_t memorySize)
+        : mAllocator(maxBlockSize, memorySize, &mHeapAllocator) {}
 
-    DummyBuddyResourceAllocator(uint64_t maxBlockSize,
-                                uint64_t memorySize,
-                                ResourceHeapAllocator* heapAllocator)
-        : mAllocator(maxBlockSize, memorySize, heapAllocator) {
-    }
+    PlaceholderBuddyResourceAllocator(uint64_t maxBlockSize,
+                                      uint64_t memorySize,
+                                      ResourceHeapAllocator* heapAllocator)
+        : mAllocator(maxBlockSize, memorySize, heapAllocator) {}
 
     ResourceMemoryAllocation Allocate(uint64_t allocationSize, uint64_t alignment = 1) {
         ResultOrError<ResourceMemoryAllocation> result =
@@ -50,16 +48,14 @@ class DummyBuddyResourceAllocator {
         return (result.IsSuccess()) ? result.AcquireSuccess() : ResourceMemoryAllocation{};
     }
 
-    void Deallocate(ResourceMemoryAllocation& allocation) {
-        mAllocator.Deallocate(allocation);
-    }
+    void Deallocate(ResourceMemoryAllocation& allocation) { mAllocator.Deallocate(allocation); }
 
     uint64_t ComputeTotalNumOfHeapsForTesting() const {
         return mAllocator.ComputeTotalNumOfHeapsForTesting();
     }
 
   private:
-    DummyResourceHeapAllocator mHeapAllocator;
+    PlaceholderResourceHeapAllocator mHeapAllocator;
     BuddyMemoryAllocator mAllocator;
 };
 
@@ -73,7 +69,7 @@ TEST(BuddyMemoryAllocatorTests, SingleHeap) {
     //
     constexpr uint64_t heapSize = 128;
     constexpr uint64_t maxBlockSize = heapSize;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     // Cannot allocate greater than heap size.
     ResourceMemoryAllocation invalidAllocation = allocator.Allocate(heapSize * 2);
@@ -106,7 +102,7 @@ TEST(BuddyMemoryAllocatorTests, MultipleHeaps) {
     //
     constexpr uint64_t maxBlockSize = 256;
     constexpr uint64_t heapSize = 128;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     // Cannot allocate greater than heap size.
     ResourceMemoryAllocation invalidAllocation = allocator.Allocate(heapSize * 2);
@@ -154,7 +150,7 @@ TEST(BuddyMemoryAllocatorTests, MultipleSplitHeaps) {
     //
     constexpr uint64_t maxBlockSize = 256;
     constexpr uint64_t heapSize = 128;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     // Allocate two 64 byte sub-allocations.
     ResourceMemoryAllocation allocation1 = allocator.Allocate(heapSize / 2);
@@ -208,7 +204,7 @@ TEST(BuddyMemoryAllocatorTests, MultiplSplitHeapsVariableSizes) {
     //
     constexpr uint64_t heapSize = 128;
     constexpr uint64_t maxBlockSize = 512;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     // Allocate two 64-byte allocations.
     ResourceMemoryAllocation allocation1 = allocator.Allocate(64);
@@ -284,7 +280,7 @@ TEST(BuddyMemoryAllocatorTests, SameSizeVariousAlignment) {
     //
     constexpr uint64_t heapSize = 128;
     constexpr uint64_t maxBlockSize = 512;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     ResourceMemoryAllocation allocation1 = allocator.Allocate(64, 128);
     ASSERT_EQ(allocation1.GetInfo().mBlockOffset, 0u);
@@ -334,7 +330,7 @@ TEST(BuddyMemoryAllocatorTests, VariousSizeSameAlignment) {
     //
     constexpr uint64_t heapSize = 128;
     constexpr uint64_t maxBlockSize = 512;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     constexpr uint64_t alignment = 64;
 
@@ -373,7 +369,7 @@ TEST(BuddyMemoryAllocatorTests, VariousSizeSameAlignment) {
 TEST(BuddyMemoryAllocatorTests, AllocationOverflow) {
     constexpr uint64_t heapSize = 128;
     constexpr uint64_t maxBlockSize = 512;
-    DummyBuddyResourceAllocator allocator(maxBlockSize, heapSize);
+    PlaceholderBuddyResourceAllocator allocator(maxBlockSize, heapSize);
 
     constexpr uint64_t largeBlock = (1ull << 63) + 1;
     ResourceMemoryAllocation invalidAllocation = allocator.Allocate(largeBlock);
@@ -385,9 +381,9 @@ TEST(BuddyMemoryAllocatorTests, ReuseFreedHeaps) {
     constexpr uint64_t kHeapSize = 128;
     constexpr uint64_t kMaxBlockSize = 4096;
 
-    DummyResourceHeapAllocator heapAllocator;
+    PlaceholderResourceHeapAllocator heapAllocator;
     PooledResourceMemoryAllocator poolAllocator(&heapAllocator);
-    DummyBuddyResourceAllocator allocator(kMaxBlockSize, kHeapSize, &poolAllocator);
+    PlaceholderBuddyResourceAllocator allocator(kMaxBlockSize, kHeapSize, &poolAllocator);
 
     std::set<ResourceHeapBase*> heaps = {};
     std::vector<ResourceMemoryAllocation> allocations = {};
@@ -426,15 +422,15 @@ TEST(BuddyMemoryAllocatorTests, DestroyHeaps) {
     constexpr uint64_t kHeapSize = 128;
     constexpr uint64_t kMaxBlockSize = 4096;
 
-    DummyResourceHeapAllocator heapAllocator;
+    PlaceholderResourceHeapAllocator heapAllocator;
     PooledResourceMemoryAllocator poolAllocator(&heapAllocator);
-    DummyBuddyResourceAllocator allocator(kMaxBlockSize, kHeapSize, &poolAllocator);
+    PlaceholderBuddyResourceAllocator allocator(kMaxBlockSize, kHeapSize, &poolAllocator);
 
     std::set<ResourceHeapBase*> heaps = {};
     std::vector<ResourceMemoryAllocation> allocations = {};
 
-    // Count by heap (vs number of allocations) to ensure there are exactly |kNumOfHeaps| worth of
-    // buffers. Otherwise, the heap may be reused if not full.
+    // Count by heap (vs number of allocations) to ensure there are exactly |kNumOfHeaps| worth
+    // of buffers. Otherwise, the heap may be reused if not full.
     constexpr uint32_t kNumOfHeaps = 10;
 
     // Allocate |kNumOfHeaps| worth.
@@ -458,3 +454,5 @@ TEST(BuddyMemoryAllocatorTests, DestroyHeaps) {
     poolAllocator.DestroyPool();
     ASSERT_EQ(poolAllocator.GetPoolSizeForTesting(), 0u);
 }
+
+}  // namespace dawn::native

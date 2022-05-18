@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
@@ -97,25 +98,32 @@ LogicalOffset CenterBlockChild(LogicalOffset offset,
   return offset;
 }
 
-inline const NGLayoutResult* LayoutBlockChild(const NGConstraintSpace& space,
-                                              const NGBreakToken* break_token,
-                                              const NGEarlyBreak* early_break,
-                                              NGBlockNode* node) {
+inline const NGLayoutResult* LayoutBlockChild(
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
+    const NGColumnSpannerPath* column_spanner_path,
+    NGBlockNode* node) {
   const NGEarlyBreak* early_break_in_child = nullptr;
   if (UNLIKELY(early_break))
     early_break_in_child = EnterEarlyBreakInChild(*node, *early_break);
+  column_spanner_path = FollowColumnSpannerPath(column_spanner_path, *node);
   return node->Layout(space, To<NGBlockBreakToken>(break_token),
-                      early_break_in_child);
+                      early_break_in_child, column_spanner_path);
 }
 
-inline const NGLayoutResult* LayoutInflow(const NGConstraintSpace& space,
-                                          const NGBreakToken* break_token,
-                                          const NGEarlyBreak* early_break,
-                                          NGLayoutInputNode* node,
-                                          NGInlineChildLayoutContext* context) {
-  if (auto* inline_node = DynamicTo<NGInlineNode>(node))
-    return inline_node->Layout(space, break_token, context);
-  return LayoutBlockChild(space, break_token, early_break,
+inline const NGLayoutResult* LayoutInflow(
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token,
+    const NGEarlyBreak* early_break,
+    const NGColumnSpannerPath* column_spanner_path,
+    NGLayoutInputNode* node,
+    NGInlineChildLayoutContext* context) {
+  if (auto* inline_node = DynamicTo<NGInlineNode>(node)) {
+    return inline_node->Layout(space, break_token, column_spanner_path,
+                               context);
+  }
+  return LayoutBlockChild(space, break_token, early_break, column_spanner_path,
                           To<NGBlockNode>(node));
 }
 
@@ -216,6 +224,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params),
       previous_result_(params.previous_result),
+      column_spanner_path_(params.column_spanner_path),
       fit_all_lines_(false),
       is_resuming_(IsResumingLayout(params.break_token)),
       abort_when_bfc_block_offset_updated_(false),
@@ -224,6 +233,14 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       is_line_clamp_context_(params.space.IsLineClampContext()),
       lines_until_clamp_(params.space.LinesUntilClamp()) {
   container_builder_.SetExclusionSpace(params.space.ExclusionSpace());
+
+  // If this node has a column spanner inside, we'll force it to stay within the
+  // current fragmentation flow, so that it doesn't establish a parallel flow,
+  // even if it might have content that overflows into the next fragmentainer.
+  // This way we'll prevent content that comes after the spanner from being laid
+  // out *before* it.
+  if (column_spanner_path_)
+    container_builder_.SetShouldForceSameFragmentationFlow();
 
   child_percentage_size_ = CalculateChildPercentageSize(
       ConstraintSpace(), Node(), ChildAvailableSize());
@@ -622,9 +639,10 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
     const NGBreakToken* child_break_token = entry.token;
 
     if (child.IsOutOfFlowPositioned()) {
-      // We don't support fragmentation inside out-of-flow positioned boxes yet,
-      // but breaking before is fine. This may happen when a column spanner is
-      // directly followed by an OOF.
+      // Out-of-flow fragmentation is a special step that takes place after
+      // regular layout, so we should never resume anything here. However, we
+      // may have break-before tokens, when a column spanner is directly
+      // followed by an OOF.
       DCHECK(!child_break_token ||
              (child_break_token->IsBlockType() &&
               To<NGBlockBreakToken>(child_break_token)->IsBreakBefore()));
@@ -638,13 +656,29 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
       // |container_builder_.UnpositionedListMarker| in the constructor, unless
       // |ListMarkerOccupiesWholeLine|, which is handled like a regular child.
     } else if (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()) {
-      // The child is a column spanner. We now need to finish this
-      // fragmentainer, then abort and let the column layout algorithm handle
-      // the spanner as a child.
+      // The child is a column spanner. If we have no breaks inside (in parallel
+      // flows), we now need to finish this fragmentainer, then abort and let
+      // the column layout algorithm handle the spanner as a child.
       DCHECK(!container_builder_.DidBreakSelf());
       DCHECK(!container_builder_.FoundColumnSpanner());
-      DCHECK(!child_break_token);
-      container_builder_.SetColumnSpanner(To<NGBlockNode>(child));
+      DCHECK(!IsResumingLayout(To<NGBlockBreakToken>(child_break_token)));
+
+      if (container_builder_.HasChildBreakInside()) {
+        // Something broke inside (typically in a parallel flow, or we wouldn't
+        // be here). Before we can handle the spanner, we need to finish what
+        // comes before it.
+        container_builder_.AddBreakBeforeChild(child, kBreakAppealPerfect,
+                                               /* is_forced_break */ true);
+        break;
+      }
+
+      // Establish a column spanner path. The innermost node will be the spanner
+      // itself, wrapped inside the container handled by this layout algorithm.
+      const auto* child_spanner_path =
+          MakeGarbageCollected<NGColumnSpannerPath>(To<NGBlockNode>(child));
+      const auto* container_spanner_path =
+          MakeGarbageCollected<NGColumnSpannerPath>(Node(), child_spanner_path);
+      container_builder_.SetColumnSpannerPath(container_spanner_path);
 
       // In order to properly collapse column spanner margins, we need to know
       // if the column spanner's parent was empty, for example, in the case that
@@ -1432,6 +1466,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     block_size -= bsp_block_sum;
     logical_offset =
         CenterBlockChild(logical_offset, block_size, fragment.BlockSize());
+    // We can't apply the simplified layout to the container if
+    // |-internal-align-self-block:center| is specified to a child.
+    container_builder_.SetDisableSimplifiedLayout();
   }
 
   PropagateBaselineFromChild(physical_fragment, logical_offset.block_offset);
@@ -1549,7 +1586,8 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
 
     auto minimum_top = CreateMinimumTopScopeForChild(child, child_data);
     const NGLayoutResult* layout_result = LayoutBlockChild(
-        child_space, child_break_token, early_break_, &To<NGBlockNode>(child));
+        child_space, child_break_token, early_break_,
+        /* column_spanner_path */ nullptr, &To<NGBlockNode>(child));
 
     // Since this child establishes a new formatting context, no exclusion space
     // should be returned.
@@ -1675,8 +1713,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
       previous_inflow_position->block_end_annotation_space);
   auto minimum_top = CreateMinimumTopScopeForChild(child, child_data);
   const NGLayoutResult* layout_result =
-      LayoutInflow(child_space, child_break_token, early_break_, &child,
-                   inline_child_layout_context);
+      LayoutInflow(child_space, child_break_token, early_break_,
+                   column_spanner_path_, &child, inline_child_layout_context);
 
   // To save space of the stack when we recurse into |NGBlockNode::Layout|
   // above, the rest of this function is continued within |FinishInflow|.
@@ -1855,8 +1893,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
         child_bfc_block_offset);
     auto minimum_top = CreateMinimumTopScopeForChild(child, *child_data);
     layout_result =
-        LayoutInflow(new_child_space, child_break_token, early_break_, &child,
-                     inline_child_layout_context);
+        LayoutInflow(new_child_space, child_break_token, early_break_,
+                     column_spanner_path_, &child, inline_child_layout_context);
 
     if (layout_result->Status() == NGLayoutResult::kBfcBlockOffsetResolved) {
       // Even a second layout pass may abort, if the BFC block offset initially
@@ -1870,9 +1908,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
           child, *child_data, ChildAvailableSize(), /* is_new_fc */ false,
           child_bfc_block_offset);
       auto minimum_top = CreateMinimumTopScopeForChild(child, *child_data);
-      layout_result =
-          LayoutInflow(new_child_space, child_break_token, early_break_, &child,
-                       inline_child_layout_context);
+      layout_result = LayoutInflow(new_child_space, child_break_token,
+                                   early_break_, column_spanner_path_, &child,
+                                   inline_child_layout_context);
     }
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);

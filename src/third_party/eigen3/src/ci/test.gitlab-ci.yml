@@ -37,7 +37,7 @@
 #     EIGEN_CI_CXX_COMPILER: g++-4.8
 #     EIGEN_CI_CC_COMPILER: gcc-4.8
 #   needs: [ "build:x86-64:linux:gcc-4.8:cxx11-on" ]
-#   tags: 
+#   tags:
 #     - eigen-runner
 #     - linux
 #     - x86-64
@@ -59,7 +59,7 @@
     EIGEN_CI_CXX_COMPILER: g++-9
     EIGEN_CI_CC_COMPILER: gcc-9
   needs: [ "build:x86-64:linux:gcc-9:cxx11-on" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - x86-64
@@ -81,7 +81,7 @@ test:x86-64:linux:gcc-9:cxx11-on:unsupported:
     EIGEN_CI_CXX_COMPILER: g++-10
     EIGEN_CI_CC_COMPILER: gcc-10
   needs: [ "build:x86-64:linux:gcc-10:cxx11-on" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - x86-64
@@ -105,7 +105,7 @@ test:x86-64:linux:gcc-10:cxx11-on:unsupported:
     EIGEN_CI_CXX_COMPILER: clang++-10
     EIGEN_CI_CC_COMPILER: clang-10
   needs: [ "build:x86-64:linux:clang-10:cxx11-on" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - x86-64
@@ -119,14 +119,14 @@ test:x86-64:linux:clang-10:cxx11-on:unsupported:
   extends: .test:x86-64:linux:clang-10:cxx11-on
   variables:
     EIGEN_CI_TEST_LABEL: "Unsupported"
-    
+
 .test:x86-64:linux:clang-10:cxx11-on:avx512:
   extends: .test:linux:base
   variables:
     EIGEN_CI_CXX_COMPILER: clang++-10
     EIGEN_CI_CC_COMPILER: clang-10
   needs: [ "build:x86-64:linux:clang-10:cxx11-on:avx512" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - x86-64
@@ -150,7 +150,7 @@ test:x86-64:linux:clang-10:cxx11-on:avx512:unsupported:
     EIGEN_CI_CXX_COMPILER: g++-10
     EIGEN_CI_CC_COMPILER: gcc-10
   needs: [ "build:aarch64:linux:gcc-10:cxx11-on" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - aarch64
@@ -174,7 +174,7 @@ test:aarch64:linux:gcc-10:cxx11-on:unsupported:
     EIGEN_CI_CXX_COMPILER: clang++-10
     EIGEN_CI_CC_COMPILER: clang-10
   needs: [ "build:aarch64:linux:clang-10:cxx11-on" ]
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - aarch64
@@ -199,7 +199,7 @@ test:aarch64:linux:clang-10:cxx11-on:unsupported:
     EIGEN_CI_CC_COMPILER: gcc-10
   needs: [ "build:ppc64le:linux:gcc-10:cxx11-on" ]
   allow_failure: true
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - ppc64le
@@ -222,7 +222,7 @@ test:ppc64le:linux:gcc-10:cxx11-on:unsupported:
     EIGEN_CI_CC_COMPILER: clang-10
   needs: [ "build:ppc64le:linux:clang-10:cxx11-on" ]
   allow_failure: true
-  tags: 
+  tags:
     - eigen-runner
     - linux
     - ppc64le

@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <algorithm>
+#include <numeric>
+#include <string>
+#include <vector>
 
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <numeric>
 
 constexpr uint32_t kRTSize = 400;
 constexpr uint32_t kBindingSize = 8;
@@ -262,7 +264,7 @@ TEST_P(DynamicBufferOffsetTests, BasicComputePipeline) {
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, mBindGroups[0], offsets.size(), offsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
     wgpu::CommandBuffer commands = commandEncoder.Finish();
     queue.Submit(1, &commands);
@@ -282,7 +284,7 @@ TEST_P(DynamicBufferOffsetTests, SetDynamicOffsetsComputePipeline) {
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, mBindGroups[0], offsets.size(), offsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
     wgpu::CommandBuffer commands = commandEncoder.Finish();
     queue.Submit(1, &commands);
@@ -337,10 +339,10 @@ TEST_P(DynamicBufferOffsetTests, InheritDynamicOffsetsComputePipeline) {
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, mBindGroups[0], offsets.size(), offsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.SetPipeline(testPipeline);
     computePassEncoder.SetBindGroup(1, mBindGroups[1]);
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
     wgpu::CommandBuffer commands = commandEncoder.Finish();
     queue.Submit(1, &commands);
@@ -390,9 +392,9 @@ TEST_P(DynamicBufferOffsetTests, UpdateDynamicOffsetsMultipleTimesComputePipelin
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, mBindGroups[0], offsets.size(), offsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.SetBindGroup(0, mBindGroups[0], testOffsets.size(), testOffsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
     wgpu::CommandBuffer commands = commandEncoder.Finish();
     queue.Submit(1, &commands);
@@ -402,11 +404,11 @@ TEST_P(DynamicBufferOffsetTests, UpdateDynamicOffsetsMultipleTimesComputePipelin
 }
 
 namespace {
-    using ReadBufferUsage = wgpu::BufferUsage;
-    using OOBRead = bool;
-    using OOBWrite = bool;
+using ReadBufferUsage = wgpu::BufferUsage;
+using OOBRead = bool;
+using OOBWrite = bool;
 
-    DAWN_TEST_PARAM_STRUCT(ClampedOOBDynamicBufferOffsetParams, ReadBufferUsage, OOBRead, OOBWrite);
+DAWN_TEST_PARAM_STRUCT(ClampedOOBDynamicBufferOffsetParams, ReadBufferUsage, OOBRead, OOBWrite);
 }  // anonymous namespace
 
 class ClampedOOBDynamicBufferOffsetTests
@@ -562,7 +564,7 @@ TEST_P(ClampedOOBDynamicBufferOffsetTests, CheckOOBAccess) {
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, bindGroup, dynamicOffsets.size(), dynamicOffsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
     wgpu::CommandBuffer commands = commandEncoder.Finish();
     queue.Submit(1, &commands);

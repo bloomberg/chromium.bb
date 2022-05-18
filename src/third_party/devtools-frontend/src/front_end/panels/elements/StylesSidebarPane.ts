@@ -61,7 +61,13 @@ import {StylePropertyHighlighter} from './StylePropertyHighlighter.js';
 import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
 
 import type {StylePropertyTreeElement} from './StylePropertyTreeElement.js';
-import {StylePropertiesSection, BlankStylePropertiesSection, KeyframePropertiesSection} from './StylePropertiesSection.js';
+import {
+  StylePropertiesSection,
+  BlankStylePropertiesSection,
+  KeyframePropertiesSection,
+  HighlightPseudoStylePropertiesSection,
+} from './StylePropertiesSection.js';
+
 import * as LayersWidget from './LayersWidget.js';
 
 const UIStrings = {
@@ -141,6 +147,14 @@ const UIStrings = {
   */
   automaticDarkMode: 'Automatic dark mode',
   /**
+  *@description Tooltip text that appears when hovering over the css changes button in the Styles Sidebar Pane of the Elements panel
+  */
+  copyAllCSSChanges: 'Copy all the CSS changes',
+  /**
+  *@description Tooltip text that appears after clicking on the copy CSS changes button
+  */
+  copiedToClipboard: 'Copied to clipboard',
+  /**
   *@description Text displayed on layer separators in the styles sidebar pane.
   */
   layer: 'Layer',
@@ -201,6 +215,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
   private readonly imagePreviewPopover: ImagePreviewPopover;
   activeCSSAngle: InlineEditor.CSSAngle.CSSAngle|null;
   #urlToChangeTracker: Map<Platform.DevToolsPath.UrlString, ChangeTracker> = new Map();
+  #copyChangesButton?: UI.Toolbar.ToolbarButton;
 
   static instance(): StylesSidebarPane {
     if (!stylesSidebarPaneInstance) {
@@ -412,7 +427,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
   }
 
   private sectionsContainerKeyDown(event: Event): void {
-    const activeElement = this.sectionsContainer.ownerDocument.deepActiveElement();
+    const activeElement = Platform.DOMUtilities.deepActiveElement(this.sectionsContainer.ownerDocument);
     if (!activeElement) {
       return;
     }
@@ -573,6 +588,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     if (!this.initialUpdateCompleted) {
       this.initialUpdateCompleted = true;
       this.appendToolbarItem(this.createRenderingShortcuts());
+      if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
+        this.#copyChangesButton = this.createCopyAllChangesButton();
+        this.appendToolbarItem(this.#copyChangesButton);
+        this.#copyChangesButton.element.classList.add('hidden');
+      }
       this.dispatchEventToListeners(Events.InitialUpdateCompleted);
     }
 
@@ -859,17 +879,48 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
       }
     }
 
-    let pseudoTypes: Protocol.DOM.PseudoType[] = [];
-    const keys = matchedStyles.pseudoTypes();
-    if (keys.delete(Protocol.DOM.PseudoType.Before)) {
-      pseudoTypes.push(Protocol.DOM.PseudoType.Before);
-    }
-    pseudoTypes = pseudoTypes.concat([...keys].sort());
-    for (const pseudoType of pseudoTypes) {
+    const customHighlightPseudoRulesets: {
+      highlightName: string|null,
+      pseudoType: Protocol.DOM.PseudoType,
+      pseudoStyles: SDK.CSSStyleDeclaration.CSSStyleDeclaration[],
+    }[] = Array.from(matchedStyles.customHighlightPseudoNames()).map(highlightName => {
+      return {
+        'highlightName': highlightName,
+        'pseudoType': Protocol.DOM.PseudoType.Highlight,
+        'pseudoStyles': matchedStyles.customHighlightPseudoStyles(highlightName),
+      };
+    });
+
+    const otherPseudoRulesets: {
+      highlightName: string|null,
+      pseudoType: Protocol.DOM.PseudoType,
+      pseudoStyles: SDK.CSSStyleDeclaration.CSSStyleDeclaration[],
+    }[] = [...matchedStyles.pseudoTypes()].map(pseudoType => {
+      return {'highlightName': null, 'pseudoType': pseudoType, 'pseudoStyles': matchedStyles.pseudoStyles(pseudoType)};
+    });
+
+    const pseudoRulesets = customHighlightPseudoRulesets.concat(otherPseudoRulesets).sort((a, b) => {
+      // We want to show the ::before pseudos first, followed by the remaining pseudos
+      // in alphabetical order.
+      if (a.pseudoType === Protocol.DOM.PseudoType.Before && b.pseudoType !== Protocol.DOM.PseudoType.Before) {
+        return -1;
+      }
+      if (a.pseudoType !== Protocol.DOM.PseudoType.Before && b.pseudoType === Protocol.DOM.PseudoType.Before) {
+        return 1;
+      }
+      if (a.pseudoType < b.pseudoType) {
+        return -1;
+      }
+      if (a.pseudoType > b.pseudoType) {
+        return 1;
+      }
+      return 0;
+    });
+
+    for (const pseudo of pseudoRulesets) {
       lastParentNode = null;
-      const pseudoStyles = matchedStyles.pseudoStyles(pseudoType);
-      for (let i = 0; i < pseudoStyles.length; ++i) {
-        const style = pseudoStyles[i];
+      for (let i = 0; i < pseudo.pseudoStyles.length; ++i) {
+        const style = pseudo.pseudoStyles[i];
         const parentNode = matchedStyles.isInherited(style) ? matchedStyles.nodeForStyle(style) : null;
 
         // Start a new SectionBlock if this is the first rule for this pseudo type, or if this
@@ -877,10 +928,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
         if (i === 0 || parentNode !== lastParentNode) {
           lastLayers = null;
           if (parentNode) {
-            const block = await SectionBlock.createInheritedPseudoTypeBlock(pseudoType, parentNode);
+            const block =
+                await SectionBlock.createInheritedPseudoTypeBlock(pseudo.pseudoType, pseudo.highlightName, parentNode);
             blocks.push(block);
           } else {
-            const block = SectionBlock.createPseudoTypeBlock(pseudoType);
+            const block = SectionBlock.createPseudoTypeBlock(pseudo.pseudoType, pseudo.highlightName);
             blocks.push(block);
           }
         }
@@ -889,7 +941,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
         addLayerSeparator(style);
         const lastBlock = blocks[blocks.length - 1];
         this.idleCallbackManager.schedule(() => {
-          const section = new StylePropertiesSection(this, matchedStyles, style, sectionIdx);
+          const section = new HighlightPseudoStylePropertiesSection(this, matchedStyles, style, sectionIdx);
           sectionIdx++;
           lastBlock.sections.push(section);
         });
@@ -1069,6 +1121,22 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
     const formattedLineNumber =
         formattedCurrentMapping.originalToFormatted(uiLocation.lineNumber, uiLocation.columnNumber)[0];
     return changedLines.has(formattedLineNumber + 1);
+  }
+
+  updateChangeStatus(): void {
+    if (!this.#copyChangesButton) {
+      return;
+    }
+
+    let hasChangedStyles = false;
+    for (const changeTracker of this.#urlToChangeTracker.values()) {
+      if (changeTracker.changedLines.size > 0) {
+        hasChangedStyles = true;
+        break;
+      }
+    }
+
+    this.#copyChangesButton.element.classList.toggle('hidden', !hasChangedStyles);
   }
 
   private async refreshChangedLines(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void> {
@@ -1252,6 +1320,29 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
 
     return button;
   }
+
+  private createCopyAllChangesButton(): UI.Toolbar.ToolbarButton {
+    const copyAllChangesButton =
+        new UI.Toolbar.ToolbarButton(i18nString(UIStrings.copyAllCSSChanges), 'largeicon-copy');
+    // TODO(1296947): implement a dedicated component to share between all copy buttons
+    copyAllChangesButton.element.setAttribute('data-content', i18nString(UIStrings.copiedToClipboard));
+    let timeout: number|undefined;
+    copyAllChangesButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, async () => {
+      const allChanges = await this.getFormattedChanges();
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
+      Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = undefined;
+      }
+      copyAllChangesButton.element.classList.add('copied-to-clipboard');
+      timeout = window.setTimeout(() => {
+        copyAllChangesButton.element.classList.remove('copied-to-clipboard');
+        timeout = undefined;
+      }, 2000);
+    });
+    return copyAllChangesButton;
+  }
 }
 
 export const enum Events {
@@ -1285,19 +1376,23 @@ export class SectionBlock {
     this.sections = [];
   }
 
-  static createPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType): SectionBlock {
+  static createPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string|null): SectionBlock {
     const separatorElement = document.createElement('div');
     separatorElement.className = 'sidebar-separator';
-    separatorElement.textContent = i18nString(UIStrings.pseudoSElement, {PH1: pseudoType});
+    const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
+    const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
+    separatorElement.textContent = i18nString(UIStrings.pseudoSElement, {PH1: pseudoTypeString});
     return new SectionBlock(separatorElement);
   }
 
-  static async createInheritedPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, node: SDK.DOMModel.DOMNode):
-      Promise<SectionBlock> {
+  static async createInheritedPseudoTypeBlock(
+      pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string|null,
+      node: SDK.DOMModel.DOMNode): Promise<SectionBlock> {
     const separatorElement = document.createElement('div');
     separatorElement.className = 'sidebar-separator';
-
-    UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, {PH1: pseudoType}));
+    const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
+    const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
+    UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, {PH1: pseudoTypeString}));
     const link = await Common.Linkifier.Linkifier.linkify(node, {
       preventKeyboardFocus: true,
       tooltip: undefined,

@@ -102,6 +102,7 @@ enum class MessageIdentifier {
   INSTANT_APPS = 27,
   ABOUT_THIS_SITE = 28,
   TRANSLATE = 29,
+  OFFER_NOTIFICATION = 30,
 
   // Insert new values before this line.
   COUNT
@@ -123,6 +124,17 @@ enum class SecondaryMenuMaxSize {
   SMALL = 0,   // default: 180dp -> @dimen/message_secondary_menu_max_size_small
   MEDIUM = 1,  // 250dp -> @dimen/message_secondary_menu_max_size_medium
   LARGE = 2,   // 300dp -> @dimen/message_secondary_menu_max_size_large
+};
+
+// The primary widget that should be shown in the message.
+//
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.messages
+enum class PrimaryWidgetAppearance {
+  // Default value. Show the primary action button if non-empty text has been
+  // set for the primary action button, otherwise no primary widget is shown.
+  BUTTON_IF_TEXT_IS_SET = 0,
+  // Show a spinning progress indicator that isn't clickable.
+  PROGRESS_SPINNER = 1,
 };
 
 }  // namespace messages

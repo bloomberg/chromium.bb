@@ -1372,8 +1372,7 @@ static VkResult loader_scanned_icd_init(const struct loader_instance *inst, stru
 }
 
 static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list,
-                                       const char *filename, uint32_t api_version, bool is_portability_driver,
-                                       enum loader_layer_library_status *lib_status) {
+                                       const char *filename, uint32_t api_version, enum loader_layer_library_status *lib_status) {
     loader_platform_dl_handle handle;
     PFN_vkCreateInstance fp_create_inst;
     PFN_vkEnumerateInstanceExtensionProperties fp_get_inst_ext_props;
@@ -1513,7 +1512,6 @@ static VkResult loader_scanned_icd_add(const struct loader_instance *inst, struc
     new_scanned_icd->EnumerateAdapterPhysicalDevices = fp_enum_dxgi_adapter_phys_devs;
 #endif
     new_scanned_icd->interface_version = interface_vers;
-    new_scanned_icd->portability_driver = is_portability_driver;
 
     new_scanned_icd->lib_name = (char *)loader_instance_heap_alloc(inst, strlen(filename) + 1, VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE);
     if (NULL == new_scanned_icd->lib_name) {
@@ -1544,11 +1542,7 @@ void loader_initialize(void) {
     loader_log(NULL, VULKAN_LOADER_INFO_BIT, 0, "Vulkan Loader Version %d.%d.%d", version.major, version.minor, version.patch);
 
 #if defined(GIT_BRANCH_NAME) && defined(GIT_TAG_INFO)
-#define LOADER_GIT_STRINGIFY(x) #x
-#define LOADER_GIT_TOSTRING(x) LOADER_GIT_STRINGIFY(x)
-    const char git_branch_name[] = LOADER_GIT_TOSTRING(GIT_BRANCH_NAME);
-    const char git_tag_info[] = LOADER_GIT_TOSTRING(GIT_TAG_INFO);
-    loader_log(NULL, VULKAN_LOADER_INFO_BIT, 0, "[Git - Tag: %s, Branch/Commit: %s]", git_tag_info, git_branch_name);
+    loader_log(NULL, VULKAN_LOADER_INFO_BIT, 0, "[Vulkan Loader Git - Tag: " GIT_BRANCH_NAME ", Branch/Commit: " GIT_TAG_INFO "]");
 #endif
 }
 
@@ -1573,7 +1567,7 @@ void loader_preload_icds(void) {
     }
 
     memset(&scanned_icds, 0, sizeof(scanned_icds));
-    VkResult result = loader_icd_scan(NULL, &scanned_icds);
+    VkResult result = loader_icd_scan(NULL, &scanned_icds, NULL);
     if (result != VK_SUCCESS) {
         loader_scanned_icd_clear(NULL, &scanned_icds);
     }
@@ -1876,8 +1870,8 @@ static void remove_all_non_valid_override_layers(struct loader_instance *inst, s
                             found_active_override_layer = true;
                         } else {
                             loader_log(
-                                inst, VULKAN_LOADER_WARN_BIT, 0,
-                                "remove_all_non_valid_override_layers: Multiple override layers where the samepath in app_keys "
+                                inst, VULKAN_LOADER_WARN_BIT | VULKAN_LOADER_LAYER_BIT, 0,
+                                "remove_all_non_valid_override_layers: Multiple override layers where the same path in app_keys "
                                 "was found. Using the first layer found");
 
                             // Remove duplicate active override layers that have the same app_key_path
@@ -1887,6 +1881,11 @@ static void remove_all_non_valid_override_layers(struct loader_instance *inst, s
                     }
                 }
                 if (!found_active_override_layer) {
+                    loader_log(
+                        inst, VULKAN_LOADER_INFO_BIT | VULKAN_LOADER_LAYER_BIT, 0,
+                        "--Override layer found but not used because app \'%s\' is not in \'app_keys\' list!",
+                        cur_path);
+
                     // Remove non-global override layers that don't have an app_key that matches cur_path
                     loader_remove_layer_in_list(inst, instance_layers, i);
                     i--;
@@ -1896,7 +1895,7 @@ static void remove_all_non_valid_override_layers(struct loader_instance *inst, s
                     global_layer_index = i;
                 } else {
                     loader_log(
-                        inst, VULKAN_LOADER_WARN_BIT, 0,
+                        inst, VULKAN_LOADER_WARN_BIT | VULKAN_LOADER_LAYER_BIT, 0,
                         "remove_all_non_valid_override_layers: Multiple global override layers found. Using the first global "
                         "layer found");
                     loader_remove_layer_in_list(inst, instance_layers, i);
@@ -2506,7 +2505,7 @@ static VkResult loader_read_layer_json(const struct loader_instance *inst, struc
     app_keys = cJSON_GetObjectItem(layer_node, "app_keys");
     if (app_keys != NULL) {
         if (strcmp(name, VK_OVERRIDE_LAYER_NAME)) {
-            loader_log(inst, VULKAN_LOADER_WARN_BIT, 0,
+            loader_log(inst, VULKAN_LOADER_WARN_BIT | VULKAN_LOADER_LAYER_BIT, 0,
                        "Layer %s contains app_keys, but any app_keys can only be provided by the override metalayer. "
                        "These will be ignored.",
                        name);
@@ -3364,10 +3363,15 @@ void loader_destroy_icd_lib_list() {}
 // VK ICDs manifest files.
 // From these manifest files it finds the ICD libraries.
 //
+// skipped_portability_drivers is used to report whether the loader found drivers which report
+// portability but the application didn't enable the bit to enumerate them
+// Can be NULL
+//
 // \returns
 // Vulkan result
 // (on result == VK_SUCCESS) a list of icds that were discovered
-VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list) {
+VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list,
+                         bool *skipped_portability_drivers) {
     char *file_str;
     loader_api_version json_file_version = {0, 0, 0};
     struct loader_data_files manifest_files;
@@ -3549,18 +3553,19 @@ VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_t
                     json = NULL;
                     continue;
                 }
-                bool portability_driver = false;
+                // Skip over ICD's which contain a true "is_portability_driver" value whenever the application doesn't enable
+                // portability enumeration.
                 item = cJSON_GetObjectItem(itemICD, "is_portability_driver");
-                if (item != NULL && item->type == cJSON_True) {
-                    portability_driver = true;
-                    // TODO: skip over the driver if the is_portability_driver field is present and true but the portability
-                    // enumeration extension is present. Then emit an error if no drivers are present but a portability driver
-                    // was skipped.
+                if (item != NULL && item->type == cJSON_True && !inst->portability_enumeration_enabled) {
+                    if (skipped_portability_drivers) *skipped_portability_drivers = true;
+                    cJSON_Delete(inst, json);
+                    json = NULL;
+                    continue;
                 }
 
                 VkResult icd_add_res = VK_SUCCESS;
                 enum loader_layer_library_status lib_status;
-                icd_add_res = loader_scanned_icd_add(inst, icd_tramp_list, fullpath, vers, portability_driver, &lib_status);
+                icd_add_res = loader_scanned_icd_add(inst, icd_tramp_list, fullpath, vers, &lib_status);
                 if (VK_ERROR_OUT_OF_HOST_MEMORY == icd_add_res) {
                     res = icd_add_res;
                     goto out;
@@ -5433,16 +5438,6 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_CreateDevice(VkPhysicalDevice physical
 
     icd_exts.list = NULL;
 
-    // Check if the driver the VkPhysicalDevice comes from is a portability driver and emit a warning if the
-    // VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR bit isn't set
-    if (icd_term->scanned_icd->portability_driver && !icd_term->this_instance->portability_enumeration_enabled) {
-        loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_DRIVER_BIT, 0,
-                   "vkCreateDevice: Attempting to create a VkDevice from a VkPhysicalDevice which is from a portability driver "
-                   "without the VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR bit in the VkInstanceCreateInfo flags being set "
-                   "and the VK_KHR_portability_enumeration extension enabled. In future versions of the loader this "
-                   "VkPhysicalDevice will not be enumerated.");
-    }
-
     if (fpCreateDevice == NULL) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT | VULKAN_LOADER_DRIVER_BIT, 0,
                    "terminator_CreateDevice: No vkCreateDevice command exposed by ICD %s", icd_term->scanned_icd->lib_name);
@@ -6463,7 +6458,7 @@ terminator_EnumerateInstanceExtensionProperties(const VkEnumerateInstanceExtensi
         loader_preload_icds();
 
         // Scan/discover all ICD libraries
-        res = loader_icd_scan(NULL, &icd_tramp_list);
+        res = loader_icd_scan(NULL, &icd_tramp_list, NULL);
         // EnumerateInstanceExtensionProperties can't return anything other than OOM or VK_ERROR_LAYER_NOT_PRESENT
         if ((VK_SUCCESS != res && icd_tramp_list.count > 0) || res == VK_ERROR_OUT_OF_HOST_MEMORY) {
             goto out;

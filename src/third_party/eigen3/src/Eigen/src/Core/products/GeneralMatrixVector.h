@@ -58,9 +58,9 @@ public:
         ResPacketSize = Vectorizable ? unpacket_traits<ResPacket_>::size : 1
   };
 
-  typedef typename conditional<Vectorizable,LhsPacket_,LhsScalar>::type LhsPacket;
-  typedef typename conditional<Vectorizable,RhsPacket_,RhsScalar>::type RhsPacket;
-  typedef typename conditional<Vectorizable,ResPacket_,ResScalar>::type ResPacket;
+  typedef std::conditional_t<Vectorizable,LhsPacket_,LhsScalar> LhsPacket;
+  typedef std::conditional_t<Vectorizable,RhsPacket_,RhsScalar> RhsPacket;
+  typedef std::conditional_t<Vectorizable,ResPacket_,ResScalar> ResPacket;
 };
 
 

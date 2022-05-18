@@ -1736,7 +1736,7 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
   std::wstring folder_to_append;
   switch (location) {
     case SHORTCUT_LOCATION_DESKTOP:
-      dir_key = (level == CURRENT_USER) ? base::DIR_USER_DESKTOP
+      dir_key = (level == CURRENT_USER) ? int{base::DIR_USER_DESKTOP}
                                         : base::DIR_COMMON_DESKTOP;
       break;
     case SHORTCUT_LOCATION_QUICK_LAUNCH:
@@ -2619,7 +2619,6 @@ bool ShellUtil::AddFileAssociations(
     const std::wstring& application_name,
     const std::wstring& file_type_name,
     const base::FilePath& application_icon_path,
-    const base::FilePath& file_type_icon_path,
     const std::set<std::wstring>& file_extensions) {
   std::vector<std::unique_ptr<RegistryEntry>> entries;
 
@@ -2630,7 +2629,6 @@ bool ShellUtil::AddFileAssociations(
   app_info.application_icon_path = application_icon_path;
   app_info.application_icon_index = 0;
   app_info.file_type_name = file_type_name;
-  app_info.file_type_icon_path = file_type_icon_path;
   app_info.file_type_icon_index = 0;
   app_info.command_line = command_line.GetCommandLineStringForShell();
 

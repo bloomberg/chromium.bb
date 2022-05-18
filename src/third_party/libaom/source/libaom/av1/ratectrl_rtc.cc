@@ -112,6 +112,7 @@ void AV1RateControlRTC::InitRateControl(const AV1RateControlRtcConfig &rc_cfg) {
   cm->seq_params->bit_depth = AOM_BITS_8;
   cm->show_frame = 1;
   oxcf->profile = cm->seq_params->profile;
+  oxcf->mode = REALTIME;
   oxcf->rc_cfg.mode = AOM_CBR;
   oxcf->pass = AOM_RC_ONE_PASS;
   oxcf->q_cfg.aq_mode = rc_cfg.aq_mode ? CYCLIC_REFRESH_AQ : NO_AQ;

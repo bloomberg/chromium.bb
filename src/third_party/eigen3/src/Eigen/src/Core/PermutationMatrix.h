@@ -500,7 +500,7 @@ class PermutationWrapper : public PermutationBase<PermutationWrapper<IndicesType
     {}
 
     /** const version of indices(). */
-    const typename internal::remove_all<typename IndicesType::Nested>::type&
+    const internal::remove_all_t<typename IndicesType::Nested>&
     indices() const { return m_indices; }
 
   protected:

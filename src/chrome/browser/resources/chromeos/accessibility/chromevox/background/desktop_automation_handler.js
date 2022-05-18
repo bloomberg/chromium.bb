@@ -5,10 +5,10 @@
 /**
  * @fileoverview Handles automation from a desktop automation node.
  */
-import {AutoScrollHandler} from './auto_scroll_handler.js';
-import {ChromeVoxEvent, CustomAutomationEvent} from './custom_automation_event.js';
-import {DesktopAutomationInterface} from './desktop_automation_interface.js';
-import {TextEditHandler} from './editing/editing.js';
+import {AutoScrollHandler} from '/chromevox/background/auto_scroll_handler.js';
+import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {TextEditHandler} from '/chromevox/background/editing/editing.js';
+import {ChromeVoxEvent, CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -20,6 +20,7 @@ const StateType = chrome.automation.StateType;
 export class DesktopAutomationHandler extends DesktopAutomationInterface {
   /**
    * @param {!AutomationNode} node
+   * @private
    */
   constructor(node) {
     super(node);
@@ -75,6 +76,14 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
     /** @private {number} */
     this.totalPages_ = -1;
 
+    this.init_(node);
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @private
+   */
+  async init_(node) {
     this.addListener_(EventType.ALERT, this.onAlert);
     this.addListener_(EventType.BLUR, this.onBlur);
     this.addListener_(
@@ -110,18 +119,15 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
         EventType.VALUE_IN_TEXT_FIELD_CHANGED, this.onEditableChanged_);
     this.addListener_(EventType.VALUE_CHANGED, this.onValueChanged);
 
-    AutomationObjectConstructorInstaller.init(node, function() {
-      chrome.automation.getFocus((function(focus) {
-                                   if (focus) {
-                                     const event = new CustomAutomationEvent(
-                                         EventType.FOCUS, focus, {
-                                           eventFrom: 'page',
-                                           eventFromAction: ActionType.FOCUS
-                                         });
-                                     this.onFocus(event);
-                                   }
-                                 }).bind(this));
-    }.bind(this));
+    await AutomationObjectConstructorInstaller.init(node);
+    const focus =
+        await new Promise(resolve => chrome.automation.getFocus(resolve));
+    if (focus) {
+      const event = new CustomAutomationEvent(
+          EventType.FOCUS, focus,
+          {eventFrom: 'page', eventFromAction: ActionType.FOCUS});
+      this.onFocus(event);
+    }
   }
 
   /** @type {TextEditHandler} */
@@ -859,18 +865,15 @@ export class DesktopAutomationHandler extends DesktopAutomationInterface {
         .go();
   }
 
-  /**
-   * Initializes global state for DesktopAutomationHandler.
-   */
-  static init() {
+  /** Initializes global state for DesktopAutomationHandler. */
+  static async init() {
     if (DesktopAutomationInterface.instance) {
       throw new Error('DesktopAutomationInterface.instance already exists.');
     }
 
-    chrome.automation.getDesktop(function(desktop) {
-      DesktopAutomationInterface.instance =
-          new DesktopAutomationHandler(desktop);
-    });
+    const desktop =
+        await new Promise(resolve => chrome.automation.getDesktop(resolve));
+    DesktopAutomationInterface.instance = new DesktopAutomationHandler(desktop);
   }
 }
 

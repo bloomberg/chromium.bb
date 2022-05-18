@@ -92,7 +92,7 @@ class FakeArcClientAdapter : public ArcClientAdapter {
                    const std::string& serial_number) override {}
 
   void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
-  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+  void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), true, std::string()));
   }
@@ -899,6 +899,26 @@ TEST_F(ArcSessionImplTest, DisableUreadahead) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       GetClient(arc_session.get())->last_start_params().disable_ureadahead);
+}
+
+// Test that validates TTS caching is not enabled by default.
+TEST_F(ArcSessionImplTest, TTSCachingByDefault) {
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      GetClient(arc_session.get())->last_start_params().enable_tts_caching);
+}
+
+// Test that validates TTS caching is enabled.
+TEST_F(ArcSessionImplTest, TTSCachingEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(arc::kEnableTTSCaching, true /* use */);
+  auto arc_session = CreateArcSession();
+  arc_session->StartMiniInstance();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(
+      GetClient(arc_session.get())->last_start_params().enable_tts_caching);
 }
 
 // Test "<<" operator for ArcSessionImpl::State type.

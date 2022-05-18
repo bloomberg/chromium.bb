@@ -11,6 +11,8 @@ import {
   kTextureUsages,
   textureDimensionAndFormatCompatible,
   kTextureDimensions,
+  kFeaturesForFormats,
+  filterFormatsByFeature,
 } from '../../../../capability_info.js';
 import { kResourceStates } from '../../../../gpu_test.js';
 import { align, lcm } from '../../../../util/math.js';
@@ -117,13 +119,12 @@ g.test('texture,device_mismatch')
     { srcMismatched: true, dstMismatched: false },
     { srcMismatched: false, dstMismatched: true },
   ] as const)
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { srcMismatched, dstMismatched } = t.params;
     const mismatched = srcMismatched || dstMismatched;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
 
     const device = mismatched ? t.mismatchedDevice : t.device;
     const size = { width: 4, height: 4, depthOrArrayLayers: 1 };
@@ -345,16 +346,26 @@ Test the formats of textures in copyTextureToTexture must be copy-compatible.
 - for all destination texture formats
 `
   )
-  .paramsSubcasesOnly(u =>
-    u //
-      .combine('srcFormat', kTextureFormats)
-      .combine('dstFormat', kTextureFormats)
+  .params(u =>
+    u
+      .combine('srcFormatFeature', kFeaturesForFormats)
+      .combine('dstFormatFeature', kFeaturesForFormats)
+      .beginSubcases()
+      .expand('srcFormat', ({ srcFormatFeature }) =>
+        filterFormatsByFeature(srcFormatFeature, kTextureFormats)
+      )
+      .expand('dstFormat', ({ dstFormatFeature }) =>
+        filterFormatsByFeature(dstFormatFeature, kTextureFormats)
+      )
   )
+  .beforeAllSubcases(t => {
+    const { srcFormatFeature, dstFormatFeature } = t.params;
+    t.selectDeviceOrSkipTestCase([srcFormatFeature, dstFormatFeature]);
+  })
   .fn(async t => {
     const { srcFormat, dstFormat } = t.params;
     const srcFormatInfo = kTextureFormatInfo[srcFormat];
     const dstFormatInfo = kTextureFormatInfo[dstFormat];
-    await t.selectDeviceOrSkipTestCase([srcFormatInfo.feature, dstFormatInfo.feature]);
 
     const textureSize = {
       width: lcm(srcFormatInfo.blockWidth, dstFormatInfo.blockWidth),
@@ -423,6 +434,10 @@ Note: this is only tested for 2D textures as it is the only dimension compatible
       .combine('srcCopyLevel', [1, 2])
       .combine('dstCopyLevel', [0, 1])
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const {
       format,
@@ -432,8 +447,6 @@ Note: this is only tested for 2D textures as it is the only dimension compatible
       srcCopyLevel,
       dstCopyLevel,
     } = t.params;
-    await t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
-
     const kMipLevelCount = 3;
 
     const srcTexture = t.device.createTexture({
@@ -683,9 +696,12 @@ Test the validations on the member 'aspect' of GPUImageCopyTexture in CopyTextur
       .combine('sourceAspect', ['all', 'depth-only', 'stencil-only'] as const)
       .combine('destinationAspect', ['all', 'depth-only', 'stencil-only'] as const)
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const { format, sourceAspect, destinationAspect } = t.params;
-    await t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
 
     const kTextureSize = { width: 16, height: 8, depthOrArrayLayers: 1 };
 
@@ -760,9 +776,12 @@ TODO: Express the offsets in "block size" so as to be able to test non-4x4 compr
       .combine('srcCopyLevel', [0, 1, 2])
       .combine('dstCopyLevel', [0, 1, 2])
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const { format, dimension, copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
-    await t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
     const { blockWidth, blockHeight } = kTextureFormatInfo[format];
 
     const kTextureSize = {

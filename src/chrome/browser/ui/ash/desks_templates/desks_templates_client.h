@@ -28,6 +28,7 @@ class DesksController;
 namespace desks_storage {
 class DeskModel;
 class LocalDeskDataManager;
+class DeskModelWrapper;
 }  // namespace desks_storage
 
 // Class to handle all Desks in-browser functionalities. Will call into
@@ -86,7 +87,7 @@ class DesksTemplatesClient : public ash::SessionObserver {
                           DeleteDeskTemplateCallback callback);
 
   using GetDeskTemplatesCallback =
-      base::OnceCallback<void(const std::vector<ash::DeskTemplate*>&,
+      base::OnceCallback<void(const std::vector<const ash::DeskTemplate*>&,
                               std::string error)>;
   // Returns the current available saved desk templates.
   // TODO(crbug.com/1286515): This will be removed with the extension. Avoid
@@ -183,7 +184,7 @@ class DesksTemplatesClient : public ash::SessionObserver {
   // storage.
   void OnGetAllTemplates(GetDeskTemplatesCallback callback,
                          desks_storage::DeskModel::GetAllEntriesStatus status,
-                         const std::vector<ash::DeskTemplate*>& entries);
+                         const std::vector<const ash::DeskTemplate*>& entries);
 
   // Callback function that is called once the DesksController has captured the
   // active desk as a template. Invokes |callback| with |desk_template| as an
@@ -217,8 +218,16 @@ class DesksTemplatesClient : public ash::SessionObserver {
   // A test only template for testing `LaunchDeskTemplate`.
   std::unique_ptr<ash::DeskTemplate> launch_template_for_test_;
 
-  // Local desks storage backend.
-  std::unique_ptr<desks_storage::LocalDeskDataManager> storage_manager_;
+  // Local desks storage backend for desk templates.
+  std::unique_ptr<desks_storage::LocalDeskDataManager>
+      desk_templates_storage_manager_;
+
+  // Local desks storage backend for save and recall desks.
+  std::unique_ptr<desks_storage::LocalDeskDataManager>
+      save_and_recall_desks_storage_manager_;
+
+  // Wrapper desk model to house both desk types backend storage.
+  std::unique_ptr<desks_storage::DeskModelWrapper> saved_desk_storage_manager_;
 
   // The stored JSON values of preconfigured desk templates
   base::flat_map<AccountId, std::string> preconfigured_desk_templates_json_;

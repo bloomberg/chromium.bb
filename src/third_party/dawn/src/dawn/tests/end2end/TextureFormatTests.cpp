@@ -12,24 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <cmath>
+#include <limits>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TextureUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <cmath>
-#include <type_traits>
 
 // An expectation for float buffer content that can correctly compare different NaN values and
 // supports a basic tolerance for comparison of finite values.
 class ExpectFloatWithTolerance : public detail::Expectation {
   public:
     ExpectFloatWithTolerance(std::vector<float> expected, float tolerance)
-        : mExpected(std::move(expected)), mTolerance(tolerance) {
-    }
+        : mExpected(std::move(expected)), mTolerance(tolerance) {}
 
     testing::AssertionResult Check(const void* data, size_t size) override {
         ASSERT(size == sizeof(float) * mExpected.size());
@@ -76,8 +77,7 @@ class ExpectFloatWithTolerance : public detail::Expectation {
 // An expectation for float16 buffers that can correctly compare NaNs (all NaNs are equivalent).
 class ExpectFloat16 : public detail::Expectation {
   public:
-    ExpectFloat16(std::vector<uint16_t> expected) : mExpected(std::move(expected)) {
-    }
+    explicit ExpectFloat16(std::vector<uint16_t> expected) : mExpected(std::move(expected)) {}
 
     testing::AssertionResult Check(const void* data, size_t size) override {
         ASSERT(size == sizeof(uint16_t) * mExpected.size());
@@ -456,8 +456,12 @@ TEST_P(TextureFormatTest, RGBA8Unorm) {
 
 // Test the BGRA8Unorm format
 TEST_P(TextureFormatTest, BGRA8Unorm) {
-    // TODO(crbug.com/dawn/596): BGRA is unsupported on OpenGL ES; add workaround or validation
-    DAWN_SUPPRESS_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_bgra_read"));
+
+    // Intel's implementation of BGRA on ES is broken: it claims to support
+    // GL_EXT_texture_format_BGRA8888, but won't accept GL_BGRA or GL_BGRA8_EXT as internalFormat.
+    DAWN_SUPPRESS_TEST_IF(IsIntel() && IsOpenGLES() && IsLinux());
+
     uint8_t maxValue = std::numeric_limits<uint8_t>::max();
     std::vector<uint8_t> textureData = {maxValue, 1, 0, maxValue};
     std::vector<float> uncompressedData = {0.0f, 1.0f / maxValue, 1.0f, 1.0f};
@@ -623,11 +627,11 @@ TEST_P(TextureFormatTest, RGBA8UnormSrgb) {
 
     std::vector<float> uncompressedData;
     for (size_t i = 0; i < textureData.size(); i += 4) {
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 0] / float(maxValue)));
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 1] / float(maxValue)));
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 2] / float(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 0] / static_cast<float>(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 1] / static_cast<float>(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 2] / static_cast<float>(maxValue)));
         // Alpha is linear for sRGB formats
-        uncompressedData.push_back(textureData[i + 3] / float(maxValue));
+        uncompressedData.push_back(textureData[i + 3] / static_cast<float>(maxValue));
     }
 
     DoFloatFormatSamplingTest(
@@ -650,11 +654,11 @@ TEST_P(TextureFormatTest, BGRA8UnormSrgb) {
     std::vector<float> uncompressedData;
     for (size_t i = 0; i < textureData.size(); i += 4) {
         // Note that R and B are swapped
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 2] / float(maxValue)));
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 1] / float(maxValue)));
-        uncompressedData.push_back(SRGBToLinear(textureData[i + 0] / float(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 2] / static_cast<float>(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 1] / static_cast<float>(maxValue)));
+        uncompressedData.push_back(SRGBToLinear(textureData[i + 0] / static_cast<float>(maxValue)));
         // Alpha is linear for sRGB formats
-        uncompressedData.push_back(textureData[i + 3] / float(maxValue));
+        uncompressedData.push_back(textureData[i + 3] / static_cast<float>(maxValue));
     }
 
     DoFloatFormatSamplingTest(
@@ -753,7 +757,7 @@ TEST_P(TextureFormatTest, RGB9E5Ufloat) {
     // exponent (15).
 
     float smallestExponent = std::pow(2.0f, -24.0f);
-    float largestExponent = std::pow(2.0f, float(31 - 24));
+    float largestExponent = std::pow(2.0f, float{31 - 24});
 
     auto MakeRGB9E5 = [](uint32_t r, uint32_t g, uint32_t b, uint32_t e) {
         ASSERT((r & 0x1FF) == r);

@@ -43,11 +43,6 @@ void test_invalid_effect(skiatest::Reporter* r, const char* src, const char* exp
 
 #define EMPTY_MAIN "half4 main(float2 p) { return half4(0); }"
 
-DEF_TEST(SkRuntimeEffectInvalid_LimitedUniformTypes, r) {
-    // Runtime SkSL supports a limited set of uniform types. No bool, for example:
-    test_invalid_effect(r, "uniform bool b;" EMPTY_MAIN, "uniform");
-}
-
 DEF_TEST(SkRuntimeEffectInvalid_NoInVariables, r) {
     // 'in' variables aren't allowed at all:
     test_invalid_effect(r, "in bool b;"    EMPTY_MAIN, "'in'");
@@ -258,7 +253,7 @@ DEF_TEST(SkRuntimeEffectForShader, r) {
                  "unknown identifier 'sk_FragCoord'");
 
     SkRuntimeEffect::Options optionsWithFragCoord;
-    SkRuntimeEffectPriv::EnableFragCoord(&optionsWithFragCoord);
+    SkRuntimeEffectPriv::UsePrivateRTShaderModule(&optionsWithFragCoord);
     test_valid("half4 main(float2 p) { return sk_FragCoord.xy01; }", optionsWithFragCoord);
 
     // Sampling a child shader requires that we pass explicit coords
@@ -315,7 +310,7 @@ public:
 
     void build(const char* src) {
         SkRuntimeEffect::Options options;
-        SkRuntimeEffectPriv::EnableFragCoord(&options);
+        SkRuntimeEffectPriv::UsePrivateRTShaderModule(&options);
         auto [effect, errorText] = SkRuntimeEffect::MakeForShader(SkString(src), options);
         if (!effect) {
             REPORT_FAILURE(fReporter, "effect",
@@ -906,7 +901,7 @@ DEF_TEST(SkRuntimeEffectThreaded, r) {
     for (auto& thread : threads) {
         thread = std::thread([r]() {
             SkRuntimeEffect::Options options;
-            SkRuntimeEffectPriv::EnableFragCoord(&options);
+            SkRuntimeEffectPriv::UsePrivateRTShaderModule(&options);
             auto [effect, error] = SkRuntimeEffect::MakeForShader(SkString(kSource), options);
             REPORTER_ASSERT(r, effect);
         });

@@ -26,7 +26,6 @@
 #include "components/webapps/browser/android/add_to_homescreen_coordinator.h"
 #include "components/webapps/browser/android/add_to_homescreen_params.h"
 #include "components/webapps/browser/android/bottomsheet/pwa_bottom_sheet_controller.h"
-#include "components/webapps/browser/android/features.h"
 #include "components/webapps/browser/android/installable/installable_ambient_badge_infobar_delegate.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapps_icon_utils.h"
@@ -34,6 +33,7 @@
 #include "components/webapps/browser/android/webapps_utils.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/webapps_client.h"
@@ -218,7 +218,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
 
   // If we are installing from the ambient badge, it will remove itself.
   if (install_source != WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB &&
-      install_source != WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB) {
+      install_source != WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB &&
+      install_source != WebappInstallSource::RICH_INSTALL_UI_WEBLAYER) {
     HideAmbientBadge();
   }
 
@@ -274,6 +275,8 @@ void AppBannerManagerAndroid::OnInstallEvent(
              WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB ||
          a2hs_params.install_source ==
              WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB ||
+         a2hs_params.install_source ==
+             WebappInstallSource::RICH_INSTALL_UI_WEBLAYER ||
          a2hs_params.install_source == WebappInstallSource::API_BROWSER_TAB ||
          a2hs_params.install_source == WebappInstallSource::API_CUSTOM_TAB ||
          a2hs_params.install_source == WebappInstallSource::DEVTOOLS);

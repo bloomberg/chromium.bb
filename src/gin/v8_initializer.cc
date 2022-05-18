@@ -34,6 +34,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gin/array_buffer.h"
 #include "gin/gin_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/v8-initialization.h"
@@ -352,7 +353,7 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 // static
 void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
                                const std::string js_command_line_flags,
-                               v8::OOMErrorCallback oom_error_callback) {
+                               v8::LegacyOOMErrorCallback oom_error_callback) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
@@ -477,8 +478,20 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     base::internal::PartitionAddressSpace::InitConfigurablePool(pool_base,
                                                                 pool_size);
     // TODO(saelo) maybe record the size of the Pool into UMA.
+
+    // If this CHECK fails, it means that something used the array buffer
+    // shared memory mapper before the sandbox was initialized, which may then
+    // cause crashes later on as array buffers may have been mapped outside the
+    // sandbox. See GetSharedMemoryMapperForArrayBuffers(). TODO(saelo) remove
+    // once sandbox initialization is mandatory.
+    CHECK_NE(nullptr, GetSharedMemoryMapperForArrayBuffers());
   }
 #endif  // V8_SANDBOX
+
+  // Initialize the partition used by gin::ArrayBufferAllocator instances. This
+  // needs to happen now, after the V8 sandbox has been initialized, so that
+  // the partition is placed inside the configurable pool initialized above.
+  ArrayBufferAllocator::InitializePartition();
 }
 
 // static

@@ -86,6 +86,14 @@ bool GetIsAvailableInArcBySource(
     // Accounts added from the browser should not be available in ARC.
     case AccountManagerFacade::AccountAdditionSource::kChromeProfileCreation:
     case AccountManagerFacade::AccountAdditionSource::kOgbAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kAvatarBubbleTurnOnSyncAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeExtensionAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSyncPromoAddAccount:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSettingsTurnOnSyncButton:
       return false;
     // These are reauthentication cases. ARC visibility shouldn't change for
     // reauthentication.
@@ -95,6 +103,9 @@ bool GetIsAvailableInArcBySource(
     case AccountManagerFacade::AccountAdditionSource::
         kAvatarBubbleReauthAccountButton:
     case AccountManagerFacade::AccountAdditionSource::kChromeExtensionReauth:
+    case AccountManagerFacade::AccountAdditionSource::kChromeSyncPromoReauth:
+    case AccountManagerFacade::AccountAdditionSource::
+        kChromeSettingsReauthAccountButton:
       NOTREACHED();
       return false;
     // Unused enums that cannot be deleted.
@@ -354,18 +365,21 @@ void AccountManagerFacadeImpl::ShowAddAccountDialog(
 
 void AccountManagerFacadeImpl::ShowReauthAccountDialog(
     AccountAdditionSource source,
-    const std::string& email) {
+    const std::string& email,
+    base::OnceClosure callback) {
   if (!account_manager_remote_ ||
       remote_version_ < RemoteMinVersions::kShowReauthAccountDialogMinVersion) {
     LOG(WARNING) << "Found remote at: " << remote_version_ << ", expected: "
                  << RemoteMinVersions::kShowReauthAccountDialogMinVersion
                  << " for ShowReauthAccountDialog.";
+    if (callback)
+      std::move(callback).Run();
     return;
   }
 
   base::UmaHistogramEnumeration(kAccountAdditionSource, source);
 
-  account_manager_remote_->ShowReauthAccountDialog(email, base::DoNothing());
+  account_manager_remote_->ShowReauthAccountDialog(email, std::move(callback));
 }
 
 void AccountManagerFacadeImpl::ShowManageAccountsSettings() {

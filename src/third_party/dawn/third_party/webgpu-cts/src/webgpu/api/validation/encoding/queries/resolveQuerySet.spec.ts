@@ -153,13 +153,12 @@ g.test('query_set_buffer,device_mismatch')
     { querySetMismatched: true, bufferMismatched: false },
     { querySetMismatched: false, bufferMismatched: true },
   ] as const)
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { querySetMismatched, bufferMismatched } = t.params;
     const mismatched = querySetMismatched || bufferMismatched;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
 
     const device = mismatched ? t.mismatchedDevice : t.device;
     const queryCout = 1;

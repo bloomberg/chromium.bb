@@ -213,6 +213,11 @@ public:
     return ploadt<PacketT, AlignmentT>(&operator()(i, j));
   }
 
+  template<typename PacketType>
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void storePacket(Index i, Index j, const PacketType &p) const {
+    pstoret<Scalar, PacketType, AlignmentType>(&operator()(i, j), p);
+  }
+
   template<typename SubPacket>
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void scatterPacket(Index i, Index j, const SubPacket &p) const {
     pscatter<Scalar, SubPacket>(&operator()(i, j), p, m_stride);
@@ -309,6 +314,11 @@ public:
   template <typename PacketT, int AlignmentT>
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE PacketT load(Index i, Index j) const {
     return pgather<Scalar,PacketT>(&operator()(i, j),m_incr.value());
+  }
+
+  template<typename PacketType>
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void storePacket(Index i, Index j, const PacketType &p) const {
+    pscatter<Scalar, PacketType>(&operator()(i, j), p, m_incr.value());
   }
 
   template<typename SubPacket>
@@ -428,10 +438,10 @@ template<typename XprType> struct blas_traits
                              ) ?  1 : 0,
     HasScalarFactor = false
   };
-  typedef typename conditional<bool(HasUsableDirectAccess),
+  typedef std::conditional_t<bool(HasUsableDirectAccess),
     ExtractType,
     typename ExtractType_::PlainObject
-    >::type DirectLinearAccessType;
+    > DirectLinearAccessType;
   static inline EIGEN_DEVICE_FUNC ExtractType extract(const XprType& x) { return x; }
   static inline EIGEN_DEVICE_FUNC const Scalar extractScalarFactor(const XprType&) { return Scalar(1); }
 };
@@ -514,10 +524,10 @@ struct blas_traits<Transpose<NestedXpr> >
   typedef Transpose<NestedXpr> XprType;
   typedef Transpose<const typename Base::ExtractType_>  ExtractType; // const to get rid of a compile error; anyway blas traits are only used on the RHS
   typedef Transpose<const typename Base::ExtractType_> ExtractType_;
-  typedef typename conditional<bool(Base::HasUsableDirectAccess),
+  typedef std::conditional_t<bool(Base::HasUsableDirectAccess),
     ExtractType,
     typename ExtractType::PlainObject
-    >::type DirectLinearAccessType;
+    > DirectLinearAccessType;
   enum {
     IsTransposed = Base::IsTransposed ? 0 : 1
   };

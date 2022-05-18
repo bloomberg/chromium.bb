@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {Store} from 'chrome://resources/js/cr/ui/store.js';
-import {StoreClient} from 'chrome://resources/js/cr/ui/store_client.js';
+import {StoreClient, StoreClientInterface} from 'chrome://resources/js/cr/ui/store_client.js';
 
 import {AppManagementStore} from './store.js';
 
@@ -25,19 +25,45 @@ export const AppManagementStoreClientImpl = {
   },
 
   /**
-   * @return {AppManagementPageState}
+   * @override
+   * @return {!AppManagementPageState}
    */
   getState() {
     return this.getStore().data;
   },
 
   /**
-   * @return {Store<AppManagementPageState>}
+   * @override
+   * @return {!Store<AppManagementPageState>}
    */
   getStore() {
     return AppManagementStore.getInstance();
   },
 };
+
+/**
+ * @interface
+ * @extends {StoreClientInterface}
+ */
+export class AppManagementStoreClientInterface {
+  /**
+   * @param {string} localProperty
+   * @param {function(!AppManagementPageState)} valueGetter
+   */
+  watch(localProperty, valueGetter) {}
+
+  /**
+   * @override
+   * @return {!AppManagementPageState}
+   */
+  getState() {}
+
+  /**
+   * @override
+   * @return {!Store<AppManagementPageState>}
+   */
+  getStore() {}
+}
 
 /**
  * @polymerBehavior

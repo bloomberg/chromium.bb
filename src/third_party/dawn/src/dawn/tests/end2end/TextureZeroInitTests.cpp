@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <string>
+#include <vector>
 
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TestUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
@@ -1000,7 +1002,7 @@ TEST_P(TextureZeroInitTest, ComputePassSampledTextureClear) {
     wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
     pass.SetPipeline(computePipeline);
     pass.SetBindGroup(0, bindGroup);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
     pass.End();
     wgpu::CommandBuffer commands = encoder.Finish();
     EXPECT_LAZY_CLEAR(1u, queue.Submit(1, &commands));
@@ -1719,9 +1721,7 @@ class CompressedTextureZeroInitTest : public TextureZeroInitTest {
         return {wgpu::FeatureName::TextureCompressionBC};
     }
 
-    bool IsBCFormatSupported() const {
-        return mIsBCFormatSupported;
-    }
+    bool IsBCFormatSupported() const { return mIsBCFormatSupported; }
 
     // Copy the compressed texture data into the destination texture.
     void InitializeDataInCompressedTextureAndExpectLazyClear(

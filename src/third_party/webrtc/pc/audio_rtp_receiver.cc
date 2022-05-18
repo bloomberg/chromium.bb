@@ -167,11 +167,6 @@ void AudioRtpReceiver::Stop() {
   track_->internal()->set_ended();
 }
 
-void AudioRtpReceiver::SetSourceEnded() {
-  RTC_DCHECK_RUN_ON(&signaling_thread_checker_);
-  source_->SetState(MediaSourceInterface::kEnded);
-}
-
 // RTC_RUN_ON(&signaling_thread_checker_)
 void AudioRtpReceiver::RestartMediaChannel(absl::optional<uint32_t> ssrc) {
   bool enabled = track_->internal()->enabled();
@@ -251,7 +246,7 @@ void AudioRtpReceiver::SetStreams(
       }
     }
     if (removed) {
-      existing_stream->RemoveTrack(track_);
+      existing_stream->RemoveTrack(audio_track());
     }
   }
   // Add remote track to any streams that are new.
@@ -265,7 +260,7 @@ void AudioRtpReceiver::SetStreams(
       }
     }
     if (added) {
-      stream->AddTrack(track_);
+      stream->AddTrack(audio_track());
     }
   }
   streams_ = streams;

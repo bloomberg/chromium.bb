@@ -57,10 +57,15 @@ void RecordWgcCapturerResult(WgcCapturerResult error) {
 }  // namespace
 
 bool IsWgcSupported(CaptureType capture_type) {
-  // A bug in the WGC API `CreateForMonitor` was fixed in 20H1.
-  if (capture_type == CaptureType::kScreen &&
-      rtc::rtc_win::GetVersion() < rtc::rtc_win::Version::VERSION_WIN10_20H1) {
-    return false;
+  if (capture_type == CaptureType::kScreen) {
+    // A bug in the WGC API `CreateForMonitor` was fixed in 20H1.
+    if (rtc::rtc_win::GetVersion() < rtc::rtc_win::Version::VERSION_WIN10_20H1)
+      return false;
+
+    // There is another bug in `CreateForMonitor` that causes a crash if there
+    // are no active displays.
+    if (!HasActiveDisplay())
+      return false;
   }
 
   if (!ResolveCoreWinRTDelayload())
@@ -240,7 +245,8 @@ void WgcCapturerWin::CaptureFrame() {
         iter_success_pair = ongoing_captures_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(capture_source_->GetSourceId()),
-            std::forward_as_tuple(d3d11_device_, item));
+            std::forward_as_tuple(d3d11_device_, item,
+                                  capture_source_->GetSize()));
     RTC_DCHECK(iter_success_pair.second);
     capture_session = &iter_success_pair.first->second;
   } else {

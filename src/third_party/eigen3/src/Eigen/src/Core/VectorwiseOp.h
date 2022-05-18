@@ -88,7 +88,6 @@ template<typename A,typename B> struct partial_redux_dummy_func;
 #define EIGEN_MAKE_PARTIAL_REDUX_FUNCTOR(MEMBER,COST,VECTORIZABLE,BINARYOP)                \
   template <typename ResultType,typename Scalar>                                                            \
   struct member_##MEMBER {                                                                  \
-    EIGEN_EMPTY_STRUCT_CTOR(member_##MEMBER)                                                \
     typedef ResultType result_type;                                                         \
     typedef BINARYOP<Scalar,Scalar> BinaryOp;   \
     template<int Size> struct Cost { enum { value = COST }; };             \
@@ -193,7 +192,7 @@ template<typename ExpressionType, int Direction> class VectorwiseOp
     typedef typename ExpressionType::RealScalar RealScalar;
     typedef Eigen::Index Index; ///< \deprecated since Eigen 3.3
     typedef typename internal::ref_selector<ExpressionType>::non_const_type ExpressionTypeNested;
-    typedef typename internal::remove_all<ExpressionTypeNested>::type ExpressionTypeNestedCleaned;
+    typedef internal::remove_all_t<ExpressionTypeNested> ExpressionTypeNestedCleaned;
 
     template<template<typename OutScalar,typename InputScalar> class Functor,
                       typename ReturnScalar=Scalar> struct ReturnType

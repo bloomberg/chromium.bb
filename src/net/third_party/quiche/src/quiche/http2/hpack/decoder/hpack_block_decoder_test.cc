@@ -11,14 +11,14 @@
 
 #include "absl/strings/string_view.h"
 #include "quiche/http2/decoder/decode_buffer.h"
-#include "quiche/http2/hpack/decoder/hpack_block_collector.h"
 #include "quiche/http2/hpack/http2_hpack_constants.h"
-#include "quiche/http2/hpack/tools/hpack_block_builder.h"
-#include "quiche/http2/hpack/tools/hpack_example.h"
+#include "quiche/http2/test_tools/hpack_block_builder.h"
+#include "quiche/http2/test_tools/hpack_block_collector.h"
+#include "quiche/http2/test_tools/hpack_example.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/random_decoder_test.h"
+#include "quiche/http2/test_tools/random_decoder_test_base.h"
+#include "quiche/common/platform/api/quiche_expect_bug.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 namespace http2 {
 namespace test {
@@ -64,8 +64,7 @@ class HpackBlockDecoderTest : public RandomDecoderTest {
   }
 
   AssertionResult DecodeHpackExampleAndValidateSeveralWays(
-      absl::string_view hpack_example,
-      Validator validator) {
+      absl::string_view hpack_example, Validator validator) {
     std::string input = HpackExampleToStringOrDie(hpack_example);
     DecodeBuffer db(input);
     return DecodeAndValidateSeveralWays(&db, validator);

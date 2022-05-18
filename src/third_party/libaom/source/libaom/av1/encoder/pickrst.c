@@ -1081,7 +1081,7 @@ static INLINE int wrap_index(int i, int wiener_win) {
 // Solve linear equations to find Wiener filter tap values
 // Taps are output scaled by WIENER_FILT_STEP
 static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
-                           int32_t *x) {
+                           int64_t *x) {
   for (int k = 0; k < n - 1; k++) {
     // Partial pivoting: bring the row with the largest pivot to the top
     for (int i = n - 1; i > k; i--) {
@@ -1116,7 +1116,7 @@ static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
       c += A[i * stride + j] * x[j] / WIENER_TAP_SCALE_FACTOR;
     }
     // Store filter taps x in scaled form.
-    x[i] = (int32_t)(WIENER_TAP_SCALE_FACTOR * (b[i] - c) / A[i * stride + i]);
+    x[i] = WIENER_TAP_SCALE_FACTOR * (b[i] - c) / A[i * stride + i];
   }
 
   return 1;
@@ -1126,7 +1126,7 @@ static int linsolve_wiener(int n, int64_t *A, int stride, int64_t *b,
 static AOM_INLINE void update_a_sep_sym(int wiener_win, int64_t **Mc,
                                         int64_t **Hc, int32_t *a, int32_t *b) {
   int i, j;
-  int32_t S[WIENER_WIN];
+  int64_t S[WIENER_WIN];
   int64_t A[WIENER_HALFWIN1], B[WIENER_HALFWIN1 * WIENER_HALFWIN1];
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin1 = (wiener_win >> 1) + 1;
@@ -1174,7 +1174,10 @@ static AOM_INLINE void update_a_sep_sym(int wiener_win, int64_t **Mc,
       S[i] = S[wiener_win - 1 - i];
       S[wiener_halfwin1 - 1] -= 2 * S[i];
     }
-    memcpy(a, S, wiener_win * sizeof(*a));
+    for (i = 0; i < wiener_win; ++i) {
+      a[i] = (int32_t)CLIP(S[i], -(1 << (WIENER_FILT_BITS - 1)),
+                           (1 << (WIENER_FILT_BITS - 1)) - 1);
+    }
   }
 }
 
@@ -1182,7 +1185,7 @@ static AOM_INLINE void update_a_sep_sym(int wiener_win, int64_t **Mc,
 static AOM_INLINE void update_b_sep_sym(int wiener_win, int64_t **Mc,
                                         int64_t **Hc, int32_t *a, int32_t *b) {
   int i, j;
-  int32_t S[WIENER_WIN];
+  int64_t S[WIENER_WIN];
   int64_t A[WIENER_HALFWIN1], B[WIENER_HALFWIN1 * WIENER_HALFWIN1];
   const int wiener_win2 = wiener_win * wiener_win;
   const int wiener_halfwin1 = (wiener_win >> 1) + 1;
@@ -1231,7 +1234,10 @@ static AOM_INLINE void update_b_sep_sym(int wiener_win, int64_t **Mc,
       S[i] = S[wiener_win - 1 - i];
       S[wiener_halfwin1 - 1] -= 2 * S[i];
     }
-    memcpy(b, S, wiener_win * sizeof(*b));
+    for (i = 0; i < wiener_win; ++i) {
+      b[i] = (int32_t)CLIP(S[i], -(1 << (WIENER_FILT_BITS - 1)),
+                           (1 << (WIENER_FILT_BITS - 1)) - 1);
+    }
   }
 }
 
@@ -1768,7 +1774,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
           cm->superres_upscaled_height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
           AOM_RESTORATION_FRAME_BORDER, cm->features.byte_alignment, NULL, NULL,
-          NULL, 0))
+          NULL, 0, 0))
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
 

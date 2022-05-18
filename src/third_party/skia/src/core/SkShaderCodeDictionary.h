@@ -15,9 +15,14 @@
 #include "include/private/SkSpinlock.h"
 #include "include/private/SkUniquePaintParamsID.h"
 #include "src/core/SkArenaAlloc.h"
+#include "src/core/SkEnumBitMask.h"
 #include "src/core/SkPaintParamsKey.h"
 #include "src/core/SkPipelineData.h"
 #include "src/core/SkUniform.h"
+
+namespace SkSL {
+struct ShaderCaps;
+}
 
 // TODO: How to represent the type (e.g., 2D) of texture being sampled?
 class SkTextureAndSampler {
@@ -30,6 +35,12 @@ private:
     const char* fName;
 };
 
+enum class SnippetRequirementFlags : uint32_t {
+    kNone = 0x0,
+    kLocalCoords = 0x1,
+};
+SK_MAKE_BITMASK_OPS(SnippetRequirementFlags);
+
 struct SkShaderSnippet {
     using GenerateGlueCodeForEntry = std::string (*)(const std::string& resultName,
                                                      int entryIndex, // for uniform name mangling
@@ -40,17 +51,19 @@ struct SkShaderSnippet {
 
     SkShaderSnippet() = default;
 
-    SkShaderSnippet(SkSpan<const SkUniform> uniforms,
+    SkShaderSnippet(const char* name,
+                    SkSpan<const SkUniform> uniforms,
+                    SnippetRequirementFlags snippetRequirementFlags,
                     SkSpan<const SkTextureAndSampler> texturesAndSamplers,
                     const char* functionName,
-                    const char* code,
                     GenerateGlueCodeForEntry glueCodeGenerator,
                     int numChildren,
                     SkSpan<const SkPaintParamsKey::DataPayloadField> dataPayloadExpectations)
-            : fUniforms(uniforms)
+            : fName(name)
+            , fUniforms(uniforms)
+            , fSnippetRequirementFlags(snippetRequirementFlags)
             , fTexturesAndSamplers(texturesAndSamplers)
             , fStaticFunctionName(functionName)
-            , fStaticSkSL(code)
             , fGlueCodeGenerator(glueCodeGenerator)
             , fNumChildren(numChildren)
             , fDataPayloadExpectations(dataPayloadExpectations) {
@@ -58,10 +71,17 @@ struct SkShaderSnippet {
 
     std::string getMangledUniformName(int uniformIndex, int mangleId) const;
 
+    bool needsLocalCoords() const {
+        return fSnippetRequirementFlags & SnippetRequirementFlags::kLocalCoords;
+    }
+
+    int numExpectedChildren() const { return fNumChildren; }
+
+    const char* fName = nullptr;
     SkSpan<const SkUniform> fUniforms;
+    SnippetRequirementFlags fSnippetRequirementFlags;
     SkSpan<const SkTextureAndSampler> fTexturesAndSamplers;
     const char* fStaticFunctionName = nullptr;
-    const char* fStaticSkSL = nullptr;
     GenerateGlueCodeForEntry fGlueCodeGenerator = nullptr;
     int fNumChildren = 0;
     SkSpan<const SkPaintParamsKey::DataPayloadField> fDataPayloadExpectations;
@@ -74,6 +94,13 @@ public:
     void add(const SkPaintParamsKey::BlockReader& reader) {
         fBlockReaders.push_back(reader);
     }
+    void addFlags(SnippetRequirementFlags flags) {
+        fSnippetRequirementFlags |= flags;
+    }
+    bool needsLocalCoords() const {
+        return fSnippetRequirementFlags & SnippetRequirementFlags::kLocalCoords;
+    }
+
 #ifdef SK_GRAPHITE_ENABLED
     void setBlendInfo(const SkPipelineDataGatherer::BlendInfo& blendInfo) {
         fBlendInfo = blendInfo;
@@ -88,12 +115,15 @@ public:
 private:
     std::string emitGlueCodeForEntry(int* entryIndex,
                                      const std::string& priorStageOutputName,
+                                     const std::string& parentPreLocalName,
                                      std::string* result,
                                      int indent) const;
 
     std::vector<SkPaintParamsKey::BlockReader> fBlockReaders;
 
+    SkEnumBitMask<SnippetRequirementFlags> fSnippetRequirementFlags =SnippetRequirementFlags::kNone;
 #ifdef SK_GRAPHITE_ENABLED
+
     // The blendInfo doesn't actually contribute to the program's creation but, it contains the
     // matching fixed-function settings that the program's caller needs to set up.
     SkPipelineDataGatherer::BlendInfo fBlendInfo;
@@ -153,6 +183,9 @@ public:
     const Entry* lookup(SkUniquePaintParamsID) const SK_EXCLUDES(fSpinLock);
 
     SkSpan<const SkUniform> getUniforms(SkBuiltInCodeSnippetID) const;
+    SnippetRequirementFlags getSnippetRequirementFlags(SkBuiltInCodeSnippetID id) const {
+        return fBuiltInCodeSnippets[(int) id].fSnippetRequirementFlags;
+    }
 
     SkSpan<const SkPaintParamsKey::DataPayloadField> dataPayloadExpectations(int snippetID) const;
 

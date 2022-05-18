@@ -52,10 +52,6 @@ bool EventsInOrder(const absl::optional<base::TimeDelta>& first,
   return first && first <= second;
 }
 
-bool IsMainFrame(content::RenderFrameHost* render_frame_host) {
-  return render_frame_host->GetParent() == nullptr;
-}
-
 internal::PageLoadTimingStatus IsValidPageLoadTiming(
     const mojom::PageLoadTiming& timing) {
   if (page_load_metrics::IsEmpty(timing))
@@ -432,8 +428,6 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       page_input_timing_(mojom::InputTiming::New()),
       mobile_friendliness_(blink::MobileFriendliness()),
       is_prerendered_page_load_(navigation_handle->IsInPrerenderedMainFrame()) {
-  page_input_timing_->max_event_durations =
-      mojom::UserInteractionLatencies::New();
 }
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
@@ -478,7 +472,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
 
   UpdateHasSeenInputOrScroll(*new_timing);
 
-  bool is_main_frame = IsMainFrame(render_frame_host);
+  bool is_main_frame = client_->IsPageMainFrame(render_frame_host);
   if (is_main_frame) {
     UpdateMainFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
@@ -532,7 +526,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
 void PageLoadMetricsUpdateDispatcher::SetUpSharedMemoryForSmoothness(
     content::RenderFrameHost* render_frame_host,
     base::ReadOnlySharedMemoryRegion shared_memory) {
-  const bool is_main_frame = IsMainFrame(render_frame_host);
+  const bool is_main_frame = client_->IsPageMainFrame(render_frame_host);
   if (is_main_frame) {
     client_->SetUpSharedMemoryForSmoothness(std::move(shared_memory));
   } else {
@@ -611,12 +605,18 @@ void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
     content::RenderFrameHost* render_frame_host,
     mojom::FrameMetadataPtr subframe_metadata) {
+  if (subframe_metadata->main_frame_viewport_rect) {
+    mojo::ReportBadMessage(
+        "Unexpected main_frame_viewport_rect set for a subframe.");
+    return;
+  }
+
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
   client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
 
-  MaybeUpdateFrameIntersection(render_frame_host, subframe_metadata);
+  MaybeUpdateMainFrameIntersectionRect(render_frame_host, subframe_metadata);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMobileFriendliness(
@@ -629,11 +629,11 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMobileFriendliness(
   client_->OnSubFrameMobileFriendlinessChanged(mobile_friendliness);
 }
 
-void PageLoadMetricsUpdateDispatcher::MaybeUpdateFrameIntersection(
+void PageLoadMetricsUpdateDispatcher::MaybeUpdateMainFrameIntersectionRect(
     content::RenderFrameHost* render_frame_host,
     const mojom::FrameMetadataPtr& frame_metadata) {
   // Handle intersection updates if included in the metadata.
-  if (frame_metadata->intersection_update.is_null())
+  if (!frame_metadata->main_frame_intersection_rect)
     return;
 
   // Do not notify intersections for untracked loads,
@@ -641,7 +641,7 @@ void PageLoadMetricsUpdateDispatcher::MaybeUpdateFrameIntersection(
   // TODO(crbug/1061091): Document definition of untracked loads in page load
   // metrics.
   const int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
-  bool is_main_frame = IsMainFrame(render_frame_host);
+  bool is_main_frame = client_->IsPageMainFrame(render_frame_host);
   if (!is_main_frame &&
       subframe_navigation_start_offset_.find(frame_tree_node_id) ==
           subframe_navigation_start_offset_.end()) {
@@ -649,18 +649,31 @@ void PageLoadMetricsUpdateDispatcher::MaybeUpdateFrameIntersection(
   }
 
   auto existing_intersection_it =
-      frame_intersection_updates_.find(frame_tree_node_id);
+      main_frame_intersection_rects_.find(frame_tree_node_id);
 
-  // Check if we already have a frame intersection update for the frame,
-  // dispatch updates for the first frame intersection update or if
-  // the intersection has changed.
-  if (existing_intersection_it == frame_intersection_updates_.end() ||
-      !existing_intersection_it->second.Equals(
-          *frame_metadata->intersection_update)) {
-    frame_intersection_updates_[frame_tree_node_id] =
-        *frame_metadata->intersection_update;
-    client_->OnFrameIntersectionUpdate(render_frame_host,
-                                       *frame_metadata->intersection_update);
+  // Check if we already have a frame intersection rect for the frame, dispatch
+  // updates for the first frame intersection rect or if the intersection has
+  // changed.
+  if (existing_intersection_it == main_frame_intersection_rects_.end() ||
+      existing_intersection_it->second !=
+          *frame_metadata->main_frame_intersection_rect) {
+    main_frame_intersection_rects_[frame_tree_node_id] =
+        *frame_metadata->main_frame_intersection_rect;
+    client_->OnMainFrameIntersectionRectChanged(
+        render_frame_host, *frame_metadata->main_frame_intersection_rect);
+  }
+}
+
+void PageLoadMetricsUpdateDispatcher::MaybeUpdateMainFrameViewportRect(
+    const mojom::FrameMetadataPtr& frame_metadata) {
+  // Handle viewport updates if included in the metadata.
+  if (!frame_metadata->main_frame_viewport_rect)
+    return;
+
+  if (!main_frame_viewport_rect_ ||
+      *frame_metadata->main_frame_viewport_rect != *main_frame_viewport_rect_) {
+    main_frame_viewport_rect_ = *frame_metadata->main_frame_viewport_rect;
+    client_->OnMainFrameViewportRectChanged(*main_frame_viewport_rect_);
   }
 }
 
@@ -724,8 +737,11 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
   main_frame_metadata_ = std::move(new_metadata);
   client_->OnMainFrameMetadataChanged();
 
-  if (!main_frame_metadata_.is_null())
-    MaybeUpdateFrameIntersection(render_frame_host, main_frame_metadata_);
+  if (!main_frame_metadata_.is_null()) {
+    MaybeUpdateMainFrameIntersectionRect(render_frame_host,
+                                         main_frame_metadata_);
+    MaybeUpdateMainFrameViewportRect(main_frame_metadata_);
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(

@@ -439,6 +439,12 @@ typedef struct {
    * during RD search.
    */
   int use_qm_dist_metric;
+
+  /*!
+   * Keep track of previous mode evaluation stage type. This will be used to
+   * reset mb rd hash record when mode evaluation type changes.
+   */
+  int mode_eval_type;
 } TxfmSearchParams;
 
 /*!\cond */
@@ -766,7 +772,10 @@ typedef enum {
 } SOURCE_SAD;
 
 typedef struct {
-  SOURCE_SAD source_sad;
+  //! SAD levels in non-rd path for var-based part and inter-mode search
+  SOURCE_SAD source_sad_nonrd;
+  //! SAD levels in rd-path for var-based part qindex thresholds
+  SOURCE_SAD source_sad_rd;
   int lighting_change;
   int low_sumdiff;
 } CONTENT_STATE_SB;
@@ -783,6 +792,14 @@ typedef struct {
   double log_var;
   int var;
 } Block4x4VarInfo;
+
+#ifndef NDEBUG
+typedef struct SetOffsetsLoc {
+  int mi_row;
+  int mi_col;
+  BLOCK_SIZE bsize;
+} SetOffsetsLoc;
+#endif  // NDEBUG
 
 /*!\endcond */
 
@@ -999,8 +1016,12 @@ typedef struct macroblock {
    * This is used to measure how viable a reference frame is.
    */
   int pred_mv_sad[REF_FRAMES];
-  //! The minimum of \ref pred_mv_sad.
-  int best_pred_mv_sad;
+  /*! \brief The minimum of \ref pred_mv_sad.
+   *
+   * Index 0 stores the minimum \ref pred_mv_sad across past reference frames.
+   * Index 1 stores the minimum \ref pred_mv_sad across future reference frames.
+   */
+  int best_pred_mv_sad[2];
   //! The sad of the 1st mv ref (nearest).
   int pred_mv0_sad[REF_FRAMES];
   //! The sad of the 2nd mv ref (near).
@@ -1229,6 +1250,10 @@ typedef struct macroblock {
    *  store source variance and log of source variance of each 4x4 sub-block.
    */
   Block4x4VarInfo *src_var_info_of_4x4_sub_blocks;
+#ifndef NDEBUG
+  /*! \brief A hash to make sure av1_set_offsets is called */
+  SetOffsetsLoc last_set_offsets_loc;
+#endif  // NDEBUG
 } MACROBLOCK;
 #undef SINGLE_REF_MODES
 

@@ -602,6 +602,17 @@ bool BestPractices::PreCallValidateAllocateDescriptorSets(VkDevice device, const
                 "same logical device. On some drivers or architectures it may be most optimal to re-use existing descriptor sets.",
                 VendorSpecificTag(kBPVendorArm));
         }
+
+        if (IsExtEnabled(device_extensions.vk_khr_maintenance1)) {
+            // Track number of descriptorSets allowable in this pool
+            if (pool_state->GetAvailableSets() < pAllocateInfo->descriptorSetCount) {
+                skip |= LogWarning(pool_state->Handle(), kVUID_BestPractices_EmptyDescriptorPool,
+                                 "vkAllocateDescriptorSets(): Unable to allocate %" PRIu32 " descriptorSets from %s"
+                                 ". This pool only has %" PRIu32 " descriptorSets remaining.",
+                                 pAllocateInfo->descriptorSetCount, report_data->FormatHandle(pool_state->Handle()).c_str(),
+                                 pool_state->GetAvailableSets());
+            }
+        }
     }
 
     return skip;
@@ -1265,6 +1276,17 @@ bool BestPractices::PreCallValidateQueueSubmit(VkQueue queue, uint32_t submitCou
     for (uint32_t submit = 0; submit < submitCount; submit++) {
         for (uint32_t semaphore = 0; semaphore < pSubmits[submit].waitSemaphoreCount; semaphore++) {
             skip |= CheckPipelineStageFlags("vkQueueSubmit", pSubmits[submit].pWaitDstStageMask[semaphore]);
+        }
+        if (pSubmits[submit].signalSemaphoreCount == 0 && pSubmits[submit].pSignalSemaphores != nullptr) {
+            skip |=
+                LogWarning(device, kVUID_BestPractices_SemaphoreCount,
+                           "pSubmits[%" PRIu32 "].pSignalSemaphores is set, but pSubmits[%" PRIu32 "].signalSemaphoreCount is 0.",
+                           submit, submit);
+        }
+        if (pSubmits[submit].waitSemaphoreCount == 0 && pSubmits[submit].pWaitSemaphores != nullptr) {
+            skip |= LogWarning(device, kVUID_BestPractices_SemaphoreCount,
+                               "pSubmits[%" PRIu32 "].pWaitSemaphores is set, but pSubmits[%" PRIu32 "].waitSemaphoreCount is 0.",
+                               submit, submit);
         }
     }
 
@@ -2542,6 +2564,9 @@ void BestPractices::ValidateBoundDescriptorSets(bp_state::CommandBuffer& cb_stat
                 VkImageView image_view{VK_NULL_HANDLE};
 
                 auto descriptor = descriptor_set->GetDescriptorFromGlobalIndex(i);
+                if (!descriptor) {
+                    continue;
+                }
                 switch (descriptor->GetClass()) {
                     case cvdescriptorset::DescriptorClass::Image: {
                         if (const auto image_descriptor = static_cast<const cvdescriptorset::ImageDescriptor*>(descriptor)) {

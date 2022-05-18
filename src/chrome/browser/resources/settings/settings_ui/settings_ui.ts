@@ -13,7 +13,7 @@
 import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
@@ -85,20 +85,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
        */
       prefs: Object,
 
-      advancedOpenedInMain_: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: 'onAdvancedOpenedInMainChanged_',
-      },
-
-      advancedOpenedInMenu_: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: 'onAdvancedOpenedInMenuChanged_',
-      },
-
       toolbarSpinnerActive_: {
         type: Boolean,
         value: false,
@@ -118,8 +104,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
     };
   }
 
-  private advancedOpenedInMain_: boolean;
-  private advancedOpenedInMenu_: boolean;
   private toolbarSpinnerActive_: boolean;
   private narrow_: boolean;
   private pageVisibility_: PageVisibility;
@@ -311,18 +295,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
     });
   }
 
-  private onAdvancedOpenedInMainChanged_() {
-    if (this.advancedOpenedInMain_) {
-      this.advancedOpenedInMenu_ = true;
-    }
-  }
-
-  private onAdvancedOpenedInMenuChanged_() {
-    if (this.advancedOpenedInMenu_) {
-      this.advancedOpenedInMain_ = true;
-    }
-  }
-
   private onNarrowChanged_() {
     if (this.$.drawer.open && !this.narrow_) {
       this.$.drawer.close();
@@ -350,20 +322,6 @@ export class SettingsUiElement extends SettingsUiElementBase {
       };
       this.$.drawer.addEventListener('close', boundCloseListener);
     }
-  }
-
-  /**
-   * Only used in tests.
-   */
-  getAdvancedOpenedInMainForTest(): boolean {
-    return this.advancedOpenedInMain_;
-  }
-
-  /**
-   * Only used in tests.
-   */
-  getAdvancedOpenedInMenuForTest(): boolean {
-    return this.advancedOpenedInMenu_;
   }
 }
 

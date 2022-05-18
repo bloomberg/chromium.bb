@@ -831,8 +831,8 @@ def _SetupBQTest(mock_commit_info, mock_swarming, mock_render, mock_json,
                  'Cr-Commit-Position: refs/heads/main@{#437745}',
   }
 
-  test_execution = run_test._RunTestExecution("fake_server", None, None, None,
-                                              None, None)
+  test_execution = run_test._RunTestExecution(None, "fake_server", None, None,
+                                              None, None, None, None, None)
   test_execution._task_id = "fake_task"
 
   commit_a = commit.Commit("fakerepo", "fakehashA")
@@ -956,7 +956,7 @@ class _JobStateFake(object):
       next(b, None)
       return itertools.izip(a, b)
 
-    return [(a, b) for a, b in Pairwise(self._attempts.keys())]
+    return [(a, b) for a, b in Pairwise(list(self._attempts.keys()))]
 
 
 class _JobStub(object):

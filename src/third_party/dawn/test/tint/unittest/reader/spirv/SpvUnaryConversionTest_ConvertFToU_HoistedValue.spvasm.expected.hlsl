@@ -1,4 +1,4 @@
-SKIP: FAILED
+SKIP: FAILED - see https://github.com/microsoft/DirectXShaderCompiler/issues/4422
 
 void main_1() {
   [loop] while (true) {
@@ -21,4 +21,5 @@ void main() {
   main_1();
   return;
 }
+Internal compiler error: access violation. Attempted to read from address 0x0000000000000048
 

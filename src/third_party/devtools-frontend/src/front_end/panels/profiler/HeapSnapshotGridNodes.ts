@@ -38,7 +38,9 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import type {ChildrenProvider} from './ChildrenProvider.js';
-import type {AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotSortableDataGrid} from './HeapSnapshotDataGrids.js';
+import type {
+  AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotSortableDataGrid} from
+  './HeapSnapshotDataGrids.js';
 import {HeapSnapshotSortableDataGridEvents} from './HeapSnapshotDataGrids.js';
 import type {HeapSnapshotProviderProxy, HeapSnapshotProxy} from './HeapSnapshotProxy.js';
 import type {DataDisplayDelegate} from './ProfileHeader.js';
@@ -572,6 +574,7 @@ export abstract class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode
         valueStyle = 'number';
         break;
       case 'hidden':
+      case 'object shape':
         valueStyle = 'null';
         break;
       case 'array':
@@ -1296,8 +1299,8 @@ export class AllocationGridNode extends HeapSnapshotGridNode {
       const linkifier = (this.dataGridInternal as AllocationDataGrid).linkifier;
       const urlElement = linkifier.linkifyScriptLocation(
           heapProfilerModel ? heapProfilerModel.target() : null,
-          String(allocationNode.scriptId) as Protocol.Runtime.ScriptId, allocationNode.scriptName,
-          allocationNode.line - 1, {
+          String(allocationNode.scriptId) as Protocol.Runtime.ScriptId,
+          allocationNode.scriptName as Platform.DevToolsPath.UrlString, allocationNode.line - 1, {
             columnNumber: allocationNode.column - 1,
             inlineFrameIndex: 0,
             className: 'profile-node-file',

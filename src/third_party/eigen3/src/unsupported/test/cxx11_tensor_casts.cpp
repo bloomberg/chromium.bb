@@ -149,7 +149,7 @@ struct test_cast_runner {
 
 // Only certain types allow cast from std::complex<>.
 template<typename Scalar>
-struct test_cast_runner<Scalar, typename internal::enable_if<NumTraits<Scalar>::IsComplex>::type> {
+struct test_cast_runner<Scalar, std::enable_if_t<NumTraits<Scalar>::IsComplex>> {
   static void run() {
     test_type_cast<Scalar, half>();
     test_type_cast<Scalar, bfloat16>();

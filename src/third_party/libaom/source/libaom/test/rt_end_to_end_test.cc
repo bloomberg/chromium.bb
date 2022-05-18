@@ -166,7 +166,7 @@ class RTEndToEndTest
       video.reset(new libaom_test::YUVVideoSource(test_video_param_.filename,
                                                   test_video_param_.fmt, 352,
                                                   288, 30, 1, 0, kFrames));
-    ASSERT_TRUE(video.get() != NULL);
+    ASSERT_NE(video, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();

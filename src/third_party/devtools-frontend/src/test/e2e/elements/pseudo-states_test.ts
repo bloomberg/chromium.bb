@@ -4,17 +4,26 @@
 
 import {assert} from 'chai';
 
-import {debuggerStatement, getBrowserAndPages, goToResource, step, timeout} from '../../shared/helper.js';
+import {debuggerStatement, getBrowserAndPages, goToResource, step} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {assertGutterDecorationForDomNodeExists, forcePseudoState, getComputedStylesForDomNode, removePseudoState, waitForContentOfSelectedElementsNode, waitForDomNodeToBeHidden, waitForDomNodeToBeVisible, waitForElementsStyleSection} from '../helpers/elements-helpers.js';
+import {
+  assertGutterDecorationForDomNodeExists,
+  forcePseudoState,
+  getComputedStylesForDomNode,
+  removePseudoState,
+  waitForContentOfSelectedElementsNode,
+  waitForDomNodeToBeHidden,
+  waitForDomNodeToBeVisible,
+  waitForElementsStyleSection,
+} from '../helpers/elements-helpers.js';
 
 const TARGET_SHOWN_ON_HOVER_SELECTOR = '.show-on-hover';
 const TARGET_SHOWN_ON_FOCUS_SELECTOR = '.show-on-focus';
 const TARGET_SHOWN_ON_TARGET_SELECTOR = '#show-on-target';
 
-describe('The Elements tab', async () => {
-  // Flaky test
-  it.skipOnPlatforms(['mac'], '[crbug.com/1280763] can force :hover state for selected DOM node', async () => {
+// Flaky test group.
+describe.skip('[crbug.com/1280763]: The Elements tab', async () => {
+  it('can force :hover state for selected DOM node', async () => {
     const {frontend} = getBrowserAndPages();
 
     await goToResource('elements/hover.html');
@@ -24,9 +33,6 @@ describe('The Elements tab', async () => {
     await step('Ensure the correct node is selected after opening a file', async () => {
       await waitForContentOfSelectedElementsNode('<body>\u200B');
     });
-
-    // FIXME(crbug/1112692): Refactor test to remove the timeout.
-    await timeout(50);
 
     await step('Select div that we can focus', async () => {
       await frontend.keyboard.press('ArrowRight');
@@ -52,9 +58,6 @@ describe('The Elements tab', async () => {
       await waitForContentOfSelectedElementsNode('<body>\u200B');
     });
 
-    // FIXME(crbug/1112692): Refactor test to remove the timeout.
-    await timeout(50);
-
     await step('Select element that we can target', async () => {
       await frontend.keyboard.press('ArrowRight');
       await waitForContentOfSelectedElementsNode(
@@ -69,8 +72,7 @@ describe('The Elements tab', async () => {
     assert.strictEqual(displayComputedStyle, 'inline');
   });
 
-  // Flaky test
-  it.skipOnPlatforms(['mac'], '[crbug.com/1134593] can force :focus state for selected DOM node', async () => {
+  it('can force :focus state for selected DOM node', async () => {
     const {frontend} = getBrowserAndPages();
 
     await goToResource('elements/focus.html');
@@ -80,9 +82,6 @@ describe('The Elements tab', async () => {
     await step('Ensure the correct node is selected after opening a file', async () => {
       await waitForContentOfSelectedElementsNode('<body>\u200B');
     });
-
-    // FIXME(crbug/1112692): Refactor test to remove the timeout.
-    await timeout(50);
 
     await step('Select div that we can focus', async () => {
       await frontend.keyboard.press('ArrowRight');
@@ -100,8 +99,7 @@ describe('The Elements tab', async () => {
     assert.strictEqual(backgroundColorComputedStyle, 'rgb(0, 128, 0)');
   });
 
-  // Flaky test
-  it.skipOnPlatforms(['mac'], '[crbug.com/1280763] can remove :focus state', async () => {
+  it('can remove :focus state', async () => {
     const {frontend} = getBrowserAndPages();
 
     await goToResource('elements/focus.html');
@@ -111,9 +109,6 @@ describe('The Elements tab', async () => {
     await step('Ensure the correct node is selected after opening a file', async () => {
       await waitForContentOfSelectedElementsNode('<body>\u200B');
     });
-
-    // FIXME(crbug/1112692): Refactor test to remove the timeout.
-    await timeout(50);
 
     await step('Select div that we can focus', async () => {
       await frontend.keyboard.press('ArrowRight');

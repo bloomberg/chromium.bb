@@ -4,8 +4,8 @@
 
 #include "absl/functional/bind_front.h"
 #include "quiche/http2/test_tools/http2_random.h"
+#include "quiche/common/platform/api/quiche_expect_bug.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 namespace http2 {
 namespace adapter {
@@ -99,8 +99,12 @@ TEST_F(WindowManagerTest, AvoidBufferedUnderflow) {
   wm_.MarkDataBuffered(42);
   EXPECT_EQ(peer_.buffered(), 42u);
   // Don't flush more than has been buffered!
-  EXPECT_QUICHE_BUG(wm_.MarkDataFlushed(43), "buffered underflow");
-  EXPECT_EQ(peer_.buffered(), 0u);
+  EXPECT_QUICHE_BUG(
+      {
+        wm_.MarkDataFlushed(43);
+        EXPECT_EQ(peer_.buffered(), 0u);
+      },
+      "buffered underflow");
 }
 
 // This test verifies that WindowManager notifies its listener when window is

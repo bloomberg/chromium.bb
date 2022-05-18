@@ -30,6 +30,8 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/bits.h"
+#include "base/system/sys_info.h"
+#include "gin/array_buffer.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
@@ -42,6 +44,35 @@ ArrayBufferContents::ArrayBufferContents(void* data,
 
   backing_store_ =
       v8::ArrayBuffer::NewBackingStore(data, length, deleter, nullptr);
+}
+
+ArrayBufferContents::ArrayBufferContents(
+    const base::subtle::PlatformSharedMemoryRegion& region,
+    uint64_t offset,
+    size_t length) {
+  DCHECK(region.IsValid());
+
+  // The offset must be a multiples of |SysInfo::VMAllocationGranularity()|.
+  size_t offset_rounding = offset % base::SysInfo::VMAllocationGranularity();
+  uint64_t real_offset = offset - offset_rounding;
+  size_t real_length = length + offset_rounding;
+
+  absl::optional<base::span<uint8_t>> result = region.MapAt(
+      real_offset, real_length, gin::GetSharedMemoryMapperForArrayBuffers());
+  if (!result.has_value()) {
+    return;
+  }
+
+  auto deleter = [](void* buffer, size_t length, void* data) {
+    size_t offset = reinterpret_cast<uintptr_t>(buffer) %
+                    base::SysInfo::VMAllocationGranularity();
+    uint8_t* base = static_cast<uint8_t*>(buffer) - offset;
+    base::span<uint8_t> mapping = base::make_span(base, length + offset);
+    gin::GetSharedMemoryMapperForArrayBuffers()->Unmap(mapping);
+  };
+  void* base = result.value().data() + offset_rounding;
+  backing_store_ =
+      v8::ArrayBuffer::NewBackingStore(base, length, deleter, nullptr);
 }
 
 ArrayBufferContents::ArrayBufferContents(
@@ -118,7 +149,9 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
   // Technically speaking, 16-byte aligned size doesn't mean 16-byte aligned
   // address, but this heuristics works with the current implementation of
   // PartitionAlloc (and PartitionAlloc doesn't support a better way for now).
-  if (base::kAlignment < 16) {  // base::kAlignment is a compile-time constant.
+  //
+  // `partition_alloc::internal::kAlignment` is a compile-time constant.
+  if (partition_alloc::internal::kAlignment < 16) {
     size_t aligned_size = base::bits::AlignUp(size, 16);
     if (size == 0) {
       aligned_size = 16;
@@ -128,12 +161,19 @@ void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
     }
   }
 
+  // The V8 sandbox requires all ArrayBuffer backing stores to be allocated
+  // inside the sandbox address space. This isn't guaranteed if allocation
+  // override hooks (which are e.g. used by GWP-ASan) are enabled for those
+  // allocations. However, allocation observer hooks (which are e.g. used by
+  // the heap profiler) should still be invoked. Using the kNoOverrideHooks
+  // flag with AllocWithFlags accomplishes this.
+  flags |= partition_alloc::AllocFlags::kNoOverrideHooks;
   if (policy == kZeroInitialize) {
     flags |= partition_alloc::AllocFlags::kZeroFill;
   }
   void* data = WTF::Partitions::ArrayBufferPartition()->AllocWithFlags(
       flags, size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
-  if (base::kAlignment < 16) {
+  if (partition_alloc::internal::kAlignment < 16) {
     char* ptr = reinterpret_cast<char*>(data);
     DCHECK_EQ(base::bits::AlignUp(ptr, 16), ptr)
         << "Pointer " << ptr << " not 16B aligned for size " << size;

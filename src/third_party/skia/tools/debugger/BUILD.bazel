@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 enforce_iwyu_on_package()
 
@@ -211,6 +213,7 @@ generated_cc_atom(
         ":JsonWriteBuffer_hdr",
         "//include/core:SkFlattenable_hdr",
         "//include/core:SkPoint_hdr",
+        "//include/core:SkSamplingOptions_hdr",
         "//include/core:SkString_hdr",
         "//src/utils:SkJSONWriter_hdr",
     ],

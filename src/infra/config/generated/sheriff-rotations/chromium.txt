@@ -49,7 +49,6 @@ ci/Win x64 Builder (dbg)
 ci/Win10 Tests x64
 ci/Win7 (32) Tests
 ci/Win7 Tests (1)
-ci/Win7 Tests (dbg)(1)
 ci/Windows deterministic
 ci/android-archive-dbg
 ci/android-archive-rel
@@ -73,6 +72,7 @@ ci/ios-simulator-noncq
 ci/lacros-amd64-generic-binary-size-rel
 ci/lacros-amd64-generic-rel
 ci/lacros-arm-generic-rel
+ci/lacros64-archive-rel
 ci/linux-archive-dbg
 ci/linux-archive-rel
 ci/linux-bfcache-rel

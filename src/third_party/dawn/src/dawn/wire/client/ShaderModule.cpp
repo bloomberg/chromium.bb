@@ -18,47 +18,49 @@
 
 namespace dawn::wire::client {
 
-    ShaderModule::~ShaderModule() {
-        ClearAllCallbacks(WGPUCompilationInfoRequestStatus_Unknown);
+ShaderModule::ShaderModule(Client* c, uint32_t r, uint32_t i) : ObjectBase(c, r, i) {}
+
+ShaderModule::~ShaderModule() {
+    ClearAllCallbacks(WGPUCompilationInfoRequestStatus_Unknown);
+}
+
+void ShaderModule::GetCompilationInfo(WGPUCompilationInfoCallback callback, void* userdata) {
+    if (client->IsDisconnected()) {
+        callback(WGPUCompilationInfoRequestStatus_DeviceLost, nullptr, userdata);
+        return;
     }
 
-    void ShaderModule::GetCompilationInfo(WGPUCompilationInfoCallback callback, void* userdata) {
-        if (client->IsDisconnected()) {
-            callback(WGPUCompilationInfoRequestStatus_DeviceLost, nullptr, userdata);
-            return;
+    uint64_t serial = mCompilationInfoRequests.Add({callback, userdata});
+
+    ShaderModuleGetCompilationInfoCmd cmd;
+    cmd.shaderModuleId = this->id;
+    cmd.requestSerial = serial;
+
+    client->SerializeCommand(cmd);
+}
+
+bool ShaderModule::GetCompilationInfoCallback(uint64_t requestSerial,
+                                              WGPUCompilationInfoRequestStatus status,
+                                              const WGPUCompilationInfo* info) {
+    CompilationInfoRequest request;
+    if (!mCompilationInfoRequests.Acquire(requestSerial, &request)) {
+        return false;
+    }
+
+    request.callback(status, info, request.userdata);
+    return true;
+}
+
+void ShaderModule::CancelCallbacksForDisconnect() {
+    ClearAllCallbacks(WGPUCompilationInfoRequestStatus_DeviceLost);
+}
+
+void ShaderModule::ClearAllCallbacks(WGPUCompilationInfoRequestStatus status) {
+    mCompilationInfoRequests.CloseAll([status](CompilationInfoRequest* request) {
+        if (request->callback != nullptr) {
+            request->callback(status, nullptr, request->userdata);
         }
-
-        uint64_t serial = mCompilationInfoRequests.Add({callback, userdata});
-
-        ShaderModuleGetCompilationInfoCmd cmd;
-        cmd.shaderModuleId = this->id;
-        cmd.requestSerial = serial;
-
-        client->SerializeCommand(cmd);
-    }
-
-    bool ShaderModule::GetCompilationInfoCallback(uint64_t requestSerial,
-                                                  WGPUCompilationInfoRequestStatus status,
-                                                  const WGPUCompilationInfo* info) {
-        CompilationInfoRequest request;
-        if (!mCompilationInfoRequests.Acquire(requestSerial, &request)) {
-            return false;
-        }
-
-        request.callback(status, info, request.userdata);
-        return true;
-    }
-
-    void ShaderModule::CancelCallbacksForDisconnect() {
-        ClearAllCallbacks(WGPUCompilationInfoRequestStatus_DeviceLost);
-    }
-
-    void ShaderModule::ClearAllCallbacks(WGPUCompilationInfoRequestStatus status) {
-        mCompilationInfoRequests.CloseAll([status](CompilationInfoRequest* request) {
-            if (request->callback != nullptr) {
-                request->callback(status, nullptr, request->userdata);
-            }
-        });
-    }
+    });
+}
 
 }  // namespace dawn::wire::client

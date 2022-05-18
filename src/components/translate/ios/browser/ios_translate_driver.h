@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
@@ -21,6 +22,7 @@ class WebState;
 
 namespace translate {
 
+class LanguageDetectionModelService;
 class TranslateManager;
 
 // Content implementation of TranslateDriver.
@@ -30,8 +32,10 @@ class IOSTranslateDriver
       public web::WebStateObserver,
       public language::IOSLanguageDetectionTabHelper::Observer {
  public:
-  IOSTranslateDriver(web::WebState* web_state,
-                     TranslateManager* translate_manager);
+  IOSTranslateDriver(
+      web::WebState* web_state,
+      TranslateManager* translate_manager,
+      LanguageDetectionModelService* language_detection_model_service);
 
   IOSTranslateDriver(const IOSTranslateDriver&) = delete;
   IOSTranslateDriver& operator=(const IOSTranslateDriver&) = delete;
@@ -45,6 +49,7 @@ class IOSTranslateDriver
   TranslateController* translate_controller() {
     return translate_controller_.get();
   }
+  void OnLanguageModelFileAvailabilityChanged(bool available);
 
   // web::WebStateObserver methods.
   void DidFinishNavigation(web::WebState* web_state,
@@ -107,6 +112,8 @@ class IOSTranslateDriver
   std::unique_ptr<TranslateController> translate_controller_;
   std::unique_ptr<LanguageDetectionController> language_detection_controller_;
 
+  LanguageDetectionModelService* language_detection_model_service_ = nullptr;
+
   // An ever-increasing sequence number of the current page, used to match up
   // translation requests with responses.
   // This matches the similar field in TranslateAgent in the renderer on other
@@ -120,6 +127,8 @@ class IOSTranslateDriver
   // Parameters of the current translation.
   std::string source_language_;
   std::string target_language_;
+
+  base::WeakPtrFactory<IOSTranslateDriver> weak_ptr_factory_{this};
 };
 
 }  // namespace translate

@@ -663,10 +663,6 @@ class WebMediaPlayerMSTest
 
 void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
   enable_surface_layer_for_video_ = testing::get<0>(GetParam());
-  WebMediaPlayer::SurfaceLayerMode surface_layer_mode =
-      enable_surface_layer_for_video_
-          ? WebMediaPlayer::SurfaceLayerMode::kAlways
-          : WebMediaPlayer::SurfaceLayerMode::kNever;
   player_ = std::make_unique<WebMediaPlayerMS>(
       nullptr, this, &delegate_, std::make_unique<media::NullMediaLog>(),
       scheduler::GetSingleThreadTaskRunnerForTesting(),
@@ -677,7 +673,7 @@ void WebMediaPlayerMSTest::InitializeWebMediaPlayerMS() {
       WebString(),
       WTF::Bind(&WebMediaPlayerMSTest::CreateMockSurfaceLayerBridge,
                 WTF::Unretained(this)),
-      std::move(submitter_), surface_layer_mode);
+      std::move(submitter_), enable_surface_layer_for_video_);
   player_->SetMediaStreamRendererFactoryForTesting(
       std::unique_ptr<MediaStreamRendererFactory>(render_factory_));
 }
@@ -797,7 +793,7 @@ void WebMediaPlayerMSTest::RenderFrame() {
 }
 
 void WebMediaPlayerMSTest::SizeChanged() {
-  gfx::Size frame_size = compositor_->GetCurrentSize();
+  gfx::Size frame_size = compositor_->GetMetadata().natural_size;
   CheckSizeChanged(frame_size);
 }
 
@@ -1218,7 +1214,7 @@ TEST_P(WebMediaPlayerMSTest, BackgroundRendering) {
 TEST_P(WebMediaPlayerMSTest, FrameSizeChange) {
   // During this test, the frame size of the input changes.
   // We need to make sure, when sizeChanged() gets called, new size should be
-  // returned by GetCurrentSize().
+  // returned by GetMetadata().
   InitializeWebMediaPlayerMS();
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 

@@ -21,7 +21,7 @@
 #include "chrome/browser/ash/arc/instance_throttle/arc_power_throttle_observer.h"
 #include "chrome/browser/ash/arc/instance_throttle/arc_provisioning_throttle_observer.h"
 #include "chrome/browser/ash/arc/instance_throttle/arc_switch_throttle_observer.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 
 namespace arc {
@@ -88,7 +88,7 @@ void SetArcVmCpuRestrictionImpl(
     return;
   }
 
-  auto* const client = chromeos::ConciergeClient::Get();
+  auto* const client = ash::ConciergeClient::Get();
   if (!client) {
     LOG(ERROR) << "ConciergeClient is not available";
     return;
@@ -100,7 +100,7 @@ void SetArcVmCpuRestrictionImpl(
 
 void SetArcVmCpuRestriction(CpuRestrictionState cpu_restriction_state,
                             bool use_quota) {
-  auto* const client = chromeos::ConciergeClient::Get();
+  auto* const client = ash::ConciergeClient::Get();
   if (!client) {
     LOG(ERROR) << "ConciergeClient is not available";
     return;

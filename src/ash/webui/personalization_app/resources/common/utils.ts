@@ -9,6 +9,28 @@
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
 
+/** A Promise<T> which can be externally |resolve()|-ed. */
+export type ExternallyResolvablePromise<T> =
+    Promise<T>&{resolve: (result: T) => void};
+
+/** Creates a Promise<T> which can be externally |resolve()|-ed. */
+export function createExternallyResolvablePromise<T>():
+    ExternallyResolvablePromise<T> {
+  let externalResolver: (result: T) => void;
+  const promise = new Promise<T>(resolve => {
+                    externalResolver = resolve;
+                  }) as ExternallyResolvablePromise<T>;
+  promise.resolve = externalResolver!;
+  return promise;
+}
+
+/**
+ * Checks if argument is an array with zero length.
+ */
+export function isEmptyArray(maybeArray: unknown): maybeArray is[] {
+  return Array.isArray(maybeArray) && maybeArray.length === 0;
+}
+
 /**
  * Checks if argument is an array with non-zero length.
  */
@@ -114,6 +136,20 @@ export function getLoadingPlaceholders<T>(factory: () => T): T[] {
  */
 export function getNumberOfGridItemsPerRow(): number {
   return window.innerWidth > 720 ? 4 : 3;
+}
+
+/**
+ * Returns the attribution list from local storage.
+ * Such as attribution (image title, author...) of a downloaded image.
+ */
+export function getLocalStorageAttribution(key: string): string[] {
+  const attributionMap =
+      JSON.parse((window.localStorage['attribution'] || '{}'));
+  const attribution = attributionMap[key];
+  if (!attribution) {
+    console.warn('Unable to get attribution from local storage.', key);
+  }
+  return attribution;
 }
 
 /**

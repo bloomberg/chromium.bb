@@ -242,20 +242,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
         fDrawInstancedSupport = version >= GR_GL_VER(2, 0);
     }
 
-#ifdef GR_DISABLE_TESSELLATION_ON_ES2
-    if (GR_IS_GR_GL_ES(standard) && version < GR_GL_VER(3, 0)) {
-        // Temporarily disable the tessellation path renderer on Chrome ES2 while we roll the
-        // necessary Skia changes.
-        fDisableTessellationPathRenderer = true;
-    }
-#else
-    if (GR_IS_GR_GL_ES(standard) && ctxInfo.isOverCommandBuffer() && version < GR_GL_VER(3, 0)) {
-        // Temporarily disable the tessellation path renderer over the ES2 command buffer. This is
-        // an attempt to lower impact while we roll out tessellation in Chrome.
-        fDisableTessellationPathRenderer = true;
-    }
-#endif
-
     if (GR_IS_GR_GL(standard)) {
         if (version >= GR_GL_VER(3, 0)) {
             fBindFragDataLocationSupport = true;
@@ -597,10 +583,6 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
     }
 
     GR_GL_GetIntegerv(gli, GR_GL_MAX_TEXTURE_SIZE, &fMaxTextureSize);
-
-    if (fDriverBugWorkarounds.max_texture_size_limit_4096) {
-        fMaxTextureSize = std::min(fMaxTextureSize, 4096);
-    }
 
     GR_GL_GetIntegerv(gli, GR_GL_MAX_RENDERBUFFER_SIZE, &fMaxRenderTargetSize);
     fMaxPreferredRenderTargetSize = fMaxRenderTargetSize;
@@ -970,23 +952,6 @@ void GrGLCaps::initGLSL(const GrGLContextInfo& ctxInfo, const GrGLInterface* gli
             shaderCaps->fSampleMaskSupport = true;
             shaderCaps->fSampleVariablesExtensionString = "GL_OES_sample_variables";
         }
-    }
-
-    bool hasTessellationSupport = false;
-    if (GR_IS_GR_GL(standard)) {
-        hasTessellationSupport = version >= GR_GL_VER(4,0) ||
-                                 ctxInfo.hasExtension("GL_ARB_tessellation_shader");
-    } else if (version >= GR_GL_VER(3,2)) {
-        hasTessellationSupport = true;
-    } else if (ctxInfo.hasExtension("GL_OES_tessellation_shader")) {
-        hasTessellationSupport = true;
-        shaderCaps->fTessellationExtensionString = "GL_OES_tessellation_shader";
-    }
-    if (hasTessellationSupport) {
-        GR_GL_GetIntegerv(gli, GR_GL_MAX_TESS_GEN_LEVEL_OES,
-                          &shaderCaps->fMaxTessellationSegments);
-        // Just in case a driver returns a negative number?
-        shaderCaps->fMaxTessellationSegments = std::max(0, shaderCaps->fMaxTessellationSegments);
     }
 
     shaderCaps->fVersionDeclString = get_glsl_version_decl_string(standard,
@@ -4200,35 +4165,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         fDisableTessellationPathRenderer = true;
     }
 
-    // http://skbug.com/9739
-    bool isNVIDIAPascal =
-            ctxInfo.driver() == GrGLDriver::kNVIDIA                              &&
-            ctxInfo.hasExtension("GL_NV_conservative_raster_pre_snap_triangles") &&  // Pascal+.
-            !ctxInfo.hasExtension("GL_NV_conservative_raster_underestimation");      // Volta+.
-    if (isNVIDIAPascal && ctxInfo.driverVersion() < GR_GL_DRIVER_VER(440, 00, 0)) {
-        if (GR_IS_GR_GL(ctxInfo.standard())) {
-            // glMemoryBarrier wasn't around until version 4.2.
-            if (ctxInfo.version() >= GR_GL_VER(4,2)) {
-                fRequiresManualFBBarrierAfterTessellatedStencilDraw = true;
-            } else {
-                shaderCaps->fMaxTessellationSegments = 0;
-            }
-        } else {
-            // glMemoryBarrier wasn't around until es version 3.1.
-            if (ctxInfo.version() >= GR_GL_VER(3,1)) {
-                fRequiresManualFBBarrierAfterTessellatedStencilDraw = true;
-            } else {
-                shaderCaps->fMaxTessellationSegments = 0;
-            }
-        }
-    }
-
-    if (ctxInfo.driver() == GrGLDriver::kQualcomm) {
-        // Qualcomm fails to link programs with tessellation and does not give an error message.
-        // http://skbug.com/9740
-        shaderCaps->fMaxTessellationSegments = 0;
-    }
-
 #ifdef SK_BUILD_FOR_WIN
     // glDrawElementsIndirect fails GrMeshTest on every Win10 Intel bot.
     if (ctxInfo.driver() == GrGLDriver::kIntel ||
@@ -4437,6 +4373,36 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         ctxInfo.driver()        == GrGLDriver::kARM     &&
         ctxInfo.driverVersion()  < GR_GL_DRIVER_VER(1, 26, 0)) {
         fRebindColorAttachmentAfterCheckFramebufferStatus = true;
+    }
+
+    // skbug.com/13286
+    // We found that the P30 produces a GL error when setting GL_TEXTURE_MAX_ANISOTROPY as a sampler
+    // parameter but not as a texture parameter. We are disabling anisotropy on drivers that may
+    // be affected.
+    //
+    // FAIL on P30
+    // GL_VENDOR  : ARM
+    // GL_RENDERER: Mali-G76
+    // GL_VERSION : OpenGL ES 3.2 v1.r16p0-01rel0.4aee637066427cbcd25297324dba15f5
+    //
+    // PASS on Pixel6
+    // GL_VENDOR  : ARM
+    // GL_RENDERER: Mali-G78
+    // GL_VERSION : OpenGL ES 3.2 v1.r32p1-00pxl0.b7e5868a59a273f4a9f58d1657ef99de
+    //
+    // PASS on Galaxy S30:
+    // GL_VENDOR  : ARM
+    // GL_RENDERER: Mali-G77
+    // GL_VERSION : OpenGL ES 3.2 v1.r20p0-01rel0.###other-sha0123456789ABCDEF0###
+    //
+    // PASS on Galaxy S9:
+    // GL_VENDOR  : ARM
+    // GL_RENDERER: Mali-G72
+    // GL_VENDOR  : OpenGL ES 3.2 v1.r19p0-01rel0.###other-sha0123456789ABCDEF0###
+    if (ctxInfo.renderer()      == GrGLRenderer::kMaliG &&
+        ctxInfo.driver()        == GrGLDriver::kARM     &&
+        ctxInfo.driverVersion()  < GR_GL_DRIVER_VER(1, 19, 0)) {
+        fAnisoSupport = false;
     }
 }
 

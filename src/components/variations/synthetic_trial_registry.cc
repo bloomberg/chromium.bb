@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -61,7 +62,7 @@ void SyntheticTrialRegistry::RegisterExternalExperiments(
   // When overriding previous external experiments, remove them now.
   if (mode == kOverrideExistingIds) {
     auto is_external = [](const SyntheticTrialGroup& group) {
-      return group.is_external;
+      return group.is_external();
     };
     base::EraseIf(synthetic_trial_groups_, is_external);
   }
@@ -80,7 +81,7 @@ void SyntheticTrialRegistry::RegisterExternalExperiments(
     // are already registered.
     if (mode == kDoNotOverrideExistingIds) {
       auto matches_trial = [trial_hash](const SyntheticTrialGroup& group) {
-        return group.id.name == trial_hash;
+        return group.id().name == trial_hash;
       };
       const auto& groups = synthetic_trial_groups_;
       if (std::any_of(groups.begin(), groups.end(), matches_trial)) {
@@ -97,10 +98,10 @@ void SyntheticTrialRegistry::RegisterExternalExperiments(
         GOOGLE_WEB_PROPERTIES_SIGNED_IN, {trial_hash, group_hash},
         static_cast<VariationID>(experiment_id));
     SyntheticTrialGroup entry(
-        trial_hash, group_hash,
+        study_name, experiment_id_str,
         variations::SyntheticTrialAnnotationMode::kNextLog);
-    entry.start_time = start_time;
-    entry.is_external = true;
+    entry.SetStartTime(start_time);
+    entry.SetIsExternal(true);
     synthetic_trial_groups_.push_back(entry);
     trials_added++;
   }
@@ -115,14 +116,14 @@ void SyntheticTrialRegistry::RegisterExternalExperiments(
 void SyntheticTrialRegistry::RegisterSyntheticFieldTrial(
     const SyntheticTrialGroup& trial) {
   for (auto& entry : synthetic_trial_groups_) {
-    if (entry.id.name == trial.id.name) {
+    if (entry.id().name == trial.id().name) {
       // Don't necessarily need to notify observers when setting
       // |annotation_mode| as it is only used when producing metrics reports
       // and does not affect variations service.
-      entry.annotation_mode = trial.annotation_mode;
-      if (entry.id.group != trial.id.group) {
-        entry.id.group = trial.id.group;
-        entry.start_time = base::TimeTicks::Now();
+      entry.SetAnnotationMode(trial.annotation_mode());
+      if (entry.id().group != trial.id().group) {
+        entry.SetGroupName(trial.group_name());
+        entry.SetStartTime(base::TimeTicks::Now());
         NotifySyntheticTrialObservers();
       }
       return;
@@ -130,7 +131,7 @@ void SyntheticTrialRegistry::RegisterSyntheticFieldTrial(
   }
 
   SyntheticTrialGroup trial_group = trial;
-  trial_group.start_time = base::TimeTicks::Now();
+  trial_group.SetStartTime(base::TimeTicks::Now());
   synthetic_trial_groups_.push_back(trial_group);
   NotifySyntheticTrialObservers();
 }
@@ -165,14 +166,19 @@ void SyntheticTrialRegistry::NotifySyntheticTrialObservers() {
 
 void SyntheticTrialRegistry::GetSyntheticFieldTrialsOlderThan(
     base::TimeTicks time,
-    std::vector<ActiveGroupId>* synthetic_trials) const {
+    std::vector<ActiveGroupId>* synthetic_trials,
+    base::StringPiece suffix) const {
   DCHECK(synthetic_trials);
   synthetic_trials->clear();
+  base::FieldTrial::ActiveGroups active_groups;
   for (const auto& entry : synthetic_trial_groups_) {
-    if (entry.start_time <= time ||
-        entry.annotation_mode == SyntheticTrialAnnotationMode::kCurrentLog)
-      synthetic_trials->push_back(entry.id);
+    if (entry.start_time() <= time ||
+        entry.annotation_mode() == SyntheticTrialAnnotationMode::kCurrentLog)
+      active_groups.push_back(entry.active_group());
   }
+
+  GetFieldTrialActiveGroupIdsForActiveGroups(suffix, active_groups,
+                                             synthetic_trials);
 }
 
 }  // namespace variations

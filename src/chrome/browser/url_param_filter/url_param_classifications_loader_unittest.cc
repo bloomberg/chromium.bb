@@ -29,12 +29,6 @@ using ::testing::UnorderedElementsAre;
 namespace url_param_filter {
 namespace {
 
-MATCHER_P(EqualsProto,
-          want,
-          "Matches an argument against an expected a proto Message.") {
-  return arg.SerializeAsString() == want.SerializeAsString();
-}
-
 class UrlParamClassificationsLoaderTest : public ::testing::Test {
  public:
   UrlParamClassificationsLoaderTest() {
@@ -86,6 +80,13 @@ class UrlParamClassificationsLoaderTest : public ::testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::string raw_test_file_;
 };
+
+TEST_F(UrlParamClassificationsLoaderTest,
+       GetClassifications_MissingComponentAndFeature) {
+  // Neither Component nor feature provide classifications.
+  EXPECT_THAT(loader()->GetSourceClassifications(), IsEmpty());
+  EXPECT_THAT(loader()->GetDestinationClassifications(), IsEmpty());
+}
 
 TEST_F(UrlParamClassificationsLoaderTest,
        ReadClassifications_NonserializedProto) {
@@ -159,6 +160,39 @@ TEST_F(UrlParamClassificationsLoaderTest,
   EXPECT_THAT(loader()->GetDestinationClassifications(),
               UnorderedElementsAre(
                   Pair("destination2.xyz", EqualsProto(expected_destination))));
+}
+
+TEST_F(UrlParamClassificationsLoaderTest,
+       GetSourceClassifications_NoSourceClassificationsProvided) {
+  // Create proto with only Destination classifications.
+  FilterClassifications classifications = MakeClassificationsProtoFromMap(
+      {}, {{kDestinationSite, {"plzblock3", "plzblock4"}}});
+
+  // Provide classifications from the Component.
+  SetComponentFileContents(classifications.SerializeAsString());
+  loader()->ReadClassifications(test_file_contents());
+
+  // No source classifications were loaded.
+  EXPECT_THAT(loader()->GetSourceClassifications(), IsEmpty());
+
+  // Provide classifications from the feature.
+  SetFeatureParams(
+      {{"classifications",
+        CreateBase64EncodedFilterParamClassificationForTesting(
+            {}, {{kDestinationSite, {"plzblock3", "plzblock4"}}})}});
+
+  // No source classifications were loaded.
+  EXPECT_THAT(loader()->GetSourceClassifications(), IsEmpty());
+}
+
+TEST_F(UrlParamClassificationsLoaderTest,
+       GetSourceClassifications_ComponentInvalid) {
+  // Provide classifications from the Component.
+  SetComponentFileContents("clearly not proto");
+  loader()->ReadClassifications(test_file_contents());
+
+  // Invalid classifications list result in an empty ClassificationMap.
+  EXPECT_THAT(loader()->GetSourceClassifications(), IsEmpty());
 }
 
 TEST_F(UrlParamClassificationsLoaderTest,
@@ -283,6 +317,38 @@ TEST_F(UrlParamClassificationsLoaderTest,
   EXPECT_THAT(
       loader()->GetSourceClassifications(),
       UnorderedElementsAre(Pair(Eq(kSourceSite), EqualsProto(expected))));
+}
+
+TEST_F(UrlParamClassificationsLoaderTest,
+       GetDestinationClassifications_NoDestinationClassificationsProvided) {
+  // Create proto with only Source classifications.
+  FilterClassifications classifications = MakeClassificationsProtoFromMap(
+      {{kSourceSite, {"plzblock1", "plzblock2"}}}, {});
+
+  // Provide classifications from the Component.
+  SetComponentFileContents(classifications.SerializeAsString());
+  loader()->ReadClassifications(test_file_contents());
+
+  // No destination classifications were loaded.
+  EXPECT_THAT(loader()->GetDestinationClassifications(), IsEmpty());
+
+  // Provide classifications from the feature.
+  SetFeatureParams({{"classifications",
+                     CreateBase64EncodedFilterParamClassificationForTesting(
+                         {{kSourceSite, {"plzblock1", "plzblock2"}}}, {})}});
+
+  // No destination classifications were loaded.
+  EXPECT_THAT(loader()->GetDestinationClassifications(), IsEmpty());
+}
+
+TEST_F(UrlParamClassificationsLoaderTest,
+       GetDestinationClassifications_ComponentInvalid) {
+  // Provide classifications from the Component.
+  SetComponentFileContents("clearly not proto");
+  loader()->ReadClassifications(test_file_contents());
+
+  // Invalid classifications list result in an empty ClassificationMap.
+  EXPECT_THAT(loader()->GetDestinationClassifications(), IsEmpty());
 }
 
 TEST_F(UrlParamClassificationsLoaderTest,

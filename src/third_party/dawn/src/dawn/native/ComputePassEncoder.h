@@ -15,6 +15,9 @@
 #ifndef SRC_DAWN_NATIVE_COMPUTEPASSENCODER_H_
 #define SRC_DAWN_NATIVE_COMPUTEPASSENCODER_H_
 
+#include <utility>
+#include <vector>
+
 #include "dawn/native/CommandBufferStateTracker.h"
 #include "dawn/native/Error.h"
 #include "dawn/native/Forward.h"
@@ -23,75 +26,81 @@
 
 namespace dawn::native {
 
-    class SyncScopeUsageTracker;
+class SyncScopeUsageTracker;
 
-    class ComputePassEncoder final : public ProgrammableEncoder {
-      public:
-        static Ref<ComputePassEncoder> Create(DeviceBase* device,
-                                              const ComputePassDescriptor* descriptor,
-                                              CommandEncoder* commandEncoder,
-                                              EncodingContext* encodingContext,
-                                              std::vector<TimestampWrite> timestampWritesAtEnd);
-        static Ref<ComputePassEncoder> MakeError(DeviceBase* device,
-                                                 CommandEncoder* commandEncoder,
-                                                 EncodingContext* encodingContext);
+class ComputePassEncoder final : public ProgrammableEncoder {
+  public:
+    static Ref<ComputePassEncoder> Create(DeviceBase* device,
+                                          const ComputePassDescriptor* descriptor,
+                                          CommandEncoder* commandEncoder,
+                                          EncodingContext* encodingContext,
+                                          std::vector<TimestampWrite> timestampWritesAtEnd);
+    static Ref<ComputePassEncoder> MakeError(DeviceBase* device,
+                                             CommandEncoder* commandEncoder,
+                                             EncodingContext* encodingContext);
 
-        ObjectType GetType() const override;
+    ObjectType GetType() const override;
 
-        void APIEnd();
-        void APIEndPass();  // TODO(dawn:1286): Remove after deprecation period.
+    void APIEnd();
+    void APIEndPass();  // TODO(dawn:1286): Remove after deprecation period.
 
-        void APIDispatch(uint32_t workgroupCountX,
-                         uint32_t workgroupCountY = 1,
-                         uint32_t workgroupCountZ = 1);
-        void APIDispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
-        void APISetPipeline(ComputePipelineBase* pipeline);
+    void APIDispatchWorkgroups(uint32_t workgroupCountX,
+                               uint32_t workgroupCountY = 1,
+                               uint32_t workgroupCountZ = 1);
+    void APIDispatchWorkgroupsIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
+    void APISetPipeline(ComputePipelineBase* pipeline);
 
-        void APISetBindGroup(uint32_t groupIndex,
-                             BindGroupBase* group,
-                             uint32_t dynamicOffsetCount = 0,
-                             const uint32_t* dynamicOffsets = nullptr);
+    void APISetBindGroup(uint32_t groupIndex,
+                         BindGroupBase* group,
+                         uint32_t dynamicOffsetCount = 0,
+                         const uint32_t* dynamicOffsets = nullptr);
 
-        void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
+    void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
-        CommandBufferStateTracker* GetCommandBufferStateTrackerForTesting();
-        void RestoreCommandBufferStateForTesting(CommandBufferStateTracker state) {
-            RestoreCommandBufferState(std::move(state));
-        }
+    CommandBufferStateTracker* GetCommandBufferStateTrackerForTesting();
+    void RestoreCommandBufferStateForTesting(CommandBufferStateTracker state) {
+        RestoreCommandBufferState(std::move(state));
+    }
 
-      protected:
-        ComputePassEncoder(DeviceBase* device,
-                           const ComputePassDescriptor* descriptor,
-                           CommandEncoder* commandEncoder,
-                           EncodingContext* encodingContext,
-                           std::vector<TimestampWrite> timestampWritesAtEnd);
-        ComputePassEncoder(DeviceBase* device,
-                           CommandEncoder* commandEncoder,
-                           EncodingContext* encodingContext,
-                           ErrorTag errorTag);
+    // Deprecated
+    void APIDispatch(uint32_t workgroupCountX,
+                     uint32_t workgroupCountY = 1,
+                     uint32_t workgroupCountZ = 1);
+    void APIDispatchIndirect(BufferBase* indirectBuffer, uint64_t indirectOffset);
 
-      private:
-        void DestroyImpl() override;
+  protected:
+    ComputePassEncoder(DeviceBase* device,
+                       const ComputePassDescriptor* descriptor,
+                       CommandEncoder* commandEncoder,
+                       EncodingContext* encodingContext,
+                       std::vector<TimestampWrite> timestampWritesAtEnd);
+    ComputePassEncoder(DeviceBase* device,
+                       CommandEncoder* commandEncoder,
+                       EncodingContext* encodingContext,
+                       ErrorTag errorTag);
 
-        ResultOrError<std::pair<Ref<BufferBase>, uint64_t>> TransformIndirectDispatchBuffer(
-            Ref<BufferBase> indirectBuffer,
-            uint64_t indirectOffset);
+  private:
+    void DestroyImpl() override;
 
-        void RestoreCommandBufferState(CommandBufferStateTracker state);
+    ResultOrError<std::pair<Ref<BufferBase>, uint64_t>> TransformIndirectDispatchBuffer(
+        Ref<BufferBase> indirectBuffer,
+        uint64_t indirectOffset);
 
-        CommandBufferStateTracker mCommandBufferState;
+    void RestoreCommandBufferState(CommandBufferStateTracker state);
 
-        // Adds the bindgroups used for the current dispatch to the SyncScopeResourceUsage and
-        // records it in mUsageTracker.
-        void AddDispatchSyncScope(SyncScopeUsageTracker scope = {});
-        ComputePassResourceUsageTracker mUsageTracker;
+    CommandBufferStateTracker mCommandBufferState;
 
-        // For render and compute passes, the encoding context is borrowed from the command encoder.
-        // Keep a reference to the encoder to make sure the context isn't freed.
-        Ref<CommandEncoder> mCommandEncoder;
+    // Adds the bindgroups used for the current dispatch to the SyncScopeResourceUsage and
+    // records it in mUsageTracker.
+    void AddDispatchSyncScope(SyncScopeUsageTracker scope = {});
+    ComputePassResourceUsageTracker mUsageTracker;
 
-        std::vector<TimestampWrite> mTimestampWritesAtEnd;
-    };
+    // For render and compute passes, the encoding context is borrowed from the command encoder.
+    // Keep a reference to the encoder to make sure the context isn't freed.
+    Ref<CommandEncoder> mCommandEncoder;
+
+    std::vector<TimestampWrite> mTimestampWritesAtEnd;
+};
 
 }  // namespace dawn::native
 

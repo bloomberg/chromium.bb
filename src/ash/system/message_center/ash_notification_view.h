@@ -21,7 +21,6 @@ class Notification;
 
 namespace views {
 class BoxLayout;
-class FlexLayoutView;
 class LabelButton;
 class View;
 }  // namespace views
@@ -55,15 +54,16 @@ class ASH_EXPORT AshNotificationView
   // collapse state.
   void AnimateGroupedChildExpandedCollapse(bool expanded);
 
-  // Toggle the expand state of the notification.
+  // Toggle the expand state of the notification. This function should only be
+  // used to handle user manually expand/collapse a notification.
   void ToggleExpand();
 
   // Called when a child notificaiton's preferred size changes.
   void GroupedNotificationsPreferredSizeChanged();
 
   // message_center::MessageView:
-  void AddGroupNotification(const message_center::Notification& notification,
-                            bool newest_first) override;
+  void AddGroupNotification(
+      const message_center::Notification& notification) override;
   void PopulateGroupNotifications(
       const std::vector<const message_center::Notification*>& notifications)
       override;
@@ -186,6 +186,11 @@ class ASH_EXPORT AshNotificationView
   void CreateOrUpdateSnoozeButton(
       const message_center::Notification& notification);
 
+  // Update visibility for grouped notifications to ensure only
+  // `kMaxGroupedNotificationsInCollapsedState` are visible in the collapsed
+  // state.
+  void UpdateGroupedNotificationsVisibility();
+
   // Update `message_in_expanded_view_` according to the given notification.
   void UpdateMessageLabelInExpandedState(
       const message_center::Notification& notification);
@@ -235,8 +240,6 @@ class ASH_EXPORT AshNotificationView
   views::View* main_right_view_ = nullptr;
   RoundedImageView* app_icon_view_ = nullptr;
   AshNotificationExpandButton* expand_button_ = nullptr;
-  views::FlexLayoutView* expand_button_container_ = nullptr;
-  views::View* control_buttons_container_ = nullptr;
   views::View* left_content_ = nullptr;
   views::Label* message_label_in_expanded_state_ = nullptr;
   views::ScrollView* grouped_notifications_scroll_view_ = nullptr;

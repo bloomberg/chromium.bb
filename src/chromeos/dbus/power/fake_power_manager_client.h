@@ -86,6 +86,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
                                             int level) {
     peripheral_battery_refresh_levels_[address] = level;
   }
+  void set_restart_callback(base::OnceClosure callback) {
+    restart_callback_ = std::move(callback);
+  }
 
   // PowerManagerClient overrides:
   void AddObserver(Observer* observer) override;
@@ -145,6 +148,7 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void SetExternalDisplayALSBrightness(bool enabled) override;
   void GetExternalDisplayALSBrightness(
       DBusMethodCallback<bool> callback) override;
+  void ChargeNowForAdaptiveCharging() override;
 
   // Pops the first report from |video_activity_reports_|, returning whether the
   // activity was fullscreen or not. There must be at least one report.
@@ -314,6 +318,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // If non-empty, called by SetPowerPolicy().
   base::OnceClosure power_policy_quit_closure_;
+
+  // Callback that will be run, if set, when RequestRestart() is called.
+  base::OnceClosure restart_callback_;
 
   // If non-empty, called by NotifyUserActivity().
   base::RepeatingClosure user_activity_callback_;

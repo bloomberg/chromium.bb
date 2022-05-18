@@ -153,7 +153,9 @@ export class ExperimentsSupport {
     Platform.DCHECK(
         () => !this.#experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
     this.#experimentNames.add(experimentName);
-    this.#experiments.push(new Experiment(this, experimentName, experimentTitle, Boolean(unstable), docLink ?? ''));
+    this.#experiments.push(new Experiment(
+        this, experimentName, experimentTitle, Boolean(unstable),
+        docLink as Platform.DevToolsPath.UrlString ?? Platform.DevToolsPath.EmptyUrlString));
   }
 
   isEnabled(experimentName: string): boolean {
@@ -206,6 +208,11 @@ export class ExperimentsSupport {
     this.#enabledTransiently.add(experimentName);
   }
 
+  disableForTest(experimentName: string): void {
+    this.checkExperiment(experimentName);
+    this.#enabledTransiently.delete(experimentName);
+  }
+
   clearForTest(): void {
     this.#experiments = [];
     this.#experimentNames.clear();
@@ -239,9 +246,11 @@ export class Experiment {
   name: string;
   title: string;
   unstable: boolean;
-  docLink?: string;
+  docLink?: Platform.DevToolsPath.UrlString;
   readonly #experiments: ExperimentsSupport;
-  constructor(experiments: ExperimentsSupport, name: string, title: string, unstable: boolean, docLink: string) {
+  constructor(
+      experiments: ExperimentsSupport, name: string, title: string, unstable: boolean,
+      docLink: Platform.DevToolsPath.UrlString) {
     this.name = name;
     this.title = title;
     this.unstable = unstable;
@@ -281,6 +290,7 @@ export enum ExperimentName {
   HEADER_OVERRIDES = 'headerOverrides',
   CSS_LAYERS = 'cssLayers',
   EYEDROPPER_COLOR_PICKER = 'eyedropperColorPicker',
+  INSTRUMENTATION_BREAKPOINTS = 'instrumentationBreakpoints',
 }
 
 // TODO(crbug.com/1167717): Make this a const enum again

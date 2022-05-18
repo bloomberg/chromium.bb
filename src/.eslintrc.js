@@ -24,13 +24,6 @@ module.exports = {
     'no-restricted-properties': [
       'error',
       {
-        'object': 'document',
-        'property': 'getElementById',
-        'message': 'Use $(\'id\') or getSVGElement(\'id\') ' +
-            'from chrome://resources/js/util.js instead of ' +
-            'document.getElementById(\'id\')',
-      },
-      {
         'property': '__lookupGetter__',
         'message': 'Use Object.getOwnPropertyDescriptor',
       },
@@ -79,6 +72,34 @@ module.exports = {
 
       'semi': 'off',
       '@typescript-eslint/semi': ['error'],
+
+      // https://google.github.io/styleguide/jsguide.html#naming
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: ['class', 'interface', 'typeAlias', 'enum', 'typeParameter'],
+          format: ['PascalCase'],
+        },
+        {
+          selector: 'enumMember',
+          format: ['UPPER_CASE'],
+        },
+        {
+          selector: 'classMethod',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+          trailingUnderscore: 'allow',
+        },
+        {
+          selector: 'parameter',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+        },
+        {
+          selector: 'function',
+          format: ['camelCase'],
+        },
+      ],
 
       '@typescript-eslint/member-delimiter-style': ['error', {
         multiline: {

@@ -1,5 +1,14 @@
 load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
 load("//tensorflow:tensorflow.bzl", "tf_kernel_library")
+load(
+    "//tensorflow/core/platform:build_config.bzl",
+    "tf_additional_all_protos",
+    "tf_proto_library",
+)
+load(
+    "//tensorflow:tensorflow.bzl",
+    "tf_cuda_library",
+)
 
 package(
     default_visibility = [
@@ -14,6 +23,7 @@ tf_kernel_library(
     srcs = [
         "aggregate_ops.cc",
         "all_reduce_op.cc",
+        "approx_topk_op.cc",
         "arg_op.cc",
         "batch_matmul_op.cc",
         "batch_norm_op.cc",
@@ -153,6 +163,7 @@ tf_kernel_library(
     deps = [
         ":case_op",
         ":conv_op_helpers",
+        ":gpu_tf_kernel_custom_call",
         ":if_op",
         ":tensor_list_utils",
         ":while_op",
@@ -185,6 +196,7 @@ tf_kernel_library(
         "//tensorflow/compiler/xla/client:value_inference",
         "//tensorflow/compiler/xla/client:xla_builder",
         "//tensorflow/compiler/xla/client:xla_computation",
+        "//tensorflow/compiler/xla/client/lib:approx_topk",
         "//tensorflow/compiler/xla/client/lib:arithmetic",
         "//tensorflow/compiler/xla/client/lib:comparators",
         "//tensorflow/compiler/xla/client/lib:constants",
@@ -209,6 +221,7 @@ tf_kernel_library(
         "//tensorflow/core/kernels:stateful_random_ops_header",
         "//tensorflow/core/kernels:stateless_random_ops_v2_header",
         "//tensorflow/core/tpu:tpu_defs",
+        "//tensorflow/core/util:overflow",
         "//tensorflow/stream_executor/lib",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/container:flat_hash_map",
@@ -217,6 +230,36 @@ tf_kernel_library(
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
     ],
+)
+
+tf_cuda_library(
+    name = "gpu_tf_kernel_custom_call",
+    srcs = ["gpu_tf_kernel_custom_call.cc"],
+    hdrs = ["gpu_tf_kernel_custom_call.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":callback_proto_cc",
+        "//tensorflow/compiler/tf2xla:common",
+        "//tensorflow/compiler/tf2xla:xla_compiler",
+        "//tensorflow/compiler/tf2xla:xla_helpers",
+        "//tensorflow/compiler/tf2xla:xla_op_registry",
+        "//tensorflow/compiler/tf2xla/lib:util",
+        "//tensorflow/compiler/xla:shape_util",
+        "//tensorflow/compiler/xla:xla_data_proto_cc",
+        "//tensorflow/compiler/xla/service:custom_call_status",
+        "//tensorflow/compiler/xla/service:custom_call_target_registry",
+        "//tensorflow/core:framework",
+        "//tensorflow/core:gpu_runtime",
+        "//tensorflow/core:protos_all_cc",
+        "//tensorflow/core/platform:human_readable_json",
+        "//tensorflow/core/platform:status",
+        "//tensorflow/stream_executor/gpu:gpu_executor_header",
+        "//tensorflow/stream_executor/gpu:gpu_stream_header",
+        "//tensorflow/stream_executor/gpu:gpu_types_header",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:span",
+    ],
+    alwayslink = 1,
 )
 
 # A separate cc_library for resampler_ops is needed because resampler is in
@@ -398,4 +441,11 @@ tf_kernel_library(
         "//tensorflow/core:logging_ops_op_lib",
     ],
     alwayslink = 1,
+)
+
+tf_proto_library(
+    name = "callback_proto",
+    srcs = ["callback.proto"],
+    cc_api_version = 2,
+    protodeps = tf_additional_all_protos(),
 )

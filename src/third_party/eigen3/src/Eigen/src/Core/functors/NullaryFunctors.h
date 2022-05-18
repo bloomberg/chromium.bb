@@ -31,7 +31,6 @@ struct functor_traits<scalar_constant_op<Scalar> >
          PacketAccess = packet_traits<Scalar>::Vectorizable, IsRepeatable = true }; };
 
 template<typename Scalar> struct scalar_identity_op {
-  EIGEN_EMPTY_STRUCT_CTOR(scalar_identity_op)
   template<typename IndexType>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Scalar operator() (IndexType row, IndexType col) const { return row==col ? Scalar(1) : Scalar(0); }
 };

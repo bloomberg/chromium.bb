@@ -17,6 +17,7 @@
 #include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -64,9 +65,8 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest {
   }
 
   void CreatePdfSpanFromResultData() {
-    auto* data = result_.FindKeyOfType("data", base::Value::Type::STRING);
-    ASSERT_TRUE(data);
-    ASSERT_TRUE(base::Base64Decode(data->GetString(), &pdf_data_));
+    const std::string& data = *result()->FindString("data");
+    ASSERT_TRUE(base::Base64Decode(data, &pdf_data_));
 
     pdf_span_ = base::as_bytes(base::make_span(pdf_data_));
 
@@ -75,27 +75,22 @@ class PrintToPdfProtocolTest : public DevToolsProtocolTest {
   }
 
   void CreatePdfSpanFromResultStream() {
-    ASSERT_NE(result_.FindKeyOfType("stream", base::Value::Type::STRING),
-              nullptr);
-    const std::string stream = result_.FindKey("stream")->GetString();
+    std::string stream = *result()->FindString("stream");
     ASSERT_GT(stream.length(), 0ul);
 
-    std::string data;
+    pdf_data_.clear();
     for (;;) {
       base::Value params(base::Value::Type::DICTIONARY);
       params.SetStringPath("handle", stream);
       params.SetIntPath("offset", pdf_data_.size());
-      SendCommandSync("IO.read", std::move(params));
-      data.append(result_.FindKey("data")->GetString());
-      if (result_.FindKeyOfType("eof", base::Value::Type::BOOLEAN))
+      const base::Value::Dict* result =
+          SendCommandSync("IO.read", std::move(params));
+      std::string data = *result->FindString("data");
+      if (result->FindBool("base64Encoded").value_or(false))
+        ASSERT_TRUE(base::Base64Decode(data, &data));
+      pdf_data_.append(std::move(data));
+      if (result->FindBool("eof").value_or(false))
         break;
-    }
-
-    absl::optional<bool> base64Encoded = result_.FindBoolPath("base64Encoded");
-    if (base64Encoded && *base64Encoded) {
-      ASSERT_TRUE(base::Base64Decode(data, &pdf_data_));
-    } else {
-      pdf_data_ = std::move(data);
     }
 
     pdf_span_ = base::span<const uint8_t>(
@@ -179,7 +174,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfBackground) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetBoolPath("printBackground", true);
@@ -203,7 +197,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfMargins) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetBoolPath("printBackground", true);
@@ -230,7 +223,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfHeaderFooter) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   constexpr double kHeaderMargin = 1.0;
   constexpr double kFooterMargin = 1.0;
@@ -307,7 +299,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfScaleTest, PrintToPdfScaleArea) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   constexpr double kScaleFactor = 2.0;
   constexpr double kDefaultScaleFactor = 1.0;
@@ -338,7 +329,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPaperOrientationTest,
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   absl::optional<gfx::SizeF> portrait_page_size = PrintToPdfAndReturnPageSize();
   ASSERT_TRUE(portrait_page_size.has_value());
@@ -363,8 +353,7 @@ class PrintToPdfPagesTest : public PrintToPdfProtocolTest {
     SendCommandSync("Runtime.evaluate", std::move(params));
   }
 
-  void PrintPageRanges(const std::string& page_ranges,
-                       bool ignore_invalid_page_ranges = false) {
+  base::Value BuildPrintParams(const std::string& page_ranges) {
     base::Value params(base::Value::Type::DICTIONARY);
     params.SetDoublePath("paperWidth", kPaperWidth);
     params.SetDoublePath("paperHeight", kPaperHeight);
@@ -373,9 +362,11 @@ class PrintToPdfPagesTest : public PrintToPdfProtocolTest {
     params.SetDoublePath("marginBottom", 0);
     params.SetDoublePath("marginRight", 0);
     params.SetStringPath("pageRanges", page_ranges);
-    params.SetBoolPath("ignoreInvalidPageRanges", ignore_invalid_page_ranges);
+    return params;
+  }
 
-    PrintToPdf(std::move(params));
+  void PrintPageRanges(const std::string& page_ranges) {
+    PrintToPdf(BuildPrintParams(page_ranges));
   }
 };
 
@@ -383,8 +374,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfPageRanges) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
-  SendCommand("Runtime.enable");
   SetDocHeight();
 
   const int kExpectedTotalPages = std::ceil(kDocHeight / kPaperHeight);
@@ -413,9 +402,12 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfPageRanges) {
   PrintPageRanges("2-999");
   EXPECT_EQ(pdf_num_pages_, kExpectedTotalPages - 1);
 
-  // Invalid page ranges are OK if explicitly requested.
-  PrintPageRanges("998-999", /*ignore_invalid_page_ranges=*/true);
-  EXPECT_EQ(pdf_num_pages_, kExpectedTotalPages);
+  // Expect specific error for ranges beyond end of the document.
+  SendCommand("Page.printToPDF",
+              std::move(BuildPrintParams("998-999").GetDict()));
+
+  EXPECT_THAT(*error()->FindString("message"),
+              testing::Eq("Page range exceeds page count"));
 }
 
 IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfCssPageSize) {
@@ -423,8 +415,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfPagesTest, PrintToPdfCssPageSize) {
       "/print_to_pdf/css_page_size.html");
 
   Attach();
-  SendCommand("Page.enable");
-  SendCommand("Runtime.enable");
   SetDocHeight();
 
   base::Value params(base::Value::Type::DICTIONARY);
@@ -444,7 +434,6 @@ IN_PROC_BROWSER_TEST_F(PrintToPdfProtocolTest, PrintToPdfAsStream) {
   NavigateToURLBlockUntilNavigationsComplete("/print_to_pdf/basic.html");
 
   Attach();
-  SendCommand("Page.enable");
 
   base::Value params(base::Value::Type::DICTIONARY);
   params.SetBoolPath("printBackground", true);

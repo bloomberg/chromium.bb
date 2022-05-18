@@ -36,12 +36,12 @@ class Y4mVideoSource : public VideoSource {
   virtual void OpenSource() {
     CloseSource();
     input_file_ = OpenTestDataFile(file_name_);
-    ASSERT_TRUE(input_file_ != NULL)
+    ASSERT_NE(input_file_, nullptr)
         << "Input file open failed. Filename: " << file_name_;
   }
 
   virtual void ReadSourceToStart() {
-    ASSERT_TRUE(input_file_ != NULL);
+    ASSERT_NE(input_file_, nullptr);
     ASSERT_FALSE(
         y4m_input_open(&y4m_, input_file_, NULL, 0, AOM_CSP_UNKNOWN, 0));
     framerate_numerator_ = y4m_.fps_n;
@@ -82,7 +82,7 @@ class Y4mVideoSource : public VideoSource {
   virtual unsigned int limit() const { return limit_; }
 
   virtual void FillFrame() {
-    ASSERT_TRUE(input_file_ != NULL);
+    ASSERT_NE(input_file_, nullptr);
     // Read a frame from input_file.
     y4m_input_fetch_frame(&y4m_, input_file_, img_.get());
   }

@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/web_request_peer.h"
 #include "third_party/blink/public/platform/web_resource_request_sender_delegate.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/platform/back_forward_cache_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/back_forward_cache_loader_helper.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/mojo_url_loader_client.h"
@@ -412,7 +413,8 @@ void WebResourceRequestSender::OnUploadProgress(int64_t position,
 }
 
 void WebResourceRequestSender::OnReceivedResponse(
-    network::mojom::URLResponseHeadPtr response_head) {
+    network::mojom::URLResponseHeadPtr response_head,
+    base::TimeTicks response_arrival) {
   TRACE_EVENT0("loading", "WebResourceRequestSender::OnReceivedResponse");
   if (!request_info_)
     return;
@@ -438,7 +440,8 @@ void WebResourceRequestSender::OnReceivedResponse(
     request_info_->peer = std::move(new_peer);
   }
 
-  request_info_->peer->OnReceivedResponse(response_head.Clone());
+  request_info_->peer->OnReceivedResponse(response_head.Clone(),
+                                          response_arrival);
   if (!request_info_)
     return;
 

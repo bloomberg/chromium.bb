@@ -469,10 +469,16 @@ class Metrics {
     SEARCH_ADS = 4,
     SHOPPING_PROPERTY = 5,
     EMULATOR = 6,
+    // The run was started from within Chrome (e.g., URL heuristic match or
+    // password change launched from the settings page).
     IN_CHROME = 7,
+    // The run was triggered by the Direction Action API in Chrome.
     DIRECT_ACTION = 8,
+    // The run was started by Google Password Manager (passwords.google.com or
+    // credential_manager in gmscore module on Android).
+    GOOGLE_PASSWORD_MANAGER = 9,
 
-    kMaxValue = DIRECT_ACTION
+    kMaxValue = GOOGLE_PASSWORD_MANAGER
   };
 
   // Used for logging the SOURCE script parameter.
@@ -787,6 +793,7 @@ class Metrics {
   static void RecordOnboardingFetcherResult(
       OnboardingFetcherResultStatus status);
   static void RecordCupRpcVerificationEvent(CupRpcVerificationEvent event);
+  static void RecordServiceRequestRetryCount(int count, bool success);
 
   // Intended for debugging: writes string representation of |reason| to
   // |out|.

@@ -568,11 +568,6 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
     // GrCaps workarounds
     ////////////////////////////////////////////////////////////////////////////
 
-#ifdef SK_BUILD_FOR_ANDROID
-    // MSAA CCPR was slow on Android. http://skbug.com/9676
-    fDriverDisableMSAAClipAtlas = true;
-#endif
-
     if (kARM_VkVendor == properties.vendorID) {
         fAvoidWritePixelsFastPath = true; // bugs.skia.org/8064
     }
@@ -634,9 +629,6 @@ void GrVkCaps::initGrCaps(const GrVkInterface* vkInterface,
     // give the minimum max size across all configs. So for simplicity we will use that for now.
     fMaxRenderTargetSize = std::min(properties.limits.maxImageDimension2D, (uint32_t)INT_MAX);
     fMaxTextureSize = std::min(properties.limits.maxImageDimension2D, (uint32_t)INT_MAX);
-    if (fDriverBugWorkarounds.max_texture_size_limit_4096) {
-        fMaxTextureSize = std::min(fMaxTextureSize, 4096);
-    }
 
     // TODO: check if RT's larger than 4k incur a performance cost on ARM.
     fMaxPreferredRenderTargetSize = fMaxRenderTargetSize;

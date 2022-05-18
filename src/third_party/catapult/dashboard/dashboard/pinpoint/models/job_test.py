@@ -21,6 +21,7 @@ from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import job
 from dashboard.pinpoint.models import scheduler
 from dashboard.pinpoint import test
+from six.moves import zip # pylint: disable=redefined-builtin
 
 # This is a very long file.
 # pylint: disable=too-many-lines
@@ -83,6 +84,8 @@ def FakeCommitAsDict(commit_self):
 
 @mock.patch.object(job.results2, 'GetCachedResults2',
                    mock.MagicMock(return_value='http://foo'))
+@mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+            mock.MagicMock(return_value=["a"]))
 class JobTest(test.TestCase):
 
   @mock.patch.object(
@@ -121,6 +124,17 @@ class JobTest(test.TestCase):
     self.assertFalse('estimate' in d)
 
 
+@mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+            mock.MagicMock(return_value=[]))
+class JobTestNoBots(test.TestCase):
+
+  def testNoBots(self):
+    with self.assertRaises(errors.SwarmingNoBots):
+      job.Job.New((), (), bug_id=123456)
+
+
+@mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+            mock.MagicMock(return_value=["a"]))
 class RetryTest(test.TestCase):
 
   def setUp(self):
@@ -173,6 +187,8 @@ class RetryTest(test.TestCase):
 @mock.patch('dashboard.pinpoint.models.job_state.JobState.ChangesExamined',
             lambda _: 10)
 @mock.patch('dashboard.common.utils.ServiceAccountHttp', mock.MagicMock())
+@mock.patch('dashboard.services.swarming.GetAliveBotsByDimensions',
+            mock.MagicMock(return_value=["a"]))
 class BugCommentTest(test.TestCase):
 
   def setUp(self):
@@ -737,7 +753,7 @@ class BugCommentTest(test.TestCase):
         for i in range(1, number_culprits + 1)
     ]
     # Return [(None,c1), (c1,c2), (c2,c3), ...]
-    differences.return_value = zip([None] + changes, changes)
+    differences.return_value = list(zip([None] + changes, changes))
 
     # Ensure culprits are ordered by deriving change results values from commit
     # names.  E.g.:
@@ -992,3 +1008,19 @@ class BugCommentTest(test.TestCase):
     self.ExecuteDeferredTasks('default')
     post_change_comment.assert_called_once_with('https://review.com', '123456',
                                                 _COMMENT_CODE_REVIEW)
+
+class GetIterationCountTest(test.TestCase):
+
+  def testEvenlyDivisibleBots(self):
+    self.assertEqual(
+        job.GetIterationCount(initial_attempt_count=5, bot_count=5), 5)
+    self.assertEqual(
+        job.GetIterationCount(initial_attempt_count=10, bot_count=5), 10)
+
+  def testMoreBots(self):
+    self.assertEqual(
+        job.GetIterationCount(initial_attempt_count=5, bot_count=17), 5)
+
+  def testLessBots(self):
+    self.assertEqual(
+        job.GetIterationCount(initial_attempt_count=10, bot_count=7), 14)

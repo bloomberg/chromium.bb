@@ -45,7 +45,7 @@ export class ProgrammableStateTest extends GPUTest {
   }
 
   setBindGroup(
-    encoder: GPUProgrammablePassEncoder,
+    encoder: GPUBindingCommandsMixin,
     index: number,
     factory: (index: number) => GPUBindGroup
   ) {
@@ -137,7 +137,7 @@ export class ProgrammableStateTest extends GPUTest {
     }
   }
 
-  setPipeline(pass: GPUProgrammablePassEncoder, pipeline: GPUComputePipeline | GPURenderPipeline) {
+  setPipeline(pass: GPUBindingCommandsMixin, pipeline: GPUComputePipeline | GPURenderPipeline) {
     if (pass instanceof GPUComputePassEncoder) {
       pass.setPipeline(pipeline as GPUComputePipeline);
     } else if (pass instanceof GPURenderPassEncoder || pass instanceof GPURenderBundleEncoder) {
@@ -145,9 +145,9 @@ export class ProgrammableStateTest extends GPUTest {
     }
   }
 
-  dispatchOrDraw(pass: GPUProgrammablePassEncoder) {
+  dispatchOrDraw(pass: GPUBindingCommandsMixin) {
     if (pass instanceof GPUComputePassEncoder) {
-      pass.dispatch(1);
+      pass.dispatchWorkgroups(1);
     } else if (pass instanceof GPURenderPassEncoder) {
       pass.draw(1);
     } else if (pass instanceof GPURenderBundleEncoder) {

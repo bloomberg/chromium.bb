@@ -12,6 +12,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+import {OptInStatus} from '../new_tab_page.mojom-webui.js';
 import {NewTabPageProxy} from '../new_tab_page_proxy.js';
 
 import {Module, ModuleHeight} from './module_descriptor.js';
@@ -45,6 +46,11 @@ export interface ModulesElement {
 
 const SHORT_CLASS_NAME: string = 'short';
 const TALL_CLASS_NAME: string = 'tall';
+
+// When a pair of short module containers are by each other, they are considered
+// siblings and wrapped in another container.
+const SHORT_MODULE_SIBLING_1: string = 'short-module-sibling-one';
+const SHORT_MODULE_SIBLING_2: string = 'short-module-sibling-two';
 
 /** Container for the NTP modules. */
 export class ModulesElement extends PolymerElement {
@@ -81,8 +87,9 @@ export class ModulesElement extends PolymerElement {
         type: Boolean,
         computed:
             `computeModulesFreShown_(modulesLoaded_, modulesFreVisible_, modulesShownToUser)`,
-        reflectToAttribute: true,
+        observer: 'onModulesFreShownChange_',
         notify: true,
+        reflectToAttribute: true,
       },
 
       modulesFreVisible_: {
@@ -95,6 +102,8 @@ export class ModulesElement extends PolymerElement {
         type: Object,
         value: null,
       },
+
+      moduleImpressionDetected_: Boolean,
 
       modulesLoaded_: Boolean,
 
@@ -138,6 +147,7 @@ export class ModulesElement extends PolymerElement {
   private modulesFreRemoved_: boolean;
   private modulesFreShown: boolean;
   private modulesFreVisible_: boolean;
+  private moduleImpressionDetected_: boolean;
   private modulesLoaded_: boolean;
   private modulesVisibilityDetermined_: boolean;
   private modulesLoadedAndVisibilityDetermined_: boolean;
@@ -182,13 +192,6 @@ export class ModulesElement extends PolymerElement {
     this.renderModules_();
   }
 
-  private computeModulesFreShown_(): boolean {
-    return (
-        loadTimeData.getBoolean('modulesFirstRunExperienceEnabled') &&
-        this.modulesLoaded_ && this.modulesFreVisible_ &&
-        this.modulesShownToUser);
-  }
-
   private appendModuleContainers_(moduleContainers: HTMLElement[]) {
     this.$.modules.innerHTML = '';
     let shortModuleSiblingsContainer: HTMLElement|null = null;
@@ -199,6 +202,10 @@ export class ModulesElement extends PolymerElement {
         this.modulesShownToUser = !moduleContainer.hidden;
       }
       if (loadTimeData.getBoolean('modulesRedesignedLayoutEnabled')) {
+        // Remove short module sibling container class name from short modules
+        // that were in a sibling container before.
+        moduleContainer.classList.toggle(SHORT_MODULE_SIBLING_1, false);
+        moduleContainer.classList.toggle(SHORT_MODULE_SIBLING_2, false);
         // Wrap pairs of sibling short modules in a container. All other
         // modules will be placed in a container of their own.
         if ((moduleContainer.classList.contains(SHORT_CLASS_NAME) ||
@@ -210,6 +217,7 @@ export class ModulesElement extends PolymerElement {
           // hidden modules to the sibling container, so if a user reverts a
           // module from its hidden state, the module assumes its original
           // position.
+          moduleContainer.classList.toggle(SHORT_MODULE_SIBLING_2, true);
           moduleContainerParent = shortModuleSiblingsContainer;
           this.$.modules.appendChild(shortModuleSiblingsContainer);
           // If another visible short module is added, a visible tall module is
@@ -227,10 +235,12 @@ export class ModulesElement extends PolymerElement {
             !moduleContainer.hidden &&
             moduleContainer.classList.contains(SHORT_CLASS_NAME) &&
             index + 1 !== moduleContainers.length &&
-            moduleContainers[index + 1].classList.contains(SHORT_CLASS_NAME)) {
+            (moduleContainers[index + 1].classList.contains(SHORT_CLASS_NAME) ||
+             moduleContainers[index + 1].hidden)) {
           // Add current short module to a new container since the next one is
           // short as well by setting its parent to be
           // 'shortModuleSiblingsContainer'.
+          moduleContainer.classList.toggle(SHORT_MODULE_SIBLING_1, true);
           shortModuleSiblingsContainer =
               this.ownerDocument.createElement('div');
           shortModuleSiblingsContainer.classList.add(
@@ -243,6 +253,7 @@ export class ModulesElement extends PolymerElement {
   }
 
   private async renderModules_(): Promise<void> {
+    this.moduleImpressionDetected_ = false;
     const modules = await ModuleRegistry.getInstance().initializeModules(
         loadTimeData.getInteger('modulesLoadTimeout'));
     if (modules) {
@@ -260,6 +271,17 @@ export class ModulesElement extends PolymerElement {
         }
         moduleWrapper.addEventListener(
             'disable-module', e => this.onDisableModule_(e));
+        moduleWrapper.addEventListener('detect-impression', () => {
+          if (!this.moduleImpressionDetected_) {
+            // Executed the first time a module impression is detected.
+            NewTabPageProxy.getInstance().handler.incrementModulesShownCount();
+            if (this.modulesFreShown) {
+              chrome.metricsPrivate.recordBoolean(
+                  `NewTabPage.Modules.FreImpression`, this.modulesFreShown);
+            }
+          }
+          this.moduleImpressionDetected_ = true;
+        });
         const moduleContainer = this.ownerDocument.createElement('div');
         moduleContainer.classList.add('module-container');
         if (loadTimeData.getBoolean('modulesRedesignedLayoutEnabled')) {
@@ -274,10 +296,6 @@ export class ModulesElement extends PolymerElement {
         moduleContainer.appendChild(moduleWrapper);
         return moduleContainer;
       });
-
-      if (modules.length > 0) {
-        NewTabPageProxy.getInstance().handler.incrementModulesShownCount();
-      }
 
       chrome.metricsPrivate.recordSmallCount(
           'NewTabPage.Modules.LoadedModulesCount', modules.length);
@@ -429,6 +447,17 @@ export class ModulesElement extends PolymerElement {
     this.appendModuleContainers_(moduleContainers);
   }
 
+  private computeModulesFreShown_(): boolean {
+    return loadTimeData.getBoolean('modulesFirstRunExperienceEnabled') &&
+        this.modulesLoaded_ && this.modulesFreVisible_ &&
+        this.modulesShownToUser;
+  }
+
+  private onModulesFreShownChange_() {
+    chrome.metricsPrivate.recordBoolean(
+        `NewTabPage.Modules.FreLoaded`, this.modulesFreShown);
+  }
+
   private onCustomizeModuleFre_() {
     this.dispatchEvent(
         new Event('customize-module', {bubbles: true, composed: true}));
@@ -440,6 +469,9 @@ export class ModulesElement extends PolymerElement {
 
   private onModulesFreOptIn_() {
     this.hideFre_();
+
+    NewTabPageProxy.getInstance().handler.logModulesFreOptInStatus(
+        OptInStatus.kExplicitOptIn);
   }
 
   private onModulesFreOptOut_() {
@@ -458,6 +490,9 @@ export class ModulesElement extends PolymerElement {
 
     // Notify the user
     this.$.removeModuleFreToast.show();
+
+    NewTabPageProxy.getInstance().handler.logModulesFreOptInStatus(
+        OptInStatus.kOptOut);
   }
 
   private onUndoRemoveModuleFreButtonClick_() {
@@ -503,14 +538,20 @@ export class ModulesElement extends PolymerElement {
     };
 
     const dragEnter = (e: MouseEvent) => {
+      // Move hidden module containers to end of list to ensure user's new
+      // layout stays intact.
       const moduleContainers = [
-        ...this.shadowRoot!.querySelectorAll<HTMLElement>('.module-container')
+        ...this.shadowRoot!.querySelectorAll<HTMLElement>(
+            '.module-container:not([hidden])'),
+        ...this.shadowRoot!.querySelectorAll<HTMLElement>(
+            '.module-container[hidden]')
       ];
       const dragIndex = moduleContainers.indexOf(dragElement.parentElement!);
       const dropIndex =
           moduleContainers.indexOf((e.target as HTMLElement).parentElement!);
 
       const dragContainer = moduleContainers[dragIndex];
+      const dropContainer = moduleContainers[dropIndex];
 
       // To animate the modules as they are reordered we use the FLIP
       // (First, Last, Invert, Play) animation approach by @paullewis.
@@ -522,8 +563,25 @@ export class ModulesElement extends PolymerElement {
         return moduleWrapper.getBoundingClientRect();
       });
 
-      moduleContainers.splice(dragIndex, 1);
-      moduleContainers.splice(dropIndex, 0, dragContainer);
+      // If a tall module is dragged to a short module sibling container, the
+      // modules in the sibling container should move together.
+      // We add or subtract 1, from the drop index, to make sure the tall module
+      // moves behind or in front of the first module in the sibling container.
+      if (dragContainer.classList.contains(TALL_CLASS_NAME) &&
+          dropContainer.classList.contains(SHORT_MODULE_SIBLING_1) &&
+          dragIndex < dropIndex) {
+        moduleContainers.splice(dragIndex, 1);
+        moduleContainers.splice(dropIndex + 1, 0, dragContainer);
+      } else if (
+          dragContainer.classList.contains(TALL_CLASS_NAME) &&
+          dropContainer.classList.contains(SHORT_MODULE_SIBLING_2) &&
+          dragIndex > dropIndex) {
+        moduleContainers.splice(dragIndex, 1);
+        moduleContainers.splice(dropIndex - 1, 0, dragContainer);
+      } else {
+        moduleContainers.splice(dragIndex, 1);
+        moduleContainers.splice(dropIndex, 0, dragContainer);
+      }
       this.appendModuleContainers_(moduleContainers);
 
       undraggedModuleWrappers.forEach((moduleWrapper, i) => {

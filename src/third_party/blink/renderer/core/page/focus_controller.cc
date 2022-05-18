@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -1128,7 +1129,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
   SetFocusedFrame(new_document.GetFrame());
 
-  element->focus(
+  element->Focus(
       FocusParams(SelectionBehaviorOnFocus::kReset, type, source_capabilities));
   return true;
 }
@@ -1149,7 +1150,7 @@ Element* FocusController::NextFocusableElementForIME(
     mojom::blink::FocusType focus_type) {
   // TODO(ajith.v) Due to crbug.com/781026 when next/previous element is far
   // from current element in terms of tabindex, then it's signalling CPU load.
-  // Will nvestigate further for a proper solution later.
+  // Will investigate further for a proper solution later.
   static const int kFocusTraversalThreshold = 50;
   element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
   auto* html_element = DynamicTo<HTMLElement>(element);
@@ -1207,8 +1208,12 @@ Element* FocusController::NextFocusableElementForIME(
     }
     LayoutObject* layout = next_element->GetLayoutObject();
     if (layout && layout->IsTextControlIncludingNG()) {
-      // TODO(ajith.v) Extend it for select elements, radio buttons and check
-      // boxes
+      // TODO(crbug.com/1320441): Extend it for radio buttons and checkboxes.
+      return next_element;
+    }
+
+    if (auto* select_element =
+            DynamicTo<HTMLSelectElement>(next_form_control_element)) {
       return next_element;
     }
   }
@@ -1307,12 +1312,21 @@ bool FocusController::SetFocusedElement(Element* element,
                                 params.source_capabilities, focus_options);
   }
 
-  // Disallow programmatic focus that crosses a fenced frame boundary on a
-  // frame that doesn't have transient user activation.
   if (new_focused_frame && !new_focused_frame->ShouldAllowScriptFocus() &&
-      !new_focused_frame->HasTransientUserActivation() &&
       params_to_use.type == mojom::blink::FocusType::kScript) {
-    return false;
+    // Disallow script focus that crosses a fenced frame boundary on a
+    // frame that doesn't have transient user activation.
+    if (!new_focused_frame->HasTransientUserActivation())
+      return false;
+    // Fenced frames should consume user activation when attempting to pull
+    // focus across a fenced boundary into itself.
+    // TODO(crbug.com/1123606) Right now the browser can't verify that the
+    // renderer properly consumed user activation. When user activation code is
+    // migrated to the browser, move this logic to the browser as well.
+    if (new_focused_frame->IsInFencedFrameTree()) {
+      LocalFrame::ConsumeTransientUserActivation(
+          DynamicTo<LocalFrame>(new_focused_frame));
+    }
   }
 
   if (old_document && old_document != new_document)
@@ -1321,17 +1335,6 @@ bool FocusController::SetFocusedElement(Element* element,
   if (new_focused_frame && !new_focused_frame->GetPage()) {
     SetFocusedFrame(nullptr);
     return false;
-  }
-
-  // TODO(crbug.com/1123606) Right now the browser can't verify that the
-  // renderer properly consumed user activation. When user activation code is
-  // migrated to the browser, move this logic to the browser as well.
-  if (new_focused_frame &&
-      params_to_use.type == mojom::blink::FocusType::kScript &&
-      new_focused_frame->IsInFencedFrameTree() &&
-      !new_focused_frame->ShouldAllowScriptFocus()) {
-    LocalFrame::ConsumeTransientUserActivation(
-        DynamicTo<LocalFrame>(new_focused_frame));
   }
 
   SetFocusedFrame(new_focused_frame);

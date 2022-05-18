@@ -119,14 +119,14 @@ class ASH_EXPORT CalendarViewController {
   int GetTodayRowTopHeight() const;
   int GetTodayRowBottomHeight() const;
 
-  // Performs the initial fetch when the calendar is first opened.
-  void InitialFetchEvents();
-
   // Requests more events as needed.
   void FetchEvents();
 
   // The calendar events of the selected date.
   SingleDayEventList SelectedDateEvents();
+
+  // The calendar events number of the `date`.
+  int GetEventNumber(base::Time date);
 
   // A callback passed into the`CalendarDateCellView`, which is called when the
   // cell is clicked to show the event list view.

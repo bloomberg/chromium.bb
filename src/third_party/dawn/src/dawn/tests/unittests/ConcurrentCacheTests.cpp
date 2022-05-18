@@ -12,45 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <memory>
+#include <utility>
 
 #include "dawn/common/ConcurrentCache.h"
 #include "dawn/native/AsyncTask.h"
 #include "dawn/platform/DawnPlatform.h"
 #include "dawn/utils/SystemUtils.h"
+#include "gtest/gtest.h"
 
 namespace {
-    class SimpleCachedObject {
-      public:
-        explicit SimpleCachedObject(size_t value) : mValue(value) {
+class SimpleCachedObject {
+  public:
+    explicit SimpleCachedObject(size_t value) : mValue(value) {}
+
+    size_t GetValue() const { return mValue; }
+
+    struct EqualityFunc {
+        bool operator()(const SimpleCachedObject* a, const SimpleCachedObject* b) const {
+            return a->mValue == b->mValue;
         }
-
-        size_t GetValue() const {
-            return mValue;
-        }
-
-        struct EqualityFunc {
-            bool operator()(const SimpleCachedObject* a, const SimpleCachedObject* b) const {
-                return a->mValue == b->mValue;
-            }
-        };
-
-        struct HashFunc {
-            size_t operator()(const SimpleCachedObject* obj) const {
-                return obj->mValue;
-            }
-        };
-
-      private:
-        size_t mValue;
     };
+
+    struct HashFunc {
+        size_t operator()(const SimpleCachedObject* obj) const { return obj->mValue; }
+    };
+
+  private:
+    size_t mValue;
+};
 
 }  // anonymous namespace
 
 class ConcurrentCacheTest : public testing::Test {
   public:
-    ConcurrentCacheTest() : mPool(mPlatform.CreateWorkerTaskPool()), mTaskManager(mPool.get()) {
-    }
+    ConcurrentCacheTest() : mPool(mPlatform.CreateWorkerTaskPool()), mTaskManager(mPool.get()) {}
 
   protected:
     dawn::platform::Platform mPlatform;

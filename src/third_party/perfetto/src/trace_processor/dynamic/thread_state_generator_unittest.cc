@@ -43,19 +43,19 @@ class ThreadStateGeneratorUnittest : public testing::Test {
   void ForwardSchedTo(Ts ts) { sched_insert_ts_ = ts.ts; }
 
   void AddWaking(Ts ts, UniqueTid utid) {
-    tables::InstantTable::Row row;
+    tables::LegacyInstantTable::Row row;
     row.ts = ts.ts;
-    row.ref = utid;
+    row.utid = utid;
     row.name = context_.storage->InternString("sched_waking");
-    context_.storage->mutable_instant_table()->Insert(row);
+    context_.storage->mutable_legacy_instant_table()->Insert(row);
   }
 
   void AddWakup(Ts ts, UniqueTid utid) {
-    tables::InstantTable::Row row;
+    tables::LegacyInstantTable::Row row;
     row.ts = ts.ts;
-    row.ref = utid;
+    row.utid = utid;
     row.name = context_.storage->InternString("sched_wakeup");
-    context_.storage->mutable_instant_table()->Insert(row);
+    context_.storage->mutable_legacy_instant_table()->Insert(row);
   }
 
   void AddSched(base::Optional<Ts> end, UniqueTid utid, const char* end_state) {
@@ -77,22 +77,20 @@ class ThreadStateGeneratorUnittest : public testing::Test {
   }
 
   void AddBlockedReason(Ts ts, UniqueTid utid, bool io_wait) {
-    tables::InstantTable::Row row;
+    tables::LegacyInstantTable::Row row;
     row.ts = ts.ts;
-    row.ref = utid;
+    row.utid = utid;
     row.name = context_.storage->InternString("sched_blocked_reason");
 
-    auto id = context_.storage->mutable_instant_table()->Insert(row).id;
+    auto id = context_.storage->mutable_legacy_instant_table()->Insert(row).id;
     auto inserter = context_.args_tracker->AddArgsTo(id);
     inserter.AddArg(context_.storage->InternString("io_wait"),
                     Variadic::Boolean(io_wait));
     context_.args_tracker->Flush();
   }
 
-  void RunThreadStateComputation(Ts trace_end_ts = Ts{
-                                     std::numeric_limits<int64_t>::max()}) {
-    unsorted_table_ =
-        thread_state_generator_->ComputeThreadStateTable(trace_end_ts.ts);
+  void RunThreadStateComputation() {
+    unsorted_table_ = thread_state_generator_->ComputeThreadStateTable();
     table_.reset(
         new Table(unsorted_table_->Sort({unsorted_table_->ts().ascending()})));
   }
@@ -293,11 +291,11 @@ TEST_F(ThreadStateGeneratorUnittest, SchedDataLoss) {
   VerifyEndOfThreadState();
 }
 
-TEST_F(ThreadStateGeneratorUnittest, StrechedSchedIgnored) {
+TEST_F(ThreadStateGeneratorUnittest, HandlingNotFinishedSched) {
   ForwardSchedTo(Ts{10});
-  AddSched(Ts{100}, thread_a_, "");
+  AddSched(base::nullopt, thread_a_, "S");
 
-  RunThreadStateComputation(Ts{100});
+  RunThreadStateComputation();
 
   VerifyThreadState(Ts{10}, base::nullopt, thread_a_, kRunning);
 
@@ -306,11 +304,11 @@ TEST_F(ThreadStateGeneratorUnittest, StrechedSchedIgnored) {
 
 TEST_F(ThreadStateGeneratorUnittest, WakingAfterStrechedSched) {
   ForwardSchedTo(Ts{10});
-  AddSched(Ts{100}, thread_a_, "");
+  AddSched(base::nullopt, thread_a_, "");
 
   AddWaking(Ts{15}, thread_a_);
 
-  RunThreadStateComputation(Ts{100});
+  RunThreadStateComputation();
 
   VerifyThreadState(Ts{10}, base::nullopt, thread_a_, kRunning);
   VerifyThreadState(Ts{15}, base::nullopt, thread_a_, "R");

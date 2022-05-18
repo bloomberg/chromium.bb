@@ -357,6 +357,7 @@ void ResourceLoader::CodeCacheRequest::DidReceiveCachedCode(
   ProcessCodeCacheResponse(response_time, std::move(data), resource_loader);
   // Reset the deferred value to its original state.
   DCHECK(resource_loader);
+  resource_loader->code_cache_arrival_time_ = base::TimeTicks::Now();
   resource_loader->SetDefersLoading(freeze_mode_);
 }
 
@@ -611,6 +612,12 @@ void ResourceLoader::DidReceiveData(base::span<const char> data) {
   DidReceiveData(data.data(), base::checked_cast<int>(data.size()));
 }
 
+void ResourceLoader::DidReceiveDecodedData(
+    const String& data,
+    std::unique_ptr<ParkableStringImpl::SecureDigest> digest) {
+  resource_->DidReceiveDecodedData(data, std::move(digest));
+}
+
 void ResourceLoader::DidFinishLoadingBody() {
   has_seen_end_of_body_ = true;
 
@@ -654,6 +661,7 @@ void ResourceLoader::StartWith(const ResourceRequestHead& request) {
         fetcher_->GetProperties().FreezeMode());
   }
 
+  request_start_time_ = base::TimeTicks::Now();
   if (is_cache_aware_loading_activated_) {
     // Override cache policy for cache-aware loading. If this request fails, a
     // reload with original request will be triggered in DidFail().
@@ -972,6 +980,18 @@ void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
 void ResourceLoader::DidReceiveResponseInternal(
     const ResourceResponse& response) {
   const ResourceRequestHead& request = resource_->GetResourceRequest();
+
+  const auto response_arrival = response.ArrivalTimeAtRenderer();
+  const auto code_cache_arrival = code_cache_arrival_time_;
+  const auto request_start = request_start_time_;
+  if (response.WasCached() && !code_cache_arrival.is_null() &&
+      !response_arrival.is_null()) {
+    DCHECK(!request_start_time_.is_null());
+    base::UmaHistogramTimes("Blink.Loading.CodeCacheArrivalAtRenderer",
+                            code_cache_arrival - request_start);
+    base::UmaHistogramTimes("Blink.Loading.CachedResponseArrivalAtRenderer",
+                            response_arrival - request_start);
+  }
 
   if (response.HasAuthorizationCoveredByWildcardOnPreflight()) {
     fetcher_->GetUseCounter().CountDeprecation(
@@ -1494,9 +1514,7 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
 
 bool ResourceLoader::ShouldBeKeptAliveWhenDetached() const {
   return resource_->GetResourceRequest().GetKeepalive() &&
-         resource_->GetResponse().IsNull() &&
-         !base::FeatureList::IsEnabled(
-             network::features::kDisableKeepaliveFetch);
+         resource_->GetResponse().IsNull();
 }
 
 void ResourceLoader::AbortResponseBodyLoading() {

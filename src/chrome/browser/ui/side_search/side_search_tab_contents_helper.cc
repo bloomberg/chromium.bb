@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
@@ -23,6 +24,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/views/controls/webview/web_contents_set_background_color.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
@@ -106,6 +108,17 @@ void SideSearchTabContentsHelper::DidFinishNavigation(
     if (side_panel_contents_)
       UpdateSideContentsNavigation();
   }
+
+  // Trigger the timer only when the side panel first becomes available. The
+  // timer should only be cleared when the side panel is no longer available.
+  if (!could_show_for_last_committed_navigation_ &&
+      CanShowSidePanelForCommittedNavigation()) {
+    available_timer_ = base::ElapsedTimer();
+  } else if (!CanShowSidePanelForCommittedNavigation()) {
+    available_timer_.reset();
+  }
+  could_show_for_last_committed_navigation_ =
+      CanShowSidePanelForCommittedNavigation();
 }
 
 void SideSearchTabContentsHelper::OnSideSearchConfigChanged() {
@@ -143,6 +156,16 @@ bool SideSearchTabContentsHelper::CanShowSidePanelForCommittedNavigation() {
          GetConfig()->is_side_panel_srp_available();
 }
 
+void SideSearchTabContentsHelper::
+    MaybeRecordDurationSidePanelAvailableToFirstOpen() {
+  if (!available_timer_)
+    return;
+  base::UmaHistogramMediumTimes(
+      "SideSearch.TimeSinceSidePanelAvailableToFirstOpen",
+      available_timer_->Elapsed());
+  available_timer_.reset();
+}
+
 void SideSearchTabContentsHelper::SetDelegate(
     base::WeakPtr<Delegate> delegate) {
   delegate_ = std::move(delegate);
@@ -175,6 +198,12 @@ void SideSearchTabContentsHelper::CreateSidePanelContents() {
   side_panel_contents_ =
       content::WebContents::Create(content::WebContents::CreateParams(
           web_contents()->GetBrowserContext(), nullptr));
+
+  // Apply a transparent background color so that we fallback to the hosting
+  // side panel view's background color.
+  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+      side_panel_contents_.get(), SK_ColorTRANSPARENT);
+
   task_manager::WebContentsTags::CreateForTabContents(
       side_panel_contents_.get());
 

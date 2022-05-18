@@ -19,7 +19,7 @@ namespace {
 
 constexpr int kButtonMargin = 2;
 constexpr int kButtonSpacing = 4;
-constexpr int kCornerRadius = 11;
+constexpr int kCornerRadius = 20;
 
 }  // namespace
 
@@ -27,11 +27,11 @@ DeskActionView::DeskActionView(
     const std::u16string& initial_combine_desks_target_name,
     base::RepeatingClosure combine_desks_callback,
     base::RepeatingClosure close_all_callback)
-    : close_all_button_(AddChildView(
-          std::make_unique<CloseButton>(std::move(close_all_callback),
-                                        CloseButton::Type::kMediumFloating))),
-      combine_desks_button_(AddChildView(
+    : combine_desks_button_(AddChildView(
           std::make_unique<CloseButton>(std::move(combine_desks_callback),
+                                        CloseButton::Type::kMediumFloating))),
+      close_all_button_(AddChildView(
+          std::make_unique<CloseButton>(std::move(close_all_callback),
                                         CloseButton::Type::kMediumFloating))) {
   SetOrientation(views::BoxLayout::Orientation::kHorizontal);
   SetInsideBorderInsets(gfx::Insets(kButtonMargin));
@@ -54,6 +54,16 @@ void DeskActionView::UpdateCombineDesksTooltip(
     const std::u16string& new_combine_desks_target_name) {
   combine_desks_button_->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_ASH_DESKS_COMBINE_DESKS_DESCRIPTION, new_combine_desks_target_name));
+}
+
+void DeskActionView::SetCombineDesksButtonVisibility(bool visible) {
+  combine_desks_button_->SetVisible(visible);
+
+  // When `combine_desks_button_` is invisible, we want to make sure that there
+  // is no space between the invisible `combine_desks_button_` and the
+  // `close_all_button_`. Otherwise, the desk action view will appear lopsided
+  // when the `combine_desks_button_` isn't visible.
+  SetBetweenChildSpacing(visible ? kButtonSpacing : 0);
 }
 
 BEGIN_METADATA(DeskActionView, views::BoxLayoutView)

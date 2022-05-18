@@ -113,8 +113,7 @@ constexpr base::TimeDelta kNearbyVisibilityReminderTimerDelay = base::Days(180);
 
 bool IsBackgroundScanningFeatureEnabled() {
   return base::FeatureList::IsEnabled(
-             features::kNearbySharingBackgroundScanning) &&
-         chromeos::features::IsBluetoothAdvertisementMonitoringEnabled();
+      features::kNearbySharingBackgroundScanning);
 }
 
 std::string ReceiveSurfaceStateToString(
@@ -3337,7 +3336,7 @@ void NearbySharingServiceImpl::ReceiveIntroduction(
   DCHECK(info && info->connection());
 
   info->frames_reader()->ReadFrame(
-      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      sharing::mojom::V1Frame::Tag::kIntroduction,
       base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
                      std::move(four_digit_token)),
@@ -3484,7 +3483,7 @@ void NearbySharingServiceImpl::ReceiveConnectionResponse(
   DCHECK(info && info->connection());
 
   info->frames_reader()->ReadFrame(
-      sharing::mojom::V1Frame::Tag::CONNECTION_RESPONSE,
+      sharing::mojom::V1Frame::Tag::kConnectionResponse,
       base::BindOnce(&NearbySharingServiceImpl::OnReceiveConnectionResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(share_target)),
       kReadResponseFrameTimeout);
@@ -3689,13 +3688,13 @@ void NearbySharingServiceImpl::OnFrameRead(
 
   sharing::mojom::V1FramePtr v1_frame = std::move(*frame);
   switch (v1_frame->which()) {
-    case sharing::mojom::V1Frame::Tag::CANCEL_FRAME:
+    case sharing::mojom::V1Frame::Tag::kCancelFrame:
       NS_LOG(INFO) << __func__ << ": Read the cancel frame, closing connection";
       DoCancel(share_target, base::DoNothing(),
                /*is_initiator_of_cancellation=*/false);
       break;
 
-    case sharing::mojom::V1Frame::Tag::CERTIFICATE_INFO:
+    case sharing::mojom::V1Frame::Tag::kCertificateInfo:
       HandleCertificateInfoFrame(v1_frame->get_certificate_info());
       break;
 
@@ -3998,6 +3997,12 @@ bool NearbySharingServiceImpl::OnIncomingPayloadsComplete(
 
       if (credentials_proto.password().empty()) {
         NS_LOG(WARNING) << __func__ << ": No Wi-Fi password found";
+        return false;
+      }
+
+      if (credentials_proto.has_hidden_ssid() &&
+          credentials_proto.hidden_ssid()) {
+        NS_LOG(WARNING) << __func__ << ": Network is hidden";
         return false;
       }
 

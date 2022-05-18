@@ -146,7 +146,7 @@ AudioReceiveStream::AudioReceiveStream(
 
 AudioReceiveStream::~AudioReceiveStream() {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  RTC_LOG(LS_INFO) << "~AudioReceiveStream: " << config_.rtp.remote_ssrc;
+  RTC_LOG(LS_INFO) << "~AudioReceiveStream: " << remote_ssrc();
   Stop();
   channel_receive_->SetAssociatedSendChannel(nullptr);
   channel_receive_->ResetReceiverCongestionControlObjects();
@@ -157,7 +157,7 @@ void AudioReceiveStream::RegisterWithTransport(
   RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
   RTC_DCHECK(!rtp_stream_receiver_);
   rtp_stream_receiver_ = receiver_controller->CreateReceiver(
-      config_.rtp.remote_ssrc, channel_receive_.get());
+      remote_ssrc(), channel_receive_.get());
 }
 
 void AudioReceiveStream::UnregisterFromTransport() {
@@ -170,8 +170,8 @@ void AudioReceiveStream::ReconfigureForTesting(
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
 
   // SSRC can't be changed mid-stream.
-  RTC_DCHECK_EQ(config_.rtp.remote_ssrc, config.rtp.remote_ssrc);
-  RTC_DCHECK_EQ(config_.rtp.local_ssrc, config.rtp.local_ssrc);
+  RTC_DCHECK_EQ(remote_ssrc(), config.rtp.remote_ssrc);
+  RTC_DCHECK_EQ(local_ssrc(), config.rtp.local_ssrc);
 
   // Configuration parameters which cannot be changed.
   RTC_DCHECK_EQ(config_.rtcp_send_transport, config.rtcp_send_transport);
@@ -209,6 +209,11 @@ void AudioReceiveStream::Stop() {
   channel_receive_->StopPlayout();
   playing_ = false;
   audio_state()->RemoveReceivingStream(this);
+}
+
+bool AudioReceiveStream::transport_cc() const {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  return config_.rtp.transport_cc;
 }
 
 bool AudioReceiveStream::IsRunning() const {
@@ -265,11 +270,20 @@ void AudioReceiveStream::SetRtpExtensions(
   config_.rtp.extensions = std::move(extensions);
 }
 
+const std::vector<RtpExtension>& AudioReceiveStream::GetRtpExtensions() const {
+  RTC_DCHECK_RUN_ON(&worker_thread_checker_);
+  return config_.rtp.extensions;
+}
+
+RtpHeaderExtensionMap AudioReceiveStream::GetRtpExtensionMap() const {
+  return RtpHeaderExtensionMap(config_.rtp.extensions);
+}
+
 webrtc::AudioReceiveStream::Stats AudioReceiveStream::GetStats(
     bool get_and_clear_legacy_stats) const {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
   webrtc::AudioReceiveStream::Stats stats;
-  stats.remote_ssrc = config_.rtp.remote_ssrc;
+  stats.remote_ssrc = remote_ssrc();
 
   webrtc::CallReceiveStatistics call_stats =
       channel_receive_->GetRTCPStatistics();
@@ -398,7 +412,7 @@ AudioMixer::Source::AudioFrameInfo AudioReceiveStream::GetAudioFrameWithInfo(
 }
 
 int AudioReceiveStream::Ssrc() const {
-  return config_.rtp.remote_ssrc;
+  return remote_ssrc();
 }
 
 int AudioReceiveStream::PreferredSampleRate() const {
@@ -407,7 +421,7 @@ int AudioReceiveStream::PreferredSampleRate() const {
 
 uint32_t AudioReceiveStream::id() const {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  return config_.rtp.remote_ssrc;
+  return remote_ssrc();
 }
 
 absl::optional<Syncable::Info> AudioReceiveStream::GetInfo() const {
@@ -471,9 +485,9 @@ uint32_t AudioReceiveStream::local_ssrc() const {
   return config_.rtp.local_ssrc;
 }
 
-const webrtc::AudioReceiveStream::Config& AudioReceiveStream::config() const {
-  RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  return config_;
+const std::string& AudioReceiveStream::sync_group() const {
+  RTC_DCHECK_RUN_ON(&packet_sequence_checker_);
+  return config_.sync_group;
 }
 
 const AudioSendStream* AudioReceiveStream::GetAssociatedSendStreamForTesting()

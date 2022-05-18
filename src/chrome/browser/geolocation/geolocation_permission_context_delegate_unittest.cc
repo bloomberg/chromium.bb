@@ -15,6 +15,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
@@ -64,22 +65,48 @@ class GeolocationPermissionContextDelegateTests
     MockLocationSettings::ClearHasShownLocationSettingsDialog();
 #endif
   }
+
+  void RequestPermissionFromCurrentDocument(
+      blink::PermissionType permission,
+      content::RenderFrameHost* render_frame_host,
+      bool user_gesture,
+      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
+    PermissionManagerFactory::GetForProfile(profile())
+        ->RequestPermissionsFromCurrentDocument(
+            {permission}, render_frame_host, user_gesture,
+            base::BindOnce(
+                [](base::OnceCallback<void(blink::mojom::PermissionStatus)>
+                       callback,
+                   const std::vector<blink::mojom::PermissionStatus>& state) {
+                  DCHECK_EQ(state.size(), 1U);
+                  std::move(callback).Run(state[0]);
+                },
+                std::move(callback)));
+  }
+
+  permissions::PermissionResult GetPermissionStatusForDisplayOnSettingsUI(
+      Profile* profile,
+      ContentSettingsType permission,
+      const GURL& origin) {
+    return PermissionManagerFactory::GetForProfile(profile)
+        ->GetPermissionStatusForDisplayOnSettingsUI(permission, origin);
+  }
 };
 
 TEST_F(GeolocationPermissionContextDelegateTests, TabContentSettingIsUpdated) {
-  GURL requesting_frame("https://www.example.com/geolocation");
+  GURL requesting_frame_url("https://www.example.com/geolocation");
   auto* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents());
   permissions::MockPermissionPromptFactory mock_prompt_factory(manager);
-  NavigateAndCommit(requesting_frame);
+  NavigateAndCommit(requesting_frame_url);
   manager->DocumentOnLoadCompletedInPrimaryMainFrame();
 
   base::RunLoop run_loop;
-  PermissionManagerFactory::GetForProfile(profile())->RequestPermission(
-      ContentSettingsType::GEOLOCATION, main_rfh(), requesting_frame, true,
+  RequestPermissionFromCurrentDocument(
+      blink::PermissionType::GEOLOCATION, main_rfh(), true,
       base::BindOnce(
-          [](base::RunLoop* run_loop, ContentSetting content_setting) {
-            EXPECT_EQ(content_setting, CONTENT_SETTING_ALLOW);
+          [](base::RunLoop* run_loop, blink::mojom::PermissionStatus status) {
+            EXPECT_EQ(status, blink::mojom::PermissionStatus::GRANTED);
             run_loop->Quit();
           },
           &run_loop));
@@ -97,7 +124,7 @@ TEST_F(GeolocationPermissionContextDelegateTests, TabContentSettingIsUpdated) {
 #if BUILDFLAG(IS_ANDROID)
 TEST_F(GeolocationPermissionContextDelegateTests,
        SearchGeolocationInIncognito) {
-  GURL requesting_frame(kDSETestUrl);
+  GURL requesting_frame_url(kDSETestUrl);
 
   SearchPermissionsService* service =
       SearchPermissionsService::Factory::GetForBrowserContext(profile());
@@ -107,20 +134,20 @@ TEST_F(GeolocationPermissionContextDelegateTests,
   service->InitializeSettingsIfNeeded();
 
   // The DSE geolocation should not be auto-granted even in a non-OTR profile.
-  ASSERT_EQ(CONTENT_SETTING_ASK,
-            PermissionManagerFactory::GetForProfile(profile())
-                ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
-                                      requesting_frame, requesting_frame)
-                .content_setting);
+  ASSERT_EQ(
+      CONTENT_SETTING_ASK,
+      GetPermissionStatusForDisplayOnSettingsUI(
+          profile(), ContentSettingsType::GEOLOCATION, requesting_frame_url)
+          .content_setting);
 
   Profile* otr_profile =
       profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   // The DSE geolocation should not be auto-granted in an OTR profile.
-  ASSERT_EQ(CONTENT_SETTING_ASK,
-            PermissionManagerFactory::GetForProfile(otr_profile)
-                ->GetPermissionStatus(ContentSettingsType::GEOLOCATION,
-                                      requesting_frame, requesting_frame)
-                .content_setting);
+  ASSERT_EQ(
+      CONTENT_SETTING_ASK,
+      GetPermissionStatusForDisplayOnSettingsUI(
+          otr_profile, ContentSettingsType::GEOLOCATION, requesting_frame_url)
+          .content_setting);
 }
 #endif

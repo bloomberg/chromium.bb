@@ -3,7 +3,7 @@
 Template file for use with tools/builtin-gen to generate builtin_type.cc
 
 See:
-* tools/cmd/builtin-gen/gen for structures used by this template
+* tools/cmd/intrinsic-gen/gen for structures used by this template
 * https://golang.org/pkg/text/template/ for documentation on the template syntax
 --------------------------------------------------------------------------------
 */ -}}
@@ -15,29 +15,29 @@ See:
 namespace tint::sem {
 
 BuiltinType ParseBuiltinType(const std::string& name) {
-{{- range .Sem.Functions  }}
-  if (name == "{{.Name}}") {
-    return BuiltinType::k{{Title .Name}};
-  }
+{{- range .Sem.Builtins  }}
+    if (name == "{{.Name}}") {
+        return BuiltinType::k{{Title .Name}};
+    }
 {{- end  }}
-  return BuiltinType::kNone;
+    return BuiltinType::kNone;
 }
 
 const char* str(BuiltinType i) {
-  switch (i) {
-    case BuiltinType::kNone:
-      return "<none>";
-{{- range .Sem.Functions  }}
-    case BuiltinType::k{{Title .Name}}:
-      return "{{.Name}}";
+    switch (i) {
+        case BuiltinType::kNone:
+            return "<none>";
+{{- range .Sem.Builtins  }}
+        case BuiltinType::k{{Title .Name}}:
+            return "{{.Name}}";
 {{- end  }}
-  }
-  return "<unknown>";
+    }
+    return "<unknown>";
 }
 
 std::ostream& operator<<(std::ostream& out, BuiltinType i) {
-  out << str(i);
-  return out;
+    out << str(i);
+    return out;
 }
 
 }  // namespace tint::sem

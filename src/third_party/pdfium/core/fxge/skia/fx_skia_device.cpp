@@ -183,7 +183,6 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
 #define SHOW_SKIA_PATH_SHORTHAND 0  // set to 1 for abbreviated path contents
 #endif
 #define DRAW_SKIA_CLIP 0  // set to 1 to draw a green rectangle around the clip
-#define SHOW_TEXT_GLYPHS 0  // set to 1 to print unichar equivalent of glyph
 
 #if SHOW_SKIA_PATH
 void DebugShowSkiaPaint(const SkPaint& paint) {
@@ -960,10 +959,8 @@ class SkiaState {
     if (hasRSX)
       m_rsxform.setCount(nChars + count);
 
-    SkScalar flip = m_fontSize < 0 ? -1 : 1;
-    SkScalar vFlip = flip;
-    if (pFont->IsVertical())
-      vFlip *= -1;
+    const SkScalar flip = m_fontSize < 0 ? -1 : 1;
+    const SkScalar vFlip = pFont->IsVertical() ? -1 : 1;
     for (int index = 0; index < nChars; ++index) {
       const TextCharPos& cp = pCharPos[index];
       int cur_index = index + count;
@@ -1033,17 +1030,6 @@ class SkiaState {
 #if defined(_SKIA_SUPPORT_PATHS_)
     m_pDriver->PreMultiply();
 #endif
-#if SHOW_TEXT_GLYPHS
-    SkTDArray<SkUnichar> text;
-    // TODO(nigi): |m_glyphs| are deprecated and glyphToUnichars() takes 4
-    // parameters now.
-    text.setCount(m_glyphs.count());
-    skPaint.glyphsToUnichars(m_glyphs.begin(), m_glyphs.count(), text.begin());
-    for (int i = 0; i < m_glyphs.count(); ++i)
-      printf("%lc", m_glyphs[i]);
-    printf("\n");
-#endif
-
     if (m_rsxform.count()) {
       sk_sp<SkTextBlob> blob = SkTextBlob::MakeFromRSXform(
           glyphs.begin(), glyphs.bytes(), m_rsxform.begin(), font,
@@ -1725,6 +1711,13 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
     float font_size,
     uint32_t color,
     const CFX_TextRenderOptions& options) {
+  // `SkTextBlob` is built from `pFont`'s font data. If `pFont` doesn't contain
+  // any font data, each text blob will have zero area to be drawn and the
+  // drawing command will be rejected. In this case, we fall back to drawing
+  // characters by their glyph bitmaps.
+  if (pFont->GetFontSpan().empty())
+    return false;
+
   // If a glyph's default width is larger than its width defined in the PDF,
   // draw the glyph with path since it can be scaled to avoid overlapping with
   // the adjacent glyphs (if there are any). Otherwise, use the device driver
@@ -1759,10 +1752,8 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
   font.setEdging(GetFontEdgingType(options));
 
   SkAutoCanvasRestore scoped_save_restore(m_pCanvas, /*doSave=*/true);
-  SkScalar flip = font_size < 0 ? -1 : 1;
-  SkScalar vFlip = flip;
-  if (pFont->IsVertical())
-    vFlip *= -1;
+  const SkScalar flip = font_size < 0 ? -1 : 1;
+  const SkScalar vFlip = pFont->IsVertical() ? -1 : 1;
   SkMatrix skMatrix = ToFlippedSkMatrix(mtObject2Device, flip);
   m_pCanvas->concat(skMatrix);
   SkTDArray<SkPoint> positions;
@@ -1789,14 +1780,6 @@ bool CFX_SkiaDeviceDriver::DrawDeviceText(
   }
   if (oneAtATime)
     useRSXform = false;
-#if SHOW_TEXT_GLYPHS
-  SkTDArray<SkUnichar> text;
-  text.setCount(glyphs.count());
-  paint.glyphsToUnichars(glyphs.begin(), glyphs.count(), text.begin());
-  for (int i = 0; i < glyphs.count(); ++i)
-    printf("%lc", text[i]);
-  printf("\n");
-#endif
 #if defined(_SKIA_SUPPORT_PATHS_)
   m_pBitmap->PreMultiply();
 #endif

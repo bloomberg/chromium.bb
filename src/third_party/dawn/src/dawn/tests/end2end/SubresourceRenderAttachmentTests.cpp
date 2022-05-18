@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/common/Assert.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
@@ -150,6 +151,10 @@ TEST_P(SubresourceRenderAttachmentTest, ColorTexture) {
 
 // Test rendering into a subresource of a depth texture
 TEST_P(SubresourceRenderAttachmentTest, DepthTexture) {
+    // TODO(crbug.com/dawn/667): Work around the fact that some platforms do not support reading
+    // depth.
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("disable_depth_read"));
+
     DoTest(Type::Depth);
 }
 

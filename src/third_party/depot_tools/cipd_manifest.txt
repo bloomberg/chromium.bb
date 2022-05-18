@@ -56,7 +56,7 @@ infra/tools/luci-auth/${platform} git_revision:297491c0babda68d84d8240c9d4504be6
 infra/tools/bb/${platform} git_revision:0e7a6d8b67bee60fc983e6a4bd14a828654a1ce3
 
 # LUCI ResultDB CLI
-infra/tools/rdb/${platform} git_revision:2be056d01d3f8bab07915a1c2eca04f1937ad833
+infra/tools/rdb/${platform} git_revision:4047a98ee73a91e5f8acdb377437a6ebda171c3c
 
 # CHROMEOS Buildjobs CLI
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
@@ -69,4 +69,4 @@ infra/goma/client/${os=mac}-${arch} git_revision:cebd6284bc74bd6b728f7556db5576e
 infra/tools/dirmd/${platform} git_revision:9ae83cf95f396f93ff5002c4159746937cf93ce9
 
 # Pinpoint CLI
-infra/chromeperf/pinpoint/${platform} git_revision:af1fb79f2dac80bb46bfd88fed08542a11022541
+infra/chromeperf/pinpoint/${platform} git_revision:40b241eb67c2b9ada8a14eb633b8cb60a62782e6

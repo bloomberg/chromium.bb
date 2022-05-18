@@ -101,6 +101,7 @@
 #include "content/browser/starscan_load_observer.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/browser/web_contents/java_script_dialog_commit_deferring_condition.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/web_package/save_as_web_bundle_job.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -136,11 +137,13 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
+#include "content/public/common/url_constants.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "net/base/url_util.h"
@@ -157,6 +160,7 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -164,6 +168,7 @@
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/pointer/pointer_device.h"
@@ -360,42 +365,9 @@ bool AnyInnerWebContents(WebContents* web_contents, const Functor& f) {
   return std::any_of(inner_contents.begin(), inner_contents.end(), f);
 }
 
-std::vector<RenderFrameHost*> GetAllFramesImpl(FrameTree& frame_tree,
-                                               bool include_pending) {
-  std::vector<RenderFrameHost*> frame_hosts;
-  for (FrameTreeNode* node : frame_tree.Nodes()) {
-    frame_hosts.push_back(node->current_frame_host());
-    if (include_pending) {
-      RenderFrameHostImpl* pending_frame_host =
-          node->render_manager()->speculative_frame_host();
-      if (pending_frame_host)
-        frame_hosts.push_back(pending_frame_host);
-    }
-  }
-  return frame_hosts;
-}
-
-int SendToAllFramesImpl(FrameTree& frame_tree,
-                        bool include_pending,
-                        IPC::Message* message) {
-  int number_of_messages = 0;
-  std::vector<RenderFrameHost*> frame_hosts =
-      GetAllFramesImpl(frame_tree, include_pending);
-  for (RenderFrameHost* rfh : frame_hosts) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
-
-    ++number_of_messages;
-    IPC::Message* message_copy = new IPC::Message(*message);
-    message_copy->set_routing_id(rfh->GetRoutingID());
-    rfh->Send(message_copy);
-  }
-  delete message;
-  return number_of_messages;
-}
-
 // Returns the set of all WebContentses that are reachable from |web_contents|
-// by applying some combination of WebContents::GetOriginalOpener() and
+// by applying some combination of
+// WebContents::GetFirstWebContentsInLiveOriginalOpenerChain() and
 // WebContents::GetOuterWebContents(). The |web_contents| parameter will be
 // included in the returned set.
 base::flat_set<WebContentsImpl*> GetAllOpeningWebContents(
@@ -411,10 +383,10 @@ base::flat_set<WebContentsImpl*> GetAllOpeningWebContents(
     auto insert_result = result.insert(current_contents);
 
     if (insert_result.second) {
-      RenderFrameHostImpl* opener_rfh = current_contents->GetOriginalOpener();
-      if (opener_rfh) {
-        current.insert(static_cast<WebContentsImpl*>(
-            WebContents::FromRenderFrameHost(opener_rfh)));
+      if (WebContents* opener_contents =
+              current_contents
+                  ->GetFirstWebContentsInLiveOriginalOpenerChain()) {
+        current.insert(static_cast<WebContentsImpl*>(opener_contents));
       }
 
       WebContentsImpl* outer_contents = current_contents->GetOuterWebContents();
@@ -486,7 +458,7 @@ bool IsWindowPlacementGranted(RenderFrameHost* host) {
   DCHECK(permission_controller);
 
   return permission_controller->GetPermissionStatusForCurrentDocument(
-             PermissionType::WINDOW_PLACEMENT, host) ==
+             blink::PermissionType::WINDOW_PLACEMENT, host) ==
          blink::mojom::PermissionStatus::GRANTED;
 }
 
@@ -1385,13 +1357,6 @@ void WebContentsImpl::ForEachFrame(
   for (FrameTreeNode* node : primary_frame_tree_.Nodes()) {
     on_frame.Run(node->current_frame_host());
   }
-}
-
-int WebContentsImpl::SendToAllFramesIncludingPending(IPC::Message* message) {
-  OPTIONAL_TRACE_EVENT0("content",
-                        "WebContentsImpl::SentToAllFramesIncludingPending");
-  return SendToAllFramesImpl(primary_frame_tree_, /*include_pending=*/true,
-                             message);
 }
 
 void WebContentsImpl::ForEachRenderFrameHost(
@@ -2578,9 +2543,9 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
                                      ->current_frame_host()
                                      ->GetSiteInstance()
                                      ->group());
-  view_.reset(CreateWebContentsView(
+  view_ = CreateWebContentsView(
       this, GetContentClient()->browser()->GetWebContentsViewDelegate(this),
-      &render_view_host_delegate_view_));
+      &render_view_host_delegate_view_);
   view_->CreateView(nullptr);
   std::unique_ptr<WebContents> web_contents =
       node_.DisconnectFromOuterWebContents();
@@ -3061,15 +3026,15 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
       site_instance.get(), params.renderer_initiated_creation,
       params.main_frame_name, GetOpener(), primary_main_frame_policy);
 
-  WebContentsViewDelegate* delegate =
+  std::unique_ptr<WebContentsViewDelegate> delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
   if (browser_plugin_guest_) {
     view_ = std::make_unique<WebContentsViewChildFrame>(
-        this, delegate, &render_view_host_delegate_view_);
+        this, std::move(delegate), &render_view_host_delegate_view_);
   } else {
-    view_.reset(CreateWebContentsView(this, delegate,
-                                      &render_view_host_delegate_view_));
+    view_ = CreateWebContentsView(this, std::move(delegate),
+                                  &render_view_host_delegate_view_);
   }
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
@@ -4285,7 +4250,7 @@ void WebContentsImpl::RequestMediaAccessPermission(
     delegate_->RequestMediaAccessPermission(this, request, std::move(callback));
   } else {
     std::move(callback).Run(
-        blink::MediaStreamDevices(),
+        blink::mojom::StreamDevices(),
         blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
         std::unique_ptr<MediaStreamUI>());
   }
@@ -4509,6 +4474,9 @@ void WebContentsImpl::SendActiveState(bool active) {
 }
 
 TextInputManager* WebContentsImpl::GetTextInputManager() {
+  if (suppress_ime_events_for_testing_)
+    return nullptr;
+
   if (GetOuterWebContents())
     return GetOuterWebContents()->GetTextInputManager();
 
@@ -5280,13 +5248,17 @@ RenderFrameHostImpl* WebContentsImpl::GetOpener() {
   return opener_ftn ? opener_ftn->current_frame_host() : nullptr;
 }
 
-bool WebContentsImpl::HasOriginalOpener() {
-  return GetOriginalOpener() != nullptr;
+bool WebContentsImpl::HasLiveOriginalOpenerChain() {
+  return GetFirstWebContentsInLiveOriginalOpenerChain() != nullptr;
 }
 
-RenderFrameHostImpl* WebContentsImpl::GetOriginalOpener() {
-  FrameTreeNode* opener_ftn = primary_frame_tree_.root()->original_opener();
-  return opener_ftn ? opener_ftn->current_frame_host() : nullptr;
+WebContents* WebContentsImpl::GetFirstWebContentsInLiveOriginalOpenerChain() {
+  FrameTreeNode* opener_ftn =
+      primary_frame_tree_.root()
+          ->first_live_main_frame_in_original_opener_chain();
+  return opener_ftn ? WebContents::FromRenderFrameHost(
+                          opener_ftn->current_frame_host())
+                    : nullptr;
 }
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
@@ -5596,7 +5568,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
         ->controller()
         .ssl_manager()
         ->DidStartResourceResponse(
-            navigation_handle->GetURL(),
+            url::SchemeHostPort(navigation_handle->GetURL()),
             navigation_handle->GetSSLInfo().has_value()
                 ? net::IsCertStatusError(
                       navigation_handle->GetSSLInfo()->cert_status)
@@ -9365,7 +9337,6 @@ void WebContentsImpl::SetTabSwitchStartTime(base::TimeTicks start_time,
     return;
   trigger->UpdateRequest(start_time, destination_is_loaded,
                          /*show_reason_tab_switching=*/true,
-                         /*show_reason_unoccluded=*/false,
                          /*show_reason_bfcache_restore=*/false);
 }
 
@@ -9393,8 +9364,9 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
       prerendering_url, trigger_type, embedder_histogram_suffix,
       content::Referrer(), /*initiator_origin=*/absl::nullopt, prerendering_url,
       content::ChildProcessHost::kInvalidUniqueID,
-      /*initiator_frame_token=*/absl::nullopt, ukm::kInvalidSourceId,
-      page_transition, url_match_predicate);
+      /*initiator_frame_token=*/absl::nullopt,
+      /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
+      ukm::kInvalidSourceId, page_transition, url_match_predicate);
   int frame_tree_node_id =
       GetPrerenderHostRegistry()->CreateAndStartHost(attributes, *this);
 

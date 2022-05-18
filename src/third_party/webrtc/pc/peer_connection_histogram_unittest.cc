@@ -107,7 +107,7 @@ class ObserverForUsageHistogramTest : public MockPeerConnectionObserver {
     candidate_target_ = other;
   }
 
-  bool HaveDataChannel() { return last_datachannel_; }
+  bool HaveDataChannel() { return last_datachannel_ != nullptr; }
 
   absl::optional<int> interesting_usage_detected() {
     return interesting_usage_detected_;
@@ -352,7 +352,7 @@ class PeerConnectionUsageHistogramTest : public ::testing::Test {
       return nullptr;
     }
 
-    observer->SetPeerConnectionInterface(result.value());
+    observer->SetPeerConnectionInterface(result.value().get());
     auto wrapper = std::make_unique<PeerConnectionWrapperForUsageHistogramTest>(
         pc_factory, result.MoveValue(), std::move(observer));
     return wrapper;

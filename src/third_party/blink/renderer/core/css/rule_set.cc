@@ -30,8 +30,12 @@
 
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
+#include <memory>
 #include <type_traits>
+#include <vector>
 
+#include "base/substring_set_matcher/substring_set_matcher.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
@@ -43,6 +47,9 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+
+using base::StringPattern;
+using base::SubstringSetMatcher;
 
 namespace blink {
 
@@ -88,7 +95,8 @@ RuleData* RuleData::MaybeCreate(StyleRule* rule,
                                 unsigned selector_index,
                                 unsigned position,
                                 AddRuleFlags add_rule_flags,
-                                const ContainerQuery* container_query) {
+                                const ContainerQuery* container_query,
+                                const StyleScope* style_scope) {
   // The selector index field in RuleData is only 13 bits so we can't support
   // selectors at index 8192 or beyond.
   // See https://crbug.com/804179
@@ -96,10 +104,10 @@ RuleData* RuleData::MaybeCreate(StyleRule* rule,
     return nullptr;
   if (position >= (1 << RuleData::kPositionBits))
     return nullptr;
-  if (container_query) {
+  if (container_query || style_scope) {
     return MakeGarbageCollected<ExtendedRuleData>(
         base::PassKey<RuleData>(), rule, selector_index, position,
-        add_rule_flags, container_query);
+        add_rule_flags, container_query, style_scope);
   }
   return MakeGarbageCollected<RuleData>(rule, selector_index, position,
                                         add_rule_flags);
@@ -109,17 +117,23 @@ RuleData::RuleData(StyleRule* rule,
                    unsigned selector_index,
                    unsigned position,
                    AddRuleFlags add_rule_flags)
-    : RuleData(Type::kNormal, rule, selector_index, position, add_rule_flags) {}
+    : RuleData(Type::kNormal,
+               rule,
+               selector_index,
+               position,
+               0 /* extra_specificity */,
+               add_rule_flags) {}
 
 RuleData::RuleData(Type type,
                    StyleRule* rule,
                    unsigned selector_index,
                    unsigned position,
+                   unsigned extra_specificity,
                    AddRuleFlags add_rule_flags)
     : rule_(rule),
       selector_index_(selector_index),
       position_(position),
-      specificity_(Selector().Specificity()),
+      specificity_(Selector().Specificity() + extra_specificity),
       link_match_type_(DetermineLinkMatchType(add_rule_flags, Selector())),
       has_document_security_origin_(add_rule_flags &
                                     kRuleHasDocumentSecurityOrigin),
@@ -147,6 +161,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
                                   AtomicString& id,
                                   AtomicString& class_name,
                                   AtomicString& attr_name,
+                                  AtomicString& attr_value,
                                   AtomicString& custom_pseudo_element_name,
                                   AtomicString& tag_name,
                                   AtomicString& part_name,
@@ -191,6 +206,19 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoPart:
           part_name = selector->Value();
           break;
+        case CSSSelector::kPseudoIs:
+        case CSSSelector::kPseudoWhere: {
+          const CSSSelectorList* selector_list = selector->SelectorList();
+          DCHECK(selector_list);
+          // If the :is/:where has only a single argument, it effectively acts
+          // like a normal selector (save for specificity), and we can put it
+          // into a bucket based on that selector.
+          if (selector_list->HasOneSelector()) {
+            ExtractSelectorValues(
+                selector_list->First(), id, class_name, attr_name, attr_value,
+                custom_pseudo_element_name, tag_name, part_name, pseudo_type);
+          }
+        } break;
         default:
           break;
       }
@@ -203,10 +231,40 @@ static void ExtractSelectorValues(const CSSSelector* selector,
     case CSSSelector::kAttributeBegin:
     case CSSSelector::kAttributeEnd:
       attr_name = selector->Attribute().LocalName();
+      attr_value = selector->Value();
       break;
     default:
       break;
   }
+}
+
+// For a (possibly compound) selector, extract the values used for determining
+// its buckets (e.g. for “.foo[baz]”, will return foo for class_name and
+// baz for attr_name). Returns the last subselector in the group, which is also
+// the one given the highest priority.
+static const CSSSelector* ExtractBestSelectorValues(
+    const CSSSelector& component,
+    AtomicString& id,
+    AtomicString& class_name,
+    AtomicString& attr_name,
+    AtomicString& attr_value,
+    AtomicString& custom_pseudo_element_name,
+    AtomicString& tag_name,
+    AtomicString& part_name,
+    CSSSelector::PseudoType& pseudo_type) {
+  const CSSSelector* it = &component;
+  for (; it && it->Relation() == CSSSelector::kSubSelector;
+       it = it->TagHistory()) {
+    ExtractSelectorValues(it, id, class_name, attr_name, attr_value,
+                          custom_pseudo_element_name, tag_name, part_name,
+                          pseudo_type);
+  }
+  if (it) {
+    ExtractSelectorValues(it, id, class_name, attr_name, attr_value,
+                          custom_pseudo_element_name, tag_name, part_name,
+                          pseudo_type);
+  }
+  return it;
 }
 
 bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
@@ -214,6 +272,7 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   AtomicString id;
   AtomicString class_name;
   AtomicString attr_name;
+  AtomicString attr_value;  // Unused.
   AtomicString custom_pseudo_element_name;
   AtomicString tag_name;
   AtomicString part_name;
@@ -223,18 +282,9 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
   all_rules_.push_back(rule_data);
 #endif
 
-  const CSSSelector* it = &component;
-  for (; it && it->Relation() == CSSSelector::kSubSelector;
-       it = it->TagHistory()) {
-    ExtractSelectorValues(it, id, class_name, attr_name,
-                          custom_pseudo_element_name, tag_name, part_name,
-                          pseudo_type);
-  }
-  if (it) {
-    ExtractSelectorValues(it, id, class_name, attr_name,
-                          custom_pseudo_element_name, tag_name, part_name,
-                          pseudo_type);
-  }
+  const CSSSelector* it = ExtractBestSelectorValues(
+      component, id, class_name, attr_name, attr_value,
+      custom_pseudo_element_name, tag_name, part_name, pseudo_type);
 
   // Prefer rule sets in order of most likely to apply infrequently.
   if (!id.IsEmpty()) {
@@ -332,9 +382,11 @@ void RuleSet::AddRule(StyleRule* rule,
                       unsigned selector_index,
                       AddRuleFlags add_rule_flags,
                       const ContainerQuery* container_query,
-                      const CascadeLayer* cascade_layer) {
-  RuleData* rule_data = RuleData::MaybeCreate(rule, selector_index, rule_count_,
-                                              add_rule_flags, container_query);
+                      const CascadeLayer* cascade_layer,
+                      const StyleScope* style_scope) {
+  RuleData* rule_data =
+      RuleData::MaybeCreate(rule, selector_index, rule_count_, add_rule_flags,
+                            container_query, style_scope);
   if (!rule_data) {
     // This can happen if selector_index or position is out of range.
     return;
@@ -358,7 +410,7 @@ void RuleSet::AddRule(StyleRule* rule,
   if (rule_data->LinkMatchType() == CSSSelector::kMatchLink) {
     RuleData* visited_dependent = RuleData::MaybeCreate(
         rule, rule_data->SelectorIndex(), rule_data->GetPosition(),
-        add_rule_flags | kRuleIsVisitedDependent, container_query);
+        add_rule_flags | kRuleIsVisitedDependent, container_query, style_scope);
     DCHECK(visited_dependent);
     visited_dependent_rules_.push_back(visited_dependent);
   }
@@ -424,7 +476,8 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
                             const MediaQueryEvaluator& medium,
                             AddRuleFlags add_rule_flags,
                             const ContainerQuery* container_query,
-                            CascadeLayer* cascade_layer) {
+                            CascadeLayer* cascade_layer,
+                            const StyleScope* style_scope) {
   for (unsigned i = 0; i < rules.size(); ++i) {
     StyleRuleBase* rule = rules[i].Get();
 
@@ -434,7 +487,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
            selector = selector_list.Next(*selector)) {
         wtf_size_t selector_index = selector_list.SelectorIndex(*selector);
         AddRule(style_rule, selector_index, add_rule_flags, container_query,
-                cascade_layer);
+                cascade_layer, style_scope);
       }
     } else if (auto* page_rule = DynamicTo<StyleRulePage>(rule)) {
       page_rule->SetCascadeLayer(cascade_layer);
@@ -442,7 +495,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (auto* media_rule = DynamicTo<StyleRuleMedia>(rule)) {
       if (MatchMediaForAddRules(medium, media_rule->MediaQueries())) {
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags,
-                      container_query, cascade_layer);
+                      container_query, cascade_layer, style_scope);
       }
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
       font_face_rule->SetCascadeLayer(cascade_layer);
@@ -469,7 +522,7 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (auto* supports_rule = DynamicTo<StyleRuleSupports>(rule)) {
       if (supports_rule->ConditionIsSupported()) {
         AddChildRules(supports_rule->ChildRules(), medium, add_rule_flags,
-                      container_query, cascade_layer);
+                      container_query, cascade_layer, style_scope);
       }
     } else if (auto* container_rule = DynamicTo<StyleRuleContainer>(rule)) {
       const ContainerQuery* inner_container_query =
@@ -479,16 +532,22 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
             inner_container_query->CopyWithParent(container_query);
       }
       AddChildRules(container_rule->ChildRules(), medium, add_rule_flags,
-                    inner_container_query, cascade_layer);
+                    inner_container_query, cascade_layer, style_scope);
     } else if (auto* layer_block_rule = DynamicTo<StyleRuleLayerBlock>(rule)) {
       CascadeLayer* sub_layer =
           GetOrAddSubLayer(cascade_layer, layer_block_rule->GetName());
       AddChildRules(layer_block_rule->ChildRules(), medium, add_rule_flags,
-                    container_query, sub_layer);
+                    container_query, sub_layer, style_scope);
     } else if (auto* layer_statement_rule =
                    DynamicTo<StyleRuleLayerStatement>(rule)) {
       for (const auto& layer_name : layer_statement_rule->GetNames())
         GetOrAddSubLayer(cascade_layer, layer_name);
+    } else if (auto* scope_rule = DynamicTo<StyleRuleScope>(rule)) {
+      const StyleScope* inner_style_scope = &scope_rule->GetStyleScope();
+      if (style_scope)
+        inner_style_scope = inner_style_scope->CopyWithParent(style_scope);
+      AddChildRules(scope_rule->ChildRules(), medium, add_rule_flags,
+                    container_query, cascade_layer, inner_style_scope);
     }
   }
 }
@@ -538,7 +597,7 @@ void RuleSet::AddRulesFromSheet(StyleSheetContents* sheet,
   }
 
   AddChildRules(sheet->ChildRules(), medium, add_rule_flags,
-                nullptr /* container_query */, cascade_layer);
+                nullptr /* container_query */, cascade_layer, nullptr);
 }
 
 void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
@@ -548,7 +607,7 @@ void RuleSet::AddStyleRule(StyleRule* rule, AddRuleFlags add_rule_flags) {
        selector_index =
            rule->SelectorList().IndexOfNextSelectorAfter(selector_index)) {
     AddRule(rule, selector_index, add_rule_flags, nullptr /* container_query */,
-            nullptr /* cascade_layer */);
+            nullptr /* cascade_layer */, nullptr /* scope */);
   }
 }
 
@@ -584,12 +643,113 @@ void RuleSet::CompactPendingRules(PendingRuleMap& pending_map,
   }
 }
 
+static wtf_size_t GetMinimumRulesetSizeForSubstringMatcher() {
+  // It's not worth going through the Aho-Corasick matcher unless we can
+  // reject a reasonable number of rules in one go. Practical ad-hoc testing
+  // suggests the break-even point between using the tree and just testing
+  // all of the rules individually lies somewhere around 20–40 rules
+  // (depending a bit on e.g. how hot the tree is in the cache, the length
+  // of the value that we match against, and of course whether we actually
+  // have a match). We add a little bit of margin to compensate for the fact
+  // that we also need to spend time building the tree, and the extra memory
+  // in use.
+  //
+  // TODO(sesse): When the Finch experiment finishes, lock this to 50.
+  return base::FeatureList::IsEnabled(
+             blink::features::kSubstringSetTreeForAttributeBuckets)
+             ? 50
+             : std::numeric_limits<wtf_size_t>::max();
+}
+
+bool RuleSet::CanIgnoreEntireList(
+    const HeapVector<Member<const RuleData>>* list,
+    const AtomicString& key,
+    const AtomicString& value) const {
+  DCHECK(!pending_rules_);
+  DCHECK_EQ(attr_rules_.find(key)->value, list);
+  if (list->size() < GetMinimumRulesetSizeForSubstringMatcher()) {
+    // Too small to build up a tree, so always check.
+    DCHECK_EQ(attr_substring_matchers_.find(key),
+              attr_substring_matchers_.end());
+    return false;
+  }
+
+  // See CreateSubstringMatchers().
+  if (value.IsEmpty()) {
+    return false;
+  }
+
+  auto it = attr_substring_matchers_.find(key);
+  if (it == attr_substring_matchers_.end()) {
+    // Building the tree failed, so always check.
+    return false;
+  }
+  return !it->value->AnyMatch(value.LowerASCII().Utf8());
+}
+
+void RuleSet::CreateSubstringMatchers(
+    CompactRuleMap& attr_map,
+    RuleSet::SubstringMatcherMap& substring_matcher_map) {
+  for (const auto& [/*AtomicString*/ attr, /*Member<RuleSet>*/ ruleset] :
+       attr_map) {
+    if (ruleset->size() < GetMinimumRulesetSizeForSubstringMatcher()) {
+      continue;
+    }
+    std::vector<StringPattern> patterns;
+    int rule_index = 0;
+    for (const Member<const RuleData>& rule : *ruleset) {
+      AtomicString id;
+      AtomicString class_name;
+      AtomicString attr_name;
+      AtomicString attr_value;
+      AtomicString custom_pseudo_element_name;
+      AtomicString tag_name;
+      AtomicString part_name;
+      CSSSelector::PseudoType pseudo_type = CSSSelector::kPseudoUnknown;
+      ExtractBestSelectorValues(rule->Selector(), id, class_name, attr_name,
+                                attr_value, custom_pseudo_element_name,
+                                tag_name, part_name, pseudo_type);
+      DCHECK(!attr_name.IsEmpty());
+
+      if (attr_value.IsEmpty()) {
+        // The empty string would make the entire tree useless (it is
+        // a substring of every possible value), so as a special case,
+        // we ignore it, and have a separate check in CanIgnoreEntireList().
+        continue;
+      }
+
+      std::string pattern = attr_value.LowerASCII().Utf8();
+
+      // SubstringSetMatcher doesn't like duplicates, and since we only
+      // use the tree for true/false information anyway, we can remove them.
+      bool already_exists =
+          any_of(patterns.begin(), patterns.end(),
+                 [&pattern](const StringPattern& existing_pattern) {
+                   return existing_pattern.pattern() == pattern;
+                 });
+      if (!already_exists) {
+        patterns.emplace_back(pattern, rule_index);
+      }
+      ++rule_index;
+    }
+
+    auto substring_matcher = std::make_unique<SubstringSetMatcher>();
+    if (!substring_matcher->Build(patterns)) {
+      // Should never really happen unless there are megabytes and megabytes
+      // of such classes, so we just drop out to the slow path.
+    } else {
+      substring_matcher_map.insert(attr, std::move(substring_matcher));
+    }
+  }
+}
+
 void RuleSet::CompactRules() {
   DCHECK(pending_rules_);
   PendingRuleMaps* pending_rules = pending_rules_.Release();
   CompactPendingRules(pending_rules->id_rules, id_rules_);
   CompactPendingRules(pending_rules->class_rules, class_rules_);
   CompactPendingRules(pending_rules->attr_rules, attr_rules_);
+  CreateSubstringMatchers(attr_rules_, attr_substring_matchers_);
   CompactPendingRules(pending_rules->tag_rules, tag_rules_);
   CompactPendingRules(pending_rules->ua_shadow_pseudo_element_rules,
                       ua_shadow_pseudo_element_rules_);
@@ -671,6 +831,12 @@ const ContainerQuery* RuleData::GetContainerQuery() const {
   return nullptr;
 }
 
+const StyleScope* RuleData::GetStyleScope() const {
+  if (auto* extended = DynamicTo<ExtendedRuleData>(this))
+    return extended->style_scope_;
+  return nullptr;
+}
+
 const CascadeLayer* RuleSet::GetLayerForTest(const RuleData& rule) const {
   if (!layer_intervals_.size() ||
       layer_intervals_[0].start_position > rule.GetPosition())
@@ -702,13 +868,21 @@ ExtendedRuleData::ExtendedRuleData(base::PassKey<RuleData>,
                                    unsigned selector_index,
                                    unsigned position,
                                    AddRuleFlags flags,
-                                   const ContainerQuery* container_query)
-    : RuleData(Type::kExtended, rule, selector_index, position, flags),
-      container_query_(container_query) {}
+                                   const ContainerQuery* container_query,
+                                   const StyleScope* style_scope)
+    : RuleData(Type::kExtended,
+               rule,
+               selector_index,
+               position,
+               (style_scope ? style_scope->Specificity() : 0),
+               flags),
+      container_query_(container_query),
+      style_scope_(style_scope) {}
 
 void ExtendedRuleData::TraceAfterDispatch(Visitor* visitor) const {
   RuleData::TraceAfterDispatch(visitor);
   visitor->Trace(container_query_);
+  visitor->Trace(style_scope_);
 }
 
 void RuleSet::PendingRuleMaps::Trace(Visitor* visitor) const {

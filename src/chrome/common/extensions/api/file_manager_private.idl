@@ -90,7 +90,9 @@ enum MountCompletedStatus {
   error_unknown_filesystem,
   error_unsupported_filesystem,
   error_invalid_archive,
-  error_need_password
+  error_need_password,
+  error_in_progress,
+  error_cancelled
 };
 
 // Filesystem to format to.
@@ -358,6 +360,7 @@ enum IOTaskType {
   delete,
   extract,
   move,
+  trash,
   zip
 };
 
@@ -1284,13 +1287,17 @@ interface Functions {
       [instanceOf=Entry] object[] entries,
       ResolveEntriesCallback callback);
 
-  // Mounts a resource or a file.
-  // |source| Mount point source. For compressed files it is the relative file
-  //     path within the external file system.
-  // |password| Optional password to decrypt the file.
+  // Mounts a resource or an archive.
+  // |fileUrl| Mount point source.
+  // |password| Optional password to decrypt the archive.
   // |callback| Callback called with the source path of the mount.
-  static void addMount(DOMString source, optional DOMString password,
+  static void addMount(DOMString fileUrl, optional DOMString password,
                        AddMountCallback callback);
+
+  // Cancels an archive mounting operation.
+  // |fileUrl| Mount point source. Should be same as the one passed to addMount.
+  // |callback|
+  static void cancelMounting(DOMString fileUrl, SimpleCallback callback);
 
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.
@@ -1633,6 +1640,9 @@ interface Functions {
 
   // Creates a new Files app window in the directory provided in `params`.
   static void openWindow(OpenWindowParams params, BooleanCallback callback);
+
+  // Opens the feedback report window.
+  static void sendFeedback();
 
   // Starts an I/O task of type |type| on |entries|. Task type specific
   // parameters are passed via |params|.

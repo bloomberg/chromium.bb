@@ -6,20 +6,37 @@ import SwiftUI
 import ios_chrome_common_ui_colors_swift
 
 struct PopupMatchRowView: View {
+  enum Colors {
+    static let highlightingColor = Color(
+      red: 26 / 255, green: 115 / 255, blue: 232 / 255, opacity: 1)
+    static let highlightingGradient = Gradient(colors: [
+      highlightingColor.opacity(0.85), highlightingColor,
+    ])
+  }
 
   enum Dimensions {
     static let actionButtonOffset = CGSize(width: -5, height: 0)
     static let actionButtonOuterPadding = EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0)
-    static let leadingSpacing: CGFloat = 60
     static let minHeight: CGFloat = 58
-    static let maxHeight: CGFloat = 98
-    static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 16)
+
+    enum VariationOne {
+      static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 0)
+    }
+
+    enum VariationTwo {
+      static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 10)
+    }
   }
+
+  @Environment(\.popupUIVariation) var uiVariation: PopupUIVariation
+  @Environment(\.horizontalSizeClass) var sizeClass
 
   let match: PopupMatch
   let isHighlighted: Bool
+  let toolbarConfiguration: ToolbarConfiguration
   let selectionHandler: () -> Void
   let trailingButtonHandler: () -> Void
+  let uiConfiguration: PopupUIConfiguration
 
   @State var isPressed = false
   @State var childView = CGSize.zero
@@ -37,7 +54,6 @@ struct PopupMatchRowView: View {
       .accessibilityElement()
       .accessibilityLabel(match.text.string)
       .accessibilityValue(match.detailText?.string ?? "")
-      .accessibilityRemoveTraits(.isButton)
 
     if match.isAppendable || match.isTabMatch {
       let trailingActionAccessibilityTitle =
@@ -55,87 +71,143 @@ struct PopupMatchRowView: View {
     }
   }
 
+  /// Enable this to tell the row it should display its own custom separator at the bottom.
+  let shouldDisplayCustomSeparator: Bool
+  var customSeparatorColor: Color {
+    uiVariation == .one ? .separator : .grey200
+  }
+  @ViewBuilder
+  var customSeparator: some View {
+    HStack(spacing: 0) {
+      Spacer().frame(
+        width: leadingMarginForRowContent + spaceBetweenRowContentLeadingEdgeAndSuggestionText)
+      customSeparatorColor.frame(height: 0.5)
+    }.environment(\.layoutDirection, .leftToRight)
+  }
+
+  @Environment(\.layoutDirection) var layoutDirection: LayoutDirection
+
+  var leadingMarginForRowContent: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxLeadingSpace
+    case .two:
+      return 0
+    }
+  }
+
+  var trailingMarginForRowContent: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.safeAreaTrailingSpace + kExpandedLocationBarLeadingMarginRefreshedPopup
+    case .two:
+      return 0
+    }
+  }
+
+  var spaceBetweenRowContentLeadingEdgeAndCenterOfSuggestionImage: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxLeadingImageLeadingSpace
+    case .two:
+      return 30
+    }
+  }
+
+  var spaceBetweenRowContentLeadingEdgeAndSuggestionText: CGFloat {
+    switch uiVariation {
+    case .one:
+      return uiConfiguration.omniboxTextFieldLeadingSpace
+    case .two:
+      return 59
+    }
+  }
+
   var body: some View {
     ZStack {
-      if isHighlighted {
-        LinearGradient(
-          gradient:
-            Gradient(colors: [backgroundColor.opacity(0.85), backgroundColor]), startPoint: .top,
-          endPoint: .bottom
-        )
+      // This hides system separators when disabling them is not possible.
+      backgroundColor
 
+      if shouldDisplayCustomSeparator {
+        VStack {
+          Spacer()
+          customSeparator
+        }
+      }
+
+      if isHighlighted {
+        LinearGradient(gradient: Colors.highlightingGradient, startPoint: .top, endPoint: .bottom)
       } else if self.isPressed {
-        Color.cr_tableRowViewHighlight
+        Color.tableRowViewHighlight
       }
 
       button
 
+      let highlightColor = isHighlighted ? Color.white : nil
+
       // The content is in front of the button, for proper hit testing.
       HStack(alignment: .center, spacing: 0) {
+        Color.clear.frame(width: leadingMarginForRowContent)
         HStack(alignment: .center, spacing: 0) {
-          Spacer()
+          Color.clear.frame(
+            width: spaceBetweenRowContentLeadingEdgeAndCenterOfSuggestionImage
+              - PopupMatchImageView.Dimension.image / 2)
           match.image
             .map { image in
               PopupMatchImageView(
-                image: image, highlightColor: isHighlighted ? foregroundColorPrimary : nil
+                image: image, highlightColor: highlightColor
               )
               .accessibilityHidden(true)
+              .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
             }
           Spacer()
-        }.frame(width: Dimensions.leadingSpacing)
+        }.frame(width: spaceBetweenRowContentLeadingEdgeAndSuggestionText)
         VStack(alignment: .leading, spacing: 0) {
           VStack(alignment: .leading, spacing: 0) {
-            OmniboxText(match.text, highlightColor: isHighlighted ? foregroundColorPrimary : nil)
+            GradientTextView(match.text, highlightColor: highlightColor)
               .lineLimit(1)
-              .truncatedWithGradient()
               .accessibilityHidden(true)
 
             if let subtitle = match.detailText, !subtitle.string.isEmpty {
-              OmniboxText(subtitle, highlightColor: isHighlighted ? foregroundColorPrimary : nil)
+              if match.hasAnswer {
+                OmniboxText(subtitle, highlightColor: highlightColor)
+                  .font(.footnote)
+                  .lineLimit(match.numberOfLines)
+                  .accessibilityHidden(true)
+              } else {
+                GradientTextView(
+                  subtitle, highlightColor: highlightColor
+                )
                 .font(.footnote)
-                .foregroundColor(foregroundColorSecondary)
                 .lineLimit(1)
-                .truncatedWithGradient()
                 .accessibilityHidden(true)
+              }
             }
           }
           .allowsHitTesting(false)
         }
-        Spacer()
+        Spacer(minLength: 0)
         if match.isAppendable || match.isTabMatch {
           PopupMatchTrailingButton(match: match, action: trailingButtonHandler)
-            .foregroundColor(isHighlighted ? foregroundColorPrimary : .cr_blue)
+            .foregroundColor(isHighlighted ? highlightColor : .chromeBlue)
+            .environment(\.layoutDirection, layoutDirection)
         }
+        Color.clear.frame(width: trailingMarginForRowContent)
       }
-      .padding(Dimensions.padding)
+      .padding(
+        uiVariation == .one ? Dimensions.VariationOne.padding : Dimensions.VariationTwo.padding
+      )
+      .environment(\.layoutDirection, .leftToRight)
     }
-    .frame(maxWidth: .infinity, minHeight: Dimensions.minHeight, maxHeight: Dimensions.maxHeight)
+    .frame(maxWidth: .infinity, minHeight: Dimensions.minHeight)
   }
 
   var backgroundColor: Color {
-    if isHighlighted {
-      return Color(red: 26 / 255, green: 115 / 255, blue: 232 / 255, opacity: 1)
-    }
-    if self.isPressed {
-      return .cr_tableRowViewHighlight
-    } else {
-      return .cr_groupedSecondaryBackground
-    }
-  }
-
-  var foregroundColorPrimary: Color {
-    if isHighlighted {
-      return .white
-    } else {
-      return .black
-    }
-  }
-
-  var foregroundColorSecondary: Color {
-    if isHighlighted {
-      return .white
-    } else {
-      return .gray
+    switch uiVariation {
+    case .one:
+      return Color(toolbarConfiguration.backgroundColor)
+    case .two:
+      return .groupedSecondaryBackground
     }
   }
 }

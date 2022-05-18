@@ -339,10 +339,10 @@ class PolynomialSolver : public PolynomialSolverBase<Scalar_,Deg_>
     EIGEN_POLYNOMIAL_SOLVER_BASE_INHERITED_TYPES( PS_Base )
 
     typedef Matrix<Scalar,Deg_,Deg_>                 CompanionMatrixType;
-    typedef typename internal::conditional<NumTraits<Scalar>::IsComplex,
-                                          ComplexEigenSolver<CompanionMatrixType>,
-                                          EigenSolver<CompanionMatrixType> >::type EigenSolverType;
-    typedef typename internal::conditional<NumTraits<Scalar>::IsComplex, Scalar, std::complex<Scalar> >::type ComplexScalar;
+    typedef std::conditional_t<NumTraits<Scalar>::IsComplex,
+                                    ComplexEigenSolver<CompanionMatrixType>,
+                                    EigenSolver<CompanionMatrixType> > EigenSolverType;
+    typedef std::conditional_t<NumTraits<Scalar>::IsComplex, Scalar, std::complex<Scalar> > ComplexScalar;
 
   public:
     /** Computes the complex roots of a new polynomial. */

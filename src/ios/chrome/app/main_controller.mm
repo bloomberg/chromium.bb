@@ -72,6 +72,7 @@
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/mailto_handler/mailto_handler_service.h"
@@ -131,6 +132,7 @@
 #import "ios/chrome/app/credential_provider_migrator_app_agent.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_support.h"
+#import "ios/chrome/browser/credential_provider/credential_provider_util.h"
 #endif
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -186,6 +188,9 @@ NSString* const kEnterpriseManagedDeviceCheck = @"EnterpriseManagedDeviceCheck";
 
 // Constants for deferred deletion of leftover session state files.
 NSString* const kPurgeWebSessionStates = @"PurgeWebSessionStates";
+
+// Constants for deferred favicons clean up.
+NSString* const kFaviconsCleanup = @"FaviconsCleanup";
 
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
@@ -495,7 +500,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       _browserStateManager->GetLastUsedBrowserState();
 
   // The CrashRestoreHelper must clean up the old browser state information.
-  // |self.restoreHelper| must be kept alive until the BVC receives the
+  // `self.restoreHelper` must be kept alive until the BVC receives the
   // browser state.
   BOOL needRestoration = NO;
   if (isPostCrashLaunch) {
@@ -643,7 +648,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       break;
     case InitStageBrowserObjectsForUI:
       // When adding a new initialization flow, consider setting
-      // |_appState.userInteracted| at the appropriate time.
+      // `_appState.userInteracted` at the appropriate time.
       DCHECK(_appState.userInteracted);
       [self startUpBrowserForegroundInitialization];
       [appState queueTransitionToNextInitStage];
@@ -946,7 +951,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-// Schedule a call to |saveFieldTrialValuesForExtensions| for deferred
+// Schedule a call to `saveFieldTrialValuesForExtensions` for deferred
 // execution.
 - (void)scheduleSaveFieldTrialValuesForExtensions {
   [[DeferredInitializationRunner sharedInstance]
@@ -997,7 +1002,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                      forKey:app_group::kChromeExtensionFieldTrialPreference];
 }
 
-// Schedules a call to |logIfEnterpriseManagedDevice| for deferred
+// Schedules a call to `logIfEnterpriseManagedDevice` for deferred
 // execution.
 - (void)scheduleEnterpriseManagedDeviceCheck {
   [[DeferredInitializationRunner sharedInstance]
@@ -1060,6 +1065,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self initializeMailtoHandling];
   [self scheduleSaveFieldTrialValuesForExtensions];
   [self scheduleEnterpriseManagedDeviceCheck];
+  [self scheduleFaviconsCleanup];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
@@ -1107,9 +1113,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
+- (void)scheduleFaviconsCleanup {
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kFaviconsCleanup
+                  block:^{
+#if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
+                    UpdateFaviconsStorage(
+                        IOSChromeFaviconLoaderFactory::GetForBrowserState(
+                            self.currentBrowserState));
+#endif
+                  }];
+}
+
 - (void)expireFirstUserActionRecorder {
   // Clear out any scheduled calls to this method. For example, the app may have
-  // been backgrounded before the |kFirstUserActionTimeout| expired.
+  // been backgrounded before the `kFirstUserActionTimeout` expired.
   [NSObject
       cancelPreviousPerformRequestsWithTarget:self
                                      selector:@selector(
@@ -1221,7 +1239,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   disableWebUsageDuringRemoval = NO;
 
   for (SceneState* sceneState in self.appState.connectedScenes) {
-    // Assumes all scenes share |browserState|.
+    // Assumes all scenes share `browserState`.
     id<BrowserInterfaceProvider> sceneInterface = sceneState.interfaceProvider;
     if (disableWebUsageDuringRemoval) {
       // Disables browsing and purges web views.
@@ -1247,7 +1265,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // Must be called only on the main thread.
     DCHECK([NSThread isMainThread]);
     for (SceneState* sceneState in self.appState.connectedScenes) {
-      // Assumes all scenes share |browserState|.
+      // Assumes all scenes share `browserState`.
       id<BrowserInterfaceProvider> sceneInterface =
           sceneState.interfaceProvider;
 
@@ -1268,7 +1286,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       sceneInterface.incognitoInterface.userInteractionEnabled = YES;
       [sceneInterface.currentInterface setPrimary:YES];
     }
-    // |completionBlock is run once, not once per scene.
+    // `completionBlock` is run once, not once per scene.
     if (completionBlock)
       completionBlock();
   };

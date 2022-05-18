@@ -322,6 +322,9 @@ TEST_P(UnifiedMessageCenterViewTest, DISABLED_AddAndRemoveNotification) {
 }
 
 TEST_P(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
+  // No special scroll behavior with the Notifications Refresh anymore.
+  if (IsNotificationsRefreshEnabled())
+    return;
   // Show message center with multiple notifications.
   AddManyNotifications();
   CreateMessageCenterView();
@@ -347,15 +350,9 @@ TEST_P(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
   AnimateMessageListToEnd();
   RelayoutMessageCenterViewForTest();
 
-  if (IsNotificationsRefreshEnabled()) {
-    EXPECT_EQ(scroll_position - removed_notification_height -
-                  kMessageListNotificationSpacing,
-              GetScroller()->GetVisibleRect().y());
-  } else {
-    EXPECT_EQ(scroll_position - removed_notification_height -
-                  kUnifiedNotificationSeparatorThickness,
-              GetScroller()->GetVisibleRect().y());
-  }
+  EXPECT_EQ(scroll_position - removed_notification_height -
+                kUnifiedNotificationSeparatorThickness,
+            GetScroller()->GetVisibleRect().y());
 
   // Check that the list is still scrolled to the bottom.
   EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height(),
@@ -487,6 +484,10 @@ TEST_P(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
 }
 
 TEST_P(UnifiedMessageCenterViewTest, ScrollPositionWhenResized) {
+  // We keep the scroll position at the top after the notifications refresh.
+  if (IsNotificationsRefreshEnabled())
+    return;
+
   AddManyNotifications();
   CreateMessageCenterView();
   EXPECT_TRUE(message_center_view()->GetVisible());
@@ -527,10 +528,19 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelLayout) {
             message_center_view()->bounds().height());
 
   EXPECT_TRUE(GetNotificationBar()->GetVisible());
-  EXPECT_EQ(0, GetNotificationBar()->bounds().y());
-  EXPECT_EQ(GetNotificationBar()->bounds().bottom(),
-            GetScroller()->bounds().y());
+
+  if (!features::IsNotificationsRefreshEnabled()) {
+    EXPECT_EQ(0, GetNotificationBar()->bounds().y());
+    EXPECT_EQ(GetNotificationBar()->bounds().bottom(),
+              GetScroller()->bounds().y());
+  } else {
+    EXPECT_EQ(kMessageCenterPadding, GetScroller()->bounds().y());
+    EXPECT_EQ(GetNotificationBar()->bounds().y(),
+              GetScroller()->bounds().bottom());
+  }
+
   EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
+
   EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 }
 
@@ -539,8 +549,13 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelInvisible) {
   AddManyNotifications();
   CreateMessageCenterView();
 
-  // Scroll to the top, the counter label should be invisible.
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  // Scroll to the top, the counter label should be invisible. After
+  // NotificationsRefresh, scrolling to the bottom should make the counter
+  // invisible.
+  GetScroller()->ScrollToPosition(GetScrollBar(),
+                                  features::IsNotificationsRefreshEnabled()
+                                      ? GetScrollBar()->bounds().bottom()
+                                      : 0);
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
@@ -555,7 +570,9 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelVisible) {
 
   // Scrolling past 5 notifications should make the counter label visible.
   const int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  GetScroller()->ScrollToPosition(
+      GetScrollBar(),
+      features::IsNotificationsRefreshEnabled() ? 0 : scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
@@ -568,20 +585,32 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelHidesAfterShown) {
   AddManyNotifications();
   CreateMessageCenterView();
 
-  // Scroll to the top, making the counter label invisible.
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  // Scroll to the top, making the counter label invisible. In
+  // NotificationsRefresh we must scroll to the bottom instead.
+  auto bottom_position = GetScrollBar()->bounds().bottom();
+  GetScroller()->ScrollToPosition(
+      GetScrollBar(),
+      features::IsNotificationsRefreshEnabled() ? bottom_position : 0);
   message_center_view()->OnMessageCenterScrolled();
+
+  EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
 
   // Scrolling past 5 notifications should make the counter label visible.
   const int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  GetScroller()->ScrollToPosition(GetScrollBar(),
+                                  features::IsNotificationsRefreshEnabled()
+                                      ? bottom_position - scroll_amount
+                                      : scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
 
   ASSERT_TRUE(GetNotificationBarLabel()->GetVisible());
 
-  // Scrolling back to the top should make the
+  // Scrolling back to the top (bottom in NotificationsRefresh) should make the
   // counter label invisible again.
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
+  GetScroller()->ScrollToPosition(GetScrollBar(),
+                                  features::IsNotificationsRefreshEnabled()
+                                      ? GetScrollBar()->bounds().bottom()
+                                      : 0);
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
@@ -599,13 +628,22 @@ TEST_P(UnifiedMessageCenterViewTest, StackingIconsNeverMoreThanThree) {
     AddNotification(false);
   CreateMessageCenterView();
 
+  auto bottom_position = GetScrollBar()->bounds().bottom();
+  if (features::IsNotificationsRefreshEnabled()) {
+    GetScroller()->ScrollToPosition(GetScrollBar(), bottom_position);
+    message_center_view()->OnMessageCenterScrolled();
+  }
+
   // Force animations to happen, so we can see if multiple animations trigger.
   ui::ScopedAnimationDurationScaleMode scoped_duration_modifier(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   // Scroll past 20 notifications, so we can scroll back up quickly.
   for (int i = 20; i >= 0; --i) {
     const int scroll_amount = (GetMessageViewVisibleBounds(0).height() * i) + 1;
-    GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+    GetScroller()->ScrollToPosition(GetScrollBar(),
+                                    features::IsNotificationsRefreshEnabled()
+                                        ? bottom_position - scroll_amount
+                                        : scroll_amount);
     message_center_view()->OnMessageCenterScrolled();
 
     auto icons_container_children =
@@ -679,16 +717,29 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   // Open the message center at the top of the notification list so the stacking
   // bar is hidden by default.
   std::string id = AddNotification(false /* pinned */);
-  for (size_t i = 0; i < 30; ++i)
+  int total_notifications = 30;
+  for (int i = 0; i < total_notifications; ++i)
     AddNotification(false /* pinned */);
   model()->SetTargetNotification(id);
 
   CreateMessageCenterView();
+
+  auto bottom_position =
+      GetMessageViewVisibleBounds(total_notifications - 1).bottom();
+
+  if (features::IsNotificationsRefreshEnabled()) {
+    GetScroller()->ScrollToPosition(GetScrollBar(), bottom_position);
+    message_center_view()->OnMessageCenterScrolled();
+  }
+
   EXPECT_FALSE(GetNotificationBarLabel()->GetVisible());
 
-  // Scroll past 5 notifications so the count label becomes visible
-  int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 5) + 1;
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  // Scroll past 6 notifications so the count label becomes visible
+  int scroll_amount = (GetMessageViewVisibleBounds(0).height() * 6) + 1;
+  GetScroller()->ScrollToPosition(GetScrollBar(),
+                                  features::IsNotificationsRefreshEnabled()
+                                      ? bottom_position - scroll_amount
+                                      : scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
   RelayoutMessageCenterViewForTest();
   EXPECT_TRUE(GetNotificationBarLabel()->GetVisible());
@@ -698,7 +749,10 @@ TEST_P(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   // Scroll past 14 notifications so the label width must be expanded to
   // contain longer 2-digit label.
   scroll_amount = (GetMessageViewVisibleBounds(0).height() * 14) + 1;
-  GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
+  GetScroller()->ScrollToPosition(GetScrollBar(),
+                                  features::IsNotificationsRefreshEnabled()
+                                      ? bottom_position - scroll_amount
+                                      : scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
   RelayoutMessageCenterViewForTest();
   EXPECT_GT(GetNotificationBarLabel()->bounds().width(), label_width);
@@ -764,8 +818,9 @@ TEST_P(UnifiedMessageCenterViewInWidgetTest,
   auto id1 = AddNotification(false /* pinned */);
 
   // Toggle focus to the last notification MessageView.
-  auto* focused_message_view =
-      ToggleFocusToMessageView(1 /* index */, true /* reverse */);
+  auto* focused_message_view = ToggleFocusToMessageView(
+      features::IsNotificationsRefreshEnabled() ? 0 : 1 /* index */,
+      true /* reverse */);
   ASSERT_TRUE(focused_message_view);
   EXPECT_EQ(id1, focused_message_view->notification_id());
 

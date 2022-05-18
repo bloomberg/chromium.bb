@@ -470,16 +470,16 @@ void DebugPrintf::AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQ
 }
 
 // For the given command buffer, map its debug data buffers and read their contents for analysis.
-void DebugPrintf::ProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE *cb_base) {
-    auto *cb_node = static_cast<debug_printf_state::CommandBuffer *>(cb_base);
-    if (cb_node && (cb_node->hasDrawCmd || cb_node->hasTraceRaysCmd || cb_node->hasDispatchCmd)) {
-        auto &gpu_buffer_list = cb_node->buffer_infos;
+void debug_printf_state::CommandBuffer::Process(VkQueue queue) {
+    auto *device_state = static_cast<DebugPrintf *>(dev_data);
+    if (hasDrawCmd || hasTraceRaysCmd || hasDispatchCmd) {
+        auto &gpu_buffer_list = buffer_infos;
         uint32_t draw_index = 0;
         uint32_t compute_index = 0;
         uint32_t ray_trace_index = 0;
 
         for (auto &buffer_info : gpu_buffer_list) {
-            char *pData;
+            char *data;
 
             uint32_t operation_index = 0;
             if (buffer_info.pipeline_bind_point == VK_PIPELINE_BIND_POINT_GRAPHICS) {
@@ -492,10 +492,10 @@ void DebugPrintf::ProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE *
                 assert(false);
             }
 
-            VkResult result = vmaMapMemory(vmaAllocator, buffer_info.output_mem_block.allocation, (void **)&pData);
+            VkResult result = vmaMapMemory(device_state->vmaAllocator, buffer_info.output_mem_block.allocation, (void **)&data);
             if (result == VK_SUCCESS) {
-                AnalyzeAndGenerateMessages(cb_node->commandBuffer(), queue, buffer_info, operation_index, (uint32_t *)pData);
-                vmaUnmapMemory(vmaAllocator, buffer_info.output_mem_block.allocation);
+                device_state->AnalyzeAndGenerateMessages(commandBuffer(), queue, buffer_info, operation_index, (uint32_t *)data);
+                vmaUnmapMemory(device_state->vmaAllocator, buffer_info.output_mem_block.allocation);
             }
 
             if (buffer_info.pipeline_bind_point == VK_PIPELINE_BIND_POINT_GRAPHICS) {
@@ -514,31 +514,6 @@ void DebugPrintf::ProcessInstrumentationBuffer(VkQueue queue, CMD_BUFFER_STATE *
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
-
-bool DebugPrintf::CommandBufferNeedsProcessing(VkCommandBuffer command_buffer) {
-    bool buffers_present = false;
-    auto cb_node = Get<debug_printf_state::CommandBuffer>(command_buffer);
-    if (cb_node->buffer_infos.size()) {
-        buffers_present = true;
-    }
-    for (const auto *secondary_cb : cb_node->linkedCommandBuffers) {
-        auto secondary_cb_node = static_cast<const debug_printf_state::CommandBuffer *>(secondary_cb);
-        if (secondary_cb_node->buffer_infos.size()) {
-            buffers_present = true;
-        }
-    }
-    return buffers_present;
-}
-
-void DebugPrintf::ProcessCommandBuffer(VkQueue queue, VkCommandBuffer command_buffer) {
-    auto cb_node = Get<debug_printf_state::CommandBuffer>(command_buffer);
-
-    ProcessInstrumentationBuffer(queue, cb_node.get());
-
-    for (auto *secondary_cmd_buffer : cb_node->linkedCommandBuffers) {
-        ProcessInstrumentationBuffer(queue, static_cast<debug_printf_state::CommandBuffer *>(secondary_cmd_buffer));
-    }
-}
 
 void DebugPrintf::PreCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount,
                                        uint32_t firstVertex, uint32_t firstInstance) {
@@ -673,7 +648,7 @@ void DebugPrintf::PostCallRecordCmdTraceRaysNV(VkCommandBuffer commandBuffer, Vk
                                                VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer,
                                                VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride,
                                                uint32_t width, uint32_t height, uint32_t depth) {
-    auto cb_state = Get<debug_printf_state::CommandBuffer>(commandBuffer);
+    auto cb_state = GetWrite<debug_printf_state::CommandBuffer>(commandBuffer);
     cb_state->hasTraceRaysCmd = true;
 }
 
@@ -692,7 +667,7 @@ void DebugPrintf::PostCallRecordCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
                                                 const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
                                                 const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable, uint32_t width,
                                                 uint32_t height, uint32_t depth) {
-    auto cb_state = Get<debug_printf_state::CommandBuffer>(commandBuffer);
+    auto cb_state = GetWrite<debug_printf_state::CommandBuffer>(commandBuffer);
     cb_state->hasTraceRaysCmd = true;
 }
 
@@ -711,7 +686,7 @@ void DebugPrintf::PostCallRecordCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
                                                         const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
                                                         const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable,
                                                         VkDeviceAddress indirectDeviceAddress) {
-    auto cb_state = Get<debug_printf_state::CommandBuffer>(commandBuffer);
+    auto cb_state = GetWrite<debug_printf_state::CommandBuffer>(commandBuffer);
     cb_state->hasTraceRaysCmd = true;
 }
 
@@ -737,7 +712,7 @@ void DebugPrintf::AllocateDebugPrintfResources(const VkCommandBuffer cmd_buffer,
     VkDescriptorBufferInfo output_desc_buffer_info = {};
     output_desc_buffer_info.range = output_buffer_size;
 
-    auto cb_node = Get<debug_printf_state::CommandBuffer>(cmd_buffer);
+    auto cb_node = GetWrite<debug_printf_state::CommandBuffer>(cmd_buffer);
     if (!cb_node) {
         ReportSetupProblem(device, "Unrecognized command buffer");
         aborted = true;
@@ -815,7 +790,7 @@ std::shared_ptr<CMD_BUFFER_STATE> DebugPrintf::CreateCmdBufferState(VkCommandBuf
 
 debug_printf_state::CommandBuffer::CommandBuffer(DebugPrintf *dp, VkCommandBuffer cb,
                                                  const VkCommandBufferAllocateInfo *pCreateInfo, const COMMAND_POOL_STATE *pool)
-    : CMD_BUFFER_STATE(dp, cb, pCreateInfo, pool) {}
+    : gpu_utils_state::CommandBuffer(dp, cb, pCreateInfo, pool) {}
 
 void debug_printf_state::CommandBuffer::Reset() {
     CMD_BUFFER_STATE::Reset();

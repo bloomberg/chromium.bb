@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_sending_event.h"
@@ -76,19 +77,21 @@ void WebContentsViewMac::InstallCreateHookForTests(
   g_create_render_widget_host_view = create_render_widget_host_view;
 }
 
-WebContentsView* CreateWebContentsView(
+std::unique_ptr<WebContentsView> CreateWebContentsView(
     WebContentsImpl* web_contents,
-    WebContentsViewDelegate* delegate,
+    std::unique_ptr<WebContentsViewDelegate> delegate,
     RenderViewHostDelegateView** render_view_host_delegate_view) {
-  WebContentsViewMac* rv = new WebContentsViewMac(web_contents, delegate);
-  *render_view_host_delegate_view = rv;
+  auto rv =
+      std::make_unique<WebContentsViewMac>(web_contents, std::move(delegate));
+  *render_view_host_delegate_view = rv.get();
   return rv;
 }
 
-WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
-                                       WebContentsViewDelegate* delegate)
+WebContentsViewMac::WebContentsViewMac(
+    WebContentsImpl* web_contents,
+    std::unique_ptr<WebContentsViewDelegate> delegate)
     : web_contents_(web_contents),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       ns_view_id_(remote_cocoa::GetNewNSViewId()),
       deferred_close_weak_ptr_factory_(this) {}
 
@@ -349,12 +352,6 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   [GetInProcessNSView() addSubview:view_view
                         positioned:NSWindowBelow
                         relativeTo:nil];
-  // For some reason known only to Cocoa, the autorecalculation of the key view
-  // loop set on the window doesn't set the next key view when the subview is
-  // added. On 10.6 things magically work fine; on 10.5 they fail
-  // <http://crbug.com/61493>. Digging into Cocoa key view loop code yielded
-  // madness; TODO(avi,rohit): look at this again and figure out what's really
-  // going on.
   [GetInProcessNSView() setNextKeyView:view_view];
   return view;
 }

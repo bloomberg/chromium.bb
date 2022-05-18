@@ -73,8 +73,8 @@ template <typename MatrixType_> class CompleteOrthogonalDecomposition
   typedef typename internal::plain_row_type<MatrixType, RealScalar>::type
       RealRowVectorType;
   typedef HouseholderSequence<
-      MatrixType, typename internal::remove_all<
-                      typename HCoeffsType::ConjugateReturnType>::type>
+      MatrixType, internal::remove_all_t<
+                      typename HCoeffsType::ConjugateReturnType>>
       HouseholderSequenceType;
   typedef typename MatrixType::PlainObject PlainObject;
 

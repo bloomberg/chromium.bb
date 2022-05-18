@@ -5,43 +5,25 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_OBSERVER_TYPES_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_OBSERVER_TYPES_H_
 
-#include <vector>
-
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/stored_source.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
-struct CONTENT_EXPORT DeactivatedSource {
-  enum class Reason {
-    kReplacedByNewerSource,
-  };
-
-  DeactivatedSource(StoredSource source, Reason reason);
-  ~DeactivatedSource();
-
-  DeactivatedSource(const DeactivatedSource&);
-  DeactivatedSource(DeactivatedSource&&);
-
-  DeactivatedSource& operator=(const DeactivatedSource&);
-  DeactivatedSource& operator=(DeactivatedSource&&);
-
-  StoredSource source;
-  Reason reason;
-};
-
 class CONTENT_EXPORT CreateReportResult {
  public:
-  CreateReportResult(base::Time trigger_time,
-                     AttributionTrigger::EventLevelResult event_level_status,
-                     AttributionTrigger::AggregatableResult aggregatable_status,
-                     absl::optional<AttributionReport>
-                         replaced_event_level_report = absl::nullopt,
-                     std::vector<AttributionReport> new_reports = {});
+  CreateReportResult(
+      base::Time trigger_time,
+      AttributionTrigger::EventLevelResult event_level_status,
+      AttributionTrigger::AggregatableResult aggregatable_status,
+      absl::optional<AttributionReport> replaced_event_level_report =
+          absl::nullopt,
+      absl::optional<AttributionReport> new_event_level_report = absl::nullopt,
+      absl::optional<AttributionReport> new_aggregatable_report =
+          absl::nullopt);
   ~CreateReportResult();
 
   CreateReportResult(const CreateReportResult&);
@@ -64,11 +46,21 @@ class CONTENT_EXPORT CreateReportResult {
     return replaced_event_level_report_;
   }
 
-  const std::vector<AttributionReport>& new_reports() const {
-    return new_reports_;
+  const absl::optional<AttributionReport>& new_event_level_report() const {
+    return new_event_level_report_;
   }
 
-  std::vector<AttributionReport>& new_reports() { return new_reports_; }
+  absl::optional<AttributionReport>& new_event_level_report() {
+    return new_event_level_report_;
+  }
+
+  const absl::optional<AttributionReport>& new_aggregatable_report() const {
+    return new_aggregatable_report_;
+  }
+
+  absl::optional<AttributionReport>& new_aggregatable_report() {
+    return new_aggregatable_report_;
+  }
 
  private:
   base::Time trigger_time_;
@@ -77,12 +69,16 @@ class CONTENT_EXPORT CreateReportResult {
 
   AttributionTrigger::AggregatableResult aggregatable_status_;
 
+  // `absl::nullopt` unless `event_level_status_` is
+  // `kSuccessDroppedLowerPriority`.
   absl::optional<AttributionReport> replaced_event_level_report_;
 
-  // Empty unless `event_level_status` is `kSuccess` or
-  // `kSuccessDroppedLowerPriority` or `aggregatable_status` is
-  // `kSuccess`.
-  std::vector<AttributionReport> new_reports_;
+  // `absl::nullopt` unless `event_level_status_` is `kSuccess` or
+  // `kSuccessDroppedLowerPriority`.
+  absl::optional<AttributionReport> new_event_level_report_;
+
+  // `absl::nullopt` unless `aggregatable_status_` is `kSuccess`.
+  absl::optional<AttributionReport> new_aggregatable_report_;
 };
 
 }  // namespace content

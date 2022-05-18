@@ -14,24 +14,30 @@
 
 #include "dawn/native/CallbackTaskManager.h"
 
+#include <utility>
+
 namespace dawn::native {
 
-    bool CallbackTaskManager::IsEmpty() {
-        std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
-        return mCallbackTaskQueue.empty();
-    }
+CallbackTaskManager::CallbackTaskManager() = default;
 
-    std::vector<std::unique_ptr<CallbackTask>> CallbackTaskManager::AcquireCallbackTasks() {
-        std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
+CallbackTaskManager::~CallbackTaskManager() = default;
 
-        std::vector<std::unique_ptr<CallbackTask>> allTasks;
-        allTasks.swap(mCallbackTaskQueue);
-        return allTasks;
-    }
+bool CallbackTaskManager::IsEmpty() {
+    std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
+    return mCallbackTaskQueue.empty();
+}
 
-    void CallbackTaskManager::AddCallbackTask(std::unique_ptr<CallbackTask> callbackTask) {
-        std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
-        mCallbackTaskQueue.push_back(std::move(callbackTask));
-    }
+std::vector<std::unique_ptr<CallbackTask>> CallbackTaskManager::AcquireCallbackTasks() {
+    std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
+
+    std::vector<std::unique_ptr<CallbackTask>> allTasks;
+    allTasks.swap(mCallbackTaskQueue);
+    return allTasks;
+}
+
+void CallbackTaskManager::AddCallbackTask(std::unique_ptr<CallbackTask> callbackTask) {
+    std::lock_guard<std::mutex> lock(mCallbackTaskQueueMutex);
+    mCallbackTaskQueue.push_back(std::move(callbackTask));
+}
 
 }  // namespace dawn::native

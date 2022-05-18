@@ -276,6 +276,11 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
       if sys.version_info.major == 3 and isinstance(text, bytes):
         # Replace characters that cannot be printed instead of failing.
         text = text.decode(self.encoding, 'replace')
+      # When redirecting to a file or process any \n characters will be replaced
+      # with \r\n. If the text to be printed already has \r\n line endings then
+      # \r\r\n line endings will be generated, leading to double-spacing of some
+      # output. Normalizing line endings to \n avoids this problem.
+      text = text.replace('\r\n', '\n')
       self._stream.write(text)
     except Exception as e:
       complain('%s.write: %r' % (self.name, e))

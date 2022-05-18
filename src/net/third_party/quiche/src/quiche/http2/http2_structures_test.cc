@@ -20,10 +20,10 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
-#include "quiche/http2/http2_structures_test_util.h"
 #include "quiche/http2/test_tools/http2_random.h"
+#include "quiche/http2/test_tools/http2_structures_test_util.h"
+#include "quiche/http2/test_tools/verify_macros.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -58,20 +58,20 @@ AssertionResult VerifyRandomCalls() {
 
   // The two Randomize calls should have made the same number of calls into
   // the Http2Random implementations.
-  VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
+  HTTP2_VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
 
   // And because Http2Random implementation is returning the same sequence, and
   // Randomize should have been consistent in applying those results, the two
   // Ts should have the same value.
-  VERIFY_EQ(t1, t2);
+  HTTP2_VERIFY_EQ(t1, t2);
 
   Randomize(&t2, &seq2);
-  VERIFY_NE(t1, t2);
+  HTTP2_VERIFY_NE(t1, t2);
 
   Randomize(&t1, &seq1);
-  VERIFY_EQ(t1, t2);
+  HTTP2_VERIFY_EQ(t1, t2);
 
-  VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
+  HTTP2_VERIFY_EQ(seq1.Rand64(), seq2.Rand64());
 
   return AssertionSuccess();
 }
@@ -148,27 +148,36 @@ TEST(Http2FrameHeaderTest, Eq) {
 }
 
 #if GTEST_HAS_DEATH_TEST && !defined(NDEBUG)
+
+using TestParams = std::tuple<Http2FrameType, uint8_t>;
+
+std::string TestParamToString(const testing::TestParamInfo<TestParams>& info) {
+  Http2FrameType type = std::get<0>(info.param);
+  uint8_t flags = std::get<1>(info.param);
+
+  return absl::StrCat(Http2FrameTypeToString(type), static_cast<int>(flags));
+}
+
 // The tests of the valid frame types include EXPECT_DEBUG_DEATH, which is
 // quite slow, so using value parameterized tests in order to allow sharding.
-class Http2FrameHeaderTypeAndFlagTest
-    : public QuicheTestWithParam<std::tuple<Http2FrameType, Http2FrameFlag>> {
+class Http2FrameHeaderTypeAndFlagTest : public QuicheTestWithParam<TestParams> {
  protected:
   Http2FrameHeaderTypeAndFlagTest()
       : type_(std::get<0>(GetParam())), flags_(std::get<1>(GetParam())) {
-    HTTP2_LOG(INFO) << "Frame type: " << type_;
-    HTTP2_LOG(INFO) << "Frame flags: "
-                    << Http2FrameFlagsToString(type_, flags_);
+    QUICHE_LOG(INFO) << "Frame type: " << type_;
+    QUICHE_LOG(INFO) << "Frame flags: "
+                     << Http2FrameFlagsToString(type_, flags_);
   }
 
   const Http2FrameType type_;
-  const Http2FrameFlag flags_;
+  const uint8_t flags_;
 };
 
 class IsEndStreamTest : public Http2FrameHeaderTypeAndFlagTest {};
-INSTANTIATE_TEST_SUITE_P(IsEndStream,
-                         IsEndStreamTest,
+INSTANTIATE_TEST_SUITE_P(IsEndStream, IsEndStreamTest,
                          Combine(ValuesIn(ValidFrameTypes()),
-                                 Values(~Http2FrameFlag::END_STREAM, 0xff)));
+                                 Values(~Http2FrameFlag::END_STREAM, 0xff)),
+                         TestParamToString);
 TEST_P(IsEndStreamTest, IsEndStream) {
   const bool is_set =
       (flags_ & Http2FrameFlag::END_STREAM) == Http2FrameFlag::END_STREAM;
@@ -203,10 +212,10 @@ TEST_P(IsEndStreamTest, IsEndStream) {
 }
 
 class IsACKTest : public Http2FrameHeaderTypeAndFlagTest {};
-INSTANTIATE_TEST_SUITE_P(IsAck,
-                         IsACKTest,
+INSTANTIATE_TEST_SUITE_P(IsAck, IsACKTest,
                          Combine(ValuesIn(ValidFrameTypes()),
-                                 Values(~Http2FrameFlag::ACK, 0xff)));
+                                 Values(~Http2FrameFlag::ACK, 0xff)),
+                         TestParamToString);
 TEST_P(IsACKTest, IsAck) {
   const bool is_set = (flags_ & Http2FrameFlag::ACK) == Http2FrameFlag::ACK;
   std::string flags_string;
@@ -240,10 +249,10 @@ TEST_P(IsACKTest, IsAck) {
 }
 
 class IsEndHeadersTest : public Http2FrameHeaderTypeAndFlagTest {};
-INSTANTIATE_TEST_SUITE_P(IsEndHeaders,
-                         IsEndHeadersTest,
+INSTANTIATE_TEST_SUITE_P(IsEndHeaders, IsEndHeadersTest,
                          Combine(ValuesIn(ValidFrameTypes()),
-                                 Values(~Http2FrameFlag::END_HEADERS, 0xff)));
+                                 Values(~Http2FrameFlag::END_HEADERS, 0xff)),
+                         TestParamToString);
 TEST_P(IsEndHeadersTest, IsEndHeaders) {
   const bool is_set =
       (flags_ & Http2FrameFlag::END_HEADERS) == Http2FrameFlag::END_HEADERS;
@@ -281,10 +290,10 @@ TEST_P(IsEndHeadersTest, IsEndHeaders) {
 }
 
 class IsPaddedTest : public Http2FrameHeaderTypeAndFlagTest {};
-INSTANTIATE_TEST_SUITE_P(IsPadded,
-                         IsPaddedTest,
+INSTANTIATE_TEST_SUITE_P(IsPadded, IsPaddedTest,
                          Combine(ValuesIn(ValidFrameTypes()),
-                                 Values(~Http2FrameFlag::PADDED, 0xff)));
+                                 Values(~Http2FrameFlag::PADDED, 0xff)),
+                         TestParamToString);
 TEST_P(IsPaddedTest, IsPadded) {
   const bool is_set =
       (flags_ & Http2FrameFlag::PADDED) == Http2FrameFlag::PADDED;
@@ -320,10 +329,10 @@ TEST_P(IsPaddedTest, IsPadded) {
 }
 
 class HasPriorityTest : public Http2FrameHeaderTypeAndFlagTest {};
-INSTANTIATE_TEST_SUITE_P(HasPriority,
-                         HasPriorityTest,
+INSTANTIATE_TEST_SUITE_P(HasPriority, HasPriorityTest,
                          Combine(ValuesIn(ValidFrameTypes()),
-                                 Values(~Http2FrameFlag::PRIORITY, 0xff)));
+                                 Values(~Http2FrameFlag::PRIORITY, 0xff)),
+                         TestParamToString);
 TEST_P(HasPriorityTest, HasPriority) {
   const bool is_set =
       (flags_ & Http2FrameFlag::PRIORITY) == Http2FrameFlag::PRIORITY;

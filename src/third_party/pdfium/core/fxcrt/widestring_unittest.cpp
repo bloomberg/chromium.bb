@@ -12,7 +12,6 @@
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/containers/contains.h"
-#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -1150,7 +1149,7 @@ TEST(WideString, ToUTF16LE) {
       {L"\x3132\x6162", ByteString("\x32\x31\x62\x61\0\0", 6)},
   };
 
-  for (size_t i = 0; i < pdfium::size(utf16le_encode_cases); ++i) {
+  for (size_t i = 0; i < std::size(utf16le_encode_cases); ++i) {
     EXPECT_EQ(utf16le_encode_cases[i].bs,
               utf16le_encode_cases[i].ws.ToUTF16LE())
         << " for case number " << i;
@@ -2055,6 +2054,21 @@ TEST(WideStringView, WideOStreamOverload) {
     stream << str1 << str2;
     EXPECT_EQ(L"abcdef", stream.str());
   }
+}
+
+TEST(WideString, FormatInteger) {
+  // Base case of 0.
+  EXPECT_EQ(L"0", WideString::FormatInteger(0));
+
+  // Positive ordinary number.
+  EXPECT_EQ(L"123456", WideString::FormatInteger(123456));
+
+  // Negative ordinary number.
+  EXPECT_EQ(L"-123456", WideString::FormatInteger(-123456));
+
+  // int limits.
+  EXPECT_EQ(L"2147483647", WideString::FormatInteger(INT_MAX));
+  EXPECT_EQ(L"-2147483648", WideString::FormatInteger(INT_MIN));
 }
 
 TEST(WideString, FX_HashCode_Wide) {

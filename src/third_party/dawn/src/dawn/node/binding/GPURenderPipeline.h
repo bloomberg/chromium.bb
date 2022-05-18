@@ -15,34 +15,33 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPURENDERPIPELINE_H_
 #define SRC_DAWN_NODE_BINDING_GPURENDERPIPELINE_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
 
-    // GPURenderPipeline is an implementation of interop::GPURenderPipeline that wraps a
-    // wgpu::RenderPipeline.
-    class GPURenderPipeline final : public interop::GPURenderPipeline {
-      public:
-        GPURenderPipeline(wgpu::RenderPipeline pipeline);
+// GPURenderPipeline is an implementation of interop::GPURenderPipeline that wraps a
+// wgpu::RenderPipeline.
+class GPURenderPipeline final : public interop::GPURenderPipeline {
+  public:
+    explicit GPURenderPipeline(wgpu::RenderPipeline pipeline);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::RenderPipeline&() const {
-            return pipeline_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::RenderPipeline&() const { return pipeline_; }
 
-        // interop::GPURenderPipeline interface compliance
-        interop::Interface<interop::GPUBindGroupLayout> getBindGroupLayout(Napi::Env,
-                                                                           uint32_t index) override;
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPURenderPipeline interface compliance
+    interop::Interface<interop::GPUBindGroupLayout> getBindGroupLayout(Napi::Env,
+                                                                       uint32_t index) override;
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::RenderPipeline pipeline_;
-    };
+  private:
+    wgpu::RenderPipeline pipeline_;
+};
 
 }  // namespace wgpu::binding
 

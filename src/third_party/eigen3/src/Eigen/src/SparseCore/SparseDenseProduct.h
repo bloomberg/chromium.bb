@@ -28,9 +28,9 @@ struct sparse_time_dense_product_impl;
 template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
 struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, typename DenseResType::Scalar, RowMajor, true>
 {
-  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
-  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
-  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef internal::remove_all_t<SparseLhsType> Lhs;
+  typedef internal::remove_all_t<DenseRhsType> Rhs;
+  typedef internal::remove_all_t<DenseResType> Res;
   typedef typename evaluator<Lhs>::InnerIterator LhsInnerIterator;
   typedef evaluator<Lhs> LhsEval;
   static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
@@ -95,9 +95,9 @@ struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, t
 template<typename SparseLhsType, typename DenseRhsType, typename DenseResType, typename AlphaType>
 struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, AlphaType, ColMajor, true>
 {
-  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
-  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
-  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef internal::remove_all_t<SparseLhsType> Lhs;
+  typedef internal::remove_all_t<DenseRhsType> Rhs;
+  typedef internal::remove_all_t<DenseResType> Res;
   typedef evaluator<Lhs> LhsEval;
   typedef typename LhsEval::InnerIterator LhsInnerIterator;
   static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const AlphaType& alpha)
@@ -119,9 +119,9 @@ struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, A
 template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
 struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, typename DenseResType::Scalar, RowMajor, false>
 {
-  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
-  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
-  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef internal::remove_all_t<SparseLhsType> Lhs;
+  typedef internal::remove_all_t<DenseRhsType> Rhs;
+  typedef internal::remove_all_t<DenseResType> Res;
   typedef evaluator<Lhs> LhsEval;
   typedef typename LhsEval::InnerIterator LhsInnerIterator;
   static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
@@ -159,9 +159,9 @@ struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, t
 template<typename SparseLhsType, typename DenseRhsType, typename DenseResType>
 struct sparse_time_dense_product_impl<SparseLhsType,DenseRhsType,DenseResType, typename DenseResType::Scalar, ColMajor, false>
 {
-  typedef typename internal::remove_all<SparseLhsType>::type Lhs;
-  typedef typename internal::remove_all<DenseRhsType>::type Rhs;
-  typedef typename internal::remove_all<DenseResType>::type Res;
+  typedef internal::remove_all_t<SparseLhsType> Lhs;
+  typedef internal::remove_all_t<DenseRhsType> Rhs;
+  typedef internal::remove_all_t<DenseResType> Res;
   typedef typename evaluator<Lhs>::InnerIterator LhsInnerIterator;
   static void run(const SparseLhsType& lhs, const DenseRhsType& rhs, DenseResType& res, const typename Res::Scalar& alpha)
   {
@@ -236,16 +236,16 @@ template<typename LhsT, typename RhsT, bool NeedToTranspose>
 struct sparse_dense_outer_product_evaluator
 {
 protected:
-  typedef typename conditional<NeedToTranspose,RhsT,LhsT>::type Lhs1;
-  typedef typename conditional<NeedToTranspose,LhsT,RhsT>::type ActualRhs;
+  typedef std::conditional_t<NeedToTranspose,RhsT,LhsT> Lhs1;
+  typedef std::conditional_t<NeedToTranspose,LhsT,RhsT> ActualRhs;
   typedef Product<LhsT,RhsT,DefaultProduct> ProdXprType;
   
   // if the actual left-hand side is a dense vector,
   // then build a sparse-view so that we can seamlessly iterate over it.
-  typedef typename conditional<is_same<typename internal::traits<Lhs1>::StorageKind,Sparse>::value,
-            Lhs1, SparseView<Lhs1> >::type ActualLhs;
-  typedef typename conditional<is_same<typename internal::traits<Lhs1>::StorageKind,Sparse>::value,
-            Lhs1 const&, SparseView<Lhs1> >::type LhsArg;
+  typedef std::conditional_t<is_same<typename internal::traits<Lhs1>::StorageKind,Sparse>::value,
+            Lhs1, SparseView<Lhs1> > ActualLhs;
+  typedef std::conditional_t<is_same<typename internal::traits<Lhs1>::StorageKind,Sparse>::value,
+            Lhs1 const&, SparseView<Lhs1> > LhsArg;
             
   typedef evaluator<ActualLhs> LhsEval;
   typedef evaluator<ActualRhs> RhsEval;

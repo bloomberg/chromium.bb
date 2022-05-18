@@ -171,6 +171,7 @@ cc_library(
         "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:SCFDialect",
         "@llvm-project//mlir:Shape",
+        "@llvm-project//mlir:TensorDialect",
     ],
     alwayslink = 1,
 )
@@ -205,6 +206,7 @@ cc_library(
         "spmd_expansion.cc",
         "tpu_add_resource_device_attribute.cc",
         "tpu_integration.cc",
+        "undo_merge_const_across_mesh.cc",
     ],
     hdrs = ["dtensor_mlir_passes.h"],
     deps = [
@@ -493,6 +495,7 @@ cc_library(
         ":op_utils",
         ":tf_dtensor_dialect",
         "//tensorflow/compiler/mlir/tensorflow:tensorflow_passes",
+        "//tensorflow/core:lib",
         "//tensorflow/dtensor/cc:dstatus",
         "@llvm-project//llvm:Support",
         "@llvm-project//mlir:IR",

@@ -15,6 +15,8 @@
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/personalization_app/search/search_handler.h"
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
@@ -36,6 +38,7 @@ namespace app_list {
 namespace {
 
 inline constexpr size_t kMinQueryLength = 3u;
+inline constexpr size_t kNumRequestedResults = 3u;
 
 }  // namespace
 
@@ -83,6 +86,9 @@ PersonalizationProvider::PersonalizationProvider(Profile* profile)
   search_handler_ = ash::personalization_app::PersonalizationAppManagerFactory::
                         GetForBrowserContext(profile_)
                             ->search_handler();
+  DCHECK(search_handler_);
+  search_handler_->AddObserver(
+      search_results_observer_.BindNewPipeAndPassRemote());
 }
 
 PersonalizationProvider::~PersonalizationProvider() = default;
@@ -99,14 +105,17 @@ void PersonalizationProvider::Start(const std::u16string& query) {
   }
 
   if (icon_.isNull()) {
+    VLOG(1) << "No personalization icon for search results";
     return;
   }
 
   current_query_ = query;
   weak_ptr_factory_.InvalidateWeakPtrs();
-  search_handler_->Search(query,
-                          base::BindOnce(&PersonalizationProvider::OnSearchDone,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  search_handler_->Search(
+      query, kNumRequestedResults,
+      base::BindOnce(&PersonalizationProvider::OnSearchDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*start_time=*/base::TimeTicks::Now()));
 }
 
 ash::AppListSearchResultType PersonalizationProvider::ResultType() const {
@@ -115,6 +124,13 @@ ash::AppListSearchResultType PersonalizationProvider::ResultType() const {
 
 void PersonalizationProvider::ViewClosing() {
   current_query_.clear();
+}
+
+void PersonalizationProvider::OnSearchResultsChanged() {
+  if (current_query_.empty()) {
+    return;
+  }
+  Start(current_query_);
 }
 
 void PersonalizationProvider::OnAppUpdate(const apps::AppUpdate& update) {
@@ -133,6 +149,7 @@ void PersonalizationProvider::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {}
 
 void PersonalizationProvider::OnSearchDone(
+    base::TimeTicks start_time,
     std::vector<::ash::personalization_app::mojom::SearchResultPtr> results) {
   SearchProvider::Results search_results;
   for (const auto& result : results) {
@@ -140,6 +157,10 @@ void PersonalizationProvider::OnSearchDone(
     search_results.push_back(std::make_unique<PersonalizationResult>(
         profile_, *result, current_query_, icon_));
   }
+
+  base::UmaHistogramTimes("Apps.AppList.PersonalizationProvider.QueryTime",
+                          base::TimeTicks::Now() - start_time);
+
   SwapResults(&search_results);
 }
 

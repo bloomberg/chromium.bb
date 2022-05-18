@@ -54,6 +54,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     private @Nullable SigninFirstRunCoordinator mSigninFirstRunCoordinator;
     private boolean mExitFirstRunCalled;
     private boolean mNativeInitialized;
+    private boolean mNativePolicyAndChildStatusLoaded;
     private boolean mAllowCrashUpload;
 
     public SigninFirstRunFragment() {}
@@ -62,7 +63,9 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     public void onAttach(Context context) {
         super.onAttach(context);
         getPageDelegate().getPolicyLoadListener().onAvailable(
-                hasPolicies -> notifyCoordinatorWhenNativeAndPolicyAreLoaded());
+                hasPolicies -> notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded());
+        getPageDelegate().getChildAccountStatusSupplier().onAvailable(
+                ignored -> notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded());
         if (getPageDelegate().isLaunchedFromCct()) {
             mSkipTosDialogPolicyListener = new SkipTosDialogPolicyListener(
                     getPageDelegate().getPolicyLoadListener(), EnterpriseInfo.getInstance(), null);
@@ -134,7 +137,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     @Override
     public void onNativeInitialized() {
         mNativeInitialized = true;
-        notifyCoordinatorWhenNativeAndPolicyAreLoaded();
+        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
     }
 
     /** Implements {@link FirstRunFragment}. */
@@ -219,19 +222,33 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
             mSigninFirstRunCoordinator.destroy();
         }
         mSigninFirstRunCoordinator = coordinator;
+        if (mSigninFirstRunCoordinator != null && mNativePolicyAndChildStatusLoaded) {
+            mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
+                    getPageDelegate().getPolicyLoadListener().get());
+        }
     }
 
-    private void notifyCoordinatorWhenNativeAndPolicyAreLoaded() {
+    /**
+     * Notifies the coordinator that native, policies and child account status has been loaded.
+     * This method may be called multiple times after all 3 wait conditions have been satisfied.
+     */
+    private void notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded() {
         // This may happen when the native initialized supplier in FirstRunActivity calls back after
         // the fragment has been detached from the activity. See https://crbug.com/1294998.
         if (getPageDelegate() == null) return;
 
         if (mSigninFirstRunCoordinator != null && mNativeInitialized
+                && getPageDelegate().getChildAccountStatusSupplier().get() != null
                 && getPageDelegate().getPolicyLoadListener().get() != null) {
-            mSigninFirstRunCoordinator.onNativeAndPolicyLoaded(
-                    getPageDelegate().getPolicyLoadListener().get());
-            getPageDelegate().recordNativeAndPoliciesLoadedHistogram();
-            mAllowCrashUpload = !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
+            // Only notify once.
+            if (!mNativePolicyAndChildStatusLoaded) {
+                mNativePolicyAndChildStatusLoaded = true;
+                mAllowCrashUpload =
+                        !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
+                mSigninFirstRunCoordinator.onNativePolicyAndChildStatusLoaded(
+                        getPageDelegate().getPolicyLoadListener().get());
+                getPageDelegate().recordNativePolicyAndChildStatusLoadedHistogram();
+            }
         }
     }
 
@@ -246,7 +263,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                 null, false);
         setSigninFirstRunCoordinator(new SigninFirstRunCoordinator(requireContext(), view,
                 mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance()));
-        notifyCoordinatorWhenNativeAndPolicyAreLoaded();
+        notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded();
         return view;
     }
 }

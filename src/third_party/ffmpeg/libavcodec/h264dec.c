@@ -672,6 +672,12 @@ static int decode_nal_units(H264Context *h, const uint8_t *buf, int buf_size)
             avpriv_request_sample(avctx, "data partitioning");
             break;
         case H264_NAL_SEI:
+            // If setup is finished, threads can contend over the contents of
+            // the active SEI.
+            if (h->setup_finished) {
+              av_log(h->avctx, AV_LOG_DEBUG, "Late SEI\n");
+              break;
+            }
             ret = ff_h264_sei_decode(&h->sei, &nal->gb, &h->ps, avctx);
             h->has_recovery_point = h->has_recovery_point || h->sei.recovery_point.recovery_frame_cnt != -1;
             if (avctx->debug & FF_DEBUG_GREEN_MD)

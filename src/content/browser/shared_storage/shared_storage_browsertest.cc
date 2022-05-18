@@ -28,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 
 namespace content {
 
@@ -265,7 +266,8 @@ class SharedStorageBrowserTest : public ContentBrowserTest {
   SharedStorageBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{blink::features::kSharedStorageAPI,
-                              blink::features::kFencedFrames},
+                              blink::features::kFencedFrames,
+                              features::kPrivacySandboxAdsAPIsOverride},
         /*disabled_features=*/{});
   }
 
@@ -290,7 +292,7 @@ class SharedStorageBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(https_server()->Start());
   }
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata>
+  FencedFrameURLMapping::SharedStorageBudgetMetadata*
   GetSharedStorageBudgetMetadata(const GURL& urn_uuid) {
     FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                               ->GetPrimaryFrameTree()
@@ -299,15 +301,10 @@ class SharedStorageBrowserTest : public ContentBrowserTest {
     FencedFrameURLMapping& fenced_frame_url_mapping =
         root->current_frame_host()->GetPage().fenced_frame_urls_map();
 
-    absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata>
-        metadata_1st_retrieval =
-            fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(
-                GURL(urn_uuid));
+    FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
+        fenced_frame_url_mapping.GetSharedStorageBudgetMetadata(GURL(urn_uuid));
 
-    EXPECT_FALSE(fenced_frame_url_mapping.ReleaseSharedStorageBudgetMetadata(
-        GURL(urn_uuid)));
-
-    return metadata_1st_retrieval;
+    return metadata;
   }
 
   void ExecuteScriptInWorklet(const ToRenderFrameHost& execution_target,
@@ -989,14 +986,14 @@ IN_PROC_BROWSER_TEST_F(
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
       .GetAttachedWorkletHost()
       ->WaitForWorkletResponsesCount(2);
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1072,7 +1069,7 @@ IN_PROC_BROWSER_TEST_F(
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
@@ -1126,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(
 
   observer.Wait();
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1166,7 +1163,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // Navigate the iframe to about:blank.
   NavigateIframeToURL(shell()->web_contents(), "test_iframe",
@@ -1326,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(
 
   observer.Wait();
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1359,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
@@ -1370,7 +1367,7 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
       "Promise resolved to a number outside the length of the input urls.",
       base::UTF16ToUTF8(console_observer.messages().back().message));
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1425,14 +1422,14 @@ IN_PROC_BROWSER_TEST_F(
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
       .GetAttachedWorkletHost()
       ->WaitForWorkletResponsesCount(2);
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1463,14 +1460,14 @@ IN_PROC_BROWSER_TEST_F(
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
       .GetAttachedWorkletHost()
       ->WaitForWorkletResponsesCount(2);
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("a.test"));
@@ -1510,14 +1507,14 @@ IN_PROC_BROWSER_TEST_F(SharedStorageBrowserTest,
     )")
                              .ExtractString();
 
-  EXPECT_TRUE(FencedFrameURLMapping::IsValidUrnUuidURL(GURL(urn_uuid)));
+  EXPECT_TRUE(blink::IsValidUrnUuidURL(GURL(urn_uuid)));
 
   // There are 2 "worklet operations": addModule and runURLSelectionOperation.
   test_worklet_host_manager()
       .GetAttachedWorkletHost()
       ->WaitForWorkletResponsesCount(2);
 
-  absl::optional<FencedFrameURLMapping::SharedStorageBudgetMetadata> metadata =
+  FencedFrameURLMapping::SharedStorageBudgetMetadata* metadata =
       GetSharedStorageBudgetMetadata(GURL(urn_uuid));
   EXPECT_TRUE(metadata);
   EXPECT_EQ(metadata->origin, https_server()->GetOrigin("b.test"));

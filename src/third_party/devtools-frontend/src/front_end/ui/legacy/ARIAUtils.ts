@@ -95,6 +95,10 @@ export function markAsMenuItem(element: Element): void {
   element.setAttribute('role', 'menuitem');
 }
 
+export function markAsMenuItemCheckBox(element: Element): void {
+  element.setAttribute('role', 'menuitemcheckbox');
+}
+
 export function markAsMenuItemSubMenu(element: Element): void {
   markAsMenuItem(element);
   element.setAttribute('aria-haspopup', 'true');
@@ -437,8 +441,6 @@ export function setActiveDescendant(element: Element, activedescendant: Element|
 
   if (activedescendant.isConnected && element.isConnected) {
     console.assert(element.hasSameShadowRoot(activedescendant), 'elements are not in the same shadow dom');
-  } else {
-    console.warn('One or more elements in an active-descendant relationship are not yet attached to the DOM tree.');
   }
 
   ensureId(activedescendant);

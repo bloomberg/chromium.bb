@@ -1771,12 +1771,6 @@ RValue<Bool> operator==(RValue<Float> lhs, RValue<Float> rhs);
 RValue<Float> Abs(RValue<Float> x);
 RValue<Float> Max(RValue<Float> x, RValue<Float> y);
 RValue<Float> Min(RValue<Float> x, RValue<Float> y);
-// Deprecated: use Rcp
-// TODO(b/147516027): Remove when GLES frontend is removed
-RValue<Float> Rcp_pp(RValue<Float> val, bool exactAtPow2 = false);
-// Deprecated: use RcpSqrt
-// TODO(b/147516027): Remove when GLES frontend is removed
-RValue<Float> RcpSqrt_pp(RValue<Float> val);
 RValue<Float> Rcp(RValue<Float> x, bool relaxedPrecision, bool exactAtPow2 = false);
 RValue<Float> RcpSqrt(RValue<Float> x, bool relaxedPrecision);
 RValue<Float> Sqrt(RValue<Float> x);
@@ -1947,12 +1941,6 @@ RValue<Float4> Abs(RValue<Float4> x);
 RValue<Float4> Max(RValue<Float4> x, RValue<Float4> y);
 RValue<Float4> Min(RValue<Float4> x, RValue<Float4> y);
 
-// Deprecated: use Rcp
-// TODO(b/147516027): Remove when GLES frontend is removed
-RValue<Float4> Rcp_pp(RValue<Float4> val, bool exactAtPow2 = false);
-// Deprecated: use RcpSqrt
-// TODO(b/147516027): Remove when GLES frontend is removed
-RValue<Float4> RcpSqrt_pp(RValue<Float4> val);
 RValue<Float4> Rcp(RValue<Float4> x, bool relaxedPrecision, bool exactAtPow2 = false);
 RValue<Float4> RcpSqrt(RValue<Float4> x, bool relaxedPrecision);
 RValue<Float4> Sqrt(RValue<Float4> x);
@@ -2227,7 +2215,6 @@ public:
 	}
 
 	std::shared_ptr<Routine> operator()(const char *name, ...);
-	std::shared_ptr<Routine> operator()(const Config::Edit &cfg, const char *name, ...);
 
 protected:
 	std::unique_ptr<Nucleus> core;
@@ -2265,12 +2252,6 @@ public:
 	RoutineType operator()(const char *name, VarArgs... varArgs)
 	{
 		return RoutineType(BaseType::operator()(name, std::forward<VarArgs>(varArgs)...));
-	}
-
-	template<typename... VarArgs>
-	RoutineType operator()(const Config::Edit &cfg, const char *name, VarArgs... varArgs)
-	{
-		return RoutineType(BaseType::operator()(cfg, name, std::forward<VarArgs>(varArgs)...));
 	}
 };
 
@@ -2867,23 +2848,7 @@ std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const char *
 	vsnprintf(fullName, 1024, name, vararg);
 	va_end(vararg);
 
-	auto routine = core->acquireRoutine(fullName, nullptr);
-	core.reset(nullptr);
-
-	return routine;
-}
-
-template<typename Return, typename... Arguments>
-std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const Config::Edit &cfg, const char *name, ...)
-{
-	char fullName[1024 + 1];
-
-	va_list vararg;
-	va_start(vararg, name);
-	vsnprintf(fullName, 1024, name, vararg);
-	va_end(vararg);
-
-	auto routine = core->acquireRoutine(fullName, &cfg);
+	auto routine = core->acquireRoutine(fullName);
 	core.reset(nullptr);
 
 	return routine;

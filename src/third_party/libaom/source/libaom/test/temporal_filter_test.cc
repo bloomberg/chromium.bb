@@ -68,8 +68,8 @@ class TemporalFilterTest
     src2_ = reinterpret_cast<uint8_t *>(
         aom_memalign(8, sizeof(uint8_t) * MAX_MB_PLANE * BH * BW));
 
-    ASSERT_TRUE(src1_ != NULL);
-    ASSERT_TRUE(src2_ != NULL);
+    ASSERT_NE(src1_, nullptr);
+    ASSERT_NE(src2_, nullptr);
   }
 
   virtual void TearDown() {
@@ -321,8 +321,8 @@ class HBDTemporalFilterTest
     src2_ = reinterpret_cast<uint16_t *>(
         aom_memalign(16, sizeof(uint16_t) * MAX_MB_PLANE * BH * BW));
 
-    ASSERT_TRUE(src1_ != NULL);
-    ASSERT_TRUE(src2_ != NULL);
+    ASSERT_NE(src1_, nullptr);
+    ASSERT_NE(src2_, nullptr);
   }
 
   virtual void TearDown() {

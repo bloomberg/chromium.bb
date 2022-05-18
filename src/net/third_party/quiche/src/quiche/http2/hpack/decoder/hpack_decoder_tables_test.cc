@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "quiche/http2/hpack/http2_hpack_constants.h"
-#include "quiche/http2/platform/api/http2_logging.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/random_util.h"
+#include "quiche/http2/test_tools/random_util.h"
+#include "quiche/http2/test_tools/verify_macros.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -69,13 +69,13 @@ class HpackDecoderStaticTableTest : public QuicheTest {
   AssertionResult VerifyStaticTableContents() {
     for (const auto& expected : shuffled_static_entries()) {
       const HpackStringPair* found = Lookup(expected.index);
-      VERIFY_NE(found, nullptr);
-      VERIFY_EQ(expected.name, found->name) << expected.index;
-      VERIFY_EQ(expected.value, found->value) << expected.index;
+      HTTP2_VERIFY_NE(found, nullptr);
+      HTTP2_VERIFY_EQ(expected.name, found->name) << expected.index;
+      HTTP2_VERIFY_EQ(expected.value, found->value) << expected.index;
     }
 
     // There should be no entry with index 0.
-    VERIFY_EQ(nullptr, Lookup(0));
+    HTTP2_VERIFY_EQ(nullptr, Lookup(0));
     return AssertionSuccess();
   }
 
@@ -111,9 +111,7 @@ const std::string& Name(const FakeHpackEntry& entry) {
 const std::string& Value(const FakeHpackEntry& entry) {
   return std::get<1>(entry);
 }
-size_t Size(const FakeHpackEntry& entry) {
-  return std::get<2>(entry);
-}
+size_t Size(const FakeHpackEntry& entry) { return std::get<2>(entry); }
 
 class HpackDecoderTablesTest : public HpackDecoderStaticTableTest {
  protected:
@@ -168,27 +166,27 @@ class HpackDecoderTablesTest : public HpackDecoderStaticTableTest {
   // Verify that the contents of the actual dynamic table match those in
   // fake_dynamic_table_.
   AssertionResult VerifyDynamicTableContents() {
-    VERIFY_EQ(current_dynamic_size(), FakeSize());
-    VERIFY_EQ(num_dynamic_entries(), fake_dynamic_table_.size());
+    HTTP2_VERIFY_EQ(current_dynamic_size(), FakeSize());
+    HTTP2_VERIFY_EQ(num_dynamic_entries(), fake_dynamic_table_.size());
 
     for (size_t ndx = 0; ndx < fake_dynamic_table_.size(); ++ndx) {
       const HpackStringPair* found = Lookup(ndx + kFirstDynamicTableIndex);
-      VERIFY_NE(found, nullptr);
+      HTTP2_VERIFY_NE(found, nullptr);
 
       const auto& expected = fake_dynamic_table_[ndx];
-      VERIFY_EQ(Name(expected), found->name);
-      VERIFY_EQ(Value(expected), found->value);
+      HTTP2_VERIFY_EQ(Name(expected), found->name);
+      HTTP2_VERIFY_EQ(Value(expected), found->value);
     }
 
     // Make sure there are no more entries.
-    VERIFY_EQ(nullptr,
-              Lookup(fake_dynamic_table_.size() + kFirstDynamicTableIndex));
+    HTTP2_VERIFY_EQ(
+        nullptr, Lookup(fake_dynamic_table_.size() + kFirstDynamicTableIndex));
     return AssertionSuccess();
   }
 
   // Apply an update to the limit on the maximum size of the dynamic table.
   AssertionResult DynamicTableSizeUpdate(size_t size_limit) {
-    VERIFY_EQ(current_dynamic_size(), FakeSize());
+    HTTP2_VERIFY_EQ(current_dynamic_size(), FakeSize());
     if (size_limit < current_dynamic_size()) {
       // Will need to trim the dynamic table's oldest entries.
       tables_.DynamicTableSizeUpdate(size_limit);
@@ -207,10 +205,10 @@ class HpackDecoderTablesTest : public HpackDecoderStaticTableTest {
     size_t old_count = num_dynamic_entries();
     tables_.Insert(name, value);
     FakeInsert(name, value);
-    VERIFY_EQ(old_count + 1, fake_dynamic_table_.size());
+    HTTP2_VERIFY_EQ(old_count + 1, fake_dynamic_table_.size());
     FakeTrim(dynamic_size_limit());
-    VERIFY_EQ(current_dynamic_size(), FakeSize());
-    VERIFY_EQ(num_dynamic_entries(), fake_dynamic_table_.size());
+    HTTP2_VERIFY_EQ(current_dynamic_size(), FakeSize());
+    HTTP2_VERIFY_EQ(num_dynamic_entries(), fake_dynamic_table_.size());
     return VerifyDynamicTableContents();
   }
 

@@ -339,7 +339,8 @@ export enum Action {
   ConsoleSidebarOpened = 53,
   PerfPanelTraceImported = 54,
   PerfPanelTraceExported = 55,
-  MaxValue = 56,
+  StackFrameRestarted = 56,
+  MaxValue = 57,
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -549,7 +550,8 @@ export enum KeyboardShortcutAction {
   'layers.left' = 104,
   'layers.right' = 105,
   'help.report-translation-issue' = 106,
-  MaxValue = 107,
+  'rendering.toggle-prefers-color-scheme' = 107,
+  MaxValue = 108,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -618,8 +620,9 @@ export enum DevtoolsExperiments {
   'evaluateExpressionsWithSourceMaps' = 58,
   'cssLayers' = 59,
   'eyedropperColorPicker' = 60,
+  'instrumentationBreakpoints' = 61,
   // Increment this when new experiments are added.
-  'MaxValue' = 61,
+  'MaxValue' = 62,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 

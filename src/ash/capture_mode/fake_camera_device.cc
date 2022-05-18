@@ -149,8 +149,8 @@ class SharedMemoryBufferStrategy : public BufferStrategy {
 
   // BufferStrategy:
   media::mojom::VideoBufferHandlePtr GetHandle() const override {
-    return media::mojom::VideoBufferHandle::NewSharedBufferHandle(
-        mojo::WrapUnsafeSharedMemoryRegion(region_.Duplicate()));
+    return media::mojom::VideoBufferHandle::NewUnsafeShmemRegion(
+        region_.Duplicate());
   }
   void DrawFrameOnBuffer(const gfx::Size& frame_size) override {
     if (!mapping_.IsValid())
@@ -303,6 +303,11 @@ class FakeCameraDevice::Subscription
         media::VideoCaptureFrameDropReason::kBufferPoolMaxBufferCountExceeded);
   }
 
+  void TriggerFatalError() {
+    subscriber_->OnError(
+        media::VideoCaptureError::kCrosHalV3DeviceDelegateMojoConnectionError);
+  }
+
   // video_capture::mojom::PushVideoStreamSubscription:
   void Activate() override {
     is_active_ = true;
@@ -369,6 +374,13 @@ SkBitmap FakeCameraDevice::GetProducedFrameAsBitmap(
 void FakeCameraDevice::Bind(
     mojo::PendingReceiver<video_capture::mojom::VideoSource> pending_receiver) {
   video_source_receiver_set_.Add(this, std::move(pending_receiver));
+}
+
+void FakeCameraDevice::TriggerFatalError() {
+  for (auto& pair : subscriptions_map_) {
+    auto* subscription = pair.first;
+    subscription->TriggerFatalError();
+  }
 }
 
 void FakeCameraDevice::CreatePushSubscription(

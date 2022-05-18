@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "content/public/browser/permission_controller_delegate.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
@@ -18,6 +17,9 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
+
+using blink::PermissionType;
 
 namespace content {
 
@@ -39,10 +41,9 @@ class MockManagerWithRequests : public MockPermissionManager {
   ~MockManagerWithRequests() override {}
   MOCK_METHOD(
       void,
-      RequestPermissions,
+      RequestPermissionsFromCurrentDocument,
       (const std::vector<PermissionType>& permission,
        RenderFrameHost* render_frame_host,
-       const GURL& requesting_origin,
        bool user_gesture,
        const base::OnceCallback<
            void(const std::vector<blink::mojom::PermissionStatus>&)> callback),
@@ -58,6 +59,8 @@ class MockManagerWithRequests : public MockPermissionManager {
               (PermissionType, const absl::optional<url::Origin>&),
               (override));
 };
+
+}  // namespace
 
 class PermissionControllerImplTest : public ::testing::Test {
  public:
@@ -81,6 +84,24 @@ class PermissionControllerImplTest : public ::testing::Test {
 
   PermissionControllerImpl* permission_controller() {
     return permission_controller_.get();
+  }
+
+  void PermissionControllerRequestPermissions(
+      const std::vector<PermissionType>& permission,
+      RenderFrameHost* render_frame_host,
+      bool user_gesture,
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback) {
+    permission_controller()->RequestPermissionsFromCurrentDocument(
+        permission, render_frame_host, user_gesture, std::move(callback));
+  }
+
+  blink::mojom::PermissionStatus GetPermissionStatusForWorker(
+      PermissionType permission,
+      RenderProcessHost* render_process_host,
+      const url::Origin& worker_origin) {
+    return permission_controller()->GetPermissionStatusForWorker(
+        permission, render_process_host, worker_origin);
   }
 
   BrowserContext* browser_context() { return &browser_context_; }
@@ -199,8 +220,14 @@ TEST_F(PermissionControllerImplTest,
        {},
        /*expect_death=*/true}};
 
-  auto web_contents = base::WrapUnique(WebContentsTester::CreateTestWebContents(
-      WebContents::CreateParams(browser_context())));
+  std::unique_ptr<WebContents> web_contents(
+      WebContentsTester::CreateTestWebContents(
+          WebContents::CreateParams(browser_context())));
+
+  WebContentsTester* web_contents_tester =
+      WebContentsTester::For(web_contents.get());
+  web_contents_tester->NavigateAndCommit(GURL(kTestUrl));
+
   RenderFrameHost* rfh = web_contents->GetMainFrame();
   for (const auto& test_case : kTestCases) {
     // Need to reset overrides for each case to ensure delegation is as
@@ -214,7 +241,7 @@ TEST_F(PermissionControllerImplTest,
 
     // Expect request permission call if override are missing.
     if (!test_case.delegated_permissions.empty()) {
-      auto forward_callbacks = testing::WithArg<4>(
+      auto forward_callbacks = testing::WithArg<3>(
           [&test_case](base::OnceCallback<void(
                            const std::vector<blink::mojom::PermissionStatus>&)>
                            callback) {
@@ -222,40 +249,42 @@ TEST_F(PermissionControllerImplTest,
             return 0;
           });
       // Regular tests can set expectations.
-      if (!test_case.expect_death) {
-        EXPECT_CALL(
-            *mock_manager(),
-            RequestPermissions(
-                testing::ElementsAreArray(test_case.delegated_permissions), rfh,
-                kTestOrigin.GetURL(), true, testing::_))
-            .WillOnce(testing::Invoke(forward_callbacks));
-      } else {
+      if (test_case.expect_death) {
         // Death tests cannot track these expectations but arguments should be
         // forwarded to ensure death occurs.
         ON_CALL(*mock_manager(),
-                RequestPermissions(
+                RequestPermissionsFromCurrentDocument(
                     testing::ElementsAreArray(test_case.delegated_permissions),
-                    rfh, kTestOrigin.GetURL(), true, testing::_))
+                    rfh, true, testing::_))
             .WillByDefault(testing::Invoke(forward_callbacks));
+      } else {
+        EXPECT_CALL(
+            *mock_manager(),
+            RequestPermissionsFromCurrentDocument(
+                testing::ElementsAreArray(test_case.delegated_permissions), rfh,
+                true, testing::_))
+            .WillOnce(testing::Invoke(forward_callbacks));
       }
     } else {
       // There should be no call to delegate if all overrides are defined.
-      EXPECT_CALL(*mock_manager(), RequestPermissions).Times(0);
+      EXPECT_CALL(*mock_manager(), RequestPermissionsFromCurrentDocument)
+          .Times(0);
     }
-    if (!test_case.expect_death) {
+
+    if (test_case.expect_death) {
+      ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+      base::MockCallback<RequestsCallback> callback;
+      EXPECT_DEATH_IF_SUPPORTED(PermissionControllerRequestPermissions(
+                                    kTypesToQuery, rfh,
+                                    /*user_gesture=*/true, callback.Get()),
+                                "");
+    } else {
       base::MockCallback<RequestsCallback> callback;
       EXPECT_CALL(callback,
                   Run(testing::ElementsAreArray(test_case.expected_results)));
-      permission_controller()->RequestPermissions(
-          kTypesToQuery, rfh, kTestOrigin.GetURL(),
-          /*user_gesture=*/true, callback.Get());
-    } else {
-      ::testing::FLAGS_gtest_death_test_style = "threadsafe";
-      base::MockCallback<RequestsCallback> callback;
-      EXPECT_DEATH_IF_SUPPORTED(permission_controller()->RequestPermissions(
-                                    kTypesToQuery, rfh, kTestOrigin.GetURL(),
-                                    /*user_gesture=*/true, callback.Get()),
-                                "");
+      PermissionControllerRequestPermissions(kTypesToQuery, rfh,
+                                             /*user_gesture=*/true,
+                                             callback.Get());
     }
   }
 }
@@ -268,10 +297,9 @@ TEST_F(PermissionControllerImplTest,
   url::Origin kTestOrigin = url::Origin::Create(kUrl);
 
   // Setup.
-  blink::mojom::PermissionStatus sync_status =
-      permission_controller()->GetPermissionStatusForWorker(
-          PermissionType::BACKGROUND_SYNC, /*render_process_host=*/nullptr,
-          kTestOrigin);
+  blink::mojom::PermissionStatus sync_status = GetPermissionStatusForWorker(
+      PermissionType::BACKGROUND_SYNC,
+      /*render_process_host=*/nullptr, kTestOrigin);
   permission_controller()->SetOverrideForDevTools(
       kTestOrigin, PermissionType::GEOLOCATION,
       blink::mojom::PermissionStatus::DENIED);
@@ -318,10 +346,9 @@ TEST_F(PermissionControllerImplTest,
                 kTestOrigin, PermissionType::GEOLOCATION,
                 blink::mojom::PermissionStatus::ASK));
 
-  blink::mojom::PermissionStatus status =
-      permission_controller()->GetPermissionStatusForWorker(
-          PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
-          kTestOrigin);
+  blink::mojom::PermissionStatus status = GetPermissionStatusForWorker(
+      PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
+      kTestOrigin);
   EXPECT_EQ(blink::mojom::PermissionStatus::DENIED, status);
 }
 
@@ -353,17 +380,17 @@ TEST_F(PermissionControllerImplTest,
 
   // Keep original settings as before.
   EXPECT_EQ(blink::mojom::PermissionStatus::DENIED,
-            permission_controller()->GetPermissionStatusForWorker(
-                PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
-                kTestOrigin));
+            GetPermissionStatusForWorker(PermissionType::GEOLOCATION,
+                                         /*render_process_host=*/nullptr,
+                                         kTestOrigin));
   EXPECT_EQ(
       blink::mojom::PermissionStatus::ASK,
-      permission_controller()->GetPermissionStatusForWorker(
+      GetPermissionStatusForWorker(
           PermissionType::MIDI, /*render_process_host=*/nullptr, kTestOrigin));
   EXPECT_EQ(blink::mojom::PermissionStatus::ASK,
-            permission_controller()->GetPermissionStatusForWorker(
-                PermissionType::BACKGROUND_SYNC,
-                /*render_process_host=*/nullptr, kTestOrigin));
+            GetPermissionStatusForWorker(PermissionType::BACKGROUND_SYNC,
+                                         /*render_process_host=*/nullptr,
+                                         kTestOrigin));
 
   EXPECT_CALL(*mock_manager(), IsPermissionOverridableByDevTools(
                                    PermissionType::GEOLOCATION, testing::_))
@@ -380,19 +407,17 @@ TEST_F(PermissionControllerImplTest,
                     PermissionType::BACKGROUND_SYNC});
   EXPECT_EQ(OverrideStatus::kOverrideSet, result);
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_controller()->GetPermissionStatusForWorker(
-                PermissionType::GEOLOCATION, /*render_process_host=*/nullptr,
-                kTestOrigin));
+            GetPermissionStatusForWorker(PermissionType::GEOLOCATION,
+                                         /*render_process_host=*/nullptr,
+                                         kTestOrigin));
   EXPECT_EQ(
       blink::mojom::PermissionStatus::GRANTED,
-      permission_controller()->GetPermissionStatusForWorker(
+      GetPermissionStatusForWorker(
           PermissionType::MIDI, /*render_process_host=*/nullptr, kTestOrigin));
   EXPECT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            permission_controller()->GetPermissionStatusForWorker(
-                PermissionType::BACKGROUND_SYNC,
-                /*render_process_host=*/nullptr, kTestOrigin));
+            GetPermissionStatusForWorker(PermissionType::BACKGROUND_SYNC,
+                                         /*render_process_host=*/nullptr,
+                                         kTestOrigin));
 }
-
-}  // namespace
 
 }  // namespace content

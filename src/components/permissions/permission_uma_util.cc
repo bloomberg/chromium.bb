@@ -20,13 +20,12 @@
 #include "components/permissions/prediction_service/prediction_common.h"
 #include "components/permissions/prediction_service/prediction_request_features.h"
 #include "components/permissions/request_type.h"
-#include "components/ukm/content/source_url_recorder.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -50,7 +49,7 @@ namespace permissions {
                                permission_bubble_type);                      \
   }
 
-using content::PermissionType;
+using blink::PermissionType;
 
 namespace {
 
@@ -333,41 +332,6 @@ void RecordPermissionActionUkm(
   }
 
   builder.Record(ukm::UkmRecorder::Get());
-}
-
-std::string GetPromptDispositionString(
-    PermissionPromptDisposition ui_disposition) {
-  switch (ui_disposition) {
-    case PermissionPromptDisposition::ANCHORED_BUBBLE:
-      return "AnchoredBubble";
-    case PermissionPromptDisposition::CUSTOM_MODAL_DIALOG:
-      return "CustomModalDialog";
-    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
-      return "LocationBarLeftChip";
-    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
-      return "LocationBarLeftQuietChip";
-    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
-      return "LocationBarLeftQuietAbusiveChip";
-    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
-      return "LocationBarLeftChipAutoBubble";
-    case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
-      return "LocationBarRightAnimatedIcon";
-    case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
-      return "LocationBarRightStaticIcon";
-    case PermissionPromptDisposition::MINI_INFOBAR:
-      return "MiniInfobar";
-    case PermissionPromptDisposition::MESSAGE_UI:
-      return "MessageUI";
-    case PermissionPromptDisposition::MODAL_DIALOG:
-      return "ModalDialog";
-    case PermissionPromptDisposition::NONE_VISIBLE:
-      return "NoneVisible";
-    case PermissionPromptDisposition::NOT_APPLICABLE:
-      return "NotApplicable";
-  }
-
-  NOTREACHED();
-  return "";
 }
 
 // |full_version| represented in the format `YYYY.M.D.m`, where m is the
@@ -813,7 +777,7 @@ PermissionUmaUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
 void PermissionUmaUtil::RecordPermissionUsage(
     ContentSettingsType permission_type,
     content::BrowserContext* browser_context,
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     const GURL& requesting_origin) {
   PermissionsClient::Get()->GetUkmSourceId(
       browser_context, web_contents, requesting_origin,
@@ -829,7 +793,7 @@ void PermissionUmaUtil::RecordPermissionAction(
     PermissionPromptDisposition ui_disposition,
     absl::optional<PermissionPromptDispositionReason> ui_reason,
     const GURL& requesting_origin,
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     content::BrowserContext* browser_context,
     absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
     absl::optional<bool> prediction_decision_held_back) {
@@ -1110,6 +1074,67 @@ std::string PermissionUmaUtil::GetPermissionActionString(
   }
   NOTREACHED();
   return std::string();
+}
+
+// static
+std::string PermissionUmaUtil::GetPromptDispositionString(
+    PermissionPromptDisposition ui_disposition) {
+  switch (ui_disposition) {
+    case PermissionPromptDisposition::ANCHORED_BUBBLE:
+      return "AnchoredBubble";
+    case PermissionPromptDisposition::CUSTOM_MODAL_DIALOG:
+      return "CustomModalDialog";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
+      return "LocationBarLeftChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
+      return "LocationBarLeftQuietChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
+      return "LocationBarLeftQuietAbusiveChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
+      return "LocationBarLeftChipAutoBubble";
+    case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
+      return "LocationBarRightAnimatedIcon";
+    case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
+      return "LocationBarRightStaticIcon";
+    case PermissionPromptDisposition::MINI_INFOBAR:
+      return "MiniInfobar";
+    case PermissionPromptDisposition::MESSAGE_UI:
+      return "MessageUI";
+    case PermissionPromptDisposition::MODAL_DIALOG:
+      return "ModalDialog";
+    case PermissionPromptDisposition::NONE_VISIBLE:
+      return "NoneVisible";
+    case PermissionPromptDisposition::NOT_APPLICABLE:
+      return "NotApplicable";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+// static
+std::string PermissionUmaUtil::GetPromptDispositionReasonString(
+    PermissionPromptDispositionReason ui_disposition_reason) {
+  switch (ui_disposition_reason) {
+    case PermissionPromptDispositionReason::DEFAULT_FALLBACK:
+      return "DefaultFallback";
+    case PermissionPromptDispositionReason::ON_DEVICE_PREDICTION_MODEL:
+      return "OnDevicePredictionModel";
+    case PermissionPromptDispositionReason::PREDICTION_SERVICE:
+      return "PredictionService";
+    case PermissionPromptDispositionReason::SAFE_BROWSING_VERDICT:
+      return "SafeBrowsingVerdict";
+    case PermissionPromptDispositionReason::USER_PREFERENCE_IN_SETTINGS:
+      return "UserPreferenceInSettings";
+  }
+
+  NOTREACHED();
+  return std::string();
+}
+
+// static
+std::string PermissionUmaUtil::GetRequestTypeString(RequestType request_type) {
+  return GetPermissionRequestString(GetUmaValueForRequestType(request_type));
 }
 
 // static

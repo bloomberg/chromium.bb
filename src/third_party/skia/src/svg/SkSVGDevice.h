@@ -34,7 +34,7 @@ struct SkPoint;
 struct SkRect;
 struct SkSamplingOptions;
 #ifdef SK_ENABLE_SKSL
-struct SkCustomMesh;
+class SkMesh;
 #endif
 
 class SkSVGDevice final : public SkClipStackDevice {
@@ -57,10 +57,13 @@ protected:
                   const SkPaint& paint,
                   bool pathIsMutable = false) override;
 
-    void onDrawGlyphRunList(SkCanvas*, const SkGlyphRunList&, const SkPaint&) override;
+    void onDrawGlyphRunList(SkCanvas*,
+                            const SkGlyphRunList&,
+                            const SkPaint& initialPaint,
+                            const SkPaint& drawingPaint) override;
     void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&, bool) override;
 #ifdef SK_ENABLE_SKSL
-    void drawCustomMesh(SkCustomMesh, sk_sp<SkBlender>, const SkPaint&) override;
+    void drawMesh(const SkMesh&, sk_sp<SkBlender>, const SkPaint&) override;
 #endif
 private:
     SkSVGDevice(const SkISize& size, std::unique_ptr<SkXMLWriter>, uint32_t);

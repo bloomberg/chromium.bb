@@ -157,7 +157,7 @@ void MetricsRenderFrameObserver::DidObserveLayoutNg(uint32_t all_block_count,
 }
 
 void MetricsRenderFrameObserver::DidStartResponse(
-    const GURL& response_url,
+    const url::SchemeHostPort& final_response_url,
     int request_id,
     const network::mojom::URLResponseHead& response_head,
     network::mojom::RequestDestination request_destination) {
@@ -168,10 +168,10 @@ void MetricsRenderFrameObserver::DidStartResponse(
     // case. There should be a guarantee that DidStartProvisionalLoad be called
     // before DidStartResponse for the frame request.
     provisional_frame_resource_data_use_->DidStartResponse(
-        response_url, request_id, response_head, request_destination);
+        final_response_url, request_id, response_head, request_destination);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidStartResponse(
-        response_url, request_id, response_head, request_destination);
+        final_response_url, request_id, response_head, request_destination);
     UpdateResourceMetadata(request_id);
   }
 }
@@ -314,10 +314,8 @@ void MetricsRenderFrameObserver::DidCreateDocumentElement() {
       CreatePageTimingSender(true /* limited_sending_mode */), CreateTimer(),
       std::move(timing.relative_timing), timing.monotonic_timing,
       std::make_unique<PageResourceDataUse>());
-  if (ukm_smoothness_data_.IsValid()) {
-    page_timing_metrics_sender_->SetUpSmoothnessReporting(
-        std::move(ukm_smoothness_data_));
-  }
+
+  OnMetricsSenderCreated();
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
@@ -342,10 +340,8 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
       CreatePageTimingSender(false /* limited_sending_mode*/), CreateTimer(),
       std::move(timing.relative_timing), timing.monotonic_timing,
       std::move(provisional_frame_resource_data_use_));
-  if (ukm_smoothness_data_.IsValid()) {
-    page_timing_metrics_sender_->SetUpSmoothnessReporting(
-        std::move(ukm_smoothness_data_));
-  }
+
+  OnMetricsSenderCreated();
 }
 
 void MetricsRenderFrameObserver::SetAdResourceTracker(
@@ -366,10 +362,23 @@ void MetricsRenderFrameObserver::OnAdResourceObserved(int request_id) {
 }
 
 void MetricsRenderFrameObserver::OnMainFrameIntersectionChanged(
-    const gfx::Rect& main_frame_intersection) {
-  if (page_timing_metrics_sender_)
+    const gfx::Rect& main_frame_intersection_rect) {
+  if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->OnMainFrameIntersectionChanged(
-        main_frame_intersection);
+        main_frame_intersection_rect);
+    return;
+  }
+
+  main_frame_intersection_rect_before_metrics_sender_created_ =
+      main_frame_intersection_rect;
+}
+
+void MetricsRenderFrameObserver::OnMainFrameViewportRectangleChanged(
+    const gfx::Rect& main_frame_viewport_rect) {
+  if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->OnMainFrameViewportRectangleChanged(
+        main_frame_viewport_rect);
+  }
 }
 
 void MetricsRenderFrameObserver::OnMobileFriendlinessChanged(
@@ -468,6 +477,21 @@ void MetricsRenderFrameObserver::SendMetrics() {
   Timing timing = GetTiming();
   page_timing_metrics_sender_->Update(std::move(timing.relative_timing),
                                       timing.monotonic_timing);
+}
+
+void MetricsRenderFrameObserver::OnMetricsSenderCreated() {
+  if (ukm_smoothness_data_.IsValid()) {
+    page_timing_metrics_sender_->SetUpSmoothnessReporting(
+        std::move(ukm_smoothness_data_));
+  }
+
+  // Send the latest the frame intersection update, as otherwise we may miss
+  // this information for a frame completely if there are no future updates.
+  if (main_frame_intersection_rect_before_metrics_sender_created_) {
+    page_timing_metrics_sender_->OnMainFrameIntersectionChanged(
+        *main_frame_intersection_rect_before_metrics_sender_created_);
+    main_frame_intersection_rect_before_metrics_sender_created_.reset();
+  }
 }
 
 MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()

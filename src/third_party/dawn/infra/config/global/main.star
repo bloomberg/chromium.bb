@@ -128,7 +128,7 @@ def get_builder_executable():
     return luci.recipe(
         name = "dawn",
         cipd_package = "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
-        cipd_version = "refs/heads/master",
+        cipd_version = "refs/heads/main",
     )
 
 def get_presubmit_executable():
@@ -140,7 +140,7 @@ def get_presubmit_executable():
     return luci.recipe(
         name = "run_presubmit",
         cipd_package = "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
-        cipd_version = "refs/heads/master",
+        cipd_version = "refs/heads/main",
     )
 
 def get_os_from_arg(arg):
@@ -410,6 +410,12 @@ dawn_standalone_builder("cron-linux-clang-rel-x64", True, False, "x64", True)
 chromium_dawn_tryjob("linux")
 chromium_dawn_tryjob("mac")
 chromium_dawn_tryjob("win")
+
+luci.cq_tryjob_verifier(
+    cq_group = "Dawn-CQ",
+    builder = "chromium:try/dawn-try-win10-x86-rel",
+    includable_only = True,
+)
 
 # Views
 

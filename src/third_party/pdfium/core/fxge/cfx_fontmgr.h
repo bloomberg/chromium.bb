@@ -12,12 +12,13 @@
 
 #include <map>
 #include <memory>
+#include <tuple>
 
 #include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/fx_freetype.h"
+#include "core/fxge/freetype/fx_freetype.h"
 #include "third_party/base/span.h"
 
 class CFX_Face;
@@ -86,7 +87,8 @@ class CFX_FontMgr {
   // Must come before |m_pBuiltinMapper| and |m_FaceMap|.
   ScopedFXFTLibraryRec const m_FTLibrary;
   std::unique_ptr<CFX_FontMapper> m_pBuiltinMapper;
-  std::map<ByteString, ObservedPtr<FontDesc>> m_FaceMap;
+  std::map<std::tuple<ByteString, int, bool>, ObservedPtr<FontDesc>> m_FaceMap;
+  std::map<std::tuple<size_t, uint32_t>, ObservedPtr<FontDesc>> m_TTCFaceMap;
   const bool m_FTLibrarySupportsHinting;
 };
 

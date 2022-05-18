@@ -400,16 +400,11 @@ struct PackedRasterizationAndMultisampleStateInfo final
     // Padded to ensure there's no gaps in this structure or those that use it.
     float minSampleShading;
     uint32_t sampleMask[gl::MAX_SAMPLE_MASK_WORDS];
-    // Note: depth bias clamp is only exposed in a 3.1 extension, but left here for completeness.
-    float depthBiasClamp;
-    float depthBiasConstantFactor;
-    float depthBiasSlopeFactor;
-    float lineWidth;
 };
 
 constexpr size_t kPackedRasterizationAndMultisampleStateSize =
     sizeof(PackedRasterizationAndMultisampleStateInfo);
-static_assert(kPackedRasterizationAndMultisampleStateSize == 32, "Size check failed");
+static_assert(kPackedRasterizationAndMultisampleStateSize == 16, "Size check failed");
 
 struct StencilOps final
 {
@@ -425,12 +420,10 @@ static_assert(kStencilOpsSize == 2, "Size check failed");
 struct PackedStencilOpState final
 {
     StencilOps ops;
-    uint8_t compareMask;
-    uint8_t writeMask;
 };
 
 constexpr size_t kPackedStencilOpSize = sizeof(PackedStencilOpState);
-static_assert(kPackedStencilOpSize == 4, "Size check failed");
+static_assert(kPackedStencilOpSize == 2, "Size check failed");
 
 struct DepthStencilEnableFlags final
 {
@@ -459,9 +452,8 @@ static_assert(kDepthCompareOpAndSurfaceRotationSize == 1, "Size check failed");
 struct PackedDepthStencilStateInfo final
 {
     DepthStencilEnableFlags enable;
-    uint8_t frontStencilReference;
-    uint8_t backStencilReference;
     DepthCompareOpAndSurfaceRotation depthCompareOpAndSurfaceRotation;
+    uint16_t padding;
 
     float minDepthBounds;
     float maxDepthBounds;
@@ -470,7 +462,7 @@ struct PackedDepthStencilStateInfo final
 };
 
 constexpr size_t kPackedDepthStencilStateSize = sizeof(PackedDepthStencilStateInfo);
-static_assert(kPackedDepthStencilStateSize == 20, "Size check failed");
+static_assert(kPackedDepthStencilStateSize == 16, "Size check failed");
 static_assert(static_cast<int>(SurfaceRotation::EnumCount) <= 8, "Size check failed");
 
 struct LogicOpState final
@@ -509,7 +501,6 @@ struct PackedInputAssemblyAndColorBlendStateInfo final
 {
     uint8_t colorWriteMaskBits[gl::IMPLEMENTATION_MAX_DRAW_BUFFERS / 2];
     PackedColorBlendAttachmentState attachments[gl::IMPLEMENTATION_MAX_DRAW_BUFFERS];
-    float blendConstants[4];
     LogicOpState logic;
     uint8_t blendEnableMask;
     PrimitiveState primitive;
@@ -531,7 +522,7 @@ struct PackedDither final
 
 constexpr size_t kPackedInputAssemblyAndColorBlendStateSize =
     sizeof(PackedInputAssemblyAndColorBlendStateInfo);
-static_assert(kPackedInputAssemblyAndColorBlendStateSize == 56, "Size check failed");
+static_assert(kPackedInputAssemblyAndColorBlendStateSize == 40, "Size check failed");
 
 constexpr size_t kGraphicsPipelineDescSumOfSizes =
     kVertexInputAttributesSize + kRenderPassDescSize + kPackedRasterizationAndMultisampleStateSize +
@@ -611,7 +602,6 @@ class GraphicsPipelineDesc final
     void updateFrontFace(GraphicsPipelineTransitionBits *transition,
                          const gl::RasterizerState &rasterState,
                          bool invertFrontFace);
-    void updateLineWidth(GraphicsPipelineTransitionBits *transition, float lineWidth);
     void updateRasterizerDiscardEnabled(GraphicsPipelineTransitionBits *transition,
                                         bool rasterizerDiscardEnabled);
 
@@ -645,7 +635,6 @@ class GraphicsPipelineDesc final
                         VkBlendFactor dstFactor);
     void updateBlendEnabled(GraphicsPipelineTransitionBits *transition,
                             gl::DrawBufferMask blendEnabledMask);
-    void updateBlendColor(GraphicsPipelineTransitionBits *transition, const gl::ColorF &color);
     void updateBlendFuncs(GraphicsPipelineTransitionBits *transition,
                           const gl::BlendStateExt &blendStateExt,
                           gl::DrawBufferMask attachmentMask);
@@ -671,8 +660,8 @@ class GraphicsPipelineDesc final
     void setDepthFunc(VkCompareOp op);
     void setDepthClampEnabled(bool enabled);
     void setStencilTestEnabled(bool enabled);
-    void setStencilFrontFuncs(uint8_t reference, VkCompareOp compareOp, uint8_t compareMask);
-    void setStencilBackFuncs(uint8_t reference, VkCompareOp compareOp, uint8_t compareMask);
+    void setStencilFrontFuncs(VkCompareOp compareOp);
+    void setStencilBackFuncs(VkCompareOp compareOp);
     void setStencilFrontOps(VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp);
     void setStencilBackOps(VkStencilOp failOp, VkStencilOp passOp, VkStencilOp depthFailOp);
     void setStencilFrontWriteMask(uint8_t mask);
@@ -689,26 +678,16 @@ class GraphicsPipelineDesc final
                                   const gl::DepthStencilState &depthStencilState,
                                   const gl::Framebuffer *drawFramebuffer);
     void updateStencilFrontFuncs(GraphicsPipelineTransitionBits *transition,
-                                 GLint ref,
                                  const gl::DepthStencilState &depthStencilState);
     void updateStencilBackFuncs(GraphicsPipelineTransitionBits *transition,
-                                GLint ref,
                                 const gl::DepthStencilState &depthStencilState);
     void updateStencilFrontOps(GraphicsPipelineTransitionBits *transition,
                                const gl::DepthStencilState &depthStencilState);
     void updateStencilBackOps(GraphicsPipelineTransitionBits *transition,
                               const gl::DepthStencilState &depthStencilState);
-    void updateStencilFrontWriteMask(GraphicsPipelineTransitionBits *transition,
-                                     const gl::DepthStencilState &depthStencilState,
-                                     const gl::Framebuffer *drawFramebuffer);
-    void updateStencilBackWriteMask(GraphicsPipelineTransitionBits *transition,
-                                    const gl::DepthStencilState &depthStencilState,
-                                    const gl::Framebuffer *drawFramebuffer);
 
     // Depth offset.
     void updatePolygonOffsetFillEnabled(GraphicsPipelineTransitionBits *transition, bool enabled);
-    void updatePolygonOffset(GraphicsPipelineTransitionBits *transition,
-                             const gl::RasterizerState &rasterState);
 
     // Tessellation
     void updatePatchVertices(GraphicsPipelineTransitionBits *transition, GLuint value);
@@ -855,8 +834,9 @@ static_assert(sizeof(PipelineLayoutDesc) == sizeof(DescriptorSetArray<Descriptor
                                                 sizeof(PackedPushConstantRange) + sizeof(uint32_t),
               "Unexpected Size");
 
-struct YcbcrConversionDesc final
+class YcbcrConversionDesc final
 {
+  public:
     YcbcrConversionDesc();
     ~YcbcrConversionDesc();
     YcbcrConversionDesc(const YcbcrConversionDesc &other);
@@ -876,7 +856,12 @@ struct YcbcrConversionDesc final
                 VkFilter chromaFilter,
                 VkComponentMapping components,
                 angle::FormatID intendedFormatID);
+    void updateChromaFilter(VkFilter filter);
+    uint64_t getExternalFormat() const { return mIsExternalFormat ? mExternalOrVkFormat : 0; }
 
+    angle::Result init(Context *context, SamplerYcbcrConversion *conversionOut) const;
+
+  private:
     // If the sampler needs to convert the image content (e.g. from YUV to RGB) then
     // mExternalOrVkFormat will be non-zero. The value is either the external format
     // as returned by vkGetAndroidHardwareBufferPropertiesANDROID or a YUV VkFormat.
@@ -1117,6 +1102,12 @@ struct ImageOrBufferViewSubresourceSerial
     ImageOrBufferViewSerial viewSerial;
     ImageSubresourceRange subresource;
 };
+
+inline bool operator==(const ImageOrBufferViewSubresourceSerial &a,
+                       const ImageOrBufferViewSubresourceSerial &b)
+{
+    return a.viewSerial == b.viewSerial && a.subresource == b.subresource;
+}
 
 constexpr ImageOrBufferViewSubresourceSerial kInvalidImageOrBufferViewSubresourceSerial = {
     kInvalidImageOrBufferViewSerial, kInvalidImageSubresourceRange};
@@ -1481,11 +1472,14 @@ struct hash<rx::vk::SamplerDesc>
 };
 
 // See Resource Serial types defined in vk_utils.h.
-#define ANGLE_HASH_VK_SERIAL(Type)                                                          \
-    template <>                                                                             \
-    struct hash<rx::vk::Type##Serial>                                                       \
-    {                                                                                       \
-        size_t operator()(const rx::vk::Type##Serial &key) const { return key.getValue(); } \
+#define ANGLE_HASH_VK_SERIAL(Type)                               \
+    template <>                                                  \
+    struct hash<rx::vk::Type##Serial>                            \
+    {                                                            \
+        size_t operator()(const rx::vk::Type##Serial &key) const \
+        {                                                        \
+            return key.getValue();                               \
+        }                                                        \
     };
 
 ANGLE_VK_SERIAL_OP(ANGLE_HASH_VK_SERIAL)
@@ -1564,6 +1558,12 @@ class CacheStats final : angle::NonCopyable
         mHitCount  = 0;
         mMissCount = 0;
         mSize      = 0;
+    }
+
+    void resetHitAndMissCount()
+    {
+        mHitCount  = 0;
+        mMissCount = 0;
     }
 
   private:
@@ -1685,6 +1685,9 @@ class GraphicsPipelineCache final : public HasCacheStats<VulkanCacheType::Graphi
                               activeAttribLocationsMask, programAttribsTypeMask, missingOutputsMask,
                               shaders, specConsts, desc, descPtrOut, pipelineOut);
     }
+
+    // Helper for VulkanPipelineCachePerf that resets the object without destroying any object.
+    void reset();
 
   private:
     angle::Result insertPipeline(ContextVk *contextVk,

@@ -109,19 +109,6 @@
       "is_debug": false,
       "is_lsan": true,
       "target_os": "chromeos",
-      "use_goma": true,
-      "v8_enable_verify_heap": true
-    }
-  },
-  "ChromiumOS ASAN Release (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "is_asan": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "is_lsan": true,
-      "target_os": "chromeos",
       "use_rbe": true,
       "use_remoteexec": true,
       "v8_enable_verify_heap": true
@@ -356,8 +343,9 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true,
-      "use_libfuzzer": true
+      "use_libfuzzer": true,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Libfuzzer Upload iOS Catalyst Debug": {
@@ -365,6 +353,7 @@
       "enable_dsyms": false,
       "enable_remoting": false,
       "ios_set_attributes_for_xcode_project_generation": false,
+      "is_asan": true,
       "is_component_build": false,
       "is_debug": true,
       "symbol_level": 1,
@@ -372,8 +361,7 @@
       "target_environment": "catalyst",
       "target_os": "ios",
       "use_goma": true,
-      "use_libfuzzer": true,
-      "use_lld": false
+      "use_libfuzzer": true
     }
   },
   "MSAN Release (chained origins)": {

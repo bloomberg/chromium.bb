@@ -9,6 +9,10 @@
  */
 #include "modules/rtp_rtcp/source/time_util.h"
 
+#include <cstdint>
+#include <limits>
+
+#include "api/units/time_delta.h"
 #include "test/gtest.h"
 
 namespace webrtc {
@@ -93,6 +97,32 @@ TEST(TimeUtilTest, SaturatedToCompactNtp) {
       CompactNtpRttToTimeDelta(SaturatedToCompactNtp(TimeDelta::Micros(5'515)))
           .us(),
       5'515, 16);
+}
+
+TEST(TimeUtilTest, ToNtpUnits) {
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Zero()), 0);
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Seconds(1)), int64_t{1} << 32);
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Seconds(-1)), -(int64_t{1} << 32));
+
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Millis(500)), int64_t{1} << 31);
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Millis(-1'500)), -(int64_t{3} << 31));
+
+  // Smallest TimeDelta that can be converted without precision loss.
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Micros(15'625)), int64_t{1} << 26);
+
+  // 1 us ~= 4'294.97 NTP units. ToNtpUnits makes no rounding promises.
+  EXPECT_GE(ToNtpUnits(TimeDelta::Micros(1)), 4'294);
+  EXPECT_LE(ToNtpUnits(TimeDelta::Micros(1)), 4'295);
+
+  // Test near maximum and minimum supported values.
+  static constexpr int64_t k35MinutesInNtpUnits = int64_t{35 * 60} << 32;
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Seconds(35 * 60)), k35MinutesInNtpUnits);
+  EXPECT_EQ(ToNtpUnits(TimeDelta::Seconds(-35 * 60)), -k35MinutesInNtpUnits);
+
+  // The result for too large or too small values is unspecified, but
+  // shouldn't cause integer overflow or other undefined behavior.
+  ToNtpUnits(TimeDelta::Micros(std::numeric_limits<int64_t>::max() - 1));
+  ToNtpUnits(TimeDelta::Micros(std::numeric_limits<int64_t>::min() + 1));
 }
 
 }  // namespace webrtc

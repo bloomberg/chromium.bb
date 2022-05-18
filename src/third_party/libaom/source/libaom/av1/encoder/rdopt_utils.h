@@ -395,19 +395,39 @@ static TX_MODE select_tx_mode(
     return TX_MODE_SELECT;
   }
 }
-// Checks the conditions to enable winner mode processing
-static INLINE int is_winner_mode_processing_enabled(
-    const struct AV1_COMP *cpi, const MACROBLOCK *const x,
-    MB_MODE_INFO *const mbmi, const PREDICTION_MODE best_mode) {
-  const SPEED_FEATURES *sf = &cpi->sf;
 
+// Checks the conditions to disable winner mode processing
+static INLINE int bypass_winner_mode_processing(const MACROBLOCK *const x,
+                                                const SPEED_FEATURES *sf,
+                                                int use_txfm_skip,
+                                                int actual_txfm_skip) {
   // Disable winner mode processing for blocks with low source variance.
   // The aggressiveness of this pruning logic reduces as qindex increases.
   // The threshold decreases linearly from 64 as qindex varies from 0 to 255.
-  if (sf->winner_mode_sf.prune_winner_mode_processing_using_src_var) {
+  if (sf->winner_mode_sf.prune_winner_mode_eval_level == 1) {
     const unsigned int src_var_thresh = 64 - 48 * x->qindex / (MAXQ + 1);
-    if (x->source_variance < src_var_thresh) return 0;
+    if (x->source_variance < src_var_thresh) return 1;
+  } else if (sf->winner_mode_sf.prune_winner_mode_eval_level >= 2) {
+    // Do not skip winner mode evaluation at low quantizers if normal mode's
+    // transform search was too aggressive.
+    if (sf->rd_sf.perform_coeff_opt >= 5 && x->qindex <= 70) return 0;
+
+    if (use_txfm_skip || actual_txfm_skip) return 1;
   }
+
+  return 0;
+}
+
+// Checks the conditions to enable winner mode processing
+static INLINE int is_winner_mode_processing_enabled(const struct AV1_COMP *cpi,
+                                                    const MACROBLOCK *const x,
+                                                    MB_MODE_INFO *const mbmi,
+                                                    int actual_txfm_skip) {
+  const SPEED_FEATURES *sf = &cpi->sf;
+  const PREDICTION_MODE best_mode = mbmi->mode;
+
+  if (bypass_winner_mode_processing(x, sf, mbmi->skip_txfm, actual_txfm_skip))
+    return 0;
 
   // TODO(any): Move block independent condition checks to frame level
   if (is_inter_block(mbmi)) {
@@ -588,10 +608,17 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       set_tx_type_prune(sf, txfm_params,
                         sf->tx_sf.tx_type_search.winner_mode_tx_type_pruning,
                         1);
-      reset_mb_rd_record(x->txfm_search_info.mb_rd_record);
       break;
     default: assert(0);
   }
+
+  // Rd record collected at a specific mode evaluation stage can not be used
+  // across other evaluation stages as the transform parameters are different.
+  // Hence, reset mb rd record whenever mode evaluation stage type changes.
+  if (txfm_params->mode_eval_type != mode_eval_type)
+    reset_mb_rd_record(x->txfm_search_info.mb_rd_record);
+
+  txfm_params->mode_eval_type = mode_eval_type;
 }
 
 // Similar to store_cfl_required(), but for use during the RDO process,

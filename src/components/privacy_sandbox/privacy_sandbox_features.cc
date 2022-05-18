@@ -14,8 +14,9 @@ const base::FeatureParam<bool> kPrivacySandboxSettings3ConsentRequired{
     &kPrivacySandboxSettings3, "consent-required", false};
 const base::FeatureParam<bool> kPrivacySandboxSettings3NoticeRequired{
     &kPrivacySandboxSettings3, "notice-required", false};
-const base::FeatureParam<bool> kPrivacySandboxSettings3DisableDialogForTesting{
-    &kPrivacySandboxSettings3, "disable-dialog-for-testing", false};
+const base::FeatureParam<bool> kPrivacySandboxSettings3NewNotice{
+    &kPrivacySandboxSettings3, "new-notice", false};
+
 const base::FeatureParam<bool>
     kPrivacySandboxSettings3ForceShowConsentForTesting{
         &kPrivacySandboxSettings3, "force-show-consent-for-testing", false};
@@ -24,9 +25,14 @@ const base::FeatureParam<bool>
         &kPrivacySandboxSettings3, "force-show-notice-for-testing", false};
 const base::FeatureParam<bool> kPrivacySandboxSettings3ShowSampleDataForTesting{
     &kPrivacySandboxSettings3, "show-sample-data", false};
+const base::FeatureParam<bool> kPrivacySandboxSettings3DisableDialogForTesting{
+    &kPrivacySandboxSettings3, "disable-dialog-for-testing", false};
 
 const base::Feature kOverridePrivacySandboxSettingsLocalTesting{
     "OverridePrivacySandboxSettingsLocalTesting",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDisablePrivacySandboxPrompts{
+    "DisablePrivacySandboxPrompts", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace privacy_sandbox

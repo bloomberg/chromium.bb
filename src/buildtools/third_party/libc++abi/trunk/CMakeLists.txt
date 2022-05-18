@@ -198,6 +198,7 @@ set(LIBCXXABI_TEST_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}/test/lit.site.cfg.in" CAC
 if (NOT IS_ABSOLUTE "${LIBCXXABI_TEST_CONFIG}")
   set(LIBCXXABI_TEST_CONFIG "${CMAKE_CURRENT_SOURCE_DIR}/test/configs/${LIBCXXABI_TEST_CONFIG}")
 endif()
+message(STATUS "Using libc++abi testing configuration: ${LIBCXXABI_TEST_CONFIG}")
 set(LIBCXXABI_TEST_PARAMS "" CACHE STRING
     "A list of parameters to run the Lit test suite with.")
 
@@ -276,7 +277,7 @@ endif()
 # Configure compiler. Must happen after setting the target flags.
 include(config-ix)
 
-if (LIBCXXABI_HAS_NOSTDINCXX_FLAG)
+if (CXX_SUPPORTS_NOSTDINCXX_FLAG)
   list(APPEND LIBCXXABI_COMPILE_FLAGS -nostdinc++)
   # cmake 3.14 and above remove system include paths that are explicitly
   # passed on the command line.  We build with -nostdinc++ and explicitly add
@@ -497,7 +498,7 @@ if (LIBCXXABI_BAREMETAL)
     add_definitions(-DLIBCXXABI_BAREMETAL)
 endif()
 
-if (LIBCXXABI_HAS_COMMENT_LIB_PRAGMA)
+if (C_SUPPORTS_COMMENT_LIB_PRAGMA)
   if (LIBCXXABI_HAS_PTHREAD_LIB)
     add_definitions(-D_LIBCXXABI_LINK_PTHREAD_LIB)
   endif()

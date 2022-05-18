@@ -158,7 +158,6 @@ void SkParticleEffectParams::prepare(const skresources::ResourceProvider* resour
         }
 
         SkSL::Program::Settings settings;
-        settings.fRemoveDeadFunctions = false;
         settings.fExternalFunctions = &externalFns;
 
         auto program = compiler.convertProgram(SkSL::ProgramKind::kGeneric, code, settings);
@@ -487,8 +486,7 @@ void SkParticleEffect::update(double now) {
 
 void SkParticleEffect::draw(SkCanvas* canvas) {
     if (this->isAlive() && fParams->fDrawable) {
-        SkPaint paint;
-        fParams->fDrawable->draw(canvas, fParticles, fCount, paint);
+        fParams->fDrawable->draw(canvas, fParticles, fCount);
     }
 }
 

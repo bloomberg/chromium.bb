@@ -47,6 +47,8 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.MaxAndroidSdkLevel;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingAsyncActionType;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -327,12 +329,14 @@ public class ExternalNavigationHandlerTest {
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
                 .withHasUserGesture(false)
-                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
         checkUrl("http://youtube.com://")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
                 .withHasUserGesture(false)
-                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @Test
@@ -1835,8 +1839,50 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SuppressLint("SdCardPath")
     @SmallTest
-    public void testFileAccess() {
+    @MaxAndroidSdkLevel(Build.VERSION_CODES.S)
+    public void testFileAccessHtml() {
         String fileUrl = "file:///sdcard/Downloads/test.html";
+
+        mUrlHandler.mShouldRequestFileAccess = false;
+        // Verify no overrides if file access is allowed (under different load conditions).
+        checkUrl(fileUrl).expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+        checkUrl(fileUrl)
+                .withPageTransition(PageTransition.RELOAD)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+        checkUrl(fileUrl)
+                .withPageTransition(PageTransition.AUTO_TOPLEVEL)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+
+        mUrlHandler.mShouldRequestFileAccess = true;
+        // Verify that the file intent action is triggered if file access is not allowed.
+        checkUrl(fileUrl)
+                .withPageTransition(PageTransition.AUTO_TOPLEVEL)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION,
+                        OverrideUrlLoadingAsyncActionType.UI_GATING_BROWSER_NAVIGATION, START_FILE);
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(33) // TODO(twellington): Replace with version code when available.
+    public void testFileAccessHtml_AndroidT() {
+        String fileUrl = "file:///sdcard/Downloads/test.html";
+
+        mUrlHandler.mShouldRequestFileAccess = true;
+        // Verify that the file intent is not triggered if the mime type can't be handled.
+        checkUrl(fileUrl)
+                .withPageTransition(PageTransition.AUTO_TOPLEVEL)
+                .withIsRendererInitiated(false)
+                .expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SuppressLint("SdCardPath")
+    @SmallTest
+    public void testFileAccessImage() {
+        String fileUrl = "file://file.png";
 
         mUrlHandler.mShouldRequestFileAccess = false;
         // Verify no overrides if file access is allowed (under different load conditions).
@@ -2546,11 +2592,6 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean blockExternalFormRedirectsWithoutGesture() {
-            return true;
-        }
-
-        @Override
         protected boolean canLaunchIncognitoIntent(Intent intent, Context context) {
             mStartActivityInIncognitoIntent = intent;
             mStartIncognitoIntentCalled = true;
@@ -2587,12 +2628,12 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        protected boolean shouldRequestFileAccess(GURL url) {
+        protected boolean shouldRequestFileAccess(GURL url, String permissionNeeded) {
             return mShouldRequestFileAccess;
         }
 
         @Override
-        protected void startFileIntent(ExternalNavigationParams params) {
+        protected void startFileIntent(ExternalNavigationParams params, String permissionNeeded) {
             mStartFileIntentCalled = true;
         }
 

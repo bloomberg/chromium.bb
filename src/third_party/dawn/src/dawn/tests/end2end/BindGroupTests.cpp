@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+#include <vector>
+
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
@@ -34,7 +37,7 @@ class BindGroupTests : public DawnTest {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
         return encoder.Finish();
     }
@@ -476,7 +479,7 @@ TEST_P(BindGroupTests, MultipleEntryPointsWithMultipleNonZeroGroups) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(cp);
         pass.SetBindGroup(0, bindGroup0);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
         cb = encoder.Finish();
         queue.Submit(1, &cb);
@@ -507,7 +510,7 @@ TEST_P(BindGroupTests, MultipleEntryPointsWithMultipleNonZeroGroups) {
         pass.SetBindGroup(0, bindGroup0);
         pass.SetBindGroup(1, bindGroup1);
         pass.SetBindGroup(2, bindGroup2);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
         cb = encoder.Finish();
         queue.Submit(1, &cb);
@@ -540,7 +543,7 @@ TEST_P(BindGroupTests, MultipleEntryPointsWithMultipleNonZeroGroups) {
         pass.SetBindGroup(0, bindGroup0);
         pass.SetBindGroup(1, bindGroup1);
         pass.SetBindGroup(2, bindGroup2);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
         cb = encoder.Finish();
         queue.Submit(1, &cb);
@@ -1059,7 +1062,7 @@ TEST_P(BindGroupTests, DynamicOffsetOrder) {
     wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
     computePassEncoder.SetPipeline(pipeline);
     computePassEncoder.SetBindGroup(0, bindGroup, offsets.size(), offsets.data());
-    computePassEncoder.Dispatch(1);
+    computePassEncoder.DispatchWorkgroups(1);
     computePassEncoder.End();
 
     wgpu::CommandBuffer commands = commandEncoder.Finish();
@@ -1141,7 +1144,7 @@ TEST_P(BindGroupTests, DynamicAndNonDynamicBindingsDoNotConflictAfterRemapping) 
         wgpu::ComputePassEncoder computePassEncoder = commandEncoder.BeginComputePass();
         computePassEncoder.SetPipeline(pipeline);
         computePassEncoder.SetBindGroup(0, bindGroup, offsets.size(), offsets.data());
-        computePassEncoder.Dispatch(1);
+        computePassEncoder.DispatchWorkgroups(1);
         computePassEncoder.End();
 
         wgpu::CommandBuffer commands = commandEncoder.Finish();
@@ -1361,7 +1364,7 @@ TEST_P(BindGroupTests, EmptyLayout) {
     wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
     pass.SetPipeline(pipeline);
     pass.SetBindGroup(0, bg);
-    pass.Dispatch(1);
+    pass.DispatchWorkgroups(1);
     pass.End();
 
     wgpu::CommandBuffer commands = encoder.Finish();
@@ -1560,7 +1563,7 @@ TEST_P(BindGroupTests, ReallyLargeBindGroup) {
     wgpu::ComputePassEncoder pass = commandEncoder.BeginComputePass();
     pass.SetPipeline(cp);
     pass.SetBindGroup(0, bg);
-    pass.Dispatch(1, 1, 1);
+    pass.DispatchWorkgroups(1, 1, 1);
     pass.End();
 
     wgpu::CommandBuffer commands = commandEncoder.Finish();
@@ -1598,7 +1601,7 @@ TEST_P(BindGroupTests, CreateWithDestroyedResource) {
         wgpu::TextureDescriptor textureDesc;
         textureDesc.usage = wgpu::TextureUsage::TextureBinding;
         textureDesc.size = {1, 1, 1};
-        textureDesc.format = wgpu::TextureFormat::BGRA8Unorm;
+        textureDesc.format = wgpu::TextureFormat::RGBA8Unorm;
 
         // Create view, then destroy.
         {

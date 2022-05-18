@@ -113,6 +113,10 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
     RequestSingleScriptAvailability(GetOriginWithoutScript());
   }
 
+  void RequestSingleScriptAvailability(const url::Origin& origin) {
+    fetcher_->FetchScriptAvailability(origin, GenerateResponseCallback(origin));
+  }
+
   int GetNumberOfPendingRequests() {
     return test_url_loader_factory_->NumPending();
   }
@@ -124,10 +128,6 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
   PasswordScriptsFetcherImpl* fetcher() { return fetcher_.get(); }
 
  private:
-  void RequestSingleScriptAvailability(const url::Origin& origin) {
-    fetcher_->FetchScriptAvailability(origin, GenerateResponseCallback(origin));
-  }
-
   void RecordResponse(url::Origin origin, bool has_script) {
     const auto& it = recorded_responses_.find(origin);
     if (it != recorded_responses_.end()) {
@@ -217,6 +217,32 @@ TEST_F(PasswordScriptsFetcherImplTest, SlowResponse) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.PasswordScriptsFetcher.CacheState",
       PasswordScriptsFetcher::CacheState::kWaiting, 1u);
+}
+
+TEST_F(PasswordScriptsFetcherImplTest, NoHttpSupport) {
+  fetcher()->PrewarmCache();
+  EXPECT_EQ(1, GetNumberOfPendingRequests());
+  SimulateResponseWithContent(
+      R"({
+        "test.com":
+          {
+            "domains": ["https://test.com", "http://wrong.scheme.test.com"],
+            "min_version": "86"
+          }
+        })");
+  base::RunLoop().RunUntilIdle();
+
+  const url::Origin kOriginWithHttpScheme =
+      url::Origin::Create(GURL("http://wrong.scheme.test.com"));
+  const url::Origin kOriginWithHttpsScheme =
+      url::Origin::Create(GURL("https://test.com"));
+
+  RequestSingleScriptAvailability(kOriginWithHttpsScheme);
+  RequestSingleScriptAvailability(kOriginWithHttpScheme);
+  EXPECT_THAT(recorded_responses(),
+              UnorderedElementsAre(Pair(kOriginWithHttpsScheme, true),
+                                   Pair(kOriginWithHttpScheme, false)));
+  EXPECT_EQ(0, GetNumberOfPendingRequests());
 }
 
 TEST_F(PasswordScriptsFetcherImplTest, NoPrewarmCache) {
@@ -431,6 +457,34 @@ TEST_F(PasswordScriptsFetcherImplTest, DebugInformationForInternals) {
   EXPECT_EQ(
       "https://www.gstatic.com/chrome/duplex/change_password_scripts.json",
       *script_list_url);
+}
+
+TEST_F(PasswordScriptsFetcherImplTest, CheckCacheEntries) {
+  fetcher()->PrewarmCache();
+  EXPECT_EQ(1, GetNumberOfPendingRequests());
+
+  // Cache should still be empty, too.
+  base::Value::List cache_entries = fetcher()->GetCacheEntries();
+  EXPECT_EQ(cache_entries.size(), 0u);
+
+  SimulateResponse();
+  EXPECT_EQ(0, GetNumberOfPendingRequests());
+
+  // Cache should now contain three entries.
+  cache_entries = fetcher()->GetCacheEntries();
+  EXPECT_EQ(cache_entries.size(), 3u);
+
+  std::vector<std::string> urls;
+  // Only `kOriginWithoutScript` is not expected to have a script.
+  for (auto it = cache_entries.begin(); it != cache_entries.end(); ++it) {
+    const std::string* url = it->GetDict().FindString("url");
+    ASSERT_TRUE(url);
+    urls.push_back(*url);
+  }
+
+  // There should be entries for all sites with a script.
+  EXPECT_THAT(urls, UnorderedElementsAre(kOriginWithScript1, kOriginWithScript2,
+                                         kOriginWithScript3));
 }
 
 }  // namespace password_manager

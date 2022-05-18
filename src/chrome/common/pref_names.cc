@@ -136,6 +136,12 @@ const char kSupervisedUserApprovedExtensions[] =
     "profile.managed.approved_extensions";
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS) && BUILDFLAG(ENABLE_EXTENSIONS)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+// Integer pref to record the day id (number of days since origin of time) when
+// supervised user metrics were last recorded.
+const char kSupervisedUserMetricsDayId[] = "supervised_user.metrics.day_id";
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
 // Stores the email address associated with the google account of the custodian
 // of the supervised user, set when the supervised user is created.
 const char kSupervisedUserCustodianEmail[] = "profile.managed.custodian_email";
@@ -278,6 +284,7 @@ const char kWebKitSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SERIF;
 const char kWebKitSansSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SANSERIF;
 const char kWebKitCursiveFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_CURSIVE;
 const char kWebKitFantasyFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_FANTASY;
+const char kWebKitMathFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_MATH;
 const char kWebKitStandardFontFamilyArabic[] =
     "webkit.webprefs.fonts.standard.Arab";
 #if BUILDFLAG(IS_WIN)
@@ -368,6 +375,7 @@ const char kWebKitSansSerifFontFamily[] =
     "webkit.webprefs.fonts.sansserif.Zyyy";
 const char kWebKitCursiveFontFamily[] = "webkit.webprefs.fonts.cursive.Zyyy";
 const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fonts.fantasy.Zyyy";
+const char kWebKitMathFontFamily[] = "webkit.webprefs.fonts.math.Zyyy";
 const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
 const char kWebKitDefaultFixedFontSize[] =
     "webkit.webprefs.default_fixed_font_size";
@@ -483,11 +491,6 @@ const char kInsightsExtensionEnabled[] = "insights_extension_enabled";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// An integer preference to store the number of times the Chrome OS Account
-// Manager welcome screen has been shown.
-const char kAccountManagerNumTimesWelcomeScreenShown[] =
-    "account_manager.num_times_welcome_screen_shown";
-
 // A boolean pref set to true if touchpad tap-to-click is enabled.
 const char kTapToClickEnabled[] = "settings.touchpad.enable_tap_to_click";
 
@@ -716,10 +719,6 @@ const char kMultiProfileUserBehavior[] = "settings.multiprofile_user_behavior";
 // A boolean preference indicating whether user has seen first-run tutorial
 // already.
 const char kFirstRunTutorialShown[] = "settings.first_run_tutorial_shown";
-
-// The total number of seconds that the machine has spent sitting on the
-// OOBE screen.
-const char kTimeOnOobe[] = "settings.time_on_oobe";
 
 // List of mounted file systems via the File System Provider API. Used to
 // restore them after a reboot.
@@ -1259,14 +1258,6 @@ const char kPluginsShowDetails[] = "plugins.show_details";
 // Boolean that indicates whether outdated plugins are allowed or not.
 const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-// Dictionary holding plugins metadata.
-const char kPluginsMetadata[] = "plugins.metadata";
-
-// Last update time of plugins resource cache.
-const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
-#endif
-
 // Int64 containing the internal value of the time at which the default browser
 // infobar was last dismissed by the user.
 const char kDefaultBrowserLastDeclined[] =
@@ -1569,7 +1560,7 @@ const char kDeletePrintJobHistoryAllowed[] =
 // An integer pref specifying the fallback behavior for sites outside of content
 // packs. One of:
 // 0: Allow (does nothing)
-// 1: Warn.
+// 1: Warn. [Deprecated]
 // 2: Block.
 const char kDefaultSupervisedUserFilteringBehavior[] =
     "profile.managed.default_filtering_behavior";
@@ -1619,6 +1610,9 @@ const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
+
+const char kHasSeenSmartLockSignInRemovedNotification[] =
+    "easy_unlock.has_seen_smart_lock_sign_in_removed_notification";
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Used to indicate whether or not the toolbar redesign bubble has been shown
@@ -1725,6 +1719,13 @@ const char kManagedWebHidAllowDevicesForUrls[] =
 // policy.
 const char kManagedWebHidAllowDevicesWithHidUsagesForUrls[] =
     "managed.web_hid_allow_devices_with_hid_usages_for_urls";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
+// Boolean indicating whether the user has given consent to use Autofill
+// Assistant. Prefs are not synced across devices or platforms and pref
+// keys differ.
+const char kAutofillAssistantOnDesktopEnabled[] = "autofill_assistant.enabled";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 // Directory of the last profile used.
@@ -2056,13 +2057,19 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // A list of dictionaries for managing Web Apps.
 const char kWebAppSettings[] = "profile.web_app.policy_settings";
 
-// A list of dictionaries for managed configurations. Each dictionary contains
-// 3 strings -- origin to be configured, link to the configuration, and the
-// hashed value to that configuration.
+// A map of App ID to install URLs to keep track of preinstalled web apps
+// after they have been deleted.
+const char kUserUninstalledPreinstalledWebAppPref[] =
+    "web_app.app_id.install_url";
+
+// A list of dictionaries for managed configurations. Each dictionary
+// contains 3 strings -- origin to be configured, link to the configuration,
+// and the hashed value to that configuration.
 const char kManagedConfigurationPerOrigin[] =
     "profile.managed_configuration.list";
-// Dictionary that maps the hash of the last downloded managed configuration for
-// a particular origin.
+
+// Dictionary that maps the hash of the last downloaded managed configuration
+// for a particular origin.
 const char kLastManagedConfigurationHashForOrigin[] =
     "profile.managed_configuration.last_hash";
 
@@ -2460,10 +2467,6 @@ const char kDeviceDMToken[] = "device_dm_token";
 // the pref name is UsersLRUInputMethods for compatibility with previous
 // versions.
 const char kUsersLastInputMethod[] = "UsersLRUInputMethod";
-
-// A dictionary pref of the echo offer check flag. It sets offer info when
-// an offer is checked.
-const char kEchoCheckedOffers[] = "EchoCheckedOffers";
 
 // Key name of a dictionary in local state to store cached multiprofle user
 // behavior policy value.
@@ -2901,6 +2904,10 @@ const char kSigninAllowedOnNextStartup[] = "signin.allowed_on_next_startup";
 const char kSigninInterceptionEnabled[] = "signin.interception_enabled";
 
 #if BUILDFLAG(IS_CHROMEOS)
+// A dictionary pref of the echo offer check flag. It sets offer info when
+// an offer is checked.
+const char kEchoCheckedOffers[] = "EchoCheckedOffers";
+
 // Boolean pref indicating whether the user is allowed to create secondary
 // profiles in Lacros browser. This is set by a policy, and the default value
 // for managed users is false.
@@ -2961,9 +2968,76 @@ const char kAnimationPolicy[] = "settings.a11y.animation_policy";
 const char kSecurityKeyPermitAttestation[] = "securitykey.permit_attestation";
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// In Lacros, these prefs store the expected value of the equivalent ash pref
+// used by extensions. The values are sent to ash.
+
+// A boolean pref which determines whether focus highlighting is enabled.
+const char kLacrosAccessibilityFocusHighlightEnabled[] =
+    "lacros.settings.a11y.focus_highlight";
+
+// A boolean pref storing the enabled status of the Docked Magnifier feature.
+const char kLacrosDockedMagnifierEnabled[] = "lacros.docked_magnifier.enabled";
+
+// A boolean pref which determines whether autoclick is enabled.
+const char kLacrosAccessibilityAutoclickEnabled[] =
+    "lacros.settings.a11y.autoclick";
+
+// A boolean pref which determines whether caret highlighting is enabled.
+const char kLacrosAccessibilityCaretHighlightEnabled[] =
+    "lacros.settings.a11y.caret_highlight";
+
+// A boolean pref which determines whether custom cursor color is enabled.
+const char kLacrosAccessibilityCursorColorEnabled[] =
+    "lacros.settings.a11y.cursor_color_enabled";
+
+// A boolean pref which determines whether cursor highlighting is enabled.
+const char kLacrosAccessibilityCursorHighlightEnabled[] =
+    "lacros.settings.a11y.cursor_highlight";
+
+// A boolean pref which determines whether dictation is enabled.
+const char kLacrosAccessibilityDictationEnabled[] =
+    "lacros.settings.a11y.dictation";
+
+// A boolean pref which determines whether high contrast is enabled.
+const char kLacrosAccessibilityHighContrastEnabled[] =
+    "lacros.settings.a11y.high_contrast_enabled";
+
+// A boolean pref which determines whether the large cursor feature is enabled.
+const char kLacrosAccessibilityLargeCursorEnabled[] =
+    "lacros.settings.a11y.large_cursor_enabled";
+
+// A boolean pref which determines whether screen magnifier is enabled.
+// NOTE: We previously had prefs named settings.a11y.screen_magnifier_type and
+// settings.a11y.screen_magnifier_type2, but we only shipped one type (full).
+// See http://crbug.com/170850 for history.
+const char kLacrosAccessibilityScreenMagnifierEnabled[] =
+    "lacros.ettings.a11y.screen_magnifier";
+
+// A boolean pref which determines whether select-to-speak is enabled.
+const char kLacrosAccessibilitySelectToSpeakEnabled[] =
+    "lacros.settings.a11y.select_to_speak";
+
+// A boolean pref which determines whether spoken feedback is enabled.
+const char kLacrosAccessibilitySpokenFeedbackEnabled[] =
+    "lacros.settings.accessibility";
+
+// A boolean pref which determines whether the sticky keys feature is enabled.
+const char kLacrosAccessibilityStickyKeysEnabled[] =
+    "lacros.settings.a11y.sticky_keys_enabled";
+
+// A boolean pref which determines whether Switch Access is enabled.
+const char kLacrosAccessibilitySwitchAccessEnabled[] =
+    "lacros.settings.a11y.switch_access.enabled";
+
+// A boolean pref which determines whether the virtual keyboard is enabled for
+// accessibility.  This feature is separate from displaying an onscreen keyboard
+// due to lack of a physical keyboard.
+const char kLacrosAccessibilityVirtualKeyboardEnabled[] =
+    "lacros.settings.a11y.virtual_keyboard";
+#endif
+
 const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";
-const char kBackgroundTracingSessionState[] =
-    "background_tracing.session_state";
 
 const char kAllowDinosaurEasterEgg[] = "allow_dinosaur_easter_egg";
 
@@ -3464,5 +3538,9 @@ const char kOriginAgentClusterDefaultEnabled[] =
 // sent by this client, across all profiles.
 const char kSCTAuditingHashdanceReportCount[] =
     "sct_auditing.hashdance_report_count";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kConsumerAutoUpdateToggle[] = "settings.consumer_auto_update_toggle";
+#endif
 
 }  // namespace prefs

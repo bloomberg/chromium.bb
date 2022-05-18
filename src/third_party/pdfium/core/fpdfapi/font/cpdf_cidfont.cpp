@@ -277,7 +277,7 @@ void LoadMetricsArray(const CPDF_Array* pArray,
 
 CPDF_CIDFont::CPDF_CIDFont(CPDF_Document* pDocument, CPDF_Dictionary* pFontDict)
     : CPDF_Font(pDocument, pFontDict) {
-  for (size_t i = 0; i < pdfium::size(m_CharBBox); ++i)
+  for (size_t i = 0; i < std::size(m_CharBBox); ++i)
     m_CharBBox[i] = FX_RECT(-1, -1, -1, -1);
 }
 
@@ -646,15 +646,16 @@ int CPDF_CIDFont::GetGlyphIndex(uint32_t unicode, bool* pVertGlyph) {
   if (m_pTTGSUBTable)
     return GetVerticalGlyph(index, pVertGlyph);
 
+  static constexpr uint32_t kGsubTag =
+      CFX_FontMapper::MakeTag('G', 'S', 'U', 'B');
   if (!m_Font.GetSubData()) {
     unsigned long length = 0;
-    int error = FT_Load_Sfnt_Table(face, FT_MAKE_TAG('G', 'S', 'U', 'B'), 0,
-                                   nullptr, &length);
+    int error = FT_Load_Sfnt_Table(face, kGsubTag, 0, nullptr, &length);
     if (!error)
       m_Font.SetSubData(FX_Alloc(uint8_t, length));
   }
-  int error = FT_Load_Sfnt_Table(face, FT_MAKE_TAG('G', 'S', 'U', 'B'), 0,
-                                 m_Font.GetSubData(), nullptr);
+  int error =
+      FT_Load_Sfnt_Table(face, kGsubTag, 0, m_Font.GetSubData(), nullptr);
   if (error || !m_Font.GetSubData())
     return index;
 
@@ -869,7 +870,7 @@ const uint8_t* CPDF_CIDFont::GetCIDTransform(uint16_t cid) const {
   if (m_Charset != CIDSET_JAPAN1 || m_pFontFile)
     return nullptr;
 
-  const auto* pEnd = kJapan1VerticalCIDs + pdfium::size(kJapan1VerticalCIDs);
+  const auto* pEnd = kJapan1VerticalCIDs + std::size(kJapan1VerticalCIDs);
   const auto* pTransform = std::lower_bound(
       kJapan1VerticalCIDs, pEnd, cid,
       [](const CIDTransform& entry, uint16_t cid) { return entry.cid < cid; });

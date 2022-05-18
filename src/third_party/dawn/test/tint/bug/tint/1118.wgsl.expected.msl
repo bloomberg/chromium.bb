@@ -1,3 +1,11 @@
+bug/tint/1118.wgsl:64:31 warning: 'dpdx' must only be called from uniform control flow
+  normalW = normalize(-(cross(dpdx(x_62), dpdy(x_64))));
+                              ^^^^
+
+bug/tint/1118.wgsl:46:19 note: reading from module-scope private variable 'fClipDistance3' may result in a non-uniform value
+  let x_9 : f32 = fClipDistance3;
+                  ^^^^^^^^^^^^^^
+
 #include <metal_stdlib>
 
 using namespace metal;
@@ -19,9 +27,9 @@ struct Scene {
 struct Material {
   /* 0x0000 */ float4 vDiffuseColor;
   /* 0x0010 */ packed_float3 vAmbientColor;
-  /* 0x001c */ float dummy;
+  /* 0x001c */ float placeholder;
   /* 0x0020 */ packed_float3 vEmissiveColor;
-  /* 0x002c */ float dummy2;
+  /* 0x002c */ float placeholder2;
 };
 
 struct Mesh {

@@ -62,10 +62,6 @@ module.exports = function (grunt) {
           'node_modules/typescript/lib/tsc.js',
           '--project', 'node.tsconfig.json',
           '--outDir', 'out-node/',
-          '--incremental', 'true',
-          '--tsBuildInfoFile', 'out-node/build.tsbuildinfo',
-          '--noEmit', 'false',
-          '--declaration', 'false'
         ],
       },
       'copy-assets': {

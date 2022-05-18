@@ -1,5 +1,19 @@
 export const description = `
-Execution Tests for the 'insertBits' builtin function
+Execution tests for the 'insertBits' builtin function
+
+S is i32 or u32
+T is S or vecN<S>
+@const fn insertBits(e: T, newbits:T, offset: u32, count: u32) -> T  Sets bits in an integer.
+
+When T is a scalar type, then:
+  w is the bit width of T
+  o = min(offset,w)
+  c = min(count, w - o)
+
+The result is e if c is 0.
+Otherwise, bits o..o+c-1 of the result are copied from bits 0..c-1 of newbits.
+Other bits of the result are copied from e.
+Component-wise when T is a vector.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
@@ -22,28 +36,8 @@ import { builtin } from './builtin.js';
 export const g = makeTestGroup(GPUTest);
 
 g.test('integer')
-  .uniqueId('xxxxxxxxxxxxxxxx')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-insertBits:
-T is i32, u32, vecN<i32>, or vecN<u32> insertBits(e: T, newbits:T, offset: u32, count: u32) -> T
-
-Sets bits in an integer.
-
-When T is a scalar type, then:
-
-* w is the bit width of T
-* o = min(offset,w)
-* c = min(count, w - o)
-* The result is e if c is 0.
-* Otherwise, bits o..o+c-1 of the result are copied from bits 0..c-1 of newbits. Other bits of the result are copied from e.
-Component-wise when T is a vector.
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`integer tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)

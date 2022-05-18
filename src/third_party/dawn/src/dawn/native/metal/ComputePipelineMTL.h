@@ -15,6 +15,8 @@
 #ifndef SRC_DAWN_NATIVE_METAL_COMPUTEPIPELINEMTL_H_
 #define SRC_DAWN_NATIVE_METAL_COMPUTEPIPELINEMTL_H_
 
+#include <vector>
+
 #include "dawn/native/ComputePipeline.h"
 
 #include "dawn/common/NSRef.h"
@@ -23,30 +25,32 @@
 
 namespace dawn::native::metal {
 
-    class Device;
+class Device;
 
-    class ComputePipeline final : public ComputePipelineBase {
-      public:
-        static Ref<ComputePipeline> CreateUninitialized(
-            Device* device,
-            const ComputePipelineDescriptor* descriptor);
-        static void InitializeAsync(Ref<ComputePipelineBase> computePipeline,
-                                    WGPUCreateComputePipelineAsyncCallback callback,
-                                    void* userdata);
+class ComputePipeline final : public ComputePipelineBase {
+  public:
+    static Ref<ComputePipeline> CreateUninitialized(Device* device,
+                                                    const ComputePipelineDescriptor* descriptor);
+    static void InitializeAsync(Ref<ComputePipelineBase> computePipeline,
+                                WGPUCreateComputePipelineAsyncCallback callback,
+                                void* userdata);
 
-        void Encode(id<MTLComputeCommandEncoder> encoder);
-        MTLSize GetLocalWorkGroupSize() const;
-        bool RequiresStorageBufferLength() const;
+    ComputePipeline(DeviceBase* device, const ComputePipelineDescriptor* descriptor);
+    ~ComputePipeline() override;
 
-      private:
-        using ComputePipelineBase::ComputePipelineBase;
-        MaybeError Initialize() override;
+    void Encode(id<MTLComputeCommandEncoder> encoder);
+    MTLSize GetLocalWorkGroupSize() const;
+    bool RequiresStorageBufferLength() const;
 
-        NSPRef<id<MTLComputePipelineState>> mMtlComputePipelineState;
-        MTLSize mLocalWorkgroupSize;
-        bool mRequiresStorageBufferLength;
-        std::vector<uint32_t> mWorkgroupAllocations;
-    };
+  private:
+    using ComputePipelineBase::ComputePipelineBase;
+    MaybeError Initialize() override;
+
+    NSPRef<id<MTLComputePipelineState>> mMtlComputePipelineState;
+    MTLSize mLocalWorkgroupSize;
+    bool mRequiresStorageBufferLength;
+    std::vector<uint32_t> mWorkgroupAllocations;
+};
 
 }  // namespace dawn::native::metal
 

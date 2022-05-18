@@ -13,7 +13,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
@@ -29,6 +31,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/utility/utility.h"
 
 namespace ash {
 
@@ -38,7 +41,12 @@ constexpr char kTestScreencastPath[] = "/root/test_screencast";
 constexpr char kTestScreencastName[] = "test_screencast";
 constexpr char kTestMediaFile[] = "test_screencast.webm";
 constexpr char kTestMetadataFile[] = "test_screencast.projector";
-// constexpr char kTestDataToWrite[] = "Data size of 16.";
+
+constexpr char kProjectorPendingScreencastBatchIOTaskDurationHistogramName[] =
+    "Ash.Projector.PendingScreencastBatchIOTaskDuration";
+constexpr char kProjectorPendingScreencastChangeIntervalHistogramName[] =
+    "Ash.Projector.PendingScreencastChangeInterval";
+
 // The test media file is 0.7 mb.
 constexpr int64_t kTestMediaFileBytes = 700 * 1024;
 // The test metadata file is 0.1 mb.
@@ -65,7 +73,7 @@ class PendingScreencastMangerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     pending_screencast_manager_ = std::make_unique<
-        PendingSreencastManager>(base::BindRepeating(
+        PendingScreencastManager>(base::BindRepeating(
         &PendingScreencastMangerBrowserTest::PendingScreencastChangeCallback,
         base::Unretained(this)));
   }
@@ -157,7 +165,7 @@ class PendingScreencastMangerBrowserTest : public InProcessBrowserTest {
                             int64_t total_bytes,
                             int64_t transferred_bytes) {
     syncing_status.item_events.emplace_back(
-        base::in_place, /*stable_id=*/1, /*group_id=*/1, path,
+        absl::in_place, /*stable_id=*/1, /*group_id=*/1, path,
         total_bytes == transferred_bytes
             ? drivefs::mojom::ItemEvent::State::kCompleted
             : drivefs::mojom::ItemEvent::State::kInProgress,
@@ -169,9 +177,11 @@ class PendingScreencastMangerBrowserTest : public InProcessBrowserTest {
   MOCK_METHOD1(PendingScreencastChangeCallback,
                void(const PendingScreencastSet&));
 
-  PendingSreencastManager* pending_screencast_manager() {
+  PendingScreencastManager* pending_screencast_manager() {
     return pending_screencast_manager_.get();
   }
+
+  base::HistogramTester histogram_tester_;
 
  private:
   drive::DriveIntegrationServiceFactory::FactoryCallback
@@ -180,7 +190,7 @@ class PendingScreencastMangerBrowserTest : public InProcessBrowserTest {
       service_factory_for_test_;
 
   std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
-  std::unique_ptr<PendingSreencastManager> pending_screencast_manager_;
+  std::unique_ptr<PendingScreencastManager> pending_screencast_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, ValidScreencast) {
@@ -202,6 +212,12 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, ValidScreencast) {
   EXPECT_CALL(*this, PendingScreencastChangeCallback(testing::_)).Times(1);
   pending_screencast_manager()->OnSyncingStatusUpdate(syncing_status);
   content::RunAllTasksUntilIdle();
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastChangeIntervalHistogramName,
+      /*count=*/0);
+  const base::TimeTicks last_pending_screencast_change_tick =
+      pending_screencast_manager()->last_pending_screencast_change_tick();
+  EXPECT_NE(base::TimeTicks(), last_pending_screencast_change_tick);
 
   const PendingScreencastSet pending_screencasts =
       pending_screencast_manager()->GetPendingScreencasts();
@@ -217,12 +233,43 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, ValidScreencast) {
   pending_screencast_manager()->OnSyncingStatusUpdate(syncing_status);
   content::RunAllTasksUntilIdle();
 
+  // Expects no report since PendingScreencastChangeCallback wasn't invoked.
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastChangeIntervalHistogramName,
+      /*count=*/0);
+  EXPECT_EQ(
+      last_pending_screencast_change_tick,
+      pending_screencast_manager()->last_pending_screencast_change_tick());
+
   // Tests PendingScreencastChangeCallback will be invoked if pending
   // screencast status changes.
   EXPECT_CALL(*this, PendingScreencastChangeCallback(testing::_)).Times(1);
   syncing_status.item_events.clear();
   pending_screencast_manager()->OnSyncingStatusUpdate(syncing_status);
   content::RunAllTasksUntilIdle();
+
+  // Since pending screencast set is empty, the last pending screencast change
+  // tick is reset to null:
+  EXPECT_EQ(
+      base::TimeTicks(),
+      pending_screencast_manager()->last_pending_screencast_change_tick());
+
+  const base::TimeDelta elapsed_time =
+      base::TimeTicks::Now() - last_pending_screencast_change_tick;
+  auto change_interval_samples = histogram_tester_.GetAllSamples(
+      kProjectorPendingScreencastChangeIntervalHistogramName);
+  // Expects only 1 sample.
+  EXPECT_EQ(1u, change_interval_samples.size());
+  // Expects the sample only have 1 count.
+  EXPECT_EQ(1, change_interval_samples.front().count);
+  // Since the end of `elapsed_time` is gotten from "base::TimeTicks::Now()"
+  // after PendingScreencastChangeCallback gets invoked. Expects `elapsed_time`
+  // is greater than the sample.
+  EXPECT_GT(elapsed_time.InMicroseconds(), change_interval_samples.front().min);
+
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/3);
 }
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, InvalidScreencasts) {
@@ -260,6 +307,9 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, InvalidScreencasts) {
   content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(pending_screencast_manager()->GetPendingScreencasts().empty());
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest,
@@ -285,6 +335,11 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest,
   content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(pending_screencast_manager()->GetPendingScreencasts().empty());
+
+  // There is no IO task for complete events.
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/0);
 }
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest,
@@ -343,6 +398,10 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest,
                               0};
     EXPECT_TRUE(pending_screencasts.find(ps) != pending_screencasts.end());
   }
+
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, UploadProgress) {
@@ -434,6 +493,9 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest, UploadProgress) {
   pending_screencast_manager()->OnSyncingStatusUpdate(syncing_status);
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(pending_screencast_manager()->GetPendingScreencasts().empty());
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/4);
 }
 
 // Test the comparison of pending screencast in a std::set.
@@ -541,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(PendingScreencastMangerBrowserTest,
 
   // Expect the screencast get removed from pending screencasts set .
   EXPECT_TRUE(pending_screencast_manager()->GetPendingScreencasts().empty());
+
+  histogram_tester_.ExpectTotalCount(
+      kProjectorPendingScreencastBatchIOTaskDurationHistogramName,
+      /*count=*/2);
 }
 
 class PendingScreencastMangerMultiProfileTest : public LoginManagerTest {
@@ -555,7 +621,7 @@ class PendingScreencastMangerMultiProfileTest : public LoginManagerTest {
     LoginManagerTest::SetUpOnMainThread();
 
     pending_screencast_manager_ =
-        std::make_unique<PendingSreencastManager>(base::BindLambdaForTesting(
+        std::make_unique<PendingScreencastManager>(base::BindLambdaForTesting(
             [&](const PendingScreencastSet& set) { base::DoNothing(); }));
   }
 
@@ -568,7 +634,7 @@ class PendingScreencastMangerMultiProfileTest : public LoginManagerTest {
   AccountId account_id1_;
   AccountId account_id2_;
   ash::LoginManagerMixin login_mixin_{&mixin_host_};
-  std::unique_ptr<PendingSreencastManager> pending_screencast_manager_;
+  std::unique_ptr<PendingScreencastManager> pending_screencast_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(PendingScreencastMangerMultiProfileTest,

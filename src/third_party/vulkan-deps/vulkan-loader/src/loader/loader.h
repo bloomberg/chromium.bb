@@ -42,8 +42,11 @@ static inline VkPhysicalDevice loader_unwrap_physical_device(VkPhysicalDevice ph
 static inline void loader_set_dispatch(void *obj, const void *data) { *((const void **)obj) = data; }
 
 static inline VkLayerDispatchTable *loader_get_dispatch(const void *obj) {
+    if (VK_NULL_HANDLE == obj) {
+        return NULL;
+    }
     VkLayerDispatchTable *disp = *((VkLayerDispatchTable **)obj);
-    if (VK_NULL_HANDLE == obj || DEVICE_DISP_TABLE_MAGIC_NUMBER != disp->magic) {
+    if (VK_NULL_HANDLE == disp || DEVICE_DISP_TABLE_MAGIC_NUMBER != disp->magic) {
         return NULL;
     }
     return disp;
@@ -112,7 +115,8 @@ VkResult loader_add_layer_name_to_list(const struct loader_instance *inst, const
                                        const struct loader_layer_list *source_list, struct loader_layer_list *target_list,
                                        struct loader_layer_list *expanded_target_list);
 void loader_scanned_icd_clear(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list);
-VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list);
+VkResult loader_icd_scan(const struct loader_instance *inst, struct loader_icd_tramp_list *icd_tramp_list,
+                         bool *skipped_portability_drivers);
 void loader_scan_for_layers(struct loader_instance *inst, struct loader_layer_list *instance_layers);
 void loader_scan_for_implicit_layers(struct loader_instance *inst, struct loader_layer_list *instance_layers);
 bool loader_implicit_layer_is_enabled(const struct loader_instance *inst, const struct loader_layer_properties *prop);

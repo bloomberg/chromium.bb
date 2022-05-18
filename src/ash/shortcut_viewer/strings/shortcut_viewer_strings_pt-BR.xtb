@@ -71,6 +71,7 @@
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3256109297135787951">Remover o destaque de um item na estante</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
+<translation id="3322797428033495633">Focar na janela picture-in-picture</translation>
 <translation id="3350805006883559974">Criar ponto flutuante da janela ativa na parte superior</translation>
 <translation id="3407560819924487926">Abrir o gerenciador de tarefas</translation>
 <translation id="3417835166382867856">Pesquisar guias</translation>
@@ -191,7 +192,7 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Abrir um arquivo no navegador</translation>
 <translation id="7952165122793773711">Ir para as guias 1 a 8</translation>
-<translation id="8026334261755873520">Limpar dados de navegação</translation>
+<translation id="8026334261755873520">Remover dados de navegação</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8234414138295101081">Girar a tela em 90 graus</translation>

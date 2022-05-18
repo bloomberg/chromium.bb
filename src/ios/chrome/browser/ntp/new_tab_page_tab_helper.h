@@ -30,8 +30,19 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   static void CreateForWebState(web::WebState* web_state);
 
+  // Sets the NTP's NavigationItem title and virtualURL to the appropriate
+  // string and chrome://newtab respectively.
+  static void UpdateItem(web::NavigationItem* item);
+
+  // Returns the default selected feed for the NTP.
+  static FeedType DefaultFeedType();
+
   // Sets the delegate. The delegate is not owned by the tab helper.
   void SetDelegate(id<NewTabPageTabHelperDelegate> delegate);
+
+  // Setter/Getter for whether to show the Start Surface.
+  bool ShouldShowStartSurface() const;
+  void SetShowStartSurface(bool show_start_surface);
 
   // Returns true when the current web_state is an NTP and the underlying
   // controllers have been created.
@@ -49,6 +60,9 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // state.
   bool IgnoreLoadRequests() const;
 
+  // Returns true if an |url| is either chrome://newtab or about://newtab.
+  bool IsNTPURL(const GURL& url);
+
   // Returns the initially selected feed for the next NTP and then resets it to
   // default.
   FeedType GetNextNTPFeedType();
@@ -62,9 +76,11 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Sets whether the next NTP should be initially scrolled to the feed.
   void SetNextNTPScrolledToFeed(bool scrolled_to_feed);
 
-  // Sets the NTP's NavigationItem title and virtualURL to the appropriate
-  // string and chrome://newtab respectively.
-  static void UpdateItem(web::NavigationItem* item);
+  // Saves the NTP state for when users navigate back to it.
+  void SaveNTPState(CGFloat scroll_position, FeedType feed_type);
+
+  // Returns the saved scroll position of the NTP from |SaveNTPState|.
+  CGFloat ScrollPositionFromSavedState();
 
  private:
   friend class web::WebStateUserData<NewTabPageTabHelper>;
@@ -83,9 +99,6 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Enable or disable the tab helper.
   void SetActive(bool active);
 
-  // Returns true if an |url| is either chrome://newtab or about://newtab.
-  bool IsNTPURL(const GURL& url);
-
   // Sets the |ignore_load_requests_| flag to YES and starts the ignore load
   // timer.
   void EnableIgnoreLoadRequests();
@@ -93,9 +106,6 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // Sets the |ignore_load_requests_| flag to NO and stops the ignore load
   // timer.
   void DisableIgnoreLoadRequests();
-
-  // Returns the default selected feed for the NTP.
-  FeedType GetDefaultFeedType();
 
   // Used to present and dismiss the NTP.
   __weak id<NewTabPageTabHelperDelegate> delegate_ = nil;
@@ -106,6 +116,10 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // |YES| if the current tab helper is active.
   BOOL active_ = NO;
 
+  // |YES| if the NTP for this WebState should be configured to show the Start
+  // Surface.
+  BOOL show_start_surface_ = false;
+
   // |YES| if the NTP's underlying ios/web page is still loading.
   BOOL ignore_load_requests_ = NO;
 
@@ -114,6 +128,9 @@ class NewTabPageTabHelper : public web::WebStateObserver,
 
   // Whether the next NTP should be initially scrolled to the feed.
   BOOL next_ntp_scrolled_to_feed_ = NO;
+
+  // The saved scroll position for navigating back to the NTP.
+  CGFloat saved_scroll_position_ = -CGFLOAT_MAX;
 
   // Ensure the ignore_load_requests_ flag is never set to NO for more than
   // |kMaximumIgnoreLoadRequestsTime| seconds.

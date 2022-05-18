@@ -17,9 +17,8 @@
 #ifndef SRC_TRACE_PROCESSOR_DYNAMIC_THREAD_STATE_GENERATOR_H_
 #define SRC_TRACE_PROCESSOR_DYNAMIC_THREAD_STATE_GENERATOR_H_
 
-#include "src/trace_processor/sqlite/db_sqlite_table.h"
-
 #include "perfetto/ext/base/flat_hash_map.h"
+#include "src/trace_processor/dynamic/dynamic_table_generator.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
 namespace perfetto {
@@ -30,7 +29,7 @@ class TraceProcessorContext;
 // Dynamic table implementing the thread state table.
 // This table is a basically the same as sched with extra information added
 // about wakeups (obtained from sched_waking/sched_wakeup).
-class ThreadStateGenerator : public DbSqliteTable::DynamicTableGenerator {
+class ThreadStateGenerator : public DynamicTableGenerator {
  public:
   explicit ThreadStateGenerator(TraceProcessorContext* context);
   ~ThreadStateGenerator() override;
@@ -45,8 +44,7 @@ class ThreadStateGenerator : public DbSqliteTable::DynamicTableGenerator {
                             std::unique_ptr<Table>& table_return) override;
 
   // Visible for testing.
-  std::unique_ptr<tables::ThreadStateTable> ComputeThreadStateTable(
-      int64_t trace_end_ts);
+  std::unique_ptr<tables::ThreadStateTable> ComputeThreadStateTable();
 
  private:
   struct ThreadSchedInfo {
@@ -56,6 +54,7 @@ class ThreadStateGenerator : public DbSqliteTable::DynamicTableGenerator {
     base::Optional<bool> io_wait;
     base::Optional<int64_t> runnable_ts;
     base::Optional<StringId> blocked_function;
+    base::Optional<UniqueTid> runnable_waker_utid;
   };
   using TidInfoMap = base::FlatHashMap<UniqueTid,
                                        ThreadSchedInfo,
@@ -66,7 +65,6 @@ class ThreadStateGenerator : public DbSqliteTable::DynamicTableGenerator {
   void AddSchedEvent(const Table& sched,
                      uint32_t sched_idx,
                      TidInfoMap& state_map,
-                     int64_t trace_end_ts,
                      tables::ThreadStateTable* table);
 
   void AddWakingEvent(const Table& wakeup,

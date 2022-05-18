@@ -5,6 +5,7 @@
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -81,6 +82,11 @@ DownloadBubbleUIController::DownloadBubbleUIController(Browser* browser)
           profile_->GetProfileKey())),
       offline_manager_(
           OfflineItemModelManagerFactory::GetForBrowserContext(profile_)) {
+  if (profile_->IsOffTheRecord()) {
+    Profile* original_profile = profile_->GetOriginalProfile();
+    original_notifier_ = std::make_unique<download::AllDownloadItemNotifier>(
+        original_profile->GetDownloadManager(), this);
+  }
   observation_.Observe(aggregator_.get());
 }
 
@@ -182,17 +188,18 @@ void DownloadBubbleUIController::OnItemRemoved(const ContentId& id) {
                      }),
       offline_items_.end());
   partial_view_ids_.erase(id);
-  display_controller_->OnRemovedItem();
+  display_controller_->OnRemovedItem(id);
 }
 
 void DownloadBubbleUIController::OnDownloadRemoved(
     content::DownloadManager* manager,
     download::DownloadItem* item) {
-  partial_view_ids_.erase(
+  const ContentId& id =
       DownloadItemModel::Wrap(
           item, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>())
-          ->GetContentId());
-  display_controller_->OnRemovedItem();
+          ->GetContentId();
+  partial_view_ids_.erase(id);
+  display_controller_->OnRemovedItem(id);
 }
 
 void DownloadBubbleUIController::OnItemUpdated(
@@ -217,6 +224,13 @@ void DownloadBubbleUIController::OnDownloadUpdated(
     download::DownloadItem* item) {
   auto model = DownloadItemModel::Wrap(
       item, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+  // manager can be different from download_notifier_ when the current profile
+  // is off the record.
+  if (manager != download_notifier_.GetManager()) {
+    display_controller_->OnUpdatedItem(model->IsDone(),
+                                       /*show_details_if_done=*/false);
+    return;
+  }
   bool show_details_if_done =
       model->ShouldShowInBubble() &&
       (browser_ == chrome::FindLastActiveWithProfile(profile_.get()));
@@ -245,39 +259,55 @@ void DownloadBubbleUIController::PruneOfflineItems() {
   }
 }
 
+std::vector<DownloadUIModelPtr>
+DownloadBubbleUIController::GetAllItemsToDisplay() {
+  base::Time cutoff_time =
+      base::Time::Now() - base::Days(kShowDownloadsInBubbleForNumDays);
+  std::vector<DownloadUIModelPtr> models_aggregate;
+  for (const OfflineItem& item : GetOfflineItems()) {
+    DownloadUIModelPtr model = OfflineItemModel::Wrap(
+        offline_manager_, item,
+        std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+    if (model->ShouldShowInBubble() &&
+        DownloadUIModelIsRecent(model, cutoff_time)) {
+      models_aggregate.push_back(std::move(model));
+    }
+  }
+  std::vector<download::DownloadItem*> download_items;
+  download_manager_->GetAllDownloads(&download_items);
+  if (original_notifier_) {
+    original_notifier_->GetManager()->GetAllDownloads(&download_items);
+  }
+  for (download::DownloadItem* item : download_items) {
+    DownloadUIModelPtr model = DownloadItemModel::Wrap(
+        item, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>());
+    if (model->ShouldShowInBubble() &&
+        DownloadUIModelIsRecent(model, cutoff_time)) {
+      models_aggregate.push_back(std::move(model));
+    }
+  }
+
+  return models_aggregate;
+}
+
 std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetDownloadUIModels(
     bool is_main_view) {
   // Prune just to keep the list of offline entries small.
   PruneOfflineItems();
 
   // Aggregate downloads and offline items
-  std::vector<DownloadUIModelPtr> models_aggregate;
-  for (const OfflineItem& item : offline_items_) {
-    models_aggregate.push_back(OfflineItemModel::Wrap(
-        offline_manager_, item,
-        std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>()));
-  }
-  std::vector<download::DownloadItem*> download_items;
-  download_manager_->GetAllDownloads(&download_items);
-  for (download::DownloadItem* item : download_items) {
-    models_aggregate.push_back(DownloadItemModel::Wrap(
-        item, std::make_unique<DownloadUIModel::BubbleStatusTextBuilder>()));
-  }
+  std::vector<DownloadUIModelPtr> models_aggregate = GetAllItemsToDisplay();
 
   // Store list of DownloadUIModelPtrs. Sort list iterators in a set, as a set
   // does not allow move semantics over unique_ptr, preventing us from putting
   // DownloadUIModelPtr directly in the set.
   DownloadUIModelPtrList filtered_models_list;
   SortedDownloadUIModelSet sorted_ui_model_iters;
-  base::Time cutoff_time =
-      base::Time::Now() - base::Days(kShowDownloadsInBubbleForNumDays);
   for (auto& model : models_aggregate) {
     // Partial view consists of only the entries in partial_view_ids_, which are
     // also removed if viewed on the main view.
-    if (model->ShouldShowInBubble() &&
-        DownloadUIModelIsRecent(model, cutoff_time) &&
-        (is_main_view || partial_view_ids_.find(model->GetContentId()) !=
-                             partial_view_ids_.end())) {
+    if (is_main_view || partial_view_ids_.find(model->GetContentId()) !=
+                            partial_view_ids_.end()) {
       if (is_main_view) {
         partial_view_ids_.erase(model->GetContentId());
       }
@@ -295,11 +325,24 @@ std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetDownloadUIModels(
 }
 
 std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetMainView() {
-  return GetDownloadUIModels(/*is_main_view=*/true);
+  if (last_partial_view_shown_time_.has_value()) {
+    base::UmaHistogramLongTimes(
+        "Download.Bubble.PartialToFullViewLatency",
+        base::Time::Now() - (*last_partial_view_shown_time_));
+    last_partial_view_shown_time_ = absl::nullopt;
+  }
+  std::vector<DownloadUIModelPtr> list =
+      GetDownloadUIModels(/*is_main_view=*/true);
+  base::UmaHistogramCounts100("Download.Bubble.FullViewSize", list.size());
+  return list;
 }
 
 std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetPartialView() {
-  return GetDownloadUIModels(/*is_main_view=*/false);
+  last_partial_view_shown_time_ = absl::make_optional(base::Time::Now());
+  std::vector<DownloadUIModelPtr> list =
+      GetDownloadUIModels(/*is_main_view=*/false);
+  base::UmaHistogramCounts100("Download.Bubble.PartialViewSize", list.size());
+  return list;
 }
 
 void DownloadBubbleUIController::ProcessDownloadWarningButtonPress(
@@ -323,14 +366,11 @@ void DownloadBubbleUIController::ProcessDownloadButtonPress(
     case DownloadCommands::DISCARD:
       ProcessDownloadWarningButtonPress(model, command);
       break;
-    case DownloadCommands::BYPASS_DEEP_SCANNING:
-      model->CompleteSafeBrowsingScan();
-      model->SetOpenWhenComplete(true);
-      break;
     case DownloadCommands::CANCEL:
       RemoveContentIdFromPartialView(model->GetContentId());
       [[fallthrough]];
     case DownloadCommands::DEEP_SCAN:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
       commands.ExecuteCommand(command);
       break;
     default:

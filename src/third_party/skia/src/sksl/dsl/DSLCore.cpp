@@ -223,8 +223,9 @@ public:
     }
 
     static DSLPossibleStatement For(DSLStatement initializer, DSLExpression test,
-                                    DSLExpression next, DSLStatement stmt, Position pos) {
-        return ForStatement::Convert(ThreadContext::Context(), pos,
+                                    DSLExpression next, DSLStatement stmt, Position pos,
+                                    const ForLoopPositions& forLoopPositions) {
+        return ForStatement::Convert(ThreadContext::Context(), pos, forLoopPositions,
                                      initializer.releaseIfPossible(), test.releaseIfPossible(),
                                      next.releaseIfPossible(), stmt.release(),
                                      ThreadContext::SymbolTable());
@@ -315,18 +316,19 @@ public:
     }
 
     static DSLExpression Swizzle(DSLExpression base, SkSL::SwizzleComponent::Type a,
-                                 Position pos) {
-        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, base.release(),
-                                              ComponentArray{a}),
+                                 Position pos, Position maskPos) {
+        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, maskPos,
+                                              base.release(), ComponentArray{a}),
                              pos);
     }
 
     static DSLExpression Swizzle(DSLExpression base,
                                  SkSL::SwizzleComponent::Type a,
                                  SkSL::SwizzleComponent::Type b,
-                                 Position pos) {
-        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, base.release(),
-                                              ComponentArray{a, b}),
+                                 Position pos,
+                                 Position maskPos) {
+        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, maskPos,
+                                              base.release(), ComponentArray{a, b}),
                              pos);
     }
 
@@ -334,8 +336,9 @@ public:
                                  SkSL::SwizzleComponent::Type a,
                                  SkSL::SwizzleComponent::Type b,
                                  SkSL::SwizzleComponent::Type c,
-                                 Position pos) {
-        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, base.release(),
+                                 Position pos,
+                                 Position maskPos) {
+        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, maskPos, base.release(),
                                               ComponentArray{a, b, c}),
                              pos);
     }
@@ -345,8 +348,9 @@ public:
                                  SkSL::SwizzleComponent::Type b,
                                  SkSL::SwizzleComponent::Type c,
                                  SkSL::SwizzleComponent::Type d,
-                                 Position pos) {
-        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, base.release(),
+                                 Position pos,
+                                 Position maskPos) {
+        return DSLExpression(Swizzle::Convert(ThreadContext::Context(), pos, maskPos, base.release(),
                                               ComponentArray{a,b,c,d}),
                              pos);
     }
@@ -412,10 +416,10 @@ DSLStatement Continue(Position pos) {
 
 void Declare(const DSLModifiers& modifiers, Position pos) {
     SkSL::ProgramKind kind = ThreadContext::GetProgramConfig()->fKind;
-    if (kind != ProgramKind::kFragment &&
-        kind != ProgramKind::kVertex) {
+    if (!ProgramConfig::IsFragment(kind) &&
+        !ProgramConfig::IsVertex(kind)) {
         ThreadContext::ReportError("layout qualifiers are not allowed in this kind of program",
-                pos);
+                                   pos);
         return;
     }
     DSLCore::Declare(modifiers);
@@ -450,7 +454,7 @@ void Declare(SkTArray<DSLGlobalVar>& vars, Position pos) {
 }
 
 DSLStatement Discard(Position pos) {
-    if (ThreadContext::GetProgramConfig()->fKind != ProgramKind::kFragment) {
+    if (!ProgramConfig::IsFragment(ThreadContext::GetProgramConfig()->fKind)) {
         ThreadContext::ReportError("discard statement is only permitted in fragment shaders", pos);
     }
     return DSLCore::Discard(pos);
@@ -461,9 +465,9 @@ DSLStatement Do(DSLStatement stmt, DSLExpression test, Position pos) {
 }
 
 DSLStatement For(DSLStatement initializer, DSLExpression test, DSLExpression next,
-                 DSLStatement stmt, Position pos) {
+                 DSLStatement stmt, Position pos, ForLoopPositions forLoopPositions) {
     return DSLStatement(DSLCore::For(std::move(initializer), std::move(test), std::move(next),
-                                     std::move(stmt), pos), pos);
+                                     std::move(stmt), pos, forLoopPositions), pos);
 }
 
 DSLStatement If(DSLExpression test, DSLStatement ifTrue, DSLStatement ifFalse, Position pos) {
@@ -475,8 +479,8 @@ DSLGlobalVar InterfaceBlock(const DSLModifiers& modifiers,  std::string_view typ
                             SkTArray<DSLField> fields, std::string_view varName, int arraySize,
                             Position pos) {
     SkSL::ProgramKind kind = ThreadContext::GetProgramConfig()->fKind;
-    if (kind != ProgramKind::kFragment &&
-        kind != ProgramKind::kVertex) {
+    if (!ProgramConfig::IsFragment(kind) &&
+        !ProgramConfig::IsVertex(kind)) {
         ThreadContext::ReportError("interface blocks are not allowed in this kind of program", pos);
         return DSLGlobalVar();
     }
@@ -699,23 +703,25 @@ DSLExpression Step(DSLExpression edge, DSLExpression x, Position pos) {
 }
 
 DSLExpression Swizzle(DSLExpression base, SkSL::SwizzleComponent::Type a,
-                      Position pos) {
-    return DSLCore::Swizzle(std::move(base), a, pos);
+                      Position pos, Position maskPos) {
+    return DSLCore::Swizzle(std::move(base), a, pos, maskPos);
 }
 
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
                       SkSL::SwizzleComponent::Type b,
-                      Position pos) {
-    return DSLCore::Swizzle(std::move(base), a, b, pos);
+                      Position pos,
+                      Position maskPos) {
+    return DSLCore::Swizzle(std::move(base), a, b, pos, maskPos);
 }
 
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
                       SkSL::SwizzleComponent::Type b,
                       SkSL::SwizzleComponent::Type c,
-                      Position pos) {
-    return DSLCore::Swizzle(std::move(base), a, b, c, pos);
+                      Position pos,
+                      Position maskPos) {
+    return DSLCore::Swizzle(std::move(base), a, b, c, pos, maskPos);
 }
 
 DSLExpression Swizzle(DSLExpression base,
@@ -723,8 +729,9 @@ DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type b,
                       SkSL::SwizzleComponent::Type c,
                       SkSL::SwizzleComponent::Type d,
-                      Position pos) {
-    return DSLCore::Swizzle(std::move(base), a, b, c, d, pos);
+                      Position pos,
+                      Position maskPos) {
+    return DSLCore::Swizzle(std::move(base), a, b, c, d, pos, maskPos);
 }
 
 DSLExpression Tan(DSLExpression x, Position pos) {

@@ -140,7 +140,8 @@ public:
                                    GrColorType textureColorType,
                                    GrColorType srcColorType,
                                    const GrMipLevel texels[],
-                                   int texelLevelCount);
+                                   int texelLevelCount,
+                                   std::string_view label);
 
     /**
      * Simplified createTexture() interface for when there is no initial texel data to upload.
@@ -150,16 +151,18 @@ public:
                                    GrTextureType textureType,
                                    GrRenderable renderable,
                                    int renderTargetSampleCnt,
-                                   GrMipmapped mipMapped,
+                                   GrMipmapped mipmapped,
                                    SkBudgeted budgeted,
-                                   GrProtected isProtected);
+                                   GrProtected isProtected,
+                                   std::string_view label);
 
     sk_sp<GrTexture> createCompressedTexture(SkISize dimensions,
                                              const GrBackendFormat& format,
                                              SkBudgeted budgeted,
-                                             GrMipmapped mipMapped,
+                                             GrMipmapped mipmapped,
                                              GrProtected isProtected,
-                                             const void* data, size_t dataSize);
+                                             const void* data,
+                                             size_t dataSize);
 
     /**
      * Implements GrResourceProvider::wrapBackendTexture
@@ -382,7 +385,7 @@ public:
 
     virtual GrFence SK_WARN_UNUSED_RESULT insertFence() = 0;
     virtual bool waitFence(GrFence) = 0;
-    virtual void deleteFence(GrFence) const = 0;
+    virtual void deleteFence(GrFence) = 0;
 
     virtual std::unique_ptr<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(
             bool isOwned = true) = 0;
@@ -641,12 +644,6 @@ public:
 
     virtual void storeVkPipelineCacheData() {}
 
-    // http://skbug.com/9739
-    virtual void insertManualFramebufferBarrier() {
-        SkASSERT(!this->caps()->requiresManualFBBarrierAfterTessellatedStencilDraw());
-        SK_ABORT("Manual framebuffer barrier not supported.");
-    }
-
     // Called before certain draws in order to guarantee coherent results from dst reads.
     virtual void xferBarrier(GrRenderTarget*, GrXferBarrierType) = 0;
 
@@ -705,7 +702,8 @@ private:
                                              SkBudgeted,
                                              GrProtected,
                                              int mipLevelCoont,
-                                             uint32_t levelClearMask) = 0;
+                                             uint32_t levelClearMask,
+                                             std::string_view label) = 0;
     virtual sk_sp<GrTexture> onCreateCompressedTexture(SkISize dimensions,
                                                        const GrBackendFormat&,
                                                        SkBudgeted,
@@ -809,7 +807,8 @@ private:
                                          SkBudgeted,
                                          GrProtected,
                                          int mipLevelCnt,
-                                         uint32_t levelClearMask);
+                                         uint32_t levelClearMask,
+                                         std::string_view label);
 
     void resetContext() {
         this->onResetContext(fResetBits);

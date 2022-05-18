@@ -1,102 +1,110 @@
 
 ---
-title: "Notes about Bazel Builds"
-linkTitle: "Notes about Bazel Builds"
+title: "Using Bazel"
+linkTitle: "Using Bazel"
 
 ---
 
+## Overview
 
-Skia cannot be built with Bazel yet.
+Skia is currently migrating towards using [Bazel](https://bazel.build/) as a build system, due to
+the ability to more tightly control what and how gets built.
 
-But you should be able to build and run the trivial `tools/bazel_test.cc`:
+When referring to a file in this doc, we use
+[Bazel label notation](https://bazel.build/concepts/labels), so to refer the file located at
+`$SKIA_ROOT/docs/examples/Arc.cpp`, we would say `//docs/examples/Arc.cpp`.
 
-    $ bazel test ...
+## Learning more about Bazel
+The Bazel docs are quite good. Suggested reading order if you are new to Bazel:
+ - [Getting Started with Bazel and C++](https://bazel.build/tutorials/cpp)
+ - [WORKSPACE.bazel and external deps](https://bazel.build/docs/external)
+ - [Targets and Labels](https://bazel.build/concepts/labels)
+ - [Understanding a build](https://bazel.build/docs/build)
+ - [Configuration with .bazelrc files](https://bazel.build/docs/bazelrc)
 
-Dependencies
-------------
+Googlers, check out [go/bazel-bites](http://go/bazel-bites) for more tips.
 
-`WORKSPACE.bazel` acts like `DEPS`, listing external dependencies and how to
-fetch them.  You can call `bazel sync`, or just let `bazel {build,test,run}`
-handle it as needed on its own.  The easiest way to add a new dependency is to
-start using `tag="..."` or `branch="..."` and then follow the advice of Bazel
-to pin that to the `commit` and `shallow_since` it suggests.
+## Building with Bazel
 
-We must provide Bazel build configuration for dependencies like `libpng` that
-don't provide their own.  For `libpng` that's `bazel/libpng.bazel`, linked by
-the `new_git_repository()` `build_file` argument, written relative to that
-fetched Git repo's root.  Its resemblance to `third_party/libpng/BUILD.gn` is
-no coincidence... it's pretty much a 1:1 translation between GN and Bazel.
+All this assumes you have [downloaded Skia](/docs/user/download), especially having synced the
+third_party deps using `./tools/git-sync-deps`.
 
-Everything that's checked in builds external dependencies from source.  I've
-not written an integrated system for substituting prebuilt versions of these
-dependencies (e.g. `/usr/include/png.h` and `/usr/lib/libpng.so`), instead
-leaving that up to users who want it.  The process is not exactly trivial, but
-closer to tedious than difficult.  Here's an example, overriding `libpng` to
-point to prebuilts from Homebrew in ~/brew:
+### Linux Hosts (you are running Bazel on a Linux machine)
+You can run a command like:
+```
+bazel build //example:hello_world_gl --config=clang_linux
+```
 
-Each overridden dependency will need its own directory with a few files.
+This uses the `clang_linux` configuration (defined in `//.bazelrc`), which is a hermetic C++
+toolchain we put together to compile Skia on a Linux host (implementation is in `//toolchain`.
+It builds the _target_ defined in `//examples/BUILD.bazel` named "hello_world_gl", which uses
+the `sk_app` framework we designed to make simple applications using Skia.
 
-    $ find overrides
-    overrides
-    overrides/libpng
-    overrides/libpng/include
-    overrides/libpng/WORKSPACE.bazel
-    overrides/libpng/BUILD.bazel
+Bazel will put this executable in `//bazel-bin/example/hello_world_gl` and tell you it did so in
+the logs. You can run this executable yourself, or have Bazel run it by modifying the command to
+be:
+```
+bazel run //example:hello_world_gl --config=clang_linux
+```
 
-`WORKSPACE.bazel` must be present, but in this case can be empty.
+If you want to pass one or more flags to `bazel run`, add them on the end after a `--` like:
+```
+bazel run //example:hello_world_gl --config=clang_linux -- --flag_one=apple --flag_two=cherry
+```
 
-    $ cat overrides/libpng/WORKSPACE.bazel
+### Mac Hosts (you are running Bazel on a Mac machine)
+You can run a command like:
+```
+bazel build //example:bazel_test_exe --config=clang_mac
+```
 
-`BUILD.bazel` is where it all happens:
+Similar to the Linux guide, this uses the `clang_mac` configuration (defined in `//.bazelrc`).
 
-    $ cat overrides/libpng/BUILD.bazel
-    cc_library(
-        name = "libpng",
-        hdrs = ["include/png.h"],
-        srcs = ["include/pngconf.h", "include/pnglibconf.h"],
-        includes = ["include"],
-        linkopts = ["-lpng", "-L/Users/mtklein/brew/lib"],
-        visibility = ["//visibility:public"],
-    )
+When building for Mac, we require the user to have Xcode installed on their device so that we can
+use system headers and Mac-specific includes when compiling. Our Bazel toolchain assumes you have
+`xcode-select` in your path so that we may symlink the user's current Xcode directory in the
+toolchain's cache. Make sure `xcode-select -p` returns a valid path.
 
-`include` is a symlink I've made to `~/brew/include` because Bazel doesn't like
-absolute paths in `hdrs` or `includes`.  On the other hand, a symlink to
-`~/brew/lib` doesn't work here, though `-L/Users/mtklein/brew/lib` works fine.
+## .bazelrc Tips
+You should make a [.bazelrc file](https://bazel.build/docs/bazelrc) in your home directory where
+you can specify settings that apply only to you. These can augment or replace the ones we define
+in the `//.bazelrc` configuration file.
 
-    $ readlink overrides/libpng/include
-    /Users/mtklein/brew/include/
+Skia defines some [configs](https://bazel.build/docs/bazelrc#config), that is, group of settings
+and features in `//bazel/buildrc`. This file contains configs for builds that we use  regularly
+(for example, in our continuous integration system).
 
-Finally, we point Bazel at all that using `--override_repository`:
+If you want to define Skia-specific configs (and options which do not conflict with other Bazel
+projects), you make a file in `//bazel/user/buildrc` which will automatically be read in. This
+file is covered by a `.gitignore` rule and should not be checked in.
 
-    $ bazel test ... --override_repository libpng=/Users/mtklein/overrides/libpng
+You may want some or all of the following entries in your `~/.bazelrc` or `//bazel/user/buildrc`
+file.
 
-I expect building from source to be the most common use case, and it's more or
-less enough to simply know that we can substitute prebuilts this way.  The most
-interesting part to me is that we don't need to provide this mechanism... it's
-all there in stock Bazel.  This plan may all want some rethinking in the future
-if we want to add the option to trim the dependency entirely and make this
-tristate (build it, use it prebuilt, or trim).
+### Build Skia faster locally
+Many Linux machines have a [RAM disk mounted at /dev/shm](https://www.cyberciti.biz/tips/what-is-devshm-and-its-practical-usage.html)
+and using this as the location for the Bazel sandbox can dramatically improve compile times because
+[sandboxing](https://bazel.build/docs/sandboxing) has been observed to be I/O intensive.
 
-.bazelrc
---------
+Add the following to `~/.bazelrc` if you have a `/dev/shm` partition that is 4+ GB big. 
+```
+build:clang --sandbox_base=/dev/shm
+```
 
-I have not (yet?) checked in a .bazelrc to the Skia repo, but have found it
-handy to write my own in ~/.bazelrc:
-
-    $ cat ~/.bazelrc
-    # Print more information on failures.
-    build --verbose_failures
-    test --test_output errors
-
-    # Create an ASAN config, try `bazel test --config asan ...`.
-    build:asan --copt -fsanitize=address
-    build:asan --copt -Wno-macro-redefined   # (_FORTIFY_SOURCE redefined.)
-    build:asan --linkopt -fsanitize=address
-
-    # Flip on and off prebuilt overrides easily.
-    build --override_repository libpng=/Users/mtklein/overrides/libpng
-
-I'm impressed by how much you can configure via bazelrc, and I think this
-should let our Bazel build configuration stay mostly focused on the structure
-of the project, less cluttered by build settings.
-
+### Authenticate to RBE on a Linux VM
+We are in the process of setting up Remote Build Execution (RBE) for Bazel. Some users have reported
+errors when trying to use RBE (via `--config=linux_rbe`) on Linux VMs such as:
+```
+ERROR: Failed to query remote execution capabilities: 
+Error code 404 trying to get security access token from Compute Engine metadata for the default
+service account. This may be because the virtual machine instance does not have permission
+scopes specified. It is possible to skip checking for Compute Engine metadata by specifying the
+environment  variable NO_GCE_CHECK=true.
+```
+For instances where it is not possible to set the `cloud-platform` scope
+[on the VM](https://skia-review.googlesource.com/c/skia/+/525577), one can directly link to their
+GCP credentials by adding the following to `~/.bazelrc` (substituting their username for &lt;user>)
+after logging in via `gcloud auth login`:
+```
+build:remote --google_credentials=/usr/local/google/home/<user>/.config/gcloud/application_default_credentials.json
+```

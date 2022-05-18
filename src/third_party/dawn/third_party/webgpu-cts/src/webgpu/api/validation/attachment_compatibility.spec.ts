@@ -1,7 +1,5 @@
 export const description = `
 Validation for attachment compatibility between render passes, bundles, and pipelines
-
-TODO: Add sparse color attachment compatibility test when defined by specification
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
@@ -13,16 +11,79 @@ import {
   kTextureSampleCounts,
   kMaxColorAttachments,
   kTextureFormatInfo,
+  getFeaturesForFormats,
+  filterFormatsByFeature,
 } from '../../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
 const kColorAttachmentCounts = range(kMaxColorAttachments, i => i + 1);
+const kColorAttachments = kColorAttachmentCounts
+  .map(count => {
+    // generate cases with 0..1 null attachments at different location
+    // e.g. count == 2
+    // [
+    //    [1, 1],
+    //    [0, 1],
+    //    [1, 0],
+    // ]
+    // 0 (false) means null attachment, 1 (true) means non-null attachment, at the slot
+
+    // Special cases: we need at least a color attachment, when we don't have depth stencil attachment
+    if (count === 1) {
+      return [[1]];
+    }
+    if (count === 2) {
+      return [
+        [1, 1],
+        [0, 1],
+        [1, 0],
+      ];
+    }
+
+    // [1, 1, ..., 1]: all color attachment are used
+    let result = [new Array<boolean>(count).fill(true)];
+
+    // [1, 0, 1, ..., 1]: generate cases with one null attachment at different locations
+    result = result.concat(
+      range(count, i => {
+        const r = new Array<boolean>(count).fill(true);
+        r[i] = false;
+        return r;
+      })
+    );
+
+    // [1, 0, 1, ..., 0, 1]: generate cases with two null attachments at different locations
+    // To reduce test run time, limit the attachment count to <= 4
+    if (count <= 4) {
+      result = result.concat(
+        range(count - 1, i => {
+          const cases = [] as boolean[][];
+          for (let j = i + 1; j < count; j++) {
+            const r = new Array<boolean>(count).fill(true);
+            r[i] = false;
+            r[j] = false;
+            cases.push(r);
+          }
+          return cases;
+        }).flat()
+      );
+    }
+
+    return result;
+  })
+  .flat() as boolean[][];
+
 const kDepthStencilAttachmentFormats = [
   undefined,
   ...kSizedDepthStencilFormats,
   ...kUnsizedDepthStencilFormats,
 ] as const;
+
+const kFeaturesForDepthStencilAttachmentFormats = getFeaturesForFormats([
+  ...kSizedDepthStencilFormats,
+  ...kUnsizedDepthStencilFormats,
+]);
 
 class F extends ValidationTest {
   createAttachmentTextureView(format: GPUTextureFormat, sampleCount?: number) {
@@ -38,15 +99,17 @@ class F extends ValidationTest {
   }
 
   createColorAttachment(
-    format: GPUTextureFormat,
+    format: GPUTextureFormat | null,
     sampleCount?: number
-  ): GPURenderPassColorAttachment {
-    return {
-      view: this.createAttachmentTextureView(format, sampleCount),
-      clearValue: [0, 0, 0, 0],
-      loadOp: 'clear',
-      storeOp: 'store',
-    };
+  ): GPURenderPassColorAttachment | null {
+    return format === null
+      ? null
+      : {
+          view: this.createAttachmentTextureView(format, sampleCount),
+          clearValue: [0, 0, 0, 0],
+          loadOp: 'clear',
+          storeOp: 'store',
+        };
   }
 
   createDepthAttachment(
@@ -70,9 +133,10 @@ class F extends ValidationTest {
   }
 
   createRenderPipeline(
-    targets: Iterable<GPUColorTargetState>,
+    targets: Iterable<GPUColorTargetState | null>,
     depthStencil?: GPUDepthStencilState,
-    sampleCount?: number
+    sampleCount?: number,
+    cullMode?: GPUCullMode
   ) {
     return this.device.createRenderPipeline({
       vertex: {
@@ -91,7 +155,7 @@ class F extends ValidationTest {
         entryPoint: 'main',
         targets,
       },
-      primitive: { topology: 'triangle-list' },
+      primitive: { topology: 'triangle-list', cullMode },
       depthStencil,
       multisample: { count: sampleCount },
     });
@@ -132,8 +196,6 @@ g.test('render_pass_and_bundle,color_count')
   .desc(
     `
   Test that the number of color attachments in render passes and bundles must match.
-
-  TODO: Add sparse color attachment compatibility test when defined by specification
   `
   )
   .paramsSubcasesOnly(u =>
@@ -157,16 +219,68 @@ g.test('render_pass_and_bundle,color_count')
     validateFinishAndSubmit(passCount === bundleCount, true);
   });
 
+g.test('render_pass_and_bundle,color_sparse')
+  .desc(
+    `
+  Test that each of color attachments in render passes and bundles must match.
+  `
+  )
+  .params(u =>
+    u //
+      // introduce attachmentCount to make it easier to split the test
+      .combine('attachmentCount', kColorAttachmentCounts)
+      .beginSubcases()
+      .combine('passAttachments', kColorAttachments)
+      .combine('bundleAttachments', kColorAttachments)
+      .filter(
+        p =>
+          p.attachmentCount === p.passAttachments.length &&
+          p.attachmentCount === p.bundleAttachments.length
+      )
+  )
+  .fn(t => {
+    const { passAttachments, bundleAttachments } = t.params;
+    const colorFormats = bundleAttachments.map(i => (i ? 'rgba8unorm' : null));
+    const bundleEncoder = t.device.createRenderBundleEncoder({
+      colorFormats,
+    });
+    const bundle = bundleEncoder.finish();
+
+    const { encoder, validateFinishAndSubmit } = t.createEncoder('non-pass');
+    const colorAttachments = passAttachments.map(i =>
+      t.createColorAttachment(i ? 'rgba8unorm' : null)
+    );
+    const pass = encoder.beginRenderPass({
+      colorAttachments,
+    });
+    pass.executeBundles([bundle]);
+    pass.end();
+    validateFinishAndSubmit(
+      passAttachments.every((v, i) => v === bundleAttachments[i]),
+      true
+    );
+  });
+
 g.test('render_pass_and_bundle,depth_format')
   .desc('Test that the depth attachment format in render passes and bundles must match.')
-  .paramsSubcasesOnly(u =>
+  .params(u =>
     u //
-      .combine('passFormat', kDepthStencilAttachmentFormats)
-      .combine('bundleFormat', kDepthStencilAttachmentFormats)
+      .combine('passFeature', kFeaturesForDepthStencilAttachmentFormats)
+      .combine('bundleFeature', kFeaturesForDepthStencilAttachmentFormats)
+      .beginSubcases()
+      .expand('passFormat', ({ passFeature }) =>
+        filterFormatsByFeature(passFeature, kDepthStencilAttachmentFormats)
+      )
+      .expand('bundleFormat', ({ bundleFeature }) =>
+        filterFormatsByFeature(bundleFeature, kDepthStencilAttachmentFormats)
+      )
   )
+  .beforeAllSubcases(t => {
+    const { passFeature, bundleFeature } = t.params;
+    t.selectDeviceOrSkipTestCase([passFeature, bundleFeature]);
+  })
   .fn(async t => {
     const { passFormat, bundleFormat } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase([passFormat, bundleFormat]);
 
     const bundleEncoder = t.device.createRenderBundleEncoder({
       colorFormats: ['rgba8unorm'],
@@ -237,8 +351,6 @@ g.test('render_pass_or_bundle_and_pipeline,color_count')
     `
 Test that the number of color attachments in render passes or bundles match the pipeline color
 count.
-
-TODO: Add sparse color attachment compatibility test when defined by specification
 `
   )
   .params(u =>
@@ -261,6 +373,45 @@ TODO: Add sparse color attachment compatibility test when defined by specificati
     validateFinishAndSubmit(encoderCount === pipelineCount, true);
   });
 
+g.test('render_pass_or_bundle_and_pipeline,color_sparse')
+  .desc(
+    `
+Test that each of color attachments in render passes or bundles match that of the pipeline.
+`
+  )
+  .params(u =>
+    u
+      .combine('encoderType', ['render pass', 'render bundle'] as const)
+      // introduce attachmentCount to make it easier to split the test
+      .combine('attachmentCount', kColorAttachmentCounts)
+      .beginSubcases()
+      .combine('encoderAttachments', kColorAttachments)
+      .combine('pipelineAttachments', kColorAttachments)
+      .filter(
+        p =>
+          p.attachmentCount === p.encoderAttachments.length &&
+          p.attachmentCount === p.pipelineAttachments.length
+      )
+  )
+  .fn(t => {
+    const { encoderType, encoderAttachments, pipelineAttachments } = t.params;
+
+    const colorTargets = pipelineAttachments.map(i =>
+      i ? ({ format: 'rgba8unorm', writeMask: 0 } as GPUColorTargetState) : null
+    );
+    const pipeline = t.createRenderPipeline(colorTargets);
+
+    const colorFormats = encoderAttachments.map(i => (i ? 'rgba8unorm' : null));
+    const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType, {
+      attachmentInfo: { colorFormats },
+    });
+    encoder.setPipeline(pipeline);
+    validateFinishAndSubmit(
+      encoderAttachments.every((v, i) => v === pipelineAttachments[i]),
+      true
+    );
+  });
+
 g.test('render_pass_or_bundle_and_pipeline,depth_format')
   .desc(
     `
@@ -270,13 +421,22 @@ Test that the depth attachment format in render passes or bundles match the pipe
   .params(u =>
     u
       .combine('encoderType', ['render pass', 'render bundle'] as const)
+      .combine('encoderFormatFeature', kFeaturesForDepthStencilAttachmentFormats)
+      .combine('pipelineFormatFeature', kFeaturesForDepthStencilAttachmentFormats)
       .beginSubcases()
-      .combine('encoderFormat', kDepthStencilAttachmentFormats)
-      .combine('pipelineFormat', kDepthStencilAttachmentFormats)
+      .expand('encoderFormat', ({ encoderFormatFeature }) =>
+        filterFormatsByFeature(encoderFormatFeature, kDepthStencilAttachmentFormats)
+      )
+      .expand('pipelineFormat', ({ pipelineFormatFeature }) =>
+        filterFormatsByFeature(pipelineFormatFeature, kDepthStencilAttachmentFormats)
+      )
   )
+  .beforeAllSubcases(t => {
+    const { encoderFormatFeature, pipelineFormatFeature } = t.params;
+    t.selectDeviceOrSkipTestCase([encoderFormatFeature, pipelineFormatFeature]);
+  })
   .fn(async t => {
     const { encoderType, encoderFormat, pipelineFormat } = t.params;
-    await t.selectDeviceForTextureFormatOrSkipTestCase([encoderFormat, pipelineFormat]);
 
     const pipeline = t.createRenderPipeline(
       [{ format: 'rgba8unorm', writeMask: 0 }],
@@ -288,6 +448,130 @@ Test that the depth attachment format in render passes or bundles match the pipe
     });
     encoder.setPipeline(pipeline);
     validateFinishAndSubmit(encoderFormat === pipelineFormat, true);
+  });
+
+const kStencilFaceStates = [
+  { failOp: 'keep', depthFailOp: 'keep', passOp: 'keep' },
+  { failOp: 'zero', depthFailOp: 'zero', passOp: 'zero' },
+] as GPUStencilFaceState[];
+
+g.test('render_pass_or_bundle_and_pipeline,depth_stencil_read_only_write_state')
+  .desc(
+    `
+Test that the depth stencil read only state in render passes or bundles is compatible with the depth stencil write state of the pipeline.
+`
+  )
+  .params(u =>
+    u
+      .combine('encoderType', ['render pass', 'render bundle'] as const)
+      .combine('format', kDepthStencilAttachmentFormats)
+      .beginSubcases()
+      // pass/bundle state
+      .combine('depthReadOnly', [false, true])
+      .combine('stencilReadOnly', [false, true])
+      .combine('stencilFront', kStencilFaceStates)
+      .combine('stencilBack', kStencilFaceStates)
+      // pipeline state
+      .combine('depthWriteEnabled', [false, true])
+      .combine('stencilWriteMask', [0, 0xffffffff])
+      .combine('cullMode', ['none', 'front', 'back'] as const)
+      .filter(p => {
+        if (p.format) {
+          const depthStencilInfo = kTextureFormatInfo[p.format];
+          // For combined depth/stencil formats the depth and stencil read only state must match
+          // in order to create a valid render bundle or render pass.
+          if (depthStencilInfo.depth && depthStencilInfo.stencil) {
+            if (p.depthReadOnly !== p.stencilReadOnly) {
+              return false;
+            }
+          }
+          // If the format has no depth aspect, the depthReadOnly, depthWriteEnabled of the pipeline must not be true
+          // in order to create a valid render pipeline.
+          if (!depthStencilInfo.depth && p.depthWriteEnabled) {
+            return false;
+          }
+          // If the format has no stencil aspect, the stencil state operation must be 'keep'
+          // in order to create a valid render pipeline.
+          if (
+            !depthStencilInfo.stencil &&
+            (p.stencilFront.failOp !== 'keep' || p.stencilBack.failOp !== 'keep')
+          ) {
+            return false;
+          }
+        }
+        // No depthStencil attachment
+        return true;
+      })
+  )
+  .beforeAllSubcases(t => {
+    t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
+  })
+  .fn(async t => {
+    const {
+      encoderType,
+      format,
+      depthReadOnly,
+      stencilReadOnly,
+      depthWriteEnabled,
+      stencilWriteMask,
+      cullMode,
+      stencilFront,
+      stencilBack,
+    } = t.params;
+
+    const pipeline = t.createRenderPipeline(
+      [{ format: 'rgba8unorm', writeMask: 0 }],
+      format === undefined
+        ? undefined
+        : {
+            format,
+            depthWriteEnabled,
+            stencilWriteMask,
+            stencilFront,
+            stencilBack,
+          },
+      1,
+      cullMode
+    );
+
+    const { encoder, validateFinishAndSubmit } = t.createEncoder(encoderType, {
+      attachmentInfo: { colorFormats: ['rgba8unorm'], depthStencilFormat: format },
+    });
+    encoder.setPipeline(pipeline);
+
+    let writesDepth = false;
+    let writesStencil = false;
+    if (format) {
+      writesDepth = depthWriteEnabled;
+      if (stencilWriteMask !== 0) {
+        if (
+          cullMode !== 'front' &&
+          (stencilFront.passOp !== 'keep' ||
+            stencilFront.depthFailOp !== 'keep' ||
+            stencilFront.failOp !== 'keep')
+        ) {
+          writesStencil = true;
+        }
+        if (
+          cullMode !== 'back' &&
+          (stencilBack.passOp !== 'keep' ||
+            stencilBack.depthFailOp !== 'keep' ||
+            stencilBack.failOp !== 'keep')
+        ) {
+          writesStencil = true;
+        }
+      }
+    }
+
+    let isValid = true;
+    if (writesDepth) {
+      isValid &&= !depthReadOnly;
+    }
+    if (writesStencil) {
+      isValid &&= !stencilReadOnly;
+    }
+
+    validateFinishAndSubmit(isValid, true);
   });
 
 g.test('render_pass_or_bundle_and_pipeline,sample_count')

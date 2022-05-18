@@ -205,8 +205,13 @@ AudioContext::AudioContext(Document& document,
     case AutoplayPolicy::Type::kUserGestureRequired:
       // kUserGestureRequire policy only applies to cross-origin iframes for Web
       // Audio.
+      // TODO(crbug.com/1318055): With MPArch there may be multiple main frames
+      // so we should use IsCrossOriginToOutermostMainFrame when we intend to
+      // check if any embedded frame (eg, iframe or fenced frame) is
+      // cross-origin with respect to the outermost main frame. Follow up to
+      // confirm correctness.
       if (document.GetFrame() &&
-          document.GetFrame()->IsCrossOriginToMainFrame()) {
+          document.GetFrame()->IsCrossOriginToOutermostMainFrame()) {
         autoplay_status_ = AutoplayStatus::kFailed;
         user_gesture_required_ = true;
       }
@@ -280,42 +285,38 @@ void AudioContext::Trace(Visitor* visitor) const {
   BaseAudioContext::Trace(visitor);
 }
 
-ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
+ScriptPromise AudioContext::suspendContext(ScriptState* script_state,
+                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   if (ContextState() == kClosed) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot suspend a context that has been closed"));
-  } else {
-    suspended_by_user_ = true;
-
-    // Stop rendering now.
-    if (destination()) {
-      SuspendRendering();
-    }
-
-    // Since we don't have any way of knowing when the hardware actually stops,
-    // we'll just resolve the promise now.
-    resolver->Resolve();
-
-    // Probe reports the suspension only when the promise is resolved.
-    probe::DidSuspendAudioContext(GetDocument());
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot suspend a closed AudioContext.");
+    return ScriptPromise();
   }
 
-  return promise;
+  suspended_by_user_ = true;
+
+  // Stop rendering now.
+  if (destination()) {
+    SuspendRendering();
+  }
+
+  // Probe reports the suspension only when the promise is resolved.
+  probe::DidSuspendAudioContext(GetDocument());
+
+  // Since we don't have any way of knowing when the hardware actually stops,
+  // we'll just resolve the promise now.
+  return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (IsContextCleared()) {
+  if (ContextState() == kClosed) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "cannot resume a closed AudioContext");
+                                      "Cannot resume a closed AudioContext.");
     return ScriptPromise();
   }
 
@@ -409,14 +410,12 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 
 ScriptPromise AudioContext::closeContext(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  if (IsContextCleared()) {
+  if (ContextState() == kClosed) {
     // We've already closed the context previously, but it hasn't yet been
     // resolved, so just throw a DOM exception to trigger a promise rejection
     // and return an empty promise.
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot close a context that is being closed or has already been "
-        "closed.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot close a closed AudioContext.");
     return ScriptPromise();
   }
 
@@ -615,7 +614,7 @@ bool AudioContext::IsAllowedToStart() const {
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       DCHECK(window->GetFrame());
-      DCHECK(window->GetFrame()->IsCrossOriginToMainFrame());
+      DCHECK(window->GetFrame()->IsCrossOriginToOutermostMainFrame());
       window->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
@@ -652,8 +651,12 @@ void AudioContext::RecordAutoplayMetrics() {
   // Record autoplay_status_ value.
   base::UmaHistogramEnumeration("WebAudio.Autoplay", autoplay_status_.value());
 
+  // TODO(crbug.com/1318055): With MPArch there may be multiple main frames so
+  // we should use IsCrossOriginToOutermostMainFrame when we intend to check if
+  // any embedded frame (eg, iframe or fenced frame) is cross-origin with
+  // respect to the outermost main frame. Follow up to confirm correctness.
   if (GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->IsCrossOriginToMainFrame()) {
+      GetDocument()->GetFrame()->IsCrossOriginToOutermostMainFrame()) {
     base::UmaHistogramEnumeration("WebAudio.Autoplay.CrossOrigin",
                                   autoplay_status_.value());
   }

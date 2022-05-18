@@ -38,8 +38,6 @@ const memoryModelTestParams: MemoryModelTestParams = {
   permuteSecond: 419,
   memStride: 4,
   aliasedMemory: false,
-  numMemLocations: 1,
-  numReadOutputs: 1,
   numBehaviors: 4,
 };
 
@@ -100,5 +98,5 @@ g.test('atomicity')
       testShader,
       resultShader
     );
-    await memModelTester.run(20, 3);
+    await memModelTester.run(10, 3);
   });

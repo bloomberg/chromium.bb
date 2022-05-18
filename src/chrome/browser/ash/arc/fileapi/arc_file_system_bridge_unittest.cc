@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/virtual_file_provider/fake_virtual_file_provider_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -58,7 +58,7 @@ class ArcFileSystemBridgeTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -82,7 +82,7 @@ class ArcFileSystemBridgeTest : public testing::Test {
     arc_bridge_service_.file_system()->CloseInstance(&fake_file_system_);
     arc_file_system_bridge_.reset();
     profile_manager_.reset();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -133,7 +133,7 @@ TEST_F(ArcFileSystemBridgeTest, GetFileNameNonASCII) {
   run_loop.Run();
 }
 
-// net::UnescapeURLComponent() leaves UTF-8 lock icons escaped, but they're
+// base::UnescapeURLComponent() leaves UTF-8 lock icons escaped, but they're
 // valid file names, so shouldn't be left escaped here.
 TEST_F(ArcFileSystemBridgeTest, GetFileNameLockIcon) {
   const GURL url("externalfile:abc:test-filesystem:/%F0%9F%94%92");

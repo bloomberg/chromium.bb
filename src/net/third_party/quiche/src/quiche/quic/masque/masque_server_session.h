@@ -7,7 +7,6 @@
 
 #include "quiche/quic/core/quic_types.h"
 #include "quiche/quic/core/quic_udp_socket.h"
-#include "quiche/quic/masque/masque_compression_engine.h"
 #include "quiche/quic/masque/masque_server_backend.h"
 #include "quiche/quic/masque/masque_utils.h"
 #include "quiche/quic/platform/api/quic_epoll.h"
@@ -22,25 +21,10 @@ class QUIC_NO_EXPORT MasqueServerSession
       public MasqueServerBackend::BackendClient,
       public QuicEpollCallbackInterface {
  public:
-  // Interface meant to be implemented by owner of this MasqueServerSession
-  // instance.
-  class QUIC_NO_EXPORT Visitor {
-   public:
-    virtual ~Visitor() {}
-    // Register a client connection ID as being handled by this session.
-    virtual void RegisterClientConnectionId(
-        QuicConnectionId client_connection_id,
-        MasqueServerSession* masque_server_session) = 0;
-
-    // Unregister a client connection ID.
-    virtual void UnregisterClientConnectionId(
-        QuicConnectionId client_connection_id) = 0;
-  };
-
   explicit MasqueServerSession(
       MasqueMode masque_mode, const QuicConfig& config,
       const ParsedQuicVersionVector& supported_versions,
-      QuicConnection* connection, QuicSession::Visitor* visitor, Visitor* owner,
+      QuicConnection* connection, QuicSession::Visitor* visitor,
       QuicEpollServer* epoll_server, QuicCryptoServerStreamBase::Helper* helper,
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache,
@@ -51,7 +35,6 @@ class QUIC_NO_EXPORT MasqueServerSession
   MasqueServerSession& operator=(const MasqueServerSession&) = delete;
 
   // From QuicSession.
-  void OnMessageReceived(absl::string_view message) override;
   void OnMessageAcked(QuicMessageId message_id,
                       QuicTime receive_timestamp) override;
   void OnMessageLost(QuicMessageId message_id) override;
@@ -61,9 +44,7 @@ class QUIC_NO_EXPORT MasqueServerSession
 
   // From MasqueServerBackend::BackendClient.
   std::unique_ptr<QuicBackendResponse> HandleMasqueRequest(
-      const std::string& masque_path,
       const spdy::Http2HeaderBlock& request_headers,
-      const std::string& request_body,
       QuicSimpleServerBackend::RequestHandler* request_handler) override;
 
   // From QuicEpollCallbackInterface.
@@ -75,24 +56,18 @@ class QUIC_NO_EXPORT MasqueServerSession
   void OnShutdown(QuicEpollServer* eps, QuicUdpSocketFd fd) override;
   std::string Name() const override;
 
-  // Handle packet for client, meant to be called by MasqueDispatcher.
-  void HandlePacketFromServer(const ReceivedPacketInfo& packet_info);
-
   QuicEpollServer* epoll_server() const { return epoll_server_; }
 
  private:
   // State that the MasqueServerSession keeps for each CONNECT-UDP request.
   class QUIC_NO_EXPORT ConnectUdpServerState
-      : public QuicSpdyStream::Http3DatagramRegistrationVisitor,
-        public QuicSpdyStream::Http3DatagramVisitor {
+      : public QuicSpdyStream::Http3DatagramVisitor {
    public:
     // ConnectUdpServerState takes ownership of |fd|. It will unregister it
     // from |epoll_server| and close the file descriptor when destructed.
     explicit ConnectUdpServerState(
-        QuicSpdyStream* stream,
-        absl::optional<QuicDatagramContextId> context_id,
-        const QuicSocketAddress& target_server_address, QuicUdpSocketFd fd,
-        MasqueServerSession* masque_session);
+        QuicSpdyStream* stream, const QuicSocketAddress& target_server_address,
+        QuicUdpSocketFd fd, MasqueServerSession* masque_session);
 
     ~ConnectUdpServerState();
 
@@ -103,9 +78,6 @@ class QUIC_NO_EXPORT MasqueServerSession
     ConnectUdpServerState& operator=(ConnectUdpServerState&&);
 
     QuicSpdyStream* stream() const { return stream_; }
-    absl::optional<QuicDatagramContextId> context_id() const {
-      return context_id_;
-    }
     const QuicSocketAddress& target_server_address() const {
       return target_server_address_;
     }
@@ -113,27 +85,13 @@ class QUIC_NO_EXPORT MasqueServerSession
 
     // From QuicSpdyStream::Http3DatagramVisitor.
     void OnHttp3Datagram(QuicStreamId stream_id,
-                         absl::optional<QuicDatagramContextId> context_id,
                          absl::string_view payload) override;
-
-    // From QuicSpdyStream::Http3DatagramRegistrationVisitor.
-    void OnContextReceived(QuicStreamId stream_id,
-                           absl::optional<QuicDatagramContextId> context_id,
-                           DatagramFormatType format_type,
-                           absl::string_view format_additional_data) override;
-    void OnContextClosed(QuicStreamId stream_id,
-                         absl::optional<QuicDatagramContextId> context_id,
-                         ContextCloseCode close_code,
-                         absl::string_view close_details) override;
 
    private:
     QuicSpdyStream* stream_;
-    absl::optional<QuicDatagramContextId> context_id_;
     QuicSocketAddress target_server_address_;
     QuicUdpSocketFd fd_;                   // Owned.
     MasqueServerSession* masque_session_;  // Unowned.
-    bool context_received_ = false;
-    bool context_registered_ = false;
   };
 
   // From QuicSpdySession.
@@ -143,9 +101,7 @@ class QUIC_NO_EXPORT MasqueServerSession
   }
 
   MasqueServerBackend* masque_server_backend_;  // Unowned.
-  Visitor* owner_;                              // Unowned.
   QuicEpollServer* epoll_server_;               // Unowned.
-  MasqueCompressionEngine compression_engine_;
   MasqueMode masque_mode_;
   std::list<ConnectUdpServerState> connect_udp_server_states_;
   bool masque_initialized_ = false;

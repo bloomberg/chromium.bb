@@ -12,9 +12,9 @@
 #include "absl/strings/string_view.h"
 #include "quiche/http2/hpack/http2_hpack_constants.h"
 #include "quiche/http2/http2_constants.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/http2/test_tools/verify_macros.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -36,14 +36,10 @@ namespace {
 class MockHpackDecoderListener : public HpackDecoderListener {
  public:
   MOCK_METHOD(void, OnHeaderListStart, (), (override));
-  MOCK_METHOD(void,
-              OnHeader,
-              (const std::string& name, const std::string& value),
-              (override));
+  MOCK_METHOD(void, OnHeader,
+              (const std::string& name, const std::string& value), (override));
   MOCK_METHOD(void, OnHeaderListEnd, (), (override));
-  MOCK_METHOD(void,
-              OnHeaderErrorDetected,
-              (absl::string_view error_message),
+  MOCK_METHOD(void, OnHeaderErrorDetected, (absl::string_view error_message),
               (override));
 };
 
@@ -73,8 +69,7 @@ class HpackDecoderStateTest : public QuicheTest {
     GetDecoderTables()->DynamicTableSizeUpdate(size);
   }
 
-  void SetStringBuffer(const char* s,
-                       StringBacking backing,
+  void SetStringBuffer(const char* s, StringBacking backing,
                        HpackDecoderStringBuffer* string_buffer) {
     switch (backing) {
       case STATIC:
@@ -118,10 +113,8 @@ class HpackDecoderStateTest : public QuicheTest {
     Mock::VerifyAndClearExpectations(&listener_);
   }
 
-  void SendValueAndVerifyCallback(size_t name_index,
-                                  HpackEntryType entry_type,
-                                  const char* name,
-                                  const char* value,
+  void SendValueAndVerifyCallback(size_t name_index, HpackEntryType entry_type,
+                                  const char* name, const char* value,
                                   StringBacking value_backing) {
     SetValue(value, value_backing);
     EXPECT_CALL(listener_, OnHeader(Eq(name), Eq(value)));
@@ -150,30 +143,29 @@ class HpackDecoderStateTest : public QuicheTest {
   }
 
   // dynamic_index is one-based, because that is the way RFC 7541 shows it.
-  AssertionResult VerifyEntry(size_t dynamic_index,
-                              const char* name,
+  AssertionResult VerifyEntry(size_t dynamic_index, const char* name,
                               const char* value) {
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
-    VERIFY_NE(entry, nullptr);
-    VERIFY_EQ(entry->name, name);
-    VERIFY_EQ(entry->value, value);
+    HTTP2_VERIFY_NE(entry, nullptr);
+    HTTP2_VERIFY_EQ(entry->name, name);
+    HTTP2_VERIFY_EQ(entry->value, value);
     return AssertionSuccess();
   }
   AssertionResult VerifyNoEntry(size_t dynamic_index) {
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
-    VERIFY_EQ(entry, nullptr);
+    HTTP2_VERIFY_EQ(entry, nullptr);
     return AssertionSuccess();
   }
   AssertionResult VerifyDynamicTableContents(
       const std::vector<std::pair<const char*, const char*>>& entries) {
     size_t index = 1;
     for (const auto& entry : entries) {
-      VERIFY_SUCCESS(VerifyEntry(index, entry.first, entry.second));
+      HTTP2_VERIFY_SUCCESS(VerifyEntry(index, entry.first, entry.second));
       ++index;
     }
-    VERIFY_SUCCESS(VerifyNoEntry(index));
+    HTTP2_VERIFY_SUCCESS(VerifyNoEntry(index));
     return AssertionSuccess();
   }
 

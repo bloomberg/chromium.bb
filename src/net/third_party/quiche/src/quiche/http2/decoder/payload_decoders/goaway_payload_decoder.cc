@@ -11,8 +11,8 @@
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
-#include "quiche/http2/platform/api/http2_bug_tracker.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/common/platform/api/quiche_bug_tracker.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
 
@@ -31,16 +31,15 @@ std::ostream& operator<<(std::ostream& out,
   // Since the value doesn't come over the wire, only a programming bug should
   // result in reaching this point.
   int unknown = static_cast<int>(v);
-  HTTP2_BUG(http2_bug_167_1)
+  QUICHE_BUG(http2_bug_167_1)
       << "Invalid GoAwayPayloadDecoder::PayloadState: " << unknown;
   return out << "GoAwayPayloadDecoder::PayloadState(" << unknown << ")";
 }
 
 DecodeStatus GoAwayPayloadDecoder::StartDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "GoAwayPayloadDecoder::StartDecodingPayload: "
-                 << state->frame_header();
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2) << "GoAwayPayloadDecoder::StartDecodingPayload: "
+                  << state->frame_header();
   QUICHE_DCHECK_EQ(Http2FrameType::GOAWAY, state->frame_header().type);
   QUICHE_DCHECK_LE(db->Remaining(), state->frame_header().payload_length);
   QUICHE_DCHECK_EQ(0, state->frame_header().flags);
@@ -51,9 +50,8 @@ DecodeStatus GoAwayPayloadDecoder::StartDecodingPayload(
 }
 
 DecodeStatus GoAwayPayloadDecoder::ResumeDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2)
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2)
       << "GoAwayPayloadDecoder::ResumeDecodingPayload: remaining_payload="
       << state->remaining_payload() << ", db->Remaining=" << db->Remaining();
 
@@ -68,7 +66,7 @@ DecodeStatus GoAwayPayloadDecoder::ResumeDecodingPayload(
   DecodeStatus status = DecodeStatus::kDecodeError;
   size_t avail;
   while (true) {
-    HTTP2_DVLOG(2)
+    QUICHE_DVLOG(2)
         << "GoAwayPayloadDecoder::ResumeDecodingPayload payload_state_="
         << payload_state_;
     switch (payload_state_) {
@@ -115,7 +113,7 @@ DecodeStatus GoAwayPayloadDecoder::ResumeDecodingPayload(
         payload_state_ = PayloadState::kHandleFixedFieldsStatus;
         continue;
     }
-    HTTP2_BUG(http2_bug_167_2) << "PayloadState: " << payload_state_;
+    QUICHE_BUG(http2_bug_167_2) << "PayloadState: " << payload_state_;
   }
 }
 

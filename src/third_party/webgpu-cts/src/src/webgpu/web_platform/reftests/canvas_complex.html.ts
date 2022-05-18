@@ -572,7 +572,7 @@ fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
           {
             view: outputTexture.createView(),
 
-            loadValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+            clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
             loadOp: 'clear',
             storeOp: 'store',
           },
@@ -632,7 +632,7 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
       const pass = encoder.beginComputePass();
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bg);
-      pass.dispatch(ctx.canvas.width, ctx.canvas.height, 1);
+      pass.dispatchWorkgroups(ctx.canvas.width, ctx.canvas.height, 1);
       pass.end();
       t.device.queue.submit([encoder.finish()]);
     }
@@ -687,7 +687,11 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
       const pass = encoder.beginComputePass();
       pass.setPipeline(pipeline);
       pass.setBindGroup(0, bg);
-      pass.dispatch(align(ctx.canvas.width, 16) / 16, align(ctx.canvas.height, 16) / 16, 1);
+      pass.dispatchWorkgroups(
+        align(ctx.canvas.width, 16) / 16,
+        align(ctx.canvas.height, 16) / 16,
+        1
+      );
       pass.end();
       t.device.queue.submit([encoder.finish()]);
     }

@@ -31,11 +31,11 @@ vars = {
 deps = {
   # Dependencies required to use GN/Clang in standalone
   'build': {
-    'url': '{chromium_git}/chromium/src/build@c7876b5a44308b94074287939244bc562007de69',
+    'url': '{chromium_git}/chromium/src/build@87b04ad66530e4a571cef36d6e71ef737d23a887',
     'condition': 'dawn_standalone',
   },
   'buildtools': {
-    'url': '{chromium_git}/chromium/src/buildtools@e1471b21ee9c6765ee95e9db0c76fe997ccad35c',
+    'url': '{chromium_git}/chromium/src/buildtools@f0d740e4e2f803e39dfd5d8d11f7d87bdf489514',
     'condition': 'dawn_standalone',
   },
   'buildtools/clang_format/script': {
@@ -78,7 +78,7 @@ deps = {
   },
 
   'tools/clang': {
-    'url': '{chromium_git}/chromium/src/tools/clang@df9b14e26c163dd8e2c0ab081e2689f038ae7141',
+    'url': '{chromium_git}/chromium/src/tools/clang@3c4a622d9f0b0ce5ec2a438189d46c695216b324',
     'condition': 'dawn_standalone',
   },
   'tools/clang/dsymutil': {
@@ -96,7 +96,7 @@ deps = {
     'condition': 'dawn_standalone',
   },
   'third_party/googletest': {
-    'url': '{chromium_git}/external/github.com/google/googletest@6b74da4757a549563d7c37c8fae3e704662a043b',
+    'url': '{chromium_git}/external/github.com/google/googletest@bda85449f48f2d80a494c8c07766b6aba3170f3b',
     'condition': 'dawn_standalone',
   },
   # This is a dependency of //testing
@@ -127,17 +127,17 @@ deps = {
   },
 
   'third_party/angle': {
-    'url': '{chromium_git}/angle/angle@8718783526307a3fbb35d4c1ad4e8101262a0d73',
+    'url': '{chromium_git}/angle/angle@1d8227dab6f14dc344fffc3a6b18eae24336faf2',
     'condition': 'dawn_standalone',
   },
 
   'third_party/swiftshader': {
-    'url': '{swiftshader_git}/SwiftShader@1d450ae99a0f4ade28dd55dac962f8b28d990376',
+    'url': '{swiftshader_git}/SwiftShader@f1c2c0b0728152d7ca24472e696e07e957e6d09a',
     'condition': 'dawn_standalone',
   },
 
   'third_party/vulkan-deps': {
-    'url': '{chromium_git}/vulkan-deps@7e9ab0686bf4d4fa9c52eeb8def33b2057624987',
+    'url': '{chromium_git}/vulkan-deps@b768d03422eaba0e33c6ed6aaf12f04e5ec0ea2b',
     'condition': 'dawn_standalone',
   },
 
@@ -153,7 +153,7 @@ deps = {
 
   # WebGPU CTS - not used directly by Dawn, only transitively by Chromium.
   'third_party/webgpu-cts': {
-    'url': '{chromium_git}/external/github.com/gpuweb/cts@9861f5e1d92559c03a8d769117124de97adc47c4',
+    'url': '{chromium_git}/external/github.com/gpuweb/cts@11f61c5f919cf69aefddfb71f1612f502dbf5f45',
     'condition': 'build_with_chromium',
   },
 
@@ -167,11 +167,11 @@ deps = {
     'condition': 'dawn_node',
   },
   'third_party/gpuweb': {
-    'url': '{github_git}/gpuweb/gpuweb.git@881403b5fda2d9ac9ffc5daa24e34738205bf155',
+    'url': '{github_git}/gpuweb/gpuweb.git@16df823c91c9045b7cdf9bd0f2c0ef6d43ac95e7',
     'condition': 'dawn_node',
   },
   'third_party/gpuweb-cts': {
-    'url': '{chromium_git}/external/github.com/gpuweb/cts@9861f5e1d92559c03a8d769117124de97adc47c4',
+    'url': '{chromium_git}/external/github.com/gpuweb/cts@11f61c5f919cf69aefddfb71f1612f502dbf5f45',
     'condition': 'dawn_standalone',
   },
 

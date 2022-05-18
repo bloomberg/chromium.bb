@@ -20,7 +20,6 @@ limitations under the License.
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringMap.h"
-#include "llvm/Support/Debug.h"
 #include "mlir/IR/Attributes.h"  // from @llvm-project
 #include "mlir/IR/BuiltinAttributes.h"  // from @llvm-project
 #include "mlir/IR/MLIRContext.h"  // from @llvm-project
@@ -30,14 +29,10 @@ limitations under the License.
 #include "tensorflow/core/framework/op_def.pb.h"
 #include "tensorflow/core/ir/dialect.h"
 #include "tensorflow/core/ir/importexport/convert_attributes.h"
-#include "tensorflow/core/ir/importexport/convert_tensor.h"
 #include "tensorflow/core/ir/importexport/convert_types.h"
-#include "tensorflow/core/ir/importexport/import.h"
 #include "tensorflow/core/ir/ops.h"
 #include "tensorflow/core/platform/errors.h"
-#include "tensorflow/core/platform/protobuf.h"
 #include "tensorflow/core/platform/status.h"
-#include "tensorflow/core/protobuf/graph_debug_info.pb.h"
 
 using tensorflow::AttrValue;
 using tensorflow::FunctionDef;
@@ -186,8 +181,10 @@ Status ImportNodes(ValueMapManager value_manager,
                           ConvertAttributeValue(tf_attr, builder, tfgDialect));
       state.addAttribute(name, attr);
     }
-    state.addAttribute(device_attr, StringAttr::get(context, node.device()));
-    state.addAttribute(name_attr, StringAttr::get(context, node.name()));
+    if (!node.device().empty())
+      state.addAttribute(device_attr, StringAttr::get(context, node.device()));
+    if (!node.name().empty())
+      state.addAttribute(name_attr, StringAttr::get(context, node.name()));
     if (node.has_experimental_type()) {
       TF_ASSIGN_OR_RETURN(
           tf_type::FullTypeAttr type,
@@ -258,14 +255,13 @@ tensorflow::StatusOr<NamedAttrList> ConvertArgDefAttributes(
 // used as scratchpad for the import inside this function. The `gradients` maps
 // is provided to
 Status ImportGenericFunction(
-    const FunctionDef& func,
+    GraphFuncOp func_op, const FunctionDef& func,
     llvm::StringMap<llvm::StringMap<SmallVector<Value, 1>>>& values_map,
     OpBuilder& builder) {
   const OpDef& signature = func.signature();
   Location unknown_loc = builder.getUnknownLoc();
   MLIRContext* context = builder.getContext();
 
-  auto func_op = builder.create<GraphFuncOp>(unknown_loc);
   TFGraphDialect* tfgDialect = cast<TFGraphDialect>(func_op->getDialect());
   NamedAttrList attrs;
   DictionaryAttr func_attrs = builder.getDictionaryAttr({});
@@ -515,9 +511,10 @@ Status ImportGenericFunction(
 
 }  // namespace
 
-Status ConvertGenericFunction(const FunctionDef& func, OpBuilder& builder) {
+Status ConvertGenericFunction(GraphFuncOp func_op, const FunctionDef& func,
+                              OpBuilder& builder) {
   llvm::StringMap<llvm::StringMap<SmallVector<Value, 1>>> values_map;
-  return ImportGenericFunction(func, values_map, builder);
+  return ImportGenericFunction(func_op, func, values_map, builder);
 }
 
 }  // namespace tfg

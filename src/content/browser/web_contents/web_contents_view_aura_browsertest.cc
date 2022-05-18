@@ -305,7 +305,9 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
 // Flaky on Windows: http://crbug.com/305722
 // The test frequently times out on Linux, too. See crbug.com/440043.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// For Fuchsia, see https://crbug.com/1318245.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_OverscrollNavigation DISABLED_OverscrollNavigation
 #else
 #define MAYBE_OverscrollNavigation OverscrollNavigation
@@ -318,7 +320,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
 // Flaky on Windows (might be related to the above test):
 // http://crbug.com/305722
 // On Linux, the test frequently times out. (See crbug.com/440043).
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+// For Fuchsia, see https://crbug.com/1318245.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_OverscrollNavigationWithTouchHandler \
   DISABLED_OverscrollNavigationWithTouchHandler
 #else
@@ -470,19 +474,22 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // this test to fail. This observer will let us know if this is happening.
   SpuriousMouseMoveEventObserver mouse_observer(GetRenderWidgetHost());
 
-  base::TimeTicks timestamp = ui::EventTimeForNow();
+  // TODO(crbug.com/1322921): Use a mock timer to generate timestamps for
+  // events. This would need injecting the mock timer into
+  // `cc::CompositorFrameReportingController`.
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED,
-      gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5), timestamp,
+      gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
+      ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
-  timestamp += base::Milliseconds(10);
-  ui::TouchEvent move1(
-      ui::ET_TOUCH_MOVED, gfx::Point(bounds.right() - 10, bounds.y() + 5),
-      timestamp, ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+  ui::TouchEvent move1(ui::ET_TOUCH_MOVED,
+                       gfx::Point(bounds.right() - 10, bounds.y() + 5),
+                       ui::EventTimeForNow(),
+                       ui::PointerDetails(ui::EventPointerType::kTouch, 0));
   details = sink->OnEventFromSource(&move1);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
@@ -490,30 +497,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // Swipe back from the right edge, back to the left edge, back to the right
   // edge.
 
-  for (int x = bounds.right() - 10; x >= bounds.x() + 10; x-= 10) {
-    timestamp += base::Milliseconds(10);
+  for (int x = bounds.right() - 10; x >= bounds.x() + 10; x -= 10) {
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
-                       timestamp,
+                       ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
 
-  for (int x = bounds.x() + 10; x <= bounds.width() - 10; x+= 10) {
-    timestamp += base::Milliseconds(10);
+  for (int x = bounds.x() + 10; x <= bounds.width() - 10; x += 10) {
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
-                       timestamp,
+                       ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
     EXPECT_EQ(1, GetCurrentIndex());
   }
 
-  for (int x = bounds.width() - 10; x >= bounds.x() + 10; x-= 10) {
-    timestamp += base::Milliseconds(10);
+  for (int x = bounds.width() - 10; x >= bounds.x() + 10; x -= 10) {
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
-                       timestamp,
+                       ui::EventTimeForNow(),
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
     details = sink->OnEventFromSource(&inc);
     ASSERT_FALSE(details.dispatcher_destroyed);
@@ -643,11 +647,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanOK) {
   drag_dest_delegate_.Reset();
   view->SetDragDestDelegateForTesting(&drag_dest_delegate_);
 
-  // The view takes ownership of the delegate.  The delegate simulates that
-  // the scans passed.
-  auto* delegate = new TestWebContentsViewDelegate(
+  auto delegate = std::make_unique<TestWebContentsViewDelegate>(
       WebContentsViewDelegate::DropCompletionResult::kContinue);
-  view->SetDelegateForTesting(delegate);
+  TestWebContentsViewDelegate* delegate_ptr = delegate.get();
+  view->SetDelegateForTesting(std::move(delegate));
 
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
@@ -685,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanOK) {
   std::move(drop_cb).Run(std::move(new_data), output_drag_op);
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
 
-  delegate->FinishScan();
+  delegate_ptr->FinishScan();
   run_loop.Run();
 
   EXPECT_TRUE(drag_dest_delegate_.GetOnDropCalled());
@@ -702,11 +705,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanBad) {
   drag_dest_delegate_.Reset();
   view->SetDragDestDelegateForTesting(&drag_dest_delegate_);
 
-  // The view takes ownership of the delegate.  The delegate simulates that
-  // the scans failed.
-  auto* delegate = new TestWebContentsViewDelegate(
+  auto delegate = std::make_unique<TestWebContentsViewDelegate>(
       WebContentsViewDelegate::DropCompletionResult::kAbort);
-  view->SetDelegateForTesting(delegate);
+  TestWebContentsViewDelegate* delegate_ptr = delegate.get();
+  view->SetDelegateForTesting(std::move(delegate));
 
   std::unique_ptr<ui::OSExchangeData> data =
       std::make_unique<ui::OSExchangeData>();
@@ -744,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, Drop_DeepScanBad) {
   std::move(drop_cb).Run(std::move(new_data), output_drag_op);
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
 
-  delegate->FinishScan();
+  delegate_ptr->FinishScan();
   run_loop.Run();
 
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
@@ -771,12 +773,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
   delete web_contents->GetContentNativeView();
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_FUCHSIA)
 // This appears to be flaky in the same was as the other overscroll
 // tests. Enabling for non-Windows platforms.
 // See http://crbug.com/369871.
 // For linux, see http://crbug.com/381294.
 // For ChromeOS, see http://crbug.com/668128.
+// For Fuchsia, see https://crbug.com/1318245.
 #define MAYBE_RepeatedQuickOverscrollGestures DISABLED_RepeatedQuickOverscrollGestures
 #else
 #define MAYBE_RepeatedQuickOverscrollGestures RepeatedQuickOverscrollGestures

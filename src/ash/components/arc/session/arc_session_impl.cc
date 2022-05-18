@@ -463,6 +463,7 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
   params.num_cores_disabled = num_cores_disabled;
   params.enable_notifications_refresh =
       ash::features::IsNotificationsRefreshEnabled();
+  params.enable_tts_caching = base::FeatureList::IsEnabled(kEnableTTSCaching);
 
   // TODO (b/196460968): Remove after CTS run is complete.
   if (params.enable_notifications_refresh) {
@@ -875,9 +876,10 @@ void ArcSessionImpl::SetDemoModeDelegate(
   client_->SetDemoModeDelegate(delegate);
 }
 
-void ArcSessionImpl::TrimVmMemory(TrimVmMemoryCallback callback) {
+void ArcSessionImpl::TrimVmMemory(TrimVmMemoryCallback callback,
+                                  int page_limit) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  client_->TrimVmMemory(std::move(callback));
+  client_->TrimVmMemory(std::move(callback), page_limit);
 }
 
 void ArcSessionImpl::SetDefaultDeviceScaleFactor(float scale_factor) {

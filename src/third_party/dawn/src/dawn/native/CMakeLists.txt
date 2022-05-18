@@ -18,7 +18,7 @@ DawnJSONGenerator(
     RESULT_VARIABLE "DAWN_NATIVE_UTILS_GEN_SOURCES"
 )
 
-add_library(dawn_native ${DAWN_DUMMY_FILE})
+add_library(dawn_native ${DAWN_PLACEHOLDER_FILE})
 common_compile_options(dawn_native)
 
 target_compile_definitions(dawn_native PRIVATE "DAWN_NATIVE_IMPLEMENTATION")
@@ -45,6 +45,8 @@ target_sources(dawn_native PRIVATE
     "BindGroupTracker.h"
     "BindingInfo.cpp"
     "BindingInfo.h"
+    "BlobCache.cpp"
+    "BlobCache.h"
     "BuddyAllocator.cpp"
     "BuddyAllocator.h"
     "BuddyMemoryAllocator.cpp"
@@ -117,15 +119,16 @@ target_sources(dawn_native PRIVATE
     "Limits.h"
     "ObjectBase.cpp"
     "ObjectBase.h"
+    "PassResourceUsage.cpp"
     "PassResourceUsage.h"
     "PassResourceUsageTracker.cpp"
     "PassResourceUsageTracker.h"
-    "PersistentCache.cpp"
-    "PersistentCache.h"
     "PerStage.cpp"
     "PerStage.h"
     "Pipeline.cpp"
     "Pipeline.h"
+    "PipelineCache.cpp"
+    "PipelineCache.h"
     "PipelineLayout.cpp"
     "PipelineLayout.h"
     "PooledResourceMemoryAllocator.cpp"
@@ -477,6 +480,8 @@ if (DAWN_ENABLE_VULKAN)
         "vulkan/Forward.h"
         "vulkan/NativeSwapChainImplVk.cpp"
         "vulkan/NativeSwapChainImplVk.h"
+        "vulkan/PipelineCacheVk.cpp"
+        "vulkan/PipelineCacheVk.h"
         "vulkan/PipelineLayoutVk.cpp"
         "vulkan/PipelineLayoutVk.h"
         "vulkan/QuerySetVk.cpp"
@@ -555,7 +560,7 @@ DawnJSONGenerator(
     RESULT_VARIABLE "WEBGPU_DAWN_NATIVE_PROC_GEN"
 )
 
-add_library(webgpu_dawn ${DAWN_DUMMY_FILE})
+add_library(webgpu_dawn ${DAWN_PLACEHOLDER_FILE})
 common_compile_options(webgpu_dawn)
 target_link_libraries(webgpu_dawn PRIVATE dawn_native)
 target_compile_definitions(webgpu_dawn PRIVATE "WGPU_IMPLEMENTATION")

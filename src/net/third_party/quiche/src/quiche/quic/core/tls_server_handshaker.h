@@ -71,6 +71,10 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   bool ExportKeyingMaterial(absl::string_view label, absl::string_view context,
                             size_t result_len, std::string* result) override;
   SSL* GetSsl() const override;
+  bool IsCryptoFrameExpectedForEncryptionLevel(
+      EncryptionLevel level) const override;
+  EncryptionLevel GetEncryptionLevelToSendCryptoDataOfSpace(
+      PacketNumberSpace space) const override;
 
   // From QuicCryptoServerStreamBase and TlsHandshaker
   ssl_early_data_reason_t EarlyDataReason() const override;
@@ -87,7 +91,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
       override;
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
   void SetWriteSecret(EncryptionLevel level, const SSL_CIPHER* cipher,
-                      const std::vector<uint8_t>& write_secret) override;
+                      absl::Span<const uint8_t> write_secret) override;
 
   // Called with normalized SNI hostname as |hostname|.  Return value will be
   // sent in an ACCEPT_CH frame in the TLS ALPS extension, unless empty.
@@ -321,7 +325,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   // |ticket_decryption_callback_| points to the non-owned callback that was
   // passed to ProofSource::TicketCrypter::Decrypt but hasn't finished running
   // yet.
-  DecryptCallback* ticket_decryption_callback_ = nullptr;
+  std::shared_ptr<DecryptCallback> ticket_decryption_callback_;
   // |decrypted_session_ticket_| contains the decrypted session ticket after the
   // callback has run but before it is passed to BoringSSL.
   std::vector<uint8_t> decrypted_session_ticket_;

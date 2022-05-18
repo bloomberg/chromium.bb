@@ -654,9 +654,7 @@ static std::unique_ptr<Expression> optimize_intrinsic_call(const Context& contex
             // Refract uses its arguments out-of-order in such a way that we end up trying to create
             // an invalid Position range, so we rewrite the arguments' positions to avoid that here.
             auto clone = [&](const Expression* expr) {
-                std::unique_ptr<Expression> result = expr->clone();
-                result->fPosition = pos;
-                return DSLExpression(std::move(result));
+                return DSLExpression(expr->clone(pos));
             };
             auto I    = [&] { return clone(arguments[0]); };
             auto N    = [&] { return clone(arguments[1]); };
@@ -793,8 +791,8 @@ bool FunctionCall::hasProperty(Property property) const {
     return false;
 }
 
-std::unique_ptr<Expression> FunctionCall::clone() const {
-    return std::make_unique<FunctionCall>(fPosition, &this->type(), &this->function(),
+std::unique_ptr<Expression> FunctionCall::clone(Position pos) const {
+    return std::make_unique<FunctionCall>(pos, &this->type(), &this->function(),
                                           this->arguments().clone());
 }
 

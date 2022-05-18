@@ -10,6 +10,7 @@
     --emoji-spacing: 0;
     --emoji-per-row: 0;
     /* Values set in css only. */
+    --emoji-group-clear-recents-icon-size: 16px;
     --emoji-group-heading-padding-bottom: 10px;
     --emoji-group-heading-padding-top: 16px;
     --emoji-group-heading-size: 32px;
@@ -21,6 +22,8 @@
             + var(--emoji-spacing) * (var(--emoji-per-row) - 1));
     --emoji-picker-group-highlight-bar-width: 24px;
     --emoji-picker-subcategory-bar-inline-margin: 18px;
+    --emoji-tooltip-delay-in: 500ms;
+    --emoji-tooltip-delay-out: 500ms;
     /* Actual properties of the emoji picker */
     background-color: var(--cros-bg-color);
     display: flex;
@@ -371,10 +374,12 @@
     <div class="category-gap"></div>
     <template is="dom-if" if="[[v2Enabled]]">
       <div data-group="emoticon-history">
-        <template is="dom-if" if="[[emoticonHistory.emoji.length]]">
+        <template is="dom-if"
+          if="[[_isHistoryReadyToPresent(
+            emojiGroupsFullyLoaded,emoticonHistory.emoji.length)]]">
             <emoticon-group data="[[emoticonHistory.emoji]]"
               group="[[emoticonHistory.group]]" class="group"
-              data-group="emoticon-history">
+              data-group="emoticon-history" clearable>
             </emoticon-group>
         </template>
       </div>

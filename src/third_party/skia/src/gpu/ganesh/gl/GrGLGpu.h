@@ -184,7 +184,7 @@ public:
 
     GrFence SK_WARN_UNUSED_RESULT insertFence() override;
     bool waitFence(GrFence) override;
-    void deleteFence(GrFence) const override;
+    void deleteFence(GrFence) override;
 
     std::unique_ptr<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned) override;
     std::unique_ptr<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore&,
@@ -203,12 +203,10 @@ public:
 
     std::unique_ptr<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override;
 
-    void deleteSync(GrGLsync) const;
+    void deleteSync(GrGLsync);
 
     void bindFramebuffer(GrGLenum fboTarget, GrGLuint fboid);
     void deleteFramebuffer(GrGLuint fboid);
-
-    void insertManualFramebufferBarrier() override;
 
     void flushProgram(sk_sp<GrGLProgram>);
 
@@ -252,7 +250,8 @@ private:
                                      SkBudgeted,
                                      GrProtected,
                                      int mipLevelCount,
-                                     uint32_t levelClearMask) override;
+                                     uint32_t levelClearMask,
+                                     std::string_view label) override;
     sk_sp<GrTexture> onCreateCompressedTexture(SkISize dimensions,
                                                const GrBackendFormat&,
                                                SkBudgeted,
@@ -421,8 +420,6 @@ private:
 
         SkLRUCache<GrProgramDesc, std::unique_ptr<Entry>, DescHash> fMap;
     };
-
-    void flushPatchVertexCount(uint8_t count);
 
     void flushColorWrite(bool writeColor);
     void flushClearColor(std::array<float, 4>);
@@ -673,8 +670,6 @@ private:
         // This is used when we're using a core profile.
         GrGLVertexArray*     fCoreProfileVertexArray;
     } fHWVertexArrayState;
-
-    uint8_t fHWPatchVertexCount;
 
     struct {
         GrGLenum                fGLTarget;

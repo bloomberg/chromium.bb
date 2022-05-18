@@ -102,6 +102,9 @@ class TabModel {
     // parent/child relationship. The tab is added to the end of the TabModel.
     // This does not include opening in the current tab.
     FROM_RECENT_TABS,
+    // Opened from a Reading list. When going "back" on Android, the Reading
+    // list should be reopened.
+    FROM_READING_LIST,
     // Must be last.
     SIZE
   };
@@ -122,6 +125,8 @@ class TabModel {
     // User-originated switch to existing tab from Omnibox tab switch
     // suggestions.
     FROM_OMNIBOX,
+    // Selection of a previously closed tab when closure is undone.
+    FROM_UNDO,
     // Must be last.
     SIZE
   };

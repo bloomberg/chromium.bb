@@ -1368,6 +1368,10 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
 
     SSLInfo ssl_info;
     EXPECT_TRUE(GetSSLInfo(&ssl_info));
+
+    // Make sure all asynchronous histogram logging is complete.
+    base::RunLoop().RunUntilIdle();
+
     return SSLInfo::HANDSHAKE_FULL == ssl_info.handshake_type;
   }
 
@@ -3774,6 +3778,9 @@ HashValueVector MakeHashValueVector(uint8_t value) {
 // Test that |ssl_info.pkp_bypassed| is set when a local trust anchor causes
 // pinning to be bypassed.
 TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -3789,6 +3796,7 @@ TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -3807,6 +3815,9 @@ TEST_P(SSLClientSocketVersionTest, PKPBypassedSet) {
 }
 
 TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -3822,6 +3833,7 @@ TEST_P(SSLClientSocketVersionTest, PKPEnforced) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -4106,6 +4118,9 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
 // When both PKP and CT are required for a host, and both fail, the more
 // serious error is that the pin validation failed.
 TEST_P(SSLClientSocketVersionTest, PKPMoreImportantThanCT) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      net::features::kStaticKeyPinningEnforcement);
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, GetServerConfig()));
   scoped_refptr<X509Certificate> server_cert =
@@ -4121,6 +4136,7 @@ TEST_P(SSLClientSocketVersionTest, PKPMoreImportantThanCT) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   transport_security_state_->EnableStaticPinsForTesting();
+  transport_security_state_->SetPinningListAlwaysTimelyForTesting(true);
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   const char kCTHost[] = "pkp-expect-ct.preloaded.test";
@@ -5535,8 +5551,7 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNoResume) {
 }
 
 // Test 0-RTT logging in the standard ConfirmHandshake-after-acceptance case.
-// Disabled due to flakiness across all platforms: https://crbug.com/1247914.
-TEST_F(SSLClientSocketZeroRTTTest, DISABLED_EarlyDataReasonZeroRTT) {
+TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonZeroRTT) {
   const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
 
   ASSERT_TRUE(StartServer());
@@ -5550,6 +5565,9 @@ TEST_F(SSLClientSocketZeroRTTTest, DISABLED_EarlyDataReasonZeroRTT) {
   ASSERT_THAT(
       callback.GetResult(ssl_socket()->ConfirmHandshake(callback.callback())),
       IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
   histograms.ExpectUniqueSample(kReasonHistogram, ssl_early_data_accepted, 1);
 }
 

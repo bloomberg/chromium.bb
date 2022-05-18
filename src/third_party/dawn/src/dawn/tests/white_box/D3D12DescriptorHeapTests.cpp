@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <list>
+#include <set>
+#include <vector>
 
 #include "dawn/native/Device.h"
 #include "dawn/native/Toggles.h"
@@ -20,8 +22,11 @@
 #include "dawn/native/d3d12/DeviceD3D12.h"
 #include "dawn/native/d3d12/ShaderVisibleDescriptorAllocatorD3D12.h"
 #include "dawn/native/d3d12/StagingDescriptorAllocatorD3D12.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
+
+namespace dawn::native::d3d12 {
 
 constexpr uint32_t kRTSize = 4;
 
@@ -29,8 +34,6 @@ constexpr uint32_t kRTSize = 4;
 // This requires Tick() to be called at-least |kFrameDepth| times. This constant
 // should be updated if the internals of Tick() change.
 constexpr uint32_t kFrameDepth = 2;
-
-using namespace dawn::native::d3d12;
 
 class D3D12DescriptorHeapTests : public DawnTest {
   protected:
@@ -96,16 +99,15 @@ class D3D12DescriptorHeapTests : public DawnTest {
     wgpu::ShaderModule mSimpleFSModule;
 };
 
-class DummyStagingDescriptorAllocator {
+class PlaceholderStagingDescriptorAllocator {
   public:
-    DummyStagingDescriptorAllocator(Device* device,
-                                    uint32_t descriptorCount,
-                                    uint32_t allocationsPerHeap)
+    PlaceholderStagingDescriptorAllocator(Device* device,
+                                          uint32_t descriptorCount,
+                                          uint32_t allocationsPerHeap)
         : mAllocator(device,
                      descriptorCount,
                      allocationsPerHeap * descriptorCount,
-                     D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) {
-    }
+                     D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) {}
 
     CPUDescriptorHeapAllocation AllocateCPUDescriptors() {
         dawn::native::ResultOrError<CPUDescriptorHeapAllocation> result =
@@ -113,9 +115,7 @@ class DummyStagingDescriptorAllocator {
         return (result.IsSuccess()) ? result.AcquireSuccess() : CPUDescriptorHeapAllocation{};
     }
 
-    void Deallocate(CPUDescriptorHeapAllocation& allocation) {
-        mAllocator.Deallocate(&allocation);
-    }
+    void Deallocate(CPUDescriptorHeapAllocation& allocation) { mAllocator.Deallocate(&allocation); }
 
   private:
     StagingDescriptorAllocator mAllocator;
@@ -172,8 +172,8 @@ TEST_P(D3D12DescriptorHeapTests, SwitchOverViewHeap) {
 TEST_P(D3D12DescriptorHeapTests, NoSwitchOverSamplerHeap) {
     utils::ComboRenderPipelineDescriptor renderPipelineDescriptor;
 
-    // Fill in a sampler heap with "sampler only" bindgroups (1x sampler per group) by creating a
-    // sampler bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps WILL NOT switch over
+    // Fill in a sampler heap with "sampler only" bindgroups (1x sampler per group) by creating
+    // a sampler bindgroup each draw. After HEAP_SIZE + 1 draws, the heaps WILL NOT switch over
     // because the sampler heap allocations are de-duplicated.
     renderPipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
             @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
@@ -233,7 +233,8 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
 
     EXPECT_EQ(allocator->GetShaderVisiblePoolSizeForTesting(), 0u);
 
-    // Allocate + increment internal serials up to |kFrameDepth| and ensure heaps are always unique.
+    // Allocate + increment internal serials up to |kFrameDepth| and ensure heaps are always
+    // unique.
     for (uint32_t i = 0; i < kFrameDepth; i++) {
         EXPECT_TRUE(allocator->AllocateAndSwitchShaderVisibleHeap().IsSuccess());
         ComPtr<ID3D12DescriptorHeap> heap = allocator->GetShaderVisibleHeap();
@@ -246,8 +247,8 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInMultipleSubmits) {
     }
 
     // Repeat up to |kFrameDepth| again but ensure heaps are the same in the expected order
-    // (oldest heaps are recycled first). The "+ 1" is so we also include the very first heap in the
-    // check.
+    // (oldest heaps are recycled first). The "+ 1" is so we also include the very first heap in
+    // the check.
     for (uint32_t i = 0; i < kFrameDepth + 1; i++) {
         EXPECT_TRUE(allocator->AllocateAndSwitchShaderVisibleHeap().IsSuccess());
         ComPtr<ID3D12DescriptorHeap> heap = allocator->GetShaderVisibleHeap();
@@ -321,7 +322,8 @@ TEST_P(D3D12DescriptorHeapTests, PoolHeapsInPendingAndMultipleSubmits) {
               heapSerial + HeapVersionID(kNumOfSwitches));
     EXPECT_EQ(allocator->GetShaderVisiblePoolSizeForTesting(), kNumOfSwitches);
 
-    // Ensure switched-over heaps can be recycled by advancing the GPU by at-least |kFrameDepth|.
+    // Ensure switched-over heaps can be recycled by advancing the GPU by at-least
+    // |kFrameDepth|.
     for (uint32_t i = 0; i < kFrameDepth; i++) {
         mD3DDevice->APITick();
     }
@@ -412,7 +414,8 @@ TEST_P(D3D12DescriptorHeapTests, GrowAndPoolHeapsInPendingAndMultipleSubmits) {
 
     EXPECT_EQ(allocator->GetShaderVisiblePoolSizeForTesting(), kNumOfPooledHeaps);
 
-    // Ensure switched-over heaps can be recycled by advancing the GPU by at-least |kFrameDepth|.
+    // Ensure switched-over heaps can be recycled by advancing the GPU by at-least
+    // |kFrameDepth|.
     for (uint32_t i = 0; i < kFrameDepth; i++) {
         mD3DDevice->APITick();
     }
@@ -430,10 +433,11 @@ TEST_P(D3D12DescriptorHeapTests, GrowAndPoolHeapsInPendingAndMultipleSubmits) {
 // Verify encoding multiple heaps worth of bindgroups.
 // Shader-visible heaps will switch out |kNumOfHeaps| times.
 TEST_P(D3D12DescriptorHeapTests, EncodeManyUBO) {
-    // This test draws a solid color triangle |heapSize| times. Each draw uses a new bindgroup that
-    // has its own UBO with a "color value" in the range [1... heapSize]. After |heapSize| draws,
-    // the result is the arithmetic sum of the sequence after the framebuffer is blended by
-    // accumulation. By checking for this sum, we ensure each bindgroup was encoded correctly.
+    // This test draws a solid color triangle |heapSize| times. Each draw uses a new bindgroup
+    // that has its own UBO with a "color value" in the range [1... heapSize]. After |heapSize|
+    // draws, the result is the arithmetic sum of the sequence after the framebuffer is blended
+    // by accumulation. By checking for this sum, we ensure each bindgroup was encoded
+    // correctly.
     DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn::native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
 
@@ -593,8 +597,8 @@ TEST_P(D3D12DescriptorHeapTests, EncodeUBOOverflowMultipleSubmit) {
 
 // Verify encoding a heaps worth of bindgroups plus one more then reuse the first
 // bindgroup in the same submit.
-// Shader-visible heaps should switch out once then re-encode the first descriptor at a new offset
-// in the heap.
+// Shader-visible heaps should switch out once then re-encode the first descriptor at a new
+// offset in the heap.
 TEST_P(D3D12DescriptorHeapTests, EncodeReuseUBOOverflow) {
     DAWN_TEST_UNSUPPORTED_IF(!mD3DDevice->IsToggleEnabled(
         dawn::native::Toggle::UseD3D12SmallShaderVisibleHeapForTesting));
@@ -832,9 +836,9 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
         const uint32_t viewHeapSize = viewAllocator->GetShaderVisibleHeapSizeForTesting();
 
         // "Small" view heap is always 2 x sampler heap size and encodes 3x the descriptors per
-        // group. This means the count of heaps switches is determined by the total number of views
-        // to encode. Compute the number of bindgroups to encode by counting the required views for
-        // |kNumOfViewHeaps| heaps worth.
+        // group. This means the count of heaps switches is determined by the total number of
+        // views to encode. Compute the number of bindgroups to encode by counting the required
+        // views for |kNumOfViewHeaps| heaps worth.
         constexpr uint32_t kViewsPerBindGroup = 3;
         constexpr uint32_t kNumOfViewHeaps = 5;
 
@@ -899,7 +903,8 @@ TEST_P(D3D12DescriptorHeapTests, EncodeManyUBOAndSamplers) {
 TEST_P(D3D12DescriptorHeapTests, Single) {
     constexpr uint32_t kDescriptorCount = 4;
     constexpr uint32_t kAllocationsPerHeap = 3;
-    DummyStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount, kAllocationsPerHeap);
+    PlaceholderStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount,
+                                                    kAllocationsPerHeap);
 
     CPUDescriptorHeapAllocation allocation = allocator.AllocateCPUDescriptors();
     EXPECT_EQ(allocation.GetHeapIndex(), 0u);
@@ -914,7 +919,8 @@ TEST_P(D3D12DescriptorHeapTests, Single) {
 TEST_P(D3D12DescriptorHeapTests, Sequential) {
     constexpr uint32_t kDescriptorCount = 4;
     constexpr uint32_t kAllocationsPerHeap = 3;
-    DummyStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount, kAllocationsPerHeap);
+    PlaceholderStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount,
+                                                    kAllocationsPerHeap);
 
     // Allocate |kNumOfHeaps| worth.
     constexpr uint32_t kNumOfHeaps = 2;
@@ -944,7 +950,8 @@ TEST_P(D3D12DescriptorHeapTests, Sequential) {
 TEST_P(D3D12DescriptorHeapTests, ReuseFreedHeaps) {
     constexpr uint32_t kDescriptorCount = 4;
     constexpr uint32_t kAllocationsPerHeap = 25;
-    DummyStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount, kAllocationsPerHeap);
+    PlaceholderStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount,
+                                                    kAllocationsPerHeap);
 
     constexpr uint32_t kNumofHeaps = 10;
 
@@ -987,7 +994,8 @@ TEST_P(D3D12DescriptorHeapTests, ReuseFreedHeaps) {
 TEST_P(D3D12DescriptorHeapTests, AllocateDeallocateMany) {
     constexpr uint32_t kDescriptorCount = 4;
     constexpr uint32_t kAllocationsPerHeap = 25;
-    DummyStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount, kAllocationsPerHeap);
+    PlaceholderStagingDescriptorAllocator allocator(mD3DDevice, kDescriptorCount,
+                                                    kAllocationsPerHeap);
 
     std::list<CPUDescriptorHeapAllocation> list3;
     std::list<CPUDescriptorHeapAllocation> list5;
@@ -1044,3 +1052,5 @@ TEST_P(D3D12DescriptorHeapTests, AllocateDeallocateMany) {
 DAWN_INSTANTIATE_TEST(D3D12DescriptorHeapTests,
                       D3D12Backend(),
                       D3D12Backend({"use_d3d12_small_shader_visible_heap"}));
+
+}  // namespace dawn::native::d3d12

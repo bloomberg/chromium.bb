@@ -13,6 +13,8 @@ source_set("public") {
     "config.h",
     "features.cc",
     "features.h",
+    "field_trial_register.h",
+    "local_state_helper.h",
     "model_provider.cc",
     "model_provider.h",
     "segment_selection_result.cc",
@@ -50,10 +52,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformService.java",
     ]
 
-    deps = [
-      "//base:base_java",
-      "//third_party/androidx:androidx_annotation_annotation_java",
-    ]
+    deps = [ "//base:base_java" ]
 
     public_deps = [
       "//components/optimization_guide/proto:optimization_guide_proto_java",

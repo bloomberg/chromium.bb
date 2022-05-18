@@ -50,11 +50,12 @@ Params:
       .expand('index_buffer_offset', p => (p.indexed ? ([0, 16] as const) : [undefined]))
       .expand('base_vertex', p => (p.indexed ? ([0, 9] as const) : [undefined]))
   )
-  .fn(async t => {
+  .beforeAllSubcases(t => {
     if (t.params.first_instance > 0 && t.params.indirect) {
-      await t.selectDeviceOrSkipTestCase('indirect-first-instance');
+      t.selectDeviceOrSkipTestCase('indirect-first-instance');
     }
-
+  })
+  .fn(async t => {
     const renderTargetSize = [72, 36];
 
     // The test will split up the render target into a grid where triangles of

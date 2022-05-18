@@ -16,6 +16,7 @@
 #define SRC_DAWN_TESTS_PARAMGENERATOR_H_
 
 #include <tuple>
+#include <utility>
 #include <vector>
 
 // ParamStruct is a custom struct which ParamStruct will yield when iterating.
@@ -46,14 +47,20 @@ class ParamGenerator {
   public:
     using value_type = ParamStruct;
 
-    ParamGenerator(std::vector<Params>... params) : mParams(params...), mIsEmpty(false) {
+    explicit ParamGenerator(std::vector<Params>... params) : mParams(params...), mIsEmpty(false) {
         for (bool isEmpty : {params.empty()...}) {
             mIsEmpty |= isEmpty;
         }
     }
 
-    class Iterator : public std::iterator<std::forward_iterator_tag, ParamStruct, size_t> {
+    class Iterator {
       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = ParamStruct;
+        using difference_type = size_t;
+        using pointer = ParamStruct*;
+        using reference = ParamStruct&;
+
         Iterator& operator++() {
             // Increment the Index by 1. If the i'th place reaches the maximum,
             // reset it to 0 and continue with the i+1'th place.
@@ -75,20 +82,15 @@ class ParamGenerator {
             return mEnd == other.mEnd && mIndex == other.mIndex;
         }
 
-        bool operator!=(const Iterator& other) const {
-            return !(*this == other);
-        }
+        bool operator!=(const Iterator& other) const { return !(*this == other); }
 
-        ParamStruct operator*() const {
-            return GetParam(mParams, mIndex, s_indexSequence);
-        }
+        ParamStruct operator*() const { return GetParam(mParams, mIndex, s_indexSequence); }
 
       private:
         friend class ParamGenerator;
 
         Iterator(ParamTuple params, Index index)
-            : mParams(params), mIndex(index), mLastIndex{GetLastIndex(params, s_indexSequence)} {
-        }
+            : mParams(params), mIndex(index), mLastIndex{GetLastIndex(params, s_indexSequence)} {}
 
         ParamTuple mParams;
         Index mIndex;
@@ -118,9 +120,9 @@ struct BackendTestConfig;
 struct AdapterTestParam;
 
 namespace detail {
-    std::vector<AdapterTestParam> GetAvailableAdapterTestParamsForBackends(
-        const BackendTestConfig* params,
-        size_t numParams);
+std::vector<AdapterTestParam> GetAvailableAdapterTestParamsForBackends(
+    const BackendTestConfig* params,
+    size_t numParams);
 }
 
 template <typename Param, typename... Params>

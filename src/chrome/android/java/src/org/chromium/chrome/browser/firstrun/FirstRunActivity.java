@@ -247,6 +247,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         // needs to register the synthetic trial group. See https://crbug.com/1295692 for details.
         FREMobileIdentityConsistencyFieldTrial.createFirstRunTrial();
 
+        super.triggerLayoutInflation();
+
         initializeStateFromLaunchData();
         RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.TriggerLayoutInflation",
                 SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
@@ -254,10 +256,16 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         setFinishOnTouchOutside(true);
 
         setContentView(createContentView());
-        ViewDrawBlocker.blockViewDrawUntilReady(
-                findViewById(android.R.id.content), () -> mPages.size() > 0);
+        if (FREMobileIdentityConsistencyFieldTrial.isEnabled() && mPagerAdapter == null) {
+            // SigninFirstRunFragment doesn't use getProperties() and can be shown right away,
+            // without waiting for FirstRunFlowSequencer.
+            createFirstPage();
+        } else {
+            ViewDrawBlocker.blockViewDrawUntilReady(
+                    findViewById(android.R.id.content), () -> mPages.size() > 0);
+        }
 
-        mFirstRunFlowSequencer = new FirstRunFlowSequencer(this) {
+        mFirstRunFlowSequencer = new FirstRunFlowSequencer(this, getChildAccountStatusSupplier()) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
                 assert freProperties != null;
@@ -585,8 +593,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     @Override
-    public void recordNativeAndPoliciesLoadedHistogram() {
-        RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.NativeAndPoliciesLoaded",
+    public void recordNativePolicyAndChildStatusLoadedHistogram() {
+        RecordHistogram.recordTimesHistogram(
+                "MobileFre.FromLaunch.NativePolicyAndChildStatusLoaded",
                 SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
     }
 

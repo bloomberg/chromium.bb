@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -81,14 +82,12 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) const {
 
 static void AutoExpandSearchableHiddenElementsUpFrameTree(Range* range) {
   const Node& first_node = *range->FirstNode();
-  bool needs_style_and_layout = false;
   bool needs_layout_shift_allowance = false;
 
   // If the target text is in a content-visibility:auto subtree, then activate
   // it so we can scroll to it.
   if (DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(
           EphemeralRangeInFlatTree(range))) {
-    needs_style_and_layout = true;
     needs_layout_shift_allowance = true;
   }
 
@@ -96,7 +95,6 @@ static void AutoExpandSearchableHiddenElementsUpFrameTree(Range* range) {
   // expand it so find-in-page can scroll to it.
   if (RuntimeEnabledFeatures::AutoExpandDetailsElementEnabled() &&
       HTMLDetailsElement::ExpandDetailsAncestors(first_node)) {
-    needs_style_and_layout = true;
     needs_layout_shift_allowance = true;
     UseCounter::Count(first_node.GetDocument(),
                       WebFeature::kAutoExpandedDetailsForFindInPage);
@@ -107,7 +105,6 @@ static void AutoExpandSearchableHiddenElementsUpFrameTree(Range* range) {
   if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
           first_node.GetExecutionContext()) &&
       DisplayLockUtilities::RevealHiddenUntilFoundAncestors(first_node)) {
-    needs_style_and_layout = true;
     needs_layout_shift_allowance = true;
     UseCounter::Count(first_node.GetDocument(),
                       WebFeature::kBeforematchRevealedHiddenMatchable);
@@ -148,21 +145,12 @@ static void AutoExpandSearchableHiddenElementsUpFrameTree(Range* range) {
       if (frame_needs_style_and_layout) {
         frame_element->GetDocument().UpdateStyleAndLayoutForNode(
             frame_element, DocumentUpdateReason::kFindInPage);
-        needs_style_and_layout = true;
         needs_layout_shift_allowance = true;
       }
     } else {
       // TODO(crbug.com/1250847): Implement an IPC signal to expand in parent
       // RemoteFrames.
     }
-  }
-
-  if (needs_style_and_layout) {
-    // If we changed dom or style in order to reveal the target element, then we
-    // have to update style and layout before scrolling The modified attributes
-    // may also affect style and have fired mutation events.
-    first_node.GetDocument().UpdateStyleAndLayoutForNode(
-        &first_node, DocumentUpdateReason::kFindInPage);
   }
 }
 
@@ -181,8 +169,8 @@ static void ScrollToVisible(Range* match) {
   mojom::blink::ScrollBehavior scroll_behavior =
       smooth_find_enabled ? mojom::blink::ScrollBehavior::kSmooth
                           : mojom::blink::ScrollBehavior::kAuto;
-  first_node.GetLayoutObject()->ScrollRectToVisible(
-      PhysicalRect(match->BoundingBox()),
+  scroll_into_view_util::ScrollRectToVisible(
+      *first_node.GetLayoutObject(), PhysicalRect(match->BoundingBox()),
       ScrollAlignment::CreateScrollIntoViewParams(
           ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
           mojom::blink::ScrollType::kUser,
@@ -808,7 +796,8 @@ int TextFinder::SelectFindMatch(unsigned index, gfx::Rect* selection_rect) {
   if (!active_match_bounding_box.IsEmpty()) {
     if (active_match_->FirstNode() &&
         active_match_->FirstNode()->GetLayoutObject()) {
-      active_match_->FirstNode()->GetLayoutObject()->ScrollRectToVisible(
+      scroll_into_view_util::ScrollRectToVisible(
+          *active_match_->FirstNode()->GetLayoutObject(),
           PhysicalRect(active_match_bounding_box),
           ScrollAlignment::CreateScrollIntoViewParams(
               ScrollAlignment::CenterIfNeeded(),
@@ -914,6 +903,12 @@ void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
   if (!context->range->collapsed() && context->range->IsConnected()) {
     AutoExpandSearchableHiddenElementsUpFrameTree(context->range);
   }
+
+  // AutoExpandSearchableHiddenElementsUpFrameTree, as well as any other
+  // animation frame tasks which ran before this one, may have dirtied
+  // style/layout which needs to be up to date in order to scroll.
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutForRange(
+      context->range, DocumentUpdateReason::kFindInPage);
 
   // During the async step or AutoExpandSearchableHiddenElementsUpFrameTree, the
   // match may have been removed from the dom, gotten DisplayLocked, etc.

@@ -17,13 +17,13 @@
 // a deprecation warning is emitted when the "old" behavior is used, and tests that an error is
 // emitted when both the old and the new behavior are used (when applicable).
 
+#include <cmath>
+
 #include "dawn/tests/DawnTest.h"
 
 #include "dawn/common/Constants.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <cmath>
 
 class DeprecationTests : public DawnTest {
   protected:
@@ -137,6 +137,35 @@ TEST_P(DeprecationTests, EndPass) {
 
         EXPECT_DEPRECATION_WARNING(pass.EndPass());
     }
+}
+
+// Test that dispatch() and dispatchIndirect() is deprecated.
+TEST_P(DeprecationTests, Dispatch) {
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
+            @stage(compute) @workgroup_size(1, 1, 1)
+            fn main() {
+            })");
+
+    wgpu::ComputePipelineDescriptor csDesc;
+    csDesc.compute.module = module;
+    csDesc.compute.entryPoint = "main";
+    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
+
+    std::array<uint32_t, 3> indirectBufferData = {1, 0, 0};
+
+    wgpu::Buffer indirectBuffer = utils::CreateBufferFromData(
+        device, &indirectBufferData[0], indirectBufferData.size() * sizeof(uint32_t),
+        wgpu::BufferUsage::Indirect);
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
+    pass.SetPipeline(pipeline);
+
+    EXPECT_DEPRECATION_WARNING(pass.Dispatch(1));
+
+    EXPECT_DEPRECATION_WARNING(pass.DispatchIndirect(indirectBuffer, 0));
+
+    pass.End();
 }
 
 DAWN_INSTANTIATE_TEST(DeprecationTests,

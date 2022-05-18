@@ -18,7 +18,7 @@ interface DrawIndexedParameter {
 
 function callDrawIndexed(
   test: GPUTest,
-  encoder: GPURenderEncoderBase,
+  encoder: GPURenderCommandsMixin,
   drawType: 'drawIndexed' | 'drawIndexedIndirect',
   param: DrawIndexedParameter
 ) {

@@ -108,41 +108,40 @@ class UnifiedMessageCenterBubbleTest
   }
 
   bool IsQuickSettingsCollapsed() {
-    return !GetSystemTrayBubble()->controller_for_test()->IsExpanded();
+    return !GetSystemTrayBubble()
+                ->unified_system_tray_controller()
+                ->IsExpanded();
   }
 
   // Helper functions for focus cycle testing.
-  void DoTab() {
-    PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB, ui::EventFlags::EF_NONE);
-  }
+  void DoTab() { PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE); }
 
   void DoShiftTab() {
-    PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB,
-                       ui::EventFlags::EF_SHIFT_DOWN);
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   }
 
   void DoAltShiftN() {
-    PressAndReleaseKey(
-        ui::KeyboardCode::VKEY_N,
-        ui::EventFlags::EF_SHIFT_DOWN | ui::EventFlags::EF_ALT_DOWN);
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_N,
+                       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
   }
 
   void DoEsc() { PressAndReleaseKey(ui::KeyboardCode::VKEY_ESCAPE); }
 
   void ToggleExpanded() {
-    GetSystemTrayBubble()->controller_for_test()->ToggleExpanded();
+    GetSystemTrayBubble()->unified_system_tray_controller()->ToggleExpanded();
   }
 
   void WaitForAnimation() {
     // Some animations do not complete without checking is_animating();
     do {
       base::RunLoop().RunUntilIdle();
-    } while (GetSystemTrayBubble() &&
-             GetSystemTrayBubble()->controller_for_test() &&
-             GetSystemTrayBubble()->controller_for_test()->animation_ &&
-             GetSystemTrayBubble()
-                 ->controller_for_test()
-                 ->animation_->is_animating());
+    } while (
+        GetSystemTrayBubble() &&
+        GetSystemTrayBubble()->unified_system_tray_controller() &&
+        GetSystemTrayBubble()->unified_system_tray_controller()->animation_ &&
+        GetSystemTrayBubble()
+            ->unified_system_tray_controller()
+            ->animation_->is_animating());
   }
 
   views::View* GetFirstMessageCenterFocusable() {
@@ -334,45 +333,51 @@ TEST_P(UnifiedMessageCenterBubbleTest, FocusCycleWithNoNotifications) {
 }
 
 TEST_P(UnifiedMessageCenterBubbleTest, BubbleBounds) {
-  // Set display size where the message center is not collapsed.
-  UpdateDisplay("0+0-1280x1024");
+  std::vector<std::string> displays = {"0+0-1200x800", "0+0-1280x1080",
+                                       "0+0-1600x1440"};
 
-  // Ensure message center is not collapsed.
-  GetPrimaryUnifiedSystemTray()->ShowBubble();
-  ASSERT_FALSE(GetMessageCenterBubble()->IsMessageCenterCollapsed());
+  for (auto display : displays) {
+    // Set display size where the message center is not collapsed.
+    UpdateDisplay(display);
 
-  // Add enough notifications so that the scroll bar is visible.
-  while (!GetMessageCenterBubble()->message_center_view()->IsScrollBarVisible())
-    AddNotification();
+    // Ensure message center is not collapsed.
+    GetPrimaryUnifiedSystemTray()->ShowBubble();
+    ASSERT_FALSE(GetMessageCenterBubble()->IsMessageCenterCollapsed());
 
-  // The message center bubble should be positioned above the system tray
-  // bubble.
-  GetPrimaryUnifiedSystemTray()->ShowBubble();
-  EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
-            GetSystemTrayBubble()->GetBoundsInScreen().y());
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
+    // Add enough notifications so that the scroll bar is visible.
+    while (
+        !GetMessageCenterBubble()->message_center_view()->IsScrollBarVisible())
+      AddNotification();
 
-  // Go into overview mode, check bounds again.
-  EnterOverview();
-  GetPrimaryUnifiedSystemTray()->ShowBubble();
-  EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
-            GetSystemTrayBubble()->GetBoundsInScreen().y());
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
-  ExitOverview();
+    // The message center bubble should be positioned above the system tray
+    // bubble.
+    GetPrimaryUnifiedSystemTray()->ShowBubble();
+    EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
+              GetSystemTrayBubble()->GetBoundsInScreen().y());
+    GetPrimaryUnifiedSystemTray()->CloseBubble();
 
-  // Go into tablet mode, check bounds again.
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  GetPrimaryUnifiedSystemTray()->ShowBubble();
-  EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
-            GetSystemTrayBubble()->GetBoundsInScreen().y());
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
+    // Go into overview mode, check bounds again.
+    EnterOverview();
+    GetPrimaryUnifiedSystemTray()->ShowBubble();
+    EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
+              GetSystemTrayBubble()->GetBoundsInScreen().y());
+    GetPrimaryUnifiedSystemTray()->CloseBubble();
+    ExitOverview();
 
-  // Go into overview mode inside tablet mode, check bounds again.
-  EnterOverview();
-  GetPrimaryUnifiedSystemTray()->ShowBubble();
-  EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
-            GetSystemTrayBubble()->GetBoundsInScreen().y());
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
+    // Go into tablet mode, check bounds again.
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    GetPrimaryUnifiedSystemTray()->ShowBubble();
+    EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
+              GetSystemTrayBubble()->GetBoundsInScreen().y());
+    GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+    // Go into overview mode inside tablet mode, check bounds again.
+    EnterOverview();
+    GetPrimaryUnifiedSystemTray()->ShowBubble();
+    EXPECT_LT(GetMessageCenterBubble()->GetBoundsInScreen().bottom(),
+              GetSystemTrayBubble()->GetBoundsInScreen().y());
+    GetPrimaryUnifiedSystemTray()->CloseBubble();
+  }
 }
 
 TEST_P(UnifiedMessageCenterBubbleTest, HandleAccelerators) {

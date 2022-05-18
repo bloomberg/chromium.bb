@@ -7964,9 +7964,14 @@ static int zipfileFilter(
     zipfileCursorErr(pCsr, "zipfile() function requires an argument");
     return SQLITE_ERROR;
   }else if( sqlite3_value_type(argv[0])==SQLITE_BLOB ){
+    static const u8 aEmptyBlob = 0;
     const u8 *aBlob = (const u8*)sqlite3_value_blob(argv[0]);
     int nBlob = sqlite3_value_bytes(argv[0]);
     assert( pTab->pFirstEntry==0 );
+    if( aBlob==0 ){
+      aBlob = &aEmptyBlob;
+      nBlob = 0;
+    }
     rc = zipfileLoadDirectory(pTab, aBlob, nBlob);
     pCsr->pFreeEntry = pTab->pFirstEntry;
     pTab->pFirstEntry = pTab->pLastEntry = 0;
@@ -14425,6 +14430,8 @@ static void exec_prepared_stmt_columnar(
   int bNextLine = 0;
   int bMultiLineRowExists = 0;
   int bw = p->cmOpts.bWordWrap;
+  const char *zEmpty = "";
+  const char *zShowNull = p->nullValue;
 
   rc = sqlite3_step(pStmt);
   if( rc!=SQLITE_ROW ) return;
@@ -14486,12 +14493,14 @@ static void exec_prepared_stmt_columnar(
       if( wx<0 ) wx = -wx;
       if( useNextLine ){
         uz = azNextLine[i];
+        if( uz==0 ) uz = (u8*)zEmpty;
       }else if( p->cmOpts.bQuote ){
         sqlite3_free(azQuoted[i]);
         azQuoted[i] = quoted_column(pStmt,i);
         uz = (const unsigned char*)azQuoted[i];
       }else{
         uz = (const unsigned char*)sqlite3_column_text(pStmt,i);
+        if( uz==0 ) uz = (u8*)zShowNull;
       }
       azData[nRow*nColumn + i]
         = translateForDisplayAndDup(uz, &azNextLine[i], wx, bw);
@@ -14505,7 +14514,7 @@ static void exec_prepared_stmt_columnar(
   nTotal = nColumn*(nRow+1);
   for(i=0; i<nTotal; i++){
     z = azData[i];
-    if( z==0 ) z = p->nullValue;
+    if( z==0 ) z = (char*)zEmpty;
     n = strlenChar(z);
     j = i%nColumn;
     if( n>p->actualWidth[j] ) p->actualWidth[j] = n;
@@ -14609,7 +14618,10 @@ columnar_end:
     utf8_printf(p->out, "Interrupt\n");
   }
   nData = (nRow+1)*nColumn;
-  for(i=0; i<nData; i++) free(azData[i]);
+  for(i=0; i<nData; i++){
+    z = azData[i];
+    if( z!=zEmpty && z!=zShowNull ) free(azData[i]);
+  }
   sqlite3_free(azData);
   sqlite3_free((void*)azNextLine);
   sqlite3_free(abRowDiv);
@@ -19035,12 +19047,12 @@ SELECT\
   ','||iif((cpos-1)%4>0, ' ', x'0a'||' '))\
  ||')' AS ColsSpec \
 FROM (\
- SELECT cpos, printf('\"%w\"',printf('%.*s%s', nlen-chop,name,suff)) AS cname \
+ SELECT cpos, printf('\"%w\"',printf('%!.*s%s', nlen-chop,name,suff)) AS cname \
  FROM ColNames ORDER BY cpos\
 )";
   static const char * const zRenamesDone =
     "SELECT group_concat("
-    " printf('\"%w\" to \"%w\"',name,printf('%.*s%s', nlen-chop, name, suff)),"
+    " printf('\"%w\" to \"%w\"',name,printf('%!.*s%s', nlen-chop, name, suff)),"
     " ','||x'0a')"
     "FROM ColNames WHERE suff<>'' OR chop!=0"
     ;
@@ -22639,7 +22651,8 @@ static int process_input(ShellState *p){
       qss = QSS_Start;
     }
   }
-  if( nSql && QSS_PLAINDARK(qss) ){
+  if( nSql ){
+    /* This may be incomplete. Let the SQL parser deal with that. */
     errCnt += runOneSqlLine(p, zSql, p->in, startline);
   }
   free(zSql);

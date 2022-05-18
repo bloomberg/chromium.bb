@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/validation/ValidationTest.h"
+#include <sstream>
+#include <string>
 
 #include "dawn/common/Constants.h"
 #include "dawn/native/ShaderModule.h"
+#include "dawn/tests/unittests/validation/ValidationTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <sstream>
 
 class ShaderModuleValidationTest : public ValidationTest {};
 
@@ -658,4 +658,12 @@ TEST_F(ShaderModuleValidationTest, MissingDecorations) {
             return 1.0;
         }
     )"));
+}
+
+// Test that WGSL extension used by enable directives must be allowed by WebGPU.
+TEST_F(ShaderModuleValidationTest, ExtensionMustBeAllowed) {
+    ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
+enable InternalExtensionForTesting;
+
+@stage(compute) @workgroup_size(1) fn main() {})"));
 }

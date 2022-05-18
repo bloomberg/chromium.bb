@@ -274,8 +274,8 @@ class Array
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Array(const EigenBase<OtherDerived> &other,
-                              typename internal::enable_if<internal::is_convertible<typename OtherDerived::Scalar,Scalar>::value,
-                                                           PrivateType>::type = PrivateType())
+                              std::enable_if_t<internal::is_convertible<typename OtherDerived::Scalar,Scalar>::value,
+                                               PrivateType> = PrivateType())
       : Base(other.derived())
     { }
 

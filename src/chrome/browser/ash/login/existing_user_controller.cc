@@ -48,6 +48,7 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/ash/login/helper.h"
+#include "chrome/browser/ash/login/profile_auth_data.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_salt_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_storage_cryptohome.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
@@ -95,7 +96,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/hibernate/buildflags.h"
+#include "chromeos/ash/components/hibernate/buildflags.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
@@ -103,6 +104,7 @@
 #include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_service.h"
@@ -131,8 +133,12 @@
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(ENABLE_HIBERNATE)
-#include "chromeos/dbus/hiberman/hiberman_client.h"  // nogncheck
+#include "chromeos/ash/components/dbus/hiberman/hiberman_client.h"  // nogncheck
 #endif
+
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace ash {
 namespace {
@@ -144,9 +150,6 @@ const char kAutoLaunchNotificationId[] =
     "chrome://managed_guest_session/auto_launch";
 
 const char kAutoLaunchNotifierId[] = "ash.managed_guest_session-auto_launch";
-
-// Delay for transferring the auth cache to the system profile.
-const long int kAuthCacheTransferDelayMs = 2000;
 
 // Delay for restarting the ui if safe-mode login has failed.
 const long int kSafeModeRestartUiDelayMs = 30000;
@@ -164,15 +167,6 @@ void OnTranferredHttpAuthCaches() {
   // have been stuck until now too.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&RefreshPoliciesOnUIThread));
-}
-
-void TransferHttpAuthCacheToSystemNetworkContext(
-    base::RepeatingClosure completion_callback,
-    const base::UnguessableToken& cache_key) {
-  network::mojom::NetworkContext* system_network_context =
-      g_browser_process->system_network_context_manager()->GetContext();
-  system_network_context->LoadHttpAuthCacheProxyEntries(cache_key,
-                                                        completion_callback);
 }
 
 // Copies any authentication details that were entered in the login profile to
@@ -339,42 +333,40 @@ AccountId GetPublicSessionAutoLoginAccountId(
 
 }  // namespace
 
-// Utility class used to wait for a Public Session policy to be available if
-// public session login is requested before the associated policy is loaded.
-// When the policy is available, it will run the callback passed to the
+// Utility class used to wait for a Public Session policy store load if public
+// session login is requested before the associated policy store is loaded.
+// When the store gets loaded, it will run the callback passed to the
 // constructor.
-class ExistingUserController::DeviceLocalAccountPolicyWaiter
-    : public policy::DeviceLocalAccountPolicyService::Observer {
+class ExistingUserController::PolicyStoreLoadWaiter
+    : public policy::CloudPolicyStore::Observer {
  public:
-  DeviceLocalAccountPolicyWaiter(
-      policy::DeviceLocalAccountPolicyService* policy_service,
-      base::OnceClosure callback)
-      : policy_service_(policy_service), callback_(std::move(callback)) {
-    scoped_observation_.Observe(policy_service);
+  PolicyStoreLoadWaiter(policy::CloudPolicyStore* store,
+                        base::OnceClosure callback)
+      : callback_(std::move(callback)) {
+    DCHECK(!store->is_initialized());
+    scoped_observation_.Observe(store);
   }
-  ~DeviceLocalAccountPolicyWaiter() override = default;
+  ~PolicyStoreLoadWaiter() override = default;
 
-  DeviceLocalAccountPolicyWaiter(const DeviceLocalAccountPolicyWaiter& other) =
-      delete;
-  DeviceLocalAccountPolicyWaiter& operator=(
-      const DeviceLocalAccountPolicyWaiter& other) = delete;
+  PolicyStoreLoadWaiter(const PolicyStoreLoadWaiter& other) = delete;
+  PolicyStoreLoadWaiter& operator=(const PolicyStoreLoadWaiter& other) = delete;
 
-  // policy::DeviceLocalAccountPolicyService::Observer:
-  void OnPolicyUpdated(const std::string& user_id) override {
-    if (!policy_service_->IsPolicyAvailableForUser(user_id))
-      return;
+  // policy::CloudPolicyStore::Observer:
+  void OnStoreLoaded(policy::CloudPolicyStore* store) override {
+    scoped_observation_.Reset();
+    std::move(callback_).Run();
+  }
+  void OnStoreError(policy::CloudPolicyStore* store) override {
+    // If store load fails, run the callback to unblock public session login
+    // attempt, which will likely fail.
     scoped_observation_.Reset();
     std::move(callback_).Run();
   }
 
-  void OnDeviceLocalAccountsChanged() override {}
-
  private:
-  base::raw_ptr<policy::DeviceLocalAccountPolicyService> policy_service_ =
-      nullptr;
   base::OnceClosure callback_;
-  base::ScopedObservation<policy::DeviceLocalAccountPolicyService,
-                          policy::DeviceLocalAccountPolicyService::Observer>
+  base::ScopedObservation<policy::CloudPolicyStore,
+                          policy::CloudPolicyStore::Observer>
       scoped_observation_{this};
 };
 
@@ -524,7 +516,7 @@ void ExistingUserController::Observe(
   VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
-      base::Milliseconds(kAuthCacheTransferDelayMs));
+      kAuthCacheTransferDelayMs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1254,33 +1246,35 @@ void ExistingUserController::LoginAsPublicSession(
     return;
   }
 
-  // Public session login will fail if attempted if the associated policy
-  // is not ready - wait for the policy to become available before starting the
+  // Public session login will fail if attempted if the associated policy store
+  // is not initialized - wait for the policy store load before starting the
   // auto-login timer.
-  policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-  policy::DeviceLocalAccountPolicyService* policy_service =
-      connector->GetDeviceLocalAccountPolicyService();
+  policy::CloudPolicyStore* policy_store =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_ash()
+          ->GetDeviceLocalAccountPolicyService()
+          ->GetBrokerForUser(user->GetAccountId().GetUserEmail())
+          ->core()
+          ->store();
 
-  if (policy_service && !policy_service->IsPolicyAvailableForUser(
-                            user_context.GetAccountId().GetUserEmail())) {
-    VLOG(2) << "Policies are not yet available for public session";
-    policy_waiter_ = std::make_unique<DeviceLocalAccountPolicyWaiter>(
-        policy_service,
+  if (!policy_store->is_initialized()) {
+    VLOG(2) << "Public session policy store not yet initialized";
+    policy_store_waiter_ = std::make_unique<PolicyStoreLoadWaiter>(
+        policy_store,
         base::BindOnce(
-            &ExistingUserController::LoginAsPublicSessionWhenPolicyAvailable,
+            &ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady,
             base::Unretained(this), user_context));
 
     return;
   }
 
-  LoginAsPublicSessionWhenPolicyAvailable(user_context);
+  LoginAsPublicSessionWithPolicyStoreReady(user_context);
 }
 
-void ExistingUserController::LoginAsPublicSessionWhenPolicyAvailable(
+void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
     const UserContext& user_context) {
-  VLOG(2) << __func__;
-  policy_waiter_.reset();
+  VLOG(2) << "LoginAsPublicSessionWithPolicyStoreReady";
+  policy_store_waiter_.reset();
 
   UserContext new_user_context = user_context;
   std::string locale = user_context.GetPublicSessionLocale();
@@ -1441,16 +1435,12 @@ void ExistingUserController::ResyncUserData() {
 }
 
 void ExistingUserController::StartAutoLoginTimer() {
-  auto session_state = session_manager::SessionManager::Get()->session_state();
   if (is_login_in_progress_ ||
-      session_state == session_manager::SessionState::OOBE ||
       !public_session_auto_login_account_id_.is_valid()) {
     VLOG(2) << "Not starting autologin timer, because:";
     VLOG_IF(2, is_login_in_progress_) << "* Login is in process;";
     VLOG_IF(2, !public_session_auto_login_account_id_.is_valid())
         << "* No valid autologin account;";
-    VLOG_IF(2, session_state == session_manager::SessionState::OOBE)
-        << "* OOBE isn't completed;";
     return;
   }
   VLOG(2) << "Starting autologin timer with delay: " << auto_login_delay_;

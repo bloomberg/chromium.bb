@@ -207,6 +207,13 @@ static bool detect_shader_settings(const std::string& text,
                 if (consume_suffix(&settingsText, " NoInline")) {
                     settings->fInlineThreshold = 0;
                 }
+                if (consume_suffix(&settingsText, " NoOptimize")) {
+                    settings->fOptimize = false;
+                    settings->fInlineThreshold = 0;
+                }
+                if (consume_suffix(&settingsText, " NoRTFlip")) {
+                    settings->fForceNoRTFlip = true;
+                }
                 if (consume_suffix(&settingsText, " NoTraceVarInSkVMDebugTrace")) {
                     settings->fAllowTraceVarInSkVMDebugTrace = false;
                 }

@@ -6,43 +6,43 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "components/prefs/pref_service.h"
+#include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "content/public/browser/navigation_entry.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
 
-bool ShouldOfferFeature(content::WebContents* web_contents) {
+absl::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
+    content::WebContents* web_contents) {
+  // TODO(crbug.com/1274173): This can probably be a DCHECK instead.
   if (!web_contents)
-    return false;
+    return absl::nullopt;
 
-  if (!web_contents->GetURL().SchemeIsHTTPOrHTTPS())
-    return false;
-
-  if (!web_contents->GetController().GetLastCommittedEntry())
-    return false;
-
-  Profile* profile =
+  auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  send_tab_to_self::SendTabToSelfSyncService* send_tab_to_self_sync_service =
-      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
-  if (!send_tab_to_self_sync_service) {
-    // Can happen in incognito or guest profile.
-    return false;
-  }
+  return GetEntryPointDisplayReason(
+      web_contents->GetLastCommittedURL(),
+      SyncServiceFactory::GetForProfile(profile),
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile),
+      profile->GetPrefs());
+}
 
-  SendTabToSelfModel* model =
-      send_tab_to_self_sync_service->GetSendTabToSelfModel();
-  return model->IsReady() && model->HasValidTargetDevice();
+bool ShouldDisplayEntryPoint(content::WebContents* web_contents) {
+  return GetEntryPointDisplayReason(web_contents).has_value();
 }
 
 bool ShouldOfferOmniboxIcon(content::WebContents* web_contents) {
   if (!web_contents)
     return false;
   return !web_contents->IsWaitingForResponse() &&
-         ShouldOfferFeature(web_contents);
+         ShouldDisplayEntryPoint(web_contents);
 }
 
 }  // namespace send_tab_to_self

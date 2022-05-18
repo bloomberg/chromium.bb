@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/process/process_metrics.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/resourced/fake_resourced_client.h"
 #include "dbus/bus.h"
@@ -246,8 +246,8 @@ void ResourcedClientImpl::HandleSetMemoryMarginBps(
     // If Chrome startup was racing with resourced startup it's possible
     // that the message was not delivered because resourced was not up yet.
     // Let's redispatch the message in 30 seconds.
-    base::ThreadPool::PostDelayedTask(
-        FROM_HERE, {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&ResourcedClientImpl::SetMemoryMarginsBps,
                        weak_factory_.GetWeakPtr(), critical_margin,
                        moderate_margin, std::move(callback)),
@@ -261,6 +261,7 @@ void ResourcedClientImpl::HandleSetMemoryMarginBps(
   if (!reader.PopUint64(&critical) || !reader.PopUint64(&moderate)) {
     LOG(ERROR) << "Unable to read back uint64s from resourced";
     std::move(callback).Run(false, 0, 0);
+    return;
   }
 
   std::move(callback).Run(true, critical, moderate);

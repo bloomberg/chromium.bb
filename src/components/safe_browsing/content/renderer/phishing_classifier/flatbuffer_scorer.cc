@@ -16,10 +16,10 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/content/common/visual_utils.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "components/safe_browsing/core/common/visual_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -94,7 +94,7 @@ FlatBufferModelScorer::FlatBufferModelScorer() = default;
 FlatBufferModelScorer::~FlatBufferModelScorer() = default;
 
 /* static */
-FlatBufferModelScorer* FlatBufferModelScorer::Create(
+std::unique_ptr<FlatBufferModelScorer> FlatBufferModelScorer::Create(
     base::ReadOnlySharedMemoryRegion region,
     base::File visual_tflite_model) {
   std::unique_ptr<FlatBufferModelScorer> scorer(new FlatBufferModelScorer());
@@ -142,7 +142,7 @@ FlatBufferModelScorer* FlatBufferModelScorer::Create(
   RecordScorerCreationStatus(SCORER_SUCCESS);
   scorer->flatbuffer_mapping_ = std::move(mapping);
 
-  return scorer.release();
+  return scorer;
 }
 
 double FlatBufferModelScorer::ComputeRuleScore(

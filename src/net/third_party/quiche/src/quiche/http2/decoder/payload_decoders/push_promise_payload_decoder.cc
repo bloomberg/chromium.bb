@@ -11,8 +11,8 @@
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
-#include "quiche/http2/platform/api/http2_bug_tracker.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/common/platform/api/quiche_bug_tracker.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
 
@@ -36,13 +36,12 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 DecodeStatus PushPromisePayloadDecoder::StartDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
+    FrameDecoderState* state, DecodeBuffer* db) {
   const Http2FrameHeader& frame_header = state->frame_header();
   const uint32_t total_length = frame_header.payload_length;
 
-  HTTP2_DVLOG(2) << "PushPromisePayloadDecoder::StartDecodingPayload: "
-                 << frame_header;
+  QUICHE_DVLOG(2) << "PushPromisePayloadDecoder::StartDecodingPayload: "
+                  << frame_header;
 
   QUICHE_DCHECK_EQ(Http2FrameType::PUSH_PROMISE, frame_header.type);
   QUICHE_DCHECK_LE(db->Remaining(), total_length);
@@ -63,11 +62,10 @@ DecodeStatus PushPromisePayloadDecoder::StartDecodingPayload(
 }
 
 DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "UnknownPayloadDecoder::ResumeDecodingPayload"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2) << "UnknownPayloadDecoder::ResumeDecodingPayload"
+                  << "  remaining_payload=" << state->remaining_payload()
+                  << "  db->Remaining=" << db->Remaining();
 
   const Http2FrameHeader& frame_header = state->frame_header();
   QUICHE_DCHECK_EQ(Http2FrameType::PUSH_PROMISE, frame_header.type);
@@ -76,7 +74,7 @@ DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
 
   DecodeStatus status;
   while (true) {
-    HTTP2_DVLOG(2)
+    QUICHE_DVLOG(2)
         << "PushPromisePayloadDecoder::ResumeDecodingPayload payload_state_="
         << payload_state_;
     switch (payload_state_) {
@@ -155,7 +153,7 @@ DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
         payload_state_ = PayloadState::kResumeDecodingPushPromiseFields;
         return status;
     }
-    HTTP2_BUG(http2_bug_183_1) << "PayloadState: " << payload_state_;
+    QUICHE_BUG(http2_bug_183_1) << "PayloadState: " << payload_state_;
   }
 }
 

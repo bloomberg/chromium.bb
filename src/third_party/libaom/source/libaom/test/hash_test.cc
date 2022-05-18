@@ -58,7 +58,7 @@ void AV1Crc32cHashTest::SetUp() {
   bsize_ = GET_PARAM(1);
   length_ = bsize_ * bsize_ * sizeof(uint16_t);
   buffer_ = new uint8_t[length_];
-  ASSERT_TRUE(buffer_ != NULL);
+  ASSERT_NE(buffer_, nullptr);
   for (size_t i = 0; i < length_; ++i) {
     buffer_[i] = rnd_.Rand8();
   }

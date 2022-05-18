@@ -21,6 +21,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -33,7 +34,8 @@ using message_center::Notification;
 
 class UnifiedSystemTrayTest : public AshTestBase {
  public:
-  UnifiedSystemTrayTest() = default;
+  UnifiedSystemTrayTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   UnifiedSystemTrayTest(const UnifiedSystemTrayTest&) = delete;
   UnifiedSystemTrayTest& operator=(const UnifiedSystemTrayTest&) = delete;
   ~UnifiedSystemTrayTest() override = default;
@@ -50,6 +52,10 @@ class UnifiedSystemTrayTest : public AshTestBase {
             message_center::RichNotificationData(),
             new message_center::NotificationDelegate()));
     return id;
+  }
+
+  void RemoveNotification(const std::string id) {
+    MessageCenter::Get()->RemoveNotification(id, /*by_user=*/false);
   }
 
   bool IsSliderBubbleShown() {
@@ -315,7 +321,7 @@ TEST_F(UnifiedSystemTrayTest, FocusMessageCenter_CollapseQuickSettings) {
   EXPECT_FALSE(message_center_view->Contains(focus_manager->GetFocusedView()));
 
   auto* quick_settings_controller =
-      GetUnifiedSystemTrayBubble()->controller_for_test();
+      GetUnifiedSystemTrayBubble()->unified_system_tray_controller();
   quick_settings_controller->EnsureExpanded();
 
   auto did_focus = tray->FocusMessageCenter(false);
@@ -398,6 +404,40 @@ TEST_F(UnifiedSystemTrayTest, FocusQuickSettings_VoxEnabled) {
   EXPECT_TRUE(tray_bubble_widget->IsActive());
   EXPECT_FALSE(
       unified_system_tray_view->Contains(focus_manager->GetFocusedView()));
+}
+
+TEST_F(UnifiedSystemTrayTest, TimeInQuickSettingsMetric) {
+  base::HistogramTester histogram_tester;
+  constexpr base::TimeDelta kTimeInQuickSettings = base::Seconds(3);
+  auto* tray = GetPrimaryUnifiedSystemTray();
+
+  // Open the tray.
+  tray->ShowBubble();
+
+  // Spend cool-down time with tray open.
+  task_environment()->FastForwardBy(kTimeInQuickSettings);
+
+  // Close and record the metric.
+  tray->CloseBubble();
+
+  // Ensure metric recorded time passed while Quick Setting was open.
+  histogram_tester.ExpectTimeBucketCount("Ash.QuickSettings.UserJourneyTime",
+                                         kTimeInQuickSettings,
+                                         /*count=*/1);
+
+  // Re-open the tray.
+  tray->ShowBubble();
+
+  // Metric isn't recorded when adding and removing a notification.
+  std::string id = AddNotification();
+  RemoveNotification(id);
+  histogram_tester.ExpectTotalCount("Ash.QuickSettings.UserJourneyTime",
+                                    /*count=*/1);
+
+  // Metric is recorded after closing bubble.
+  tray->CloseBubble();
+  histogram_tester.ExpectTotalCount("Ash.QuickSettings.UserJourneyTime",
+                                    /*count=*/2);
 }
 
 }  // namespace ash

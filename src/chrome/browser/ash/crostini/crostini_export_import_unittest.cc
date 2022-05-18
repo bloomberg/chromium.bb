@@ -15,13 +15,13 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/fake_seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -126,20 +126,20 @@ class CrostiniExportImportTest : public testing::Test {
                               kCrostiniDefaultContainerName),
         custom_container_id_("MyVM", "MyContainer") {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
-    fake_seneschal_client_ = chromeos::FakeSeneschalClient::Get();
-    fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
+    fake_seneschal_client_ = ash::FakeSeneschalClient::Get();
+    fake_cicerone_client_ = ash::FakeCiceroneClient::Get();
   }
 
   CrostiniExportImportTest(const CrostiniExportImportTest&) = delete;
   CrostiniExportImportTest& operator=(const CrostiniExportImportTest&) = delete;
 
   ~CrostiniExportImportTest() override {
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -186,8 +186,8 @@ class CrostiniExportImportTest : public testing::Test {
  protected:
   Profile* profile() { return profile_.get(); }
 
-  chromeos::FakeCiceroneClient* fake_cicerone_client_;
-  chromeos::FakeSeneschalClient* fake_seneschal_client_;
+  ash::FakeCiceroneClient* fake_cicerone_client_;
+  ash::FakeSeneschalClient* fake_seneschal_client_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniExportImport> crostini_export_import_;

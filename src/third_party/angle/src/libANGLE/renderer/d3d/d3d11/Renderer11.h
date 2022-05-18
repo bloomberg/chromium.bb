@@ -361,6 +361,8 @@ class Renderer11 : public RendererD3D
     angle::Result blitRenderbufferRect(const gl::Context *context,
                                        const gl::Rectangle &readRect,
                                        const gl::Rectangle &drawRect,
+                                       UINT readLayer,
+                                       UINT drawLayer,
                                        RenderTargetD3D *readRenderTarget,
                                        RenderTargetD3D *drawRenderTarget,
                                        GLenum filter,
@@ -500,6 +502,8 @@ class Renderer11 : public RendererD3D
                       gl::Limitations *outLimitations) const override;
 
     void initializeFeatures(angle::FeaturesD3D *features) const override;
+
+    void initializeFrontendFeatures(angle::FrontendFeatures *features) const override;
 
     angle::Result drawLineLoop(const gl::Context *context,
                                GLuint count,

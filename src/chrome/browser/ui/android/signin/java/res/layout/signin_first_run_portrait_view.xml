@@ -37,6 +37,7 @@
                 android:visibility="invisible" />
 
             <ImageView
+                android:id="@+id/fre_logo"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/fre_tos_image_height"
                 android:layout_marginBottom="24dp"
@@ -51,7 +52,7 @@
                 android:gravity="center"
                 android:paddingHorizontal="70dp"
                 android:text="@string/fre_welcome"
-                android:textAppearance="@style/TextAppearance.FreFirstFrameTitle" />
+                android:textAppearance="@style/TextAppearance.Headline.Primary" />
 
             <org.chromium.ui.widget.TextViewWithLeading
                 android:id="@+id/subtitle"
@@ -91,7 +92,8 @@
                 style="@style/Widget.AppCompat.ProgressBar"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginBottom="128dp" />
+                android:layout_marginBottom="128dp"
+                android:alpha="0.0" />
 
             <include layout="@layout/signin_first_run_bottom_group_view" />
         </LinearLayout>

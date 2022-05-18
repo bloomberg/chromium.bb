@@ -634,6 +634,8 @@ if (skia_compile_modules || skia_compile_sksl_tests) {
     sources = [
       "src/sksl/sksl_frag.sksl",
       "src/sksl/sksl_gpu.sksl",
+      "src/sksl/sksl_graphite_frag.sksl",
+      "src/sksl/sksl_graphite_vert.sksl",
       "src/sksl/sksl_public.sksl",
       "src/sksl/sksl_rt_shader.sksl",
       "src/sksl/sksl_vert.sksl",
@@ -1435,7 +1437,7 @@ skia_component("skia") {
     ]
   }
 
-  if (is_linux || target_cpu == "wasm") {
+  if (is_linux || is_wasm) {
     sources += [ "src/ports/SkDebug_stdio.cpp" ]
     if (skia_use_egl) {
       libs += [ "GLESv2" ]
@@ -1484,7 +1486,7 @@ skia_component("skia") {
 }
 
 # DebugCanvas used in experimental/wasm-skp-debugger
-if (target_cpu == "wasm") {
+if (is_wasm) {
   skia_static_library("debugcanvas") {
     public_configs = [ ":skia_public" ]
 
@@ -1826,8 +1828,6 @@ if (skia_enable_tools) {
     frameworks = []
 
     if (skia_use_gl) {
-      sources +=
-          [ "tools/gpu/gl/command_buffer/GLTestContext_command_buffer.cpp" ]
       if (is_ios) {
         sources += [ "tools/gpu/gl/iOS/CreatePlatformGLTestContext_iOS.mm" ]
         frameworks += [ "OpenGLES.framework" ]
@@ -2897,67 +2897,6 @@ if (skia_enable_tools) {
       sources += [ "tools/gpu/vk/VkTestUtils.h" ]
       sources += [ "tools/gpu/vk/VkTestUtils.cpp" ]
       deps = [ ":skia" ]
-    }
-  }
-
-  if (skia_qt_path != "" && (is_win || is_linux || is_mac)) {
-    action_foreach("generate_mocs") {
-      script = "gn/call.py"
-      sources = [ "tools/mdbviz/MainWindow.h" ]
-      outputs = [ "$target_gen_dir/mdbviz/{{source_name_part}}_moc.cpp" ]
-      args = [
-        "$skia_qt_path" + "/bin/moc",
-        "{{source}}",
-        "-o",
-        "gen/mdbviz/{{source_name_part}}_moc.cpp",
-      ]
-    }
-    action_foreach("generate_resources") {
-      script = "gn/call.py"
-      sources = [ "tools/mdbviz/resources.qrc" ]
-      outputs = [ "$target_gen_dir/mdbviz/{{source_name_part}}_res.cpp" ]
-      args = [
-        "$skia_qt_path" + "/bin/rcc",
-        "{{source}}",
-        "-o",
-        "gen/mdbviz/{{source_name_part}}_res.cpp",
-      ]
-    }
-    test_app("mdbviz") {
-      if (is_win) {
-        # on Windows we need to disable some exception handling warnings due to the Qt headers
-        cflags = [ "/Wv:18" ]  # 18 -> VS2013, 19 -> VS2015, 1910 -> VS2017
-      }
-      sources = [
-        "tools/UrlDataManager.cpp",
-        "tools/debugger/DebugCanvas.cpp",
-        "tools/debugger/DebugLayerManager.cpp",
-        "tools/debugger/DrawCommand.cpp",
-        "tools/debugger/JsonWriteBuffer.cpp",
-        "tools/mdbviz/MainWindow.cpp",
-        "tools/mdbviz/Model.cpp",
-        "tools/mdbviz/main.cpp",
-
-        # generated files
-        "$target_gen_dir/mdbviz/MainWindow_moc.cpp",
-        "$target_gen_dir/mdbviz/resources_res.cpp",
-      ]
-      lib_dirs = [ "$skia_qt_path/lib" ]
-      libs = [
-        "Qt5Core.lib",
-        "Qt5Gui.lib",
-        "Qt5Widgets.lib",
-      ]
-      include_dirs = [
-        "$skia_qt_path/include",
-        "$skia_qt_path/include/QtCore",
-        "$skia_qt_path/include/QtWidgets",
-      ]
-      deps = [
-        ":generate_mocs",
-        ":generate_resources",
-        ":skia",
-      ]
     }
   }
 

@@ -252,18 +252,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Send a notification that the print preview has loaded.
   void SendPrintPreviewLoadedNotification();
 
-  // Initialize image buffer(s) according to the new context size.
-  virtual void InitImageData(const gfx::Size& size) = 0;
-
   // Schedules invalidation tasks after painting finishes.
   void InvalidateAfterPaintDone();
 
   // Updates the available area and the background parts, notifies the PDF
   // engine, and updates the accessibility information.
   void OnGeometryChanged(double old_zoom, float old_device_scale);
-
-  // Returns the plugin-specific image data buffer.
-  virtual SkBitmap GetPluginImageData() const;
 
   // Updates the geometry of the plugin and its image data if the plugin rect
   // or the device scale has changed. `new_plugin_rect` must be in device
@@ -378,8 +372,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   bool full_frame() const { return full_frame_; }
 
-  SkBitmap& mutable_image_data() { return image_data_; }
-
   const gfx::Rect& available_area() const { return available_area_; }
 
   void set_document_size(const gfx::Size& size) { document_size_ = size; }
@@ -431,7 +423,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void HandleSaveAttachmentMessage(const base::Value::Dict& message);
   void HandleSelectAllMessage(const base::Value::Dict& /*message*/);
   void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
-  void HandleSetReadOnlyMessage(const base::Value::Dict& message);
+  void HandleSetPresentationModeMessage(const base::Value::Dict& message);
   void HandleSetTwoUpViewMessage(const base::Value::Dict& message);
   void HandleStopScrollingMessage(const base::Value::Dict& /*message*/);
   void HandleViewportMessage(const base::Value::Dict& message);

@@ -591,7 +591,12 @@ EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC __half_raw float_to_half_rtne(float ff) {
 
 #elif defined(EIGEN_HAS_FP16_C)
   __half_raw h;
-  h.x = _cvtss_sh(ff, 0);
+  #if EIGEN_COMP_MSVC
+    // MSVC does not have scalar instructions.
+    h.x =_mm_extract_epi16(_mm_cvtps_ph(_mm_set_ss(ff), 0), 0);
+  #else
+    h.x = _cvtss_sh(ff, 0);
+  #endif
   return h;
 
 #elif defined(EIGEN_HAS_ARM64_FP16_SCALAR_ARITHMETIC)
@@ -652,7 +657,12 @@ EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC float half_to_float(__half_raw h) {
   (defined(EIGEN_HAS_HIP_FP16) && defined(EIGEN_HIP_DEVICE_COMPILE))
   return __half2float(h);
 #elif defined(EIGEN_HAS_FP16_C)
-  return _cvtsh_ss(h.x);
+  #if EIGEN_COMP_MSVC
+    // MSVC does not have scalar instructions.
+    return _mm_cvtss_f32(_mm_cvtph_ps(_mm_set1_epi16(h.x)));
+  #else
+    return _cvtsh_ss(h.x);
+  #endif
 #elif defined(EIGEN_HAS_ARM64_FP16_SCALAR_ARITHMETIC)
   return static_cast<float>(h.x);
 #else

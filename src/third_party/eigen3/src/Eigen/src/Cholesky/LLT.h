@@ -242,7 +242,7 @@ static Index llt_rank_update_lower(MatrixType& mat, const VectorType& vec, const
   typedef typename MatrixType::Scalar Scalar;
   typedef typename MatrixType::RealScalar RealScalar;
   typedef typename MatrixType::ColXpr ColXpr;
-  typedef typename internal::remove_all<ColXpr>::type ColXprCleaned;
+  typedef internal::remove_all_t<ColXpr> ColXprCleaned;
   typedef typename ColXprCleaned::SegmentReturnType ColXprSegment;
   typedef Matrix<Scalar,Dynamic,1> TempVectorType;
   typedef typename TempVectorType::SegmentReturnType TempVecSegment;

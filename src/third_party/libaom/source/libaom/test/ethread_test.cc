@@ -441,10 +441,10 @@ TEST_P(AVxEncoderThreadRTTest, EncoderResultTest) {
   DoTest();
 }
 
-// For real time mode, test speed 6, 7, 8, 9.
+// For real time mode, test speed 5, 6, 7, 8, 9, 10.
 AV1_INSTANTIATE_TEST_SUITE(AVxEncoderThreadRTTest,
                            ::testing::Values(::libaom_test::kRealTime),
-                           ::testing::Values(6, 7, 8, 9),
+                           ::testing::Values(5, 6, 7, 8, 9, 10),
                            ::testing::Values(0, 2), ::testing::Values(0, 2),
                            ::testing::Values(0, 1));
 

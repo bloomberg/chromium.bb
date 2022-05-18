@@ -23,6 +23,7 @@ mojom("mojom_platform") {
   generate_java = true
   sources = [
     "ad_tagging/ad_evidence.mojom",
+    "annotation/annotation.mojom",
     "app_banner/app_banner.mojom",
     "array_buffer/array_buffer_contents.mojom",
     "associated_interfaces/associated_interfaces.mojom",
@@ -141,6 +142,7 @@ mojom("mojom_platform") {
     "notifications/notification.mojom",
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
+    "opengraph/metadata.mojom",
     "parakeet/ad_request.mojom",
     "payments/payment_app.mojom",
     "peerconnection/peer_connection_tracker.mojom",
@@ -986,8 +988,9 @@ mojom("mojom_core") {
     "page/widget.mojom",
     "page_state/page_state.mojom",
 
-    # transferable_message.mojom depends the other three messaging/ mojom files.
+    # transferable_message.mojom depends the other messaging/ mojom files here.
     "messaging/cloneable_message.mojom",
+    "messaging/delegated_capability.mojom",
     "messaging/message_port_descriptor.mojom",
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",

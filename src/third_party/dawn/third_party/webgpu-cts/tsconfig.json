@@ -1,7 +1,7 @@
 {
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "lib": ["dom", "es2016"],
+    "lib": ["dom", "es2019"],
     "module": "esnext",
     /* Output options */
     "noEmit": true,

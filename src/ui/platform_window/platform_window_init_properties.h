@@ -131,6 +131,16 @@ struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
   // Wayland specific.  Holds the application ID that is used by the window
   // manager to match the desktop entry and group windows.
   std::string wayland_app_id;
+
+  // Specifies the unique browser session id and the restore window id.
+  int32_t restore_session_id;
+  int32_t restore_window_id;
+#endif
+
+#if defined(USE_OZONE)
+  // Specifies whether the current window requests key-events that matches
+  // system shortcuts.
+  bool inhibit_keyboard_shortcuts = false;
 #endif
 
   bool enable_compositing_based_throttling = false;

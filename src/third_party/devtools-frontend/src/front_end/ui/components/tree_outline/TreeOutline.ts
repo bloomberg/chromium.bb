@@ -11,7 +11,13 @@ import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import treeOutlineStyles from './treeOutline.css.js';
 
 import type {TreeNodeId, TreeNode, TreeNodeWithChildren} from './TreeOutlineUtils.js';
-import {findNextNodeForTreeOutlineKeyboardNavigation, getNodeChildren, getPathToTreeNode, isExpandableNode, trackDOMNodeToTreeNode} from './TreeOutlineUtils.js';
+import {
+  findNextNodeForTreeOutlineKeyboardNavigation,
+  getNodeChildren,
+  getPathToTreeNode,
+  isExpandableNode,
+  trackDOMNodeToTreeNode,
+} from './TreeOutlineUtils.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
@@ -95,16 +101,15 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
    */
   #nodeIdPendingFocus: TreeNodeId|null = null;
   #selectedTreeNode: TreeNode<TreeNodeDataType>|null = null;
-  #defaultRenderer =
-      (node: TreeNode<TreeNodeDataType>, _state: {isExpanded: boolean}): LitHtml.TemplateResult => {
-        if (typeof node.treeNodeData !== 'string') {
-          console.warn(`The default TreeOutline renderer simply stringifies its given value. You passed in ${
-              JSON.stringify(
-                  node.treeNodeData, null,
-                  2)}. Consider providing a different defaultRenderer that can handle nodes of this type.`);
-        }
-        return LitHtml.html`${String(node.treeNodeData)}`;
-      };
+  #defaultRenderer = (node: TreeNode<TreeNodeDataType>, _state: {isExpanded: boolean}): LitHtml.TemplateResult => {
+    if (typeof node.treeNodeData !== 'string') {
+      console.warn(`The default TreeOutline renderer simply stringifies its given value. You passed in ${
+          JSON.stringify(
+              node.treeNodeData, null,
+              2)}. Consider providing a different defaultRenderer that can handle nodes of this type.`);
+    }
+    return LitHtml.html`${String(node.treeNodeData)}`;
+  };
   #nodeFilter?: ((node: TreeNodeDataType) => FilterOption);
 
   /**
@@ -255,23 +260,34 @@ export class TreeOutline<TreeNodeDataType> extends HTMLElement {
     return this.#selectedTreeNode;
   }
 
-  async #fetchNodeChildren(node: TreeNodeWithChildren<TreeNodeDataType>): Promise<TreeNode<TreeNodeDataType>[]> {
+  async #flattenSubtree(node: TreeNodeWithChildren<TreeNodeDataType>, filter: (node: TreeNodeDataType) => FilterOption):
+      Promise<TreeNode<TreeNodeDataType>[]> {
     const children = await getNodeChildren(node);
-    if (!this.#nodeFilter) {
-      return children;
-    }
     const filteredChildren = [];
     for (const child of children) {
-      const filtering = this.#nodeFilter(child.treeNodeData);
+      const filtering = filter(child.treeNodeData);
       // We always include the selected node in the tree, regardless of its filtering status.
-      if (filtering === FilterOption.SHOW || this.#isSelectedNode(child) || child.id === this.#nodeIdPendingFocus) {
+      const toBeSelected = this.#isSelectedNode(child) || child.id === this.#nodeIdPendingFocus;
+      // If a node is already expanded we should not flatten it away.
+      const expanded = this.#nodeExpandedMap.get(child.id);
+      if (filtering === FilterOption.SHOW || toBeSelected || expanded) {
         filteredChildren.push(child);
       } else if (filtering === FilterOption.FLATTEN && isExpandableNode(child)) {
-        const grandChildren = await this.#fetchNodeChildren(child);
+        const grandChildren = await this.#flattenSubtree(child, filter);
         filteredChildren.push(...grandChildren);
       }
     }
     return filteredChildren;
+  }
+
+  async #fetchNodeChildren(node: TreeNodeWithChildren<TreeNodeDataType>): Promise<TreeNode<TreeNodeDataType>[]> {
+    const children = await getNodeChildren(node);
+    const filter = this.#nodeFilter;
+    if (!filter) {
+      return children;
+    }
+    const filteredDescendants = await this.#flattenSubtree(node, filter);
+    return filteredDescendants.length ? filteredDescendants : children;
   }
 
   #setNodeExpandedState(node: TreeNode<TreeNodeDataType>, newExpandedState: boolean): void {

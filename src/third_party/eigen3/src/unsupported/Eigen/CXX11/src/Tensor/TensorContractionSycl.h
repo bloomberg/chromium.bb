@@ -158,7 +158,7 @@ enum class data_source { global_mem, local_mem, private_mem };
  */
 template <bool PacketLoad, bool is_coalesced_layout, bool, typename PacketType, typename TensorMapper,
           typename StorageIndex>
-static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<PacketLoad, PacketType>::type read(
+static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE std::enable_if_t<PacketLoad, PacketType> read(
     const TensorMapper &tensorMapper, const StorageIndex &NCIndex, const StorageIndex &CIndex, const StorageIndex &ld) {
   const StorageIndex row = (is_coalesced_layout) ? NCIndex : CIndex;
   const StorageIndex col = (is_coalesced_layout) ? CIndex : NCIndex;
@@ -188,7 +188,7 @@ static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_
  * \param CIndex: is the contracting dim index
  */
 template <bool PacketLoad, bool, bool IsRhs, typename PacketType, typename TensorMapper, typename StorageIndex>
-static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<!PacketLoad, PacketType>::type read(
+static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE std::enable_if_t<!PacketLoad, PacketType> read(
     const TensorMapper &tensorMapper, const StorageIndex &NCIndex, const StorageIndex &CIndex, const StorageIndex &) {
   const StorageIndex row = (IsRhs) ? CIndex : NCIndex;
   const StorageIndex col = (IsRhs) ? NCIndex : CIndex;
@@ -218,7 +218,7 @@ static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_
 
 template <typename StorageIndex, StorageIndex ld, data_source dt, typename PacketType, typename DataScalar>
 static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    typename ::Eigen::internal::enable_if<dt != data_source::global_mem, void>::type
+    std::enable_if_t<dt != data_source::global_mem, void>
     write(PacketType &packet_data, DataScalar ptr) {
   EIGEN_CONSTEXPR int PacketSize = Eigen::internal::unpacket_traits<PacketType>::size;
   EIGEN_UNROLL_LOOP
@@ -244,8 +244,8 @@ static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
  */
 
 template <data_source dt, typename PacketType, typename DataScalar>
-static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<
-    Eigen::internal::unpacket_traits<PacketType>::size != 1 && dt == data_source::global_mem, void>::type
+static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename std::enable_if_t<
+    Eigen::internal::unpacket_traits<PacketType>::size != 1 && dt == data_source::global_mem, void>
 write(PacketType &packet_data, DataScalar *ptr) {
   ::Eigen::internal::pstoreu<DataScalar, PacketType>(ptr, packet_data);
 }
@@ -264,8 +264,8 @@ write(PacketType &packet_data, DataScalar *ptr) {
  * \param ptr: a pointer to the local memory
  */
 template <data_source dt, typename PacketType, typename DataScalar>
-static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<
-    Eigen::internal::unpacket_traits<PacketType>::size == 1 && dt == data_source::global_mem, void>::type
+static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename std::enable_if_t<
+    Eigen::internal::unpacket_traits<PacketType>::size == 1 && dt == data_source::global_mem, void>
 write(PacketType &packet_data, DataScalar *ptr) {
   *ptr = packet_data;
 }
@@ -321,7 +321,7 @@ struct BlockProperties {
   static EIGEN_CONSTEXPR bool packet_load = packet_load_;
   typedef typename Eigen::internal::unpacket_traits<PacketType>::type OutScalar;
   static EIGEN_CONSTEXPR bool is_rhs = is_rhs_;
-  typedef typename Eigen::internal::conditional<packet_load, PacketType, OutScalar>::type OutType;
+  typedef std::conditional_t<packet_load, PacketType, OutScalar> OutType;
   static EIGEN_CONSTEXPR int elements_per_access = Eigen::internal::unpacket_traits<OutType>::size;
   static EIGEN_CONSTEXPR bool is_coalesced_layout = !(is_transposed ^ is_rhs);
   static EIGEN_CONSTEXPR int nc_stride = (is_coalesced_layout ? elements_per_access : 1);
@@ -477,8 +477,7 @@ class TensorContractionKernel {
   typedef cl::sycl::accessor<OutScalar, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local> Scratch;
   typedef cl::sycl::multi_ptr<OutScalar, cl::sycl::access::address_space::local_space> local_ptr;
   typedef OutScalar * /*cl::sycl::multi_ptr<OutScalar, cl::sycl::access::address_space::private_space>*/ private_ptr;
-  typedef
-      typename ::Eigen::internal::conditional<contraction_tp == contraction_type::local, local_ptr, private_ptr>::type
+  typedef std::conditional_t<contraction_tp == contraction_type::local, local_ptr, private_ptr>
           tile_ptr;
   static EIGEN_CONSTEXPR StorageIndex LSDL = contraction_tp == contraction_type::local
                                                  ? Properties::TileSizeDimM + Properties::BC
@@ -544,7 +543,7 @@ class TensorContractionKernel {
     template <contraction_type tp = contraction_tp>
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     TiledMemory(const ThreadProperties<StorageIndex> &, local_ptr,
-                typename ::Eigen::internal::enable_if<tp == contraction_type::no_local>::type * = 0)
+                std::enable_if_t<tp == contraction_type::no_local> * = 0)
         : lhs_scratch_extract{},
           rhs_scratch_extract{},
           lhs_scratch_ptr_compute(lhs_scratch_extract.ptr),
@@ -555,7 +554,7 @@ class TensorContractionKernel {
     template <contraction_type tp = contraction_tp>
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     TiledMemory(const ThreadProperties<StorageIndex> &thread_properties, local_ptr block_start_ptr,
-                typename ::Eigen::internal::enable_if<tp == contraction_type::local>::type * = 0)
+                std::enable_if_t<tp == contraction_type::local> * = 0)
         : lhs_scratch_extract{block_start_ptr},
           rhs_scratch_extract{lhs_scratch_extract.ptr +
                               ((Properties::DoubleBuffer + 1) * LSDL * Properties::TileSizeDimK)},
@@ -712,7 +711,7 @@ class TensorContractionKernel {
   template <typename InputBlockProperties, bool is_internal_block, typename Input, typename PrivateReg,
             contraction_type contract_tp = contraction_tp>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<contract_tp == contraction_type::no_local>::type
+      std::enable_if_t<contract_tp == contraction_type::no_local>
       extract_block(const Input &inpt, PrivateReg private_ptr, const std::pair<StorageIndex, StorageIndex> &,
                     const StorageIndex &ncOffset, const StorageIndex cOffset) {
     EIGEN_CONSTEXPR StorageIndex LocalThreadSizeNC =
@@ -785,28 +784,28 @@ class TensorContractionKernel {
 
   template <bool db = Properties::DoubleBuffer, contraction_type ctp = contraction_tp>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<db && ctp == contraction_type::local>::type
+      std::enable_if_t<db && ctp == contraction_type::local>
       sync_mem(const cl::sycl::nd_item<1> &, bool &db_offset) noexcept {
     db_offset = !db_offset;
   }
 
   template <bool db = Properties::DoubleBuffer, contraction_type ctp = contraction_tp>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<!db && ctp == contraction_type::local>::type
+      std::enable_if_t<!db && ctp == contraction_type::local>
       sync_mem(const cl::sycl::nd_item<1> &itemID, bool &) noexcept {
     itemID.barrier(cl::sycl::access::fence_space::local_space);
   }
 
   template <contraction_type ctp = contraction_tp>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<ctp == contraction_type::no_local>::type
+      std::enable_if_t<ctp == contraction_type::no_local>
       sync_mem(const cl::sycl::nd_item<1> &, bool &) noexcept {
     return;
   }
 
   template <bool need_sync, contraction_type ctp = contraction_tp>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<need_sync && ctp == contraction_type::no_local>::type
+      std::enable_if_t<need_sync && ctp == contraction_type::no_local>
       sync_thread(const cl::sycl::nd_item<1> &
 #ifdef EIGEN_SYCL_ARM_GPU_CACHE_OPTIMISATION
                       itemID
@@ -820,12 +819,12 @@ class TensorContractionKernel {
   }
   template <bool need_sync, contraction_type ctp = contraction_tp>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<need_sync && ctp == contraction_type::local>::type
+      std::enable_if_t<need_sync && ctp == contraction_type::local>
       sync_thread(const cl::sycl::nd_item<1> &itemID) {
     itemID.barrier(cl::sycl::access::fence_space::local_space);
   }
   template <bool need_sync>
-  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<!need_sync>::type sync_thread(
+  static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE std::enable_if_t<!need_sync> sync_thread(
       const cl::sycl::nd_item<1> &) {
     return;
   }
@@ -896,7 +895,7 @@ class TensorContractionKernel {
   template <typename InputBlockProperties, bool is_internal_block, typename Input, typename Local,
             contraction_type contract_tp = contraction_tp>
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-      typename ::Eigen::internal::enable_if<contract_tp == contraction_type::local>::type
+      std::enable_if_t<contract_tp == contraction_type::local>
       extract_block(const Input &inpt, Local local_ptr, const std::pair<StorageIndex, StorageIndex>& local_index,
                     const StorageIndex &ncOffset, const StorageIndex cOffset) {
     EIGEN_CONSTEXPR StorageIndex TileSizeDimNC =
@@ -1294,7 +1293,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
   typedef TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgType, OutputKernelType>, Device> Self;
   typedef TensorContractionEvaluatorBase<Self> Base;
   typedef TensorContractionOp<Indices, LeftArgType, RightArgType, OutputKernelType> XprType;
-  typedef typename internal::remove_const<typename XprType::Scalar>::type Scalar;
+  typedef std::remove_const_t<typename XprType::Scalar> Scalar;
   typedef typename XprType::Index StorageIndex;
   typedef typename XprType::CoeffReturnType CoeffReturnType;
   typedef typename PacketType<CoeffReturnType, Device>::type PacketReturnType;
@@ -1307,14 +1306,14 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
     TripleDim(const StorageIndex M_, const StorageIndex N_, const StorageIndex K_) : M(M_), N(N_), K(K_) {}
   };
   enum {
-    Layout = TensorEvaluator<LeftArgType, Device>::Layout,
     PacketAccess = (PacketType<CoeffReturnType, Device>::size > 1),
     BlockAccess = false,
   };
 
-  static EIGEN_CONSTEXPR int LDims = Base::LDims;
-  static EIGEN_CONSTEXPR int RDims = Base::RDims;
-  static EIGEN_CONSTEXPR int ContractDims = Base::ContractDims;
+  static constexpr int Layout = TensorEvaluator<LeftArgType, Device>::Layout;
+  static constexpr int LDims = Base::LDims;
+  static constexpr int RDims = Base::RDims;
+  static constexpr int ContractDims = Base::ContractDims;
 
   typedef array<StorageIndex, LDims> left_dim_mapper_t;
   typedef array<StorageIndex, RDims> right_dim_mapper_t;
@@ -1323,14 +1322,14 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
   typedef array<StorageIndex, LDims - ContractDims> left_nocontract_t;
   typedef array<StorageIndex, RDims - ContractDims> right_nocontract_t;
 
-  static const int NumDims = LDims + RDims - 2 * ContractDims;
+  static constexpr int NumDims = LDims + RDims - 2 * ContractDims;
 
   typedef DSizes<StorageIndex, NumDims> Dimensions;
 
   typedef TensorEvaluator<typename Base::EvalLeftArgType, Device> LeftEvaluator;
   typedef TensorEvaluator<typename Base::EvalRightArgType, Device> RightEvaluator;
-  typedef typename Eigen::internal::remove_const<typename LeftEvaluator::CoeffReturnType>::type LhsScalar;
-  typedef typename Eigen::internal::remove_const<typename RightEvaluator::CoeffReturnType>::type RhsScalar;
+  typedef std::remove_const_t<typename LeftEvaluator::CoeffReturnType> LhsScalar;
+  typedef std::remove_const_t<typename RightEvaluator::CoeffReturnType> RhsScalar;
 
   typedef typename LeftEvaluator::Dimensions LeftDimensions;
   typedef typename RightEvaluator::Dimensions RightDimensions;

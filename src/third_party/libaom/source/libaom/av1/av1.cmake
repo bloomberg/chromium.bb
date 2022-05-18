@@ -354,6 +354,7 @@ list(APPEND AOM_AV1_ENCODER_INTRIN_AVX2
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_NEON
             "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c"
+            "${AOM_ROOT}/av1/encoder/arm/neon/highbd_quantize_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/ml_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/picksrt_neon.c"
             "${AOM_ROOT}/av1/encoder/arm/neon/rdopt_neon.c"
@@ -468,34 +469,12 @@ if(CONFIG_INTERNAL_STATS)
 endif()
 
 if(CONFIG_REALTIME_ONLY)
-  list(REMOVE_ITEM AOM_AV1_COMMON_SOURCES "${AOM_ROOT}/av1/common/restoration.c"
-                   "${AOM_ROOT}/av1/common/restoration.h"
-                   "${AOM_ROOT}/av1/common/warped_motion.c"
-                   "${AOM_ROOT}/av1/common/warped_motion.h")
-
-  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSE2
-                   "${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c")
-
-  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_SSE4_1
-                   "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_sse4.c"
-                   "${AOM_ROOT}/av1/common/x86/selfguided_sse4.c"
-                   "${AOM_ROOT}/av1/common/x86/warp_plane_sse4.c")
-
-  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_AVX2
-                   "${AOM_ROOT}/av1/common/x86/highbd_warp_affine_avx2.c"
-                   "${AOM_ROOT}/av1/common/x86/selfguided_avx2.c"
-                   "${AOM_ROOT}/av1/common/x86/warp_plane_avx2.c")
-
   list(REMOVE_ITEM AOM_AV1_ENCODER_INTRIN_SSE4_1
                    "${AOM_ROOT}/av1/encoder/x86/pickrst_sse4.c")
 
   list(REMOVE_ITEM AOM_AV1_ENCODER_INTRIN_AVX2
                    "${AOM_ROOT}/av1/encoder/x86/pickrst_avx2.c"
                    "${AOM_ROOT}/av1/encoder/x86/cnn_avx2.c")
-
-  list(REMOVE_ITEM AOM_AV1_COMMON_INTRIN_NEON
-                   "${AOM_ROOT}/av1/common/arm/selfguided_neon.c"
-                   "${AOM_ROOT}/av1/common/arm/warp_plane_neon.c")
 
   list(REMOVE_ITEM AOM_AV1_ENCODER_SOURCES
                    "${AOM_ROOT}/av1/encoder/cnn.c"

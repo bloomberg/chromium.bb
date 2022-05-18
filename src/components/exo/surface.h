@@ -180,6 +180,10 @@ class Surface final : public ui::PropertyHandler {
   void SetRoundedCorners(const gfx::RRectF& rounded_corners_bounds);
   void SetOverlayPriorityHint(OverlayPriority hint);
 
+  // Sets the background color that shall be associated with the next buffer
+  // commit.
+  void SetBackgroundColor(absl::optional<SkColor> background_color);
+
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::SizeF& viewport);
 
@@ -407,6 +411,16 @@ class Surface final : public ui::PropertyHandler {
   // Starts or ends throttling on the surface.
   void ThrottleFrameRate(bool on);
 
+  // If true is set, if this window has a focus, key events should be sent to
+  // the app, even if it is an ash shortcut (with some exceptions).
+  // See exo::Keyboard for more details.
+  void SetKeyboardShortcutsInhibited(bool inhibited);
+
+  // Returns whether keyboard shortcuts are inhibited.
+  bool is_keyboard_shortcuts_inhibited() const {
+    return keyboard_shortcuts_inhibited_;
+  }
+
  private:
   struct State {
     State();
@@ -426,8 +440,11 @@ class Surface final : public ui::PropertyHandler {
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
     gfx::Vector2d offset;
-    gfx::ColorSpace color_space;
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
     bool is_tracking_occlusion = false;
+    // Represents optional background color that must be associated with the
+    // next buffer commit.
+    absl::optional<SkColor> background_color;
   };
   class BufferAttachment {
    public:
@@ -609,6 +626,8 @@ class Surface final : public ui::PropertyHandler {
   gfx::Size embedded_surface_size_;
 
   LeaveEnterCallback leave_enter_callback_;
+
+  bool keyboard_shortcuts_inhibited_ = false;
 };
 
 class ScopedSurface {

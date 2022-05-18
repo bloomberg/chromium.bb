@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <limits>
+#include <utility>
+#include <vector>
 
 #include "dawn/native/CommandAllocator.h"
+#include "gtest/gtest.h"
 
-#include <limits>
-
-using namespace dawn::native;
+namespace dawn::native {
 
 // Definition of the command types used in the tests
 enum class CommandType {
@@ -368,7 +369,7 @@ TEST(CommandAllocator, EmptyIterator) {
 
 template <size_t A>
 struct alignas(A) AlignedStruct {
-    char dummy;
+    char placeholder;
 };
 
 // Test for overflows in Allocate's computations, size 1 variant
@@ -405,8 +406,7 @@ TEST(CommandAllocator, AllocationOverflow_8) {
 
 template <int DefaultValue>
 struct IntWithDefault {
-    IntWithDefault() : value(DefaultValue) {
-    }
+    IntWithDefault() : value(DefaultValue) {}
 
     int value;
 };
@@ -501,3 +501,5 @@ TEST(CommandAllocator, AcquireCommandBlocks) {
     ASSERT_FALSE(iterator.NextCommandId(&type));
     iterator.MakeEmptyAsDataWasDestroyed();
 }
+
+}  // namespace dawn::native

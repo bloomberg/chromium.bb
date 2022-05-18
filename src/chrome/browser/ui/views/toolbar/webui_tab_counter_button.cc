@@ -16,17 +16,18 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/flying_indicator.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/user_education/common/user_education_class_properties.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -516,21 +517,16 @@ void WebUITabCounterButton::UpdateTooltip(int num_tabs) {
 }
 
 void WebUITabCounterButton::UpdateColors() {
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  const SkColor toolbar_color =
-      theme_provider ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR)
-                     : gfx::kPlaceholderColor;
+  const auto* const color_provider = GetColorProvider();
+  const SkColor toolbar_color = color_provider->GetColor(kColorToolbar);
   appearing_label_->SetBackgroundColor(toolbar_color);
   disappearing_label_->SetBackgroundColor(toolbar_color);
 
   const SkColor normal_text_color =
-      theme_provider
-          ? theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)
-          : gfx::kPlaceholderColor;
+      color_provider->GetColor(kColorToolbarButtonIcon);
   const SkColor current_text_color =
-      GetProperty(kHasInProductHelpPromoKey)
-          ? theme_provider->GetColor(
-                ThemeProperties::COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT)
+      GetProperty(user_education::kHasInProductHelpPromoKey)
+          ? color_provider->GetColor(kColorToolbarFeaturePromoHighlight)
           : normal_text_color;
 
   appearing_label_->SetEnabledColor(current_text_color);
@@ -605,7 +601,7 @@ void WebUITabCounterButton::AddedToWidget() {
 void WebUITabCounterButton::AfterPropertyChange(const void* key,
                                                 int64_t old_value) {
   View::AfterPropertyChange(key, old_value);
-  if (key != kHasInProductHelpPromoKey)
+  if (key != user_education::kHasInProductHelpPromoKey)
     return;
   UpdateColors();
 }

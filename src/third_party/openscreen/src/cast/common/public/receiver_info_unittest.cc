@@ -149,7 +149,7 @@ TEST(ReceiverInfoTests, ParseReceiverInfoFromRealTXT) {
       // Note: Includes bits set that are not known:
       {"ca", "208901"},
       {"cd", "FED81089FA3FF851CF088AB33AB014C0"},
-      {"fn", u8"⚡ Yurovision® ULTRA™"},
+      {"fn", "⚡ Yurovision® ULTRA™"},
       {"ic", "/setup/icon.png"},
       {"id", "4ef522244a5a877f35ddead7d98702e6"},
       {"md", "Chromecast Ultra"},
@@ -176,7 +176,7 @@ TEST(ReceiverInfoTests, ParseReceiverInfoFromRealTXT) {
   EXPECT_TRUE(info.capabilities & (kHasVideoOutput | kHasAudioOutput));
   EXPECT_EQ(info.status, kBusy);
   EXPECT_EQ(info.model_name, "Chromecast Ultra");
-  EXPECT_EQ(info.friendly_name, u8"⚡ Yurovision® ULTRA™");
+  EXPECT_EQ(info.friendly_name, "⚡ Yurovision® ULTRA™");
 }
 
 }  // namespace cast

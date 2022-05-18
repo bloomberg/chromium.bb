@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 
+#include "base/containers/flat_set.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -40,7 +41,7 @@ void FakeWebAppRegistryController::SetUp(base::raw_ptr<Profile> profile) {
       /*protocol_handler_manager=*/nullptr,
       /*url_handler_manager=*/nullptr);
 
-  command_manager_ = std::make_unique<WebAppCommandManager>();
+  command_manager_ = std::make_unique<WebAppCommandManager>(profile);
 
   sync_bridge_ = std::make_unique<WebAppSyncBridge>(
       mutable_registrar_.get(), mock_processor_.CreateForwardingProcessor());
@@ -96,9 +97,8 @@ void FakeWebAppRegistryController::SetInstallWebAppsAfterSyncDelegate(
   install_web_apps_after_sync_delegate_ = std::move(delegate);
 }
 
-void FakeWebAppRegistryController::
-    SetUninstallWithoutRegistryUpdateFromSyncDelegate(
-        UninstallWithoutRegistryUpdateFromSyncDelegate delegate) {
+void FakeWebAppRegistryController::SetUninstallFromSyncDelegate(
+    UninstallFromSyncDelegate delegate) {
   uninstall_from_sync_before_registry_update_delegate_ = std::move(delegate);
 }
 
@@ -119,7 +119,7 @@ void FakeWebAppRegistryController::InstallWebAppsAfterSync(
   }
 }
 
-void FakeWebAppRegistryController::UninstallWithoutRegistryUpdateFromSync(
+void FakeWebAppRegistryController::UninstallFromSync(
     const std::vector<AppId>& web_apps,
     RepeatingUninstallCallback callback) {
   if (uninstall_from_sync_before_registry_update_delegate_) {
@@ -133,7 +133,7 @@ void FakeWebAppRegistryController::UninstallWithoutRegistryUpdateFromSync(
 }
 
 void FakeWebAppRegistryController::RetryIncompleteUninstalls(
-    const std::vector<AppId>& apps_to_uninstall) {
+    const base::flat_set<AppId>& apps_to_uninstall) {
   if (retry_incomplete_uninstalls_delegate_)
     retry_incomplete_uninstalls_delegate_.Run(apps_to_uninstall);
 }

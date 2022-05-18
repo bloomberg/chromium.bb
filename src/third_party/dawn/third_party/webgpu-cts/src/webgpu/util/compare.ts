@@ -1,7 +1,7 @@
 import { Colors } from '../../common/util/colors.js';
 
-import { f32, Scalar, Value, Vector } from './conversion.js';
-import { correctlyRounded, diffULP } from './math.js';
+import { f32, isFloatValue, Scalar, Value, Vector } from './conversion.js';
+import { correctlyRounded, oneULP, withinULP } from './math.js';
 
 /** Comparison describes the result of a Comparator function. */
 export interface Comparison {
@@ -24,7 +24,7 @@ export interface Comparator {
  * @returns a FloatMatch that returns true iff the two numbers are equal to, or
  * less than the specified absolute error threshold.
  */
-export function absThreshold(diff: number): FloatMatch {
+export function absMatch(diff: number): FloatMatch {
   return (got, expected) => {
     if (got === expected) {
       return true;
@@ -40,12 +40,12 @@ export function absThreshold(diff: number): FloatMatch {
  * @returns a FloatMatch that returns true iff the two numbers are within or
  * equal to the specified ULP threshold value.
  */
-export function ulpThreshold(ulp: number): FloatMatch {
+export function ulpMatch(ulp: number): FloatMatch {
   return (got, expected) => {
     if (got === expected) {
       return true;
     }
-    return diffULP(got, expected) <= ulp;
+    return withinULP(got, expected, ulp);
   };
 }
 
@@ -54,7 +54,7 @@ export function ulpThreshold(ulp: number): FloatMatch {
  * to |got|.
  * |got| must be expressible as a float32.
  */
-export function correctlyRoundedThreshold(): FloatMatch {
+export function correctlyRoundedMatch(): FloatMatch {
   return (got, expected) => {
     return correctlyRounded(f32(got), expected);
   };
@@ -72,7 +72,8 @@ export function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Com
     // Check types
     const gTy = got.type;
     const eTy = expected.type;
-    if (gTy !== eTy) {
+    const bothFloatTypes = isFloatValue(got) && isFloatValue(expected);
+    if (gTy !== eTy && !bothFloatTypes) {
       return {
         matched: false,
         got: `${Colors.red(gTy.toString())}(${got})`,
@@ -84,7 +85,7 @@ export function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Com
   if (got instanceof Scalar) {
     const g = got;
     const e = expected as Scalar;
-    const isFloat = g.type.kind === 'f32';
+    const isFloat = g.type.kind === 'f64' || g.type.kind === 'f32' || g.type.kind === 'f16';
     const matched =
       (isFloat && cmpFloats(g.value as number, e.value as number)) ||
       (!isFloat && g.value === e.value);
@@ -127,17 +128,49 @@ export function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Com
   throw new Error(`unhandled type '${typeof got}`);
 }
 
-/** @returns a Comparator that checks whether a test value matches any of the provided values */
-export function anyOf(...values: Value[]): Comparator {
+/** @returns a Comparator that checks whether a test value matches any of the provided options */
+export function anyOf(...expectations: (Value | Comparator)[]): Comparator {
   return (got, cmpFloats) => {
     const failed: Array<string> = [];
-    for (const e of values) {
-      const cmp = compare(got, e, cmpFloats);
+    for (const e of expectations) {
+      let cmp: Comparison;
+      if ((e as Value).type !== undefined) {
+        const v = e as Value;
+        cmp = compare(got, v, cmpFloats);
+      } else {
+        const c = e as Comparator;
+        cmp = c(got, cmpFloats);
+      }
       if (cmp.matched) {
         return cmp;
       }
       failed.push(cmp.expected);
     }
     return { matched: false, got: got.toString(), expected: failed.join(' or ') };
+  };
+}
+
+/** @returns a Comparator that checks whether a result is within N * ULP of a target value, where N is defined by a function
+ *
+ * N is n(x), where x is the input into the function under test, not the result of the function.
+ * For a function f(x) = X that is being tested, the acceptance interval is defined as within X +/- n(x) * ulp(X).
+ */
+export function ulpComparator(x: number, target: Scalar, n: (x: number) => number): Comparator {
+  const c = n(x);
+  const match = ulpMatch(c);
+  return (got, _) => {
+    const cmp = compare(got, target, match);
+    if (cmp.matched) {
+      return cmp;
+    }
+    const ulp = Math.max(
+      oneULP(target.value as number, true),
+      oneULP(target.value as number, false)
+    );
+    return {
+      matched: false,
+      got: got.toString(),
+      expected: `within ${c} * ULP (${ulp}) of ${target}`,
+    };
   };
 }

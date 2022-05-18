@@ -10,18 +10,17 @@
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
 
 DecodeStatus ContinuationPayloadDecoder::StartDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
+    FrameDecoderState* state, DecodeBuffer* db) {
   const Http2FrameHeader& frame_header = state->frame_header();
   const uint32_t total_length = frame_header.payload_length;
 
-  HTTP2_DVLOG(2) << "ContinuationPayloadDecoder::StartDecodingPayload: "
-                 << frame_header;
+  QUICHE_DVLOG(2) << "ContinuationPayloadDecoder::StartDecodingPayload: "
+                  << frame_header;
   QUICHE_DCHECK_EQ(Http2FrameType::CONTINUATION, frame_header.type);
   QUICHE_DCHECK_LE(db->Remaining(), total_length);
   QUICHE_DCHECK_EQ(0, frame_header.flags & ~(Http2FrameFlag::END_HEADERS));
@@ -32,11 +31,10 @@ DecodeStatus ContinuationPayloadDecoder::StartDecodingPayload(
 }
 
 DecodeStatus ContinuationPayloadDecoder::ResumeDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "ContinuationPayloadDecoder::ResumeDecodingPayload"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2) << "ContinuationPayloadDecoder::ResumeDecodingPayload"
+                  << "  remaining_payload=" << state->remaining_payload()
+                  << "  db->Remaining=" << db->Remaining();
   QUICHE_DCHECK_EQ(Http2FrameType::CONTINUATION, state->frame_header().type);
   QUICHE_DCHECK_LE(state->remaining_payload(),
                    state->frame_header().payload_length);

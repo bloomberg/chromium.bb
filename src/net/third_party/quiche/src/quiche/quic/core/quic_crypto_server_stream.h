@@ -12,6 +12,7 @@
 #include "quiche/quic/core/quic_crypto_handshaker.h"
 #include "quiche/quic/core/quic_crypto_server_stream_base.h"
 #include "quiche/quic/core/quic_session.h"
+#include "quiche/quic/core/quic_types.h"
 #include "quiche/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -72,6 +73,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerStream
       override;
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
   SSL* GetSsl() const override;
+  bool IsCryptoFrameExpectedForEncryptionLevel(
+      EncryptionLevel level) const override;
+  EncryptionLevel GetEncryptionLevelToSendCryptoDataOfSpace(
+      PacketNumberSpace space) const override;
 
   // From QuicCryptoHandshaker
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override;

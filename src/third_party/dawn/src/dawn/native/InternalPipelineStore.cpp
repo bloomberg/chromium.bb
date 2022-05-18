@@ -14,25 +14,24 @@
 
 #include "dawn/native/InternalPipelineStore.h"
 
+#include <unordered_map>
+
 #include "dawn/native/ComputePipeline.h"
 #include "dawn/native/Device.h"
 #include "dawn/native/RenderPipeline.h"
 #include "dawn/native/ShaderModule.h"
 
-#include <unordered_map>
-
 namespace dawn::native {
 
-    class RenderPipelineBase;
-    class ShaderModuleBase;
+class RenderPipelineBase;
+class ShaderModuleBase;
 
-    InternalPipelineStore::InternalPipelineStore(DeviceBase* device)
-        : scratchStorage(device, wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage),
-          scratchIndirectStorage(device,
-                                 wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Indirect |
-                                     wgpu::BufferUsage::Storage) {
-    }
+InternalPipelineStore::InternalPipelineStore(DeviceBase* device)
+    : scratchStorage(device, wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Storage),
+      scratchIndirectStorage(
+          device,
+          wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Indirect | wgpu::BufferUsage::Storage) {}
 
-    InternalPipelineStore::~InternalPipelineStore() = default;
+InternalPipelineStore::~InternalPipelineStore() = default;
 
 }  // namespace dawn::native

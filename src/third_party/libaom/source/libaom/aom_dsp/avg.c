@@ -51,19 +51,11 @@ unsigned int aom_avg_8x8_c(const uint8_t *s, int p) {
 
 void aom_avg_8x8_quad_c(const uint8_t *s, int p, int x16_idx, int y16_idx,
                         int *avg) {
-  const uint8_t *s_tmp = s;
   for (int k = 0; k < 4; k++) {
-    int sum = 0;
     const int x8_idx = x16_idx + ((k & 1) << 3);
     const int y8_idx = y16_idx + ((k >> 1) << 3);
-    s_tmp = (s + y8_idx * p + x8_idx);
-    for (int i = 0; i < 8; i++) {
-      for (int j = 0; j < 8; j++) {
-        sum += s_tmp[j];
-      }
-      s_tmp += p;
-    }
-    avg[k] = (sum + 32) >> 6;
+    const uint8_t *s_tmp = s + y8_idx * p + x8_idx;
+    avg[k] = aom_avg_8x8_c(s_tmp, p);
   }
 }
 

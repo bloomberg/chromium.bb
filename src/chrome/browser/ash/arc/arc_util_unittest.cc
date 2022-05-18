@@ -32,7 +32,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/oobe_config/fake_oobe_configuration_client.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -695,18 +695,6 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
   EXPECT_TRUE(IsPlayStoreAvailable());
 }
 
-// TODO(b/154290639): We disable Play Store if device is offline enrolled.
-TEST_F(ChromeArcUtilTest, ArcStartModeDefaultOfflineDemoMode) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv({"", "--arc-availability=installed"});
-  ash::DemoSession::SetDemoConfigForTesting(
-      ash::DemoSession::DemoModeConfig::kOffline);
-  ScopedLogIn login(GetFakeUserManager(),
-                    AccountId::FromUserEmail("public_user@gmail.com"),
-                    user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  EXPECT_FALSE(IsPlayStoreAvailable());
-}
-
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithoutPlayStore) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatureState(chromeos::features::kShowPlayInDemoMode,
@@ -758,7 +746,7 @@ TEST_F(ChromeArcUtilTest, ArcUnmanagedToManagedTransition_FeatureOff) {
 class ArcOobeTest : public ChromeArcUtilTest {
  public:
   ArcOobeTest() {
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     oobe_configuration_ = std::make_unique<ash::OobeConfiguration>();
   }
 
@@ -770,7 +758,7 @@ class ArcOobeTest : public ChromeArcUtilTest {
     // configuration.
     fake_login_display_host_.reset();
     oobe_configuration_.reset();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
   }
 
  protected:

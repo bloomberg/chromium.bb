@@ -623,6 +623,10 @@ void inspect(void *pbi, void *data) {
   // We allocate enough space and hope we don't write out of bounds. Totally
   // unsafe but this speeds things up, especially when compiled to Javascript.
   char *buffer = aom_malloc(MAX_BUFFER);
+  if (!buffer) {
+    fprintf(stderr, "Error allocating inspect info buffer\n");
+    abort();
+  }
   char *buf = buffer;
   buf += put_str(buf, "{\n");
   if (layers & BLOCK_SIZE_LAYER) {

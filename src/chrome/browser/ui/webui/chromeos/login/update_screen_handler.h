@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -19,7 +20,7 @@ namespace chromeos {
 
 // Interface for dependency injection between WelcomeScreen and its actual
 // representation. Owned by UpdateScreen.
-class UpdateView {
+class UpdateView : public base::SupportsWeakPtr<UpdateView> {
  public:
   // The screen name must never change. It's stored into local state as a
   // pending screen during OOBE update. So the value should be the same between
@@ -32,12 +33,13 @@ class UpdateView {
     kRestartInProgress = 2,
     kManualReboot = 3,
     kCellularPermission = 4,
+    kOptOutInfo = 5,
   };
 
   virtual ~UpdateView() {}
 
   // Shows the contents of the screen.
-  virtual void Show() = 0;
+  virtual void Show(bool is_opt_out_enabled) = 0;
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
@@ -70,7 +72,7 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
 
  private:
   // UpdateView:
-  void Show() override;
+  void Show(bool is_opt_out_enabled) override;
   void Hide() override;
   void Bind(ash::UpdateScreen* screen) override;
   void Unbind() override;
@@ -89,12 +91,6 @@ class UpdateScreenHandler : public UpdateView, public BaseScreenHandler {
   // BaseScreenHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void InitializeDeprecated() override;
-
-  ash::UpdateScreen* screen_ = nullptr;
-
-  // If true, InitializeDeprecated() will call Show().
-  bool show_on_init_ = false;
 };
 
 }  // namespace chromeos

@@ -29,6 +29,12 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+using ash::phonehub::util::LogPermissionOnboardingDialogAction;
+using ash::phonehub::util::LogPermissionOnboardingSettingsClicked;
+using ash::phonehub::util::PermissionsOnboardingScreenEvent;
+using ash::phonehub::util::PermissionsOnboardingSetUpMode;
+using ash::phonehub::util::PermissionsOnboardingStep;
+
 namespace chromeos {
 
 namespace settings {
@@ -61,7 +67,7 @@ const char kNotificationAccessProhibitedReason[] =
 const char kIsAndroidSmsPairingComplete[] = "isAndroidSmsPairingComplete";
 const char kIsNearbyShareDisallowedByPolicy[] =
     "isNearbyShareDisallowedByPolicy";
-const char kIsPhoneHubAppsAccessGranted[] = "isPhoneHubAppsAccessGranted";
+const char kAppsAccessStatus[] = "appsAccessStatus";
 const char kIsPhoneHubPermissionsDialogSupported[] =
     "isPhoneHubPermissionsDialogSupported";
 const char kIsCameraRollFilePermissionGranted[] =
@@ -172,6 +178,16 @@ void MultideviceHandler::RegisterMessages() {
       "cancelCombinedFeatureSetup",
       base::BindRepeating(&MultideviceHandler::HandleCancelCombinedFeatureSetup,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "logPhoneHubPermissionSetUpScreenAction",
+      base::BindRepeating(
+          &MultideviceHandler::LogPhoneHubPermissionSetUpScreenAction,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "logPhoneHubPermissionSetUpButtonClicked",
+      base::BindRepeating(
+          &MultideviceHandler::LogPhoneHubPermissionSetUpButtonClicked,
+          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
@@ -584,6 +600,22 @@ void MultideviceHandler::HandleCancelCombinedFeatureSetup(
   combined_access_operation_.reset();
 }
 
+void MultideviceHandler::LogPhoneHubPermissionSetUpScreenAction(
+    const base::Value::List& args) {
+  int setup_screen_int = args[0].GetInt();
+  int setup_action_int = args[1].GetInt();
+  LogPermissionOnboardingDialogAction(
+      static_cast<PermissionsOnboardingStep>(setup_screen_int),
+      static_cast<PermissionsOnboardingScreenEvent>(setup_action_int));
+}
+
+void MultideviceHandler::LogPhoneHubPermissionSetUpButtonClicked(
+    const base::Value::List& args) {
+  int setup_mode = args[0].GetInt();
+  LogPermissionOnboardingSettingsClicked(
+      static_cast<PermissionsOnboardingSetUpMode>(setup_mode));
+}
+
 void MultideviceHandler::OnNotificationStatusChange(
     phonehub::NotificationAccessSetupOperation::Status new_status) {
   FireWebUIListener("settings.onNotificationAccessSetupStatusChanged",
@@ -651,11 +683,14 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
       kPageContentDataPhoneHubStateKey,
       static_cast<int32_t>(
           feature_states[multidevice_setup::mojom::Feature::kPhoneHub]));
+  auto cameraRoll_feature_state =
+      base::FeatureList::IsEnabled(chromeos::features::kPhoneHubCameraRoll)
+          ? feature_states
+                [multidevice_setup::mojom::Feature::kPhoneHubCameraRoll]
+          : multidevice_setup::mojom::FeatureState::kNotSupportedByChromebook;
   page_content_dictionary->SetIntKey(
       kPageContentDataPhoneHubCameraRollStateKey,
-      static_cast<int32_t>(
-          feature_states
-              [multidevice_setup::mojom::Feature::kPhoneHubCameraRoll]));
+      static_cast<int32_t>(cameraRoll_feature_state));
   page_content_dictionary->SetIntKey(
       kPageContentDataPhoneHubNotificationsStateKey,
       static_cast<int32_t>(
@@ -666,10 +701,12 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
       static_cast<int32_t>(
           feature_states
               [multidevice_setup::mojom::Feature::kPhoneHubTaskContinuation]));
-  page_content_dictionary->SetIntKey(
-      kPageContentDataPhoneHubAppsStateKey,
-      static_cast<int32_t>(
-          feature_states[multidevice_setup::mojom::Feature::kEche]));
+  auto eche_feature_state =
+      base::FeatureList::IsEnabled(chromeos::features::kEcheSWA)
+          ? feature_states[multidevice_setup::mojom::Feature::kEche]
+          : multidevice_setup::mojom::FeatureState::kNotSupportedByChromebook;
+  page_content_dictionary->SetIntKey(kPageContentDataPhoneHubAppsStateKey,
+                                     static_cast<int32_t>(eche_feature_state));
 
   page_content_dictionary->SetIntKey(
       kPageContentDataWifiSyncStateKey,
@@ -721,12 +758,9 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
           kAvailableButNotGranted;
   if (apps_access_manager_)
     apps_access_status = apps_access_manager_->GetAccessStatus();
-  bool is_apps_access_granted =
-      apps_access_status ==
-      phonehub::MultideviceFeatureAccessManager::AccessStatus::kAccessGranted;
 
-  page_content_dictionary->SetBoolKey(kIsPhoneHubAppsAccessGranted,
-                                      is_apps_access_granted);
+  page_content_dictionary->SetInteger(kAppsAccessStatus,
+                                      static_cast<int32_t>(apps_access_status));
 
   bool is_camera_roll_file_permission_granted = false;
   if (camera_roll_manager_) {

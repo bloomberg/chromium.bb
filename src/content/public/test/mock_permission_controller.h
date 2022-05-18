@@ -8,15 +8,15 @@
 #include "content/public/browser/permission_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class GURL;
+namespace blink {
+enum class PermissionType;
+}
 
 namespace url {
 class Origin;
 }
 
 namespace content {
-
-enum class PermissionType;
 
 // Mock of the permission controller for unit tests.
 class MockPermissionController : public PermissionController {
@@ -29,35 +29,31 @@ class MockPermissionController : public PermissionController {
   ~MockPermissionController() override;
 
   // PermissionController:
-  MOCK_METHOD3(DeprecatedGetPermissionStatus,
-               blink::mojom::PermissionStatus(PermissionType permission,
-                                              const GURL& requesting_origin,
-                                              const GURL& embedding_origin));
   MOCK_METHOD3(
       GetPermissionStatusForWorker,
-      blink::mojom::PermissionStatus(PermissionType permission,
+      blink::mojom::PermissionStatus(blink::PermissionType permission,
                                      RenderProcessHost* render_process_host,
                                      const url::Origin& worker_origin));
   MOCK_METHOD2(
       GetPermissionStatusForCurrentDocument,
-      blink::mojom::PermissionStatus(PermissionType permission,
+      blink::mojom::PermissionStatus(blink::PermissionType permission,
                                      RenderFrameHost* render_frame_host));
   MOCK_METHOD2(
       GetPermissionStatusForOriginWithoutContext,
-      blink::mojom::PermissionStatus(PermissionType permission,
+      blink::mojom::PermissionStatus(blink::PermissionType permission,
                                      const url::Origin& requesting_origin));
-  void RequestPermission(
-      PermissionType permission,
+  void RequestPermissionFromCurrentDocument(
+      blink::PermissionType permission,
       RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin,
       bool user_gesture,
       base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
       override;
-  void RequestPermissionFromCurrentDocument(
-      PermissionType permission,
+  void RequestPermissionsFromCurrentDocument(
+      const std::vector<blink::PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       bool user_gesture,
-      base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
       override;
 };
 

@@ -504,6 +504,7 @@ icu18n_public = [
   "source/i18n/unicode/ulocdata.h",
   "source/i18n/unicode/umsg.h",
   "source/i18n/unicode/unirepl.h",
+  "source/i18n/unicode/unounclass.h",
   "source/i18n/unicode/unumberformatter.h",
   "source/i18n/unicode/unumberrangeformatter.h",
   "source/i18n/unicode/unum.h",

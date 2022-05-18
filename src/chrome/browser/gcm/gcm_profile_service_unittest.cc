@@ -40,7 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #endif
 
 namespace gcm {
@@ -164,7 +164,7 @@ FakeGCMClient* GCMProfileServiceTest::GetGCMClient() const {
 
 void GCMProfileServiceTest::SetUp() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+  ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 #endif
   TestingProfile::Builder builder;
   profile_ = builder.Build();
@@ -174,7 +174,7 @@ void GCMProfileServiceTest::TearDown() {
   gcm_profile_service_->driver()->RemoveAppHandler(kTestAppID);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   profile_.reset();
-  chromeos::ConciergeClient::Shutdown();
+  ash::ConciergeClient::Shutdown();
 #endif
 }
 

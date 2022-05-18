@@ -40,6 +40,20 @@ describe('TextFragmentUtils', function() {
         );
   });
 
+  // The word 'a' is an ambiguous match in this document. With no prefix or
+  // suffix, we should get the first instance.
+  it('highlights the first instance of an ambiguous match', function() {
+    document.body.innerHTML = window.__html__['complicated-layout.html'];
+    const directives = utils.getFragmentDirectives('#:~:text=a');
+    const parsedDirectives = utils.parseFragmentDirectives(directives);
+    const processedDirectives = utils.processFragmentDirectives(
+        parsedDirectives,
+        )['text'];
+    const marks = processedDirectives[0];
+    expect(marksArrayToString(marks)).toEqual('a');
+    expect(marks[0].parentElement.id).toEqual('root');
+  });
+
   it('works with range-based matches across block boundaries', function() {
     document.body.innerHTML = window.__html__['complicated-layout.html'];
     const directives = utils.getFragmentDirectives(

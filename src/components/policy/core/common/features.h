@@ -14,14 +14,8 @@
 namespace policy {
 namespace features {
 
-// Enable chrome://management page on Android.
-POLICY_EXPORT extern const base::Feature kChromeManagementPageAndroid;
-
 // Enable force installed Chrome apps policy migration.
 POLICY_EXPORT extern const base::Feature kDefaultChromeAppsMigration;
-
-// Update browser device identifier during enrollment and fetching policies.
-POLICY_EXPORT extern const base::Feature kUploadBrowserDeviceIdentifier;
 
 // Enable reporting Login events to the reporting connector when the Password
 // Manager detects that the user logged in to a web page.
@@ -35,10 +29,6 @@ POLICY_EXPORT extern const base::Feature kPasswordBreachEventReporting;
 // ManagedAccountsSigninRestriction policy for a dasher account.
 POLICY_EXPORT extern const base::Feature
     kEnableUserCloudSigninRestrictionPolicyFetcher;
-
-// The OAuth2 scope required to fetch the policy.
-POLICY_EXPORT extern const base::FeatureParam<std::string>
-    kUserCloudSigninRestrictionPolicyFetcherScope;
 
 // Enable MetricsReportingEnabled policy to alter MetricsReportingState on
 // Android.

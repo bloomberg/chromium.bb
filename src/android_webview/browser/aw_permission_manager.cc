@@ -16,13 +16,13 @@
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 
+using blink::PermissionType;
 using blink::mojom::PermissionStatus;
-using content::PermissionType;
 
 using RequestPermissionsCallback =
     base::OnceCallback<void(const std::vector<PermissionStatus>&)>;
@@ -441,6 +441,17 @@ void AwPermissionManager::ResetPermission(PermissionType permission,
   result_cache_->ClearResult(permission, requesting_origin, embedding_origin);
 }
 
+void AwPermissionManager::RequestPermissionsFromCurrentDocument(
+    const std::vector<PermissionType>& permissions,
+    content::RenderFrameHost* render_frame_host,
+    bool user_gesture,
+    base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)>
+        callback) {
+  RequestPermissions(permissions, render_frame_host,
+                     LastCommittedOrigin(render_frame_host), user_gesture,
+                     std::move(callback));
+}
+
 PermissionStatus AwPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
@@ -457,23 +468,15 @@ PermissionStatus AwPermissionManager::GetPermissionStatus(
   return PermissionStatus::DENIED;
 }
 
-PermissionStatus AwPermissionManager::GetPermissionStatusForFrame(
-    PermissionType permission,
-    content::RenderFrameHost* render_frame_host,
-    const GURL& requesting_origin) {
-  return GetPermissionStatus(
-      permission, requesting_origin,
-      permissions::PermissionUtil::GetLastCommittedOriginAsURL(
-          render_frame_host));
-}
-
 PermissionStatus AwPermissionManager::GetPermissionStatusForCurrentDocument(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host) {
   return GetPermissionStatus(
-      permission, render_frame_host->GetLastCommittedOrigin().GetURL(),
+      permission,
       permissions::PermissionUtil::GetLastCommittedOriginAsURL(
-          render_frame_host));
+          render_frame_host),
+      permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+          render_frame_host->GetMainFrame()));
 }
 
 PermissionStatus AwPermissionManager::GetPermissionStatusForWorker(

@@ -10,6 +10,7 @@
 
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/ash_export.h"
+#include "ash/capture_mode/capture_mode_toast_controller.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/folder_selection_dialog_controller.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -91,6 +92,9 @@ class ASH_EXPORT CaptureModeSession
   void set_is_stopping_to_start_video_recording(bool value) {
     is_stopping_to_start_video_recording_ = value;
   }
+  CaptureModeToastController* capture_toast_controller() {
+    return &capture_toast_controller_;
+  }
 
   // Initializes the capture mode session. This should be called right after the
   // object is created.
@@ -103,6 +107,15 @@ class ASH_EXPORT CaptureModeSession
   // Gets the current window selected for |kWindow| capture source. Returns
   // nullptr if no window is available for selection.
   aura::Window* GetSelectedWindow() const;
+
+  // Called when a user toggles the capture source or capture type to announce
+  // an accessibility alert. If `trigger_now` is true, it will announce
+  // immediately; otherwise, it will trigger another alert asynchronously with
+  // the alert.
+  void A11yAlertCaptureSource(bool trigger_now);
+
+  // Called when switching a capture type from another capture type.
+  void A11yAlertCaptureType();
 
   // Called when either the capture source or type changes.
   void OnCaptureSourceChanged(CaptureModeSource new_source);
@@ -156,6 +169,12 @@ class ASH_EXPORT CaptureModeSession
   // active.
   gfx::Rect GetCameraPreviewConfineBounds() const;
 
+  // Returns the in-session target value that should be used for the visibility
+  // of the camera preview (if any). During the session, things like dragging
+  // the user region may affect the camera preview's visibility, and hence this
+  // function should be consulted.
+  bool CalculateCameraPreviewTargetVisibility() const;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -206,7 +225,17 @@ class ASH_EXPORT CaptureModeSession
   void OnCameraPreviewDragStarted();
   void OnCameraPreviewDragEnded(const gfx::Point& screen_location,
                                 bool is_touch);
-  void OnCameraPreviewBoundsChanged();
+
+  // Called every time when camera preview is updated.
+  // `capture_surface_became_too_small` indicates whether the camera preview
+  // becomes invisible is due to the capture surface becoming too small.
+  // `did_bounds_or_visibility_change` determines whether the capture UIs'
+  // opacity should be updated.
+  void OnCameraPreviewBoundsOrVisibilityChanged(
+      bool capture_surface_became_too_small,
+      bool did_bounds_or_visibility_change);
+
+  void OnCameraPreviewDestroyed();
 
  private:
   friend class CaptureModeSettingsTestApi;
@@ -283,12 +312,9 @@ class ASH_EXPORT CaptureModeSession
                                        bool is_touch) const;
 
   // Handles updating the select region UI.
-  void OnLocatedEventPressed(const gfx::Point& location_in_root,
-                             bool is_touch,
-                             bool is_event_on_capture_bar_or_menu);
+  void OnLocatedEventPressed(const gfx::Point& location_in_root, bool is_touch);
   void OnLocatedEventDragged(const gfx::Point& location_in_root);
-  void OnLocatedEventReleased(bool is_event_on_capture_bar_or_menu,
-                              bool region_intersects_capture_bar);
+  void OnLocatedEventReleased(const gfx::Point& location_in_root);
 
   // Updates the capture region and the capture region widgets depending on the
   // value of |is_resizing|. |by_user| is true if the capture region is changed
@@ -353,19 +379,19 @@ class ASH_EXPORT CaptureModeSession
   // kImage or using custom video capture icon when |type| is kVideo.
   bool IsUsingCustomCursor(CaptureModeType type) const;
 
-  // Updates the capture bar widget with a given opacity. There is a different
-  // animation duration and tween type for mouse/touch release.
-  void UpdateCaptureBarWidgetOpacity(float opacity, bool on_release);
-
   // Ensure the user region in |controller_| is within the bounds of the root
   // window. This is called when creating |this| or when the display bounds have
   // changed.
   void ClampCaptureRegionToRootWindowSize();
 
   // Ends a region selection. Cleans up internal state and updates the cursor,
-  // capture bar opacity and magnifier glass.
-  void EndSelection(bool is_event_on_capture_bar_or_menu,
-                    bool region_intersects_capture_bar);
+  // capture UIs' opacity and magnifier glass. The `cursor_screen_location`
+  // could not be provided in some use cases, for example the capture region is
+  // updated because of the display metrics are changed. When
+  // `cursor_screen_location` is not provived, we will try to get the screen
+  // location of the mouse.
+  void EndSelection(
+      absl::optional<gfx::Point> cursor_screen_location = absl::nullopt);
 
   // Schedules a paint on the region and enough inset around it so that the
   // shadow, affordance circles, etc. are all repainted.
@@ -389,8 +415,12 @@ class ASH_EXPORT CaptureModeSession
   void MaybeReparentCameraPreviewWidget();
 
   // Called at the beginning or end of the drag of capture region to update the
-  // camera preview's visibility.
-  void MaybeUpdateCameraPreviewVisibility();
+  // camera preview's bounds and visibility.
+  void MaybeUpdateCameraPreviewBounds();
+
+  // Returns true if the given `event` is targeted on the capture bar or the
+  // setting menu if it exists.
+  bool IsEventTargetedOnCaptureBarOrMenu(const ui::LocatedEvent& event) const;
 
   CaptureModeController* const controller_;
 
@@ -524,7 +554,12 @@ class ASH_EXPORT CaptureModeSession
   std::unique_ptr<FolderSelectionDialogController>
       folder_selection_dialog_controller_;
 
+  // Controls the user nudge animations.
   std::unique_ptr<UserNudgeController> user_nudge_controller_;
+
+  // Controls creating, destroying or updating the visibility of the capture
+  // toast.
+  CaptureModeToastController capture_toast_controller_;
 
   base::WeakPtrFactory<CaptureModeSession> weak_ptr_factory_{this};
 };

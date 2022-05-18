@@ -504,12 +504,14 @@ constexpr bool IsSourceUdpPortBlocked(uint16_t port) {
       111,    // Portmap.
       123,    // NTP, vulnerable to reflection attacks.
       137,    // NETBIOS Name Service,
-      128,    // NETBIOS Datagram Service
+      138,    // NETBIOS Datagram Service
       161,    // SNMP.
       389,    // CLDAP.
       500,    // IKE, can loop with QUIC.
       1900,   // SSDP, vulnerable to reflection attacks.
+      3702,   // WS-Discovery, vulnerable to reflection attacks.
       5353,   // mDNS, vulnerable to reflection attacks.
+      5355,   // LLMNR, vulnerable to reflection attacks.
       11211,  // memcache, vulnerable to reflection attacks.
               // This list MUST be sorted in increasing order.
   };
@@ -1390,7 +1392,6 @@ void QuicDispatcher::MaybeResetPacketsWithNoVersion(
   // recently.
   if (recent_stateless_reset_addresses_.contains(packet_info.peer_address)) {
     QUIC_CODE_COUNT(quic_donot_send_reset_repeatedly);
-    QUICHE_DCHECK(use_recent_reset_addresses_);
     return;
   }
   if (packet_info.form != GOOGLE_QUIC_PACKET) {
@@ -1410,24 +1411,21 @@ void QuicDispatcher::MaybeResetPacketsWithNoVersion(
       return;
     }
   }
-  if (use_recent_reset_addresses_) {
-    QUIC_RESTART_FLAG_COUNT(quic_use_recent_reset_addresses);
-    // Do not send a stateless reset if there are too many stateless reset
-    // addresses.
-    if (recent_stateless_reset_addresses_.size() >=
-        GetQuicFlag(FLAGS_quic_max_recent_stateless_reset_addresses)) {
-      QUIC_CODE_COUNT(quic_too_many_recent_reset_addresses);
-      return;
-    }
-    if (recent_stateless_reset_addresses_.empty()) {
-      clear_stateless_reset_addresses_alarm_->Update(
-          helper()->GetClock()->ApproximateNow() +
-              QuicTime::Delta::FromMilliseconds(GetQuicFlag(
-                  FLAGS_quic_recent_stateless_reset_addresses_lifetime_ms)),
-          QuicTime::Delta::Zero());
-    }
-    recent_stateless_reset_addresses_.emplace(packet_info.peer_address);
+  // Do not send a stateless reset if there are too many stateless reset
+  // addresses.
+  if (recent_stateless_reset_addresses_.size() >=
+      GetQuicFlag(FLAGS_quic_max_recent_stateless_reset_addresses)) {
+    QUIC_CODE_COUNT(quic_too_many_recent_reset_addresses);
+    return;
   }
+  if (recent_stateless_reset_addresses_.empty()) {
+    clear_stateless_reset_addresses_alarm_->Update(
+        helper()->GetClock()->ApproximateNow() +
+            QuicTime::Delta::FromMilliseconds(GetQuicFlag(
+                FLAGS_quic_recent_stateless_reset_addresses_lifetime_ms)),
+        QuicTime::Delta::Zero());
+  }
+  recent_stateless_reset_addresses_.emplace(packet_info.peer_address);
 
   time_wait_list_manager()->SendPublicReset(
       packet_info.self_address, packet_info.peer_address,

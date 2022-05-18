@@ -98,7 +98,8 @@ class ManagePasswordsUIController
       const std::vector<const password_manager::PasswordForm*>*
           federated_matches) override;
   void OnCredentialLeak(password_manager::CredentialLeakType leak_dialog_type,
-                        const GURL& origin) override;
+                        const GURL& url,
+                        const std::u16string& username) override;
   void OnShowMoveToAccountBubble(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
       override;
@@ -221,8 +222,7 @@ class ManagePasswordsUIController
   bool IsShowingBubbleForTest() const { return IsShowingBubble(); }
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
  private:
@@ -231,6 +231,8 @@ class ManagePasswordsUIController
   // PasswordsLeakDialogDelegate:
   void NavigateToPasswordCheckup(
       password_manager::PasswordCheckReferrer referrer) override;
+  void StartAutomatedPasswordChange(const GURL& origin,
+                                    const std::u16string& username) override;
   void OnLeakDialogHidden() override;
 
   enum class BubbleStatus {

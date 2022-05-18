@@ -46,8 +46,7 @@ static avifBool compareYUVA(const avifImage * image1, const avifImage * image2)
     }
 
     if (image1->alphaPlane != NULL || image2->alphaPlane != NULL) {
-        if (image1->alphaPlane == NULL || image2->alphaPlane == NULL || image1->alphaRange != image2->alphaRange ||
-            image1->alphaPremultiplied != image2->alphaPremultiplied) {
+        if (image1->alphaPlane == NULL || image2->alphaPlane == NULL || image1->alphaPremultiplied != image2->alphaPremultiplied) {
             printf("ERROR: input mismatch\n");
             return AVIF_FALSE;
         }
@@ -94,7 +93,6 @@ static void fillPlanes(avifImage * image)
         }
     }
     if (image->alphaPlane != NULL) {
-        assert(image->alphaRange == AVIF_RANGE_FULL);
         const uint16_t alphaValue = (1 << image->depth) - 1;
         for (uint32_t y = 0; y < image->height; ++y) {
             uint8_t * const row = image->alphaPlane + y * image->alphaRowBytes;
@@ -130,7 +128,6 @@ static avifBool encodeDecodeY4m(uint32_t width,
     image->depth = depth;
     image->yuvFormat = yuvFormat;
     image->yuvRange = yuvRange;
-    image->alphaRange = AVIF_RANGE_FULL; // Unused by y4mRead() and y4mWrite().
     avifImageAllocatePlanes(image, createAlpha ? AVIF_PLANES_ALL : AVIF_PLANES_YUV);
     fillPlanes(image);
 

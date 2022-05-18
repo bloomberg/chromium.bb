@@ -27,7 +27,7 @@ import './metadata.js';
 import './metrics.js';
 import './my_files.js';
 import './office.js';
-import './open_audio_files.js';
+import './open_audio_media_app.js';
 import './open_image_media_app.js';
 import './open_sniffed_files.js';
 import './open_video_media_app.js';
@@ -126,7 +126,7 @@ export async function openNewWindow(initialRoot, appState = {}) {
  *     passed to chrome. fileSystem.chooseEntry() API.
  * @param {string} volumeName Volume name passed to the selectVolume remote
  *     function.
- * @param {Array<TestEntryInfo>} expectedSet Expected set of the entries.
+ * @param {!Array<!TestEntryInfo>} expectedSet Expected set of the entries.
  * @param {function(string):Promise} closeDialog Function to close the
  *     dialog.
  * @param {boolean} useBrowserOpen Whether to launch the select file dialog via

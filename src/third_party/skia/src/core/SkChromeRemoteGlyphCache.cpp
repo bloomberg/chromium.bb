@@ -790,6 +790,7 @@ RemoteStrike* SkStrikeServerImpl::getOrCreateCache(const SkStrikeSpec& strikeSpe
 }
 
 // -- GlyphTrackingDevice --------------------------------------------------------------------------
+#if SK_SUPPORT_GPU
 class GlyphTrackingDevice final : public SkNoPixelsDevice {
 public:
     GlyphTrackingDevice(
@@ -798,9 +799,8 @@ public:
             : SkNoPixelsDevice(SkIRect::MakeSize(dimensions), props, std::move(colorSpace))
             , fStrikeServerImpl(server)
             , fDFTSupport(DFTSupport)
-            , fPainter{props, kUnknown_SkColorType, imageInfo().colorSpace(), fStrikeServerImpl}
-            , fConvertPainter{props, kUnknown_SkColorType, imageInfo().colorSpace(),
-                              SkStrikeCache::GlobalStrikeCache()} {
+            , fPainter{props, imageInfo().colorSpace(), fStrikeServerImpl}
+            , fConvertPainter{props, imageInfo().colorSpace(), SkStrikeCache::GlobalStrikeCache()} {
         SkASSERT(fStrikeServerImpl != nullptr);
     }
 
@@ -811,10 +811,10 @@ public:
     }
 
 protected:
-    #if SK_SUPPORT_GPU
     void onDrawGlyphRunList(SkCanvas*,
                             const SkGlyphRunList& glyphRunList,
-                            const SkPaint& paint) override {
+                            const SkPaint& initialPaint,
+                            const SkPaint& drawingPaint) override {
         GrContextOptions ctxOptions;
         GrSDFTControl control =
                 GrSDFTControl{fDFTSupport,
@@ -824,20 +824,13 @@ protected:
 
         SkMatrix drawMatrix = this->localToDevice();
         drawMatrix.preTranslate(glyphRunList.origin().x(), glyphRunList.origin().y());
-        const uint64_t uniqueID = glyphRunList.uniqueID();
-        for (auto& glyphRun : glyphRunList) {
-            fPainter.processGlyphRun(nullptr,
-                                     glyphRun,
-                                     drawMatrix,
-                                     paint,
-                                     control,
-                                     "Cache Diff",
-                                     uniqueID);
-        }
+        fPainter.categorizeGlyphRunList(
+                nullptr, glyphRunList, drawMatrix, drawingPaint, control, "Cache Diff");
     }
 
     sk_sp<GrSlug> convertGlyphRunListToSlug(const SkGlyphRunList& glyphRunList,
-                                            const SkPaint& paint) override {
+                                            const SkPaint& initialPaint,
+                                            const SkPaint& drawingPaint) override {
         GrContextOptions ctxOptions;
         GrSDFTControl control =
                 GrSDFTControl{fDFTSupport,
@@ -854,20 +847,17 @@ protected:
 
         // Use the lightweight strike cache provided by SkRemoteGlyphCache through fPainter to do
         // the analysis.
-        for (auto& glyphRun : glyphRunList) {
-            fPainter.processGlyphRun(nullptr,
-                                     glyphRun,
-                                     positionMatrix,
-                                     paint,
-                                     control,
-                                     "Convert Slug Analysis");
-        }
+        fPainter.categorizeGlyphRunList(
+            nullptr, glyphRunList, positionMatrix, drawingPaint, control, "Convert Slug Analysis");
 
         // Use the glyph strike cache to get actual glyph information.
-        return skgpu::v1::MakeSlug(
-                this->localToDevice(), glyphRunList, paint, control, &fConvertPainter);
+        return skgpu::v1::MakeSlug(this->localToDevice(),
+                                   glyphRunList,
+                                   initialPaint,
+                                   drawingPaint,
+                                   control,
+                                   &fConvertPainter);
     }
-    #endif  // SK_SUPPORT_GPU
 
 private:
     SkStrikeServerImpl* const fStrikeServerImpl;
@@ -875,6 +865,7 @@ private:
     SkGlyphRunListPainter fPainter;
     SkGlyphRunListPainter fConvertPainter;
 };
+#endif  // SK_SUPPORT_GPU
 
 // -- SkStrikeServer -------------------------------------------------------------------------------
 SkStrikeServer::SkStrikeServer(DiscardableHandleManager* dhm)
@@ -886,10 +877,15 @@ std::unique_ptr<SkCanvas> SkStrikeServer::makeAnalysisCanvas(int width, int heig
                                                              const SkSurfaceProps& props,
                                                              sk_sp<SkColorSpace> colorSpace,
                                                              bool DFTSupport) {
+#if SK_SUPPORT_GPU
     sk_sp<SkBaseDevice> trackingDevice(new GlyphTrackingDevice(SkISize::Make(width, height),
                                                                props, this->impl(),
                                                                std::move(colorSpace),
                                                                DFTSupport));
+#else
+    sk_sp<SkBaseDevice> trackingDevice(new SkNoPixelsDevice(
+            SkIRect::MakeWH(width, height), props, std::move(colorSpace)));
+#endif
     return std::make_unique<SkCanvas>(std::move(trackingDevice));
 }
 
@@ -987,13 +983,14 @@ bool SkStrikeClientImpl::ReadGlyph(SkTLazy<SkGlyph>& glyph, Deserializer* deseri
 
     return true;
 }
-
+// Change the path count to track the line number of the failing read.
+// TODO: change __LINE__ back to glyphPathsCount when bug chromium:1287356 is closed.
 #define READ_FAILURE                                                        \
     {                                                                       \
         SkDebugf("Bad font data serialization line: %d", __LINE__);         \
         SkStrikeClient::DiscardableHandleManager::ReadFailureData data = {  \
                 memorySize,  deserializer.bytesRead(), typefaceSize,        \
-                strikeCount, glyphImagesCount,         glyphPathsCount};    \
+                strikeCount, glyphImagesCount, __LINE__};                   \
         fDiscardableHandleManager->notifyReadFailure(data);                 \
         return false;                                                       \
     }

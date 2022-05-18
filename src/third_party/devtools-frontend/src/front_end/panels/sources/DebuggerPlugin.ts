@@ -441,7 +441,7 @@ export class DebuggerPlugin extends Plugin {
     } else {
       const removeTitle = i18nString(UIStrings.removeBreakpoint, {n: breakpoints.length});
       contextMenu.debugSection().appendItem(
-          removeTitle, () => breakpoints.forEach(breakpoint => breakpoint.remove(false)));
+          removeTitle, () => breakpoints.forEach(breakpoint => void breakpoint.remove(false)));
       if (breakpoints.length === 1 && supportsConditionalBreakpoints) {
         // Editing breakpoints only make sense for conditional breakpoints
         // and logpoints and both are currently only available for JavaScript
@@ -472,11 +472,11 @@ export class DebuggerPlugin extends Plugin {
     }
 
     function addSourceMapURLDialogCallback(
-        scriptFile: Bindings.ResourceScriptMapping.ResourceScriptFile, url: string): void {
+        scriptFile: Bindings.ResourceScriptMapping.ResourceScriptFile, url: Platform.DevToolsPath.UrlString): void {
       if (!url) {
         return;
       }
-      scriptFile.addSourceMapURL(url as Platform.DevToolsPath.UrlString);
+      scriptFile.addSourceMapURL(url);
     }
 
     if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
@@ -520,7 +520,7 @@ export class DebuggerPlugin extends Plugin {
     if (value !== this.muted) {
       this.muted = value;
       if (!value) {
-        this.restoreBreakpointsAfterEditing();
+        void this.restoreBreakpointsAfterEditing();
       } else if (this.editor) {
         this.editor.dispatch({effects: muteBreakpoints.of(null)});
       }
@@ -534,6 +534,10 @@ export class DebuggerPlugin extends Plugin {
       }
     }
     return true;
+  }
+
+  private isVariableIdentifier(tokenType: string): boolean {
+    return tokenType === 'VariableName' || tokenType === 'VariableDefinition';
   }
 
   private isIdentifier(tokenType: string): boolean {
@@ -962,11 +966,11 @@ export class DebuggerPlugin extends Plugin {
     tree.iterate({
       from: fromPos,
       to: toPos,
-      enter(type, from, to): void {
-        const varName = type.name === 'VariableName' && editorState.sliceDoc(from, to);
+      enter: node => {
+        const varName = this.isVariableIdentifier(node.name) && editorState.sliceDoc(node.from, node.to);
         if (varName && variableMap.has(varName)) {
-          if (from > curLine.to) {
-            curLine = editorState.doc.lineAt(from);
+          if (node.from > curLine.to) {
+            curLine = editorState.doc.lineAt(node.from);
           }
           let names = namesPerLine.get(curLine.number - 1);
           if (!names) {
@@ -1217,18 +1221,19 @@ export class DebuggerPlugin extends Plugin {
   // breakpoints the breakpoint manager might have (which point into
   // the old file) with the breakpoints we have, which had their
   // positions tracked through the changes.
-  private restoreBreakpointsAfterEditing(): void {
+  private async restoreBreakpointsAfterEditing(): Promise<void> {
     const {breakpoints} = this;
     const editor = this.editor as TextEditor.TextEditor.TextEditor;
     this.breakpoints = [];
-    for (const {breakpoint, position} of breakpoints) {
+    await Promise.all(breakpoints.map(async description => {
+      const {breakpoint, position} = description;
       const condition = breakpoint.condition(), enabled = breakpoint.enabled();
-      breakpoint.remove(false);
+      await breakpoint.remove(false);
       const editorLocation = editor.toLineColumn(position);
       const uiLocation =
           this.transformer.editorLocationToUILocation(editorLocation.lineNumber, editorLocation.columnNumber);
-      void this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, condition, enabled);
-    }
+      await this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, condition, enabled);
+    }));
   }
 
   private async refreshBreakpoints(): Promise<void> {
@@ -1265,7 +1270,7 @@ export class DebuggerPlugin extends Plugin {
       if (event.shiftKey) {
         breakpoint.setEnabled(!breakpoint.enabled());
       } else {
-        breakpoint.remove(false);
+        void breakpoint.remove(false);
       }
     } else if (this.editor) {
       const editorLocation = this.editor.editor.posAtDOM(event.target as unknown as HTMLElement);
@@ -1440,7 +1445,7 @@ export class DebuggerPlugin extends Plugin {
       if (onlyDisable) {
         breakpoint.setEnabled(hasDisabled);
       } else {
-        breakpoint.remove(false);
+        void breakpoint.remove(false);
       }
     }
   }

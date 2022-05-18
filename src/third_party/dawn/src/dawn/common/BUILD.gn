@@ -118,9 +118,12 @@ config("internal_config") {
       "-Wredundant-move",
       "-Wshadow-field",
       "-Wstrict-prototypes",
+      "-Wsuggest-destructor-override",
+      "-Wsuggest-override",
       "-Wtautological-unsigned-zero-compare",
       "-Wunreachable-code-aggressive",
       "-Wunused-but-set-variable",
+      "-Wunused-macros",
     ]
 
     if (is_win) {
@@ -204,6 +207,7 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "Math.h",
       "NSRef.h",
       "NonCopyable.h",
+      "Numeric.h",
       "PlacementAllocated.h",
       "Platform.h",
       "Preprocessor.h",

@@ -629,8 +629,7 @@ void av1_init_mt_sync(AV1_COMP *cpi, int is_first_pass) {
     AV1LfSync *lf_sync = &mt_info->lf_row_sync;
     // Number of superblock rows
     const int sb_rows =
-        ALIGN_POWER_OF_TWO(cm->height >> MI_SIZE_LOG2, MAX_MIB_SIZE_LOG2) >>
-        MAX_MIB_SIZE_LOG2;
+        CEIL_POWER_OF_TWO(cm->height >> MI_SIZE_LOG2, MAX_MIB_SIZE_LOG2);
     PrimaryMultiThreadInfo *const p_mt_info = &cpi->ppi->p_mt_info;
     int num_lf_workers = av1_get_num_mod_workers_for_alloc(p_mt_info, MOD_LPF);
 
@@ -926,10 +925,8 @@ int av1_check_fpmt_config(AV1_PRIMARY *const ppi,
 // Computes the max number of enc workers possible for each resolution.
 static AOM_INLINE int compute_max_num_enc_workers(
     CommonModeInfoParams *const mi_params, int mib_size_log2) {
-  int num_sb_rows =
-      ALIGN_POWER_OF_TWO(mi_params->mi_rows, mib_size_log2) >> mib_size_log2;
-  int num_sb_cols =
-      ALIGN_POWER_OF_TWO(mi_params->mi_cols, mib_size_log2) >> mib_size_log2;
+  int num_sb_rows = CEIL_POWER_OF_TWO(mi_params->mi_rows, mib_size_log2);
+  int num_sb_cols = CEIL_POWER_OF_TWO(mi_params->mi_cols, mib_size_log2);
 
   return AOMMIN((num_sb_cols + 1) >> 1, num_sb_rows);
 }
@@ -1219,11 +1216,12 @@ static AOM_INLINE void accumulate_counters_enc_workers(AV1_COMP *cpi,
       av1_accumulate_cyclic_refresh_counters(cpi->cyclic_refresh,
                                              &thread_data->td->mb);
     if (thread_data->td != &cpi->td) {
+      // Keep these conditional expressions in sync with the corresponding ones
+      // in prepare_enc_workers().
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }
-      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF &&
-          av1_need_dv_costs(cpi)) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.dv_costs);
       }
     }
@@ -1292,18 +1290,25 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
               thread_data->td->hash_value_buffer[x][y];
         }
       }
+      // Keep these conditional expressions in sync with the corresponding ones
+      // in accumulate_counters_enc_workers().
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.mv_costs,
                         (MvCosts *)aom_malloc(sizeof(MvCosts)));
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
-      if ((cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) &&
-          av1_need_dv_costs(cpi)) {
-        CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
-                        (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
-        memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
-               sizeof(IntraBCMVCosts));
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
+        // Reset dv_costs to NULL for worker threads when dv cost update is
+        // enabled so that only dv_cost_upd_level needs to be checked before the
+        // aom_free() call for the same.
+        thread_data->td->mb.dv_costs = NULL;
+        if (av1_need_dv_costs(cpi)) {
+          CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
+                          (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
+          memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
+                 sizeof(IntraBCMVCosts));
+        }
       }
     }
     av1_alloc_mb_data(cpi, &thread_data->td->mb);
@@ -1369,6 +1374,8 @@ static AOM_INLINE void fp_prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     // Before encoding a frame, copy the thread data from cpi.
     if (thread_data->td != &cpi->td) {
       thread_data->td->mb = cpi->td.mb;
+      // Keep this conditional expression in sync with the corresponding one
+      // in av1_fp_encode_tiles_row_mt().
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.mv_costs,
                         (MvCosts *)aom_malloc(sizeof(MvCosts)));
@@ -1651,6 +1658,8 @@ void av1_fp_encode_tiles_row_mt(AV1_COMP *cpi) {
   for (int i = num_workers - 1; i >= 0; i--) {
     EncWorkerData *const thread_data = &cpi->mt_info.tile_thr_data[i];
     if (thread_data->td != &cpi->td) {
+      // Keep this conditional expression in sync with the corresponding one
+      // in fp_prepare_enc_workers().
       if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }

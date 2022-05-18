@@ -40,6 +40,8 @@ def FindSwiftFormatToolInChromiumTree():
 
 
 def IsSwiftFormatSupported():
+  if sys.platform != 'darwin':
+    return False
   try:
     FindSwiftFormatToolInChromiumTree()
     return True

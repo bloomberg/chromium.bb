@@ -286,7 +286,7 @@ template<typename PlainObjectType> void check_const_correctness(const PlainObjec
   // CMake can help with that.
 
   // verify that map-to-const don't have LvalueBit
-  typedef typename internal::add_const<PlainObjectType>::type ConstPlainObjectType;
+  typedef std::add_const_t<PlainObjectType> ConstPlainObjectType;
   VERIFY( !(internal::traits<Map<ConstPlainObjectType> >::Flags & LvalueBit) );
   VERIFY( !(internal::traits<Map<ConstPlainObjectType, Aligned> >::Flags & LvalueBit) );
   VERIFY( !(Map<ConstPlainObjectType>::Flags & LvalueBit) );

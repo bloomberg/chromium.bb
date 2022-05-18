@@ -150,6 +150,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // If enabled, per-AgentGroupScheduler CompositorTaskRunner will be used
     // instead of per-MainThreadScheduler CompositorTaskRunner.
     bool mbi_compositor_task_runner_per_agent_scheduling_group;
+
+    // If enabled, the parser may continue parsing if BeginMainFrame was
+    // recently called.
+    bool can_defer_begin_main_frame_during_loading;
   };
 
   static const char* UseCaseToString(UseCase use_case);
@@ -189,11 +193,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
-  void DidScheduleBeginMainFrame() override;
   void DidRunBeginMainFrame() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
-  void OnMainFrameRequestedForInput() override;
 #if BUILDFLAG(IS_ANDROID)
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
@@ -213,7 +215,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetRendererProcessType(WebRendererProcessType type) override;
   Vector<WebInputEventAttribution> GetPendingUserInputInfo(
       bool include_continuous) const override;
-  bool IsBeginMainFrameScheduled() const override;
+  bool DontDeferBeginMainFrame() const override;
 
   // ThreadScheduler implementation:
   void PostIdleTask(const base::Location&, Thread::IdleTask) override;
@@ -265,6 +267,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner() override;
   const base::TickClock* GetTickClock() const override;
+  MainThreadSchedulerHelper& GetHelper() override { return helper_; }
 
   base::TimeTicks NowTicks() const;
 
@@ -849,7 +852,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, TracingCategory::kDebug>
         has_visible_render_widget_with_touch_handler;
     TraceableState<bool, TracingCategory::kDebug> in_idle_period_for_testing;
-    TraceableState<bool, TracingCategory::kInfo> use_virtual_time;
     TraceableState<bool, TracingCategory::kTopLevel> is_audio_playing;
     TraceableState<bool, TracingCategory::kDebug>
         compositor_will_send_main_frame_not_expected;
@@ -869,8 +871,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         absl::optional<base::sequence_manager::TaskQueue::QueuePriority>,
         TracingCategory::kInfo>
         task_priority_for_tracing;  // Only used for tracing.
-    base::Time initial_virtual_time;
-    base::TimeTicks initial_virtual_time_ticks;
 
     VirtualTimePolicy virtual_time_policy;
 
@@ -945,8 +945,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         waiting_for_any_main_frame_meaningful_paint;
     TraceableState<bool, TracingCategory::kInfo>
         have_seen_input_since_navigation;
-    TraceableCounter<uint32_t, TracingCategory::kInfo>
-        begin_main_frame_scheduled_count;
+    base::TimeTicks last_main_frame_time;
   };
 
   struct CompositorThreadOnly {

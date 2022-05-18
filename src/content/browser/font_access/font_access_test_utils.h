@@ -7,6 +7,10 @@
 
 #include "content/public/test/mock_permission_manager.h"
 
+namespace blink {
+enum class PermissionType;
+}
+
 namespace content {
 
 class TestFontAccessPermissionManager : public MockPermissionManager {
@@ -20,22 +24,19 @@ class TestFontAccessPermissionManager : public MockPermissionManager {
 
   ~TestFontAccessPermissionManager() override;
 
-  using PermissionCallback =
-      base::OnceCallback<void(blink::mojom::PermissionStatus)>;
+  using PermissionCallback = base::OnceCallback<void(
+      const std::vector<blink::mojom::PermissionStatus>&)>;
 
-  void RequestPermission(PermissionType permissions,
-                         RenderFrameHost* render_frame_host,
-                         const GURL& requesting_origin,
-                         bool user_gesture,
-                         PermissionCallback callback) override;
-
-  blink::mojom::PermissionStatus GetPermissionStatusForFrame(
-      PermissionType permission,
-      RenderFrameHost* render_frame_host,
-      const GURL& requesting_origin) override;
+  void RequestPermissionsFromCurrentDocument(
+      const std::vector<blink::PermissionType>& permissions,
+      content::RenderFrameHost* render_frame_host,
+      bool user_gesture,
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
+      override;
 
   blink::mojom::PermissionStatus GetPermissionStatusForCurrentDocument(
-      PermissionType permission,
+      blink::PermissionType permission,
       RenderFrameHost* render_frame_host) override;
 
   void SetRequestCallback(
@@ -43,13 +44,14 @@ class TestFontAccessPermissionManager : public MockPermissionManager {
     request_callback_ = std::move(request_callback);
   }
 
-  void SetPermissionStatusForFrame(blink::mojom::PermissionStatus status) {
-    permission_status_for_frame_ = status;
+  void SetPermissionStatusForCurrentDocument(
+      blink::mojom::PermissionStatus status) {
+    permission_status_for_current_document_ = status;
   }
 
  private:
   base::RepeatingCallback<void(PermissionCallback)> request_callback_;
-  blink::mojom::PermissionStatus permission_status_for_frame_ =
+  blink::mojom::PermissionStatus permission_status_for_current_document_ =
       blink::mojom::PermissionStatus::ASK;
 };
 

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.34.0] - 2022-05-05
+
 ### Breaking
  - `SkRuntimeEffect.makeShader` and `SkRuntimeEffect.makeShaderWithChildren` no longer accept
    an `isOpaque` parameter. These functions will now make a best effort to determine if your
@@ -21,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  - If an invalid matrix type is passed in (e.g. not an array, TypedArray, or DOMMatrix), CanvasKit
    will throw instead of drawing incorrectly.
+
+### Fixed
+ - SkParagraph objects no longer have their glyphs garbled when stored to an SkPicture.
+   (skbug.com/13247)
 
 ## [0.33.0] - 2022-02-03
 

@@ -29,7 +29,7 @@
 #include "libANGLE/renderer/gl/SurfaceGL.h"
 #include "libANGLE/renderer/gl/formatutilsgl.h"
 #include "libANGLE/renderer/gl/renderergl_utils.h"
-#include "platform/FeaturesGL.h"
+#include "platform/FeaturesGL_autogen.h"
 
 using angle::CheckedNumeric;
 
@@ -73,7 +73,7 @@ bool GetDepthStencilWorkaround(GLenum format)
 bool GetEmulatedAlphaChannel(const angle::FeaturesGL &features,
                              const gl::InternalFormat &originalInternalFormat)
 {
-    return (features.rgbDXT1TexturesSampleZeroAlpha.enabled &&
+    return (features.RGBDXT1TexturesSampleZeroAlpha.enabled &&
             originalInternalFormat.sizedInternalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ||
            (features.emulateRGB10.enabled && originalInternalFormat.format == GL_RGB &&
             originalInternalFormat.type == GL_UNSIGNED_INT_2_10_10_10_REV_EXT);
@@ -1360,7 +1360,7 @@ angle::Result TextureGL::generateMipmap(const gl::Context *context)
 
     stateManager->bindTexture(getType(), mTextureID);
     if (baseLevelInternalFormat.colorEncoding == GL_SRGB &&
-        features.encodeAndDecodeSRGBForGenerateMipmap.enabled && getType() == gl::TextureType::_2D)
+        features.decodeEncodeSRGBForGenerateMipmap.enabled && getType() == gl::TextureType::_2D)
     {
         nativegl::TexImageFormat texImageFormat = nativegl::GetTexImageFormat(
             functions, features, baseLevelInternalFormat.internalFormat,
@@ -2020,6 +2020,7 @@ gl::TextureType TextureGL::getType() const
 }
 
 angle::Result TextureGL::initializeContents(const gl::Context *context,
+                                            GLenum binding,
                                             const gl::ImageIndex &imageIndex)
 {
     ContextGL *contextGL              = GetImplAs<ContextGL>(context);

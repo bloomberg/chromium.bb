@@ -15,6 +15,7 @@
 #include "include/core/SkSpan.h"
 #include "include/core/SkTileMode.h"
 #include "include/private/SkColorData.h"
+#include "src/core/SkEnumBitMask.h"
 
 #ifdef SK_GRAPHITE_ENABLED
 #include "src/gpu/Blend.h"
@@ -25,6 +26,8 @@
 
 class SkArenaAlloc;
 class SkUniform;
+
+enum class SnippetRequirementFlags : uint32_t;
 
 class SkUniformDataBlock {
 public:
@@ -134,7 +137,7 @@ public:
 #endif
 
 #ifdef SK_GRAPHITE_ENABLED
-    SkPipelineDataGatherer(skgpu::graphite::Layout layout) : fUniformManager(layout) {}
+    SkPipelineDataGatherer(skgpu::graphite::Layout layout);
 #endif
 
     void reset();
@@ -153,9 +156,15 @@ public:
         fTextureDataBlock.add(sampling, tileModes, std::move(proxy));
     }
     bool hasTextures() const { return !fTextureDataBlock.empty(); }
+#endif // SK_GRAPHITE_ENABLED
 
+    void addFlags(SnippetRequirementFlags flags);
+    bool needsLocalCoords() const;
+
+#ifdef SK_GRAPHITE_ENABLED
     const SkTextureDataBlock& textureDataBlock() { return fTextureDataBlock; }
 
+    void write(const SkM44& mat) { fUniformManager.write(mat); }
     void write(const SkColor4f* colors, int numColors) { fUniformManager.write(colors, numColors); }
     void write(const SkPMColor4f& premulColor) { fUniformManager.write(&premulColor, 1); }
     void write(const SkRect& rect) { fUniformManager.write(rect); }
@@ -179,10 +188,11 @@ private:
     void doneWithExpectedUniforms() { fUniformManager.doneWithExpectedUniforms(); }
 #endif // SK_DEBUG
 
-    SkTextureDataBlock              fTextureDataBlock;
-    BlendInfo                       fBlendInfo;
-    skgpu::graphite::UniformManager fUniformManager;
+    SkTextureDataBlock                     fTextureDataBlock;
+    BlendInfo                              fBlendInfo;
+    skgpu::graphite::UniformManager        fUniformManager;
 #endif // SK_GRAPHITE_ENABLED
+    SkEnumBitMask<SnippetRequirementFlags> fSnippetRequirementFlags;
 };
 
 #if defined(SK_DEBUG) && defined(SK_GRAPHITE_ENABLED)

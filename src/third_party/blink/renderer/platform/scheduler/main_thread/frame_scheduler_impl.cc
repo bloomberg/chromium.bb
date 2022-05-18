@@ -392,7 +392,6 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     }
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
-    case TaskType::kNetworkingWithURLLoaderAnnotation:
       return LoadingTaskQueueTraits();
     case TaskType::kNetworkingUnfreezable:
       return IsInflightNetworkRequestBackForwardCacheSupportEnabled()
@@ -572,7 +571,7 @@ FrameSchedulerImpl::CreateResourceLoadingTaskRunnerHandleImpl() {
   }
 
   return ResourceLoadingTaskRunnerHandleImpl::WrapTaskRunner(
-      GetTaskQueue(TaskType::kNetworkingWithURLLoaderAnnotation));
+      GetTaskQueue(TaskType::kNetworking));
 }
 
 void FrameSchedulerImpl::DidChangeResourceLoadingPriority(
@@ -685,6 +684,8 @@ void FrameSchedulerImpl::OnStartedUsingFeature(
     OnAddedAggressiveThrottlingOptOut();
   if (policy.disable_back_forward_cache)
     back_forward_cache_disabling_feature_tracker_.Add(feature);
+  if (policy.disable_align_wake_ups)
+    DisableAlignWakeUpsForProcess();
 }
 
 void FrameSchedulerImpl::OnStoppedUsingFeature(
@@ -760,6 +761,7 @@ void FrameSchedulerImpl::WriteIntoTrace(
                                              FRAME_TYPE_CROSS_ORIGIN_SUBFRAME
                                        : RendererMainThreadTaskExecution::
                                              FRAME_TYPE_SAME_ORIGIN_SUBFRAME);
+  proto->set_is_ad_frame(is_ad_frame_);
 }
 
 void FrameSchedulerImpl::SetPageVisibilityForTracing(

@@ -281,6 +281,8 @@ void DlpClipboardNotifier::ShowToast(const std::string& id,
   ash::ToastData toast(
       id, catalog_name, text, ash::ToastData::kDefaultToastDuration,
       /*visible_on_lock_screen=*/false,
+      /*has_dismiss_button=*/true,
+      /*custom_dismiss_text=*/
       l10n_util::GetStringUTF16(IDS_POLICY_DLP_CLIPBOARD_BLOCK_TOAST_BUTTON));
   toast.is_managed = true;
   toast.dismiss_callback = base::BindRepeating(&OnToastClicked);
@@ -292,12 +294,12 @@ void DlpClipboardNotifier::OnClipboardDataChanged() {
   ResetUserWarnSelection();
 }
 
-void DlpClipboardNotifier::OnWidgetClosing(views::Widget* widget) {
+void DlpClipboardNotifier::OnWidgetDestroying(views::Widget* widget) {
   if (!blink_paste_cb_.is_null()) {
     std::move(blink_paste_cb_).Run(false);
     Observe(nullptr);
   }
-  DlpDataTransferNotifier::OnWidgetClosing(widget);
+  DlpDataTransferNotifier::OnWidgetDestroying(widget);
 }
 
 void DlpClipboardNotifier::WebContentsDestroyed() {

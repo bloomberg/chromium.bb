@@ -16,7 +16,7 @@
 
 #include "dawn/native/PerStage.h"
 
-using namespace dawn::native;
+namespace dawn::native {
 
 // Tests for StageBit
 TEST(PerStage, StageBit) {
@@ -87,3 +87,5 @@ TEST(PerStage, IterateNoStages) {
     ASSERT_EQ(counts[wgpu::ShaderStage::Fragment], 0);
     ASSERT_EQ(counts[wgpu::ShaderStage::Compute], 0);
 }
+
+}  // namespace dawn::native

@@ -15,11 +15,10 @@ import './privacy_guide_fragment_shared_css.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {UpdateSyncStateEvent} from '../../clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
+import {ClearBrowsingDataBrowserProxyImpl, UpdateSyncStateEvent} from '../../clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 import {loadTimeData} from '../../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyGuideInteractions} from '../../metrics_browser_proxy.js';
 import {OpenWindowProxyImpl} from '../../open_window_proxy.js';
-import {SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {Router} from '../../router.js';
 
 import {getTemplate} from './privacy_guide_completion_fragment.html.js';
@@ -43,6 +42,11 @@ export class PrivacyGuideCompletionFragmentElement extends
         type: Boolean,
         value: false,
       },
+
+      enablePrivacyGuide2_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('privacyGuide2Enabled'),
+      },
     };
   }
 
@@ -52,15 +56,16 @@ export class PrivacyGuideCompletionFragmentElement extends
 
   override ready() {
     super.ready();
-    SyncBrowserProxyImpl.getInstance().getSyncStatus().then(
-        (status: SyncStatus) => this.updateWaaLink_(status.signedIn!));
     this.addWebUIListener(
         'update-sync-state',
         (event: UpdateSyncStateEvent) => this.updateWaaLink_(event.signedIn));
+    ClearBrowsingDataBrowserProxyImpl.getInstance().getSyncState().then(
+        (status: UpdateSyncStateEvent) =>
+            this.updateWaaLink_(status.signedIn));
   }
 
   override focus() {
-    this.shadowRoot!.querySelector<HTMLElement>('.headline-container')!.focus();
+    this.shadowRoot!.querySelector<HTMLElement>('[focus-element]')!.focus();
   }
 
   /**

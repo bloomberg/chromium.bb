@@ -58,7 +58,7 @@ g.test('memcpy').fn(async t => {
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, bg);
-  pass.dispatch(1);
+  pass.dispatchWorkgroups(1);
   pass.end();
   t.device.queue.submit([encoder.finish()]);
 
@@ -148,7 +148,7 @@ g.test('large_dispatch')
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bg);
-    pass.dispatch(dims[0], dims[1], dims[2]);
+    pass.dispatchWorkgroups(dims[0], dims[1], dims[2]);
     pass.end();
     t.device.queue.submit([encoder.finish()]);
 

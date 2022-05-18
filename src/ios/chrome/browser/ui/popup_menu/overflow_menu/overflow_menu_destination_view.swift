@@ -46,6 +46,8 @@ struct OverflowMenuDestinationButton: ButtonStyle {
   /// The layout parameters for this view.
   var layoutParameters: OverflowMenuDestinationView.LayoutParameters
 
+  weak var metricsHandler: PopupMenuMetricsHandler?
+
   func makeBody(configuration: Configuration) -> some View {
     Group {
       switch layoutParameters {
@@ -72,7 +74,7 @@ struct OverflowMenuDestinationButton: ButtonStyle {
 
   /// Background color for the icon.
   func backgroundColor(configuration: Configuration) -> Color {
-    return configuration.isPressed ? Color(.systemGray4) : .cr_groupedSecondaryBackground
+    return configuration.isPressed ? Color(.systemGray4) : .groupedSecondaryBackground
   }
 
   /// View representing the background of the icon.
@@ -103,7 +105,7 @@ struct OverflowMenuDestinationButton: ButtonStyle {
             )
             // Pad the color circle by 0.5, otherwise the color shows up faintly
             // around the border.
-            .background(Circle().foregroundColor(.cr_blue500).padding(0.5))
+            .background(Circle().foregroundColor(.blue500).padding(0.5))
             .frame(width: Dimensions.badgeWidth, height: Dimensions.badgeWidth)
             .offset(x: Dimensions.iconWidth / 2, y: -Dimensions.iconWidth / 2)
         }
@@ -164,9 +166,14 @@ struct OverflowMenuDestinationView: View {
   /// The layout parameters for this view.
   var layoutParameters: LayoutParameters
 
+  weak var metricsHandler: PopupMenuMetricsHandler?
+
   var body: some View {
     Button(
-      action: destination.handler,
+      action: {
+        metricsHandler?.popupMenuTookAction()
+        destination.handler()
+      },
       label: {
         EmptyView()
       }

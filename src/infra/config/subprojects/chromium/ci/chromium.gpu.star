@@ -14,8 +14,9 @@ ci.defaults.set(
     builder_group = "chromium.gpu",
     executable = ci.DEFAULT_EXECUTABLE,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
     pool = ci.gpu.POOL,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM_GPU,
     tree_closing = True,
@@ -38,21 +39,33 @@ ci.gpu.linux_builder(
         category = "Android",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.linux_builder(
     name = "GPU Linux Builder",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "use_clang_coverage",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-gpu-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "Linux",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.linux_builder(
@@ -61,9 +74,6 @@ ci.gpu.linux_builder(
         category = "Linux",
     ),
     tree_closing = False,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
     sheriff_rotations = args.ignore_default(None),
 )
 
@@ -85,6 +95,7 @@ ci.gpu.mac_builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-gpu-archive",
     ),
@@ -92,6 +103,8 @@ ci.gpu.mac_builder(
         category = "Mac",
     ),
     cq_mirrors_console_view = "mirrors",
+    goma_backend = goma.backend.RBE_PROD,
+    reclient_instance = None,
 )
 
 ci.gpu.mac_builder(
@@ -101,6 +114,8 @@ ci.gpu.mac_builder(
     ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
+    goma_backend = goma.backend.RBE_PROD,
+    reclient_instance = None,
 )
 
 ci.gpu.windows_builder(
@@ -128,9 +143,7 @@ ci.gpu.windows_builder(
         category = "Windows",
     ),
     cq_mirrors_console_view = "mirrors",
-    goma_backend = None,
     reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.windows_builder(
@@ -140,9 +153,7 @@ ci.gpu.windows_builder(
     ),
     sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
-    goma_backend = None,
     reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.thin_tester(
@@ -158,6 +169,24 @@ ci.thin_tester(
 ci.thin_tester(
     name = "Linux Release (NVIDIA)",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "use_clang_coverage",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-gpu-archive",
+    ),
     cq_mirrors_console_view = "mirrors",
     console_view_entry = consoles.console_view_entry(
         category = "Linux",
@@ -191,6 +220,7 @@ ci.thin_tester(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-gpu-archive",
     ),
@@ -226,6 +256,7 @@ ci.thin_tester(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-gpu-archive",
     ),

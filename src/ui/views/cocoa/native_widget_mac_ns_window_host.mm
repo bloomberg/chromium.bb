@@ -9,7 +9,6 @@
 
 #include "base/base64.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -40,7 +39,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -336,7 +334,8 @@ void NativeWidgetMacNSWindowHost::CreateRemoteNSWindow(
   {
     auto in_process_ns_window_create_params =
         remote_cocoa::mojom::CreateWindowParams::New();
-    in_process_ns_window_create_params->style_mask = NSBorderlessWindowMask;
+    in_process_ns_window_create_params->style_mask =
+        NSWindowStyleMaskBorderless;
     in_process_ns_window_ =
         remote_cocoa::NativeWidgetNSWindowBridge::CreateNSWindow(
             in_process_ns_window_create_params.get());
@@ -399,9 +398,9 @@ void NativeWidgetMacNSWindowHost::InitWindow(
     is_headless_mode_window_ = params.headless_mode;
 
     // OSX likes to put shadows on most things. However, frameless windows (with
-    // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
-    // ShadowType::kDrop is used for Menus, which get the same shadow style on
-    // Mac.
+    // styleMask = NSWindowStyleMaskBorderless) default to no shadow. So change
+    // that. ShadowType::kDrop is used for Menus, which get the same shadow
+    // style on Mac.
     switch (params.shadow_type) {
       case Widget::InitParams::ShadowType::kNone:
         window_params->has_window_server_shadow = false;
@@ -417,7 +416,7 @@ void NativeWidgetMacNSWindowHost::InitWindow(
     }  // No default case, to pick up new types.
 
     // Include "regular" windows without the standard frame in the window cycle.
-    // These use NSBorderlessWindowMask so do not get it by default.
+    // These use NSWindowStyleMaskBorderless so do not get it by default.
     window_params->force_into_collection_cycle =
         widget_type_ == Widget::InitParams::TYPE_WINDOW &&
         params.remove_standard_frame;
@@ -478,7 +477,6 @@ void NativeWidgetMacNSWindowHost::SetBoundsInScreen(const gfx::Rect& bounds) {
 }
 
 void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen,
-                                                base::TimeDelta delay,
                                                 int64_t target_display_id) {
   // Note that when the NSWindow begins a fullscreen transition, the value of
   // |target_fullscreen_state_| updates via OnWindowFullscreenTransitionStart.
@@ -487,30 +485,10 @@ void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen,
   // called until the current transition completes).
   target_fullscreen_state_ = fullscreen;
 
-  if (!delay.is_zero()) {
-    // Synchronously requesting fullscreen after moving the window to another
-    // display causes the window to resign key. Workaround this OS-specific
-    // quirk by delaying the fullscreen request, after setting the target state,
-    // to encapsulate some of these details from the calling client window code,
-    // i.e. so BrowserView::ProcessFullscreen will still hide its frame, etc.
-    // TODO(crbug.com/1034783): Refine cross-display fullscreen implementations.
-    // TODO(crbug.com/1210548): Find a better solution to avoid key resignation.
-    DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
-    auto callback = base::BindOnce(
-        &NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay, widget_id_);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, std::move(callback), delay);
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kFullscreenControllerMac)) {
-    if (target_fullscreen_state_)
-      GetNSWindowMojo()->EnterFullscreen(target_display_id);
-    else
-      GetNSWindowMojo()->ExitFullscreen();
-  } else {
-    GetNSWindowMojo()->SetFullscreen(fullscreen);
-  }
+  if (target_fullscreen_state_)
+    GetNSWindowMojo()->EnterFullscreen(target_display_id);
+  else
+    GetNSWindowMojo()->ExitFullscreen();
 }
 
 void NativeWidgetMacNSWindowHost::SetRootView(views::View* root_view) {
@@ -606,14 +584,6 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
   compositor_->compositor()->SetRootLayer(nullptr);
   ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
       std::move(compositor_));
-}
-
-// static
-void NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay(
-    uint64_t bridged_native_widget_id) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kFullscreenControllerMac));
-  if (NativeWidgetMacNSWindowHost* host = GetFromId(bridged_native_widget_id))
-    host->GetNSWindowMojo()->SetFullscreen(host->target_fullscreen_state_);
 }
 
 bool NativeWidgetMacNSWindowHost::SetWindowTitle(const std::u16string& title) {

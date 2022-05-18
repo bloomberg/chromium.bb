@@ -152,10 +152,10 @@ class F extends ValidationTest {
     const x = callWithZero ? 0 : 1;
     switch (call) {
       case 'dispatch':
-        pass.dispatch(x, 1, 1);
+        pass.dispatchWorkgroups(x, 1, 1);
         break;
       case 'dispatchIndirect':
-        pass.dispatchIndirect(this.getIndirectBuffer([x, 1, 1]), 0);
+        pass.dispatchWorkgroupsIndirect(this.getIndirectBuffer([x, 1, 1]), 0);
         break;
       default:
         break;

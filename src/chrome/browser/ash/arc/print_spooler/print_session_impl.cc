@@ -39,6 +39,10 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace arc {
 
 namespace {
@@ -269,16 +273,16 @@ void PrintSessionImpl::OnWindowDestroying(aura::Window* window) {
 }
 
 void PrintSessionImpl::CreatePreviewDocument(
-    base::Value job_settings,
+    base::Value::Dict job_settings,
     CreatePreviewDocumentCallback callback) {
   mojom::PrintDocumentRequestPtr request =
-      PrintDocumentRequestFromJobSettings(job_settings.GetDict());
+      PrintDocumentRequestFromJobSettings(job_settings);
   if (!request || !request->attributes) {
     std::move(callback).Run(base::ReadOnlySharedMemoryRegion());
     return;
   }
 
-  int request_id = job_settings.FindIntKey(printing::kPreviewRequestID).value();
+  int request_id = job_settings.FindInt(printing::kPreviewRequestID).value();
   instance_->CreatePreviewDocument(
       std::move(request),
       base::BindOnce(&PrintSessionImpl::OnPreviewDocumentCreated,

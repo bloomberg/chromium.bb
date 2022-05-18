@@ -4802,6 +4802,45 @@ bool CoreChecks::PreCallValidateCreateBuffer(VkDevice device, const VkBufferCrea
         }
     }
 
+    if ((pCreateInfo->usage & (VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR | VK_BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR)) > 0) {
+        bool has_decode_codec_operation = false;
+        const auto* video_profiles = LvlFindInChain<VkVideoProfilesKHR>(pCreateInfo->pNext);
+        if (video_profiles) {
+            for (uint32_t i = 0; i < video_profiles->profileCount; ++i) {
+                if (video_profiles->pProfiles[i].videoCodecOperation &
+                    (VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_EXT | VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_EXT)) {
+                    has_decode_codec_operation = true;
+                    break;
+                }
+            }
+        }
+        if (!has_decode_codec_operation) {
+            skip |= LogError(device, "VUID-VkBufferCreateInfo-usage-04813",
+                             "vkCreateBuffer(): pCreateInfo->usage is %s, but pNext chain does not include VkVideoProfilesKHR with "
+                             "a decode codec-operation.",
+                             string_VkBufferUsageFlags(pCreateInfo->usage).c_str());
+        }
+    }
+    if ((pCreateInfo->usage & (VK_BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT_KHR | VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR)) > 0) {
+        bool has_encode_codec_operation = false;
+        const auto *video_profiles = LvlFindInChain<VkVideoProfilesKHR>(pCreateInfo->pNext);
+        if (video_profiles) {
+            for (uint32_t i = 0; i < video_profiles->profileCount; ++i) {
+                if (video_profiles->pProfiles[i].videoCodecOperation &
+                    (VK_VIDEO_CODEC_OPERATION_ENCODE_H264_BIT_EXT | VK_VIDEO_CODEC_OPERATION_ENCODE_H265_BIT_EXT)) {
+                    has_encode_codec_operation = true;
+                    break;
+                }
+            }
+        }
+        if (!has_encode_codec_operation) {
+            skip |= LogError(device, "VUID-VkBufferCreateInfo-usage-04814",
+                             "vkCreateBuffer(): pCreateInfo->usage is %s, but pNext chain does not include VkVideoProfilesKHR with "
+                             "an encode codec-operation.",
+                             string_VkBufferUsageFlags(pCreateInfo->usage).c_str());
+        }
+    }
+
     return skip;
 }
 
@@ -5372,6 +5411,13 @@ bool CoreChecks::ValidateBufferBarrier(const LogObjectList &objects, const Locat
             skip |= LogError(objects, vuid, "%s %s has a size of 0.", loc.Message().c_str(),
                              report_data->FormatHandle(mem_barrier.buffer).c_str());
         }
+    }
+
+    if (mem_barrier.srcQueueFamilyIndex == VK_QUEUE_FAMILY_EXTERNAL &&
+        mem_barrier.dstQueueFamilyIndex == VK_QUEUE_FAMILY_EXTERNAL) {
+        auto size_loc = loc.dot(Field::srcQueueFamilyIndex);
+        const auto &vuid = GetBufferBarrierVUID(size_loc, BufferError::kQueueFamilyExternal);
+        skip |= LogError(objects, vuid, "Both srcQueueFamilyIndex and dstQueueFamilyIndex are VK_QUEUE_FAMILY_EXTERNAL.");
     }
     return skip;
 }
@@ -6199,6 +6245,7 @@ bool CoreChecks::ValidateCmdCopyBufferBounds(const BUFFER_STATE *src_buffer_stat
                              func_name, i, region.size, dst_buffer_size, i, region.dstOffset);
         }
 
+        // Perf improvement potential here
         // The union of the source regions, and the union of the destination regions, must not overlap in memory
         if (src_buffer_state->buffer() == dst_buffer_state->buffer()) {
             VkDeviceSize src_min = region.srcOffset;

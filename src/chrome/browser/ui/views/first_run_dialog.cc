@@ -32,10 +32,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/metrics/structured/neutrino_logging.h"  // nogncheck
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 namespace {
 
 #if !BUILDFLAG(IS_MAC)
@@ -105,8 +101,6 @@ FirstRunDialog::FirstRunDialog(base::RepeatingClosure learn_more_callback,
       l10n_util::GetStringUTF16(IDS_FR_ENABLE_LOGGING)));
   // Having this box checked means the user has to opt-out of metrics recording.
   report_crashes_->SetChecked(!first_run::IsMetricsReportingOptIn());
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::FIRST_RUN_DIALOG);
 }
 
 FirstRunDialog::~FirstRunDialog() {
@@ -114,19 +108,21 @@ FirstRunDialog::~FirstRunDialog() {
 
 void FirstRunDialog::Done() {
   CHECK(!quit_runloop_.is_null());
+
+  if (!closed_through_accept_button_) {
+    ChangeMetricsReportingState(false);
+  }
+
   quit_runloop_.Run();
 }
 
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
+  closed_through_accept_button_ = true;
 
 #if BUILDFLAG(IS_MAC)
   ChangeMetricsReportingState(report_crashes_->GetChecked());
 #else
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  metrics::structured::NeutrinoDevicesLog(
-      metrics::structured::NeutrinoDevicesLocation::kFirstRunDialog);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ChangeMetricsReportingStateWithReply(
       report_crashes_->GetChecked(),
       base::BindOnce(&InitCrashReporterIfEnabled));

@@ -182,9 +182,38 @@ export class NavigationViewPanelElement extends PolymerElement {
    * @param {?Object} initialData
    */
   addSelector(name, pageIs, icon = '', id = null, initialData = null) {
-    const selectorItem =
-        this.createSelectorItem(name, pageIs, icon, id, initialData);
+    this.addSelectorItem(
+        this.createSelectorItem(name, pageIs, icon, id, initialData));
+  }
+
+  /**
+   * Adds a new section to the top level navigation. The name and icon will
+   * be displayed in the side navigation.
+   * @param {!SelectorItem} selectorItem
+   */
+  addSelectorItem(selectorItem) {
     this.push('selectorItems_', selectorItem);
+  }
+
+  /**
+   * Removes a section from the top level navigation. If the section is
+   * currently selected, the selection will be reset to the top item.
+   *
+   * @param {string} id The ID of the section to remove.
+   */
+  removeSelectorById(id) {
+    const index =
+        this.selectorItems_.findIndex((selector) => selector.id === id);
+    if (index < 0) {
+      throw new Error('Cannot find selector with ID "' + id + '" to remove.');
+    }
+    if (this.selectorItems_.length === 1) {
+      throw new Error('Removing the last selector is not supported.');
+    }
+    this.splice('selectorItems_', index, 1);
+    if (this.selectedItem && this.selectedItem.id === id) {
+      this.selectedItem = this.selectorItems_[0];
+    }
   }
 
   /** @protected */

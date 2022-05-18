@@ -3529,7 +3529,7 @@ static AOM_INLINE void refine_winner_mode_tx(
   const int num_planes = av1_num_planes(cm);
 
   if (!is_winner_mode_processing_enabled(cpi, x, best_mbmode,
-                                         best_mbmode->mode))
+                                         rd_cost->skip_txfm))
     return;
 
   // Set params for winner mode evaluation
@@ -3537,16 +3537,6 @@ static AOM_INLINE void refine_winner_mode_tx(
 
   // No best mode identified so far
   if (*best_mode_index == THR_INVALID) return;
-
-  int skip_winner_mode_eval =
-      cpi->sf.winner_mode_sf.disable_winner_mode_eval_for_txskip;
-  // Do not skip winner mode evaluation at low quantizers if normal mode's
-  // transform search was too aggressive.
-  if (cpi->sf.rd_sf.perform_coeff_opt >= 5 && x->qindex <= 70)
-    skip_winner_mode_eval = 0;
-
-  if (skip_winner_mode_eval && (best_mbmode->skip_txfm || rd_cost->skip_txfm))
-    return;
 
   best_rd = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
   for (int mode_idx = 0; mode_idx < winner_mode_count; mode_idx++) {
@@ -3564,7 +3554,7 @@ static AOM_INLINE void refine_winner_mode_tx(
     if (xd->lossless[winner_mbmi->segment_id] == 0 &&
         winner_mode_index != THR_INVALID &&
         is_winner_mode_processing_enabled(cpi, x, winner_mbmi,
-                                          winner_mbmi->mode)) {
+                                          rd_cost->skip_txfm)) {
       RD_STATS rd_stats = *winner_rd_stats;
       int skip_blk = 0;
       RD_STATS rd_stats_y, rd_stats_uv;
@@ -3846,8 +3836,8 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
   }
 
   if (sf->inter_sf.alt_ref_search_fp) {
-    if (!cm->show_frame && x->best_pred_mv_sad < INT_MAX) {
-      int sad_thresh = x->best_pred_mv_sad + (x->best_pred_mv_sad >> 3);
+    if (!cm->show_frame && x->best_pred_mv_sad[0] < INT_MAX) {
+      int sad_thresh = x->best_pred_mv_sad[0] + (x->best_pred_mv_sad[0] >> 3);
       // Conservatively skip the modes w.r.t. BWDREF, ALTREF2 and ALTREF, if
       // those are past frames
       MV_REFERENCE_FRAME start_frame =
@@ -3872,8 +3862,8 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
   }
 
   if (sf->rt_sf.prune_inter_modes_wrt_gf_arf_based_on_sad) {
-    if (x->best_pred_mv_sad < INT_MAX) {
-      int sad_thresh = x->best_pred_mv_sad + (x->best_pred_mv_sad >> 1);
+    if (x->best_pred_mv_sad[0] < INT_MAX) {
+      int sad_thresh = x->best_pred_mv_sad[0] + (x->best_pred_mv_sad[0] >> 1);
       const int prune_ref_list[2] = { GOLDEN_FRAME, ALTREF_FRAME };
 
       // Conservatively skip the modes w.r.t. GOLDEN and ALTREF references
@@ -3990,7 +3980,8 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
 
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
-  x->best_pred_mv_sad = INT_MAX;
+  x->best_pred_mv_sad[0] = INT_MAX;
+  x->best_pred_mv_sad[1] = INT_MAX;
 
   for (MV_REFERENCE_FRAME ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME;
        ++ref_frame) {
@@ -4008,12 +3999,18 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
       assert(get_ref_frame_yv12_buf(cm, ref_frame) != NULL);
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, yv12_mb);
     }
-    // Store the best pred_mv_sad across all past frames
-    if ((cpi->sf.inter_sf.alt_ref_search_fp ||
-         cpi->sf.rt_sf.prune_inter_modes_wrt_gf_arf_based_on_sad) &&
-        cpi->ref_frame_dist_info.ref_relative_dist[ref_frame - LAST_FRAME] < 0)
-      x->best_pred_mv_sad =
-          AOMMIN(x->best_pred_mv_sad, x->pred_mv_sad[ref_frame]);
+    if (cpi->sf.inter_sf.alt_ref_search_fp ||
+        cpi->sf.rt_sf.prune_inter_modes_wrt_gf_arf_based_on_sad) {
+      // Store the best pred_mv_sad across all past frames
+      if (cpi->ref_frame_dist_info.ref_relative_dist[ref_frame - LAST_FRAME] <
+          0)
+        x->best_pred_mv_sad[0] =
+            AOMMIN(x->best_pred_mv_sad[0], x->pred_mv_sad[ref_frame]);
+      else
+        // Store the best pred_mv_sad across all future frames
+        x->best_pred_mv_sad[1] =
+            AOMMIN(x->best_pred_mv_sad[1], x->pred_mv_sad[ref_frame]);
+    }
   }
 
   if (!cpi->sf.rt_sf.use_real_time_ref_set && is_comp_ref_allowed(bsize)) {

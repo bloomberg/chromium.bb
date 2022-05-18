@@ -23,7 +23,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/thread_pool.h"
+#include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -49,6 +53,7 @@
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
@@ -175,17 +180,25 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
     storage_policy_ = base::MakeRefCounted<MockSpecialStoragePolicy>();
 
+    quota_manager_task_runner_ =
+        base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()});
+
     quota_manager_ = base::MakeRefCounted<QuotaManager>(
-        is_incognito(), data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
+        is_incognito(), data_dir_.GetPath(), quota_manager_task_runner_,
         /*quota_change_callback=*/base::DoNothing(), storage_policy_,
         GetQuotaSettingsFunc());
-    QuotaSettings settings;
-    settings.per_host_quota = 25 * 1024 * 1024;
-    settings.pool_size = settings.per_host_quota * 5;
-    settings.must_remain_available = 10 * 1024 * 1024;
-    settings.refresh_interval = base::TimeDelta::Max();
-    quota_manager_->SetQuotaSettings(settings);
+
+    quota_manager_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](const scoped_refptr<QuotaManager>& quota_manager) {
+                         QuotaSettings settings;
+                         settings.per_host_quota = 25 * 1024 * 1024;
+                         settings.pool_size = settings.per_host_quota * 5;
+                         settings.must_remain_available = 10 * 1024 * 1024;
+                         settings.refresh_interval = base::TimeDelta::Max();
+                         quota_manager->SetQuotaSettings(settings);
+                       },
+                       quota_manager_));
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,
@@ -294,13 +307,20 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void GetUsageFromQuotaManager() {
     int64_t quota = -1;
     quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
-        quota_manager_.get(), origin(), sandbox_file_system_.type(), &usage_,
+        quota_manager_->proxy(), origin(), sandbox_file_system_.type(), &usage_,
         &quota);
     EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, quota_status_);
   }
 
   void RevokeUsageCache() {
-    quota_manager_->ResetUsageTracker(sandbox_file_system_.storage_type());
+    quota_manager_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](const scoped_refptr<QuotaManager>& quota_manager,
+                          SandboxFileSystemTestHelper* sandbox_file_system) {
+                         quota_manager->ResetUsageTracker(
+                             sandbox_file_system->storage_type());
+                       },
+                       quota_manager_, &sandbox_file_system_));
     usage_cache()->Delete(sandbox_file_system_.GetUsageCachePath());
   }
 
@@ -804,6 +824,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<QuotaManager> quota_manager_;
+  scoped_refptr<base::SingleThreadTaskRunner> quota_manager_task_runner_;
   scoped_refptr<FileSystemContext> file_system_context_;
   blink::StorageKey storage_key_;
   FileSystemType type_;
@@ -1233,6 +1254,12 @@ TEST_P(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
   EXPECT_TRUE(ofu()->IsDirectoryEmpty(context.get(), url));
 }
 
+// TODO(https://crbug.com/702990): Remove this test once last_access_time has
+// been removed after PPAPI has been deprecated. Fuchsia does not support touch,
+// which breaks this test that relies on it. Since PPAPI is being deprecated,
+// this test is excluded from the Fuchsia build.
+// See https://crbug.com/1077456 for details.
+#if !BUILDFLAG(IS_FUCHSIA)
 TEST_P(ObfuscatedFileUtilTest, TestTouch) {
   FileSystemURL url = CreateURLFromUTF8("file");
   std::unique_ptr<FileSystemOperationContext> context = NewContext(nullptr);
@@ -1262,6 +1289,7 @@ TEST_P(ObfuscatedFileUtilTest, TestTouch) {
             ofu()->CreateDirectory(context.get(), url, exclusive, recursive));
   TestTouchHelper(url, false);
 }
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
 TEST_P(ObfuscatedFileUtilTest, TestPathQuotas) {
   FileSystemURL url = CreateURLFromUTF8("fake/file");

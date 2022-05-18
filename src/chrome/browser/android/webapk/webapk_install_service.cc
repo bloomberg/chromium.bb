@@ -18,6 +18,7 @@
 #include "components/webapk/webapk.pb.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapk/webapk_types.h"
+#include "components/webapps/browser/android/webapps_utils.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -45,7 +46,8 @@ void WebApkInstallService::InstallAsync(
     bool is_primary_icon_maskable,
     webapps::WebappInstallSource install_source) {
   if (IsInstallInProgress(shortcut_info.manifest_url)) {
-    ShortcutHelper::ShowWebApkInstallInProgressToast();
+    webapps::WebappsUtils::ShowWebApkInstallResultToast(
+        webapps::WebApkInstallResult::INSTALL_ALREADY_IN_PROGRESS);
     return;
   }
 
@@ -80,7 +82,8 @@ void WebApkInstallService::InstallForServiceAsync(
 
   GURL manifest_url(proto->manifest_url());
   if (IsInstallInProgress(manifest_url)) {
-    std::move(finish_callback).Run(webapps::WebApkInstallResult::FAILURE);
+    std::move(finish_callback)
+        .Run(webapps::WebApkInstallResult::INSTALL_ALREADY_IN_PROGRESS);
     return;
   }
   installs_.insert(manifest_url);
@@ -125,10 +128,12 @@ void WebApkInstallService::OnFinishedInstall(
       shortcut_info.manifest_url, shortcut_info.url, shortcut_info.short_name,
       primary_icon, is_primary_icon_maskable, result, webapk_package_name);
 
-  // If the install didn't definitely fail, we don't add a shortcut. This could
-  // happen if Play was busy with another install and this one is still queued
-  // (and hence might succeed in the future).
-  if (result != webapps::WebApkInstallResult::PROBABLE_FAILURE) {
+  // If WebAPK install failed, try adding a shortcut instead.
+  // If the install didn't definitely fail (i.e. PROBABLE_FAILURE), we don't add
+  // a shortcut. This could happen if Play was busy with another install and
+  // this one is still queued (and hence might succeed in the future).
+  if (result != webapps::WebApkInstallResult::SUCCESS &&
+      result != webapps::WebApkInstallResult::PROBABLE_FAILURE) {
     if (!web_contents)
       return;
 

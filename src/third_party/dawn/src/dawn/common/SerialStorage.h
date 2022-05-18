@@ -15,10 +15,10 @@
 #ifndef SRC_DAWN_COMMON_SERIALSTORAGE_H_
 #define SRC_DAWN_COMMON_SERIALSTORAGE_H_
 
-#include "dawn/common/Assert.h"
-
 #include <cstdint>
 #include <utility>
+
+#include "dawn/common/Assert.h"
 
 template <typename T>
 struct SerialStorageTraits {};
@@ -35,7 +35,7 @@ class SerialStorage {
   public:
     class Iterator {
       public:
-        Iterator(StorageIterator start);
+        explicit Iterator(StorageIterator start);
         Iterator& operator++();
 
         bool operator==(const Iterator& other) const;
@@ -52,7 +52,7 @@ class SerialStorage {
 
     class ConstIterator {
       public:
-        ConstIterator(ConstStorageIterator start);
+        explicit ConstIterator(ConstStorageIterator start);
         ConstIterator& operator++();
 
         bool operator==(const ConstIterator& other) const;
@@ -193,25 +193,23 @@ typename SerialStorage<Derived>::StorageIterator SerialStorage<Derived>::FindUpT
 template <typename Derived>
 SerialStorage<Derived>::BeginEnd::BeginEnd(typename SerialStorage<Derived>::StorageIterator start,
                                            typename SerialStorage<Derived>::StorageIterator end)
-    : mStartIt(start), mEndIt(end) {
-}
+    : mStartIt(start), mEndIt(end) {}
 
 template <typename Derived>
 typename SerialStorage<Derived>::Iterator SerialStorage<Derived>::BeginEnd::begin() const {
-    return {mStartIt};
+    return SerialStorage::Iterator(mStartIt);
 }
 
 template <typename Derived>
 typename SerialStorage<Derived>::Iterator SerialStorage<Derived>::BeginEnd::end() const {
-    return {mEndIt};
+    return SerialStorage::Iterator(mEndIt);
 }
 
 // SerialStorage::Iterator
 
 template <typename Derived>
 SerialStorage<Derived>::Iterator::Iterator(typename SerialStorage<Derived>::StorageIterator start)
-    : mStorageIterator(start), mSerialIterator(nullptr) {
-}
+    : mStorageIterator(start), mSerialIterator(nullptr) {}
 
 template <typename Derived>
 typename SerialStorage<Derived>::Iterator& SerialStorage<Derived>::Iterator::operator++() {
@@ -257,8 +255,7 @@ template <typename Derived>
 SerialStorage<Derived>::ConstBeginEnd::ConstBeginEnd(
     typename SerialStorage<Derived>::ConstStorageIterator start,
     typename SerialStorage<Derived>::ConstStorageIterator end)
-    : mStartIt(start), mEndIt(end) {
-}
+    : mStartIt(start), mEndIt(end) {}
 
 template <typename Derived>
 typename SerialStorage<Derived>::ConstIterator SerialStorage<Derived>::ConstBeginEnd::begin()
@@ -276,8 +273,7 @@ typename SerialStorage<Derived>::ConstIterator SerialStorage<Derived>::ConstBegi
 template <typename Derived>
 SerialStorage<Derived>::ConstIterator::ConstIterator(
     typename SerialStorage<Derived>::ConstStorageIterator start)
-    : mStorageIterator(start), mSerialIterator(nullptr) {
-}
+    : mStorageIterator(start), mSerialIterator(nullptr) {}
 
 template <typename Derived>
 typename SerialStorage<Derived>::ConstIterator&

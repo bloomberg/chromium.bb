@@ -147,7 +147,7 @@ class LFControlEndToEndTest
     std::unique_ptr<libaom_test::VideoSource> video;
     video.reset(new libaom_test::Y4mVideoSource(test_video_param_.filename, 0,
                                                 kFrames));
-    ASSERT_TRUE(video.get() != NULL);
+    ASSERT_NE(video, nullptr);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
     const double psnr = GetAveragePsnr();

@@ -4,12 +4,18 @@
 
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
 
+#import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/new_tab_page_commands.h"
+#import "ios/chrome/browser/ui/follow/first_follow_favicon_data_source.h"
 #import "ios/chrome/browser/ui/follow/first_follow_view_controller.h"
-#import "ios/chrome/browser/ui/follow/first_follow_view_delegate.h"
+#import "ios/chrome/browser/ui/follow/followed_web_channel.h"
+#import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,7 +28,14 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
 
 }  // namespace
 
-@interface FirstFollowCoordinator () <FirstFollowViewDelegate>
+@interface FirstFollowCoordinator () <ConfirmationAlertActionHandler,
+                                      FirstFollowFaviconDataSource>
+// FaviconLoader retrieves favicons for a given page URL.
+@property(nonatomic, assign) FaviconLoader* faviconLoader;
+
+// The view controller is owned by the view hierarchy.
+@property(nonatomic, weak) FirstFollowViewController* firstFollowViewController;
+
 @end
 
 @implementation FirstFollowCoordinator
@@ -35,10 +48,12 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
   firstFollowViewController.followedWebChannel = self.followedWebChannel;
   // Ownership is passed to VC so this object is not retained after VC closes.
   self.followedWebChannel = nil;
-  firstFollowViewController.delegate = self;
-  firstFollowViewController.faviconLoader =
-      IOSChromeFaviconLoaderFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+  self.firstFollowViewController = firstFollowViewController;
+  firstFollowViewController.actionHandler = self;
+  firstFollowViewController.faviconDataSource = self;
+
+  self.faviconLoader = IOSChromeFaviconLoaderFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
 
   if (@available(iOS 15, *)) {
     firstFollowViewController.modalPresentationStyle =
@@ -48,8 +63,10 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
     presentationController.prefersEdgeAttachedInCompactHeight = YES;
     presentationController.widthFollowsPreferredContentSizeWhenEdgeAttached =
         YES;
-    presentationController.detents =
-        @[ UISheetPresentationControllerDetent.mediumDetent ];
+    presentationController.detents = @[
+      UISheetPresentationControllerDetent.mediumDetent,
+      UISheetPresentationControllerDetent.largeDetent
+    ];
     presentationController.preferredCornerRadius = kHalfSheetCornerRadius;
   } else {
     firstFollowViewController.modalPresentationStyle =
@@ -67,12 +84,33 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
   }
 }
 
-#pragma mark - FirstFollowViewDelegate
+#pragma mark - ConfirmationAlertActionHandler
 
-// Go To Feed button tapped.
-- (void)handleGoToFeedTapped {
-  [self.newTabPageCommandsHandler
-      openNTPScrolledIntoFeedType:FeedTypeFollowing];
+- (void)confirmationAlertPrimaryAction {
+  if (self.firstFollowViewController.followedWebChannel.available) {
+    [self.newTabPageCommandsHandler
+        openNTPScrolledIntoFeedType:FeedTypeFollowing];
+  }
+  if (self.baseViewController.presentedViewController) {
+    [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
+  }
+}
+
+- (void)confirmationAlertSecondaryAction {
+  if (self.baseViewController.presentedViewController) {
+    [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
+  }
+}
+
+#pragma mark - FirstFollowFaviconDataSource
+
+- (void)faviconForURL:(CrURL*)URL
+           completion:(void (^)(FaviconAttributes*))completion {
+  self.faviconLoader->FaviconForPageUrl(
+      URL.gurl, kDesiredSmallFaviconSizePt, kMinFaviconSizePt,
+      /*fallback_to_google_server=*/true, ^(FaviconAttributes* attributes) {
+        completion(attributes);
+      });
 }
 
 #pragma mark - Helpers

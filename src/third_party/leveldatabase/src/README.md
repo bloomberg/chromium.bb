@@ -18,7 +18,7 @@ Authors: Sanjay Ghemawat (sanjay@google.com) and Jeff Dean (jeff@google.com)
 
 # Documentation
 
-  [LevelDB library documentation](https://github.com/google/leveldb/blob/master/doc/index.md) is online and bundled with the source code.
+  [LevelDB library documentation](https://github.com/google/leveldb/blob/main/doc/index.md) is online and bundled with the source code.
 
 # Limitations
 
@@ -99,6 +99,12 @@ Contribution requirements:
    clang-format -i --style=file <file>
    ```
 
+We are unlikely to accept contributions to the build configuration files, such
+as `CMakeLists.txt`. We are focused on maintaining a build configuration that
+allows us to test that the project works in a few supported configurations
+inside Google. We are not currently interested in supporting other requirements,
+such as different operating systems, compilers, or build systems.
+
 ## Submitting a Pull Request
 
 Before any pull request will be accepted the author must first sign a
@@ -107,7 +113,7 @@ Contributor License Agreement (CLA) at https://cla.developers.google.com/.
 In order to keep the commit timeline linear
 [squash](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History#Squashing-Commits)
 your changes down to a single commit and [rebase](https://git-scm.com/docs/git-rebase)
-on google/leveldb/master. This keeps the commit timeline linear and more easily sync'ed
+on google/leveldb/main. This keeps the commit timeline linear and more easily sync'ed
 with the internal repository at Google. More information at GitHub's
 [About Git rebase](https://help.github.com/articles/about-git-rebase/) page.
 

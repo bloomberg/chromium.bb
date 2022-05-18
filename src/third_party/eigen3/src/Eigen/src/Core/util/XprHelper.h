@@ -11,17 +11,6 @@
 #ifndef EIGEN_XPRHELPER_H
 #define EIGEN_XPRHELPER_H
 
-// just a workaround because GCC seems to not really like empty structs
-// FIXME: gcc 4.3 generates bad code when strict-aliasing is enabled
-// so currently we simply disable this optimization for gcc 4.3
-#if EIGEN_COMP_GNUC
-  #define EIGEN_EMPTY_STRUCT_CTOR(X) \
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE X() {} \
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE X(const X& ) {}
-#else
-  #define EIGEN_EMPTY_STRUCT_CTOR(X)
-#endif
-
 #include "../InternalHeaderCheck.h"
 
 namespace Eigen {
@@ -113,7 +102,7 @@ class no_assignment_operator
 template<typename I1, typename I2>
 struct promote_index_type
 {
-  typedef typename conditional<(sizeof(I1)<sizeof(I2)), I2, I1>::type type;
+  typedef std::conditional_t<(sizeof(I1)<sizeof(I2)), I2, I1> type;
 };
 
 /** \internal If the template parameter Value is Dynamic, this class is just a wrapper around a T variable that
@@ -148,7 +137,6 @@ template<typename T> class variable_if_dynamic<T, Dynamic>
 template<typename T, int Value> class variable_if_dynamicindex
 {
   public:
-    EIGEN_EMPTY_STRUCT_CTOR(variable_if_dynamicindex)
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE explicit variable_if_dynamicindex(T v) { EIGEN_ONLY_USED_FOR_DEBUG(v); eigen_assert(v == T(Value)); }
     EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE EIGEN_CONSTEXPR
     T value() { return T(Value); }
@@ -203,38 +191,27 @@ struct find_best_packet
 };
 
 #if EIGEN_MAX_STATIC_ALIGN_BYTES>0
-template<int ArrayBytes, int AlignmentBytes,
-         bool Match     =  bool((ArrayBytes%AlignmentBytes)==0),
-         bool TryHalf   =  bool(EIGEN_MIN_ALIGN_BYTES<AlignmentBytes) >
-struct compute_default_alignment_helper
-{
-  enum { value = 0 };
-};
-
-template<int ArrayBytes, int AlignmentBytes, bool TryHalf>
-struct compute_default_alignment_helper<ArrayBytes, AlignmentBytes, true, TryHalf> // Match
-{
-  enum { value = AlignmentBytes };
-};
-
-template<int ArrayBytes, int AlignmentBytes>
-struct compute_default_alignment_helper<ArrayBytes, AlignmentBytes, false, true> // Try-half
-{
-  // current packet too large, try with an half-packet
-  enum { value = compute_default_alignment_helper<ArrayBytes, AlignmentBytes/2>::value };
-};
+constexpr inline int compute_default_alignment_helper(int ArrayBytes, int AlignmentBytes) {
+  if((ArrayBytes % AlignmentBytes) == 0) {
+    return AlignmentBytes;
+  } else if (EIGEN_MIN_ALIGN_BYTES<AlignmentBytes) {
+    return compute_default_alignment_helper(ArrayBytes, AlignmentBytes/2);
+  } else {
+    return 0;
+  }
+}
 #else
 // If static alignment is disabled, no need to bother.
-// This also avoids a division by zero in "bool Match =  bool((ArrayBytes%AlignmentBytes)==0)"
-template<int ArrayBytes, int AlignmentBytes>
-struct compute_default_alignment_helper
-{
-  enum { value = 0 };
-};
+// This also avoids a division by zero
+constexpr inline int compute_default_alignment_helper(int ArrayBytes, int AlignmentBytes) {
+  EIGEN_UNUSED_VARIABLE(ArrayBytes);
+  EIGEN_UNUSED_VARIABLE(AlignmentBytes);
+  return 0;
+}
 #endif
 
 template<typename T, int Size> struct compute_default_alignment {
-  enum { value = compute_default_alignment_helper<Size*sizeof(T),EIGEN_MAX_STATIC_ALIGN_BYTES>::value };
+  enum { value = compute_default_alignment_helper(Size*sizeof(T), EIGEN_MAX_STATIC_ALIGN_BYTES) };
 };
 
 template<typename T> struct compute_default_alignment<T,Dynamic> {
@@ -261,25 +238,21 @@ template<typename Scalar_, int Rows_, int Cols_,
     typedef Matrix<Scalar_, Rows_, Cols_, Options, MaxRows_, MaxCols_> type;
 };
 
-template<typename Scalar, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
-class compute_matrix_flags
-{
-    enum { row_major_bit = Options&RowMajor ? RowMajorBit : 0 };
-  public:
-    // FIXME currently we still have to handle DirectAccessBit at the expression level to handle DenseCoeffsBase<>
-    // and then propagate this information to the evaluator's flags.
-    // However, I (Gael) think that DirectAccessBit should only matter at the evaluation stage.
-    enum { ret = DirectAccessBit | LvalueBit | NestByRefBit | row_major_bit };
-};
+constexpr inline unsigned compute_matrix_flags(int Options) {
+  unsigned row_major_bit = Options&RowMajor ? RowMajorBit : 0;
+  // FIXME currently we still have to handle DirectAccessBit at the expression level to handle DenseCoeffsBase<>
+  // and then propagate this information to the evaluator's flags.
+  // However, I (Gael) think that DirectAccessBit should only matter at the evaluation stage.
+  return DirectAccessBit | LvalueBit | NestByRefBit | row_major_bit;
+}
 
-template<int Rows_, int Cols_> struct size_at_compile_time
-{
-  enum { ret = (Rows_==Dynamic || Cols_==Dynamic) ? Dynamic : Rows_ * Cols_ };
-};
+constexpr inline int size_at_compile_time(int rows, int cols) {
+  return (rows==Dynamic || cols==Dynamic) ? Dynamic : rows * cols;
+}
 
 template<typename XprType> struct size_of_xpr_at_compile_time
 {
-  enum { ret = size_at_compile_time<traits<XprType>::RowsAtCompileTime,traits<XprType>::ColsAtCompileTime>::ret };
+  enum { ret = size_at_compile_time(traits<XprType>::RowsAtCompileTime, traits<XprType>::ColsAtCompileTime) };
 };
 
 /* plain_matrix_type : the difference from eval is that plain_matrix_type is always a plain matrix type,
@@ -409,28 +382,28 @@ template<typename T> struct plain_matrix_type_row_major
 template <typename T>
 struct ref_selector
 {
-  typedef typename conditional<
+  typedef std::conditional_t<
     bool(traits<T>::Flags & NestByRefBit),
     T const&,
     const T
-  >::type type;
+  > type;
 
-  typedef typename conditional<
+  typedef std::conditional_t<
     bool(traits<T>::Flags & NestByRefBit),
     T &,
     T
-  >::type non_const_type;
+  > non_const_type;
 };
 
 /** \internal Adds the const qualifier on the value-type of T2 if and only if T1 is a const type */
 template<typename T1, typename T2>
 struct transfer_constness
 {
-  typedef typename conditional<
+  typedef std::conditional_t<
     bool(internal::is_const<T1>::value),
-    typename internal::add_const_on_value_type<T2>::type,
+    add_const_on_value_type_t<T2>,
     T2
-  >::type type;
+  > type;
 };
 
 
@@ -463,7 +436,7 @@ template<typename T, int n, typename PlainObject = typename plain_object_eval<T>
     Evaluate = (int(evaluator<T>::Flags) & EvalBeforeNestingBit) || (int(CostEval) < int(CostNoEval))
   };
 
-  typedef typename conditional<Evaluate, PlainObject, typename ref_selector<T>::type>::type type;
+  typedef std::conditional_t<Evaluate, PlainObject, typename ref_selector<T>::type> type;
 };
 
 template<typename T>
@@ -503,10 +476,10 @@ struct generic_xpr_base<Derived, XprKind, Dense>
 template<typename XprType, typename CastType> struct cast_return_type
 {
   typedef typename XprType::Scalar CurrentScalarType;
-  typedef typename remove_all<CastType>::type CastType_;
+  typedef remove_all_t<CastType> CastType_;
   typedef typename CastType_::Scalar NewScalarType;
-  typedef typename conditional<is_same<CurrentScalarType,NewScalarType>::value,
-                              const XprType&,CastType>::type type;
+  typedef std::conditional_t<is_same<CurrentScalarType,NewScalarType>::value,
+                              const XprType&,CastType> type;
 };
 
 template <typename A, typename B> struct promote_storage_type;
@@ -597,11 +570,11 @@ struct plain_row_type
   typedef Array<Scalar, 1, ExpressionType::ColsAtCompileTime,
                  int(ExpressionType::PlainObject::Options) | int(RowMajor), 1, ExpressionType::MaxColsAtCompileTime> ArrayRowType;
 
-  typedef typename conditional<
+  typedef std::conditional_t<
     is_same< typename traits<ExpressionType>::XprKind, MatrixXpr >::value,
     MatrixRowType,
     ArrayRowType
-  >::type type;
+  > type;
 };
 
 template<typename ExpressionType, typename Scalar = typename ExpressionType::Scalar>
@@ -612,11 +585,11 @@ struct plain_col_type
   typedef Array<Scalar, ExpressionType::RowsAtCompileTime, 1,
                  ExpressionType::PlainObject::Options & ~RowMajor, ExpressionType::MaxRowsAtCompileTime, 1> ArrayColType;
 
-  typedef typename conditional<
+  typedef std::conditional_t<
     is_same< typename traits<ExpressionType>::XprKind, MatrixXpr >::value,
     MatrixColType,
     ArrayColType
-  >::type type;
+  > type;
 };
 
 template<typename ExpressionType, typename Scalar = typename ExpressionType::Scalar>
@@ -629,11 +602,11 @@ struct plain_diag_type
   typedef Matrix<Scalar, diag_size, 1, ExpressionType::PlainObject::Options & ~RowMajor, max_diag_size, 1> MatrixDiagType;
   typedef Array<Scalar, diag_size, 1, ExpressionType::PlainObject::Options & ~RowMajor, max_diag_size, 1> ArrayDiagType;
 
-  typedef typename conditional<
+  typedef std::conditional_t<
     is_same< typename traits<ExpressionType>::XprKind, MatrixXpr >::value,
     MatrixDiagType,
     ArrayDiagType
-  >::type type;
+  > type;
 };
 
 template<typename Expr,typename Scalar = typename Expr::Scalar>
@@ -647,7 +620,7 @@ struct plain_constant_type
   typedef Matrix<Scalar,  traits<Expr>::RowsAtCompileTime,   traits<Expr>::ColsAtCompileTime,
                  Options, traits<Expr>::MaxRowsAtCompileTime,traits<Expr>::MaxColsAtCompileTime> matrix_type;
 
-  typedef CwiseNullaryOp<scalar_constant_op<Scalar>, const typename conditional<is_same< typename traits<Expr>::XprKind, MatrixXpr >::value, matrix_type, array_type>::type > type;
+  typedef CwiseNullaryOp<scalar_constant_op<Scalar>, const std::conditional_t<is_same< typename traits<Expr>::XprKind, MatrixXpr >::value, matrix_type, array_type> > type;
 };
 
 template<typename ExpressionType>
@@ -687,14 +660,14 @@ struct possibly_same_dense {
 
 template<typename T1, typename T2>
 EIGEN_DEVICE_FUNC
-bool is_same_dense(const T1 &mat1, const T2 &mat2, typename enable_if<possibly_same_dense<T1,T2>::value>::type * = 0)
+bool is_same_dense(const T1 &mat1, const T2 &mat2, std::enable_if_t<possibly_same_dense<T1,T2>::value> * = 0)
 {
   return (mat1.data()==mat2.data()) && (mat1.innerStride()==mat2.innerStride()) && (mat1.outerStride()==mat2.outerStride());
 }
 
 template<typename T1, typename T2>
 EIGEN_DEVICE_FUNC
-bool is_same_dense(const T1 &, const T2 &, typename enable_if<!possibly_same_dense<T1,T2>::value>::type * = 0)
+bool is_same_dense(const T1 &, const T2 &, std::enable_if_t<!possibly_same_dense<T1,T2>::value> * = 0)
 {
   return false;
 }
@@ -716,9 +689,9 @@ struct scalar_div_cost<std::complex<T>, Vectorized> {
 
 
 template<bool Vectorized>
-struct scalar_div_cost<signed long,Vectorized,typename conditional<sizeof(long)==8,void,false_type>::type> { enum { value = 24 }; };
+struct scalar_div_cost<signed long,Vectorized, std::conditional_t<sizeof(long)==8,void,false_type>> { enum { value = 24 }; };
 template<bool Vectorized>
-struct scalar_div_cost<unsigned long,Vectorized,typename conditional<sizeof(long)==8,void,false_type>::type> { enum { value = 21 }; };
+struct scalar_div_cost<unsigned long,Vectorized, std::conditional_t<sizeof(long)==8,void,false_type>> { enum { value = 21 }; };
 
 
 #ifdef EIGEN_DEBUG_ASSIGN
@@ -807,12 +780,12 @@ struct ScalarBinaryOpTraits<T,T,BinaryOp>
 };
 
 template <typename T, typename BinaryOp>
-struct ScalarBinaryOpTraits<T, typename NumTraits<typename internal::enable_if<NumTraits<T>::IsComplex,T>::type>::Real, BinaryOp>
+struct ScalarBinaryOpTraits<T, typename NumTraits<std::enable_if_t<NumTraits<T>::IsComplex,T>>::Real, BinaryOp>
 {
   typedef T ReturnType;
 };
 template <typename T, typename BinaryOp>
-struct ScalarBinaryOpTraits<typename NumTraits<typename internal::enable_if<NumTraits<T>::IsComplex,T>::type>::Real, T, BinaryOp>
+struct ScalarBinaryOpTraits<typename NumTraits<std::enable_if_t<NumTraits<T>::IsComplex,T>>::Real, T, BinaryOp>
 {
   typedef T ReturnType;
 };

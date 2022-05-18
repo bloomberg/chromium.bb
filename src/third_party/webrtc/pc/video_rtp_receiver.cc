@@ -114,11 +114,6 @@ void VideoRtpReceiver::Stop() {
   track_->internal()->set_ended();
 }
 
-void VideoRtpReceiver::SetSourceEnded() {
-  RTC_DCHECK_RUN_ON(&signaling_thread_checker_);
-  source_->SetState(MediaSourceInterface::kEnded);
-}
-
 // RTC_RUN_ON(&signaling_thread_checker_)
 void VideoRtpReceiver::RestartMediaChannel(absl::optional<uint32_t> ssrc) {
   MediaSourceInterface::SourceState state = source_->state();
@@ -221,7 +216,7 @@ void VideoRtpReceiver::SetStreams(
       }
     }
     if (removed) {
-      existing_stream->RemoveTrack(track_);
+      existing_stream->RemoveTrack(video_track());
     }
   }
   // Add remote track to any streams that are new.
@@ -235,7 +230,7 @@ void VideoRtpReceiver::SetStreams(
       }
     }
     if (added) {
-      stream->AddTrack(track_);
+      stream->AddTrack(video_track());
     }
   }
   streams_ = streams;

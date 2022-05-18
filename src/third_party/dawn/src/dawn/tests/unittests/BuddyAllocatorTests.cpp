@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
-#include "dawn/native/BuddyAllocator.h"
+#include <vector>
 
-using namespace dawn::native;
+#include "dawn/native/BuddyAllocator.h"
+#include "gtest/gtest.h"
+
+namespace dawn::native {
 
 constexpr uint64_t BuddyAllocator::kInvalidOffset;
 
@@ -263,8 +265,8 @@ TEST(BuddyAllocatorTests, MultipleSplitBlocksInterleaved) {
 
 // Verify the buddy allocator can deal with multiple allocations with mixed alignments.
 TEST(BuddyAllocatorTests, SameSizeVariousAlignment) {
-    //  After two 8 byte allocations with 16 byte alignment then one 8 byte allocation with 8 byte
-    //  alignment.
+    //  After two 8 byte allocations with 16 byte alignment then one 8 byte allocation with 8
+    //  byte alignment.
     //
     //  Level          --------------------------------
     //      0       32 |               S              |
@@ -296,8 +298,8 @@ TEST(BuddyAllocatorTests, SameSizeVariousAlignment) {
 
 // Verify the buddy allocator can deal with multiple allocations with equal alignments.
 TEST(BuddyAllocatorTests, VariousSizeSameAlignment) {
-    //  After two 8 byte allocations with 4 byte alignment then one 16 byte allocation with 4 byte
-    //  alignment.
+    //  After two 8 byte allocations with 4 byte alignment then one 16 byte allocation with 4
+    //  byte alignment.
     //
     //  Level          --------------------------------
     //      0       32 |               S              |
@@ -325,3 +327,5 @@ TEST(BuddyAllocatorTests, VariousSizeSameAlignment) {
 
     ASSERT_EQ(allocator.ComputeTotalNumOfFreeBlocksForTesting(), 0u);
 }
+
+}  // namespace dawn::native

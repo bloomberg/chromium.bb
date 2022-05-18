@@ -11,10 +11,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -110,9 +112,8 @@ class MediaFoundationRendererTest : public testing::Test {
         std::make_unique<NullMediaLog>());
 
     // Some default actions.
-    ON_CALL(cdm_context_, GetMediaFoundationCdmProxy(_))
-        .WillByDefault(Invoke(
-            this, &MediaFoundationRendererTest::GetMediaFoundationCdmProxy));
+    ON_CALL(cdm_context_, GetMediaFoundationCdmProxy())
+        .WillByDefault(Return(mf_cdm_proxy_));
     ON_CALL(*mf_cdm_proxy_, GetPMPServer(_, _))
         .WillByDefault(
             Invoke(this, &MediaFoundationRendererTest::GetPMPServer));
@@ -139,13 +140,6 @@ class MediaFoundationRendererTest : public testing::Test {
     }
 
     return streams;
-  }
-
-  bool GetMediaFoundationCdmProxy(
-      CdmContext::GetMediaFoundationCdmProxyCB get_mf_cdm_proxy_cb) {
-    // Call the callback asynchronously per API contract.
-    BindToCurrentLoop(std::move(get_mf_cdm_proxy_cb)).Run(mf_cdm_proxy_);
-    return true;
   }
 
   HRESULT GetPMPServer(REFIID riid, LPVOID* object_result) {
@@ -248,6 +242,11 @@ TEST_F(MediaFoundationRendererTest, DirectCompositionHandle) {
 TEST_F(MediaFoundationRendererTest, ClearStartsInFrameServer) {
   if (!MediaFoundationRenderer::IsSupported())
     return;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      media::kMediaFoundationClearRendering, {{"strategy", "dynamic"}});
+  ;
 
   AddStream(DemuxerStream::AUDIO, /*encrypted=*/false);
   AddStream(DemuxerStream::VIDEO, /*encrypted=*/false);

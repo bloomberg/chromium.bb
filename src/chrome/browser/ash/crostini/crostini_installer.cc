@@ -274,8 +274,8 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
 
   // Abort the long-running flow, and RestartObserver methods will not be called
   // again until next installation.
-  crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
-      restart_id_, base::DoNothing());
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  crostini_manager->AbortRestartCrostini(restart_id_, base::DoNothing());
   restart_id_ = CrostiniManager::kUninitializedRestartId;
   RecordSetupResult(InstallStateToCancelledSetupResult(installing_state_));
 
@@ -284,8 +284,7 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&crostini::CrostiniManager::RemoveCrostini,
-                       base::Unretained(
-                           crostini::CrostiniManager::GetForProfile(profile_)),
+                       crostini_manager->GetWeakPtr(),
                        crostini::kCrostiniDefaultVmName,
                        base::BindOnce(&CrostiniInstaller::FinishCleanup,
                                       weak_ptr_factory_.GetWeakPtr())));
@@ -401,12 +400,20 @@ void CrostiniInstaller::OnContainerSetup(bool success) {
   }
 }
 
-void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted() {
+// TODO(justinhuang): Address the case where Default Container is being booted +
+// getting configured and a new VM is being created. Since Enterprise-based
+// configurations currently work as configure on every startup, we'll have a
+// potential overlap which will cause this to signal too many times.
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted(
+    const ContainerId& container_id) {
   DCHECK_EQ(installing_state_, InstallerState::kStartContainer);
   UpdateInstallingState(InstallerState::kConfigureContainer);
 }
 
-void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(bool success) {
+// TODO(justinhuang): Similar to the above.
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(
+    const ContainerId& container_id,
+    bool success) {
   DCHECK_EQ(installing_state_, InstallerState::kConfigureContainer);
   DCHECK(ansible_management_service_observation_.IsObservingSource(
       AnsibleManagementService::GetForProfile(profile_)));

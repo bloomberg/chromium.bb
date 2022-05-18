@@ -5,13 +5,11 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 
 #include "base/containers/flat_map.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace page_load_metrics {
 
@@ -82,17 +80,8 @@ class TestPageLoadMetricsObserver final : public PageLoadMetricsObserver {
 
 class PageLoadTrackerTest : public PageLoadMetricsObserverContentTestHarness {
  public:
-  PageLoadTrackerTest() : observer_(new TestPageLoadMetricsObserver(&events_)) {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {
-            {blink::features::kPrerender2, {}},
-            {blink::features::kPrerender2MemoryControls, {}},
-            {blink::features::kFencedFrames,
-             {{"implementation_type", "mparch"}}},
-            {blink::features::kInitialNavigationEntry, {}},
-        },
-        {});
-  }
+  PageLoadTrackerTest()
+      : observer_(new TestPageLoadMetricsObserver(&events_)) {}
 
  protected:
   void SetTargetUrl(const std::string& url) { target_url_ = GURL(url); }
@@ -125,7 +114,6 @@ class PageLoadTrackerTest : public PageLoadMetricsObserverContentTestHarness {
   raw_ptr<TestPageLoadMetricsObserver> observer_;
   bool is_observer_passed_ = false;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   GURL target_url_;
 };
 
@@ -201,13 +189,7 @@ TEST_F(PageLoadTrackerTest, EventForwarding) {
   EXPECT_EQ(2u, GetEvents().sub_frame_navigation_count);
 }
 
-// TODO(https://crbug.com/1312096): Enable the test on Android.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_PrerenderPageType DISABLED_PrerenderPageType
-#else
-#define MAYBE_PrerenderPageType PrerenderPageType
-#endif
-TEST_F(PageLoadTrackerTest, MAYBE_PrerenderPageType) {
+TEST_F(PageLoadTrackerTest, PrerenderPageType) {
   // Target URL to monitor the tracker via the test observer.
   const char kPrerenderingUrl[] = "https://a.test/prerender";
   SetTargetUrl(kPrerenderingUrl);
@@ -284,13 +266,7 @@ TEST_F(PageLoadTrackerTest, FencedFramesPageType) {
   EXPECT_TRUE(GetEvents().was_ready_to_commit_next_navigation);
 }
 
-// TODO(https://crbug.com/1312096): Enable the test on Android.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_StopObservingOnPrerender DISABLED_StopObservingOnPrerender
-#else
-#define MAYBE_StopObservingOnPrerender StopObservingOnPrerender
-#endif
-TEST_F(PageLoadTrackerTest, MAYBE_StopObservingOnPrerender) {
+TEST_F(PageLoadTrackerTest, StopObservingOnPrerender) {
   // Target URL to monitor the tracker via the test observer.
   const char kPrerenderingUrl[] = "https://a.test/prerender";
   SetTargetUrl(kPrerenderingUrl);

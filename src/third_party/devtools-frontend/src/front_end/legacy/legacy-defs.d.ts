@@ -60,10 +60,6 @@ declare namespace Adb {
   type NetworkDiscoveryConfig = string[];
 }
 
-interface Document {
-  deepActiveElement(): Element|null;
-}
-
 interface HTMLElement {
   createChild(tagName: string, className?: string, content?: string): HTMLElement;
   totalOffset(): {left: number, top: number};
@@ -126,8 +122,8 @@ interface DOMError {
 }
 
 interface ShadowRoot {
-  elementFromPoint(x: number, y: number): Element | null;
-  getSelection(): Selection | null;
+  elementFromPoint(x: number, y: number): Element|null;
+  getSelection(): Selection|null;
 }
 
 interface HTMLDialogElement {

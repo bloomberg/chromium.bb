@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -47,16 +48,6 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
     mock_cert_verifier_.SetUpCommandLine(
         base::CommandLine::ForCurrentProcess());
 
-    // SetUp gets called before the test body, which is why we have to
-    // enable/disable the feature awkwardly through the constructor, instead
-    // of having a more straightforward setup call in the test body.
-    std::vector<base::Feature> enabled, disabled;
-    (origin_cluster_default_enabled_ ? enabled : disabled)
-        .push_back(blink::features::kOriginAgentClusterDefaultEnabled);
-    (origin_cluster_absent_warning_ ? enabled : disabled)
-        .push_back(blink::features::kOriginAgentClusterDefaultWarning);
-    features_.InitWithFeatures(enabled, disabled);
-
     ContentBrowserTest::SetUp();
   }
 
@@ -69,6 +60,15 @@ class OriginAgentClusterBrowserTest : public ContentBrowserTest {
         origin_cluster_default_enabled_(origin_cluster_default_enabled),
         origin_cluster_absent_warning_(origin_cluster_absent_warning) {
     server_.AddDefaultHandlers(GetTestDataFilePath());
+
+    // InitWithFeatures needs to be called in the constructor in multi-threaded
+    // tests.
+    std::vector<base::Feature> enabled, disabled;
+    (origin_cluster_default_enabled_ ? enabled : disabled)
+        .push_back(blink::features::kOriginAgentClusterDefaultEnabled);
+    (origin_cluster_absent_warning_ ? enabled : disabled)
+        .push_back(blink::features::kOriginAgentClusterDefaultWarning);
+    features_.InitWithFeatures(enabled, disabled);
   }
 
   void SetUpOnMainThread() override {

@@ -43,7 +43,7 @@ async function initCanvasContent(
   canvasType: CanvasType
 ): Promise<HTMLCanvasElement | OffscreenCanvas> {
   const canvas = createCanvas(t, canvasType, 2, 2);
-  const ctx = canvas.getContext('webgpu');
+  const ctx = canvas.getContext('webgpu' as const);
   assert(ctx !== null, 'Failed to get WebGPU context from canvas');
 
   ctx.configure({

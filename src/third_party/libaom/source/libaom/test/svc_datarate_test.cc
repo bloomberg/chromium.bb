@@ -988,7 +988,7 @@ class DatarateTestSVC
     }
   }
 
-  virtual void BasicRateTargetingSVC3TL3SLHDMT2Test() {
+  virtual void BasicRateTargetingSVC3TL3SLHDMultiThread2Test() {
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 500;
     cfg_.rc_buf_sz = 1000;
@@ -1030,7 +1030,7 @@ class DatarateTestSVC
     }
   }
 
-  virtual void BasicRateTargetingSVC3TL3SLHDMT4Test() {
+  virtual void BasicRateTargetingSVC3TL3SLHDMultiThread4Test() {
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 500;
     cfg_.rc_buf_sz = 1000;
@@ -1434,6 +1434,57 @@ class DatarateTestSVC
     EXPECT_EQ((int)GetMismatchFrames(), num_nonref);
   }
 
+  virtual void BasicRateTargetingSVC3TL1SLDropSetEnhER0Test() {
+    cfg_.rc_buf_initial_sz = 500;
+    cfg_.rc_buf_optimal_sz = 500;
+    cfg_.rc_buf_sz = 1000;
+    cfg_.rc_dropframe_thresh = 0;
+    cfg_.rc_min_quantizer = 0;
+    cfg_.rc_max_quantizer = 63;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_lag_in_frames = 0;
+
+    ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352,
+                                         288, 30, 1, 0, 300);
+    const int bitrate_array[2] = { 200, 550 };
+    cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
+    ResetModel();
+
+    // Set error_resilience off.
+    cfg_.g_error_resilient = 0;
+
+    // Drop TL1 and TL2: for part of sequence. Start at first TL2 at
+    // frame 101, and end at second T2 at frame 199. Frame 200 is TL0,
+    // so we can continue decoding without mismatch (since LAST is the
+    // only reference and error_resil = 1 on TL1/TL2 frames).
+    int n = 0;
+    int num_nonref = 300 / 2;
+    for (int i = 101; i < 200; i++) {
+      if (i % 4 != 0) {
+        drop_frames_list_[n] = i;
+        n++;
+        if (i % 2 != 0) num_nonref -= 1;
+      }
+    }
+    drop_frames_ = n;
+    number_temporal_layers_ = 3;
+    target_layer_bitrate_[0] = 50 * cfg_.rc_target_bitrate / 100;
+    target_layer_bitrate_[1] = 70 * cfg_.rc_target_bitrate / 100;
+    target_layer_bitrate_[2] = cfg_.rc_target_bitrate;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+    for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
+      ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.60)
+          << " The datarate for the file is lower than target by too much!";
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
+          << " The datarate for the file is greater than target by too much!";
+    }
+    // Test that no mismatches have been found.
+    std::cout << "          Decoded frames: " << GetDecodedFrames() << "\n";
+    std::cout << "          Mismatch frames: " << GetMismatchFrames() << "\n";
+    EXPECT_EQ(300 - GetDecodedFrames(), drop_frames_);
+    EXPECT_EQ((int)GetMismatchFrames(), num_nonref);
+  }
+
   virtual void BasicRateTargetingSVC3TL1SLMultiRefCompoundTest() {
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 500;
@@ -1633,13 +1684,13 @@ TEST_P(DatarateTestSVC, BasicRateTargetingFixedModeSVC3TL3SLHD) {
 
 // Check basic rate targeting for CBR, for 3 spatial, 3 temporal layers,
 // for 2 threads, 2 tile_columns, row-mt enabled.
-TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SLHDMT2) {
-  BasicRateTargetingSVC3TL3SLHDMT2Test();
+TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SLHDMultiThread2) {
+  BasicRateTargetingSVC3TL3SLHDMultiThread2Test();
 }
 // Check basic rate targeting for CBR, for 3 spatial, 3 temporal layers,
 // for 4 threads, 4 tile_columns, row-mt enabled.
-TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SLHDMT4) {
-  BasicRateTargetingSVC3TL3SLHDMT4Test();
+TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL3SLHDMultiThread4) {
+  BasicRateTargetingSVC3TL3SLHDMultiThread4Test();
 }
 
 // Check basic rate targeting for CBR, for 3 spatial, 3 temporal layers,
@@ -1703,6 +1754,15 @@ TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLDropAllEnhFrameER) {
 // frames in the sequence.
 TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLDropSetEnhFrameER) {
   BasicRateTargetingSVC3TL1SLDropSetEnhFrameERTest();
+}
+
+// Check basic rate targeting for CBR, for 3 temporal layers, 1 spatial layer,
+// with dropping set of enhancement layers (TL 1 and TL2) in middle of sequence.
+// Test that the error_resilient flag can be 0/off for all frames.
+// This allows for successful decoding after dropping a set enhancement layer
+// frames in the sequence.
+TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLDropSetEnhER0) {
+  BasicRateTargetingSVC3TL1SLDropSetEnhER0Test();
 }
 
 // Check basic rate targeting for CBR, for 3 temporal layers, 1 spatial layer,

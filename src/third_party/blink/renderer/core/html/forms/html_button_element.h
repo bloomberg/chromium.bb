@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class HTMLButtonElement final : public HTMLFormControlElement {
+class CORE_EXPORT HTMLButtonElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -44,6 +44,11 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   void DispatchBlurEvent(Element*,
                          mojom::blink::FocusType,
                          InputDeviceCapabilities*) override;
+
+  // Retrieves the element pointed to by 'togglepopup', 'showpopup', and/or
+  // 'hidepopup' content attributes, if any.
+  Element* togglePopupElement(PopupTriggerAction& action) const;
+  Element* togglePopupElement() const;
 
  private:
   enum Type { kSubmit, kReset, kButton };
@@ -60,10 +65,6 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void DefaultEventHandler(Event&) override;
   bool HasActivationBehavior() const override;
-
-  // Retrieves the element pointed to by the 'togglepopup' content attribute,
-  // if that element a) exists, and b) is a valid Popup element.
-  Element* togglePopupElement() const;
 
   void AppendToFormData(FormData&) override;
 

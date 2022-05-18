@@ -178,7 +178,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       v8::MaybeLocal<v8::Script> script =
           v8::ScriptCompiler::Compile(script_state->GetContext(), &source,
                                       v8::ScriptCompiler::kConsumeCodeCache);
-
+      cache_handler->DidUseCodeCache();
       // The ScriptState has an associated context. We expect the current
       // context to match the context associated with Script context when
       // compiling the script for main world. Hence it is safe to use the
@@ -338,6 +338,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
         // previously.
         SingleCachedMetadataHandler* cache_handler = params.CacheHandler();
         DCHECK(cache_handler);
+        cache_handler->DidUseCodeCache();
         // TODO(leszeks): Add support for passing in ScriptCacheConsumer.
         v8::ScriptCompiler::Source source(
             code, origin,
@@ -512,13 +513,14 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
       try_catch.SetVerbose(true);
     }
 
-    const ReferrerScriptInfo referrer_info(classic_script->BaseURL(),
+    const ReferrerScriptInfo referrer_info(classic_script->BaseUrl(),
                                            classic_script->FetchOptions());
 
     v8::Local<v8::Script> script;
 
-    if (classic_script->CacheHandler()) {
-      classic_script->CacheHandler()->Check(
+    SingleCachedMetadataHandler* cache_handler = classic_script->CacheHandler();
+    if (cache_handler) {
+      cache_handler->Check(
           ExecutionContext::GetCodeCacheHostFromContext(execution_context),
           classic_script->SourceText());
     }
@@ -551,6 +553,11 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
 
       if (produce_cache_options ==
               V8CodeCache::ProduceCacheOptions::kProduceCodeCache &&
+          cache_handler) {
+        cache_handler->WillProduceCodeCache();
+      }
+      if (produce_cache_options ==
+              V8CodeCache::ProduceCacheOptions::kProduceCodeCache &&
           base::FeatureList::IsEnabled(features::kCacheCodeOnIdle)) {
         auto delay =
             base::Milliseconds(features::kCacheCodeOnIdleDelayParam.Get());
@@ -565,7 +572,7 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
                       // script state as a weak persistent.
                       WrapPersistent(script_state),
                       v8::Global<v8::Script>(isolate, script),
-                      WrapPersistent(classic_script->CacheHandler()),
+                      WrapPersistent(cache_handler),
                       classic_script->SourceText().length(),
                       classic_script->SourceUrl(),
                       classic_script->StartPosition()),
@@ -574,9 +581,9 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
         V8CodeCache::ProduceCache(
             isolate,
             ExecutionContext::GetCodeCacheHostFromContext(execution_context),
-            script, classic_script->CacheHandler(),
-            classic_script->SourceText().length(), classic_script->SourceUrl(),
-            classic_script->StartPosition(), produce_cache_options);
+            script, cache_handler, classic_script->SourceText().length(),
+            classic_script->SourceUrl(), classic_script->StartPosition(),
+            produce_cache_options);
       }
     }
 
@@ -646,7 +653,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
     const ClassicScript& classic_script) {
   DCHECK_EQ(isolate, script_state->GetIsolate());
 
-  const ReferrerScriptInfo referrer_info(classic_script.BaseURL(),
+  const ReferrerScriptInfo referrer_info(classic_script.BaseUrl(),
                                          classic_script.FetchOptions());
   v8::Local<v8::Data> host_defined_options =
       referrer_info.ToV8HostDefinedOptions(isolate, classic_script.SourceUrl());
@@ -858,7 +865,7 @@ ScriptEvaluationResult V8ScriptRunner::EvaluateModule(
     // Script IDs are not available on errored modules or on non-source text
     // modules, so we give them a default value.
     probe::ExecuteScript probe(execution_context, script_state->GetContext(),
-                               module_script->SourceURL(),
+                               module_script->SourceUrl(),
                                record->GetStatus() != v8::Module::kErrored &&
                                        record->IsSourceTextModule()
                                    ? record->ScriptId()

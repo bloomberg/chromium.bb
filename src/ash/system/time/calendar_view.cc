@@ -16,6 +16,7 @@
 #include "ash/system/time/calendar_month_view.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
+#include "ash/system/time/date_helper.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/bind.h"
@@ -61,10 +62,6 @@ constexpr int kMonthLabelPaddingOffset = -1;
 // expanded.
 constexpr float kExpandedCalendarViewHeightScale = 1.1;
 
-// After the user is finished navigating to a different month, this is how long
-// we wait before fetchiung more events.
-constexpr base::TimeDelta kScrollingSettledTimeout = base::Milliseconds(100);
-
 // Duration of the delay for modifying opacity.
 constexpr base::TimeDelta kDelayVisibilityAnimationDuration =
     base::Milliseconds(200);
@@ -79,12 +76,6 @@ constexpr base::TimeDelta kAnimationDurationForClosingEvents =
 
 // The cool-down time for enabling animation.
 constexpr base::TimeDelta kAnimationDisablingTimeout = base::Milliseconds(500);
-
-// TODO(https://crbug.com/1236276): for some language it may start from "M".
-constexpr int kDefaultWeekTitles[] = {
-    IDS_ASH_CALENDAR_SUN, IDS_ASH_CALENDAR_MON, IDS_ASH_CALENDAR_TUE,
-    IDS_ASH_CALENDAR_WED, IDS_ASH_CALENDAR_THU, IDS_ASH_CALENDAR_FRI,
-    IDS_ASH_CALENDAR_SAT};
 
 constexpr char kMonthViewScrollOneMonthAnimationHistogram[] =
     "Ash.CalendarView.ScrollOneMonth.MonthView.AnimationSmoothness";
@@ -149,9 +140,9 @@ class MonthHeaderView : public views::View {
     calendar_utils::SetUpWeekColumns(layout);
     layout->AddRows(1, views::TableLayout::kFixedSize);
 
-    for (int week_day : kDefaultWeekTitles) {
-      auto label =
-          std::make_unique<CalendarLabel>(l10n_util::GetStringUTF16(week_day));
+    for (const std::u16string& week_day :
+         DateHelper::GetInstance()->week_titles()) {
+      auto label = std::make_unique<CalendarLabel>(week_day);
       label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
       label->SetBorder((views::CreateEmptyBorder(
           gfx::Insets::VH(calendar_utils::kDateVerticalPadding, 0))));
@@ -346,11 +337,6 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
     : TrayDetailedView(delegate),
       controller_(controller),
       calendar_view_controller_(std::make_unique<CalendarViewController>()),
-      scrolling_settled_timer_(
-          FROM_HERE,
-          kScrollingSettledTimeout,
-          base::BindRepeating(&CalendarView::OnScrollingSettledTimerFired,
-                              base::Unretained(this))),
       header_animation_restart_timer_(
           FROM_HERE,
           kAnimationDisablingTimeout,
@@ -444,10 +430,12 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   content_view_->GetViewAccessibility().OverrideName(GetClassName());
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  // Set up layer for animations.
+  content_view_->SetPaintToLayer();
+  content_view_->layer()->SetFillsBoundsOpaquely(false);
+
   SetMonthViews();
 
-  scoped_calendar_model_observer_.Observe(
-      Shell::Get()->system_tray_model()->calendar_model());
   scoped_calendar_view_controller_observer_.Observe(
       calendar_view_controller_.get());
   scoped_view_observer_.AddObservation(scroll_view_);
@@ -456,6 +444,9 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
 }
 
 CalendarView::~CalendarView() {
+  RestoreHeadersStatus();
+  RestoreMonthStatus();
+
   // Removes child views including month views and event list to remove their
   // dependency from `CalendarViewController`, since these views are destructed
   // after the controller.
@@ -563,9 +554,6 @@ void CalendarView::ResetToTodayWithAnimation() {
   if (!should_months_animate_)
     return;
   SetShouldMonthsAnimateAndScrollEnabled(/*enabled=*/false);
-
-  content_view_->SetPaintToLayer();
-  content_view_->layer()->SetFillsBoundsOpaquely(false);
 
   auto content_reporter = calendar_metrics::CreateAnimationReporter(
       content_view_, kContentViewResetToTodayAnimationHistogram);
@@ -702,7 +690,6 @@ void CalendarView::RestoreHeadersStatus() {
   header_->layer()->GetAnimator()->StopAnimating();
   header_->layer()->SetOpacity(1.0f);
   header_->layer()->SetTransform(gfx::Transform());
-  scrolling_settled_timer_.Reset();
   if (!should_header_animate_)
     header_animation_restart_timer_.Reset();
 }
@@ -895,7 +882,6 @@ void CalendarView::OnMonthChanged(const base::Time::Exploded current_month) {
             if (!calendar_view)
               return;
             calendar_view->set_should_header_animate(true);
-            calendar_view->reset_scrolling_settled_timer();
           },
           weak_factory_.GetWeakPtr()))
       .OnAborted(base::BindOnce(
@@ -916,18 +902,6 @@ void CalendarView::OnMonthChanged(const base::Time::Exploded current_month) {
       .Then()
       .SetDuration(calendar_utils::kAnimationDurationForVisibility)
       .SetOpacity(header_, 1.0f);
-}
-
-void CalendarView::OnEventsFetched(
-    const CalendarModel::FetchingStatus status,
-    const base::Time start_time,
-    const google_apis::calendar::EventList* events) {
-  // No need to store the events, but we need to notify the month views that
-  // something may have changed and they need to refresh.
-  previous_month_->SchedulePaintChildren();
-  current_month_->SchedulePaintChildren();
-  next_month_->SchedulePaintChildren();
-  next_next_month_->SchedulePaintChildren();
 }
 
 void CalendarView::OpenEventList() {
@@ -1481,10 +1455,6 @@ void CalendarView::OnEvent(ui::Event* event) {
   }
 }
 
-void CalendarView::OnScrollingSettledTimerFired() {
-  calendar_view_controller_->FetchEvents();
-}
-
 void CalendarView::OnContentsScrolled() {
   base::AutoReset<bool> set_is_scrolling(&is_calendar_view_scrolling_, true);
 
@@ -1563,12 +1533,22 @@ void CalendarView::OnOpenEventListAnimationComplete() {
     next_next_month_->DisableFocus();
     content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
   }
+
+  up_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_CALENDAR_UP_BUTTON_EVENT_LIST_ACCESSIBLE_DESCRIPTION));
+  down_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_CALENDAR_DOWN_BUTTON_EVENT_LIST_ACCESSIBLE_DESCRIPTION));
 }
 
 void CalendarView::OnCloseEventListAnimationComplete() {
   RemoveChildViewT(event_list_view_);
   event_list_view_ = nullptr;
   calendar_view_controller_->OnEventListClosed();
+
+  up_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION));
+  down_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION));
 }
 
 BEGIN_METADATA(CalendarView, views::View)

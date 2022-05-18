@@ -15,7 +15,7 @@
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;
-class QuotaManager;
+class QuotaManagerProxy;
 }
 
 namespace url {
@@ -41,6 +41,7 @@ class AsyncFileTestHelper {
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
+      FileSystemOperation::ErrorBehavior error_behavior,
       std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate);
 
   // Performs CopyFileLocal from |src| to |dest| and returns the status code.
@@ -58,6 +59,7 @@ class AsyncFileTestHelper {
       FileSystemContext* context,
       const FileSystemURL& src,
       const FileSystemURL& dest,
+      FileSystemOperation::ErrorBehavior error_behavior,
       std::unique_ptr<CopyOrMoveHookDelegate> copy_or_move_hook_delegate);
 
   // Performs MoveFileLocal from |src| to |dest| and returns the status code.
@@ -118,7 +120,7 @@ class AsyncFileTestHelper {
   // Returns usage and quota. It's valid to pass nullptr to |usage| and/or
   // |quota|.
   static blink::mojom::QuotaStatusCode GetUsageAndQuota(
-      QuotaManager* quota_manager,
+      QuotaManagerProxy* quota_manager_proxy,
       const url::Origin& origin,
       FileSystemType type,
       int64_t* usage,

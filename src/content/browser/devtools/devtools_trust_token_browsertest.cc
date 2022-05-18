@@ -32,10 +32,10 @@ class DevToolsTrustTokenBrowsertest : public DevToolsProtocolTest,
   }
 
   // The returned view is only valid until the next |SendCommand| call.
-  base::Value::ListView GetTrustTokensViaProtocol() {
+  base::Value::ConstListView GetTrustTokensViaProtocol() {
     SendCommand("Storage.getTrustTokens", nullptr);
-    base::Value* tokens = result_->FindPath("tokens");
-    EXPECT_TRUE(tokens);
+    const base::Value* tokens = result()->Find("tokens");
+    CHECK(tokens);
     return tokens->GetListDeprecated();
   }
 
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTrustTokenBrowsertest,
   SendCommand("Network.enable", std::make_unique<base::DictionaryValue>());
 
   // Make sure there are no existing DevTools events in the queue.
-  EXPECT_EQ(notifications_.size(), 0ul);
+  EXPECT_FALSE(HasExistingNotification());
 
   // 3) Issue another redemption, and verify its served from cache.
   EXPECT_EQ("NoModificationAllowedError",
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(
   SendCommand("Network.enable", std::make_unique<base::DictionaryValue>());
 
   // Make sure there are no existing DevTools events in the queue.
-  EXPECT_EQ(notifications_.size(), 0ul);
+  EXPECT_FALSE(HasExistingNotification());
 
   // Issuance operations successfully answered locally result in
   // NoModificationAllowedError.
@@ -180,13 +180,12 @@ IN_PROC_BROWSER_TEST_F(
 namespace {
 
 bool MatchStatus(const std::string& expected_status,
-                 base::DictionaryValue* params) {
-  std::string actual_status;
-  EXPECT_TRUE(params->GetString("status", &actual_status));
-  return expected_status == actual_status;
+                 const base::Value::Dict& params) {
+  const std::string* actual_status = params.FindString("status");
+  return expected_status == *actual_status;
 }
 
-base::RepeatingCallback<bool(base::DictionaryValue*)> okStatusMatcher =
+base::RepeatingCallback<bool(const base::Value::Dict&)> okStatusMatcher =
     base::BindRepeating(
         &MatchStatus,
         protocol::Network::TrustTokenOperationDone::StatusEnum::Ok);
@@ -359,8 +358,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTrustTokenBrowsertest, ClearTrustTokens) {
   params->SetStringPath("issuerOrigin", IssuanceOriginFromHost("a.test"));
   auto* result = SendCommand("Storage.clearTrustTokens", std::move(params));
 
-  EXPECT_THAT(result->FindBoolPath("didDeleteTokens"),
-              ::testing::Optional(true));
+  EXPECT_THAT(result->FindBool("didDeleteTokens"), ::testing::Optional(true));
 
   // 6) Call Storage.getTrustTokens and expect no Trust Tokens to be there.
   //    Note that we still get an entry for our 'issuerOrigin', but the actual

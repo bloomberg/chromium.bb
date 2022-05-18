@@ -4,24 +4,19 @@
 
 // This file is a copy of Chromium's /src/base/containers/linked_list_unittest.cc
 
-#include <gtest/gtest.h>
+#include <list>
+#include <utility>
 
 #include "dawn/common/LinkedList.h"
-
-#include <list>
+#include "gtest/gtest.h"
 
 class Node : public LinkNode<Node> {
   public:
-    explicit Node(int id) : id_(id) {
-    }
+    explicit Node(int id) : id_(id) {}
 
-    int id() const {
-        return id_;
-    }
+    int id() const { return id_; }
 
-    void set_id(int id) {
-        id_ = id;
-    }
+    void set_id(int id) { id_ = id; }
 
   private:
     int id_;
@@ -29,8 +24,7 @@ class Node : public LinkNode<Node> {
 
 class MultipleInheritanceNodeBase {
   public:
-    MultipleInheritanceNodeBase() : field_taking_up_space_(0) {
-    }
+    MultipleInheritanceNodeBase() : field_taking_up_space_(0) {}
     int field_taking_up_space_;
 };
 
@@ -42,14 +36,11 @@ class MultipleInheritanceNode : public MultipleInheritanceNodeBase,
 
 class MovableNode : public LinkNode<MovableNode> {
   public:
-    explicit MovableNode(int id) : id_(id) {
-    }
+    explicit MovableNode(int id) : id_(id) {}
 
     MovableNode(MovableNode&&) = default;
 
-    int id() const {
-        return id_;
-    }
+    int id() const { return id_; }
 
   private:
     int id_;

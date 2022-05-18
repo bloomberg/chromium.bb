@@ -2081,6 +2081,10 @@ bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *module_state,
                         skip |= LogError(device, "VUID-RuntimeSpirv-LocalSizeId-06434",
                                          "LocalSizeId execution mode used but maintenance4 feature not enabled");
                     }
+                    if (!IsExtEnabled(device_extensions.vk_khr_maintenance4)) {
+                        skip |= LogError(device, "VUID-RuntimeSpirv-LocalSizeId-06433",
+                                         "LocalSizeId execution mode used but maintenance4 extension is not enabled and used Vulkan api version is 1.2 or less");
+                    }
                     break;
                 }
 
@@ -2099,6 +2103,24 @@ bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *module_state,
                     }
                     break;
                 }
+                case spv::ExecutionModeSubgroupUniformControlFlowKHR: {
+                    if (!enabled_features.shader_subgroup_uniform_control_flow_features.shaderSubgroupUniformControlFlow ||
+                        (phys_dev_ext_props.subgroup_properties.supportedStages & stage) == 0 ||
+                        module_state->static_data_.has_invocation_repack_instruction) {
+                        std::stringstream msg;
+                        if (!enabled_features.shader_subgroup_uniform_control_flow_features.shaderSubgroupUniformControlFlow) {
+                            msg << "shaderSubgroupUniformControlFlow feature must be enabled";
+                        } else if ((phys_dev_ext_props.subgroup_properties.supportedStages & stage) == 0) {
+                            msg << "stage" << string_VkShaderStageFlagBits(stage)
+                                << " must be in VkPhysicalDeviceSubgroupProperties::supportedStages("
+                                << string_VkShaderStageFlags(phys_dev_ext_props.subgroup_properties.supportedStages) << ")";
+                        } else {
+                            msg << "the shader must not use any invocation repack instructions";
+                        }
+                        skip |= LogError(device, "VUID-RuntimeSpirv-SubgroupUniformControlFlowKHR-06379",
+                                         "If ExecutionModeSubgroupUniformControlFlowKHR is used %s.", msg.str().c_str());
+                    }
+                } break;
             }
         }
     }
@@ -2942,7 +2964,8 @@ bool CoreChecks::ValidateInterfaceBetweenStages(SHADER_MODULE_STATE const *produ
             //   expressed in the member type -- it's expressed in the block type.
             if (!TypesMatch(producer, consumer, a_it->second.type_id, b_it->second.type_id)) {
                 skip |= LogError(producer->vk_shader_module(), kVUID_Core_Shader_InterfaceTypeMismatch,
-                                 "Type mismatch on location %" PRIu32 ".%" PRIu32 ": '%s' vs '%s'", a_first.first, a_first.second,
+                                 "Type mismatch on location %" PRIu32 ".%" PRIu32 ", between %s and %s: '%s' vs '%s'",
+                                 a_first.first, a_first.second, producer_stage->name, consumer_stage->name,
                                  producer->DescribeType(a_it->second.type_id).c_str(),
                                  consumer->DescribeType(b_it->second.type_id).c_str());
                 a_it++;
@@ -2951,7 +2974,7 @@ bool CoreChecks::ValidateInterfaceBetweenStages(SHADER_MODULE_STATE const *produ
             }
             if (a_it->second.is_patch != b_it->second.is_patch) {
                 skip |= LogError(producer->vk_shader_module(), kVUID_Core_Shader_InterfaceTypeMismatch,
-                                 "Decoration mismatch on location %u.%u: is per-%s in %s stage but per-%s in %s stage",
+                                 "Decoration mismatch on location %" PRIu32 ".%" PRIu32 ": is per-%s in %s stage but per-%s in %s stage",
                                  a_first.first, a_first.second, a_it->second.is_patch ? "patch" : "vertex", producer_stage->name,
                                  b_it->second.is_patch ? "patch" : "vertex", consumer_stage->name);
             }
@@ -3246,6 +3269,14 @@ bool CoreChecks::ValidateRayTracingPipeline(PIPELINE_STATE *pipeline, VkPipeline
                 " : The stage member of at least one element of pStages must be VK_SHADER_STAGE_RAYGEN_BIT_KHR.");
         }
     }
+    if ((flags & VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR) != 0 &&
+        (flags & VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR) != 0) {
+        skip |= LogError(
+            device, "VUID-VkRayTracingPipelineCreateInfoKHR-flags-06546",
+            "vkCreateRayTracingPipelinesKHR: flags (%s) contains both VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR and "
+            "VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR bits.",
+            string_VkPipelineCreateFlags(flags).c_str());
+    }
 
     for (uint32_t group_index = 0; group_index < create_info.groupCount; group_index++) {
         const auto &group = groups[group_index];
@@ -3421,6 +3452,29 @@ bool CoreChecks::ValidateComputeWorkGroupSizes(const SHADER_MODULE_STATE *module
 
     const auto subgroup_flags = VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT |
                                 VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT;
+    const auto *required_subgroup_size_features =
+        LvlFindInChain<VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>(stage_state.create_info->pNext);
+    if (required_subgroup_size_features &&
+        (invocations > required_subgroup_size_features->requiredSubgroupSize *
+                           phys_dev_ext_props.subgroup_size_control_props.maxComputeWorkgroupSubgroups)) {
+        skip |= LogError(module_state->vk_shader_module(), "VUID-VkPipelineShaderStageCreateInfo-pNext-02756",
+                         "Local workgroup size (%" PRIu32 ", %" PRIu32 ", %" PRIu32
+                         ") is greater than VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT::requiredSubgroupSize (%" PRIu32
+                         ") * maxComputeWorkgroupSubgroups (%" PRIu32 ").",
+                         local_size_x, local_size_y, local_size_z, required_subgroup_size_features->requiredSubgroupSize,
+                         phys_dev_ext_props.subgroup_size_control_props.maxComputeWorkgroupSubgroups);
+    }
+    if (required_subgroup_size_features &&
+        (stage_state.create_info->flags & VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT) > 0) {
+        if (SafeModulo(required_subgroup_size_features->requiredSubgroupSize, local_size_x) != 0) {
+            skip |= LogError(
+                module_state->vk_shader_module(), "VUID-VkPipelineShaderStageCreateInfo-pNext-02757",
+                "Local workgroup size x (%" PRIu32
+                ") is not a multiple of VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT::requiredSubgroupSize (%" PRIu32
+                ").",
+                local_size_x, required_subgroup_size_features->requiredSubgroupSize);
+        }
+    }
     if ((stage_state.create_info->flags & subgroup_flags) == subgroup_flags) {
         if (SafeModulo(local_size_x, phys_dev_ext_props.subgroup_size_control_props.maxSubgroupSize) != 0) {
             skip |= LogError(
@@ -3434,8 +3488,6 @@ bool CoreChecks::ValidateComputeWorkGroupSizes(const SHADER_MODULE_STATE *module
         }
     } else if ((stage_state.create_info->flags & VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT) &&
                (stage_state.create_info->flags & VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT) == 0) {
-        const auto *required_subgroup_size_features =
-            LvlFindInChain<VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>(stage_state.create_info->pNext);
         if (!required_subgroup_size_features) {
             if (SafeModulo(local_size_x, phys_dev_props_core11.subgroupSize) != 0) {
                 skip |= LogError(

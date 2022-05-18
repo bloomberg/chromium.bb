@@ -127,9 +127,8 @@ class FullReductionKernelFunctor {
   typedef typename OpDef::type Op;
   typedef typename Evaluator::EvaluatorPointerType EvaluatorPointerType;
   typedef typename Evaluator::PacketReturnType PacketReturnType;
-  typedef
-      typename ::Eigen::internal::conditional<(Evaluator::ReducerTraits::PacketAccess & Evaluator::InputPacketAccess),
-                                              PacketReturnType, CoeffReturnType>::type OutType;
+  typedef std::conditional_t<(Evaluator::ReducerTraits::PacketAccess & Evaluator::InputPacketAccess),
+                                              PacketReturnType, CoeffReturnType> OutType;
   typedef cl::sycl::accessor<OutType, 1, cl::sycl::access::mode::read_write, cl::sycl::access::target::local>
       LocalAccessor;
   LocalAccessor scratch;
@@ -145,7 +144,7 @@ class FullReductionKernelFunctor {
   void operator()(cl::sycl::nd_item<1> itemID) { compute_reduction(itemID); }
 
   template <bool Vect = (Evaluator::ReducerTraits::PacketAccess & Evaluator::InputPacketAccess)>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<Vect>::type compute_reduction(
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE std::enable_if_t<Vect> compute_reduction(
       const cl::sycl::nd_item<1> &itemID) {
     auto output_ptr = final_output.get_pointer();
     Index VectorizedRange = (rng / Evaluator::PacketSize) * Evaluator::PacketSize;
@@ -184,7 +183,7 @@ class FullReductionKernelFunctor {
   }
 
   template <bool Vect = (Evaluator::ReducerTraits::PacketAccess & Evaluator::InputPacketAccess)>
-  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ::Eigen::internal::enable_if<!Vect>::type compute_reduction(
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE std::enable_if_t<!Vect> compute_reduction(
       const cl::sycl::nd_item<1> &itemID) {
     auto output_ptr = final_output.get_pointer();
     Index globalid = itemID.get_global_id(0);
@@ -483,7 +482,7 @@ struct FullReducer<Self, Op, Eigen::SyclDevice, Vectorizable> {
   static EIGEN_CONSTEXPR bool HasOptimizedImplementation = true;
   static EIGEN_CONSTEXPR int PacketSize = Self::PacketAccess ? Self::PacketSize : 1;
   static void run(const Self &self, Op &reducer, const Eigen::SyclDevice &dev, EvaluatorPointerType data) {
-    typedef typename conditional<Self::PacketAccess, typename Self::PacketReturnType, CoeffReturnType>::type OutType;
+    typedef std::conditional_t<Self::PacketAccess, typename Self::PacketReturnType, CoeffReturnType> OutType;
     static_assert(!((EIGEN_SYCL_LOCAL_THREAD_DIM0 * EIGEN_SYCL_LOCAL_THREAD_DIM1) &
                     (EIGEN_SYCL_LOCAL_THREAD_DIM0 * EIGEN_SYCL_LOCAL_THREAD_DIM1 - 1)),
                   "The Local thread size must be a power of 2 for the reduction "

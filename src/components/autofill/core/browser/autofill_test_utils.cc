@@ -582,6 +582,8 @@ CreditCard GetVirtualCard() {
                           "5555555555554444",  // Mastercard
                           "10", test::NextYear().c_str(), "1");
   credit_card.set_record_type(CreditCard::RecordType::VIRTUAL_CARD);
+  credit_card.set_virtual_card_enrollment_state(
+      CreditCard::VirtualCardEnrollmentState::ENROLLED);
   CreditCardTestApi(&credit_card).set_network_for_virtual_card(kMasterCard);
   return credit_card;
 }
@@ -977,9 +979,9 @@ std::vector<FormSignature> GetEncodedSignatures(
 }
 
 void AddFieldSuggestionToForm(
-    const autofill::FormFieldData& field_data,
+    const FormFieldData& field_data,
     ServerFieldType field_type,
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+    AutofillQueryResponse_FormSuggestion* form_suggestion) {
   auto* field_suggestion = form_suggestion->add_field_suggestions();
   field_suggestion->set_field_signature(
       CalculateFieldSignatureForField(field_data).value());
@@ -987,9 +989,9 @@ void AddFieldSuggestionToForm(
 }
 
 void AddFieldPredictionsToForm(
-    const autofill::FormFieldData& field_data,
+    const FormFieldData& field_data,
     const std::vector<int>& field_types,
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+    AutofillQueryResponse_FormSuggestion* form_suggestion) {
   std::vector<ServerFieldType> types;
   for (auto type : field_types) {
     types.emplace_back(ToSafeServerFieldType(type, UNKNOWN_TYPE));
@@ -998,9 +1000,9 @@ void AddFieldPredictionsToForm(
 }
 
 void AddFieldPredictionsToForm(
-    const autofill::FormFieldData& field_data,
+    const FormFieldData& field_data,
     const std::vector<ServerFieldType>& field_types,
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+    AutofillQueryResponse_FormSuggestion* form_suggestion) {
   auto* field_suggestion = form_suggestion->add_field_suggestions();
   field_suggestion->set_field_signature(
       CalculateFieldSignatureForField(field_data).value());

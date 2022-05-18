@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
@@ -58,6 +59,9 @@ constexpr int kBorderCornerRadius = 6;
 // The rounded corner radii, also in dips.
 constexpr int kCornerRadius = 4;
 constexpr gfx::RoundedCornersF kCornerRadii(kCornerRadius);
+
+// Used for painting the highlight when the context menu is open.
+constexpr float kHighlightTransparency = 0.3f * 0xFF;
 
 // Holds data about the original desk's layers to determine what we should do
 // when we attempt to mirror those layers.
@@ -288,6 +292,16 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
 
+  if (features::IsDesksCloseAllEnabled()) {
+    highlight_overlay_ = AddChildView(std::make_unique<views::View>());
+    highlight_overlay_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    highlight_overlay_->SetVisible(false);
+    ui::Layer* highlight_overlay_layer = highlight_overlay_->layer();
+    highlight_overlay_layer->SetName("DeskPreviewView highlight overlay");
+    highlight_overlay_layer->SetRoundedCornerRadius(kCornerRadii);
+    highlight_overlay_layer->SetIsFastRoundedCorner(true);
+  }
+
   auto border = std::make_unique<WmHighlightItemBorder>(kBorderCornerRadius);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
@@ -313,6 +327,11 @@ int DeskPreviewView::GetHeight(aura::Window* root) {
 void DeskPreviewView::SetBorderColor(SkColor color) {
   border_ptr_->set_color(color);
   SchedulePaint();
+}
+
+void DeskPreviewView::SetHighlightOverlayVisibility(bool visible) {
+  DCHECK(highlight_overlay_);
+  highlight_overlay_->SetVisible(visible);
 }
 
 void DeskPreviewView::OnRemovingDesk() {
@@ -373,6 +392,9 @@ void DeskPreviewView::Layout() {
   wallpaper_preview_->SetBoundsRect(bounds);
   desk_mirrored_contents_view_->SetBoundsRect(bounds);
 
+  if (features::IsDesksCloseAllEnabled())
+    highlight_overlay_->SetBoundsRect(bounds);
+
   // The desk's contents mirrored layer needs to be scaled down so that it fits
   // exactly in the center of the view.
   const auto root_size = mini_view_->root_window()->layer()->size();
@@ -395,7 +417,7 @@ bool DeskPreviewView::OnMousePressed(const ui::MouseEvent& event) {
   // should open the context menu.
   if (features::IsDesksCloseAllEnabled() && event.IsRightMouseButton()) {
     DeskNameView::CommitChanges(GetWidget());
-    mini_view_->OpenContextMenu();
+    mini_view_->OpenContextMenu(ui::MENU_SOURCE_MOUSE);
   } else {
     mini_view_->owner_bar()->HandlePressEvent(mini_view_, event);
   }
@@ -419,8 +441,6 @@ void DeskPreviewView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     // Only long press can trigger drag & drop.
     case ui::ET_GESTURE_LONG_PRESS:
-      // TODO(crbug.com/1308780): Need to figure out how we can still maintain
-      // drag functionality while allowing long press to open the context menu.
       owner_bar->HandleLongPressEvent(mini_view_, *event);
       event->SetHandled();
       break;
@@ -440,6 +460,17 @@ void DeskPreviewView::OnGestureEvent(ui::GestureEvent* event) {
 
   if (!event->handled())
     Button::OnGestureEvent(event);
+}
+
+void DeskPreviewView::OnThemeChanged() {
+  views::Button::OnThemeChanged();
+
+  if (features::IsDesksCloseAllEnabled()) {
+    highlight_overlay_->layer()->SetColor(
+        SkColorSetA(AshColorProvider::Get()->GetControlsLayerColor(
+                        AshColorProvider::ControlsLayerType::kHighlightColor1),
+                    kHighlightTransparency));
+  }
 }
 
 }  // namespace ash

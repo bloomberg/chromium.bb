@@ -10,6 +10,10 @@ title: User-Agent Reduction
 
 ## Updates
 
+May 6, 2022: ["Phase 4"](https://www.chromium.org/updates/ua-reduction/#sample-ua-strings-phase-4)
+began rolling out to a small percentage of the Chrome 101 stable population while we evaluate
+stability.
+
 April 11, 2022: Add a table to map from UA to UA-CH
 
 March 3, 2022: Added frozen Chrome OS platform version to

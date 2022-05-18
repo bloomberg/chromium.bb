@@ -53,11 +53,11 @@ class DownloadItemModel : public DownloadUIModel,
   bool MightBeMalicious() const override;
   bool IsMalicious() const override;
   bool IsMixedContent() const override;
-  bool ShouldShowIncognitoWarning() const override;
   bool ShouldAllowDownloadFeedback() const override;
   bool ShouldRemoveFromShelfWhenComplete() const override;
   bool ShouldShowDownloadStartedAnimation() const override;
   bool ShouldShowInShelf() const override;
+  bool ShouldShowInBubble() const override;
   void SetShouldShowInShelf(bool should_show) override;
   bool ShouldNotifyUI() const override;
   bool WasUINotified() const override;

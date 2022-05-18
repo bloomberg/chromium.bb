@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
@@ -746,6 +747,14 @@ void NavigationURLLoaderImpl::OnReceiveEarlyHints(
   DCHECK_NE(early_hints->ip_address_space,
             network::mojom::IPAddressSpace::kUnknown);
 
+  // Ignore Early Hints for embed and object destination.
+  if (request_info_->common_params->request_destination ==
+          network::mojom::RequestDestination::kEmbed ||
+      request_info_->common_params->request_destination ==
+          network::mojom::RequestDestination::kObject) {
+    return;
+  }
+
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
 
@@ -775,6 +784,12 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   LogQueueTimeHistogram("Navigation.QueueTime.OnReceiveResponse",
                         resource_request_->is_outermost_main_frame);
   head_ = std::move(head);
+
+  // Early Hints preloads should not be committed for PDF.
+  // See https://github.com/whatwg/html/issues/7823
+  if (head_->mime_type == "application/pdf" || head_->mime_type == "text/pdf")
+    early_hints_manager_.reset();
+
   if (response_body)
     OnStartLoadingResponseBody(std::move(response_body));
 }

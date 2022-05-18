@@ -13,22 +13,22 @@
 // limitations under the License.
 
 #include <cmath>
-
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 constexpr static unsigned int kRTSize = 16;
 
 namespace {
-    // MipLevel colors, ordering from base level to high level
-    // each mipmap of the texture is having a different color
-    // so we can check if the sampler anisotropic filtering is fetching
-    // from the correct miplevel
-    const std::array<RGBA8, 3> colors = {RGBA8::kRed, RGBA8::kGreen, RGBA8::kBlue};
+// MipLevel colors, ordering from base level to high level
+// each mipmap of the texture is having a different color
+// so we can check if the sampler anisotropic filtering is fetching
+// from the correct miplevel
+const std::array<RGBA8, 3> colors = {RGBA8::kRed, RGBA8::kGreen, RGBA8::kBlue};
 }  // namespace
 
 class SamplerFilterAnisotropicTest : public DawnTest {

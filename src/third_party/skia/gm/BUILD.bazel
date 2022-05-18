@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_library(
     name = "gm",
@@ -402,7 +404,6 @@ filegroup(
         "swizzle.cpp",
         "tablecolorfilter.cpp",
         "tallstretchedbitmaps.cpp",
-        "tessellation.cpp",
         "testgradient.cpp",
         "texelsubset.cpp",
         "text_scale_skew.cpp",
@@ -791,6 +792,7 @@ generated_cc_atom(
     deps = [
         ":gm_hdr",
         "//include/core:SkCanvas_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkColor_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkPaint_hdr",
@@ -1357,6 +1359,7 @@ generated_cc_atom(
         "//include/core:SkTileMode_hdr",
         "//include/core:SkTypes_hdr",
         "//include/effects:SkGradientShader_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -2487,6 +2490,7 @@ generated_cc_atom(
         "//include/effects:SkGradientShader_hdr",
         "//include/private:SkTDArray_hdr",
         "//src/core:SkTLazy_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -3149,6 +3153,7 @@ generated_cc_atom(
         "//include/effects:SkImageFilters_hdr",
         "//src/effects/imagefilters:SkCropImageFilter_hdr",
         "//tools:Resources_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -3170,6 +3175,7 @@ generated_cc_atom(
         "//include/core:SkSize_hdr",
         "//include/core:SkString_hdr",
         "//include/core:SkSurface_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -3216,22 +3222,6 @@ generated_cc_atom(
         "//include/core:SkTypes_hdr",
         "//include/utils:SkRandom_hdr",
         "//tools:ToolUtils_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "custommesh_src",
-    srcs = ["custommesh.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":gm_hdr",
-        "//include/core:SkBlender_hdr",
-        "//include/core:SkCanvas_hdr",
-        "//include/core:SkColorSpace_hdr",
-        "//include/core:SkCustomMesh_hdr",
-        "//include/core:SkSurface_hdr",
-        "//include/effects:SkGradientShader_hdr",
-        "//src/core:SkCanvasPriv_hdr",
     ],
 )
 
@@ -3503,6 +3493,7 @@ generated_cc_atom(
         "//include/core:SkMatrix_hdr",
         "//include/core:SkRect_hdr",
         "//tools:Resources_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -3709,6 +3700,7 @@ generated_cc_atom(
         "//include/effects:SkGradientShader_hdr",
         "//include/utils:SkRandom_hdr",
         "//src/core:SkMathPriv_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -4857,6 +4849,7 @@ generated_cc_atom(
         "//include/effects:SkGradientShader_hdr",
         "//include/gpu:GrRecordingContext_hdr",
         "//tools:Resources_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -6904,6 +6897,7 @@ generated_cc_atom(
         "//include/private:SkTArray_hdr",
         "//include/private:SkTDArray_hdr",
         "//tools:Resources_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -7754,6 +7748,7 @@ generated_cc_atom(
         "//include/core:SkSize_hdr",
         "//include/core:SkString_hdr",
         "//include/core:SkTypeface_hdr",
+        "//src/core:SkEnumerate_hdr",
         "//tools:Resources_hdr",
         "//tools:ToolUtils_hdr",
     ],
@@ -8212,6 +8207,7 @@ generated_cc_atom(
         "//include/core:SkTextBlob_hdr",
         "//include/core:SkTypeface_hdr",
         "//include/core:SkTypes_hdr",
+        "//include/gpu:GrContextOptions_hdr",
         "//include/private:SkTDArray_hdr",
         "//include/private/chromium:GrSlug_hdr",
         "//tools:ToolUtils_hdr",
@@ -8640,32 +8636,7 @@ generated_cc_atom(
         "//include/core:SkTypes_hdr",
         "//include/private:SkTo_hdr",
         "//include/utils:SkRandom_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "tessellation_src",
-    srcs = ["tessellation.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":gm_hdr",
-        "//src/core:SkCanvasPriv_hdr",
-        "//src/gpu/ganesh:GrCaps_hdr",
-        "//src/gpu/ganesh:GrDirectContextPriv_hdr",
-        "//src/gpu/ganesh:GrGeometryProcessor_hdr",
-        "//src/gpu/ganesh:GrMemoryPool_hdr",
-        "//src/gpu/ganesh:GrOpFlushState_hdr",
-        "//src/gpu/ganesh:GrOpsRenderPass_hdr",
-        "//src/gpu/ganesh:GrPipeline_hdr",
-        "//src/gpu/ganesh:GrProgramInfo_hdr",
-        "//src/gpu/ganesh:GrRecordingContextPriv_hdr",
-        "//src/gpu/ganesh:GrShaderCaps_hdr",
-        "//src/gpu/ganesh:GrShaderVar_hdr",
-        "//src/gpu/ganesh/glsl:GrGLSLFragmentShaderBuilder_hdr",
-        "//src/gpu/ganesh/glsl:GrGLSLVarying_hdr",
-        "//src/gpu/ganesh/glsl:GrGLSLVertexGeoBuilder_hdr",
-        "//src/gpu/ganesh/ops:GrDrawOp_hdr",
-        "//src/gpu/ganesh/v1:SurfaceDrawContext_v1_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -9210,7 +9181,6 @@ generated_cc_atom(
         "//src/gpu/ganesh:GrDirectContextPriv_hdr",
         "//src/gpu/ganesh:GrDrawingManager_hdr",
         "//src/gpu/ganesh:GrRecordingContextPriv_hdr",
-        "//src/gpu/ganesh/ops:TessellationPathRenderer_hdr",
     ],
 )
 
@@ -9359,6 +9329,7 @@ generated_cc_atom(
         "//include/core:SkSurface_hdr",
         "//include/core:SkTileMode_hdr",
         "//include/effects:SkGradientShader_hdr",
+        "//tools:ToolUtils_hdr",
     ],
 )
 
@@ -9684,5 +9655,24 @@ generated_cc_atom(
         "//include/core:SkMatrix_hdr",
         "//include/core:SkRect_hdr",
         "//include/effects:SkImageFilters_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "mesh_src",
+    srcs = ["mesh.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":gm_hdr",
+        "//include/core:SkBlender_hdr",
+        "//include/core:SkCanvas_hdr",
+        "//include/core:SkColorSpace_hdr",
+        "//include/core:SkData_hdr",
+        "//include/core:SkMesh_hdr",
+        "//include/core:SkSurface_hdr",
+        "//include/effects:SkGradientShader_hdr",
+        "//include/gpu:GrDirectContext_hdr",
+        "//src/core:SkCanvasPriv_hdr",
+        "//src/core:SkMeshPriv_hdr",
     ],
 )

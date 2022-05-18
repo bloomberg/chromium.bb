@@ -34,10 +34,9 @@ class ASH_EXPORT MockProjectorClient : public ProjectorClient,
   bool GetDriveFsMountPointPath(base::FilePath* result) const override;
   MOCK_CONST_METHOD0(IsDriveFsMounted, bool());
   MOCK_CONST_METHOD0(IsDriveFsMountFailed, bool());
-  MOCK_METHOD0(ShowSelfieCam, void());
-  MOCK_METHOD0(CloseSelfieCam, void());
   MOCK_CONST_METHOD0(OpenProjectorApp, void());
   MOCK_CONST_METHOD0(MinimizeProjectorApp, void());
+  MOCK_CONST_METHOD0(CloseProjectorApp, void());
   MOCK_CONST_METHOD1(OnNewScreencastPreconditionChanged,
                      void(const NewScreencastPrecondition&));
   MOCK_METHOD1(SetAnnotatorMessageHandler, void(AnnotatorMessageHandler*));
@@ -48,12 +47,8 @@ class ASH_EXPORT MockProjectorClient : public ProjectorClient,
   MOCK_METHOD0(Redo, void());
   MOCK_METHOD0(Clear, void());
 
-  bool IsSelfieCamVisible() const override;
-  void SetSelfieCamVisible(bool visible);
-
  private:
   base::ScopedTempDir screencast_container_path_;
-  bool is_selfie_cam_visible_ = false;
 };
 
 }  // namespace ash

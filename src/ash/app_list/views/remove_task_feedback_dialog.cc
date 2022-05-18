@@ -11,7 +11,6 @@
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/highlight_border.h"
 #include "ash/style/pill_button.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -24,6 +23,7 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/style/typography.h"
@@ -58,6 +58,7 @@ RemoveTaskFeedbackDialog::RemoveTaskFeedbackDialog(
       .SetPaintToLayer()
       .AddChildren(
           views::Builder<views::Label>()
+              .CopyAddressTo(&title_)
               .SetText(l10n_util::GetStringUTF16(
                   IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_TITLE))
               .SetTextContext(views::style::CONTEXT_DIALOG_TITLE)
@@ -66,6 +67,7 @@ RemoveTaskFeedbackDialog::RemoveTaskFeedbackDialog(
               .SetAutoColorReadabilityEnabled(false)
               .SetPaintToLayer(),
           views::Builder<views::Label>()
+              .CopyAddressTo(&feedback_text_)
               .SetText(l10n_util::GetStringUTF16(
                   IDS_ASH_LAUNCHER_CONTINUE_SECTION_REMOVE_DIALOG_FEEDBACK_TEXT))
               .SetProperty(views::kMarginsKey,
@@ -113,6 +115,10 @@ RemoveTaskFeedbackDialog::RemoveTaskFeedbackDialog(
               .CopyAddressTo(&button_row))
       .BuildChildren();
 
+  layer()->SetFillsBoundsOpaquely(false);
+  title_->layer()->SetFillsBoundsOpaquely(false);
+  feedback_text_->layer()->SetFillsBoundsOpaquely(false);
+
   cancel_button_ = button_row->AddChildView(std::make_unique<ash::PillButton>(
       views::Button::PressedCallback(base::BindRepeating(
           &RemoveTaskFeedbackDialog::Cancel, base::Unretained(this))),
@@ -147,12 +153,27 @@ gfx::Size RemoveTaskFeedbackDialog::CalculatePreferredSize() const {
 void RemoveTaskFeedbackDialog::OnThemeChanged() {
   views::WidgetDelegateView::OnThemeChanged();
 
+  title_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  feedback_text_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+
+  auto set_checkbox_text_color = [](views::Checkbox* view) {
+    view->SetEnabledTextColors(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary));
+  };
+  set_checkbox_text_color(all_suggestions_option_);
+  set_checkbox_text_color(single_suggestion_option_);
+  set_checkbox_text_color(done_using_option_);
+  set_checkbox_text_color(not_show_option_);
+
   SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetBaseLayerColor(
           AshColorProvider::BaseLayerType::kTransparent80),
       kDialogRoundedCornerRadius));
-  SetBorder(std::make_unique<HighlightBorder>(
-      kDialogRoundedCornerRadius, HighlightBorder::Type::kHighlightBorder1,
+  SetBorder(std::make_unique<views::HighlightBorder>(
+      kDialogRoundedCornerRadius,
+      views::HighlightBorder::Type::kHighlightBorder1,
       /*use_light_colors=*/false));
 }
 

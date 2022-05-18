@@ -23,16 +23,8 @@ def RunSteps(api):
     bot_update = False
 
   checkout_root = api.checkout.default_checkout_root
-  checkout_chromium = False
   checkout_flutter = False
-  extra_gclient_env = {}
   flutter_android = False
-  if 'CommandBuffer' in api.vars.builder_name:
-    checkout_chromium = True
-  if 'RecreateSKPs' in api.vars.builder_name:
-    checkout_chromium = True
-    extra_gclient_env['CPPFLAGS'] = (
-        '-DSK_ALLOW_CROSSPROCESS_PICTUREIMAGEFILTERS=1')
   if 'Flutter' in api.vars.builder_name:
     checkout_root = checkout_root.join('flutter')
     checkout_flutter = True
@@ -42,9 +34,7 @@ def RunSteps(api):
   if bot_update:
     api.checkout.bot_update(
         checkout_root=checkout_root,
-        checkout_chromium=checkout_chromium,
         checkout_flutter=checkout_flutter,
-        extra_gclient_env=extra_gclient_env,
         flutter_android=flutter_android)
   else:
     api.checkout.git(checkout_root=api.path['start_dir'])
@@ -52,8 +42,7 @@ def RunSteps(api):
 
 
 TEST_BUILDERS = [
-  'Build-Mac-Clang-x86_64-Debug-CommandBuffer',
-  'Housekeeper-Weekly-RecreateSKPs',
+  'Build-Debian9-Clang-arm-Release-Flutter_Android_Docker',
 ]
 
 

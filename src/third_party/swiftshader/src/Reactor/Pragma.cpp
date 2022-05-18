@@ -30,7 +30,8 @@ namespace {
 
 struct PragmaState
 {
-	bool memorySanitizerInstrumentation;
+	bool memorySanitizerInstrumentation = false;
+	int optimizationLevel = 2;  // Default
 };
 
 // The initialization of static thread-local data is not observed by MemorySanitizer
@@ -59,7 +60,7 @@ CLANG_NO_SANITIZE_MEMORY PragmaState &getPragmaState()
 
 namespace rr {
 
-void Pragma(PragmaBooleanOption option, bool enable)
+void Pragma(BooleanPragmaOption option, bool enable)
 {
 	PragmaState &state = ::getPragmaState();
 
@@ -69,11 +70,25 @@ void Pragma(PragmaBooleanOption option, bool enable)
 		state.memorySanitizerInstrumentation = enable;
 		break;
 	default:
-		UNSUPPORTED("Unknown pragma %d", int(option));
+		UNSUPPORTED("Unknown Boolean pragma option %d", int(option));
 	}
 }
 
-bool getPragmaState(PragmaBooleanOption option)
+void Pragma(IntegerPragmaOption option, int value)
+{
+	PragmaState &state = ::getPragmaState();
+
+	switch(option)
+	{
+	case OptimizationLevel:
+		state.optimizationLevel = value;
+		break;
+	default:
+		UNSUPPORTED("Unknown integer pragma option %d", int(option));
+	}
+}
+
+bool getPragmaState(BooleanPragmaOption option)
 {
 	PragmaState &state = ::getPragmaState();
 
@@ -82,8 +97,48 @@ bool getPragmaState(PragmaBooleanOption option)
 	case MemorySanitizerInstrumentation:
 		return state.memorySanitizerInstrumentation;
 	default:
-		UNSUPPORTED("Unknown pragma %d", int(option));
+		UNSUPPORTED("Unknown Boolean pragma option %d", int(option));
 		return false;
+	}
+}
+
+int getPragmaState(IntegerPragmaOption option)
+{
+	PragmaState &state = ::getPragmaState();
+
+	switch(option)
+	{
+	case OptimizationLevel:
+		return state.optimizationLevel;
+	default:
+		UNSUPPORTED("Unknown integer pragma option %d", int(option));
+		return 0;
+	}
+}
+
+ScopedPragma::ScopedPragma(BooleanPragmaOption option, bool enable)
+{
+	oldState = BooleanPragma{ option, getPragmaState(option) };
+	Pragma(option, enable);
+}
+
+ScopedPragma::ScopedPragma(IntegerPragmaOption option, int value)
+{
+	oldState = IntegerPragma{ option, getPragmaState(option) };
+	Pragma(option, value);
+}
+
+ScopedPragma::~ScopedPragma()
+{
+	if(std::holds_alternative<BooleanPragma>(oldState))
+	{
+		auto &restore = std::get<BooleanPragma>(oldState);
+		Pragma(restore.option, restore.enable);
+	}
+	else
+	{
+		auto &restore = std::get<IntegerPragma>(oldState);
+		Pragma(restore.option, restore.value);
 	}
 }
 

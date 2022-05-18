@@ -272,9 +272,9 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                      src_search_sites,
                                      /*fine_search_interval=*/0);
 
-  av1_full_pixel_search(start_mv, &full_ms_params, step_param,
-                        cond_cost_list(cpi, cost_list), &tmp_mv->as_fullmv,
-                        NULL);
+  const unsigned int full_var_rd = av1_full_pixel_search(
+      start_mv, &full_ms_params, step_param, cond_cost_list(cpi, cost_list),
+      &tmp_mv->as_fullmv, NULL);
 
   // calculate the bit cost on motion vector
   MV mvp_full = get_mv_from_fullmv(&tmp_mv->as_fullmv);
@@ -292,6 +292,20 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     if (cpi->sf.rt_sf.force_half_pel_block &&
         cpi->sf.mv_sf.subpel_force_stop < HALF_PEL)
       ms_params.forced_stop = subpel_select(cpi, bsize, tmp_mv);
+    if (cpi->sf.rt_sf.reduce_zeromv_mvres && ref_mv.row == 0 &&
+        ref_mv.col == 0 && start_mv.row == 0 && start_mv.col == 0) {
+      // If both the refmv and the fullpel results show zero mv, then there is
+      // high likelihood that the current block is static. So we can try to
+      // reduce the mv resolution here.
+      // These thresholds are the mean var rd collected from multiple encoding
+      // runs.
+      if ((bsize == BLOCK_64X64 && full_var_rd * 40 < 62267 * 7) ||
+          (bsize == BLOCK_32X32 && full_var_rd * 8 < 42380) ||
+          (bsize == BLOCK_16X16 && full_var_rd * 8 < 10127)) {
+        ms_params.forced_stop = HALF_PEL;
+      }
+    }
+
     MV subpel_start_mv = get_mv_from_fullmv(&tmp_mv->as_fullmv);
     cpi->mv_search_params.find_fractional_mv_step(
         xd, cm, &ms_params, subpel_start_mv, &tmp_mv->as_mv, &dis,
@@ -1203,7 +1217,7 @@ static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
     int left_mv_valid = 0;
     int above_row = INVALID_MV_ROW_COL, above_col = INVALID_MV_ROW_COL;
     int left_row = INVALID_MV_ROW_COL, left_col = INVALID_MV_ROW_COL;
-    if (bsize >= BLOCK_64X64 && content_state_sb.source_sad != kHighSad &&
+    if (bsize >= BLOCK_64X64 && content_state_sb.source_sad_nonrd != kHighSad &&
         spatial_variance < 300 &&
         (mv_row > 16 || mv_row < -16 || mv_col > 16 || mv_col < -16)) {
       this_rdc->rdcost = this_rdc->rdcost << 2;
@@ -1971,8 +1985,8 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
     // Keep golden (longer-term) reference if sb has high source sad, for
     // frames whose average souce_sad is below threshold. This is to try to
     // capture case where only part of frame has high motion.
-    if (x->content_state_sb.source_sad >= kHighSad && bsize <= BLOCK_32X32 &&
-        cpi->rc.frame_source_sad < 50000)
+    if (x->content_state_sb.source_sad_nonrd >= kHighSad &&
+        bsize <= BLOCK_32X32 && cpi->rc.frame_source_sad < 50000)
       use_golden_ref_frame = 1;
   }
 
@@ -2094,13 +2108,13 @@ static void estimate_intra_mode(
       do_early_exit_rdthresh = 0;
     }
     if (x->source_variance < AOMMAX(50, (spatial_var_thresh >> 1)) &&
-        x->content_state_sb.source_sad >= kHighSad)
+        x->content_state_sb.source_sad_nonrd >= kHighSad)
       force_intra_check = 1;
     // For big blocks worth checking intra (since only DC will be checked),
     // even if best_early_term is set.
     if (bsize >= BLOCK_32X32) best_early_term = 0;
   } else if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
-             x->content_state_sb.source_sad == kLowSad) {
+             x->content_state_sb.source_sad_nonrd == kLowSad) {
     perform_intra_pred = 0;
   }
 
@@ -2158,7 +2172,7 @@ static void estimate_intra_mode(
       // For spatially flat blocks with zero motion only check
       // DC mode.
       if (cpi->sf.rt_sf.source_metrics_sb_nonrd &&
-          x->content_state_sb.source_sad == kZeroSad &&
+          x->content_state_sb.source_sad_nonrd == kZeroSad &&
           x->source_variance == 0 && this_mode != DC_PRED)
         continue;
     }
@@ -2288,7 +2302,7 @@ static AOM_INLINE int skip_mode_by_low_temp(
     return 1;
   }
 
-  if (content_state_sb.source_sad != kHighSad && bsize >= BLOCK_64X64 &&
+  if (content_state_sb.source_sad_nonrd != kHighSad && bsize >= BLOCK_64X64 &&
       force_skip_low_temp_var && mode == NEWMV) {
     return 1;
   }
@@ -2669,7 +2683,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       use_modeled_non_rd_cost =
           (quant_params->base_qindex > 120 && x->source_variance > 100 &&
            bsize <= BLOCK_16X16 && !x->content_state_sb.lighting_change &&
-           x->content_state_sb.source_sad != kHighSad);
+           x->content_state_sb.source_sad_nonrd != kHighSad);
   }
 
 #if COLLECT_PICK_MODE_STAT
@@ -2795,9 +2809,9 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       // has motion skip the modes with zero motion for flat blocks.
       if (cpi->sf.rt_sf.source_metrics_sb_nonrd) {
         if ((frame_mv[this_mode][ref_frame].as_int != 0 &&
-             x->content_state_sb.source_sad == kZeroSad) ||
+             x->content_state_sb.source_sad_nonrd == kZeroSad) ||
             (frame_mv[this_mode][ref_frame].as_int == 0 &&
-             x->content_state_sb.source_sad != kZeroSad &&
+             x->content_state_sb.source_sad_nonrd != kZeroSad &&
              x->source_variance == 0))
           continue;
       }

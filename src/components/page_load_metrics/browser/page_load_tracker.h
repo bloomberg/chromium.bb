@@ -200,6 +200,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   ~PageLoadTracker() override;
 
   // PageLoadMetricsUpdateDispatcher::Client implementation:
+  bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
@@ -222,9 +223,11 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
-  void OnFrameIntersectionUpdate(
+  void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
-      const mojom::FrameIntersectionUpdate& frame_intersection_update) override;
+      const gfx::Rect& main_frame_intersection_rect) override;
+  void OnMainFrameViewportRectChanged(
+      const gfx::Rect& main_frame_viewport_rect) override;
   void SetUpSharedMemoryForSmoothness(
       base::ReadOnlySharedMemoryRegion shared_memory) override;
 
@@ -329,7 +332,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   base::TimeTicks page_end_time() const { return page_end_time_; }
 
   void AddObserver(std::unique_ptr<PageLoadMetricsObserver> observer);
-  base::WeakPtr<PageLoadMetricsObserver> FindObserver(char const* name);
+  base::WeakPtr<PageLoadMetricsObserverInterface> FindObserver(
+      char const* name);
 
   // If the user performs some abort-like action while we are tracking this page
   // load, notify the tracker. Note that we may not classify this as an abort if
@@ -394,6 +398,25 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Called when V8 per-frame memory usage updates are available.
   void OnV8MemoryChanged(const std::vector<MemoryUpdate>& memory_updates);
 
+  // Checks if this tracker is for outermost pages.
+  bool IsOutermostTracker() const { return !parent_tracker_; }
+
+  void UpdateMetrics(
+      content::RenderFrameHost* render_frame_host,
+      mojom::PageLoadTimingPtr new_timing,
+      mojom::FrameMetadataPtr new_metadata,
+      const std::vector<blink::UseCounterFeature>& new_features,
+      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr new_cpu_timing,
+      mojom::InputTimingPtr input_timing_delta,
+      const absl::optional<blink::MobileFriendliness>& mobile_friendliness);
+
+  // Set RenderFrameHost for the main frame of the page this tracker instance is
+  // bound. This is called on moving the tracker to the active / inactive
+  // tracker list after the provisional load is committed.
+  void SetPageMainFrame(content::RenderFrameHost* rfh);
+
   // Obtains a weak pointer for this instance.
   base::WeakPtr<PageLoadTracker> GetWeakPtr();
 
@@ -416,6 +439,14 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Returns nullopt if and only if the |time| passed is nullopt.
   absl::optional<base::TimeDelta> DurationSinceNavigationStartForTime(
       const absl::optional<base::TimeTicks>& time) const;
+
+  using InvokeCallback =
+      base::RepeatingCallback<PageLoadMetricsObserver::ObservePolicy(
+          PageLoadMetricsObserverInterface*)>;
+  void InvokeAndPruneObservers(const char* trace_name, InvokeCallback callback);
+
+  void AddObserverInterface(
+      std::unique_ptr<PageLoadMetricsObserverInterface> observer);
 
   // Whether we stopped tracking this navigation after it was initiated. We may
   // stop tracking a navigation if it doesn't meet the criteria for tracking
@@ -482,12 +513,13 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Interface to chrome features. Must outlive the class.
   const raw_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
 
-  // Holds active PageLoadMetricsObserver instances bound to the tracking page.
-  std::vector<std::unique_ptr<PageLoadMetricsObserver>> observers_;
+  // Holds active PageLoadMetricsObserverInterface inheritances' instances bound
+  // to the tracking page.
+  std::vector<std::unique_ptr<PageLoadMetricsObserverInterface>> observers_;
 
   // Observer's name pointer to instance map. Can be raw_ptr as the instance is
   // owned `observers` above, and is removed from the map on destruction.
-  base::flat_map<const char*, base::raw_ptr<PageLoadMetricsObserver>>
+  base::flat_map<const char*, base::raw_ptr<PageLoadMetricsObserverInterface>>
       observers_map_;
 
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
@@ -495,6 +527,11 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   ukm::SourceId source_id_;
 
   const raw_ptr<content::WebContents> web_contents_;
+
+  // Holds the RenderFrameHost for the main frame of the page that this tracker
+  // instance is bound. Safe to use raw_ptr as the tracker instance is accessed
+  // via a map that uses the RenderFrameHost as the key while it's valid.
+  raw_ptr<content::RenderFrameHost> page_main_frame_;
 
   const bool is_first_navigation_in_web_contents_;
 

@@ -22,7 +22,9 @@ Third parties which want to opt into receiving partitioned cookies should includ
 
 `Set-Cookie: __Host-name=value; Secure; Path=/; SameSite=None; `**`Partitioned`**
 
-Partitioned cookies must include the [`__Host-` prefix](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#cookie_prefixes) and cannot have the [`SameParty` attribute](https://developer.chrome.com/blog/first-party-sets-sameparty/).
+Partitioned cookies must include the attributes required for the [`__Host-` prefix](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#cookie_prefixes) (`Secure`, `Path=/`, and no `Domain`) and cannot have the [`SameParty` attribute](https://developer.chrome.com/blog/first-party-sets-sameparty/).
+Partitioned cookies may include the `__Host-` prefix in their name, but it is not necessary as long as they satisfy the other requirements.
+
 Chrome will enforce these rules for cookies set with the `Partitioned` attribute even when cookie partitioning is disabled, but if the feature is disabled the resulting cookie will still be sent to requests to its host on different top-level sites than where it was set.
 
 ## Origin Trial

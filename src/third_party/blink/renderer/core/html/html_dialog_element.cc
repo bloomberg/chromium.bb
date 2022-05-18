@@ -43,12 +43,16 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/C/#the-dialog-element
-// This function chooses the focused element when show() or showModal() is
-// invoked, as described in their spec.
-static void SetFocusForDialog(HTMLDialogElement* dialog) {
+// static
+void HTMLDialogElement::SetFocusForDialog(HTMLDialogElement* dialog) {
   Element* control = nullptr;
   Node* next = nullptr;
+
+  if (!dialog->isConnected())
+    return;
+
+  auto& document = dialog->GetDocument();
+  dialog->previously_focused_element_ = document.FocusedElement();
 
   // TODO(kochi): How to find focusable element inside Shadow DOM is not
   // currently specified.  This may change at any time.
@@ -73,9 +77,9 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
 
   // 3. Run the focusing steps for control.
   if (control->IsFocusable())
-    control->focus();
+    control->Focus();
   else
-    dialog->GetDocument().ClearFocusedElement();
+    document.ClearFocusedElement();
 
   // 4. Let topDocument be the active document of control's node document's
   // browsing context's top-level browsing context.
@@ -155,7 +159,7 @@ void HTMLDialogElement::close(const String& return_value) {
     focus_options->setPreventScroll(true);
     Element* previously_focused_element = previously_focused_element_;
     previously_focused_element_ = nullptr;
-    previously_focused_element->focus(focus_options);
+    previously_focused_element->Focus(focus_options);
   }
 
   if (close_watcher_)
@@ -180,16 +184,13 @@ void HTMLDialogElement::show() {
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   // Showing a <dialog> should hide all open popups.
-  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
     GetDocument().HideAllPopupsUntil(nullptr);
   }
 
   // The layout must be updated here because setFocusForDialog calls
   // Element::isFocusable, which requires an up-to-date layout.
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
-
-  previously_focused_element_ = GetDocument().FocusedElement();
 
   SetFocusForDialog(this);
 }
@@ -200,7 +201,8 @@ class DialogCloseWatcherEventListener : public NativeEventListener {
       : dialog_(dialog) {}
 
   void Invoke(ExecutionContext*, Event* event) override {
-    DCHECK(dialog_);
+    if (!dialog_)
+      return;
     if (event->type() == event_type_names::kCancel)
       dialog_->CloseWatcherFiredCancel();
     if (event->type() == event_type_names::kClose)
@@ -240,8 +242,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   }
 
   // Showing a <dialog> should hide all open popups.
-  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
     document.HideAllPopupsUntil(nullptr);
   }
 
@@ -255,8 +256,6 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   // of queuing up AX events on objects that would be invalidated when the cache
   // is thrown away.
   InertSubtreesChanged(document, old_modal_dialog);
-
-  previously_focused_element_ = document.FocusedElement();
 
   if (RuntimeEnabledFeatures::CloseWatcherEnabled()) {
     if (LocalDOMWindow* window = GetDocument().domWindow()) {

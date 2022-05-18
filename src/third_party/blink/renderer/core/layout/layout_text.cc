@@ -303,7 +303,7 @@ void LayoutText::WillBeDestroyed() {
   GetSelectionDisplayItemClientMap().erase(this);
 
   if (node_id_ != kInvalidDOMNodeId) {
-    if (auto* manager = GetContentCaptureManager())
+    if (auto* manager = GetOrResetContentCaptureManager())
       manager->OnLayoutTextWillBeDestroyed(*GetNode());
     node_id_ = kInvalidDOMNodeId;
   }
@@ -2241,7 +2241,7 @@ void LayoutText::TextDidChangeWithoutInvalidation() {
     text_autosizer->Record(this);
 
   if (HasNodeId()) {
-    if (auto* content_capture_manager = GetContentCaptureManager())
+    if (auto* content_capture_manager = GetOrResetContentCaptureManager())
       content_capture_manager->OnNodeTextChanged(*GetNode());
   }
 
@@ -2259,6 +2259,14 @@ void LayoutText::InvalidateSubtreeLayoutForFontUpdates() {
   SetNeedsCollectInlines();
   SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
       layout_invalidation_reason::kFontsChanged);
+  if (RuntimeEnabledFeatures::ParallelTextShapingEnabled()) {
+    if (!GetText().ContainsOnlyWhitespaceOrEmpty()) {
+      // The test[1] needs to do this for `document.fonts.add(face)` to kick off
+      // font load before layout.
+      // [1] fast/css/fontfaceset-ready.html
+      StyleRef().GetFont().WillUseFontData(GetText());
+    }
+  }
 }
 
 void LayoutText::DirtyOrDeleteLineBoxesIfNeeded(bool full_layout) {
@@ -2871,7 +2879,7 @@ PhysicalRect LayoutText::DebugRect() const {
 DOMNodeId LayoutText::EnsureNodeId() {
   NOT_DESTROYED();
   if (node_id_ == kInvalidDOMNodeId) {
-    if (auto* content_capture_manager = GetContentCaptureManager()) {
+    if (auto* content_capture_manager = GetOrResetContentCaptureManager()) {
       if (auto* node = GetNode()) {
         content_capture_manager->ScheduleTaskIfNeeded(*node);
         node_id_ = DOMNodeIds::IdForNode(node);
@@ -2881,11 +2889,11 @@ DOMNodeId LayoutText::EnsureNodeId() {
   return node_id_;
 }
 
-ContentCaptureManager* LayoutText::GetContentCaptureManager() {
+ContentCaptureManager* LayoutText::GetOrResetContentCaptureManager() {
   NOT_DESTROYED();
   if (auto* node = GetNode()) {
     if (auto* frame = node->GetDocument().GetFrame()) {
-      return frame->LocalFrameRoot().GetContentCaptureManager();
+      return frame->LocalFrameRoot().GetOrResetContentCaptureManager();
     }
   }
   return nullptr;

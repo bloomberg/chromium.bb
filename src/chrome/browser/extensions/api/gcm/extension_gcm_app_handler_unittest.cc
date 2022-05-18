@@ -69,7 +69,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #endif
 
 namespace extensions {
@@ -271,7 +271,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
     // This is needed to create extension service under CrOS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
 #endif
 
     // Create a new profile.
@@ -311,7 +311,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     gcm_app_handler_.reset();
     profile_.reset();
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
 #endif
   }
 

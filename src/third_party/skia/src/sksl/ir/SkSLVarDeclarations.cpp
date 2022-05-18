@@ -64,6 +64,8 @@ void VarDeclaration::ErrorCheck(const Context& context,
                                 const Modifiers& modifiers,
                                 const Type* baseType,
                                 Variable::Storage storage) {
+    SkASSERT(!baseType->isArray());
+
     if (baseType->matches(*context.fTypes.fInvalid)) {
         context.fErrors->error(pos, "invalid type");
         return;
@@ -71,9 +73,6 @@ void VarDeclaration::ErrorCheck(const Context& context,
     if (baseType->isVoid()) {
         context.fErrors->error(pos, "variables of type 'void' are not allowed");
         return;
-    }
-    if (context.fConfig->strictES2Mode() && baseType->isArray()) {
-        context.fErrors->error(pos, "array size must appear after variable name");
     }
 
     if (baseType->componentType().isOpaque() && storage != Variable::Storage::kGlobal) {
@@ -90,14 +89,27 @@ void VarDeclaration::ErrorCheck(const Context& context,
         if (modifiers.fFlags & Modifiers::kIn_Flag) {
             context.fErrors->error(pos, "'in' variables not permitted in runtime effects");
         }
+        if (modifiers.fFlags & Modifiers::kUniform_Flag) {
+            auto validUniformType = [](const Type& t) {
+                const Type& ct = t.componentType();
+                return t.isEffectChild() ||
+                       ((t.isScalar() || t.isVector()) && ct.isSigned() && ct.bitWidth() == 32) ||
+                       ((t.isScalar() || t.isVector() || t.isMatrix()) && ct.isFloat());
+            };
+            if (!validUniformType(*baseType)) {
+                context.fErrors->error(
+                        pos,
+                        "variables of type '" + baseType->displayName() + "' may not be uniform");
+            }
+        }
     }
     if (baseType->isEffectChild() && !(modifiers.fFlags & Modifiers::kUniform_Flag)) {
         context.fErrors->error(pos,
                 "variables of type '" + baseType->displayName() + "' must be uniform");
     }
-    if (modifiers.fFlags & SkSL::Modifiers::kUniform_Flag &&
-        (context.fConfig->fKind == ProgramKind::kCustomMeshVertex ||
-         context.fConfig->fKind == ProgramKind::kCustomMeshFragment)) {
+    if (modifiers.fFlags & Modifiers::kUniform_Flag &&
+        (context.fConfig->fKind == ProgramKind::kMeshVertex ||
+         context.fConfig->fKind == ProgramKind::kMeshFragment)) {
         context.fErrors->error(pos, "uniforms are not permitted in custom mesh shaders");
     }
     if (modifiers.fLayout.fFlags & Layout::kColor_Flag) {
@@ -112,8 +124,7 @@ void VarDeclaration::ErrorCheck(const Context& context,
             return t.isVector() && t.componentType().isFloat() &&
                    (t.columns() == 3 || t.columns() == 4);
         };
-        if (!validColorXformType(*baseType) && !(baseType->isArray() &&
-                                                 validColorXformType(baseType->componentType()))) {
+        if (!validColorXformType(*baseType)) {
             context.fErrors->error(pos,
                                    "'layout(color)' is not permitted on variables of type '" +
                                            baseType->displayName() + "'");

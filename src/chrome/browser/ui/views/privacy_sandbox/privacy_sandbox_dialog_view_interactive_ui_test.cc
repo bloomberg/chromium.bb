@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/privacy_sandbox/mock_privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_dialog.h"
+#include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,6 +19,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/ozone/buildflags.h"
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PrivacySandboxDialogViewInteractiveUiTest : public InProcessBrowserTest {
  public:
@@ -33,6 +38,14 @@ class PrivacySandboxDialogViewInteractiveUiTest : public InProcessBrowserTest {
  private:
   raw_ptr<MockPrivacySandboxService> mock_service_;
 };
+
+// The build flag OZONE_PLATFORM_WAYLAND is only available on
+// Linux or ChromeOS, so this simplifies the next set of ifdefs.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#define OZONE_PLATFORM_WAYLAND
+#endif  // BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1315979): Flaky on ChromeOS and Wayland.
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OZONE_PLATFORM_WAYLAND)
@@ -57,8 +70,8 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxDialogViewInteractiveUiTest,
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
       PrivacySandboxDialogView::kViewClassName);
-  ShowPrivacySandboxDialog(browser(),
-                           PrivacySandboxService::DialogType::kNotice);
+  ShowPrivacySandboxPrompt(browser(),
+                           PrivacySandboxService::PromptType::kNotice);
   auto* dialog = waiter.WaitIfNeededAndGet();
   EXPECT_TRUE(dialog);
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
@@ -88,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxDialogViewInteractiveUiTest,
       views::test::AnyWidgetTestPasskey{},
       PrivacySandboxDialogView::kViewClassName);
   ShowPrivacySandboxDialog(browser(),
-                           PrivacySandboxService::DialogType::kConsent);
+                           PrivacySandboxService::PromptType::kConsent);
   auto* dialog = waiter.WaitIfNeededAndGet();
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));

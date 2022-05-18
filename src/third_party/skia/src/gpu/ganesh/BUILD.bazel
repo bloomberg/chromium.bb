@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom", "selects")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "generated_cc_atom", "selects")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_library(
     name = "core_srcs",
@@ -64,8 +66,6 @@ cc_library(
         ":GrProxyProvider_src",
         ":GrRecordingContextPriv_src",
         ":GrRecordingContext_src",
-        ":GrRectanizerPow2_src",
-        ":GrRectanizerSkyline_src",
         ":GrRenderTargetProxy_src",
         ":GrRenderTarget_src",
         ":GrRenderTaskCluster_src",
@@ -82,7 +82,6 @@ cc_library(
         ":GrStagingBufferManager_src",
         ":GrStencilSettings_src",
         ":GrStyle_src",
-        ":GrSubRunAllocator_src",
         ":GrSurfaceInfo_src",
         ":GrSurfaceProxy_src",
         ":GrSurface_src",
@@ -157,7 +156,7 @@ cc_library(
         "//src/gpu/ganesh/ops:DefaultPathRenderer_src",
         "//src/gpu/ganesh/ops:DrawAtlasOp_src",
         "//src/gpu/ganesh/ops:DrawAtlasPathOp_src",
-        "//src/gpu/ganesh/ops:DrawCustomMeshOp_src",
+        "//src/gpu/ganesh/ops:DrawMeshOp_src",
         "//src/gpu/ganesh/ops:DrawableOp_src",
         "//src/gpu/ganesh/ops:FillRRectOp_src",
         "//src/gpu/ganesh/ops:FillRectOp_src",
@@ -171,7 +170,6 @@ cc_library(
         "//src/gpu/ganesh/ops:PathInnerTriangulateOp_src",
         "//src/gpu/ganesh/ops:PathStencilCoverOp_src",
         "//src/gpu/ganesh/ops:PathTessellateOp_src",
-        "//src/gpu/ganesh/ops:PathTessellator_src",
         "//src/gpu/ganesh/ops:QuadPerEdgeAA_src",
         "//src/gpu/ganesh/ops:RegionOp_src",
         "//src/gpu/ganesh/ops:ShadowRRectOp_src",
@@ -181,24 +179,19 @@ cc_library(
         "//src/gpu/ganesh/ops:SoftwarePathRenderer_src",
         "//src/gpu/ganesh/ops:StrokeRectOp_src",
         "//src/gpu/ganesh/ops:StrokeTessellateOp_src",
-        "//src/gpu/ganesh/ops:StrokeTessellator_src",
         "//src/gpu/ganesh/ops:TessellationPathRenderer_src",
         "//src/gpu/ganesh/ops:TextureOp_src",
         "//src/gpu/ganesh/ops:TriangulatingPathRenderer_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrPathTessellationShader_Hardware_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrPathTessellationShader_MiddleOut_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrPathTessellationShader_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrStrokeTessellationShader_HardwareImpl_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrStrokeTessellationShader_InstancedImpl_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrStrokeTessellationShader_src",
-        "//src/gpu/ganesh/tessellate/shaders:GrTessellationShader_src",
+        "//src/gpu/ganesh/tessellate:GrPathTessellationShader_src",
+        "//src/gpu/ganesh/tessellate:GrStrokeTessellationShader_src",
+        "//src/gpu/ganesh/tessellate:GrTessellationShader_src",
+        "//src/gpu/ganesh/tessellate:PathTessellator_src",
+        "//src/gpu/ganesh/tessellate:StrokeTessellator_src",
         "//src/gpu/ganesh/text:GrAtlasManager_src",
         "//src/gpu/ganesh/text:GrDistanceFieldAdjustTable_src",
-        "//src/gpu/ganesh/text:GrGlyphVector_src",
         "//src/gpu/ganesh/text:GrSDFMaskFilter_src",
         "//src/gpu/ganesh/text:GrSDFTControl_src",
         "//src/gpu/ganesh/text:GrSlug_src",
-        "//src/gpu/ganesh/text:GrStrikeCache_src",
         "//src/gpu/ganesh/text:GrTextBlobRedrawCoordinator_src",
         "//src/gpu/ganesh/text:GrTextBlob_src",
     ],
@@ -207,6 +200,7 @@ cc_library(
 cc_library(
     name = "dawn_srcs",
     deps = [
+        "//src/gpu/ganesh/dawn:GrDawnAsyncWait_src",
         "//src/gpu/ganesh/dawn:GrDawnAttachment_src",
         "//src/gpu/ganesh/dawn:GrDawnBuffer_src",
         "//src/gpu/ganesh/dawn:GrDawnCaps_src",
@@ -373,7 +367,7 @@ cc_library(
         "//bazel/common_config_settings:webgl_standard": [":webgl_srcs"],
         "//conditions:default": [],
     }) + select({
-        "//bazel/common_config_settings:vulkan_with_vma": ["//third_party:vulkanmemoryallocator"],
+        "//bazel/common_config_settings:vulkan_with_vma": ["//third_party/vulkanmemoryallocator"],
         "//conditions:default": [],
     }),
 )
@@ -431,6 +425,7 @@ generated_cc_atom(
         ":GrTextureProxy_hdr",
         ":GrTexture_hdr",
         ":SkGr_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkTypes_hdr",
         "//include/gpu:GrBackendSurface_hdr",
         "//include/gpu:GrDirectContext_hdr",
@@ -1083,6 +1078,7 @@ generated_cc_atom(
         "//include/core:SkSpan_hdr",
         "//include/core:SkSurface_hdr",
         "//include/gpu:GrDirectContext_hdr",
+        "//src/gpu:AtlasTypes_hdr",
     ],
 )
 
@@ -1149,9 +1145,9 @@ generated_cc_atom(
         "//src/gpu/ganesh/mtl:GrMtlTrampoline_hdr",
         "//src/gpu/ganesh/ops:SmallPathAtlasMgr_hdr",
         "//src/gpu/ganesh/text:GrAtlasManager_hdr",
-        "//src/gpu/ganesh/text:GrStrikeCache_hdr",
         "//src/gpu/ganesh/vk:GrVkGpu_hdr",
         "//src/image:SkImage_GpuBase_hdr",
+        "//src/text/gpu:StrikeCache_hdr",
         "//src/utils:SkJSONWriter_hdr",
         "//src/utils:SkShaderUtils_hdr",
     ],
@@ -1194,13 +1190,12 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":GrDeferredUpload_hdr",
-        ":GrRectanizerSkyline_hdr",
         ":GrSurfaceProxyView_hdr",
         "//include/gpu:GrBackendSurface_hdr",
-        "//include/private:SkTArray_hdr",
         "//src/core:SkIPoint16_hdr",
         "//src/core:SkTInternalLList_hdr",
-        "//src/gpu/ganesh/geometry:GrRect_hdr",
+        "//src/gpu:AtlasTypes_hdr",
+        "//src/gpu:RectanizerSkyline_hdr",
     ],
 )
 
@@ -1351,13 +1346,13 @@ generated_cc_atom(
         ":GrDynamicAtlas_hdr",
         ":GrOnFlushResourceProvider_hdr",
         ":GrProxyProvider_hdr",
-        ":GrRectanizerPow2_hdr",
-        ":GrRectanizerSkyline_hdr",
         ":GrRenderTarget_hdr",
         ":GrResourceProvider_hdr",
         ":GrSurfaceProxyPriv_hdr",
         ":GrSurfaceProxyView_hdr",
         "//src/core:SkIPoint16_hdr",
+        "//src/gpu:RectanizerPow2_hdr",
+        "//src/gpu:RectanizerSkyline_hdr",
     ],
 )
 
@@ -1493,18 +1488,6 @@ generated_cc_atom(
         "//src/gpu/ganesh/glsl:GrGLSLProgramBuilder_hdr",
         "//src/gpu/ganesh/glsl:GrGLSLUniformHandler_hdr",
         "//src/gpu/ganesh/glsl:GrGLSLVarying_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrGlyph_hdr",
-    hdrs = ["GrGlyph.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrDrawOpAtlas_hdr",
-        "//include/private/gpu/ganesh:GrTypesPriv_hdr",
-        "//src/core:SkGlyph_hdr",
-        "//src/core:SkMask_hdr",
     ],
 )
 
@@ -2234,45 +2217,6 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
-    name = "GrRectanizerPow2_hdr",
-    hdrs = ["GrRectanizerPow2.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrRectanizer_impl_hdr",
-        "//include/private:SkMalloc_hdr",
-        "//src/core:SkIPoint16_hdr",
-        "//src/core:SkMathPriv_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrRectanizerPow2_src",
-    srcs = ["GrRectanizerPow2.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [":GrRectanizerPow2_hdr"],
-)
-
-generated_cc_atom(
-    name = "GrRectanizerSkyline_hdr",
-    hdrs = ["GrRectanizerSkyline.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrRectanizer_impl_hdr",
-        "//include/private:SkTDArray_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrRectanizerSkyline_src",
-    srcs = ["GrRectanizerSkyline.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrRectanizerSkyline_hdr",
-        "//src/core:SkIPoint16_hdr",
-    ],
-)
-
-generated_cc_atom(
     name = "GrRefCnt_hdr",
     hdrs = ["GrRefCnt.h"],
     visibility = ["//:__subpackages__"],
@@ -2300,11 +2244,11 @@ generated_cc_atom(
     deps = [
         ":GrCaps_hdr",
         ":GrNativeRect_hdr",
-        ":GrSubRunAllocator_hdr",
         ":GrSurfaceProxy_hdr",
         "//include/private/gpu/ganesh:GrTypesPriv_hdr",
         "//src/core:SkArenaAlloc_hdr",
         "//src/gpu:Swizzle_hdr",
+        "//src/text/gpu:SubRunAllocator_hdr",
     ],
 )
 
@@ -2763,27 +2707,6 @@ generated_cc_atom(
     deps = [
         ":GrStyle_hdr",
         "//src/utils:SkDashPathPriv_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrSubRunAllocator_hdr",
-    hdrs = ["GrSubRunAllocator.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkMath_hdr",
-        "//include/core:SkSpan_hdr",
-        "//src/core:SkArenaAlloc_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "GrSubRunAllocator_src",
-    srcs = ["GrSubRunAllocator.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":GrSubRunAllocator_hdr",
-        "//include/core:SkMath_hdr",
     ],
 )
 
@@ -3507,11 +3430,4 @@ generated_cc_atom(
         "//include/core:SkColorSpace_hdr",
         "//include/core:SkImageInfo_hdr",
     ],
-)
-
-generated_cc_atom(
-    name = "GrRectanizer_impl_hdr",
-    hdrs = ["GrRectanizer_impl.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu:GrTypes_hdr"],
 )

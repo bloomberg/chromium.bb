@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/cxx17_backports.h"
@@ -1392,6 +1393,14 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2D(
     InsertError(GL_INVALID_OPERATION,
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
+  }
+  if (feature_info_->workarounds().client_max_texture_size && texture) {
+    GLint max_level = base::bits::Log2Floor(
+        feature_info_->workarounds().client_max_texture_size);
+    if (level > max_level) {
+      InsertError(GL_INVALID_VALUE, "Level too large");
+      return error::kNoError;
+    }
   }
   BindPendingImageForClientIDIfNeeded(texture);
   api()->glFramebufferTexture2DEXTFn(
@@ -4674,55 +4683,6 @@ error::Error GLES2DecoderPassthroughImpl::DoBindUniformLocationCHROMIUM(
     const char* name) {
   api()->glBindUniformLocationCHROMIUMFn(
       GetProgramServiceID(program, resources_), location, name);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoBindTexImage2DCHROMIUM(
-    GLenum target,
-    GLint imageId) {
-  return BindTexImage2DCHROMIUMImpl(target, 0, imageId);
-}
-
-error::Error
-GLES2DecoderPassthroughImpl::DoBindTexImage2DWithInternalformatCHROMIUM(
-    GLenum target,
-    GLenum internalformat,
-    GLint imageId) {
-  return BindTexImage2DCHROMIUMImpl(target, internalformat, imageId);
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
-    GLenum target,
-    GLint imageId) {
-  TextureTarget target_enum = GLenumToTextureTarget(target);
-  if (target_enum == TextureTarget::kCubeMap ||
-      target_enum == TextureTarget::kUnkown) {
-    InsertError(GL_INVALID_ENUM, "Invalid target");
-    return error::kNoError;
-  }
-
-  const BoundTexture& bound_texture =
-      bound_textures_[static_cast<size_t>(target_enum)][active_texture_unit_];
-  if (bound_texture.texture == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No texture bound");
-    return error::kNoError;
-  }
-
-  gl::GLImage* image = group_->image_manager()->LookupImage(imageId);
-  if (image == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "No image found with the given ID");
-    return error::kNoError;
-  }
-
-  // Only release the image if it is currently bound
-  if (bound_texture.texture->GetLevelImage(target, 0) == image) {
-    image->ReleaseTexImage(target);
-    bound_texture.texture->SetLevelImage(target, 0, nullptr);
-  }
-
-  // Target is already validated
-  UpdateTextureSizeFromTarget(target);
-
   return error::kNoError;
 }
 

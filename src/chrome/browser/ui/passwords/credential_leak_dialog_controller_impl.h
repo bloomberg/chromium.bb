@@ -19,7 +19,9 @@ class CredentialLeakDialogControllerImpl
  public:
   CredentialLeakDialogControllerImpl(
       PasswordsLeakDialogDelegate* delegate,
-      password_manager::CredentialLeakType leak_type);
+      password_manager::CredentialLeakType leak_type,
+      const GURL& url,
+      const std::u16string& username);
 
   CredentialLeakDialogControllerImpl(
       const CredentialLeakDialogControllerImpl&) = delete;
@@ -42,12 +44,16 @@ class CredentialLeakDialogControllerImpl
   std::u16string GetDescription() const override;
   std::u16string GetTitle() const override;
   bool ShouldCheckPasswords() const override;
+  bool ShouldOfferAutomatedPasswordChange() const override;
   bool ShouldShowCancelButton() const override;
 
  private:
   raw_ptr<CredentialLeakPrompt> credential_leak_dialog_ = nullptr;
   raw_ptr<PasswordsLeakDialogDelegate> delegate_;
   const password_manager::CredentialLeakType leak_type_;
+  std::unique_ptr<password_manager::LeakDialogTraits> leak_dialog_traits_;
+  GURL url_;
+  std::u16string username_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_CREDENTIAL_LEAK_DIALOG_CONTROLLER_IMPL_H_

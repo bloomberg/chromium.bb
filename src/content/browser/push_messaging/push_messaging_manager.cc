@@ -24,12 +24,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
@@ -330,11 +330,14 @@ void PushMessagingManager::Register(PushMessagingManager::RegisterData data) {
           url::Origin requesting_origin = data.requesting_origin;
           bool user_gesture = data.user_gesture;
 
+          DCHECK_EQ(data.requesting_origin,
+                    render_frame_host->GetLastCommittedOrigin());
+
           render_frame_host->GetBrowserContext()
               ->GetPermissionController()
-              ->RequestPermission(
-                  PermissionType::NOTIFICATIONS, render_frame_host,
-                  requesting_origin.GetURL(), user_gesture,
+              ->RequestPermissionFromCurrentDocument(
+                  blink::PermissionType::NOTIFICATIONS, render_frame_host,
+                  user_gesture,
                   base::BindOnce(
                       &PushMessagingManager::DidRequestPermissionInIncognito,
                       AsWeakPtr(), std::move(data)));
@@ -358,7 +361,8 @@ void PushMessagingManager::Register(PushMessagingManager::RegisterData data) {
                        std::move(data)));
   } else {
     push_service->SubscribeFromWorker(
-        requesting_origin.GetURL(), registration_id, std::move(options),
+        requesting_origin.GetURL(), registration_id,
+        render_process_host_.GetID(), std::move(options),
         base::BindOnce(&PushMessagingManager::DidRegister, AsWeakPtr(),
                        std::move(data)));
   }

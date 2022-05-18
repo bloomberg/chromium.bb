@@ -31,14 +31,6 @@ const CFStringRef kMessageLoopExclusiveRunLoopMode =
 
 namespace {
 
-MessagePumpCFRunLoopBase::LudicrousSlackSetting GetLudicrousSlackSetting() {
-  return base::IsLudicrousTimerSlackEnabled()
-             ? MessagePumpCFRunLoopBase::LudicrousSlackSetting::
-                   kLudicrousSlackOn
-             : MessagePumpCFRunLoopBase::LudicrousSlackSetting::
-                   kLudicrousSlackOff;
-}
-
 // Mask that determines which modes to use.
 enum { kCommonModeMask = 0x1, kAllModesMask = 0xf };
 
@@ -187,37 +179,10 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
     ScheduleDelayedWorkImpl(next_work_info.remaining_delay());
 }
 
-MessagePumpCFRunLoopBase::LudicrousSlackSetting
-MessagePumpCFRunLoopBase::GetLudicrousSlackState() const {
-  if (ludicrous_slack_setting_ == LudicrousSlackSetting::kLudicrousSlackOn &&
-      IsLudicrousTimerSlackSuspended()) {
-    return LudicrousSlackSetting::kLudicrousSlackSuspended;
-  }
-
-  return ludicrous_slack_setting_;
-}
-
 void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
   // The tolerance needs to be set before the fire date or it may be ignored.
 
-  // Pickup the ludicrous slack setting as late as possible to work around
-  // initialization issues in base. Note that the main thread won't sleep until
-  // field trial initialization is complete.
-  if (ludicrous_slack_setting_ ==
-      LudicrousSlackSetting::kLudicrousSlackUninitialized) {
-    ludicrous_slack_setting_ = GetLudicrousSlackSetting();
-  } else {
-    // Validate that the setting doesn't change after we cache it.
-    DCHECK_EQ(ludicrous_slack_setting_, GetLudicrousSlackSetting());
-  }
-  DCHECK_NE(ludicrous_slack_setting_,
-            LudicrousSlackSetting::kLudicrousSlackUninitialized);
-
-  if (GetLudicrousSlackState() == LudicrousSlackSetting::kLudicrousSlackOn) {
-    // Specify ludicrous slack when the experiment is enabled and not suspended.
-    CFRunLoopTimerSetTolerance(delayed_work_timer_,
-                               GetLudicrousTimerSlack().InSecondsF());
-  } else if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
+  if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
     CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
   } else {
     CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
@@ -747,7 +712,7 @@ void MessagePumpNSApplication::DoRun(Delegate* delegate) {
     NSDate* distant_future = [NSDate distantFuture];
     while (keep_running()) {
       MessagePumpScopedAutoreleasePool autorelease_pool(this);
-      NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+      NSEvent* event = [NSApp nextEventMatchingMask:NSEventMaskAny
                                           untilDate:distant_future
                                              inMode:NSDefaultRunLoopMode
                                             dequeue:YES];
@@ -777,12 +742,12 @@ bool MessagePumpNSApplication::DoQuit() {
   }
 
   // Send a fake event to wake the loop up.
-  [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined
+  [NSApp postEvent:[NSEvent otherEventWithType:NSEventTypeApplicationDefined
                                       location:NSZeroPoint
                                  modifierFlags:0
                                      timestamp:0
                                   windowNumber:0
-                                       context:NULL
+                                       context:nil
                                        subtype:0
                                          data1:0
                                          data2:0]

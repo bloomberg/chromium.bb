@@ -19,9 +19,9 @@
 #include "api/sequence_checker.h"
 #include "api/units/data_size.h"
 #include "api/video/encoded_frame.h"
+#include "api/video/frame_buffer.h"
 #include "api/video/video_content_type.h"
 #include "modules/video_coding/frame_buffer2.h"
-#include "modules/video_coding/frame_buffer3.h"
 #include "modules/video_coding/frame_helpers.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -167,7 +167,7 @@ Timestamp ReceiveTime(const EncodedFrame& frame) {
 }
 
 // Encapsulates use of the new frame buffer for use in VideoReceiveStream. This
-// behaves the same as the FrameBuffer2Proxy but uses frame_buffer3 instead.
+// behaves the same as the FrameBuffer2Proxy but uses frame_buffer instead.
 // Responsibilities from frame_buffer2, like stats, jitter and frame timing
 // accounting are moved into this pro
 class FrameBuffer3Proxy : public FrameBufferProxy {
@@ -384,13 +384,11 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
  private:
   void FrameReadyForDecode(uint32_t rtp_timestamp, Timestamp render_time) {
     RTC_DCHECK_RUN_ON(&worker_sequence_checker_);
-    RTC_DCHECK(buffer_->NextDecodableTemporalUnitRtpTimestamp() ==
-               rtp_timestamp)
+    auto frames = buffer_->ExtractNextDecodableTemporalUnit();
+    RTC_DCHECK(frames[0]->Timestamp() == rtp_timestamp)
         << "Frame buffer's next decodable frame was not the one sent for "
            "extraction rtp="
-        << rtp_timestamp << " next="
-        << buffer_->NextDecodableTemporalUnitRtpTimestamp().value_or(-1);
-    auto frames = buffer_->ExtractNextDecodableTemporalUnit();
+        << rtp_timestamp << " extracted rtp=" << frames[0]->Timestamp();
     OnFrameReady(std::move(frames), render_time);
   }
 
@@ -431,7 +429,7 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
     RTC_DCHECK(keyframe_required_);
     // Iterate through the frame buffer until there is a complete keyframe and
     // release this right away.
-    while (buffer_->NextDecodableTemporalUnitRtpTimestamp()) {
+    while (buffer_->DecodableTemporalUnitsInfo()) {
       auto next_frame = buffer_->ExtractNextDecodableTemporalUnit();
       if (next_frame.empty()) {
         RTC_DCHECK_NOTREACHED()
@@ -449,41 +447,40 @@ class FrameBuffer3Proxy : public FrameBufferProxy {
   }
 
   void MaybeScheduleFrameForRelease() RTC_RUN_ON(&worker_sequence_checker_) {
-    if (!decoder_ready_for_new_frame_ ||
-        !buffer_->NextDecodableTemporalUnitRtpTimestamp())
+    auto decodable_tu_info = buffer_->DecodableTemporalUnitsInfo();
+    if (!decoder_ready_for_new_frame_ || !decodable_tu_info) {
       return;
+    }
 
     if (keyframe_required_) {
       return ForceKeyFrameReleaseImmediately();
     }
 
-    // TODO(https://bugs.webrtc.org/13343): Make [next,last] decodable returned
-    // as an optional pair and remove this check.
-    RTC_CHECK(buffer_->LastDecodableTemporalUnitRtpTimestamp());
-    auto last_rtp = *buffer_->LastDecodableTemporalUnitRtpTimestamp();
-
     // If already scheduled then abort.
     if (frame_decode_scheduler_->ScheduledRtpTimestamp() ==
-        buffer_->NextDecodableTemporalUnitRtpTimestamp())
+        decodable_tu_info->next_rtp_timestamp) {
       return;
+    }
 
     absl::optional<FrameDecodeTiming::FrameSchedule> schedule;
-    while (buffer_->NextDecodableTemporalUnitRtpTimestamp()) {
-      auto next_rtp = *buffer_->NextDecodableTemporalUnitRtpTimestamp();
-      schedule = decode_timing_.OnFrameBufferUpdated(next_rtp, last_rtp,
-                                                     IsTooManyFramesQueued());
+    while (decodable_tu_info) {
+      schedule = decode_timing_.OnFrameBufferUpdated(
+          decodable_tu_info->next_rtp_timestamp,
+          decodable_tu_info->last_rtp_timestamp, IsTooManyFramesQueued());
       if (schedule) {
         // Don't schedule if already waiting for the same frame.
-        if (frame_decode_scheduler_->ScheduledRtpTimestamp() != next_rtp) {
+        if (frame_decode_scheduler_->ScheduledRtpTimestamp() !=
+            decodable_tu_info->next_rtp_timestamp) {
           frame_decode_scheduler_->CancelOutstanding();
           frame_decode_scheduler_->ScheduleFrame(
-              next_rtp, *schedule,
+              decodable_tu_info->next_rtp_timestamp, *schedule,
               absl::bind_front(&FrameBuffer3Proxy::FrameReadyForDecode, this));
         }
         return;
       }
       // If no schedule for current rtp, drop and try again.
       buffer_->DropNextDecodableTemporalUnit();
+      decodable_tu_info = buffer_->DecodableTemporalUnitsInfo();
     }
   }
 
@@ -570,14 +567,10 @@ std::unique_ptr<FrameBufferProxy> FrameBufferProxy::CreateFromFieldTrial(
     DecodeSynchronizer* decode_sync,
     const FieldTrialsView& field_trials) {
   switch (ParseFrameBufferFieldTrial(field_trials)) {
-    case FrameBufferArm::kFrameBuffer3: {
-      auto scheduler =
-          std::make_unique<TaskQueueFrameDecodeScheduler>(clock, worker_queue);
-      return std::make_unique<FrameBuffer3Proxy>(
-          clock, worker_queue, timing, stats_proxy, decode_queue, receiver,
-          max_wait_for_keyframe, max_wait_for_frame, std::move(scheduler),
-          field_trials);
-    }
+    case FrameBufferArm::kFrameBuffer2:
+      return std::make_unique<FrameBuffer2Proxy>(
+          clock, timing, stats_proxy, decode_queue, receiver,
+          max_wait_for_keyframe, max_wait_for_frame, field_trials);
     case FrameBufferArm::kSyncDecode: {
       std::unique_ptr<FrameDecodeScheduler> scheduler;
       if (decode_sync) {
@@ -595,12 +588,16 @@ std::unique_ptr<FrameBufferProxy> FrameBufferProxy::CreateFromFieldTrial(
           max_wait_for_keyframe, max_wait_for_frame, std::move(scheduler),
           field_trials);
     }
-    case FrameBufferArm::kFrameBuffer2:
+    case FrameBufferArm::kFrameBuffer3:
       ABSL_FALLTHROUGH_INTENDED;
-    default:
-      return std::make_unique<FrameBuffer2Proxy>(
-          clock, timing, stats_proxy, decode_queue, receiver,
-          max_wait_for_keyframe, max_wait_for_frame, field_trials);
+    default: {
+      auto scheduler =
+          std::make_unique<TaskQueueFrameDecodeScheduler>(clock, worker_queue);
+      return std::make_unique<FrameBuffer3Proxy>(
+          clock, worker_queue, timing, stats_proxy, decode_queue, receiver,
+          max_wait_for_keyframe, max_wait_for_frame, std::move(scheduler),
+          field_trials);
+    }
   }
 }
 

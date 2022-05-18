@@ -229,13 +229,13 @@ public:
   /** type of read reference to the linear part of the transformation */
   typedef const Block<ConstMatrixType,Dim,Dim,int(Mode)==(AffineCompact) && (int(Options)&RowMajor)==0> ConstLinearPart;
   /** type of read/write reference to the affine part of the transformation */
-  typedef typename internal::conditional<int(Mode)==int(AffineCompact),
+  typedef std::conditional_t<int(Mode)==int(AffineCompact),
                               MatrixType&,
-                              Block<MatrixType,Dim,HDim> >::type AffinePart;
+                              Block<MatrixType,Dim,HDim> > AffinePart;
   /** type of read reference to the affine part of the transformation */
-  typedef typename internal::conditional<int(Mode)==int(AffineCompact),
+  typedef std::conditional_t<int(Mode)==int(AffineCompact),
                               const MatrixType&,
-                              const Block<const MatrixType,Dim,HDim> >::type ConstAffinePart;
+                              const Block<const MatrixType,Dim,HDim> > ConstAffinePart;
   /** type of a vector */
   typedef Matrix<Scalar,Dim,1> VectorType;
   /** type of a read/write reference to the translation part of the rotation */
@@ -600,7 +600,7 @@ public:
   template<typename Derived>
   EIGEN_DEVICE_FUNC inline Transform operator*(const RotationBase<Derived,Dim>& r) const;
 
-  typedef typename internal::conditional<int(Mode)==Isometry,ConstLinearPart,const LinearMatrixType>::type RotationReturnType;
+  typedef std::conditional_t<int(Mode)==Isometry,ConstLinearPart,const LinearMatrixType> RotationReturnType;
   EIGEN_DEVICE_FUNC RotationReturnType rotation() const;
 
   template<typename RotationMatrixType, typename ScalingMatrixType>

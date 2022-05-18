@@ -40,6 +40,14 @@ CharMap BuildValidCharMap(absl::string_view valid_chars) {
   }
   return map;
 }
+CharMap AllowObsText(CharMap map) {
+  // Characters above 0x80 are allowed in header field values as `obs-text` in
+  // RFC 7230.
+  for (uint8_t c = 0xff; c >= 0x80; --c) {
+    map[c] = true;
+  }
+  return map;
+}
 
 bool AllCharsInMap(absl::string_view str, const CharMap& map) {
   for (char c : str) {
@@ -56,10 +64,14 @@ bool IsValidHeaderName(absl::string_view name) {
   return AllCharsInMap(name, valid_chars);
 }
 
-bool IsValidHeaderValue(absl::string_view value) {
+bool IsValidHeaderValue(absl::string_view value, ObsTextOption option) {
   static const CharMap valid_chars =
       BuildValidCharMap(kHttp2HeaderValueAllowedChars);
-  return AllCharsInMap(value, valid_chars);
+  static const CharMap valid_chars_with_obs_text =
+      AllowObsText(BuildValidCharMap(kHttp2HeaderValueAllowedChars));
+  return AllCharsInMap(value, option == ObsTextOption::kAllow
+                                  ? valid_chars_with_obs_text
+                                  : valid_chars);
 }
 
 bool IsValidStatus(absl::string_view status) {
@@ -116,12 +128,11 @@ bool ValidateResponseTrailers(const std::vector<std::string>& pseudo_headers) {
 }  // namespace
 
 void HeaderValidator::StartHeaderBlock() {
+  HeaderValidatorBase::StartHeaderBlock();
   pseudo_headers_.clear();
-  status_.clear();
   method_.clear();
   path_.clear();
   authority_ = absl::nullopt;
-  content_length_.reset();
 }
 
 HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
@@ -141,7 +152,7 @@ HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
                    << absl::CEscape(validated_key) << "]";
     return HEADER_FIELD_INVALID;
   }
-  if (!IsValidHeaderValue(value)) {
+  if (!IsValidHeaderValue(value, obs_text_option_)) {
     QUICHE_VLOG(2) << "invalid chars in header value: [" << absl::CEscape(value)
                    << "]";
     return HEADER_FIELD_INVALID;
@@ -182,9 +193,16 @@ HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
       }
     }
   } else if (key == "content-length") {
-    const bool success = HandleContentLength(value);
-    if (!success) {
-      return HEADER_FIELD_INVALID;
+    const ContentLengthStatus status = HandleContentLength(value);
+    switch (status) {
+      case CONTENT_LENGTH_ERROR:
+        return HEADER_FIELD_INVALID;
+      case CONTENT_LENGTH_SKIP:
+        return HEADER_SKIP;
+      case CONTENT_LENGTH_OK:
+        return HEADER_OK;
+      default:
+        return HEADER_FIELD_INVALID;
     }
   } else if (key == "te" && value != "trailers") {
     return HEADER_FIELD_INVALID;
@@ -215,28 +233,33 @@ bool HeaderValidator::FinishHeaderBlock(HeaderType type) {
   return false;
 }
 
-bool HeaderValidator::HandleContentLength(absl::string_view value) {
+HeaderValidator::ContentLengthStatus HeaderValidator::HandleContentLength(
+    absl::string_view value) {
   if (value.empty()) {
-    return false;
+    return CONTENT_LENGTH_ERROR;
   }
 
   if (status_ == "204" && value != "0") {
     // There should be no body in a "204 No Content" response.
-    return false;
+    return CONTENT_LENGTH_ERROR;
   }
   if (!status_.empty() && status_[0] == '1' && value != "0") {
     // There should also be no body in a 1xx response.
-    return false;
+    return CONTENT_LENGTH_ERROR;
   }
 
   size_t content_length = 0;
   const bool valid = absl::SimpleAtoi(value, &content_length);
   if (!valid) {
-    return false;
+    return CONTENT_LENGTH_ERROR;
   }
 
+  if (content_length_.has_value()) {
+    return content_length == content_length_.value() ? CONTENT_LENGTH_SKIP
+                                                     : CONTENT_LENGTH_ERROR;
+  }
   content_length_ = content_length;
-  return true;
+  return CONTENT_LENGTH_OK;
 }
 
 // Returns whether `authority` contains only characters from the `host` ABNF

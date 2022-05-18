@@ -48,6 +48,7 @@ cc_library(
     name = "comm",
     hdrs = [
         "ble.h",
+        "ble_v2.h",
         "bluetooth_adapter.h",
         "bluetooth_classic.h",
         "bluetooth_classic_device.h",
@@ -64,13 +65,22 @@ cc_library(
         "thread_pool.h",
         "webrtc.h",
         "wifi.h",
+        "wifi_hotspot.h",
         "wifi_lan.h",
     ],
     visibility = ["//visibility:private"],
     deps = [
         "//internal/platform:base",
+        "//internal/platform:types",
         "//internal/platform/implementation:comm",
+        "//internal/platform/implementation:types",
         "//internal/platform/implementation/windows/generated:types",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/types:optional",
     ],
 )
 
@@ -91,6 +101,7 @@ cc_library(
 cc_library(
     name = "windows",
     srcs = [
+        "ble_v2.cc",
         "bluetooth_adapter.cc",
         "bluetooth_classic_device.cc",
         "bluetooth_classic_medium.cc",
@@ -103,6 +114,9 @@ cc_library(
         "system_clock.cc",
         "thread_pool.cc",
         "utils.cc",
+        "wifi_hotspot_medium.cc",
+        "wifi_hotspot_server_socket.cc",
+        "wifi_hotspot_socket.cc",
         "wifi_lan_medium.cc",
         "wifi_lan_server_socket.cc",
         "wifi_lan_socket.cc",
@@ -110,19 +124,23 @@ cc_library(
     copts = ["-Ithird_party/nearby/internal/platform/implementation/windows/generated"],
     defines = ["_SILENCE_CLANG_COROUTINE_MESSAGE"],
     visibility = [
-        "//location/nearby/cpp/sharing:__subpackages__",
+        "//location/nearby:__subpackages__",
         "//connections/clients/windows:__subpackages__",
     ],
     deps = [
         ":comm",
         ":crypto",  # build_cleaner: keep
         ":types",
+        "//internal/platform:base",
+        "//internal/platform:cancellation_flag",
         "//internal/platform:types",
-        "//internal/platform/implementation:comm",
         "//internal/platform/implementation:platform",
+        "//internal/platform/implementation:types",
         "//internal/platform/implementation/shared:count_down_latch",
         "//internal/platform/implementation/shared:file",
         "//internal/platform/implementation/windows/generated:types",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -149,14 +167,16 @@ cc_test(
     srcs = [
         "atomic_boolean_test.cc",
         "atomic_reference_test.cc",
+        "ble_v2_test.cc",
         "count_down_latch_test.cc",
         "crypto_test.cc",
         "executor_test.cc",
         "platform_test.cc",
         "scheduled_executor_test.cc",
         "submittable_executor_test.cc",
+        "utils_test.cc",
     ],
-    copts = ["-Iplatform/implementation/windows/generated -DCORE_ADAPTER_DLL"],
+    copts = ["-Ithird_party/nearby/internal/platform/implementation/windows/generated -DCORE_ADAPTER_DLL"],
     deps = [
         ":comm",
         ":crypto",

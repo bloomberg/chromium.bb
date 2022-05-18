@@ -88,6 +88,17 @@ gfx::Rect DrmWindowHost::GetBounds() const {
   return bounds_;
 }
 
+void DrmWindowHost::SetBoundsInDIP(const gfx::Rect& bounds) {
+  NOTREACHED();
+  // No scaling at DRM level and should always use pixel bounds.
+}
+
+gfx::Rect DrmWindowHost::GetBoundsInDIP() const {
+  // No scaling at DRM level and should always use pixel bounds.
+  NOTREACHED();
+  return bounds_;
+}
+
 void DrmWindowHost::SetTitle(const std::u16string& title) {}
 
 void DrmWindowHost::SetCapture() {
@@ -144,11 +155,11 @@ void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
   cursor_->CommitBoundsChange(widget_, bounds_, bounds);
 }
 
-void DrmWindowHost::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+void DrmWindowHost::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
   NOTREACHED();
 }
 
-gfx::Rect DrmWindowHost::GetRestoredBoundsInPixels() const {
+gfx::Rect DrmWindowHost::GetRestoredBoundsInDIP() const {
   NOTREACHED();
   return gfx::Rect();
 }

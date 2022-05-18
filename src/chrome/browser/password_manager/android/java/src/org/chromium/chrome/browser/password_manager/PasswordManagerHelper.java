@@ -10,17 +10,28 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.common.base.Optional;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.ModelType;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /** A helper class for showing PasswordSettings. */
 public class PasswordManagerHelper {
@@ -30,6 +41,10 @@ public class PasswordManagerHelper {
     public static final String MANAGE_PASSWORDS_REFERRER = "manage-passwords-referrer";
 
     private static final String UPM_VARIATION_FEATURE_PARAM = "stage";
+
+    // Loading dialog is dismissed with this delay after sending an intent to prevent
+    // the old activity from showing up before the new one is shown.
+    private static final long LOADING_DIALOG_DISMISS_DELAY_MS = 300L;
 
     // |PasswordSettings| full class name to open the fragment. Will be changed to
     // |PasswordSettings.class.getName()| once it's modularized.
@@ -62,6 +77,35 @@ public class PasswordManagerHelper {
     private static final String PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM =
             "PasswordManager.PasswordCheckup.Launch.Success";
 
+    private static final String LOADING_DIALOG_CREDENTIAL_MANAGER_HISTOGRAM =
+            "PasswordManager.ModalLoadingDialog.CredentialManager.Outcome";
+    private static final String LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM =
+            "PasswordManager.ModalLoadingDialog.PasswordCheckup.Outcome";
+
+    /**
+     *  The identifier of the loading dialog outcome.
+     *
+     *  These values are persisted to logs. Entries should not be renumbered and
+     *  numeric values should never be reused.
+     *  Please, keep in sync with tools/metrics/histograms/enums.xml.
+     */
+    @VisibleForTesting
+    @IntDef({LoadingDialogOutcome.NOT_SHOWN_LOADED, LoadingDialogOutcome.SHOWN_LOADED,
+            LoadingDialogOutcome.SHOWN_CANCELLED, LoadingDialogOutcome.SHOWN_TIMED_OUT,
+            LoadingDialogOutcome.NUM_ENTRIES})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface LoadingDialogOutcome {
+        /** The loading dialog was requested but loading finished before it got shown. */
+        int NOT_SHOWN_LOADED = 0;
+        /** The loading dialog was shown, loading process finished.  */
+        int SHOWN_LOADED = 1;
+        /** The loading dialog was shown and cancelled by user before loading finished. */
+        int SHOWN_CANCELLED = 2;
+        /** The loading dialog was shown and timed out before loading finished. */
+        int SHOWN_TIMED_OUT = 3;
+        int NUM_ENTRIES = 4;
+    }
+
     /**
      * Launches the password settings or, if available, the credential manager from Google Play
      * Services.
@@ -70,21 +114,17 @@ public class PasswordManagerHelper {
      */
     public static void showPasswordSettings(Context context, @ManagePasswordsReferrer int referrer,
             SettingsLauncher settingsLauncher, CredentialManagerLauncher credentialManagerLauncher,
-            SyncService syncService) {
+            SyncService syncService,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
         RecordHistogram.recordEnumeratedHistogram("PasswordManager.ManagePasswordsReferrer",
                 referrer, ManagePasswordsReferrer.MAX_VALUE + 1);
 
-        // The credential manager is NonNull if the Unified password manager is active or there is
-        // a dry run measuring the latency/success of fetching the launch intent.
-        if (credentialManagerLauncher != null) {
-            // This method always request the launch intent but only actually launches it when the
-            // UnifiedPasswordManager feature allows it.
-            launchTheCredentialManager(referrer, credentialManagerLauncher, syncService);
-
-            if (usesUnifiedPasswordManagerUI()) {
-                // While waiting for the new UI, exit early to prevent launching the old settings.
-                return;
-            }
+        if (credentialManagerLauncher != null && hasChosenToSyncPasswords(syncService)) {
+            LoadingModalDialogCoordinator loadingDialogCoordinator =
+                    LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
+            launchTheCredentialManager(
+                    referrer, credentialManagerLauncher, syncService, loadingDialogCoordinator);
+            return;
         }
 
         Bundle fragmentArgs = new Bundle();
@@ -93,25 +133,19 @@ public class PasswordManagerHelper {
                 context, PASSWORD_SETTINGS_CLASS, fragmentArgs));
     }
 
-    public static void showPasswordCheckup(@PasswordCheckReferrer int referrer,
-            PasswordCheckupClientHelper checkupClient, SyncService syncService) {
-        assert checkupClient != null;
+    public static void showPasswordCheckup(Context context, @PasswordCheckReferrer int referrer,
+            PasswordCheckupClientHelper checkupClient, SyncService syncService,
+            ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
         if (!usesUnifiedPasswordManagerUI()) return;
 
         Optional<String> account = hasChosenToSyncPasswords(syncService)
                 ? Optional.of(CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()))
                 : Optional.absent();
-        long startTimeMs = SystemClock.elapsedRealtime();
-        checkupClient.getPasswordCheckupPendingIntent(referrer, account,
-                (intent)
-                        -> PasswordManagerHelper.launchPasswordCheckup(intent, startTimeMs),
-                (error) -> {
-                    RecordHistogram.recordBooleanHistogram(
-                            PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, false);
-                    RecordHistogram.recordEnumeratedHistogram(
-                            PASSWORD_CHECKUP_GET_INTENT_ERROR_HISTOGRAM, error,
-                            CredentialManagerError.COUNT);
-                });
+
+        LoadingModalDialogCoordinator loadingDialogCoordinator =
+                LoadingModalDialogCoordinator.create(modalDialogManagerSupplier, context);
+
+        launchPasswordCheckup(referrer, checkupClient, account, loadingDialogCoordinator);
     }
 
     /**
@@ -175,30 +209,57 @@ public class PasswordManagerHelper {
         return false;
     }
 
-    private static void launchTheCredentialManager(@ManagePasswordsReferrer int referrer,
-            CredentialManagerLauncher credentialManagerLauncher, SyncService syncService) {
-        if (hasChosenToSyncPasswords(syncService)) {
-            long startTimeMs = SystemClock.elapsedRealtime();
-            credentialManagerLauncher.getCredentialManagerIntentForAccount(referrer,
+    @VisibleForTesting
+    static void launchTheCredentialManager(@ManagePasswordsReferrer int referrer,
+            CredentialManagerLauncher credentialManagerLauncher, SyncService syncService,
+            LoadingModalDialogCoordinator loadingDialogCoordinator) {
+        if (!hasChosenToSyncPasswords(syncService)) return;
 
-                    CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()),
-                    (intent)
-                            -> PasswordManagerHelper.launchCredentialManager(
-                                    intent, startTimeMs, true),
-                    (error) -> PasswordManagerHelper.recordFailureMetrics(error, true));
-            return;
-        }
+        loadingDialogCoordinator.show();
 
         long startTimeMs = SystemClock.elapsedRealtime();
-        credentialManagerLauncher.getCredentialManagerIntentForLocal(referrer,
+        credentialManagerLauncher.getCredentialManagerIntentForAccount(referrer,
+                CoreAccountInfo.getEmailFrom(syncService.getAccountInfo()),
                 (intent)
-                        -> PasswordManagerHelper.launchCredentialManager(
-                                intent, startTimeMs, false),
-                (error) -> PasswordManagerHelper.recordFailureMetrics(error, false));
+                        -> PasswordManagerHelper.launchCredentialManagerIntent(
+                                intent, startTimeMs, true, loadingDialogCoordinator),
+                (error) -> {
+                    PasswordManagerHelper.recordFailureMetrics(error, true);
+                    recordLoadingDialogMetrics(LOADING_DIALOG_CREDENTIAL_MANAGER_HISTOGRAM,
+                            loadingDialogCoordinator.getState());
+                    loadingDialogCoordinator.dismiss();
+                });
+    }
+
+    @VisibleForTesting
+    static void launchPasswordCheckup(@PasswordCheckReferrer int referrer,
+            PasswordCheckupClientHelper checkupClient, Optional<String> account,
+            LoadingModalDialogCoordinator loadingDialogCoordinator) {
+        assert checkupClient != null;
+
+        loadingDialogCoordinator.show();
+
+        long startTimeMs = SystemClock.elapsedRealtime();
+        checkupClient.getPasswordCheckupPendingIntent(referrer, account,
+                (intent)
+                        -> PasswordManagerHelper.launchPasswordCheckupIntent(
+                                intent, startTimeMs, loadingDialogCoordinator),
+                (error) -> {
+                    RecordHistogram.recordBooleanHistogram(
+                            PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, false);
+                    RecordHistogram.recordEnumeratedHistogram(
+                            PASSWORD_CHECKUP_GET_INTENT_ERROR_HISTOGRAM, error,
+                            CredentialManagerError.COUNT);
+                    recordLoadingDialogMetrics(LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM,
+                            loadingDialogCoordinator.getState());
+                    loadingDialogCoordinator.dismiss();
+                });
     }
 
     private static void recordFailureMetrics(
             @CredentialManagerError int error, boolean forAccount) {
+        // While support for the local storage API exists in Chrome, it isn't used at this time.
+        assert forAccount : "Local storage for preferences not ready for use";
         final String kGetIntentSuccessHistogram = forAccount ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
                                                              : LOCAL_GET_INTENT_SUCCESS_HISTOGRAM;
         final String kGetIntentErrorHistogram =
@@ -208,43 +269,44 @@ public class PasswordManagerHelper {
                 kGetIntentErrorHistogram, error, CredentialManagerError.COUNT);
     }
 
-    private static boolean launchIntent(PendingIntent intent) {
+    private static void launchIntentAndRecordSuccess(
+            PendingIntent intent, String intentLaunchSuccessHistogram) {
         boolean launchIntentSuccessfully = true;
         try {
             intent.send();
         } catch (CanceledException e) {
             launchIntentSuccessfully = false;
         }
-        return launchIntentSuccessfully;
+        RecordHistogram.recordBooleanHistogram(
+                intentLaunchSuccessHistogram, launchIntentSuccessfully);
     }
 
-    private static void launchCredentialManager(
-            PendingIntent intent, long startTimeMs, boolean forAccount) {
+    private static void launchCredentialManagerIntent(PendingIntent intent, long startTimeMs,
+            boolean forAccount, LoadingModalDialogCoordinator loadingDialogCoordinator) {
+        // While support for the local storage API exists in Chrome, it isn't used at this time.
+        assert forAccount : "Local storage for preferences not ready for use";
         recordSuccessMetrics(SystemClock.elapsedRealtime() - startTimeMs, forAccount);
 
-        if (!usesUnifiedPasswordManagerUI()) {
-            return; // The built-in settings screen has already been started at this point.
-        }
-
-        boolean launchIntentSuccessfully = launchIntent(intent);
-        RecordHistogram.recordBooleanHistogram(forAccount
-                        ? ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
-                        : LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
-                launchIntentSuccessfully);
+        maybeLaunchIntentWithLoadingDialog(loadingDialogCoordinator, intent,
+                forAccount ? ACCOUNT_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM
+                           : LOCAL_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
+                LOADING_DIALOG_CREDENTIAL_MANAGER_HISTOGRAM);
     }
 
-    private static void launchPasswordCheckup(PendingIntent intent, long startTimeMs) {
+    private static void launchPasswordCheckupIntent(PendingIntent intent, long startTimeMs,
+            LoadingModalDialogCoordinator loadingDialogCoordinator) {
         RecordHistogram.recordTimesHistogram(PASSWORD_CHECKUP_GET_INTENT_LATENCY_HISTOGRAM,
                 SystemClock.elapsedRealtime() - startTimeMs);
         RecordHistogram.recordBooleanHistogram(PASSWORD_CHECKUP_GET_INTENT_SUCCESS_HISTOGRAM, true);
 
-        boolean launchIntentSuccessfully = launchIntent(intent);
-        RecordHistogram.recordBooleanHistogram(
+        maybeLaunchIntentWithLoadingDialog(loadingDialogCoordinator, intent,
                 PASSWORD_CHECKUP_LAUNCH_CREDENTIAL_MANAGER_SUCCESS_HISTOGRAM,
-                launchIntentSuccessfully);
+                LOADING_DIALOG_PASSWORD_CHECKUP_HISTOGRAM);
     }
 
     private static void recordSuccessMetrics(long elapsedTimeMs, boolean forAccount) {
+        // While support for the local storage API exists in Chrome, it isn't used at this time.
+        assert forAccount : "Local storage for preferences not ready for use";
         final String kGetIntentLatencyHistogram = forAccount ? ACCOUNT_GET_INTENT_LATENCY_HISTOGRAM
                                                              : LOCAL_GET_INTENT_LATENCY_HISTOGRAM;
         final String kGetIntentSuccessHistogram = forAccount ? ACCOUNT_GET_INTENT_SUCCESS_HISTOGRAM
@@ -252,5 +314,100 @@ public class PasswordManagerHelper {
 
         RecordHistogram.recordTimesHistogram(kGetIntentLatencyHistogram, elapsedTimeMs);
         RecordHistogram.recordBooleanHistogram(kGetIntentSuccessHistogram, true);
+    }
+
+    /**
+     * Launches the pending intent and reports metrics if the loading dialog was not cancelled or
+     * timed out. Intent launch metric is not recorded if the loading was cancelled or timed out.
+     *
+     * @param loadingDialogCoordinator {@link LoadingModalDialogCoordinator}.
+     * @param intent {@link PendingIntent} to be launched.
+     * @param intentLaunchSuccessHistogram Name of the intent launch success histogram.
+     */
+    private static void maybeLaunchIntentWithLoadingDialog(
+            LoadingModalDialogCoordinator loadingDialogCoordinator, PendingIntent intent,
+            String intentLaunchSuccessHistogram, String loadingDialogOutcomeHistogram) {
+        @LoadingModalDialogCoordinator.State
+        int loadingDialogState = loadingDialogCoordinator.getState();
+        if (loadingDialogState == LoadingModalDialogCoordinator.State.CANCELLED
+                || loadingDialogState == LoadingModalDialogCoordinator.State.TIMED_OUT) {
+            // Dialog was dismissed or timeout occurred before the loading finished, do not launch
+            // the intent.
+            recordLoadingDialogMetrics(loadingDialogOutcomeHistogram, loadingDialogState);
+            return;
+        }
+
+        if (loadingDialogState == LoadingModalDialogCoordinator.State.PENDING) {
+            // Dialog is not yet visible, dismiss immediately.
+            recordLoadingDialogMetrics(loadingDialogOutcomeHistogram, loadingDialogState);
+            loadingDialogCoordinator.dismiss();
+            launchIntentAndRecordSuccess(intent, intentLaunchSuccessHistogram);
+            return;
+        }
+
+        if (loadingDialogCoordinator.isImmediatelyDismissable()) {
+            // Dialog is visible and dismissable. Dismiss with a small delay to cover the intent
+            // launch delay.
+            recordLoadingDialogMetrics(loadingDialogOutcomeHistogram, loadingDialogState);
+            launchIntentAndRecordSuccess(intent, intentLaunchSuccessHistogram);
+            new Handler(Looper.getMainLooper())
+                    .postDelayed(
+                            loadingDialogCoordinator::dismiss, LOADING_DIALOG_DISMISS_DELAY_MS);
+            return;
+        }
+
+        // Dialog could not be dismissed right now, wait for it to become immediately
+        // dismissable.
+        loadingDialogCoordinator.addObserver(new LoadingModalDialogCoordinator.Observer() {
+            @Override
+            public void onDismissable() {
+                // Record the known state - if the dialog was cancelled or timed out,
+                // {@link #onCancelledOrTimedOut()} would be called.
+                recordLoadingDialogMetrics(loadingDialogOutcomeHistogram, loadingDialogState);
+                launchIntentAndRecordSuccess(intent, intentLaunchSuccessHistogram);
+                new Handler(Looper.getMainLooper())
+                        .postDelayed(
+                                loadingDialogCoordinator::dismiss, LOADING_DIALOG_DISMISS_DELAY_MS);
+            }
+
+            @Override
+            public void onDismissedWithState(@LoadingModalDialogCoordinator.State int finalState) {
+                recordLoadingDialogMetrics(loadingDialogOutcomeHistogram, finalState);
+            }
+        });
+    }
+
+    /**
+     * Reports metric for the GMS Core UI loading dialog.
+     * Should be called right before launching the loaded intent or before dismissing the dialog if
+     * the intent will not be launched.
+     *
+     * @param histogramName Name of the histogram to report metric via.
+     * @param loadingDialogState State of the loading dialog before launching the intent.
+     */
+    private static void recordLoadingDialogMetrics(
+            String histogramName, @LoadingModalDialogCoordinator.State int loadingDialogState) {
+        switch (loadingDialogState) {
+            case LoadingModalDialogCoordinator.State.PENDING:
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        LoadingDialogOutcome.NOT_SHOWN_LOADED, LoadingDialogOutcome.NUM_ENTRIES);
+                break;
+            case LoadingModalDialogCoordinator.State.SHOWN:
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        LoadingDialogOutcome.SHOWN_LOADED, LoadingDialogOutcome.NUM_ENTRIES);
+                break;
+            case LoadingModalDialogCoordinator.State.CANCELLED:
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        LoadingDialogOutcome.SHOWN_CANCELLED, LoadingDialogOutcome.NUM_ENTRIES);
+                break;
+            case LoadingModalDialogCoordinator.State.TIMED_OUT:
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        LoadingDialogOutcome.SHOWN_TIMED_OUT, LoadingDialogOutcome.NUM_ENTRIES);
+                break;
+            case LoadingModalDialogCoordinator.State.READY:
+            case LoadingModalDialogCoordinator.State.FINISHED:
+                throw new AssertionError(
+                        "Unexpected state for metrics recording: " + loadingDialogState);
+        }
     }
 }

@@ -15,10 +15,11 @@
 #ifndef SRC_DAWN_COMMON_SYSTEMUTILS_H_
 #define SRC_DAWN_COMMON_SYSTEMUTILS_H_
 
-#include "dawn/common/Platform.h"
-
 #include <optional>
 #include <string>
+#include <utility>
+
+#include "dawn/common/Platform.h"
 
 const char* GetPathSeparator();
 // Returns a pair of the environment variable's value, and a boolean indicating whether the variable
@@ -39,7 +40,7 @@ bool IsMacOSVersionAtLeast(uint32_t majorVersion, uint32_t minorVersion = 0);
 
 class ScopedEnvironmentVar {
   public:
-    ScopedEnvironmentVar() = default;
+    ScopedEnvironmentVar();
     ScopedEnvironmentVar(const char* variableName, const char* value);
     ~ScopedEnvironmentVar();
 

@@ -132,34 +132,6 @@ std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
       base::FilePath(cdm_data_directory), cdm_data_quota_bytes);
 }
 
-// Implements the fuchsia.web.FrameHost protocol using a ContextImpl with
-// incognito browser context.
-class FrameHostImpl final : public fuchsia::web::FrameHost {
- public:
-  explicit FrameHostImpl(
-      inspect::Node inspect_node,
-      WebEngineDevToolsController* devtools_controller,
-      network::NetworkQualityTracker* network_quality_tracker)
-      : context_(
-            WebEngineBrowserContext::CreateIncognito(network_quality_tracker),
-            std::move(inspect_node),
-            devtools_controller) {}
-  ~FrameHostImpl() override = default;
-
-  FrameHostImpl(const FrameHostImpl&) = delete;
-  FrameHostImpl& operator=(const FrameHostImpl&) = delete;
-
-  // fuchsia.web.FrameHost implementation.
-  void CreateFrameWithParams(
-      fuchsia::web::CreateFrameParams params,
-      fidl::InterfaceRequest<fuchsia::web::Frame> request) override {
-    context_.CreateFrameWithParams(std::move(params), std::move(request));
-  }
-
- private:
-  ContextImpl context_;
-};
-
 // Checks the supported ozone platform with Scenic if no arg is specified
 // already.
 void MaybeSetOzonePlatformArg(base::CommandLine* launch_args) {
@@ -185,10 +157,15 @@ void MaybeSetOzonePlatformArg(base::CommandLine* launch_args) {
 
 }  // namespace
 
+void FrameHostImpl::CreateFrameWithParams(
+    fuchsia::web::CreateFrameParams params,
+    fidl::InterfaceRequest<fuchsia::web::Frame> request) {
+  context_.CreateFrameWithParams(std::move(params), std::move(request));
+}
+
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
-    content::ContentBrowserClient* browser_client,
-    content::MainFunctionParams parameters)
-    : browser_client_(browser_client), parameters_(std::move(parameters)) {}
+    content::ContentBrowserClient* browser_client)
+    : browser_client_(browser_client) {}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -319,12 +296,6 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   if (*g_test_request)
     HandleContextRequest(std::move(*g_test_request));
 
-  // In browser tests |ui_task| runs the "body" of each test.
-  if (parameters_.ui_task) {
-    // Since the main loop won't run, there is nothing to quit.
-    quit_closure_ = base::DoNothing();
-  }
-
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -354,8 +325,18 @@ void WebEngineBrowserMainParts::SetContextRequestForTest(
 }
 
 ContextImpl* WebEngineBrowserMainParts::context_for_test() const {
-  DCHECK_EQ(context_bindings_.size(), 1u);
+  if (context_bindings_.size() == 0)
+    return nullptr;
   return context_bindings_.bindings().front()->impl().get();
+}
+
+std::vector<FrameHostImpl*> WebEngineBrowserMainParts::frame_hosts_for_test()
+    const {
+  std::vector<FrameHostImpl*> frame_host_impls;
+  for (auto& binding : frame_host_bindings_.bindings()) {
+    frame_host_impls.push_back(binding->impl().get());
+  }
+  return frame_host_impls;
 }
 
 void WebEngineBrowserMainParts::HandleContextRequest(

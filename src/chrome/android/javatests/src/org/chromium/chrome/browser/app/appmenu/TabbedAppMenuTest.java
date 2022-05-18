@@ -55,6 +55,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -215,13 +216,15 @@ public class TabbedAppMenuTest {
         // App menu is shown during setup.
         Assert.assertTrue("App menu should be showing.", mAppMenuHandler.isAppMenuShowing());
         Assert.assertFalse("Overview shouldn't be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
 
         LayoutTestUtils.startShowingAndWaitForLayout(
                 mActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER, false);
 
         Assert.assertTrue("Overview should be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
         Assert.assertFalse("App menu shouldn't be showing.", mAppMenuHandler.isAppMenuShowing());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("App menu should be allowed to show.",
@@ -230,12 +233,11 @@ public class TabbedAppMenuTest {
         });
         showAppMenuAndAssertMenuShown();
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mActivityTestRule.getActivity().getLayoutManager().showLayout(
-                                LayoutType.BROWSING, false));
+        LayoutTestUtils.startShowingAndWaitForLayout(
+                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING, false);
         Assert.assertFalse("Overview shouldn't be showing.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+                mActivityTestRule.getActivity().getLayoutManager().isLayoutVisible(
+                        LayoutType.TAB_SWITCHER));
         CriteriaHelper.pollUiThread(
                 () -> !mAppMenuHandler.isAppMenuShowing(), "App menu shouldn't be showing.");
     }
@@ -244,6 +246,7 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main", "Bookmark", "RenderTest"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/false"})
     public void testBookmarkMenuItem() throws IOException {
         PropertyModel bookmarkStarPropertyModel = AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.bookmark_this_page_id);
@@ -295,8 +298,21 @@ public class TabbedAppMenuTest {
         int requestDesktopSiteIndex =
                 findIndexOfMenuItemById(R.id.request_desktop_site_row_menu_id);
         Assert.assertNotEquals("No request desktop site row found.", -1, requestDesktopSiteIndex);
-        mRenderTestRule.render(
-                getListView().getChildAt(requestDesktopSiteIndex), "request_desktop_site");
+
+        Callable<Boolean> isVisible = () -> {
+            int visibleStart = getListView().getFirstVisiblePosition();
+            int visibleEnd = visibleStart + getListView().getChildCount() - 1;
+            return requestDesktopSiteIndex >= visibleStart && requestDesktopSiteIndex <= visibleEnd;
+        };
+        CriteriaHelper.pollUiThread(() -> getListView().getChildAt(0) != null);
+        if (!TestThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> getListView().smoothScrollToPosition(requestDesktopSiteIndex));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+        mRenderTestRule.render(getListView().getChildAt(requestDesktopSiteIndex
+                                       - getListView().getFirstVisiblePosition()),
+                "request_desktop_site");
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -311,8 +327,15 @@ public class TabbedAppMenuTest {
         showAppMenuAndAssertMenuShown();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        mRenderTestRule.render(
-                getListView().getChildAt(requestDesktopSiteIndex), "request_mobile_site");
+        CriteriaHelper.pollUiThread(() -> getListView().getChildAt(0) != null);
+        if (!TestThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> getListView().smoothScrollToPosition(requestDesktopSiteIndex));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+        mRenderTestRule.render(getListView().getChildAt(requestDesktopSiteIndex
+                                       - getListView().getFirstVisiblePosition()),
+                "request_mobile_site");
     }
 
     @Test
@@ -329,8 +352,21 @@ public class TabbedAppMenuTest {
         int requestDesktopSiteIndex =
                 findIndexOfMenuItemById(R.id.request_desktop_site_row_menu_id);
         Assert.assertNotEquals("No request desktop site row found.", -1, requestDesktopSiteIndex);
-        mRenderTestRule.render(
-                getListView().getChildAt(requestDesktopSiteIndex), "request_desktop_site_uncheck");
+
+        Callable<Boolean> isVisible = () -> {
+            int visibleStart = getListView().getFirstVisiblePosition();
+            int visibleEnd = visibleStart + getListView().getChildCount() - 1;
+            return requestDesktopSiteIndex >= visibleStart && requestDesktopSiteIndex <= visibleEnd;
+        };
+        CriteriaHelper.pollUiThread(() -> getListView().getChildAt(0) != null);
+        if (!TestThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> getListView().smoothScrollToPosition(requestDesktopSiteIndex));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+        mRenderTestRule.render(getListView().getChildAt(requestDesktopSiteIndex
+                                       - getListView().getFirstVisiblePosition()),
+                "request_desktop_site_uncheck");
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -345,19 +381,23 @@ public class TabbedAppMenuTest {
         showAppMenuAndAssertMenuShown();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        mRenderTestRule.render(
-                getListView().getChildAt(requestDesktopSiteIndex), "request_mobile_site_check");
+        CriteriaHelper.pollUiThread(() -> getListView().getChildAt(0) != null);
+        if (!TestThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> getListView().smoothScrollToPosition(requestDesktopSiteIndex));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+        mRenderTestRule.render(getListView().getChildAt(requestDesktopSiteIndex
+                                       - getListView().getFirstVisiblePosition()),
+                "request_mobile_site_check");
     }
 
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:bookmark_in_app_menu/true"})
-    public void
-    testAddBookmarkMenuItem() throws IOException {
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/true"})
+    public void testAddBookmarkMenuItem() throws IOException {
         int addBookmark = findIndexOfMenuItemById(R.id.add_bookmark_menu_id);
         Assert.assertNotEquals("No add bookmark found.", -1, addBookmark);
     }

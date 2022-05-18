@@ -36,22 +36,20 @@ ReceiverSessionImpl::ReceiverSessionImpl(
 ReceiverSessionImpl::~ReceiverSessionImpl() = default;
 
 void ReceiverSessionImpl::StartStreamingAsync(
-    mojo::AssociatedRemote<mojom::CastStreamingReceiver>
-        cast_streaming_receiver) {
+    mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector) {
   DCHECK(HasNetworkContextGetter());
 
   DVLOG(1) << __func__;
-  cast_streaming_receiver_ = std::move(cast_streaming_receiver);
+  demuxer_connector_ = std::move(demuxer_connector);
 
-  cast_streaming_receiver_->EnableReceiver(base::BindOnce(
+  demuxer_connector_->EnableReceiver(base::BindOnce(
       &ReceiverSessionImpl::OnReceiverEnabled, weak_factory_.GetWeakPtr()));
-  cast_streaming_receiver_.set_disconnect_handler(base::BindOnce(
+  demuxer_connector_.set_disconnect_handler(base::BindOnce(
       &ReceiverSessionImpl::OnMojoDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ReceiverSessionImpl::StartStreamingAsync(
-    mojo::AssociatedRemote<mojom::CastStreamingReceiver>
-        cast_streaming_receiver,
+    mojo::AssociatedRemote<mojom::DemuxerConnector> demuxer_connector,
     mojo::AssociatedRemote<mojom::RendererController> renderer_controller) {
   DCHECK(!renderer_control_config_);
   external_renderer_controls_ =
@@ -60,7 +58,7 @@ void ReceiverSessionImpl::StartStreamingAsync(
   renderer_control_config_.emplace(std::move(renderer_controller),
                                    external_renderer_controls_->Bind());
 
-  StartStreamingAsync(std::move(cast_streaming_receiver));
+  StartStreamingAsync(std::move(demuxer_connector));
 }
 
 ReceiverSession::RendererController*
@@ -79,15 +77,16 @@ void ReceiverSessionImpl::OnReceiverEnabled() {
 }
 
 void ReceiverSessionImpl::OnSessionInitialization(
-    absl::optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
-        audio_stream_info,
-    absl::optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
-        video_stream_info) {
+    StreamingInitializationInfo initialization_info,
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> audio_pipe_consumer,
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> video_pipe_consumer) {
   DVLOG(1) << __func__;
-  DCHECK(audio_stream_info || video_stream_info);
+  DCHECK_EQ(!!initialization_info.audio_stream_info, !!audio_pipe_consumer);
+  DCHECK_EQ(!!initialization_info.video_stream_info, !!video_pipe_consumer);
+  DCHECK(audio_pipe_consumer || video_pipe_consumer);
 
   mojom::AudioStreamInitializationInfoPtr audio_info;
-  if (audio_stream_info) {
+  if (audio_pipe_consumer) {
     mojo::PendingRemote<mojom::AudioBufferRequester> audio_receiver;
     audio_demuxer_stream_data_provider_ =
         std::make_unique<AudioDemuxerStreamDataProvider>(
@@ -95,16 +94,21 @@ void ReceiverSessionImpl::OnSessionInitialization(
             cast_streaming_session_.GetAudioBufferRequester(),
             base::BindOnce(&ReceiverSessionImpl::OnMojoDisconnect,
                            weak_factory_.GetWeakPtr()),
-            std::move(audio_stream_info->decoder_config));
+            std::move(initialization_info.audio_stream_info->config));
+    audio_demuxer_stream_data_provider_->SetOnNoBuffersAvailableCallback(
+        std::move(
+            initialization_info.audio_stream_info->on_no_buffers_callback));
+    audio_demuxer_stream_data_provider_->SetOnErrorCallback(
+        std::move(initialization_info.audio_stream_info->on_error_callback));
     audio_info = mojom::AudioStreamInitializationInfo::New(
         std::move(audio_receiver),
         mojom::AudioStreamInfo::New(
             audio_demuxer_stream_data_provider_->config(),
-            std::move(std::move(audio_stream_info->data_pipe))));
+            std::move(std::move(audio_pipe_consumer.value()))));
   }
 
   mojom::VideoStreamInitializationInfoPtr video_info;
-  if (video_stream_info) {
+  if (video_pipe_consumer) {
     mojo::PendingRemote<mojom::VideoBufferRequester> video_receiver;
     video_demuxer_stream_data_provider_ =
         std::make_unique<VideoDemuxerStreamDataProvider>(
@@ -112,16 +116,21 @@ void ReceiverSessionImpl::OnSessionInitialization(
             cast_streaming_session_.GetVideoBufferRequester(),
             base::BindOnce(&ReceiverSessionImpl::OnMojoDisconnect,
                            weak_factory_.GetWeakPtr()),
-            std::move(video_stream_info->decoder_config));
+            std::move(initialization_info.video_stream_info->config));
+    video_demuxer_stream_data_provider_->SetOnNoBuffersAvailableCallback(
+        std::move(
+            initialization_info.video_stream_info->on_no_buffers_callback));
+    video_demuxer_stream_data_provider_->SetOnErrorCallback(
+        std::move(initialization_info.video_stream_info->on_error_callback));
     video_info = mojom::VideoStreamInitializationInfo::New(
         std::move(video_receiver),
         mojom::VideoStreamInfo::New(
             video_demuxer_stream_data_provider_->config(),
-            std::move(std::move(video_stream_info->data_pipe))));
+            std::move(std::move(video_pipe_consumer.value()))));
   }
 
-  cast_streaming_receiver_->OnStreamsInitialized(std::move(audio_info),
-                                                 std::move(video_info));
+  demuxer_connector_->OnStreamsInitialized(std::move(audio_info),
+                                           std::move(video_info));
 
   InformClientOfConfigChange();
 }
@@ -141,25 +150,48 @@ void ReceiverSessionImpl::OnVideoBufferReceived(
 }
 
 void ReceiverSessionImpl::OnSessionReinitialization(
-    absl::optional<cast_streaming::CastStreamingSession::AudioStreamInfo>
-        audio_stream_info,
-    absl::optional<cast_streaming::CastStreamingSession::VideoStreamInfo>
-        video_stream_info) {
+    StreamingInitializationInfo initialization_info,
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> audio_pipe_consumer,
+    absl::optional<mojo::ScopedDataPipeConsumerHandle> video_pipe_consumer) {
   DVLOG(1) << __func__;
-  DCHECK(audio_stream_info || video_stream_info);
-  DCHECK_EQ(!!audio_stream_info, !!audio_demuxer_stream_data_provider_);
-  DCHECK_EQ(!!video_stream_info, !!video_demuxer_stream_data_provider_);
+  DCHECK(audio_pipe_consumer || video_pipe_consumer);
+  DCHECK_EQ(!!audio_pipe_consumer, !!initialization_info.audio_stream_info);
+  DCHECK_EQ(!!video_pipe_consumer, !!initialization_info.video_stream_info);
+  DCHECK_EQ(!!audio_pipe_consumer, !!audio_demuxer_stream_data_provider_);
+  DCHECK_EQ(!!video_pipe_consumer, !!video_demuxer_stream_data_provider_);
 
-  if (audio_stream_info) {
-    audio_demuxer_stream_data_provider_->OnNewStreamInfo(
-        std::move(audio_stream_info->decoder_config),
-        std::move(audio_stream_info->data_pipe));
+  if (audio_pipe_consumer) {
+    if (!audio_demuxer_stream_data_provider_->config().Matches(
+            initialization_info.audio_stream_info->config)) {
+      audio_demuxer_stream_data_provider_->SetOnNoBuffersAvailableCallback(
+          std::move(
+              initialization_info.audio_stream_info->on_no_buffers_callback));
+      audio_demuxer_stream_data_provider_->SetOnErrorCallback(
+          std::move(initialization_info.audio_stream_info->on_error_callback));
+      audio_demuxer_stream_data_provider_->OnNewStreamInfo(
+          std::move(initialization_info.audio_stream_info->config),
+          std::move(*audio_pipe_consumer));
+    } else {
+      DVLOG(1) << "Skipping application of new AudioDecoderConfig as no "
+                  "config parameters have changed";
+    }
   }
 
-  if (video_stream_info) {
-    video_demuxer_stream_data_provider_->OnNewStreamInfo(
-        std::move(video_stream_info->decoder_config),
-        std::move(video_stream_info->data_pipe));
+  if (video_pipe_consumer) {
+    if (!video_demuxer_stream_data_provider_->config().Matches(
+            initialization_info.video_stream_info->config)) {
+      video_demuxer_stream_data_provider_->SetOnNoBuffersAvailableCallback(
+          std::move(
+              initialization_info.video_stream_info->on_no_buffers_callback));
+      video_demuxer_stream_data_provider_->SetOnErrorCallback(
+          std::move(initialization_info.video_stream_info->on_error_callback));
+      video_demuxer_stream_data_provider_->OnNewStreamInfo(
+          std::move(initialization_info.video_stream_info->config),
+          std::move(*video_pipe_consumer));
+    } else {
+      DVLOG(1) << "Skipping application of new VideoDecoderConfig as no "
+                  "config parameters have changed";
+    }
   }
 
   InformClientOfConfigChange();
@@ -182,7 +214,7 @@ void ReceiverSessionImpl::OnSessionEnded() {
   DVLOG(1) << __func__;
 
   // Tear down the Mojo connection.
-  cast_streaming_receiver_.reset();
+  demuxer_connector_.reset();
 
   // Tear down all remaining Mojo objects if needed. This is necessary if the
   // Cast Streaming Session ending was initiated by the receiver component.
@@ -201,7 +233,9 @@ void ReceiverSessionImpl::OnMojoDisconnect() {
 
   // Close the Cast Streaming Session. OnSessionEnded() will be called as part
   // of the Session shutdown, which will tear down the Mojo connection.
-  cast_streaming_session_.Stop();
+  if (cast_streaming_session_.is_running()) {
+    cast_streaming_session_.Stop();
+  }
 
   // Tear down all remaining Mojo objects.
   audio_demuxer_stream_data_provider_.reset();

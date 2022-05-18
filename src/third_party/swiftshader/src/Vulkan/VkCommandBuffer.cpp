@@ -430,6 +430,25 @@ private:
 	const uint32_t scissorID;
 };
 
+class CmdSetLineWidth : public vk::CommandBuffer::Command
+{
+public:
+	CmdSetLineWidth(float lineWidth)
+	    : lineWidth(lineWidth)
+	{
+	}
+
+	void execute(vk::CommandBuffer::ExecutionState &executionState) override
+	{
+		executionState.dynamicState.lineWidth = lineWidth;
+	}
+
+	std::string description() override { return "vkCmdSetLineWidth()"; }
+
+private:
+	const float lineWidth;
+};
+
 class CmdSetDepthBias : public vk::CommandBuffer::Command
 {
 public:
@@ -1432,7 +1451,7 @@ public:
 		{
 			// We need both a descriptor set object for updates and a descriptor set data pointer for routines
 			descriptorSetObjects[firstSet + i] = vk::Cast(pDescriptorSets[i]);
-			descriptorSets[firstSet + i] = vk::Cast(pDescriptorSets[i])->data;
+			descriptorSets[firstSet + i] = vk::Cast(pDescriptorSets[i])->getDataAddress();
 		}
 
 		for(uint32_t i = 0; i < dynamicOffsetCount; i++)
@@ -1786,7 +1805,7 @@ VkResult CommandBuffer::reset(VkCommandPoolResetFlags flags)
 }
 
 template<typename T, typename... Args>
-void CommandBuffer::addCommand(Args &&... args)
+void CommandBuffer::addCommand(Args &&...args)
 {
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
 	commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
@@ -1945,8 +1964,7 @@ void CommandBuffer::setScissor(uint32_t firstScissor, uint32_t scissorCount, con
 
 void CommandBuffer::setLineWidth(float lineWidth)
 {
-	// If the wide lines feature is not enabled, lineWidth must be 1.0
-	ASSERT(lineWidth == 1.0f);
+	addCommand<::CmdSetLineWidth>(lineWidth);
 }
 
 void CommandBuffer::setDepthBias(float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor)

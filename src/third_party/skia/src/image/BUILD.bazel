@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_library(
     name = "core_srcs",
@@ -119,6 +121,7 @@ generated_cc_atom(
         "//include/gpu:GrYUVABackendTextures_hdr",
         "//src/core:SkAutoPixmapStorage_hdr",
         "//src/core:SkMipmap_hdr",
+        "//src/core:SkSamplingPriv_hdr",
         "//src/core:SkScopeExit_hdr",
         "//src/gpu/ganesh:GrClip_hdr",
         "//src/gpu/ganesh:GrDirectContextPriv_hdr",

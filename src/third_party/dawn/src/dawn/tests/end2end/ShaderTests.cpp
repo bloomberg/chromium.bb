@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <numeric>
+#include <string>
+#include <vector>
 
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <numeric>
-#include <vector>
 
 class ShaderTests : public DawnTest {
   public:
@@ -91,7 +91,7 @@ struct Buf {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();
@@ -456,7 +456,7 @@ struct Buf {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();
@@ -512,7 +512,7 @@ struct Buf {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();
@@ -564,7 +564,7 @@ struct Buf {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
 
         commands = encoder.Finish();
@@ -651,15 +651,15 @@ struct Buf {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline1);
         pass.SetBindGroup(0, bindGroup1);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
 
         pass.SetPipeline(pipeline2);
         pass.SetBindGroup(0, bindGroup2);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
 
         pass.SetPipeline(pipeline3);
         pass.SetBindGroup(0, bindGroup3);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
 
         pass.End();
 
@@ -730,6 +730,35 @@ fn main(@builtin(vertex_index) VertexIndex : u32)
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(255, 255, 255, 255), renderPass.color, 0, 0);
+}
+
+// This is a regression test for crbug.com/dawn:1363 where the BindingRemapper transform was run
+// before the SingleEntryPoint transform, causing one of the other entry points to have conflicting
+// bindings.
+TEST_P(ShaderTests, ConflictingBindingsDueToTransformOrder) {
+    wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
+        @group(0) @binding(0) var<uniform> b0 : u32;
+        @group(0) @binding(1) var<uniform> b1 : u32;
+
+        @stage(vertex) fn vertex() -> @builtin(position) vec4<f32> {
+            _ = b0;
+            return vec4<f32>(0.0);
+        }
+
+        @stage(fragment) fn fragment() -> @location(0) vec4<f32> {
+            _ = b0;
+            _ = b1;
+            return vec4<f32>(0.0);
+        }
+    )");
+
+    utils::ComboRenderPipelineDescriptor desc;
+    desc.vertex.module = module;
+    desc.vertex.entryPoint = "vertex";
+    desc.cFragment.module = module;
+    desc.cFragment.entryPoint = "fragment";
+
+    device.CreateRenderPipeline(&desc);
 }
 
 // TODO(tint:1155): Test overridable constants used for workgroup size

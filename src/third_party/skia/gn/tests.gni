@@ -52,7 +52,6 @@ tests_sources = [
   "$_tests/CopySurfaceTest.cpp",
   "$_tests/CubicMapTest.cpp",
   "$_tests/CullTestTest.cpp",
-  "$_tests/CustomMeshTest.cpp",
   "$_tests/DashPathEffectTest.cpp",
   "$_tests/DataRefTest.cpp",
   "$_tests/DebugLayerManagerTest.cpp",
@@ -147,6 +146,7 @@ tests_sources = [
   "$_tests/MatrixTest.cpp",
   "$_tests/MemoryTest.cpp",
   "$_tests/MemsetTest.cpp",
+  "$_tests/MeshTest.cpp",
   "$_tests/MessageBusTest.cpp",
   "$_tests/MetaDataTest.cpp",
   "$_tests/MipMapTest.cpp",
@@ -234,6 +234,7 @@ tests_sources = [
   "$_tests/SkColorSpaceXformStepsTest.cpp",
   "$_tests/SkDOMTest.cpp",
   "$_tests/SkDSLRuntimeEffectTest.cpp",
+  "$_tests/SkEnumBitMaskTest.cpp",
   "$_tests/SkGaussFilterTest.cpp",
   "$_tests/SkGlyphBufferTest.cpp",
   "$_tests/SkGlyphTest.cpp",
@@ -337,13 +338,13 @@ graphite_tests_sources = [
   "$_tests/graphite/CommandBufferTest.cpp",
   "$_tests/graphite/IntersectionTreeTest.cpp",
   "$_tests/graphite/KeyTest.cpp",
-  "$_tests/graphite/MaskTest.cpp",
   "$_tests/graphite/PipelineDataCacheTest.cpp",
   "$_tests/graphite/RecorderTest.cpp",
   "$_tests/graphite/RectTest.cpp",
   "$_tests/graphite/ShapeTest.cpp",
   "$_tests/graphite/TransformTest.cpp",
   "$_tests/graphite/UniformTest.cpp",
+  "$_tests/graphite/UploadBufferManagerTest.cpp",
 ]
 
 graphite_metal_tests_sources = [ "$_tests/graphite/MtlBackendTextureTest.mm" ]

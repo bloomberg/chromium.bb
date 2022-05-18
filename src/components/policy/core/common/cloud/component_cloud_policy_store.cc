@@ -23,6 +23,7 @@
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_proto_decoders.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
@@ -78,6 +79,25 @@ const ComponentCloudPolicyStore::DomainConstants* GetDomainConstantsForType(
       return &constants;
   }
   return nullptr;
+}
+
+base::Value::Dict TranslatePolicyMapEntryToJson(const PolicyMap::Entry& entry) {
+  base::Value::Dict result;
+  // This is actually safe because this code just copies the value,
+  // not caring about its type.
+  result.Set(kValue, entry.value_unsafe()->Clone());
+  if (entry.level == POLICY_LEVEL_RECOMMENDED) {
+    result.Set(kLevel, base::StringPiece(kRecommended));
+  }
+  return result;
+}
+
+base::Value::Dict TranslatePolicyMapToJson(const PolicyMap& policy_map) {
+  base::Value::Dict result;
+  for (const auto& [key, entry] : policy_map) {
+    result.Set(key, TranslatePolicyMapEntryToJson(entry));
+  }
+  return result;
 }
 
 }  // namespace
@@ -197,9 +217,6 @@ void ComponentCloudPolicyStore::Load() {
     cached_hashes_[ns] = payload.secure_hash();
     stored_policy_times_[ns] =
         base::Time::FromJavaTime(policy_data.timestamp());
-
-    serialized_policy_[ns] =
-        std::vector<uint8_t>(it->second.begin(), it->second.end());
   }
   delegate_->OnComponentCloudPolicyStoreUpdated();
 }
@@ -232,8 +249,6 @@ bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
   policy_bundle_.Get(ns).Swap(&policy);
   cached_hashes_[ns] = secure_hash;
   stored_policy_times_[ns] = base::Time::FromJavaTime(policy_data->timestamp());
-  serialized_policy_[ns] =
-      std::vector<uint8_t>(serialized_policy.begin(), serialized_policy.end());
   delegate_->OnComponentCloudPolicyStoreUpdated();
   return true;
 }
@@ -250,7 +265,6 @@ void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
 
   if (!policy_bundle_.Get(ns).empty()) {
     policy_bundle_.Get(ns).Clear();
-    serialized_policy_.erase(ns);
     delegate_->OnComponentCloudPolicyStoreUpdated();
   }
 }
@@ -286,7 +300,6 @@ void ComponentCloudPolicyStore::Purge(const PurgeFilter& filter) {
       cached_hashes_.erase(prev);
       DCHECK(stored_policy_times_.count(ns));
       stored_policy_times_.erase(ns);
-      serialized_policy_.erase(ns);
     } else {
       ++it;
     }
@@ -305,7 +318,6 @@ void ComponentCloudPolicyStore::Clear() {
 
   cached_hashes_.clear();
   stored_policy_times_.clear();
-  serialized_policy_.clear();
   const PolicyBundle empty_bundle;
   if (!policy_bundle_.Equals(empty_bundle)) {
     policy_bundle_.Clear();
@@ -430,37 +442,17 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
     return false;
   }
 
-  // Each top-level key maps a policy name to its description.
-  //
-  // Each description is an object that contains the policy value under the
-  // "Value" key. The optional "Level" key is either "Mandatory" (default) or
-  // "Recommended".
-  for (auto it : json.DictItems()) {
-    const std::string& policy_name = it.first;
-    base::Value description = std::move(it.second);
-    if (!description.is_dict()) {
-      *error = "The JSON blob dictionary value is not a dictionary.";
-      return false;
-    }
+  return ParseComponentPolicy(std::move(json), domain_constants_->scope,
+                              POLICY_SOURCE_CLOUD, policy, error);
+}
 
-    absl::optional<base::Value> value = description.ExtractKey(kValue);
-    if (!value.has_value()) {
-      *error = base::StrCat(
-          {"The JSON blob dictionary value doesn't contain the required ",
-           kValue, " field."});
-      return false;
-    }
-
-    PolicyLevel level = POLICY_LEVEL_MANDATORY;
-    const std::string* level_string = description.FindStringKey(kLevel);
-    if (level_string && *level_string == kRecommended)
-      level = POLICY_LEVEL_RECOMMENDED;
-
-    policy->Set(policy_name, level, domain_constants_->scope,
-                POLICY_SOURCE_CLOUD, std::move(value.value()), nullptr);
+ComponentPolicyMap ComponentCloudPolicyStore::GetJsonPolicyMap() {
+  ComponentPolicyMap result;
+  for (const auto& [policy_namespace, policy_map] : policy_bundle_) {
+    result[policy_namespace] =
+        base::Value(TranslatePolicyMapToJson(policy_map));
   }
-
-  return true;
+  return result;
 }
 
 }  // namespace policy

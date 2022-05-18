@@ -17,6 +17,7 @@
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
@@ -24,13 +25,11 @@
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_fenced_frame_reporting.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_impression.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_policy_container.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -59,6 +58,7 @@ namespace blink {
 
 class KURL;
 class WebDocumentLoader;
+class WebServiceWorkerNetworkProvider;
 
 // This structure holds all information collected by Blink when
 // navigation is being initiated.
@@ -157,7 +157,7 @@ struct BLINK_EXPORT WebNavigationInfo {
   // Optional impression associated with this navigation. This is attached when
   // a navigation results from a click on an anchor tag that has conversion
   // measurement attributes.
-  absl::optional<WebImpression> impression;
+  absl::optional<Impression> impression;
 
   // The frame policy specified by the frame owner element.
   // For top-level window with no opener, this is the default lax FramePolicy.
@@ -445,6 +445,9 @@ struct BLINK_EXPORT WebNavigationParams {
   WebVector<WebHistoryItem> navigation_api_forward_entries;
 
   // List of URLs which are preloaded by HTTP Early Hints.
+  // TODO(https://crbug.com/1317936): Pass information more than URL such as
+  // request destination so that ResourceFetcher can provide more useful
+  // console messages when Early Hints preloaded resources are not used.
   WebVector<WebURL> early_hints_preloaded_resources;
 
   // If this is a navigation to fenced frame from an interest group auction,

@@ -186,7 +186,7 @@ namespace internal {
 template <typename Tensor, std::size_t rank>
 struct TensorPrinter {
   static void run(std::ostream& s, const Tensor& _t, const TensorIOFormat& fmt) {
-    typedef typename internal::remove_const<typename Tensor::Scalar>::type Scalar;
+    typedef std::remove_const_t<typename Tensor::Scalar> Scalar;
     typedef typename Tensor::Index IndexType;
     static const int layout = Tensor::Layout;
     // backwards compatibility case: print tensor after reshaping to matrix of size dim(0) x
@@ -203,14 +203,14 @@ struct TensorPrinter {
     }
 
     assert(layout == RowMajor);
-    typedef typename conditional<is_same<Scalar, char>::value || is_same<Scalar, unsigned char>::value ||
-                                     is_same<Scalar, numext::int8_t>::value || is_same<Scalar, numext::uint8_t>::value,
-                                 int,
-                                 typename conditional<is_same<Scalar, std::complex<char> >::value ||
-                                                          is_same<Scalar, std::complex<unsigned char> >::value ||
-                                                          is_same<Scalar, std::complex<numext::int8_t> >::value ||
-                                                          is_same<Scalar, std::complex<numext::uint8_t> >::value,
-                                                      std::complex<int>, const Scalar&>::type>::type PrintType;
+    typedef std::conditional_t<is_same<Scalar, char>::value || is_same<Scalar, unsigned char>::value ||
+                             is_same<Scalar, numext::int8_t>::value || is_same<Scalar, numext::uint8_t>::value,
+                          int,
+                          std::conditional_t<is_same<Scalar, std::complex<char> >::value ||
+                                                is_same<Scalar, std::complex<unsigned char> >::value ||
+                                                is_same<Scalar, std::complex<numext::int8_t> >::value ||
+                                                is_same<Scalar, std::complex<numext::uint8_t> >::value,
+                                        std::complex<int>, const Scalar&>> PrintType;
 
     const IndexType total_size = array_prod(_t.dimensions());
 

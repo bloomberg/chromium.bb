@@ -43,6 +43,10 @@
 #   hash function for preloaded entries again (we have already done so once).
 #
 
+# Last updated: 2022-04-25 00:00 UTC
+PinsListTimestamp
+1650844800
+
 TestSPKI
 sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 
@@ -1569,23 +1573,6 @@ ysqpS9SqP8zQoypnUZalR89ZGf6pjCbKM1ZQWGjBC03B5JRdEoPjULzzBB/e2igM
 Vchpq1U6WS8/WGgtiDNXS43Bx0Nka41KLIk4Pv8VSy7Jfxu6i33+SuA7cDP1oTK9
 aFE/tQpQ/YVB8aQ9+2vGoBDv9bFF+bxMmQyFtST3SUvKLhgeRqLraEd8OPfEizYl
 PwIDAQAB
------END PUBLIC KEY-----
-
-YahooBackup1
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw1vZXDjNejqvtVvyYcP0
-7ubiG0RW1sar002td1qI7Zo9Lz8kZtrAUJrBXGh6bbpovsIwWkUjirUQk2b3M7Ob
-bgQWVGGeQlrVUUjTMth4Cg5p2Xj8b5Z5Nt7H4G9yS1boxQyh23yxpS6vB4E8LNhY
-xUBdL20j24UeRjMC+KcgKLdz0cnXpu/icfLNs9NRuYGFQZzdM7hlCKJKFLZfpNOw
-xW38ArbbJfvCZ7KhenRphlnCTCxUglp3hgGMc9pBb2xKhIh1bABn12/DB/ZuOP4d
-hYeg5UhYKhS7Z5q3Yg+mBLgQQrdat82yTU677iY38IXNzud9kvxRYb5mZrc5va6N
-SQIDAQAB
------END PUBLIC KEY-----
-
-YahooBackup2
------BEGIN PUBLIC KEY-----
-MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEY26fFxATbUDuPe7tEeZx7uGLIycMrm20
-/opCiPXC5oAcyOu0pLmiGWBKD8CRK+Po/pYsyIsHotll0aZ6V3BbQg==
 -----END PUBLIC KEY-----
 
 # From https://letsencrypt.org/certificates/

@@ -3838,7 +3838,7 @@ TEST_F(VkLayerTest, ImageBarrierSubpassConflicts) {
     image.InitNoLayout(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
 
-    VkFramebufferCreateInfo fbci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp, 1, &imageView, 32, 32, 1};
+    VkFramebufferCreateInfo fbci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp_noselfdep, 1, &imageView, 32, 32, 1};
     VkFramebuffer fb;
     err = vk::CreateFramebuffer(m_device->device(), &fbci, nullptr, &fb);
     ASSERT_VK_SUCCESS(err);
@@ -14359,6 +14359,192 @@ TEST_F(VkLayerTest, InvalidQueueBindSparseMemoryType) {
     m_errorMonitor->VerifyFound();
 }
 
+TEST_F(VkLayerTest, QueueBindSparse_InvalidSparseMemoryBindSize) {
+    TEST_DESCRIPTION("Test QueueBindSparse with invalid sparse memory bind size");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (!m_device->phy().features().sparseBinding) {
+        printf("%s Test requires unsupported sparseBinding feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo b_info =
+        vk_testing::Buffer::create_info(256, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, nullptr);
+    b_info.flags = VK_BUFFER_CREATE_SPARSE_BINDING_BIT;
+    VkBufferObj buffer_sparse;
+    buffer_sparse.init_no_mem(*m_device, b_info);
+
+    VkMemoryRequirements buffer_mem_reqs;
+    vk::GetBufferMemoryRequirements(device(), buffer_sparse.handle(), &buffer_mem_reqs);
+    VkMemoryAllocateInfo buffer_mem_alloc =
+        vk_testing::DeviceMemory::alloc_info(buffer_mem_reqs.size, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vk_testing::DeviceMemory buffer_mem;
+    buffer_mem.init(*m_device, buffer_mem_alloc);
+
+    VkSparseMemoryBind buffer_memory_bind = {};
+    buffer_memory_bind.size = 0u;  // This will trigger the VUID we are testing
+    buffer_memory_bind.memory = buffer_mem.handle();
+
+    VkSparseBufferMemoryBindInfo buffer_memory_bind_info{};
+    buffer_memory_bind_info.buffer = buffer_sparse.handle();
+    buffer_memory_bind_info.bindCount = 1;
+    buffer_memory_bind_info.pBinds = &buffer_memory_bind;
+
+    VkBindSparseInfo bind_info = LvlInitStruct<VkBindSparseInfo>();
+    bind_info.bufferBindCount = 1;
+    bind_info.pBufferBinds = &buffer_memory_bind_info;
+
+    uint32_t sparse_index = m_device->QueueFamilyMatching(VK_QUEUE_SPARSE_BINDING_BIT, 0u);
+    VkQueue sparse_queue = m_device->graphics_queues()[sparse_index]->handle();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSparseMemoryBind-size-01098");
+    vk::QueueBindSparse(sparse_queue, 1, &bind_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, QueueBindSparse_InvalidSparseMemoryBindResourceOffset) {
+    TEST_DESCRIPTION("Test QueueBindSparse with invalid sparse memory bind resource offset");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (!m_device->phy().features().sparseBinding) {
+        printf("%s Test requires unsupported sparseBinding feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo b_info =
+        vk_testing::Buffer::create_info(256, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, nullptr);
+    b_info.flags = VK_BUFFER_CREATE_SPARSE_BINDING_BIT;
+    VkBufferObj buffer_sparse;
+    buffer_sparse.init_no_mem(*m_device, b_info);
+
+    VkMemoryRequirements buffer_mem_reqs;
+    vk::GetBufferMemoryRequirements(device(), buffer_sparse.handle(), &buffer_mem_reqs);
+    VkMemoryAllocateInfo buffer_mem_alloc =
+        vk_testing::DeviceMemory::alloc_info(buffer_mem_reqs.size, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vk_testing::DeviceMemory buffer_mem;
+    buffer_mem.init(*m_device, buffer_mem_alloc);
+
+    VkSparseMemoryBind buffer_memory_bind = {};
+    buffer_memory_bind.size = buffer_mem_reqs.size;
+    buffer_memory_bind.memory = buffer_mem.handle();
+    // This will trigger the VUID we are testing
+    buffer_memory_bind.resourceOffset = buffer_mem_reqs.size + buffer_mem_reqs.size;
+
+    VkSparseBufferMemoryBindInfo buffer_memory_bind_info{};
+    buffer_memory_bind_info.buffer = buffer_sparse.handle();
+    buffer_memory_bind_info.bindCount = 1;
+    buffer_memory_bind_info.pBinds = &buffer_memory_bind;
+
+    VkBindSparseInfo bind_info = LvlInitStruct<VkBindSparseInfo>();
+    bind_info.bufferBindCount = 1;
+    bind_info.pBufferBinds = &buffer_memory_bind_info;
+
+    uint32_t sparse_index = m_device->QueueFamilyMatching(VK_QUEUE_SPARSE_BINDING_BIT, 0u);
+    VkQueue sparse_queue = m_device->graphics_queues()[sparse_index]->handle();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSparseMemoryBind-resourceOffset-01099");
+    vk::QueueBindSparse(sparse_queue, 1, &bind_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, QueueBindSparse_InvalidSparseMemoryBindSizeResourceOffset) {
+    TEST_DESCRIPTION("Test QueueBindSparse with invalid sparse memory bind size due to resource offset");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (!m_device->phy().features().sparseBinding) {
+        printf("%s Test requires unsupported sparseBinding feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo b_info =
+        vk_testing::Buffer::create_info(256, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, nullptr);
+    b_info.flags = VK_BUFFER_CREATE_SPARSE_BINDING_BIT;
+    VkBufferObj buffer_sparse;
+    buffer_sparse.init_no_mem(*m_device, b_info);
+
+    VkMemoryRequirements buffer_mem_reqs;
+    vk::GetBufferMemoryRequirements(device(), buffer_sparse.handle(), &buffer_mem_reqs);
+    VkMemoryAllocateInfo buffer_mem_alloc =
+        vk_testing::DeviceMemory::alloc_info(buffer_mem_reqs.size, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vk_testing::DeviceMemory buffer_mem;
+    buffer_mem.init(*m_device, buffer_mem_alloc);
+
+    VkSparseMemoryBind buffer_memory_bind = {};
+    buffer_memory_bind.memory = buffer_mem.handle();
+    // This will trigger the VUID we are testing
+    buffer_memory_bind.resourceOffset = 100;
+    buffer_memory_bind.size = buffer_mem_reqs.size;
+
+    VkSparseBufferMemoryBindInfo buffer_memory_bind_info{};
+    buffer_memory_bind_info.buffer = buffer_sparse.handle();
+    buffer_memory_bind_info.bindCount = 1;
+    buffer_memory_bind_info.pBinds = &buffer_memory_bind;
+
+    VkBindSparseInfo bind_info = LvlInitStruct<VkBindSparseInfo>();
+    bind_info.bufferBindCount = 1;
+    bind_info.pBufferBinds = &buffer_memory_bind_info;
+
+    uint32_t sparse_index = m_device->QueueFamilyMatching(VK_QUEUE_SPARSE_BINDING_BIT, 0u);
+    VkQueue sparse_queue = m_device->graphics_queues()[sparse_index]->handle();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSparseMemoryBind-size-01100");
+    vk::QueueBindSparse(sparse_queue, 1, &bind_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, QueueBindSparse_InvalidSparseMemoryBindSizeMemoryOffset) {
+    TEST_DESCRIPTION("Test QueueBindSparse with invalid sparse memory bind size due to memory offset");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (!m_device->phy().features().sparseBinding) {
+        printf("%s Test requires unsupported sparseBinding feature. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkBufferCreateInfo b_info =
+        vk_testing::Buffer::create_info(256, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, nullptr);
+    b_info.flags = VK_BUFFER_CREATE_SPARSE_BINDING_BIT;
+    VkBufferObj buffer_sparse;
+    buffer_sparse.init_no_mem(*m_device, b_info);
+
+    VkMemoryRequirements buffer_mem_reqs;
+    vk::GetBufferMemoryRequirements(device(), buffer_sparse.handle(), &buffer_mem_reqs);
+    VkMemoryAllocateInfo buffer_mem_alloc =
+        vk_testing::DeviceMemory::alloc_info(buffer_mem_reqs.size, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    vk_testing::DeviceMemory buffer_mem;
+    buffer_mem.init(*m_device, buffer_mem_alloc);
+
+    VkSparseMemoryBind buffer_memory_bind = {};
+    buffer_memory_bind.memory = buffer_mem.handle();
+    // This will trigger the VUID we are testing
+    buffer_memory_bind.memoryOffset = buffer_mem_alloc.allocationSize - 1;
+    buffer_memory_bind.size = buffer_mem_reqs.size;
+
+    VkSparseBufferMemoryBindInfo buffer_memory_bind_info{};
+    buffer_memory_bind_info.buffer = buffer_sparse.handle();
+    buffer_memory_bind_info.bindCount = 1;
+    buffer_memory_bind_info.pBinds = &buffer_memory_bind;
+
+    VkBindSparseInfo bind_info = LvlInitStruct<VkBindSparseInfo>();
+    bind_info.bufferBindCount = 1;
+    bind_info.pBufferBinds = &buffer_memory_bind_info;
+
+    uint32_t sparse_index = m_device->QueueFamilyMatching(VK_QUEUE_SPARSE_BINDING_BIT, 0u);
+    VkQueue sparse_queue = m_device->graphics_queues()[sparse_index]->handle();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSparseMemoryBind-size-01102");
+    vk::QueueBindSparse(sparse_queue, 1, &bind_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, InvalidConditionalRenderingOffset) {
     TEST_DESCRIPTION("Begin conditional rendering with invalid offset.");
 
@@ -15185,8 +15371,13 @@ TEST_F(VkLayerTest, ImageViewMinLodFeature) {
 TEST_F(VkLayerTest, ValidateDeviceImageMemoryRequirements) {
     TEST_DESCRIPTION("Validate usage of VkDeviceImageMemoryRequirementsKHR.");
 
+    SetTargetApiVersion(VK_API_VERSION_1_1);
     AddRequiredExtensions(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(Init());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
     if (!AreRequestedExtensionsEnabled()) {
         printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
         return;
@@ -15235,10 +15426,18 @@ TEST_F(VkLayerTest, TestCompletelyOverlappingBufferCopy) {
     VkMemoryPropertyFlags reqs = 0;
     buffer.init_as_src_and_dst(*m_device, copy_info.size, reqs);
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
+    VkBufferObj buffer_shared_memory;
+    buffer_shared_memory.init_no_mem(*m_device, buffer.create_info());
+    buffer_shared_memory.bind_memory(buffer.memory(), 0u);
 
     m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
     vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer.handle(), 1, &copy_info);
+    // TODO AITOR: Uncomment lines below once we correctly check memory overlap
+    // m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
+    // vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer_shared_memory.handle(), 1, &copy_info);
+
     m_commandBuffer->end();
 
     m_errorMonitor->VerifyFound();
@@ -15266,15 +15465,23 @@ TEST_F(VkLayerTest, TestCopyingInterleavedRegions) {
     VkMemoryPropertyFlags reqs = 0;
     buffer.init_as_src_and_dst(*m_device, 32, reqs);
 
+    VkBufferObj buffer_shared_memory;
+    buffer_shared_memory.init_no_mem(*m_device, buffer.create_info());
+    buffer_shared_memory.bind_memory(buffer.memory(), 0u);
+
     m_commandBuffer->begin();
 
     m_errorMonitor->ExpectSuccess();
     vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer.handle(), 4, copy_infos);
+    vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer_shared_memory.handle(), 4, copy_infos);
     m_errorMonitor->VerifyNotFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
     copy_infos[2].dstOffset = 21;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
     vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer.handle(), 4, copy_infos);
+    // TODO AITOR: Uncomment lines below once we correctly check memory overlap
+    // m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdCopyBuffer-pRegions-00117");
+    // vk::CmdCopyBuffer(m_commandBuffer->handle(), buffer.handle(), buffer_shared_memory.handle(), 4, copy_infos);
     m_errorMonitor->VerifyFound();
 
     m_commandBuffer->end();
@@ -15293,6 +15500,293 @@ TEST_F(VkLayerTest, TestSamplerReductionMode) {
     VkSampler sampler;
     m_errorMonitor->SetAllowedFailureMsg("VUID-VkSamplerCreateInfo-pNext-pNext");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSamplerCreateInfo-pNext-06726");
+    vk::CreateSampler(device(), &sampler_ci, nullptr, &sampler);
+    m_errorMonitor->VerifyFound();
+}
+
+
+TEST_F(VkLayerTest, TestBindBufferMemoryDeviceGroup) {
+    TEST_DESCRIPTION("Test VkBindBufferMemoryDeviceGroupInfo.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    uint32_t physical_device_group_count = 0;
+    vk::EnumeratePhysicalDeviceGroups(instance(), &physical_device_group_count, nullptr);
+
+    if (physical_device_group_count == 0) {
+        printf("%s physical_device_group_count is 0, skipping test\n", kSkipPrefix);
+        return;
+    }
+    std::vector<VkPhysicalDeviceGroupProperties> physical_device_group(physical_device_group_count,
+                                                                       {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GROUP_PROPERTIES});
+    vk::EnumeratePhysicalDeviceGroups(instance(), &physical_device_group_count, physical_device_group.data());
+    auto create_device_pnext = LvlInitStruct<VkDeviceGroupDeviceCreateInfo>();
+    create_device_pnext.physicalDeviceCount = 0;
+    create_device_pnext.pPhysicalDevices = nullptr;
+    for (const auto &dg : physical_device_group) {
+        if (dg.physicalDeviceCount > 1) {
+            create_device_pnext.physicalDeviceCount = dg.physicalDeviceCount;
+            create_device_pnext.pPhysicalDevices = dg.physicalDevices;
+            break;
+        }
+    }
+    if (create_device_pnext.pPhysicalDevices) {
+        ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &create_device_pnext));
+    } else {
+        printf("%s Test requires a physical device group with more than 1 device.\n", kSkipPrefix);
+        return;
+    }
+
+    m_errorMonitor->ExpectSuccess();
+
+    VkBufferObj buffer;
+    auto buffer_info = VkBufferObj::create_info(4096, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    buffer.init_no_mem(*m_device, buffer_info);
+
+    VkMemoryRequirements buffer_mem_reqs;
+    vk::GetBufferMemoryRequirements(m_device->device(), buffer.handle(), &buffer_mem_reqs);
+    VkMemoryAllocateInfo buffer_alloc_info = LvlInitStruct<VkMemoryAllocateInfo>();
+    buffer_alloc_info.memoryTypeIndex = 0;
+    buffer_alloc_info.allocationSize = buffer_mem_reqs.size;
+
+    VkDeviceMemory buffer_memory;
+    vk::AllocateMemory(m_device->device(), &buffer_alloc_info, nullptr, &buffer_memory);
+
+    uint32_t device_indices[1] = {0};
+
+    VkBindBufferMemoryDeviceGroupInfo bind_buffer_memory_device_group = LvlInitStruct<VkBindBufferMemoryDeviceGroupInfo>();
+    bind_buffer_memory_device_group.deviceIndexCount = 1;
+    bind_buffer_memory_device_group.pDeviceIndices = device_indices;
+
+    VkBindBufferMemoryInfo bind_buffer_info = LvlInitStruct<VkBindBufferMemoryInfo>(&bind_buffer_memory_device_group);
+    bind_buffer_info.buffer = buffer.handle();
+    bind_buffer_info.memory = buffer_memory;
+    bind_buffer_info.memoryOffset = 0;
+
+    m_errorMonitor->VerifyNotFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindBufferMemoryDeviceGroupInfo-deviceIndexCount-01606");
+    vk::BindBufferMemory2(device(), 1, &bind_buffer_info);
+    m_errorMonitor->VerifyFound();
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+    VkImageObj image(m_device);
+    image.init_no_mem(*m_device, image_create_info);
+
+    VkMemoryRequirements image_mem_reqs;
+    vk::GetBufferMemoryRequirements(m_device->device(), buffer.handle(), &image_mem_reqs);
+    VkMemoryAllocateInfo image_alloc_info = LvlInitStruct<VkMemoryAllocateInfo>();
+    image_alloc_info.memoryTypeIndex = 0;
+    image_alloc_info.allocationSize = image_mem_reqs.size;
+
+    VkDeviceMemory image_memory;
+    vk::AllocateMemory(m_device->device(), &image_alloc_info, nullptr, &image_memory);
+
+    VkBindImageMemoryDeviceGroupInfo bind_image_memory_device_group = LvlInitStruct<VkBindImageMemoryDeviceGroupInfo>();
+    bind_image_memory_device_group.deviceIndexCount = 1;
+    bind_image_memory_device_group.pDeviceIndices = device_indices;
+
+    VkBindImageMemoryInfo bind_image_info = LvlInitStruct<VkBindImageMemoryInfo>(&bind_image_memory_device_group);
+    bind_image_info.image = image.handle();
+    bind_image_info.memory = image_memory;
+    bind_image_info.memoryOffset = 0;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryDeviceGroupInfo-deviceIndexCount-01634");
+    vk::BindImageMemory2(device(), 1, &bind_image_info);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, CreateColorImageWithDepthAspect) {
+    TEST_DESCRIPTION("Test creating an image with color format but depth aspect.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    m_errorMonitor->ExpectSuccess();
+
+    auto format = FindSupportedDepthStencilFormat(gpu());
+    if (!format) {
+        printf("%s No Depth + Stencil format found. Skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    VkImageObj color_image(m_device);
+    color_image.Init(64, 64, 1, format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL);
+
+    m_errorMonitor->VerifyNotFound();
+
+    VkImageViewCreateInfo civ_ci = LvlInitStruct<VkImageViewCreateInfo>();
+    civ_ci.image = color_image.handle();
+    civ_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    civ_ci.format = format;
+    civ_ci.subresourceRange.layerCount = 1;
+    civ_ci.subresourceRange.baseMipLevel = 0;
+    civ_ci.subresourceRange.levelCount = 1;
+    civ_ci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    vk_testing::ImageView color_image_view;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidImageAspect");
+    color_image_view.init(*m_device, civ_ci);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, VideoBufferUsage) {
+    TEST_DESCRIPTION("Create buffer with USAGE_VIDEO_DECODE.");
+
+    AddRequiredExtensions(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s extension not supported, skipping test.\n", kSkipPrefix, VK_KHR_VIDEO_QUEUE_EXTENSION_NAME);
+        return;
+    }
+
+    VkBufferCreateInfo buffer_ci = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_ci.usage = VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR | VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR;
+    buffer_ci.size = 2048;
+
+    VkBuffer buffer;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBufferCreateInfo-usage-04813");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBufferCreateInfo-usage-04814");
+    vk::CreateBuffer(device(), &buffer_ci, nullptr, &buffer);
+    m_errorMonitor->VerifyFound();
+
+    VkVideoProfileKHR video_profile[2];
+    video_profile[0] = LvlInitStruct<VkVideoProfileKHR>();
+    video_profile[0].videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_EXT;
+    video_profile[0].chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_MONOCHROME_BIT_KHR;
+    video_profile[0].chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+    video_profile[0].lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+    video_profile[1] = LvlInitStruct<VkVideoProfileKHR>();
+    video_profile[1].videoCodecOperation = VK_VIDEO_CODEC_OPERATION_ENCODE_H264_BIT_EXT;
+    video_profile[1].chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_MONOCHROME_BIT_KHR;
+    video_profile[1].chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+    video_profile[1].lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR;
+    VkVideoProfilesKHR video_profiles = LvlInitStruct<VkVideoProfilesKHR>();
+    video_profiles.profileCount = 1;
+    video_profiles.pProfiles = video_profile;
+    buffer_ci.pNext = &video_profiles;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBufferCreateInfo-usage-04814");
+    vk::CreateBuffer(device(), &buffer_ci, nullptr, &buffer);
+    m_errorMonitor->VerifyFound();
+
+    video_profiles.profileCount = 2;
+
+    m_errorMonitor->ExpectSuccess();
+    vk::CreateBuffer(device(), &buffer_ci, nullptr, &buffer);
+    m_errorMonitor->VerifyNotFound();
+
+    vk::DestroyBuffer(device(), buffer, nullptr);
+}
+
+TEST_F(VkLayerTest, TestInvalidBarrierQueues) {
+    TEST_DESCRIPTION("Test buffer memory with both src and dst queue VK_QUEUE_FAMILY_EXTERNAL.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    VkBufferObj buffer;
+    VkMemoryPropertyFlags mem_reqs = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+    buffer.init_as_src_and_dst(*m_device, 256, mem_reqs);
+
+    VkBufferMemoryBarrier bmb = LvlInitStruct<VkBufferMemoryBarrier>();
+    bmb.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    bmb.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    bmb.srcQueueFamilyIndex = VK_QUEUE_FAMILY_EXTERNAL;
+    bmb.dstQueueFamilyIndex = VK_QUEUE_FAMILY_EXTERNAL;
+    bmb.buffer = buffer.handle();
+    bmb.offset = 0;
+    bmb.size = VK_WHOLE_SIZE;
+
+    m_commandBuffer->begin();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBufferMemoryBarrier-srcQueueFamilyIndex-04087");
+    vk::CmdPipelineBarrier(m_commandBuffer->handle(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 1, &bmb, 0, nullptr);
+    m_errorMonitor->VerifyFound();
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, TestBarrierAccessVideoDecode) {
+    TEST_DESCRIPTION("Test barrier with access decode read bit.");
+
+    AddRequiredExtensions(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s or %s is not supported, skipping test.\n", kSkipPrefix, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+               VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME);
+        return;
+    }
+    if (!CheckSynchronization2SupportAndInitState(this)) {
+        printf("%s Synchronization2 not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    VkMemoryBarrier2 mem_barrier = LvlInitStruct<VkMemoryBarrier2>();
+    mem_barrier.srcAccessMask = VK_ACCESS_2_VIDEO_DECODE_READ_BIT_KHR;
+    mem_barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+    mem_barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT;
+    mem_barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+
+    VkDependencyInfo dependency_info = LvlInitStruct<VkDependencyInfo>();
+    dependency_info.memoryBarrierCount = 1;
+    dependency_info.pMemoryBarriers = &mem_barrier;
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryBarrier2-srcAccessMask-04858");
+    m_commandBuffer->PipelineBarrier2KHR(&dependency_info);
+
+    mem_barrier.srcAccessMask = VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryBarrier2-srcAccessMask-04859");
+    m_commandBuffer->PipelineBarrier2KHR(&dependency_info);
+
+    mem_barrier.srcAccessMask = VK_ACCESS_2_VIDEO_ENCODE_READ_BIT_KHR;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryBarrier2-srcAccessMask-04860");
+    m_commandBuffer->PipelineBarrier2KHR(&dependency_info);
+
+    mem_barrier.srcAccessMask = VK_ACCESS_2_VIDEO_ENCODE_WRITE_BIT_KHR;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkMemoryBarrier2-srcAccessMask-04861");
+    m_commandBuffer->PipelineBarrier2KHR(&dependency_info);
+
+    m_commandBuffer->end();
+
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestInvalidSamplerReductionMode) {
+    TEST_DESCRIPTION("Create sampler with invalid combination of filter and reduction mode.");
+
+    AddRequiredExtensions(VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s is not supported, skipping test.\n", kSkipPrefix,
+               VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
+        return;
+    }
+
+    VkSamplerReductionModeCreateInfo sampler_reduction_mode_ci = LvlInitStruct<VkSamplerReductionModeCreateInfo>();
+    sampler_reduction_mode_ci.reductionMode = VK_SAMPLER_REDUCTION_MODE_MAX;
+    VkSamplerCreateInfo sampler_ci = LvlInitStruct<VkSamplerCreateInfo>(&sampler_reduction_mode_ci);
+    sampler_ci.magFilter = VK_FILTER_CUBIC_EXT;
+
+    VkSampler sampler;
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSamplerCreateInfo-magFilter-01422");
     vk::CreateSampler(device(), &sampler_ci, nullptr, &sampler);
     m_errorMonitor->VerifyFound();
 }

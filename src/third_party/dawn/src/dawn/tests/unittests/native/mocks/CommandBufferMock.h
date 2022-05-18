@@ -15,24 +15,20 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_COMMANDBUFFERMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_COMMANDBUFFERMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/CommandBuffer.h"
 #include "dawn/native/Device.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class CommandBufferMock : public CommandBufferBase {
-      public:
-        CommandBufferMock(DeviceBase* device) : CommandBufferBase(device) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->CommandBufferBase::DestroyImpl();
-            });
-        }
-        ~CommandBufferMock() override = default;
+class CommandBufferMock : public CommandBufferBase {
+  public:
+    explicit CommandBufferMock(DeviceBase* device);
+    ~CommandBufferMock() override;
 
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
 }  // namespace dawn::native
 

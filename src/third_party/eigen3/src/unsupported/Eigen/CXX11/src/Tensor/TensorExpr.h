@@ -37,9 +37,9 @@ struct traits<TensorCwiseNullaryOp<NullaryOp, XprType> >
   typedef traits<XprType> XprTraits;
   typedef typename XprType::Scalar Scalar;
   typedef typename XprType::Nested XprTypeNested;
-  typedef typename remove_reference<XprTypeNested>::type XprTypeNested_;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
+  typedef std::remove_reference_t<XprTypeNested> XprTypeNested_;
+  static constexpr int NumDimensions = XprTraits::NumDimensions;
+  static constexpr int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;
   enum {
     Flags = 0
@@ -65,7 +65,7 @@ class TensorCwiseNullaryOp : public TensorBase<TensorCwiseNullaryOp<NullaryOp, X
         : m_xpr(xpr), m_functor(func) {}
 
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename XprType::Nested>::type&
+    const internal::remove_all_t<typename XprType::Nested>&
     nestedExpression() const { return m_xpr; }
 
     EIGEN_DEVICE_FUNC
@@ -88,9 +88,9 @@ struct traits<TensorCwiseUnaryOp<UnaryOp, XprType> >
   typedef typename result_of<UnaryOp(typename XprType::Scalar)>::type Scalar;
   typedef traits<XprType> XprTraits;
   typedef typename XprType::Nested XprTypeNested;
-  typedef typename remove_reference<XprTypeNested>::type XprTypeNested_;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
+  typedef std::remove_reference_t<XprTypeNested> XprTypeNested_;
+  static constexpr int NumDimensions = XprTraits::NumDimensions;
+  static constexpr int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar, 
                                   typename XprTraits::PointerType
                                   >::type 
@@ -134,7 +134,7 @@ class TensorCwiseUnaryOp : public TensorBase<TensorCwiseUnaryOp<UnaryOp, XprType
 
     /** \returns the nested expression */
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename XprType::Nested>::type&
+    const internal::remove_all_t<typename XprType::Nested>&
     nestedExpression() const { return m_xpr; }
 
   protected:
@@ -163,14 +163,14 @@ struct traits<TensorCwiseBinaryOp<BinaryOp, LhsXprType, RhsXprType> >
       typename traits<RhsXprType>::Index>::type Index;
   typedef typename LhsXprType::Nested LhsNested;
   typedef typename RhsXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type LhsNested_;
-  typedef typename remove_reference<RhsNested>::type RhsNested_;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
+  typedef std::remove_reference_t<LhsNested> LhsNested_;
+  typedef std::remove_reference_t<RhsNested> RhsNested_;
+  static constexpr int NumDimensions = XprTraits::NumDimensions;
+  static constexpr int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar,
-                                  typename conditional<Pointer_type_promotion<typename LhsXprType::Scalar, Scalar>::val,
+                                  std::conditional_t<Pointer_type_promotion<typename LhsXprType::Scalar, Scalar>::val,
                                                       typename traits<LhsXprType>::PointerType,
-                                                      typename traits<RhsXprType>::PointerType>::type
+                                                      typename traits<RhsXprType>::PointerType>
                                   >::type 
                                   PointerType;
   enum {
@@ -215,11 +215,11 @@ class TensorCwiseBinaryOp : public TensorBase<TensorCwiseBinaryOp<BinaryOp, LhsX
 
     /** \returns the nested expressions */
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename LhsXprType::Nested>::type&
+    const internal::remove_all_t<typename LhsXprType::Nested>&
     lhsExpression() const { return m_lhs_xpr; }
 
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename RhsXprType::Nested>::type&
+    const internal::remove_all_t<typename RhsXprType::Nested>&
     rhsExpression() const { return m_rhs_xpr; }
 
   protected:
@@ -244,15 +244,15 @@ struct traits<TensorCwiseTernaryOp<TernaryOp, Arg1XprType, Arg2XprType, Arg3XprT
   typedef typename Arg1XprType::Nested Arg1Nested;
   typedef typename Arg2XprType::Nested Arg2Nested;
   typedef typename Arg3XprType::Nested Arg3Nested;
-  typedef typename remove_reference<Arg1Nested>::type Arg1Nested_;
-  typedef typename remove_reference<Arg2Nested>::type Arg2Nested_;
-  typedef typename remove_reference<Arg3Nested>::type Arg3Nested_;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
+  typedef std::remove_reference_t<Arg1Nested> Arg1Nested_;
+  typedef std::remove_reference_t<Arg2Nested> Arg2Nested_;
+  typedef std::remove_reference_t<Arg3Nested> Arg3Nested_;
+  static constexpr int NumDimensions = XprTraits::NumDimensions;
+  static constexpr int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar,
-                                  typename conditional<Pointer_type_promotion<typename Arg2XprType::Scalar, Scalar>::val,
+                                  std::conditional_t<Pointer_type_promotion<typename Arg2XprType::Scalar, Scalar>::val,
                                                       typename traits<Arg2XprType>::PointerType,
-                                                      typename traits<Arg3XprType>::PointerType>::type
+                                                      typename traits<Arg3XprType>::PointerType>
                                   >::type 
                                   PointerType;
   enum {
@@ -295,15 +295,15 @@ class TensorCwiseTernaryOp : public TensorBase<TensorCwiseTernaryOp<TernaryOp, A
 
     /** \returns the nested expressions */
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename Arg1XprType::Nested>::type&
+    const internal::remove_all_t<typename Arg1XprType::Nested>&
     arg1Expression() const { return m_arg1_xpr; }
 
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename Arg2XprType::Nested>::type&
+    const internal::remove_all_t<typename Arg2XprType::Nested>&
     arg2Expression() const { return m_arg2_xpr; }
 
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<typename Arg3XprType::Nested>::type&
+    const internal::remove_all_t<typename Arg3XprType::Nested>&
     arg3Expression() const { return m_arg3_xpr; }
 
   protected:
@@ -328,11 +328,11 @@ struct traits<TensorSelectOp<IfXprType, ThenXprType, ElseXprType> >
   typedef typename IfXprType::Nested IfNested;
   typedef typename ThenXprType::Nested ThenNested;
   typedef typename ElseXprType::Nested ElseNested;
-  static const int NumDimensions = XprTraits::NumDimensions;
-  static const int Layout = XprTraits::Layout;
-  typedef typename conditional<Pointer_type_promotion<typename ThenXprType::Scalar, Scalar>::val,
+  static constexpr int NumDimensions = XprTraits::NumDimensions;
+  static constexpr int Layout = XprTraits::Layout;
+  typedef std::conditional_t<Pointer_type_promotion<typename ThenXprType::Scalar, Scalar>::val,
                                typename traits<ThenXprType>::PointerType,
-                               typename traits<ElseXprType>::PointerType>::type PointerType;
+                               typename traits<ElseXprType>::PointerType> PointerType;
 };
 
 template<typename IfXprType, typename ThenXprType, typename ElseXprType>

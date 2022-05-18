@@ -963,17 +963,9 @@ export namespace Audits {
 
   export const enum AttributionReportingIssueType {
     PermissionPolicyDisabled = 'PermissionPolicyDisabled',
-    InvalidAttributionSourceEventId = 'InvalidAttributionSourceEventId',
-    InvalidAttributionData = 'InvalidAttributionData',
     AttributionSourceUntrustworthyOrigin = 'AttributionSourceUntrustworthyOrigin',
     AttributionUntrustworthyOrigin = 'AttributionUntrustworthyOrigin',
-    AttributionTriggerDataTooLarge = 'AttributionTriggerDataTooLarge',
-    AttributionEventSourceTriggerDataTooLarge = 'AttributionEventSourceTriggerDataTooLarge',
-    InvalidAttributionSourceExpiry = 'InvalidAttributionSourceExpiry',
-    InvalidAttributionSourcePriority = 'InvalidAttributionSourcePriority',
-    InvalidEventSourceTriggerData = 'InvalidEventSourceTriggerData',
-    InvalidTriggerPriority = 'InvalidTriggerPriority',
-    InvalidTriggerDedupKey = 'InvalidTriggerDedupKey',
+    InvalidHeader = 'InvalidHeader',
   }
 
   /**
@@ -1025,32 +1017,71 @@ export namespace Audits {
   }
 
   export const enum DeprecationIssueType {
+    AuthorizationCoveredByWildcard = 'AuthorizationCoveredByWildcard',
+    CanRequestURLHTTPContainingNewline = 'CanRequestURLHTTPContainingNewline',
+    ChromeLoadTimesConnectionInfo = 'ChromeLoadTimesConnectionInfo',
+    ChromeLoadTimesFirstPaintAfterLoadTime = 'ChromeLoadTimesFirstPaintAfterLoadTime',
+    ChromeLoadTimesWasAlternateProtocolAvailable = 'ChromeLoadTimesWasAlternateProtocolAvailable',
+    CookieWithTruncatingChar = 'CookieWithTruncatingChar',
+    CrossOriginAccessBasedOnDocumentDomain = 'CrossOriginAccessBasedOnDocumentDomain',
+    CrossOriginWindowAlert = 'CrossOriginWindowAlert',
+    CrossOriginWindowConfirm = 'CrossOriginWindowConfirm',
+    CSSSelectorInternalMediaControlsOverlayCastButton = 'CSSSelectorInternalMediaControlsOverlayCastButton',
+    CustomCursorIntersectsViewport = 'CustomCursorIntersectsViewport',
     DeprecationExample = 'DeprecationExample',
-    Untranslated = 'Untranslated',
+    DocumentDomainSettingWithoutOriginAgentClusterHeader = 'DocumentDomainSettingWithoutOriginAgentClusterHeader',
+    EventPath = 'EventPath',
+    GeolocationInsecureOrigin = 'GeolocationInsecureOrigin',
+    GeolocationInsecureOriginDeprecatedNotRemoved = 'GeolocationInsecureOriginDeprecatedNotRemoved',
+    GetUserMediaInsecureOrigin = 'GetUserMediaInsecureOrigin',
+    HostCandidateAttributeGetter = 'HostCandidateAttributeGetter',
+    InsecurePrivateNetworkSubresourceRequest = 'InsecurePrivateNetworkSubresourceRequest',
+    LegacyConstraintGoogIPv6 = 'LegacyConstraintGoogIPv6',
+    LocalCSSFileExtensionRejected = 'LocalCSSFileExtensionRejected',
+    MediaElementAudioSourceNode = 'MediaElementAudioSourceNode',
+    MediaSourceAbortRemove = 'MediaSourceAbortRemove',
+    MediaSourceDurationTruncatingBuffered = 'MediaSourceDurationTruncatingBuffered',
+    NoSysexWebMIDIWithoutPermission = 'NoSysexWebMIDIWithoutPermission',
+    NotificationInsecureOrigin = 'NotificationInsecureOrigin',
+    NotificationPermissionRequestedIframe = 'NotificationPermissionRequestedIframe',
+    ObsoleteWebRtcCipherSuite = 'ObsoleteWebRtcCipherSuite',
+    PaymentRequestBasicCard = 'PaymentRequestBasicCard',
+    PaymentRequestShowWithoutGesture = 'PaymentRequestShowWithoutGesture',
+    PictureSourceSrc = 'PictureSourceSrc',
+    PrefixedCancelAnimationFrame = 'PrefixedCancelAnimationFrame',
+    PrefixedRequestAnimationFrame = 'PrefixedRequestAnimationFrame',
+    PrefixedStorageInfo = 'PrefixedStorageInfo',
+    PrefixedVideoDisplayingFullscreen = 'PrefixedVideoDisplayingFullscreen',
+    PrefixedVideoEnterFullscreen = 'PrefixedVideoEnterFullscreen',
+    PrefixedVideoEnterFullScreen = 'PrefixedVideoEnterFullScreen',
+    PrefixedVideoExitFullscreen = 'PrefixedVideoExitFullscreen',
+    PrefixedVideoExitFullScreen = 'PrefixedVideoExitFullScreen',
+    PrefixedVideoSupportsFullscreen = 'PrefixedVideoSupportsFullscreen',
+    RangeExpand = 'RangeExpand',
+    RequestedSubresourceWithEmbeddedCredentials = 'RequestedSubresourceWithEmbeddedCredentials',
+    RTCConstraintEnableDtlsSrtpFalse = 'RTCConstraintEnableDtlsSrtpFalse',
+    RTCConstraintEnableDtlsSrtpTrue = 'RTCConstraintEnableDtlsSrtpTrue',
+    RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics =
+        'RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics',
+    RTCPeerConnectionSdpSemanticsPlanB = 'RTCPeerConnectionSdpSemanticsPlanB',
+    RtcpMuxPolicyNegotiate = 'RtcpMuxPolicyNegotiate',
+    RTPDataChannel = 'RTPDataChannel',
+    SharedArrayBufferConstructedWithoutIsolation = 'SharedArrayBufferConstructedWithoutIsolation',
+    TextToSpeech_DisallowedByAutoplay = 'TextToSpeech_DisallowedByAutoplay',
+    V8SharedArrayBufferConstructedInExtensionWithoutIsolation =
+        'V8SharedArrayBufferConstructedInExtensionWithoutIsolation',
+    XHRJSONEncodingDetection = 'XHRJSONEncodingDetection',
+    XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload = 'XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload',
+    XRSupportsSession = 'XRSupportsSession',
   }
 
   /**
    * This issue tracks information needed to print a deprecation message.
-   * The formatting is inherited from the old console.log version, see more at:
-   * https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc
-   * TODO(crbug.com/1264960): Re-work format to add i18n support per:
-   * https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+   * https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
    */
   export interface DeprecationIssueDetails {
     affectedFrame?: AffectedFrame;
     sourceCodeLocation: SourceCodeLocation;
-    /**
-     * The content of an untranslated deprecation issue,
-     * e.g. "window.inefficientLegacyStorageMethod will be removed in M97,
-     * around January 2022. Please use Web Storage or Indexed Database
-     * instead. This standard was abandoned in January, 1970. See
-     * https://www.chromestatus.com/feature/5684870116278272 for more details."
-     */
-    message?: string;
-    /**
-     * The id of an untranslated deprecation issue e.g. PrefixedStorageInfo.
-     */
-    deprecationType?: string;
     type: DeprecationIssueType;
   }
 
@@ -1072,6 +1103,11 @@ export namespace Audits {
   export const enum FederatedAuthRequestIssueReason {
     ApprovalDeclined = 'ApprovalDeclined',
     TooManyRequests = 'TooManyRequests',
+    ManifestListHttpNotFound = 'ManifestListHttpNotFound',
+    ManifestListNoResponse = 'ManifestListNoResponse',
+    ManifestListInvalidResponse = 'ManifestListInvalidResponse',
+    ManifestNotInManifestList = 'ManifestNotInManifestList',
+    ManifestListTooBig = 'ManifestListTooBig',
     ManifestHttpNotFound = 'ManifestHttpNotFound',
     ManifestNoResponse = 'ManifestNoResponse',
     ManifestInvalidResponse = 'ManifestInvalidResponse',
@@ -4895,6 +4931,8 @@ export namespace DOMSnapshot {
  */
 export namespace DOMStorage {
 
+  export type SerializedStorageKey = string;
+
   /**
    * DOM Storage identifier.
    */
@@ -4902,7 +4940,11 @@ export namespace DOMStorage {
     /**
      * Security origin for the storage.
      */
-    securityOrigin: string;
+    securityOrigin?: string;
+    /**
+     * Represents a key by which DOM Storage keys its CachedStorageAreas
+     */
+    storageKey?: SerializedStorageKey;
     /**
      * Whether the storage is local storage (not session storage).
      */
@@ -4935,6 +4977,14 @@ export namespace DOMStorage {
     storageId: StorageId;
     key: string;
     value: string;
+  }
+
+  export interface GetStorageKeyForFrameRequest {
+    frameId: Page.FrameId;
+  }
+
+  export interface GetStorageKeyForFrameResponse extends ProtocolResponseWithError {
+    storageKey: SerializedStorageKey;
   }
 
   export interface DomStorageItemAddedEvent {
@@ -5132,6 +5182,8 @@ export namespace Emulation {
     architecture: string;
     model: string;
     mobile: boolean;
+    bitness?: string;
+    wow64?: boolean;
   }
 
   /**
@@ -10131,8 +10183,10 @@ export namespace Page {
     ChDeviceMemory = 'ch-device-memory',
     ChDownlink = 'ch-downlink',
     ChEct = 'ch-ect',
+    ChPartitionedCookies = 'ch-partitioned-cookies',
     ChPrefersColorScheme = 'ch-prefers-color-scheme',
     ChRtt = 'ch-rtt',
+    ChSaveData = 'ch-save-data',
     ChUa = 'ch-ua',
     ChUaArch = 'ch-ua-arch',
     ChUaBitness = 'ch-ua-bitness',
@@ -10148,7 +10202,6 @@ export namespace Page {
     ChViewportHeight = 'ch-viewport-height',
     ChViewportWidth = 'ch-viewport-width',
     ChWidth = 'ch-width',
-    ChPartitionedCookies = 'ch-partitioned-cookies',
     ClipboardRead = 'clipboard-read',
     ClipboardWrite = 'clipboard-write',
     CrossOriginIsolated = 'cross-origin-isolated',
@@ -10169,6 +10222,7 @@ export namespace Page {
     InterestCohort = 'interest-cohort',
     JoinAdInterestGroup = 'join-ad-interest-group',
     KeyboardMap = 'keyboard-map',
+    LocalFonts = 'local-fonts',
     Magnetometer = 'magnetometer',
     Microphone = 'microphone',
     Midi = 'midi',
@@ -10640,6 +10694,10 @@ export namespace Page {
      * The fantasy font-family.
      */
     fantasy?: string;
+    /**
+     * The math font-family.
+     */
+    math?: string;
   }
 
   /**
@@ -10770,7 +10828,6 @@ export namespace Page {
     JavaScriptExecution = 'JavaScriptExecution',
     RendererProcessKilled = 'RendererProcessKilled',
     RendererProcessCrashed = 'RendererProcessCrashed',
-    GrantedMediaStreamAccess = 'GrantedMediaStreamAccess',
     SchedulerTrackedFeatureUsed = 'SchedulerTrackedFeatureUsed',
     ConflictingBrowsingInstance = 'ConflictingBrowsingInstance',
     CacheFlushed = 'CacheFlushed',
@@ -10797,7 +10854,6 @@ export namespace Page {
     ForegroundCacheLimit = 'ForegroundCacheLimit',
     BrowsingInstanceNotSwapped = 'BrowsingInstanceNotSwapped',
     BackForwardCacheDisabledForDelegate = 'BackForwardCacheDisabledForDelegate',
-    OptInUnloadHeaderNotPresent = 'OptInUnloadHeaderNotPresent',
     UnloadHandlerExistsInMainFrame = 'UnloadHandlerExistsInMainFrame',
     UnloadHandlerExistsInSubFrame = 'UnloadHandlerExistsInSubFrame',
     ServiceWorkerUnregistration = 'ServiceWorkerUnregistration',
@@ -10928,6 +10984,38 @@ export namespace Page {
    */
   export const enum PrerenderFinalStatus {
     Activated = 'Activated',
+    Destroyed = 'Destroyed',
+    LowEndDevice = 'LowEndDevice',
+    CrossOriginRedirect = 'CrossOriginRedirect',
+    CrossOriginNavigation = 'CrossOriginNavigation',
+    InvalidSchemeRedirect = 'InvalidSchemeRedirect',
+    InvalidSchemeNavigation = 'InvalidSchemeNavigation',
+    InProgressNavigation = 'InProgressNavigation',
+    NavigationRequestBlockedByCsp = 'NavigationRequestBlockedByCsp',
+    MainFrameNavigation = 'MainFrameNavigation',
+    MojoBinderPolicy = 'MojoBinderPolicy',
+    RendererProcessCrashed = 'RendererProcessCrashed',
+    RendererProcessKilled = 'RendererProcessKilled',
+    Download = 'Download',
+    TriggerDestroyed = 'TriggerDestroyed',
+    NavigationNotCommitted = 'NavigationNotCommitted',
+    NavigationBadHttpStatus = 'NavigationBadHttpStatus',
+    ClientCertRequested = 'ClientCertRequested',
+    NavigationRequestNetworkError = 'NavigationRequestNetworkError',
+    MaxNumOfRunningPrerendersExceeded = 'MaxNumOfRunningPrerendersExceeded',
+    CancelAllHostsForTesting = 'CancelAllHostsForTesting',
+    DidFailLoad = 'DidFailLoad',
+    Stop = 'Stop',
+    SslCertificateError = 'SslCertificateError',
+    LoginAuthRequested = 'LoginAuthRequested',
+    UaChangeRequiresReload = 'UaChangeRequiresReload',
+    BlockedByClient = 'BlockedByClient',
+    AudioOutputDeviceRequested = 'AudioOutputDeviceRequested',
+    MixedContent = 'MixedContent',
+    TriggerBackgrounded = 'TriggerBackgrounded',
+    EmbedderTriggeredAndSameOriginRedirected = 'EmbedderTriggeredAndSameOriginRedirected',
+    EmbedderTriggeredAndCrossOriginRedirected = 'EmbedderTriggeredAndCrossOriginRedirected',
+    EmbedderTriggeredAndDestroyed = 'EmbedderTriggeredAndDestroyed',
   }
 
   export interface AddScriptToEvaluateOnLoadRequest {
@@ -11102,15 +11190,15 @@ export namespace Page {
 
   export interface GetLayoutMetricsResponse extends ProtocolResponseWithError {
     /**
-     * Deprecated metrics relating to the layout viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssLayoutViewport` instead.
+     * Deprecated metrics relating to the layout viewport. Is in device pixels. Use `cssLayoutViewport` instead.
      */
     layoutViewport: LayoutViewport;
     /**
-     * Deprecated metrics relating to the visual viewport. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssVisualViewport` instead.
+     * Deprecated metrics relating to the visual viewport. Is in device pixels. Use `cssVisualViewport` instead.
      */
     visualViewport: VisualViewport;
     /**
-     * Deprecated size of scrollable area. Can be in DP or in CSS pixels depending on the `enable-use-zoom-for-dsf` flag. Use `cssContentSize` instead.
+     * Deprecated size of scrollable area. Is in DP. Use `cssContentSize` instead.
      */
     contentSize: DOM.Rect;
     /**
@@ -11271,15 +11359,16 @@ export namespace Page {
      */
     marginRight?: number;
     /**
-     * Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
-     * print all pages.
+     * Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are
+     * printed in the document order, not in the order specified, and no
+     * more than once.
+     * Defaults to empty string, which implies the entire document is printed.
+     * The page numbers are quietly capped to actual page count of the
+     * document, and ranges beyond the end of the document are ignored.
+     * If this results in no pages to print, an error is reported.
+     * It is an error to specify a range with start greater than end.
      */
     pageRanges?: string;
-    /**
-     * Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
-     * Defaults to false.
-     */
-    ignoreInvalidPageRanges?: boolean;
     /**
      * HTML template for the print header. Should be valid HTML markup with following
      * classes used to inject printing values into them:
@@ -12609,6 +12698,8 @@ export namespace ServiceWorker {
 }
 
 export namespace Storage {
+
+  export type SerializedStorageKey = string;
 
   /**
    * Enum of possible storage types.
@@ -14665,6 +14756,13 @@ export namespace Debugger {
      * The value being returned, if the function is at return point.
      */
     returnValue?: Runtime.RemoteObject;
+    /**
+     * Valid only while the VM is paused and indicates whether this frame
+     * can be restarted or not. Note that a `true` value here does not
+     * guarantee that Debugger#restartFrame with this CallFrameId will be
+     * successful, but it is very likely.
+     */
+    canBeRestarted?: boolean;
   }
 
   export const enum ScopeType {
@@ -15316,7 +15414,7 @@ export namespace Debugger {
      */
     executionContextId: Runtime.ExecutionContextId;
     /**
-     * Content hash of the script.
+     * Content hash of the script, SHA-256.
      */
     hash: string;
     /**
@@ -15391,7 +15489,7 @@ export namespace Debugger {
      */
     executionContextId: Runtime.ExecutionContextId;
     /**
-     * Content hash of the script.
+     * Content hash of the script, SHA-256.
      */
     hash: string;
     /**
@@ -15565,11 +15663,18 @@ export namespace HeapProfiler {
      * when the tracking is stopped.
      */
     reportProgress?: boolean;
+    /**
+     * Deprecated in favor of `exposeInternals`.
+     */
     treatGlobalObjectsAsRoots?: boolean;
     /**
      * If true, numerical values are included in the snapshot
      */
     captureNumericValue?: boolean;
+    /**
+     * If true, exposes internals of the snapshot.
+     */
+    exposeInternals?: boolean;
   }
 
   export interface TakeHeapSnapshotRequest {
@@ -15578,13 +15683,18 @@ export namespace HeapProfiler {
      */
     reportProgress?: boolean;
     /**
-     * If true, a raw snapshot without artificial roots will be generated
+     * If true, a raw snapshot without artificial roots will be generated.
+     * Deprecated in favor of `exposeInternals`.
      */
     treatGlobalObjectsAsRoots?: boolean;
     /**
      * If true, numerical values are included in the snapshot
      */
     captureNumericValue?: boolean;
+    /**
+     * If true, exposes internals of the snapshot.
+     */
+    exposeInternals?: boolean;
   }
 
   export interface AddHeapSnapshotChunkEvent {
@@ -15915,6 +16025,42 @@ export namespace Runtime {
    */
   export type ScriptId = OpaqueIdentifier<string, 'Protocol.Runtime.ScriptId'>;
 
+  export const enum WebDriverValueType {
+    Undefined = 'undefined',
+    Null = 'null',
+    String = 'string',
+    Number = 'number',
+    Boolean = 'boolean',
+    Bigint = 'bigint',
+    Regexp = 'regexp',
+    Date = 'date',
+    Symbol = 'symbol',
+    Array = 'array',
+    Object = 'object',
+    Function = 'function',
+    Map = 'map',
+    Set = 'set',
+    Weakmap = 'weakmap',
+    Weakset = 'weakset',
+    Error = 'error',
+    Proxy = 'proxy',
+    Promise = 'promise',
+    Typedarray = 'typedarray',
+    Arraybuffer = 'arraybuffer',
+    Node = 'node',
+    Window = 'window',
+  }
+
+  /**
+   * Represents the value serialiazed by the WebDriver BiDi specification
+   * https://w3c.github.io/webdriver-bidi.
+   */
+  export interface WebDriverValue {
+    type: WebDriverValueType;
+    value?: any;
+    objectId?: string;
+  }
+
   /**
    * Unique object identifier.
    */
@@ -15990,6 +16136,10 @@ export namespace Runtime {
      * String representation of the object.
      */
     description?: string;
+    /**
+     * WebDriver BiDi representation of the value.
+     */
+    webDriverValue?: WebDriverValue;
     /**
      * Unique object identifier (for non-primitive values).
      */
@@ -16486,6 +16636,12 @@ export namespace Runtime {
      * Whether to throw an exception if side effect cannot be ruled out during evaluation.
      */
     throwOnSideEffect?: boolean;
+    /**
+     * Whether the result should contain `webDriverValue`, serialized according to
+     * https://w3c.github.io/webdriver-bidi. This is mutually exclusive with `returnByValue`, but
+     * resulting `objectId` is still provided.
+     */
+    generateWebDriverValue?: boolean;
   }
 
   export interface CallFunctionOnResponse extends ProtocolResponseWithError {
@@ -16608,6 +16764,10 @@ export namespace Runtime {
      * This is mutually exclusive with `contextId`.
      */
     uniqueContextId?: string;
+    /**
+     * Whether the result should be serialized according to https://w3c.github.io/webdriver-bidi.
+     */
+    generateWebDriverValue?: boolean;
   }
 
   export interface EvaluateResponse extends ProtocolResponseWithError {

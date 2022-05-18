@@ -11,6 +11,7 @@
 #ifndef PC_CHANNEL_INTERFACE_H_
 #define PC_CHANNEL_INTERFACE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,8 +29,6 @@ class VideoBitrateAllocatorFactory;
 namespace cricket {
 
 class MediaContentDescription;
-class VideoChannel;
-class VoiceChannel;
 struct MediaConfig;
 
 // A Channel is a construct that groups media streams of the same type
@@ -42,11 +41,17 @@ struct MediaConfig;
 // ChannelInterface contains methods common to voice and video channels.
 // As more methods are added to BaseChannel, they should be included in the
 // interface as well.
+// TODO(bugs.webrtc.org/13931): Merge this class into RtpTransceiver.
 class ChannelInterface {
  public:
+  virtual ~ChannelInterface() = default;
   virtual cricket::MediaType media_type() const = 0;
 
   virtual MediaChannel* media_channel() const = 0;
+  // Typecasts of media_channel(). Will cause an exception if the
+  // channel is of the wrong type.
+  virtual VideoMediaChannel* video_media_channel() const = 0;
+  virtual VoiceMediaChannel* voice_media_channel() const = 0;
 
   // Returns a string view for the transport name. Fetching the transport name
   // must be done on the network thread only and note that the lifetime of
@@ -83,35 +88,6 @@ class ChannelInterface {
   //   * An SrtpTransport for SDES.
   //   * A DtlsSrtpTransport for DTLS-SRTP.
   virtual bool SetRtpTransport(webrtc::RtpTransportInternal* rtp_transport) = 0;
-
- protected:
-  virtual ~ChannelInterface() = default;
-};
-
-class ChannelFactoryInterface {
- public:
-  virtual VideoChannel* CreateVideoChannel(
-      webrtc::Call* call,
-      const MediaConfig& media_config,
-      const std::string& mid,
-      bool srtp_required,
-      const webrtc::CryptoOptions& crypto_options,
-      const VideoOptions& options,
-      webrtc::VideoBitrateAllocatorFactory*
-          video_bitrate_allocator_factory) = 0;
-
-  virtual VoiceChannel* CreateVoiceChannel(
-      webrtc::Call* call,
-      const MediaConfig& media_config,
-      const std::string& mid,
-      bool srtp_required,
-      const webrtc::CryptoOptions& crypto_options,
-      const AudioOptions& options) = 0;
-
-  virtual void DestroyChannel(ChannelInterface* channel) = 0;
-
- protected:
-  virtual ~ChannelFactoryInterface() = default;
 };
 
 }  // namespace cricket

@@ -459,6 +459,16 @@ export function genConfig(
       HeapProfDs.config.chromeConfig.traceConfig = traceConfigJson;
       protoCfg.dataSources.push(HeapProfDs);
     }
+
+    if (chromeCategories.has('disabled-by-default-cpu_profiler') ||
+        chromeCategories.has('disabled-by-default-cpu_profiler.debug')) {
+      const dataSource = new TraceConfig.DataSource();
+      dataSource.config = new DataSourceConfig();
+      dataSource.config.name = 'org.chromium.sampler_profiler';
+      dataSource.config.chromeConfig = new ChromeConfig();
+      dataSource.config.chromeConfig.traceConfig = traceConfigJson;
+      protoCfg.dataSources.push(dataSource);
+    }
   }
 
   // Keep these last. The stages above can enrich them.
@@ -502,8 +512,12 @@ export function genConfig(
     // Override the advanced ftrace parameters only if the user has ticked the
     // "Advanced ftrace config" tab.
     if (uiCfg.ftrace) {
-      ds.config.ftraceConfig.bufferSizeKb = uiCfg.ftraceBufferSizeKb;
-      ds.config.ftraceConfig.drainPeriodMs = uiCfg.ftraceDrainPeriodMs;
+      if (uiCfg.ftraceBufferSizeKb) {
+        ds.config.ftraceConfig.bufferSizeKb = uiCfg.ftraceBufferSizeKb;
+      }
+      if (uiCfg.ftraceDrainPeriodMs) {
+        ds.config.ftraceConfig.drainPeriodMs = uiCfg.ftraceDrainPeriodMs;
+      }
       if (uiCfg.symbolizeKsyms) {
         ds.config.ftraceConfig.symbolizeKsyms = true;
         ftraceEvents.add('sched/sched_blocked_reason');
@@ -552,6 +566,13 @@ export function genConfig(
     ds.config.ftraceConfig.ftraceEvents = ftraceEventsArray;
     ds.config.ftraceConfig.atraceCategories = Array.from(atraceCats);
     ds.config.ftraceConfig.atraceApps = Array.from(atraceApps);
+
+    if (isTargetOsAtLeast(target, 'S')) {
+      const compact = new FtraceConfig.CompactSchedConfig();
+      compact.enabled = true;
+      ds.config.ftraceConfig.compactSched = compact;
+    }
+
     if (!isChromeTarget(target) || isCrOSTarget(target)) {
       protoCfg.dataSources.push(ds);
     }

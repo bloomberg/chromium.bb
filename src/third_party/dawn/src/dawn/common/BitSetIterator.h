@@ -15,14 +15,15 @@
 #ifndef SRC_DAWN_COMMON_BITSETITERATOR_H_
 #define SRC_DAWN_COMMON_BITSETITERATOR_H_
 
+#include <bitset>
+#include <limits>
+
 #include "dawn/common/Assert.h"
 #include "dawn/common/Math.h"
 #include "dawn/common/UnderlyingType.h"
 
-#include <bitset>
-#include <limits>
-
-// This is ANGLE's BitSetIterator class with a customizable return type
+// This is ANGLE's BitSetIterator class with a customizable return type.
+// Types have been updated to be more specific.
 // TODO(crbug.com/dawn/306): it could be optimized, in particular when N <= 64
 
 template <typename T>
@@ -53,32 +54,26 @@ class BitSetIterator final {
         }
 
       private:
-        unsigned long getNextBit();
+        uint32_t getNextBit();
 
         static constexpr size_t kBitsPerWord = sizeof(uint32_t) * 8;
         std::bitset<N> mBits;
-        unsigned long mCurrentBit;
-        unsigned long mOffset;
+        uint32_t mCurrentBit;
+        uint32_t mOffset;
     };
 
-    Iterator begin() const {
-        return Iterator(mBits);
-    }
-    Iterator end() const {
-        return Iterator(std::bitset<N>(0));
-    }
+    Iterator begin() const { return Iterator(mBits); }
+    Iterator end() const { return Iterator(std::bitset<N>(0)); }
 
   private:
     const std::bitset<N> mBits;
 };
 
 template <size_t N, typename T>
-BitSetIterator<N, T>::BitSetIterator(const std::bitset<N>& bitset) : mBits(bitset) {
-}
+BitSetIterator<N, T>::BitSetIterator(const std::bitset<N>& bitset) : mBits(bitset) {}
 
 template <size_t N, typename T>
-BitSetIterator<N, T>::BitSetIterator(const BitSetIterator& other) : mBits(other.mBits) {
-}
+BitSetIterator<N, T>::BitSetIterator(const BitSetIterator& other) : mBits(other.mBits) {}
 
 template <size_t N, typename T>
 BitSetIterator<N, T>& BitSetIterator<N, T>::operator=(const BitSetIterator& other) {
@@ -92,7 +87,7 @@ BitSetIterator<N, T>::Iterator::Iterator(const std::bitset<N>& bits)
     if (bits.any()) {
         mCurrentBit = getNextBit();
     } else {
-        mOffset = static_cast<unsigned long>(roundUp(N, kBitsPerWord));
+        mOffset = static_cast<uint32_t>(roundUp(N, kBitsPerWord));
     }
 }
 
@@ -115,7 +110,7 @@ bool BitSetIterator<N, T>::Iterator::operator!=(const Iterator& other) const {
 }
 
 template <size_t N, typename T>
-unsigned long BitSetIterator<N, T>::Iterator::getNextBit() {
+uint32_t BitSetIterator<N, T>::Iterator::getNextBit() {
     static std::bitset<N> wordMask(std::numeric_limits<uint32_t>::max());
 
     while (mOffset < N) {

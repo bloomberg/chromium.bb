@@ -289,11 +289,8 @@ void FileSystemAccessFileHandleImpl::DoGetLengthAfterOpenFile(
     OpenAccessHandleCallback callback,
     scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
     base::File file,
-    base::OnceClosure on_close_callback) {
+    base::ScopedClosureRunner on_close_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::ScopedClosureRunner scoped_on_close_callback(
-      std::move(on_close_callback));
 
   blink::mojom::FileSystemAccessErrorPtr result =
       file_system_access_error::FromFileError(file.error_details());
@@ -321,7 +318,7 @@ void FileSystemAccessFileHandleImpl::DoGetLengthAfterOpenFile(
       base::BindOnce(&GetFileLengthOnBlockingThread, std::move(file)),
       base::BindOnce(&FileSystemAccessFileHandleImpl::DidOpenFileAndGetLength,
                      weak_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(lock), std::move(scoped_on_close_callback)));
+                     std::move(lock), std::move(on_close_callback)));
 }
 
 void FileSystemAccessFileHandleImpl::DidOpenFileAndGetLength(
@@ -486,6 +483,7 @@ void FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions(
     bool auto_close,
     CreateFileWriterCallback callback,
     bool can_write) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!can_write) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(
@@ -516,6 +514,17 @@ void FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions(
   CreateSwapFile(
       /*count=*/0, keep_existing_data, auto_close, std::move(lock.value()),
       std::move(callback));
+}
+
+storage::FileSystemURL FileSystemAccessFileHandleImpl::GetSwapURL(
+    const base::FilePath& swap_path) {
+  storage::FileSystemURL swap_url =
+      manager()->context()->CreateCrackedFileSystemURL(
+          url().storage_key(), url().mount_type(), swap_path);
+  if (url().bucket()) {
+    swap_url.SetBucket(url().bucket().value());
+  }
+  return swap_url;
 }
 
 void FileSystemAccessFileHandleImpl::CreateSwapFile(
@@ -556,9 +565,7 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
 
   // First attempt to just create the swap file in the same file system as
   // this file.
-  storage::FileSystemURL swap_url =
-      manager()->context()->CreateCrackedFileSystemURL(
-          url().storage_key(), url().mount_type(), swap_path);
+  storage::FileSystemURL swap_url = GetSwapURL(swap_path);
   DCHECK(swap_url.is_valid());
 
   manager()->DoFileSystemOperation(
@@ -649,6 +656,7 @@ void FileSystemAccessFileHandleImpl::DidCopySwapFile(
 
 base::WeakPtr<FileSystemAccessHandleBase>
 FileSystemAccessFileHandleImpl::AsWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
 }
 

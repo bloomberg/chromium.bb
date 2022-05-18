@@ -285,8 +285,18 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void BubbleFrameView::ResetWindowControls() {
-  close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
-  minimize_->SetVisible(GetWidget()->widget_delegate()->CanMinimize());
+  // If the close button is not visible, marking it as "ignored" will cause it
+  // to be removed from the accessibility tree.
+  bool close_is_visible =
+      GetWidget()->widget_delegate()->ShouldShowCloseButton();
+  close_->SetVisible(close_is_visible);
+  close_->GetViewAccessibility().OverrideIsIgnored(!close_is_visible);
+
+  // If the minimize button is not visible, marking it as "ignored" will cause
+  // it to be removed from the accessibility tree.
+  bool minimize_is_visible = GetWidget()->widget_delegate()->CanMinimize();
+  minimize_->SetVisible(minimize_is_visible);
+  minimize_->GetViewAccessibility().OverrideIsIgnored(!minimize_is_visible);
 }
 
 void BubbleFrameView::UpdateWindowIcon() {
@@ -472,13 +482,8 @@ void BubbleFrameView::OnThemeChanged() {
   UpdateWindowTitle();
   ResetWindowControls();
   UpdateWindowIcon();
-
-  if (bubble_border_ && bubble_border_->use_theme_background_color()) {
-    bubble_border_->set_background_color(
-        GetColorProvider()->GetColor(ui::kColorDialogBackground));
-    UpdateClientViewBackground();
-    SchedulePaint();
-  }
+  UpdateClientViewBackground();
+  SchedulePaint();
 }
 
 void BubbleFrameView::ViewHierarchyChanged(
@@ -535,6 +540,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   // Update the background, which relies on the border.
   SetBackground(std::make_unique<views::BubbleBackground>(bubble_border_));
 }
+
 void BubbleFrameView::SetContentMargins(const gfx::Insets& content_margins) {
   content_margins_ = content_margins;
   OnPropertyChanged(&content_margins_, kPropertyEffectsPreferredSizeChanged);
@@ -624,13 +630,13 @@ bool BubbleFrameView::GetDisplayVisibleArrow() const {
 }
 
 void BubbleFrameView::SetBackgroundColor(SkColor color) {
-  bubble_border_->set_background_color(color);
+  bubble_border_->SetColor(color);
   UpdateClientViewBackground();
   SchedulePaint();
 }
 
 SkColor BubbleFrameView::GetBackgroundColor() const {
-  return bubble_border_->background_color();
+  return bubble_border_->color();
 }
 
 void BubbleFrameView::UpdateClientViewBackground() {

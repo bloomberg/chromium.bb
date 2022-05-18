@@ -12,13 +12,12 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
-
-class PrefService;
 
 namespace optimization_guide {
 namespace features {
@@ -42,8 +41,10 @@ extern const base::Feature kPageVisibilityBatchAnnotations;
 extern const base::Feature kPageEntitiesModelResetOnShutdown;
 extern const base::Feature kPageEntitiesModelBypassFilters;
 extern const base::Feature kUseLocalPageEntitiesMetadataProvider;
-extern const base::Feature kBatchAnnotationsValidation;
+extern const base::Feature kPageContentAnnotationsValidation;
 extern const base::Feature kPreventLongRunningPredictionModels;
+extern const base::Feature kOverrideNumThreadsForModelExecution;
+extern const base::Feature kOptGuideEnableXNNPACKDelegateWithTFLite;
 
 // Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
 // annotations on-device models.
@@ -90,8 +91,8 @@ bool IsOptimizationTargetPredictionEnabled();
 bool IsOptimizationHintsEnabled();
 
 // Returns true if the feature to fetch from the remote Optimization Guide
-// Service is enabled.
-bool IsRemoteFetchingEnabled(PrefService* pref_service);
+// Service is enabled. This controls the fetching of both hints and models.
+bool IsRemoteFetchingEnabled();
 
 // Returns true if the feature to fetch data for users that have consented to
 // anonymous data collection is enabled but are not Data Saver users.
@@ -203,8 +204,11 @@ base::TimeDelta PredictionModelFetchStartupDelay();
 // refresh models.
 base::TimeDelta PredictionModelFetchInterval();
 
-// The timeout for executing models, if enabled.
-absl::optional<base::TimeDelta> ModelExecutionTimeout();
+// Whether to use the model execution watchdog.
+bool IsModelExecutionWatchdogEnabled();
+
+// The default timeout for the watchdog to use if none is given by the caller.
+base::TimeDelta ModelExecutionWatchdogDefaultTimeout();
 
 // Returns a set of field trial name hashes that can be sent in the request to
 // the remote Optimization Guide Service if the client is in one of the
@@ -221,12 +225,9 @@ bool IsUnrestrictedModelDownloadingEnabled();
 // Returns whether the feature to annotate page content is enabled.
 bool IsPageContentAnnotationEnabled();
 
-// Returns the max size that should be requested for a page content text dump.
-uint64_t MaxSizeForPageContentTextDump();
-
-// Returns whether the title should always be annotated instead of a page
-// content text dump.
-bool ShouldAnnotateTitleInsteadOfPageContent();
+// Whether search metadata should be persisted for non-Google searches, as
+// identified by the TemplateURLService.
+bool ShouldPersistSearchMetadataForNonGoogleSearches();
 
 // Whether we should write content annotations to History Service.
 bool ShouldWriteContentAnnotationsToHistoryService();
@@ -280,22 +281,28 @@ bool UseLocalPageEntitiesMetadataProvider();
 // immediately after requested.
 size_t AnnotateVisitBatchSize();
 
-// Whether the batch annotation validation feature is enabled.
-bool BatchAnnotationsValidationEnabled();
+// Whether the page content annotation validation feature or command line flag
+// is enabled for the given annotation type.
+bool PageContentAnnotationValidationEnabledForType(AnnotationType type);
 
-// The time period between browser start and running a running batch annotation
-// validation.
-base::TimeDelta BatchAnnotationValidationStartupDelay();
+// The time period between browser start and running a running page content
+// annotation validation.
+base::TimeDelta PageContentAnnotationValidationStartupDelay();
 
-// The size of batches to run for validation.
-size_t BatchAnnotationsValidationBatchSize();
-
-// True if the batch annotations feature should use the PageTopics annotation
-// type instead of ContentVisibility.
-bool BatchAnnotationsValidationUsePageTopics();
+// The size of batches to run for page content validation.
+size_t PageContentAnnotationsValidationBatchSize();
 
 // The maximum size of the visit annotation cache.
 size_t MaxVisitAnnotationCacheSize();
+
+// Returns the number of threads to use for model inference on the given
+// optimization target.
+absl::optional<int> OverrideNumThreadsForOptTarget(
+    proto::OptimizationTarget opt_target);
+
+// Whether XNNPACK should be used with TFLite, on platforms where it is
+// supported. This is a no-op on unsupported platforms.
+bool TFLiteXNNPACKDelegateEnabled();
 
 }  // namespace features
 }  // namespace optimization_guide

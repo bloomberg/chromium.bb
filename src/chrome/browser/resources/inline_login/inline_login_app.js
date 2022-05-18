@@ -19,6 +19,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import './arc_account_picker/arc_account_picker_app.js';
 import './gaia_action_buttons.js';
 import './signin_blocked_by_policy_page.js';
+import './signin_error_page.js';
 import './welcome_page_app.js';
 import './strings.m.js';
 import {getAccountAdditionOptionsFromJSON} from './inline_login_util.js';
@@ -36,6 +37,7 @@ import {InlineLoginBrowserProxy, InlineLoginBrowserProxyImpl} from './inline_log
 const View = {
   addAccount: 'addAccount',
   signinBlockedByPolicy: 'signinBlockedByPolicy',
+  signinError: 'signinError',
   welcome: 'welcome',
   arcAccountPicker: 'arcAccountPicker',
 };
@@ -61,6 +63,15 @@ Polymer({
     loading_: {
       type: Boolean,
       value: true,
+    },
+
+    /**
+     * Indicates whether the account is being verified.
+     * @private {boolean}
+     */
+    verifyingAccount_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -175,8 +186,7 @@ Polymer({
     this.addWebUIListener('close-dialog', () => this.closeDialog_());
     // <if expr="chromeos_ash">
     this.addWebUIListener(
-        'show-signin-blocked-by-policy-page',
-        data => this.signinBlockedByPolicyShowView_(data));
+        'show-signin-error-page', data => this.signinErrorShowView_(data));
     // </if>
   },
 
@@ -250,7 +260,7 @@ Polymer({
    * @private
    */
   onAuthCompleted_(e) {
-    this.loading_ = true;
+    this.verifyingAccount_ = true;
     /** @type {!AuthCompletedCredentials} */
     const credentials = e.detail;
 
@@ -306,6 +316,17 @@ Polymer({
   },
 
   /**
+   * @param {boolean} loading Indicates whether the page is loading.
+   * @param {boolean} verifyingAccount Indicates whether the user account is
+   *  being verified.
+   * @return {boolean}
+   * @private
+   */
+  isSpinnerActive_(loading, verifyingAccount) {
+    return loading || verifyingAccount;
+  },
+
+  /**
    * Closes the login dialog.
    * @private
    */
@@ -350,19 +371,26 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNextButtonLabel_() {
-    return this.currentView_ === View.signinBlockedByPolicy ||
-            !this.isArcAccountRestrictionsEnabled_ ?
-        this.i18n('ok') :
-        this.i18n('nextButtonLabel');
+  getNextButtonLabel_(currentView, isArcAccountRestrictionsEnabled) {
+    if (currentView === View.signinBlockedByPolicy ||
+        currentView === View.signinError) {
+      return this.i18n('ok');
+    }
+    if (!isArcAccountRestrictionsEnabled) {
+      return this.i18n('ok');
+    }
+    return this.i18n('nextButtonLabel');
   },
 
   /**
+   * @param {View} currentView Identifier of the view that is being shown.
+   * @param {boolean} verifyingAccount Indicates whether the user account is
+   *  being verified.
    * @return {boolean}
    * @private
    */
-  shouldShowBackButton_() {
-    return this.currentView_ === View.addAccount;
+  shouldShowBackButton_(currentView, verifyingAccount) {
+    return currentView === View.addAccount && !verifyingAccount;
   },
 
   /**
@@ -371,7 +399,8 @@ Polymer({
    */
   shouldShowOkButton_() {
     return this.currentView_ === View.welcome ||
-        this.currentView_ === View.signinBlockedByPolicy;
+        this.currentView_ === View.signinBlockedByPolicy ||
+        this.currentView_ === View.signinError;
   },
 
   /**
@@ -441,11 +470,14 @@ Polymer({
 
   /**
    * @param {View} id identifier of the view that should be shown.
+   * @param {string} enterAnimation enter animation for the new view.
+   * @param {string} exitAnimation exit animation for the previous view.
    * @private
    */
-  switchView_(id) {
+  switchView_(id, enterAnimation = 'fade-in', exitAnimation = 'fade-out') {
     this.currentView_ = id;
-    /** @type {CrViewManagerElement} */ (this.$.viewManager).switchView(id);
+    /** @type {CrViewManagerElement} */ (this.$.viewManager)
+        .switchView(id, enterAnimation, exitAnimation);
     this.dispatchEvent(new CustomEvent('switch-view-notify-for-testing'));
   },
 
@@ -465,14 +497,26 @@ Polymer({
   // <if expr="chromeos_ash">
 
   /**
-   * Shows the sign-in blocked by policy screen.
-   * @param {{email:string, hostedDomain:string}} data parameters.
+   * Shows the sign-in blocked by policy screen if the user account is not
+   * allowed to sign-in. Or shows the sign-in error screen if any error occurred
+   * during the sign-in flow.
+   * @param {{email:string, hostedDomain:string, signinBlockedByPolicy:boolean,
+   *  deviceType:string}}
+   * data parameters.
    * @private
    */
-  signinBlockedByPolicyShowView_(data) {
-    this.set('email_', data.email);
-    this.set('hostedDomain_', data.hostedDomain);
-    this.switchView_(View.signinBlockedByPolicy);
+  signinErrorShowView_(data) {
+    this.verifyingAccount_ = false;
+    if (data.signinBlockedByPolicy) {
+      this.set('email_', data.email);
+      this.set('hostedDomain_', data.hostedDomain);
+      this.set('deviceType_', data.deviceType);
+      this.switchView_(
+          View.signinBlockedByPolicy, 'no-animation', 'no-animation');
+    } else {
+      this.switchView_(View.signinError, 'no-animation', 'no-animation');
+    }
+
     this.setFocusToWebview_();
   },
 
@@ -488,6 +532,7 @@ Polymer({
         this.setFocusToWebview_();
         break;
       case View.signinBlockedByPolicy:
+      case View.signinError:
         this.closeDialog_();
         break;
     }

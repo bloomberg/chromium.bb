@@ -345,7 +345,7 @@ static double find_best_frame_unsharp_amount(const AV1_COMP *const cpi,
   aom_alloc_frame_buffer(
       &sharpened, width, height, source->subsampling_x, source->subsampling_y,
       cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-      cm->features.byte_alignment);
+      cm->features.byte_alignment, 0);
 
   const double baseline_variance = frame_average_variance(cpi, source);
   double unsharp_amount;
@@ -397,7 +397,7 @@ void av1_vmaf_neg_preprocessing(AV1_COMP *const cpi,
   aom_alloc_frame_buffer(
       &blurred, width, height, source->subsampling_x, source->subsampling_y,
       cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-      cm->features.byte_alignment);
+      cm->features.byte_alignment, 0);
 
   gaussian_blur(bit_depth, source, &blurred);
   unsharp(cpi, source, &blurred, source, best_frame_unsharp_amount);
@@ -417,11 +417,11 @@ void av1_vmaf_frame_preprocessing(AV1_COMP *const cpi,
   aom_alloc_frame_buffer(
       &source_extended, width, height, source->subsampling_x,
       source->subsampling_y, cm->seq_params->use_highbitdepth,
-      cpi->oxcf.border_in_pixels, cm->features.byte_alignment);
+      cpi->oxcf.border_in_pixels, cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(
       &blurred, width, height, source->subsampling_x, source->subsampling_y,
       cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-      cm->features.byte_alignment);
+      cm->features.byte_alignment, 0);
 
   av1_copy_and_extend_frame(source, &source_extended);
   gaussian_blur(bit_depth, &source_extended, &blurred);
@@ -457,11 +457,11 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
   memset(&source_extended, 0, sizeof(source_extended));
   aom_alloc_frame_buffer(
       &blurred, width, height, ss_x, ss_y, cm->seq_params->use_highbitdepth,
-      cpi->oxcf.border_in_pixels, cm->features.byte_alignment);
+      cpi->oxcf.border_in_pixels, cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&source_extended, width, height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
 
   av1_copy_and_extend_frame(source, &source_extended);
   gaussian_blur(bit_depth, &source_extended, &blurred);
@@ -495,11 +495,11 @@ void av1_vmaf_blk_preprocessing(AV1_COMP *const cpi,
   aom_alloc_frame_buffer(&source_block, block_w, block_h, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&blurred_block, block_w, block_h, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
 
   for (int row = 0; row < num_rows; ++row) {
     for (int col = 0; col < num_cols; ++col) {
@@ -622,7 +622,7 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   aom_alloc_frame_buffer(
       &resized_source, y_width / resize_factor, y_height / resize_factor, ss_x,
       ss_y, cm->seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-      cm->features.byte_alignment);
+      cm->features.byte_alignment, 0);
   av1_resize_and_extend_frame_nonnormative(cpi->source, &resized_source,
                                            bit_depth, av1_num_planes(cm));
 
@@ -640,7 +640,7 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   aom_alloc_frame_buffer(&blurred, resized_y_width, resized_y_height, ss_x,
                          ss_y, cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   gaussian_blur(bit_depth, &resized_source, &blurred);
 
   YV12_BUFFER_CONFIG recon;
@@ -648,7 +648,7 @@ void av1_set_mb_vmaf_rdmult_scaling(AV1_COMP *cpi) {
   aom_alloc_frame_buffer(&recon, resized_y_width, resized_y_height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_yv12_copy_frame(&resized_source, &recon, 1);
 
   VmafContext *vmaf_context;
@@ -824,15 +824,15 @@ static double calc_vmaf_motion_score(const AV1_COMP *const cpi,
   aom_alloc_frame_buffer(&blurred_cur, y_width, y_height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&blurred_last, y_width, y_height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&blurred_next, y_width, y_height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
 
   gaussian_blur(bit_depth, cur, &blurred_cur);
   gaussian_blur(bit_depth, last, &blurred_last);
@@ -1016,18 +1016,18 @@ static double find_best_frame_unsharp_amount_neg(
   aom_alloc_frame_buffer(&recon_sharpened, width, height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&src_sharpened, width, height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(&recon_blurred, width, height, ss_x, ss_y,
                          cm->seq_params->use_highbitdepth,
                          cpi->oxcf.border_in_pixels,
-                         cm->features.byte_alignment);
+                         cm->features.byte_alignment, 0);
   aom_alloc_frame_buffer(
       &src_blurred, width, height, ss_x, ss_y, cm->seq_params->use_highbitdepth,
-      cpi->oxcf.border_in_pixels, cm->features.byte_alignment);
+      cpi->oxcf.border_in_pixels, cm->features.byte_alignment, 0);
 
   gaussian_blur(bit_depth, recon, &recon_blurred);
   gaussian_blur(bit_depth, src, &src_blurred);

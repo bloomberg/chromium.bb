@@ -44,14 +44,17 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
 
   av1_free_txb_buf(cpi);
   // TODO(jingning): This should be further reduced.
-  cpi->coeff_buffer_base = aom_malloc(sizeof(*cpi->coeff_buffer_base) * size);
+  CHECK_MEM_ERROR(cm, cpi->coeff_buffer_base,
+                  aom_malloc(sizeof(*cpi->coeff_buffer_base) * size));
   CHECK_MEM_ERROR(
       cm, coeff_buf_pool->tcoeff,
       aom_memalign(32, sizeof(*coeff_buf_pool->tcoeff) * num_tcoeffs));
-  coeff_buf_pool->eobs =
-      aom_malloc(sizeof(*coeff_buf_pool->eobs) * num_tcoeffs / txb_unit_size);
-  coeff_buf_pool->entropy_ctx = aom_malloc(
-      sizeof(*coeff_buf_pool->entropy_ctx) * num_tcoeffs / txb_unit_size);
+  CHECK_MEM_ERROR(
+      cm, coeff_buf_pool->eobs,
+      aom_malloc(sizeof(*coeff_buf_pool->eobs) * num_tcoeffs / txb_unit_size));
+  CHECK_MEM_ERROR(cm, coeff_buf_pool->entropy_ctx,
+                  aom_malloc(sizeof(*coeff_buf_pool->entropy_ctx) *
+                             num_tcoeffs / txb_unit_size));
 
   tran_low_t *tcoeff_ptr = coeff_buf_pool->tcoeff;
   uint16_t *eob_ptr = coeff_buf_pool->eobs;

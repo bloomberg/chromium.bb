@@ -57,7 +57,15 @@ import {Events, PerformanceModel} from './PerformanceModel.js';
 import type {Client} from './TimelineController.js';
 import {TimelineController} from './TimelineController.js';
 import type {TimelineEventOverview} from './TimelineEventOverview.js';
-import {TimelineEventOverviewCoverage, TimelineEventOverviewCPUActivity, TimelineEventOverviewFrames, TimelineEventOverviewInput, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview} from './TimelineEventOverview.js';
+import {
+  TimelineEventOverviewCoverage,
+  TimelineEventOverviewCPUActivity,
+  TimelineEventOverviewInput,
+  TimelineEventOverviewMemory,
+  TimelineEventOverviewNetwork,
+  TimelineEventOverviewResponsiveness,
+  TimelineFilmStripOverview,
+} from './TimelineEventOverview.js';
 import {TimelineFlameChartView} from './TimelineFlameChartView.js';
 import {TimelineHistoryManager} from './TimelineHistoryManager.js';
 import {TimelineLoader} from './TimelineLoader.js';
@@ -687,7 +695,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.createFileSelector();
   }
 
-  loadFromURL(url: string): void {
+  loadFromURL(url: Platform.DevToolsPath.UrlString): void {
     if (this.state !== State.Idle) {
       return;
     }
@@ -701,7 +709,6 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     if (Root.Runtime.experiments.isEnabled('inputEventsOnTimelineOverview')) {
       this.overviewControls.push(new TimelineEventOverviewInput());
     }
-    this.overviewControls.push(new TimelineEventOverviewFrames());
     this.overviewControls.push(new TimelineEventOverviewCPUActivity());
     this.overviewControls.push(new TimelineEventOverviewNetwork());
     if (this.showScreenshotsSetting.get() && this.performanceModel &&
@@ -1242,7 +1249,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     const item = items[0];
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
     if (item.kind === 'string') {
-      const url = dataTransfer.getData('text/uri-list');
+      const url = dataTransfer.getData('text/uri-list') as Platform.DevToolsPath.UrlString;
       if (new Common.ParsedURL.ParsedURL(url).isValid) {
         this.loadFromURL(url);
       }
@@ -1485,7 +1492,7 @@ export class LoadTimelineHandler implements Common.QueryParamHandler.QueryParamH
 
   handleQueryParam(value: string): void {
     void UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
-      TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value));
+      TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value) as Platform.DevToolsPath.UrlString);
     });
   }
 }

@@ -500,7 +500,7 @@ struct evaluator<CwiseNullaryOp<NullaryOp,PlainObjectType> >
   : evaluator_base<CwiseNullaryOp<NullaryOp,PlainObjectType> >
 {
   typedef CwiseNullaryOp<NullaryOp,PlainObjectType> XprType;
-  typedef typename internal::remove_all<PlainObjectType>::type PlainObjectTypeCleaned;
+  typedef internal::remove_all_t<PlainObjectType> PlainObjectTypeCleaned;
 
   enum {
     CoeffReadCost = internal::functor_traits<NullaryOp>::Cost,
@@ -1225,8 +1225,8 @@ struct block_evaluator<ArgType, BlockRows, BlockCols, InnerPanel, /* HasDirectAc
   explicit block_evaluator(const XprType& block)
     : mapbase_evaluator<XprType, typename XprType::PlainObject>(block)
   {
-    // TODO: for the 3.3 release, this should be turned to an internal assertion, but let's keep it as is for the beta lifetime
-    eigen_assert(((internal::UIntPtr(block.data()) % plain_enum_max(1,evaluator<XprType>::Alignment)) == 0) && "data is not aligned");
+    eigen_internal_assert((internal::is_constant_evaluated() || (internal::UIntPtr(block.data()) % plain_enum_max(1,evaluator<XprType>::Alignment)) == 0) \
+      && "data is not aligned");
   }
 };
 
@@ -1298,7 +1298,7 @@ struct unary_evaluator<Replicate<ArgType, RowFactor, ColFactor> >
     Factor = (RowFactor==Dynamic || ColFactor==Dynamic) ? Dynamic : RowFactor*ColFactor
   };
   typedef typename internal::nested_eval<ArgType,Factor>::type ArgTypeNested;
-  typedef typename internal::remove_all<ArgTypeNested>::type ArgTypeNestedCleaned;
+  typedef internal::remove_all_t<ArgTypeNested> ArgTypeNestedCleaned;
 
   enum {
     CoeffReadCost = evaluator<ArgTypeNestedCleaned>::CoeffReadCost,
@@ -1382,7 +1382,7 @@ template<typename XprType>
 struct evaluator_wrapper_base
   : evaluator_base<XprType>
 {
-  typedef typename remove_all<typename XprType::NestedExpressionType>::type ArgType;
+  typedef remove_all_t<typename XprType::NestedExpressionType> ArgType;
   enum {
     CoeffReadCost = evaluator<ArgType>::CoeffReadCost,
     Flags = evaluator<ArgType>::Flags,
@@ -1723,14 +1723,14 @@ struct evaluator<EvalToTemp<ArgType> >
   EIGEN_DEVICE_FUNC explicit evaluator(const XprType& xpr)
     : m_result(xpr.arg())
   {
-    ::new (static_cast<Base*>(this)) Base(m_result);
+    internal::construct_at<Base>(this, m_result);
   }
 
   // This constructor is used when nesting an EvalTo evaluator in another evaluator
   EIGEN_DEVICE_FUNC evaluator(const ArgType& arg)
     : m_result(arg)
   {
-    ::new (static_cast<Base*>(this)) Base(m_result);
+    internal::construct_at<Base>(this, m_result);
   }
 
 protected:

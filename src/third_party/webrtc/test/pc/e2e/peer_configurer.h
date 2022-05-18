@@ -51,7 +51,8 @@ class PeerConfigurerImpl final
             std::make_unique<InjectableComponents>(network_thread,
                                                    network_manager,
                                                    packet_socket_factory)),
-        params_(std::make_unique<Params>()) {}
+        params_(std::make_unique<Params>()),
+        configurable_params_(std::make_unique<ConfigurableParams>()) {}
 
   PeerConfigurer* SetName(absl::string_view name) override {
     params_->name = std::string(name);
@@ -127,13 +128,13 @@ class PeerConfigurerImpl final
       PeerConnectionE2EQualityTestFixture::VideoConfig config) override {
     video_sources_.push_back(
         CreateSquareFrameGenerator(config, /*type=*/absl::nullopt));
-    params_->video_configs.push_back(std::move(config));
+    configurable_params_->video_configs.push_back(std::move(config));
     return this;
   }
   PeerConfigurer* AddVideoConfig(
       PeerConnectionE2EQualityTestFixture::VideoConfig config,
       std::unique_ptr<test::FrameGeneratorInterface> generator) override {
-    params_->video_configs.push_back(std::move(config));
+    configurable_params_->video_configs.push_back(std::move(config));
     video_sources_.push_back(std::move(generator));
     return this;
   }
@@ -141,8 +142,14 @@ class PeerConfigurerImpl final
       PeerConnectionE2EQualityTestFixture::VideoConfig config,
       PeerConnectionE2EQualityTestFixture::CapturingDeviceIndex index)
       override {
-    params_->video_configs.push_back(std::move(config));
+    configurable_params_->video_configs.push_back(std::move(config));
     video_sources_.push_back(index);
+    return this;
+  }
+  PeerConfigurer* SetVideoSubscription(
+      PeerConnectionE2EQualityTestFixture::VideoSubscription subscription)
+      override {
+    configurable_params_->video_subscription = std::move(subscription);
     return this;
   }
   PeerConfigurer* SetAudioConfig(
@@ -221,7 +228,13 @@ class PeerConfigurerImpl final
 
   InjectableComponents* components() { return components_.get(); }
   Params* params() { return params_.get(); }
+  ConfigurableParams* configurable_params() {
+    return configurable_params_.get();
+  }
   const Params& params() const { return *params_; }
+  const ConfigurableParams& configurable_params() const {
+    return *configurable_params_;
+  }
   std::vector<VideoSource>* video_sources() { return &video_sources_; }
 
   // Returns InjectableComponents and transfer ownership to the caller.
@@ -232,6 +245,7 @@ class PeerConfigurerImpl final
     components_ = nullptr;
     return components;
   }
+
   // Returns Params and transfer ownership to the caller.
   // Can be called once.
   std::unique_ptr<Params> ReleaseParams() {
@@ -240,6 +254,16 @@ class PeerConfigurerImpl final
     params_ = nullptr;
     return params;
   }
+
+  // Returns ConfigurableParams and transfer ownership to the caller.
+  // Can be called once.
+  std::unique_ptr<ConfigurableParams> ReleaseConfigurableParams() {
+    RTC_CHECK(configurable_params_);
+    auto configurable_params = std::move(configurable_params_);
+    configurable_params_ = nullptr;
+    return configurable_params;
+  }
+
   // Returns video sources and transfer frame generators ownership to the
   // caller. Can be called once.
   std::vector<VideoSource> ReleaseVideoSources() {
@@ -251,6 +275,7 @@ class PeerConfigurerImpl final
  private:
   std::unique_ptr<InjectableComponents> components_;
   std::unique_ptr<Params> params_;
+  std::unique_ptr<ConfigurableParams> configurable_params_;
   std::vector<VideoSource> video_sources_;
 };
 
@@ -292,14 +317,13 @@ class PeerParamsPreprocessor {
   void ValidateParams(const PeerConfigurerImpl& peer);
 
  private:
-  DefaultNamesProvider peer_names_provider;
+  DefaultNamesProvider peer_names_provider_;
 
-  std::set<std::string> peer_names;
-  std::set<std::string> video_labels;
-  std::set<std::string> audio_labels;
-  std::set<std::string> video_sync_groups;
-  std::set<std::string> audio_sync_groups;
-  int media_streams_count = 0;
+  std::set<std::string> peer_names_;
+  std::set<std::string> video_labels_;
+  std::set<std::string> audio_labels_;
+  std::set<std::string> video_sync_groups_;
+  std::set<std::string> audio_sync_groups_;
 };
 
 }  // namespace webrtc_pc_e2e

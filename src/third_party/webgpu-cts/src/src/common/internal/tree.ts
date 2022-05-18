@@ -59,6 +59,7 @@ export interface TestSubtree<T extends TestQuery = TestQuery> extends TestTreeNo
 
 export interface TestTreeLeaf extends TestTreeNodeBase<TestQuerySingleCase> {
   readonly run: RunFn;
+  readonly isUnimplemented?: boolean;
   subtreeCounts?: undefined;
 }
 
@@ -531,6 +532,7 @@ function insertLeaf(parent: TestSubtree, query: TestQuerySingleCase, t: RunCase)
     readableRelativeName: readableNameForCase(query),
     query,
     run: (rec, expectations) => t.run(rec, query, expectations || []),
+    isUnimplemented: t.isUnimplemented,
   };
   assert(!parent.children.has(key));
   parent.children.set(key, leaf);

@@ -265,7 +265,7 @@ struct packetmath_pcast_ops_runner {
 
 // Only some types support cast from std::complex<>.
 template <typename Scalar, typename Packet>
-struct packetmath_pcast_ops_runner<Scalar, Packet, typename internal::enable_if<NumTraits<Scalar>::IsComplex>::type> {
+struct packetmath_pcast_ops_runner<Scalar, Packet, std::enable_if_t<NumTraits<Scalar>::IsComplex>> {
   static void run() {
     test_cast_runner<Packet, std::complex<float> >::run();
     test_cast_runner<Packet, std::complex<double> >::run();
@@ -404,11 +404,11 @@ struct eigen_optimization_barrier_test {
 };
 
 template<typename Packet>
-struct eigen_optimization_barrier_test<Packet, typename internal::enable_if<
+struct eigen_optimization_barrier_test<Packet, std::enable_if_t<
     !NumTraits<Packet>::IsComplex &&
     !internal::is_same<Packet, Eigen::half>::value &&
     !internal::is_same<Packet, Eigen::bfloat16>::value
-  >::type> {
+  >> {
   static void run() {
     typedef typename internal::unpacket_traits<Packet>::type Scalar;
     Scalar s = internal::random<Scalar>();

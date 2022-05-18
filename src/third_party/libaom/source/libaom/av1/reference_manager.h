@@ -26,7 +26,11 @@ class RefFrameManager {
  public:
   explicit RefFrameManager(int max_ref_frames)
       : max_ref_frames_(max_ref_frames) {
-    forward_max_size_ = max_ref_frames - 2;
+    // forward_max_size_ define max number of arf frames that can exists at
+    // the same time. In the other words, it's the max size of forward_stack_.
+    // TODO(angiebird): Figure out if this number is optimal.
+    forward_max_size_ = kRefFrameTableSize - 2;
+    cur_global_order_idx_ = 0;
     Reset();
   }
   ~RefFrameManager() = default;
@@ -57,17 +61,27 @@ class RefFrameManager {
 
   void Reset();
   int AllocateRefIdx();
-  void UpdateOrder(int order_idx);
-  int ColocatedRefIdx(int order_idx);
+  int GetRefFrameCountByType(RefUpdateType ref_update_type) const;
+  int GetRefFrameCount() const;
+  std::vector<ReferenceFrame> GetRefFrameListByPriority() const;
+  int GetRefFrameIdxByPriority(RefUpdateType ref_update_type,
+                               int priority_idx) const;
+  GopFrame GetRefFrameByPriority(RefUpdateType ref_update_type,
+                                 int priority_idx) const;
+  GopFrame GetRefFrameByIndex(int ref_idx) const;
+  void UpdateOrder(int global_order_idx);
+  int ColocatedRefIdx(int global_order_idx);
   int ForwardMaxSize() const { return forward_max_size_; }
   int MaxRefFrames() const { return max_ref_frames_; }
-  void UpdateFrame(GopFrame *gop_frame, RefUpdateType ref_update_type,
-                   EncodeRefMode encode_ref_mode);
+  int CurGlobalOrderIdx() const { return cur_global_order_idx_; }
+  void UpdateRefFrameTable(GopFrame *gop_frame);
+  ReferenceFrame GetPrimaryRefFrame(const GopFrame &gop_frame) const;
 
  private:
-  // TODO(angiebird): // Make RefFrameTable comply with max_ref_frames_
+  // TOOD(angiebird): Do we still need max_ref_frames_?
   int max_ref_frames_;
   int forward_max_size_;
+  int cur_global_order_idx_;
   RefFrameTable ref_frame_table_;
   std::deque<int> free_ref_idx_list_;
   std::vector<int> forward_stack_;

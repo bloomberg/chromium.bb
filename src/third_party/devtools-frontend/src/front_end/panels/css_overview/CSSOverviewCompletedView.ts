@@ -14,7 +14,9 @@ import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
 
 import cssOverviewCompletedViewStyles from './cssOverviewCompletedView.css.js';
-import type {OverviewController, PopulateNodesEvent, PopulateNodesEventNodes, PopulateNodesEventNodeTypes} from './CSSOverviewController.js';
+import type {
+  OverviewController, PopulateNodesEvent, PopulateNodesEventNodes, PopulateNodesEventNodeTypes} from
+  './CSSOverviewController.js';
 import {Events as CSSOverViewControllerEvents} from './CSSOverviewController.js';
 import {CSSOverviewSidebarPanel, SidebarEvents} from './CSSOverviewSidebarPanel.js';
 import type {UnusedDeclaration} from './CSSOverviewUnusedDeclarations.js';
@@ -789,7 +791,7 @@ export class CSSOverviewCompletedView extends UI.Panel.PanelWithSidebar {
   #colorsToFragment(section: string, color: string): UI.Fragment.Fragment|undefined {
     const blockFragment = UI.Fragment.Fragment.build`<li>
       <button data-type="color" data-color="${color}" data-section="${section}" class="block" $="color"></button>
-      <div class="block-title">${color}</div>
+      <div class="block-title color-text">${color}</div>
     </li>`;
 
     const block = (blockFragment.$('color') as HTMLElement);
@@ -1072,7 +1074,7 @@ export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode<
         button.classList.add('show-element');
         UI.Tooltip.Tooltip.install(button, i18nString(UIStrings.showElement));
         button.tabIndex = 0;
-        button.onclick = (): void => this.data.node.scrollIntoView();
+        button.onclick = (): Promise<void> => frontendNode.scrollIntoView();
         cell.appendChild(button);
       });
       return cell;

@@ -41,7 +41,9 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 
 import {Cookie} from './Cookie.js';
-import type {BlockedCookieWithReason, ContentData, ExtraRequestInfo, ExtraResponseInfo, MIME_TYPE, NameValue, WebBundleInfo, WebBundleInnerRequestInfo} from './NetworkRequest.js';
+import type {
+  BlockedCookieWithReason, ContentData, ExtraRequestInfo, ExtraResponseInfo, MIME_TYPE, NameValue, WebBundleInfo,
+  WebBundleInnerRequestInfo} from './NetworkRequest.js';
 import {Events as NetworkRequestEvents, NetworkRequest} from './NetworkRequest.js';
 import type {Target} from './Target.js';
 import {Capability} from './Target.js';
@@ -1535,8 +1537,7 @@ export class InterceptedRequest {
       Promise<void> {
     this.#hasRespondedInternal = true;
     const body = encoded ? await contentBlob.text() : await blobToBase64(contentBlob);
-    void this.#fetchAgent.invoke_fulfillRequest(
-        {requestId: this.requestId, responseCode: this.responseStatusCode || 200, body, responseHeaders});
+    void this.#fetchAgent.invoke_fulfillRequest({requestId: this.requestId, responseCode: 200, body, responseHeaders});
 
     async function blobToBase64(blob: Blob): Promise<string> {
       const reader = new FileReader();

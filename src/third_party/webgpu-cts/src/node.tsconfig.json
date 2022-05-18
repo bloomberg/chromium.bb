@@ -5,7 +5,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs"
+    "module": "commonjs",
+    "incremental": false,
+    "noEmit": false,
+    "declaration": false,
   },
 
   "exclude": [

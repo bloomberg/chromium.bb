@@ -24,8 +24,10 @@ namespace {
 // Initialize fake values used by the |DailyUseCaseImpl|.
 constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
 
-const version_info::Channel kFakeChromeOSChannel =
-    version_info::Channel::STABLE;
+constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
+    version_info::Channel::STABLE /* chromeos_channel */,
+    MarketSegment::MARKET_SEGMENT_UNKNOWN /* market_segment */,
+};
 
 }  // namespace
 
@@ -40,8 +42,9 @@ class DailyUseCaseImplTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     DeviceActivityController::RegisterPrefs(local_state_.registry());
+
     daily_use_case_impl_ = std::make_unique<DailyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_);
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_);
   }
 
   void TearDown() override { daily_use_case_impl_.reset(); }
@@ -52,12 +55,11 @@ class DailyUseCaseImplTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
 };
 
-TEST_F(DailyUseCaseImplTest, GetLastKnownPingTimestampReturnsEpochOnNoPrefs) {
-  EXPECT_EQ(daily_use_case_impl_->GetLastKnownPingTimestamp(),
-            base::Time::UnixEpoch());
+TEST_F(DailyUseCaseImplTest, CheckIfLastKnownPingTimestampNotSet) {
+  EXPECT_FALSE(daily_use_case_impl_->IsLastKnownPingTimestampSet());
 }
 
-TEST_F(DailyUseCaseImplTest, CheckLocalStateUpdatesCorrectly) {
+TEST_F(DailyUseCaseImplTest, CheckIfLastKnownPingTimestampSet) {
   // Create fixed timestamp to see if local state updates value correctly.
   base::Time new_daily_ts;
   EXPECT_TRUE(
@@ -67,6 +69,7 @@ TEST_F(DailyUseCaseImplTest, CheckLocalStateUpdatesCorrectly) {
   daily_use_case_impl_->SetLastKnownPingTimestamp(new_daily_ts);
 
   EXPECT_EQ(daily_use_case_impl_->GetLastKnownPingTimestamp(), new_daily_ts);
+  EXPECT_TRUE(daily_use_case_impl_->IsLastKnownPingTimestampSet());
 }
 
 TEST_F(DailyUseCaseImplTest, CheckGenerateUTCWindowIdentifierHasValidFormat) {

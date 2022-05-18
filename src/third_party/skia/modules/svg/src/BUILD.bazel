@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkSVGAttributeParser_src",
@@ -11,6 +13,7 @@ generated_cc_atom(
         "//include/utils:SkParse_hdr",
         "//modules/svg/include:SkSVGAttributeParser_hdr",
         "//modules/svg/include:SkSVGTypes_hdr",
+        "//src/utils:SkUTF_hdr",
     ],
 )
 
@@ -595,4 +598,26 @@ generated_cc_atom(
     name = "SkSVGValue_src",
     srcs = ["SkSVGValue.cpp"],
     visibility = ["//:__subpackages__"],
+)
+
+generated_cc_atom(
+    name = "SkSVGOpenTypeSVGDecoder_src",
+    srcs = ["SkSVGOpenTypeSVGDecoder.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//include/core:SkColor_hdr",
+        "//include/core:SkOpenTypeSVGDecoder_hdr",
+        "//include/core:SkSpan_hdr",
+        "//include/core:SkStream_hdr",
+        "//include/core:SkTypes_hdr",
+        "//include/utils:SkBase64_hdr",
+        "//modules/skresources/include:SkResources_hdr",
+        "//modules/svg/include:SkSVGDOM_hdr",
+        "//modules/svg/include:SkSVGNode_hdr",
+        "//modules/svg/include:SkSVGOpenTypeSVGDecoder_hdr",
+        "//modules/svg/include:SkSVGRenderContext_hdr",
+        "//modules/svg/include:SkSVGSVG_hdr",
+        "//modules/svg/include:SkSVGUse_hdr",
+        "//src/core:SkEnumerate_hdr",
+    ],
 )

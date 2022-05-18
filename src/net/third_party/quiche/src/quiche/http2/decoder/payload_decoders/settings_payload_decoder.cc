@@ -8,18 +8,17 @@
 #include "quiche/http2/decoder/http2_frame_decoder_listener.h"
 #include "quiche/http2/http2_constants.h"
 #include "quiche/http2/http2_structures.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
 
 DecodeStatus SettingsPayloadDecoder::StartDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
+    FrameDecoderState* state, DecodeBuffer* db) {
   const Http2FrameHeader& frame_header = state->frame_header();
   const uint32_t total_length = frame_header.payload_length;
 
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingPayload: "
-                 << frame_header;
+  QUICHE_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingPayload: "
+                  << frame_header;
   QUICHE_DCHECK_EQ(Http2FrameType::SETTINGS, frame_header.type);
   QUICHE_DCHECK_LE(db->Remaining(), total_length);
   QUICHE_DCHECK_EQ(0, frame_header.flags & ~(Http2FrameFlag::ACK));
@@ -40,11 +39,10 @@ DecodeStatus SettingsPayloadDecoder::StartDecodingPayload(
 }
 
 DecodeStatus SettingsPayloadDecoder::ResumeDecodingPayload(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::ResumeDecodingPayload"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2) << "SettingsPayloadDecoder::ResumeDecodingPayload"
+                  << "  remaining_payload=" << state->remaining_payload()
+                  << "  db->Remaining=" << db->Remaining();
   QUICHE_DCHECK_EQ(Http2FrameType::SETTINGS, state->frame_header().type);
   QUICHE_DCHECK_LE(db->Remaining(), state->frame_header().payload_length);
 
@@ -58,11 +56,10 @@ DecodeStatus SettingsPayloadDecoder::ResumeDecodingPayload(
 }
 
 DecodeStatus SettingsPayloadDecoder::StartDecodingSettings(
-    FrameDecoderState* state,
-    DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingSettings"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+    FrameDecoderState* state, DecodeBuffer* db) {
+  QUICHE_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingSettings"
+                  << "  remaining_payload=" << state->remaining_payload()
+                  << "  db->Remaining=" << db->Remaining();
   while (state->remaining_payload() > 0) {
     DecodeStatus status =
         state->StartDecodingStructureInPayload(&setting_fields_, db);
@@ -72,9 +69,9 @@ DecodeStatus SettingsPayloadDecoder::StartDecodingSettings(
     }
     return HandleNotDone(state, db, status);
   }
-  HTTP2_DVLOG(2) << "LEAVING SettingsPayloadDecoder::StartDecodingSettings"
-                 << "\n\tdb->Remaining=" << db->Remaining()
-                 << "\n\t remaining_payload=" << state->remaining_payload();
+  QUICHE_DVLOG(2) << "LEAVING SettingsPayloadDecoder::StartDecodingSettings"
+                  << "\n\tdb->Remaining=" << db->Remaining()
+                  << "\n\t remaining_payload=" << state->remaining_payload();
   state->listener()->OnSettingsEnd();
   return DecodeStatus::kDecodeDone;
 }

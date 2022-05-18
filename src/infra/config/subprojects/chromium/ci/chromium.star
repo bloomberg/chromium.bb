@@ -4,6 +4,7 @@
 """Definitions of builders in the chromium builder group."""
 
 load("//lib/args.star", "args")
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
@@ -15,6 +16,7 @@ ci.defaults.set(
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     main_console_view = "main",
+    os = os.LINUX_DEFAULT,
     pool = ci.DEFAULT_POOL,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
@@ -39,6 +41,28 @@ consoles.console_view(
 
 ci.builder(
     name = "android-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_platform = builder_config.target_platform.ANDROID,
+            target_arch = builder_config.target_arch.ARM,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     # Bump to 32 if needed.
     console_view_entry = consoles.console_view_entry(
         category = "android",
@@ -46,7 +70,6 @@ ci.builder(
     ),
     cores = 8,
     execution_timeout = 4 * time.hour,
-    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = True,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
@@ -55,12 +78,33 @@ ci.builder(
 
 ci.builder(
     name = "android-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_platform = builder_config.target_platform.ANDROID,
+            target_arch = builder_config.target_arch.ARM,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "android",
         short_name = "rel",
     ),
     cores = 32,
-    os = os.LINUX_BIONIC_REMOVE,
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -90,7 +134,6 @@ ci.builder(
     # See https://crbug.com/1153349#c22, as we update symbol_level=2, build
     # needs longer time to complete.
     execution_timeout = 7 * time.hour,
-    os = os.LINUX_BIONIC_REMOVE,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
@@ -117,19 +160,78 @@ ci.builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
-    os = os.LINUX_BIONIC_REMOVE,
     sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
+    name = "lacros64-archive-rel",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "rel",
+    ),
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+            target_cros_boards = [
+                "amd64-generic",
+            ],
+            target_platform = builder_config.target_platform.CHROMEOS,
+        ),
+    ),
+    cores = 32,
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "lacros64-archive-rel.json",
+            ],
+        },
+    },
+    tree_closing = True,
+)
+
+ci.builder(
     name = "linux-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "dbg",
     ),
     # Bump to 32 if needed.
     cores = 8,
-    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = True,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
@@ -138,13 +240,29 @@ ci.builder(
 
 ci.builder(
     name = "linux-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "rel",
     ),
     cores = 32,
     notifies = ["linux-archive-rel"],
-    os = os.LINUX_BIONIC_REMOVE,
     properties = {
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
@@ -163,69 +281,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-archive-tagged",
-    builderless = False,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "tag",
-    ),
-    cores = 32,
-    execution_timeout = 7 * time.hour,
-    os = os.LINUX_BIONIC_REMOVE,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "archive_datas": [
-                {
-                    "files": [
-                        "chrome",
-                        "chrome-wrapper",
-                        "chrome_100_percent.pak",
-                        "chrome_200_percent.pak",
-                        "chrome_crashpad_handler",
-                        "chrome_sandbox",
-                        "icudtl.dat",
-                        "libEGL.so",
-                        "libGLESv2.so",
-                        "libvk_swiftshader.so",
-                        "libvulkan.so.1",
-                        "MEIPreload/manifest.json",
-                        "MEIPreload/preloaded_data.pb",
-                        "nacl_helper",
-                        "nacl_helper_bootstrap",
-                        "nacl_irt_x86_64.nexe",
-                        "product_logo_48.png",
-                        "resources.pak",
-                        "v8_context_snapshot.bin",
-                        "vk_swiftshader_icd.json",
-                        "xdg-mime",
-                        "xdg-settings",
-                    ],
-                    "dirs": ["ClearKeyCdm", "locales", "resources"],
-                    "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chrome-linux.zip",
-                    "archive_type": "ARCHIVE_TYPE_ZIP",
-                },
-                {
-                    "files": [
-                        "chromedriver",
-                    ],
-                    "gcs_bucket": "chromium-browser-versioned",
-                    "gcs_path": "experimental/Linux_x64_Tagged/{%chromium_version%}/chromedriver_linux64.zip",
-                    "archive_type": "ARCHIVE_TYPE_ZIP",
-                },
-            ],
-        },
-    },
-    schedule = "triggered",
-    sheriff_rotations = args.ignore_default(None),
-    triggered_by = [],
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
     name = "linux-official",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
@@ -235,7 +290,6 @@ ci.builder(
     ),
     cores = 32,
     execution_timeout = 7 * time.hour,
-    os = os.LINUX_BIONIC_REMOVE,
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
@@ -244,6 +298,20 @@ ci.builder(
 
 ci.builder(
     name = "mac-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "dbg",
@@ -256,6 +324,21 @@ ci.builder(
 
 ci.builder(
     name = "mac-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935).
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "rel",
@@ -277,32 +360,21 @@ ci.builder(
 )
 
 ci.builder(
-    name = "mac-archive-tagged",
-    console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "tag",
-    ),
-    cores = 12,
-    execution_timeout = 7 * time.hour,
-    os = os.MAC_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "source_side_spec_path": [
-                "src",
-                "infra",
-                "archive_config",
-                "mac-tagged.json",
-            ],
-        },
-    },
-    schedule = "triggered",
-    sheriff_rotations = args.ignore_default(None),
-    triggered_by = [],
-)
-
-ci.builder(
     name = "mac-arm64-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac|arm",
         short_name = "dbg",
@@ -314,6 +386,21 @@ ci.builder(
 
 ci.builder(
     name = "mac-arm64-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935).
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac|arm",
         short_name = "rel",
@@ -335,38 +422,25 @@ ci.builder(
 )
 
 ci.builder(
-    name = "mac-arm64-archive-tagged",
-    console_view_entry = consoles.console_view_entry(
-        category = "mac|arm",
-        short_name = "tag",
-    ),
-    cores = 12,
-    execution_timeout = 7 * time.hour,
-    os = os.MAC_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "source_side_spec_path": [
-                "src",
-                "infra",
-                "archive_config",
-                "mac-tagged.json",
-            ],
-        },
-    },
-    schedule = "triggered",
-    sheriff_rotations = args.ignore_default(None),
-    triggered_by = [],
-)
-
-ci.builder(
     name = "mac-official",
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "checkout_pgo_profiles",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            target_bits = 64,
+        ),
+    ),
     builderless = False,
-    # TODO(crbug.com/1072012) Use the default console view and use the default
-    # main console view once the build is green
-    main_console_view = None,
     console_view_entry = consoles.console_view_entry(
-        console_view = "chromium.fyi",
         category = "mac",
         short_name = "off",
     ),
@@ -392,6 +466,20 @@ ci.builder(
 
 ci.builder(
     name = "win-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "win|rel",
         short_name = "64",
@@ -416,36 +504,23 @@ ci.builder(
 )
 
 ci.builder(
-    name = "win-archive-tagged",
-    console_view_entry = consoles.console_view_entry(
-        category = "win|tag",
-        short_name = "64",
-    ),
-    cores = 32,
-    execution_timeout = 7 * time.hour,
-    os = os.WINDOWS_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "source_side_spec_path": [
-                "src",
-                "infra",
-                "archive_config",
-                "win-tagged.json",
-            ],
-        },
-    },
-    schedule = "triggered",
-    sheriff_rotations = args.ignore_default(None),
-    triggered_by = [],
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
     name = "win-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "checkout_pgo_profiles",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "win|off",
         short_name = "64",
@@ -472,6 +547,20 @@ ci.builder(
 
 ci.builder(
     name = "win32-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "win|rel",
         short_name = "32",
@@ -496,34 +585,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "win32-archive-tagged",
-    console_view_entry = consoles.console_view_entry(
-        category = "win|tag",
-        short_name = "32",
-    ),
-    cores = 32,
-    execution_timeout = 7 * time.hour,
-    os = os.WINDOWS_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "source_side_spec_path": [
-                "src",
-                "infra",
-                "archive_config",
-                "win-tagged.json",
-            ],
-        },
-    },
-    schedule = "triggered",
-    sheriff_rotations = args.ignore_default(None),
-    triggered_by = [],
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
     name = "win32-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     console_view_entry = consoles.console_view_entry(
@@ -534,4 +595,19 @@ ci.builder(
     # TODO(crbug.com/1155416) builds with PGO change take long time.
     execution_timeout = 7 * time.hour,
     os = os.WINDOWS_DEFAULT,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "checkout_pgo_profiles",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            target_bits = 32,
+        ),
+    ),
 )

@@ -66,6 +66,10 @@ void MediumEnvironment::Reset() {
     webrtc_signaling_complete_callback_.clear();
 #endif
     wifi_lan_mediums_.clear();
+    {
+      MutexLock lock(&mutex_);
+      wifi_hotspot_mediums_.clear();
+    }
     use_valid_peer_connection_ = true;
     peer_connection_latency_ = absl::ZeroDuration();
   });
@@ -532,7 +536,7 @@ void MediumEnvironment::UpdateBleV2MediumForAdvertising(
                           << ", enabled=" << enabled;
         for (auto& medium_info : ble_v2_mediums_) {
           const api::ble_v2::BleMedium* remote_medium = medium_info.first;
-          const BleV2MediumContext& remote_context = medium_info.second;
+          BleV2MediumContext& remote_context = medium_info.second;
           // Do not send notification to the same medium.
           if (remote_medium == &medium) continue;
           NEARBY_LOGS(INFO)
@@ -540,7 +544,7 @@ void MediumEnvironment::UpdateBleV2MediumForAdvertising(
               << remote_medium << ", remote_medium_context=" << &remote_context
               << ", remote_context.peripheral=" << remote_context.ble_peripheral
               << ". Ready to call OnBleV2PeripheralStateChanged.";
-          OnBleV2PeripheralStateChanged(enabled, context,
+          OnBleV2PeripheralStateChanged(enabled, remote_context,
                                         context.advertisement_data,
                                         *context.ble_peripheral);
         }
@@ -786,6 +790,91 @@ api::WifiLanMedium* MediumEnvironment::GetWifiLanMedium(
     }
   }
   return nullptr;
+}
+
+void MediumEnvironment::RegisterWifiHotspotMedium(
+    api::WifiHotspotMedium& medium) {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this, &medium]() {
+    MutexLock lock(&mutex_);
+    wifi_hotspot_mediums_.insert({&medium, WifiHotspotMediumContext{}});
+    NEARBY_LOG(INFO, "Registered: medium=%p", &medium);
+  });
+}
+
+api::WifiHotspotMedium* MediumEnvironment::GetWifiHotspotMedium(
+    absl::string_view ssid, absl::string_view ip_address) {
+  MutexLock lock(&mutex_);
+  for (auto& medium_info : wifi_hotspot_mediums_) {
+    auto* medium_found = medium_info.first;
+    auto& info = medium_info.second;
+    if (info.is_ap && info.hotspot_credentials) {
+      if ((info.hotspot_credentials->GetSSID() == ssid) ||
+          (!ip_address.empty() &&
+           (info.hotspot_credentials->GetIPAddress() == ip_address))) {
+        NEARBY_LOGS(INFO) << "Found Remote WifiHotspot medium=" << medium_found;
+        return medium_found;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+void MediumEnvironment::UpdateWifiHotspotMediumForStartOrConnect(
+      api::WifiHotspotMedium& medium, HotspotCredentials* hotspot_credentials,
+      bool is_ap, bool enabled) {
+  if (!enabled_) return;
+
+  CountDownLatch latch(1);
+  RunOnMediumEnvironmentThread([this, &medium,
+                                hotspot_credentials = hotspot_credentials,
+                                is_ap, enabled, &latch]() {
+    std::string role_status =
+        absl::StrFormat("; %s is %s", is_ap ? "SoftAP" : "STA",
+                        is_ap ? (enabled ? "Started" : "Stopped")
+                              : (enabled ? "Connected" : "Disconneced"));
+
+    if (hotspot_credentials) {
+      NEARBY_LOGS(INFO) << "Update WifiHotspot medium for Hotspot: this="
+                        << this << "; medium=" << &medium << role_status
+                        << "; ssid=" << hotspot_credentials->GetSSID()
+                        << "; password=" << hotspot_credentials->GetPassword();
+    } else {
+      NEARBY_LOGS(INFO) << "Reset WifiHotspot medium for Hotspot: this="
+                        << this << "; medium=" << &medium << role_status;
+    }
+
+    MutexLock lock(&mutex_);
+    for (auto& medium_info : wifi_hotspot_mediums_) {
+      auto& local_medium = medium_info.first;
+      auto& info = medium_info.second;
+      if (local_medium == &medium) {
+        NEARBY_LOGS(INFO) << "Found WifiHotspot medium=" << &medium;
+        info.is_active = enabled;
+        info.is_ap = is_ap;
+        if (enabled) {
+          info.hotspot_credentials = hotspot_credentials;
+        } else {
+          info.hotspot_credentials = nullptr;
+        }
+        continue;
+      }
+    }
+    latch.CountDown();
+  });
+  latch.Await();
+}
+
+void MediumEnvironment::UnregisterWifiHotspotMedium(
+    api::WifiHotspotMedium& medium) {
+  if (!enabled_) return;
+  RunOnMediumEnvironmentThread([this, &medium]() {
+    MutexLock lock(&mutex_);
+    auto item = wifi_hotspot_mediums_.extract(&medium);
+    if (item.empty()) return;
+    NEARBY_LOGS(INFO) << "Unregistered WifiHotspot medium";
+  });
 }
 
 void MediumEnvironment::SetFeatureFlags(const FeatureFlags::Flags& flags) {

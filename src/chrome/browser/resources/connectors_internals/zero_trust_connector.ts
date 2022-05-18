@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
+import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 
 import {KeyInfo, KeyManagerInitializedValue, KeyTrustLevel, KeyType, PageHandler, PageHandlerInterface, ZeroTrustState} from './connectors_internals.mojom-webui.js';
 
@@ -24,7 +25,7 @@ export class ZeroTrustConnectorElement extends CustomElement {
   }
 
   static override get template() {
-    return `{__html_template__}`;
+    return getTrustedHTML`{__html_template__}`;
   }
 
   public set enabledString(str: string) {
@@ -112,8 +113,7 @@ export class ZeroTrustConnectorElement extends CustomElement {
 
     this.keyInfo = state.keyInfo;
 
-    // Pretty print the dictionary as a JSON string.
-    this.signalsString = JSON.stringify(state.signalsDictionary, null, 2);
+    this.signalsString = state.signalsJson;
   }
 
   private async fetchZeroTrustValues(): Promise<ZeroTrustState|undefined> {

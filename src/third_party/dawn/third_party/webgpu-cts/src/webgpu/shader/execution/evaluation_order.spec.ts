@@ -445,7 +445,7 @@ fn main() {
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, group);
-  pass.dispatch(1);
+  pass.dispatchWorkgroups(1);
   pass.end();
 
   t.queue.submit([encoder.finish()]);

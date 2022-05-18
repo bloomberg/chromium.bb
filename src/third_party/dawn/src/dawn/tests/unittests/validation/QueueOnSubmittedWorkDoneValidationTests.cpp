@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+
 #include "dawn/tests/unittests/validation/ValidationTest.h"
-
-#include <gmock/gmock.h>
-
-using namespace testing;
+#include "gmock/gmock.h"
 
 class MockQueueWorkDoneCallback {
   public:

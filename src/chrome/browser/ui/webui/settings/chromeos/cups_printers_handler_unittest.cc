@@ -17,7 +17,7 @@
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -211,7 +211,7 @@ class CupsPrintersHandlerTest : public testing::Test {
 
 TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
   DBusThreadManager::Initialize();
-  chromeos::ConciergeClient::InitializeFake(
+  ConciergeClient::InitializeFake(
       /*fake_cicerone_client=*/nullptr);
 
   DebugDaemonClient* client = DBusThreadManager::Get()->GetDebugDaemonClient();
@@ -240,7 +240,7 @@ TEST_F(CupsPrintersHandlerTest, RemoveCorrectPrinter) {
   EXPECT_FALSE(expected);
 
   profile_.reset();
-  chromeos::ConciergeClient::Shutdown();
+  ConciergeClient::Shutdown();
   DBusThreadManager::Shutdown();
 }
 

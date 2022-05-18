@@ -504,6 +504,8 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
       const QuicSocketAddress& /*address*/) const override {
     return false;
   }
+
+  void OnBandwidthUpdateTimeout() override {}
 };
 
 class MockQuicConnectionHelper : public QuicConnectionHelperInterface {
@@ -853,6 +855,24 @@ class MockQuicCryptoStream : public QuicCryptoStream {
     return false;
   }
   SSL* GetSsl() const override { return nullptr; }
+  bool IsCryptoFrameExpectedForEncryptionLevel(
+      quic::EncryptionLevel level) const override {
+    return level != ENCRYPTION_ZERO_RTT;
+  }
+  EncryptionLevel GetEncryptionLevelToSendCryptoDataOfSpace(
+      PacketNumberSpace space) const override {
+    switch (space) {
+      case INITIAL_DATA:
+        return ENCRYPTION_INITIAL;
+      case HANDSHAKE_DATA:
+        return ENCRYPTION_HANDSHAKE;
+      case APPLICATION_DATA:
+        return ENCRYPTION_FORWARD_SECURE;
+      default:
+        QUICHE_DCHECK(false);
+        return NUM_ENCRYPTION_LEVELS;
+    }
+  }
 
  private:
   quiche::QuicheReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
@@ -959,8 +979,6 @@ class MockHttp3DebugVisitor : public Http3DebugVisitor {
   MOCK_METHOD(void, OnSettingsFrameReceived, (const SettingsFrame&),
               (override));
   MOCK_METHOD(void, OnGoAwayFrameReceived, (const GoAwayFrame&), (override));
-  MOCK_METHOD(void, OnMaxPushIdFrameReceived, (const MaxPushIdFrame&),
-              (override));
   MOCK_METHOD(void, OnPriorityUpdateFrameReceived, (const PriorityUpdateFrame&),
               (override));
   MOCK_METHOD(void, OnAcceptChFrameReceived, (const AcceptChFrame&),
@@ -1033,11 +1051,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
 
   void set_early_data_enabled(bool enabled) { early_data_enabled_ = enabled; }
 
-  void set_client_cert_mode(ClientCertMode mode) {
-    if (support_client_cert()) {
-      client_cert_mode_ = mode;
-    }
-  }
+  void set_client_cert_mode(ClientCertMode mode) { client_cert_mode_ = mode; }
 
  private:
   MockQuicSessionVisitor visitor_;
@@ -1777,6 +1791,8 @@ class TestPacketWriter : public QuicPacketWriter {
 
   void SimulateNextPacketTooLarge() { next_packet_too_large_ = true; }
 
+  void ExpectNextPacketUnprocessable() { next_packet_processable_ = false; }
+
   void AlwaysGetPacketTooLarge() { always_get_packet_too_large_ = true; }
 
   // Sets the amount of time that the writer should before the actual write.
@@ -1923,6 +1939,7 @@ class TestPacketWriter : public QuicPacketWriter {
   bool block_on_next_flush_ = false;
   bool block_on_next_write_ = false;
   bool next_packet_too_large_ = false;
+  bool next_packet_processable_ = true;
   bool always_get_packet_too_large_ = false;
   bool is_write_blocked_data_buffered_ = false;
   bool is_batch_mode_ = false;
@@ -1987,11 +2004,9 @@ class SavingHttp3DatagramVisitor : public QuicSpdyStream::Http3DatagramVisitor {
  public:
   struct SavedHttp3Datagram {
     QuicStreamId stream_id;
-    absl::optional<QuicDatagramContextId> context_id;
     std::string payload;
     bool operator==(const SavedHttp3Datagram& o) const {
-      return stream_id == o.stream_id && context_id == o.context_id &&
-             payload == o.payload;
+      return stream_id == o.stream_id && payload == o.payload;
     }
   };
   const std::vector<SavedHttp3Datagram>& received_h3_datagrams() const {
@@ -2000,31 +2015,13 @@ class SavingHttp3DatagramVisitor : public QuicSpdyStream::Http3DatagramVisitor {
 
   // Override from QuicSpdyStream::Http3DatagramVisitor.
   void OnHttp3Datagram(QuicStreamId stream_id,
-                       absl::optional<QuicDatagramContextId> context_id,
                        absl::string_view payload) override {
     received_h3_datagrams_.push_back(
-        SavedHttp3Datagram{stream_id, context_id, std::string(payload)});
+        SavedHttp3Datagram{stream_id, std::string(payload)});
   }
 
  private:
   std::vector<SavedHttp3Datagram> received_h3_datagrams_;
-};
-
-class MockHttp3DatagramRegistrationVisitor
-    : public QuicSpdyStream::Http3DatagramRegistrationVisitor {
- public:
-  MOCK_METHOD(void, OnContextReceived,
-              (QuicStreamId stream_id,
-               absl::optional<QuicDatagramContextId> context_id,
-               DatagramFormatType format_type,
-               absl::string_view format_additional_data),
-              (override));
-
-  MOCK_METHOD(void, OnContextClosed,
-              (QuicStreamId stream_id,
-               absl::optional<QuicDatagramContextId> context_id,
-               ContextCloseCode close_code, absl::string_view close_details),
-              (override));
 };
 
 }  // namespace test

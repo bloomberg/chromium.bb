@@ -52,9 +52,18 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
   virtual void PrepareForShutdown() = 0;
 
   // Sets and gets the bounds of the platform-window. Note that the bounds is in
-  // physical pixel coordinates.
+  // physical pixel coordinates. The implementation should use
+  // `PlatformWindowDelegate::ConvertRectToPixels|DIP` if conversion is
+  // necessary.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetBounds() const = 0;
+
+  // Sets and gets the bounds of the platform-window. Note that the bounds is in
+  // device-independent-pixel (dip) coordinates. The implementation should use
+  // `PlatformWindowDelegate::ConvertRectToPixels|DIP` if conversion is
+  // necessary.
+  virtual void SetBoundsInDIP(const gfx::Rect& bounds) = 0;
+  virtual gfx::Rect GetBoundsInDIP() const = 0;
 
   virtual void SetTitle(const std::u16string& title) = 0;
 
@@ -93,8 +102,8 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
   virtual void ConfineCursorToBounds(const gfx::Rect& bounds) = 0;
 
   // Sets and gets the restored bounds of the platform-window.
-  virtual void SetRestoredBoundsInPixels(const gfx::Rect& bounds) = 0;
-  virtual gfx::Rect GetRestoredBoundsInPixels() const = 0;
+  virtual void SetRestoredBoundsInDIP(const gfx::Rect& bounds) = 0;
+  virtual gfx::Rect GetRestoredBoundsInDIP() const = 0;
 
   // Sets the Window icons. |window_icon| is a 16x16 icon suitable for use in
   // a title bar. |app_icon| is a larger size for use in the host environment

@@ -30,8 +30,9 @@ class SkRRect;
 class SkSurface;
 class SkSurfaceProps;
 struct SkPoint;
-struct SkCustomMesh;
-
+#ifdef SK_ENABLE_SKSL
+class SkMesh;
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 class SkBitmapDevice : public SkBaseDevice {
 public:
@@ -88,7 +89,7 @@ protected:
 
     void drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&, bool) override;
 #ifdef SK_ENABLE_SKSL
-    void drawCustomMesh(SkCustomMesh, sk_sp<SkBlender>, const SkPaint&) override;
+    void drawMesh(const SkMesh&, sk_sp<SkBlender>, const SkPaint&) override;
 #endif
 
     void drawAtlas(const SkRSXform[], const SkRect[], const SkColor[], int count, sk_sp<SkBlender>,
@@ -107,7 +108,10 @@ protected:
 
     ///////////////////////////////////////////////////////////////////////////
 
-    void onDrawGlyphRunList(SkCanvas*, const SkGlyphRunList&, const SkPaint&) override;
+    void onDrawGlyphRunList(SkCanvas*,
+                            const SkGlyphRunList&,
+                            const SkPaint& initialPaint,
+                            const SkPaint& drawingPaint) override;
     bool onReadPixels(const SkPixmap&, int x, int y) override;
     bool onWritePixels(const SkPixmap&, int, int) override;
     bool onPeekPixels(SkPixmap*) override;
@@ -153,7 +157,7 @@ private:
     SkBitmap    fBitmap;
     void*       fRasterHandle = nullptr;
     SkRasterClipStack  fRCStack;
-    SkGlyphRunListPainter fGlyphPainter;
+    SkGlyphRunListPainterCPU fGlyphPainter;
 
 
     using INHERITED = SkBaseDevice;

@@ -109,6 +109,7 @@ class WebContentsVideoCaptureDeviceBrowserTest
         const auto average_letterbox_rgb =
             ComputeAverageColor(rgb_frame, gfx::Rect(frame_size),
                                 ToSafeExcludeRect(content_in_frame_rect_f));
+
         VLOG(1)
             << "Video frame analysis: size=" << frame_size.ToString()
             << ", captured upper-left quadrant of content should be bound by "
@@ -121,13 +122,10 @@ class WebContentsVideoCaptureDeviceBrowserTest
             << " and has average color " << average_mainframe_rgb
             << ", letterbox region has average color " << average_letterbox_rgb;
 
-        // The letterboxed region should always be black, or invalid color (in
-        // case the letterboxed area was empty).
+        // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
-          EXPECT_TRUE(!average_letterbox_rgb.is_valid() ||
-                      IsApproximatelySameColor(SK_ColorBLACK,
-                                               average_letterbox_rgb,
-                                               max_color_diff));
+          EXPECT_TRUE(IsApproximatelySameColor(
+              SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
         if (testing::Test::HasFailure()) {
@@ -457,16 +455,8 @@ INSTANTIATE_TEST_SUITE_P(
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, whether the WebContents is visible/hidden or occluded/unoccluded
 // and whether the main document contains a cross-site iframe.
-
-// Fails on LACROS for Chrome OS and linux. http://crbug.com/1108205
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
-#else
-#define MAYBE_CapturesContentChanges CapturesContentChanges
-#endif
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       MAYBE_CapturesContentChanges) {
+                       CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

@@ -34,10 +34,11 @@ namespace webrtc {
 
 class PeerConnectionInternal;
 
-class DataChannelController : public SctpDataChannelProviderInterface,
+class DataChannelController : public SctpDataChannelControllerInterface,
                               public DataChannelSink {
  public:
   explicit DataChannelController(PeerConnectionInternal* pc) : pc_(pc) {}
+  ~DataChannelController();
 
   // Not copyable or movable.
   DataChannelController(DataChannelController&) = delete;
@@ -86,8 +87,6 @@ class DataChannelController : public SctpDataChannelProviderInterface,
       const InternalDataChannelInit*
           config) /* RTC_RUN_ON(signaling_thread()) */;
   void AllocateSctpSids(rtc::SSLRole role);
-
-  SctpDataChannel* FindDataChannelBySid(int sid) const;
 
   // Checks if any data channel has been added.
   bool HasDataChannels() const;

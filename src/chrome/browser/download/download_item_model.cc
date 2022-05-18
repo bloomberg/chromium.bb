@@ -291,10 +291,6 @@ bool DownloadItemModel::IsMixedContent() const {
   return download_->IsMixedContent();
 }
 
-bool DownloadItemModel::ShouldShowIncognitoWarning() const {
-  return download_->ShouldShowIncognitoWarning();
-}
-
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!IsDangerous())
@@ -358,6 +354,23 @@ bool DownloadItemModel::ShouldShowInShelf() const {
 void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
   data->should_show_in_shelf_ = should_show;
+}
+
+bool DownloadItemModel::ShouldShowInBubble() const {
+  // Downloads blocked by local policies should be notified, otherwise users
+  // won't get any feedback that the download has failed.
+  bool should_notify =
+      download_->GetLastReason() ==
+          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED &&
+      download_->GetMixedContentStatus() !=
+          download::DownloadItem::MixedContentStatus::SILENT_BLOCK;
+
+  // Wait until the target path is determined.
+  if (download_->GetTargetFilePath().empty() && !should_notify) {
+    return false;
+  }
+
+  return DownloadUIModel::ShouldShowInBubble();
 }
 
 bool DownloadItemModel::ShouldNotifyUI() const {
@@ -718,17 +731,15 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::BYPASS_DEEP_SCANNING:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       CompleteSafeBrowsingScan();
+      SetOpenWhenComplete(true);
 #endif
       [[fallthrough]];
     case DownloadCommands::KEEP:
-      // Order of these warning validations should be same as the order that
-      // GetDesiredDownloadItemMode() method follows.
-      if (ShouldShowIncognitoWarning()) {
-        download_->AcceptIncognitoWarning();
-        break;
-      }
       if (IsMixedContent()) {
         download_->ValidateMixedContentDownload();
+        break;
+      }
+      if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
         break;
       }
       DCHECK(IsDangerous());

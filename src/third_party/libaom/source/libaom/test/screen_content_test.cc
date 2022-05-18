@@ -110,4 +110,37 @@ AV1_INSTANTIATE_TEST_SUITE(ScreenContentToolsTestLarge,
                            ::testing::Values(::libaom_test::kOnePassGood,
                                              ::libaom_test::kTwoPassGood),
                            ::testing::Values(AOM_Q));
+
+class ScreenContentToolsMultiThreadTestLarge
+    : public ScreenContentToolsTestLarge {};
+
+TEST_P(ScreenContentToolsMultiThreadTestLarge, ScreenContentToolsTest) {
+  // TODO(aomedia:3278): This test is known to have data races. Do not run the
+  // test under ThreadSanitizer.
+#if defined(__has_feature)
+#if __has_feature(thread_sanitizer)
+  GTEST_SKIP()
+      << "Skipping the test under ThreadSanitizer. See bug aomedia:3278.";
+#endif
+#elif defined(__SANITIZE_THREAD__)
+  GTEST_SKIP()
+      << "Skipping the test under ThreadSanitizer. See bug aomedia:3278.";
+#endif
+  // Don't force screen content, however as the input is screen content
+  // allow_screen_content_tools should still be turned on even with
+  // multi-threaded encoding.
+  ::libaom_test::Y4mVideoSource video_sc("desktop_credits.y4m", 0, 10);
+  cfg_.g_profile = 1;
+  cfg_.g_threads = 4;
+  is_screen_content_violated_ = true;
+  tune_content_ = AOM_CONTENT_DEFAULT;
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video_sc));
+  ASSERT_EQ(is_screen_content_violated_, false)
+      << "Failed detection of screen content";
+}
+
+AV1_INSTANTIATE_TEST_SUITE(ScreenContentToolsMultiThreadTestLarge,
+                           ::testing::Values(::libaom_test::kOnePassGood,
+                                             ::libaom_test::kTwoPassGood),
+                           ::testing::Values(AOM_Q));
 }  // namespace

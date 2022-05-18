@@ -21,7 +21,7 @@ namespace features {
 // User, Kiosks, Managed Guest Sessions) to the device status report.
 const base::Feature kActivityReportingSessionType{
     "ActivityReportingSessionType", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
@@ -33,7 +33,7 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
     "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust the touchpad haptic click settings.
@@ -273,7 +273,7 @@ const base::Feature kDesktopPWAsDefaultOfflinePage{
 // for web app windows.
 const base::Feature kDesktopPWAsElidedExtensionsMenu {
   "DesktopPWAsElidedExtensionsMenu",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -283,17 +283,6 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu {
 // Whether to parse and enforce the WebAppSettings policy.
 const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
     "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Replaces the origin text flash and the icon in web app notifications with
-// the name of the app and the icon of the app.
-const base::Feature kDesktopPWAsNotificationIconAndTitle {
-  "DesktopPWAsNotificationIconAndTitle",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
 
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
@@ -328,6 +317,11 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
 const base::Feature kKeepForceInstalledPreinstalledApps{
     "KeepForceInstalledPreinstalledApps", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Causes the DMToken to be deleted (rather than invalidated) when a browser is
+// deleted from CBCM.
+const base::Feature kDmTokenDeletion{"DmTokenDeletion",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {
@@ -366,13 +360,13 @@ const base::FeatureParam<std::string> kDnsOverHttpsTemplatesParam{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables the DNS-Over-HTTPS in the DNS proxy.
 const base::Feature kDnsProxyEnableDOH{"DnsProxyEnableDOH",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
 // Enable loading native libraries earlier in startup on Android.
 const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -626,6 +620,10 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
     "IncognitoBrandConsistencyForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// When enabled, users will see a warning when downloading from Incognito.
+const base::Feature kIncognitoDownloadsWarning{
+    "IncognitoDownloadsWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -640,11 +638,6 @@ const base::Feature kIncognitoParamFilterEnabled{
 // When enabled, shows a demo of in-product help in a WebUI context.
 const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kKernelnextVMs{"KernelnextVMs",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -662,21 +655,6 @@ constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel{
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 const base::Feature kListWebAppsSwitch{"ListWebAppsSwitch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_MAC)
-// Uses NSFullSizeContentViewWindowMask where available instead of adding our
-// own views to the window frame. This is a temporary kill switch, it can be
-// removed once we feel okay about leaving it on.
-const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-#endif
-
-#if BUILDFLAG(IS_MAC)
-// Enables the Material Design download shelf on Mac.
-const base::Feature kMacMaterialDesignDownloadShelf{
-    "MacMDDownloadShelf", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -859,7 +837,7 @@ const base::Feature kAbusiveNotificationPermissionRevocation{
 
 const base::Feature kRemoveStatusBarInWebApps {
   "RemoveStatusBarInWebApps",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -1040,6 +1018,10 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsProbability{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-settings-probability", 0.8};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreProbability{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-3-notice-learn-more-probability", 0.2};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
@@ -1071,6 +1053,10 @@ extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeSettingsTriggerId{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-settings-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-3-notice-learn-more-trigger-id", ""};
 // The time the user must remain on settings after interacting with a privacy
 // setting to be considered.
 const base::FeatureParam<base::TimeDelta>

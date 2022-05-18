@@ -34,6 +34,8 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/power/battery_level_provider.h"
 #include "chrome/browser/metrics/power/power_metrics_reporter.h"
+#include "chrome/browser/metrics/power/process_metrics_recorder.h"
+#include "chrome/browser/metrics/power/process_monitor.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -41,6 +43,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/unexportable_key.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_switches.h"
@@ -217,6 +220,7 @@ void RecordStartupMetrics() {
   // Determine if Applocker is enabled and running. This does not check if
   // Applocker rules are being enforced.
   base::UmaHistogramBoolean("Windows.ApplockerRunning", IsApplockerRunning());
+  crypto::MeasureTPMAvailabilityWin();
 #endif  // BUILDFLAG(IS_WIN)
 
   bluetooth_utility::ReportBluetoothAvailability();
@@ -507,6 +511,11 @@ ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
 ChromeBrowserMainExtraPartsMetrics::~ChromeBrowserMainExtraPartsMetrics() =
     default;
 
+void ChromeBrowserMainExtraPartsMetrics::PostCreateMainMessageLoop() {
+  // Must be initialized before any child processes are spawned.
+  process_monitor_ = std::make_unique<ProcessMonitor>();
+}
+
 void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
   RecordMicroArchitectureStats();
 }
@@ -647,14 +656,23 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
             g_browser_process->local_state()));
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  // Only instantiate the ProcessMetricsRecorder and the PowerMetricsReporter if
+  // process_monitor_ exists. This is always the case for Chrome but not for the
+  // unittests.
+  if (process_monitor_) {
+    process_metrics_recorder_ =
+        std::make_unique<ProcessMetricsRecorder>(process_monitor_.get());
+
+    // BatteryLevelProvider is supported on mac and windows only, thus we report
+    // power metrics only on those platforms.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  // BatteryLevelProvider is supported on mac and windows only, thus we report
-  // power metrics only on those platforms.
-  if (performance_monitor::ProcessMonitor::Get()) {
-    // PowerMetricsReporter needs ProcessMonitor to be created.
-    power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>();
-  }
+    power_metrics_reporter_ =
+        std::make_unique<PowerMetricsReporter>(process_monitor_.get());
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
+    process_monitor_->StartGatherCycle();
+  }
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {

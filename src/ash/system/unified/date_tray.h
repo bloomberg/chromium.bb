@@ -19,7 +19,8 @@ class TimeTrayItemView;
 // This date tray is next to the `UnifidedSystemTray`. Activating this tray
 // results in the CalendarView showing in the UnifiedSystemTray's bubble. This
 // tray doesn't not have its own bubble.
-class ASH_EXPORT DateTray : public TrayBackgroundView {
+class ASH_EXPORT DateTray : public TrayBackgroundView,
+                            public UnifiedSystemTray::Observer {
  public:
   METADATA_HEADER(DateTray);
 
@@ -34,9 +35,14 @@ class ASH_EXPORT DateTray : public TrayBackgroundView {
   std::u16string GetAccessibleNameForTray() override;
   void HandleLocaleChange() override;
   void UpdateLayout() override;
+  void UpdateAfterLoginStatusChange() override;
   void ShowBubble() override {}
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override {}
   void ClickedOutsideBubble() override {}
+
+  // UnifiedSystemTray::Observer:
+  void OnOpeningCalendarView() override;
+  void OnLeavingCalendarView() override;
 
  private:
   friend class DateTrayTest;
@@ -46,6 +52,9 @@ class ASH_EXPORT DateTray : public TrayBackgroundView {
 
   // Owned by `StatusAreaWidget`.
   UnifiedSystemTray* unified_system_tray_ = nullptr;
+
+  base::ScopedObservation<UnifiedSystemTray, UnifiedSystemTray::Observer>
+      scoped_unified_system_tray_observer_{this};
 };
 
 }  // namespace ash

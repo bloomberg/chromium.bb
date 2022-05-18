@@ -9,7 +9,7 @@
 
 namespace epoll_server {
 
-int AddressFamilyUnderTest() { return AddressFamilyUnderTestImpl(); }
+inline int AddressFamilyUnderTest() { return AddressFamilyUnderTestImpl(); }
 
 }  // namespace epoll_server
 

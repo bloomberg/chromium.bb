@@ -56,8 +56,8 @@ extern "C" {
 // downstream projects to do greater-than preprocessor checks on AVIF_VERSION
 // to leverage in-development code without breaking their stable builds.
 #define AVIF_VERSION_MAJOR 0
-#define AVIF_VERSION_MINOR 9
-#define AVIF_VERSION_PATCH 3
+#define AVIF_VERSION_MINOR 10
+#define AVIF_VERSION_PATCH 1
 #define AVIF_VERSION_DEVEL 1
 #define AVIF_VERSION \
     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
@@ -178,6 +178,7 @@ typedef struct avifRWData
 #define AVIF_DATA_EMPTY { NULL, 0 }
 // clang-format on
 
+// The avifRWData input must be zero-initialized before being manipulated with these functions.
 AVIF_API void avifRWDataRealloc(avifRWData * raw, size_t newSize);
 AVIF_API void avifRWDataSet(avifRWData * raw, const uint8_t * data, size_t len);
 AVIF_API void avifRWDataFree(avifRWData * raw);
@@ -432,7 +433,6 @@ typedef struct avifImage
     uint32_t yuvRowBytes[AVIF_PLANE_COUNT_YUV];
     avifBool imageOwnsYUVPlanes;
 
-    avifRange alphaRange;
     uint8_t * alphaPlane;
     uint32_t alphaRowBytes;
     avifBool imageOwnsAlphaPlane;
