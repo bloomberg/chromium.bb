@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 import posixpath
 import sys
@@ -26,6 +27,13 @@ webgl_test_harness_script = r"""
   var domAutomationController = {};
 
   domAutomationController._finished = false;
+  domAutomationController._originalLog = window.console.log;
+  domAutomationController._messages = '';
+
+  domAutomationController.log = function(msg) {
+    domAutomationController._messages += msg + "\n";
+    domAutomationController._originalLog.apply(window.console, [msg]);
+  }
 
   domAutomationController.send = function(msg) {
     // Issue a read pixel to synchronize the gpu process to ensure
@@ -57,6 +65,13 @@ basic_test_harness_script = r"""
   domAutomationController._readyForActions = false;
   domAutomationController._succeeded = false;
   domAutomationController._finished = false;
+  domAutomationController._originalLog = window.console.log;
+  domAutomationController._messages = '';
+
+  domAutomationController.log = function(msg) {
+    domAutomationController._messages += msg + "\n";
+    domAutomationController._originalLog.apply(window.console, [msg]);
+  }
 
   domAutomationController.send = function(msg) {
     domAutomationController._proceed = true;
@@ -188,8 +203,15 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     url = self.UrlOfStaticFilePath(test_path)
     tab.Navigate(url,
                  script_to_evaluate_on_commit=test_params.test_harness_script)
-    tab.action_runner.WaitForJavaScriptCondition(
-        test_params.finish_js_condition, timeout=30)
+
+    try:
+      tab.action_runner.WaitForJavaScriptCondition(
+          test_params.finish_js_condition, timeout=30)
+    finally:
+      test_messages = tab.EvaluateJavaScript(
+          'domAutomationController._messages')
+      if test_messages:
+        logging.info('Logging messages from the test:\n%s', test_messages)
 
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
@@ -408,20 +430,28 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if expected.no_overlay:
       return
 
+    # TODO(crbug.com/1278681): Remove this history after no more flaky tests.
+    logging.info(
+        'SwapChain Presentation Mode History %s',
+        TraceIntegrationTest._SwapChainPresentationModeListToStr(
+            presentation_mode_history))
+
     valid_entry_found = False
-    for index, mode in enumerate(presentation_mode_history):
+    for index, mode in enumerate(reversed(presentation_mode_history)):
+      # Be more tolerant for the beginning frames in non-overlay mode.
+      # Only check the last three entries.
+      if index >= 3:
+        break
       if mode in (_SWAP_CHAIN_PRESENTATION_MODE_NONE,
                   _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
         # Be more tolerant to avoid test flakiness
         continue
       if (TraceIntegrationTest._SwapChainPresentationModeToStr(mode) !=
           expected.presentation_mode):
-        if index >= len(presentation_mode_history) // 2:
-          # Be more tolerant for the first half frames in non-overlay mode.
-          self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
-                    (expected.presentation_mode,
-                     TraceIntegrationTest._SwapChainPresentationModeListToStr(
-                         presentation_mode_history)))
+        self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
+                  (expected.presentation_mode,
+                   TraceIntegrationTest._SwapChainPresentationModeListToStr(
+                       presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
       self.fail(

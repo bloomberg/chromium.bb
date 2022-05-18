@@ -31,6 +31,7 @@ All/SshWarningTest.*
 All/SyncConsentPolicyDisabledTest.*
 All/SyncConsentTestWithModesParams.*
 All/SyncConsentTestWithParams.*
+All/UpdateScreenTest.*
 All/WebviewCloseViewLoginTest.*
 All/WebviewLoginWithIframeTest.*
 All/WizardControllerDeviceStateExplicitRequirementTest.*
@@ -79,6 +80,7 @@ EnterpriseEnrollmentTest.*
 EnterpriseEnrollmentTestBase.*
 EulaOfflineTest.*
 EulaTest.*
+ExistingUserControllerAuthFailureTest.*
 FamilyLinkNoticeScreenChildTest.*
 FamilyLinkNoticeScreenManagedTest.*
 FamilyLinkNoticeScreenTest.*
@@ -153,8 +155,6 @@ SystemWebDialogOobeTest.*
 TermsOfServiceScreenTest.*
 UpdateRequiredScreenPolicyPresentTest.*
 UpdateRequiredScreenTest.*
-UpdateScreenTest.*
-BetterUpdateScreenTest.*
 UserCloudExternalDataManagerTest.*
 UserCreationScreenEnrolledTest.*
 UserCreationScreenLoginTest.*

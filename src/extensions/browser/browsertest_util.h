@@ -7,18 +7,13 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
-
-namespace base {
-class Value;
-}  // namespace base
+#include "content/public/test/browser_test_utils.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace extensions {
-namespace browsertest_util {
+namespace extensions::browsertest_util {
 
 // Determine if a user activation notification should be triggered before
 // executing a script
@@ -48,22 +43,12 @@ bool ExecuteScriptInBackgroundPageNoWait(content::BrowserContext* context,
                                          const std::string& extension_id,
                                          const std::string& script);
 
-// Executes the given `script` in the context of the background service worker
-// registered by the extension with the given `extension_id`. If non-empty,
-// `callback` is invoked with the result of the execution.
-void ExecuteScriptInServiceWorker(
-    content::BrowserContext* browser_context,
-    const std::string& extension_id,
-    const std::string& script,
-    base::OnceCallback<void(base::Value)> callback);
-
 // Synchronously stops the service worker registered by the extension with the
 // given `extension_id` at global scope. The extension must be installed and
 // enabled.
 void StopServiceWorkerForExtensionGlobalScope(content::BrowserContext* context,
                                               const std::string& extension_id);
 
-}  // namespace browsertest_util
-}  // namespace extensions
+}  // namespace extensions::browsertest_util
 
 #endif  // EXTENSIONS_BROWSER_BROWSERTEST_UTIL_H_

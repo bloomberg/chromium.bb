@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/json/json_reader.h"
+#include "base/test/bind.h"
 #include "chrome/browser/ash/arc/input_overlay/test/arc_test_window.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "components/exo/test/exo_test_base.h"
@@ -46,6 +47,10 @@ class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
     return controller_->GetInputMappingViewBoundsForTesting();
   }
 
+  void DismissEducationalDialog() {
+    controller_->DismissEducationalViewForTesting();
+  }
+
  protected:
   std::unique_ptr<input_overlay::test::ArcTestWindow> arc_test_window_;
   std::unique_ptr<DisplayOverlayController> controller_;
@@ -56,11 +61,15 @@ class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
     arc_test_window_ = std::make_unique<input_overlay::test::ArcTestWindow>(
         exo_test_helper(), ash::Shell::GetPrimaryRootWindow(),
         "org.chromium.arc.testapp.inputoverlay");
-    injector_ = std::make_unique<TouchInjector>(arc_test_window_->GetWindow());
+    injector_ = std::make_unique<TouchInjector>(
+        arc_test_window_->GetWindow(),
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<AppDataProto>, const std::string&) {}));
     base::JSONReader::ValueWithError json_value =
         base::JSONReader::ReadAndReturnValueWithError(kValidJson);
     injector_->ParseActions(json_value.value.value());
-    controller_ = std::make_unique<DisplayOverlayController>(injector_.get());
+    controller_ =
+        std::make_unique<DisplayOverlayController>(injector_.get(), false);
   }
 
   void TearDown() override {
@@ -74,6 +83,8 @@ class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
 };
 
 TEST_F(DisplayOverlayControllerTest, TestWindowBoundsChange) {
+  // Make sure educational dialog is bypassed.
+  DismissEducationalDialog();
   auto original_bounds = GetInputMappingViewBounds();
   auto new_bounds = gfx::Rect(original_bounds);
   new_bounds.set_width(new_bounds.size().width() + 50);

@@ -10,6 +10,7 @@
 #include "ash/bubble/bubble_constants.h"
 #include "base/check_op.h"
 #include "base/time/time.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -43,11 +44,18 @@ AppListBubbleSearchPage::AppListBubbleSearchPage(
 AppListBubbleSearchPage::~AppListBubbleSearchPage() = default;
 
 void AppListBubbleSearchPage::AnimateShowPage() {
-  SetVisible(true);
-
   // If skipping animations, just update visibility.
-  if (ui::ScopedAnimationDurationScaleMode::is_zero())
+  if (ui::ScopedAnimationDurationScaleMode::is_zero()) {
+    SetVisible(true);
     return;
+  }
+
+  // Ensure any in-progress animations have their cleanup callbacks called.
+  // Note that this might call SetVisible(false) from the hide animation.
+  AbortAllAnimations();
+
+  // Ensure the view is visible.
+  SetVisible(true);
 
   ui::Layer* layer = search_view_->GetPageAnimationLayer();
   DCHECK_EQ(layer->type(), ui::LAYER_TEXTURED);
@@ -105,5 +113,8 @@ void AppListBubbleSearchPage::AbortAllAnimations() {
 ui::Layer* AppListBubbleSearchPage::GetPageAnimationLayerForTest() {
   return search_view_->GetPageAnimationLayer();
 }
+
+BEGIN_METADATA(AppListBubbleSearchPage, views::View)
+END_METADATA
 
 }  // namespace ash

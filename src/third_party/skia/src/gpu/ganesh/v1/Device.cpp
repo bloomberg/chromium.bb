@@ -21,11 +21,11 @@
 #include "include/private/chromium/GrSlug.h"
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkClipStack.h"
-#include "src/core/SkCustomMeshPriv.h"
 #include "src/core/SkDraw.h"
 #include "src/core/SkImageFilterCache.h"
 #include "src/core/SkImageFilter_Base.h"
 #include "src/core/SkLatticeIter.h"
+#include "src/core/SkMeshPriv.h"
 #include "src/core/SkPictureData.h"
 #include "src/core/SkRRectPriv.h"
 #include "src/core/SkRasterClip.h"
@@ -157,7 +157,7 @@ sk_sp<BaseDevice> Device::Make(GrRecordingContext* rContext,
                                const SkImageInfo& ii,
                                SkBackingFit fit,
                                int sampleCount,
-                               GrMipmapped mipMapped,
+                               GrMipmapped mipmapped,
                                GrProtected isProtected,
                                GrSurfaceOrigin origin,
                                const SkSurfaceProps& props,
@@ -173,7 +173,7 @@ sk_sp<BaseDevice> Device::Make(GrRecordingContext* rContext,
                                         ii.dimensions(),
                                         props,
                                         sampleCount,
-                                        mipMapped,
+                                        mipmapped,
                                         isProtected,
                                         origin,
                                         budgeted);
@@ -882,12 +882,10 @@ void Device::drawVertices(const SkVertices* vertices,
                                       skipColorXform);
 }
 
-void Device::drawCustomMesh(SkCustomMesh customMesh,
-                            sk_sp<SkBlender> blender,
-                            const SkPaint& paint) {
+void Device::drawMesh(const SkMesh& mesh, sk_sp<SkBlender> blender, const SkPaint& paint) {
     ASSERT_SINGLE_OWNER
-    GR_CREATE_TRACE_MARKER_CONTEXT("skgpu::v1::Device", "drawCustomMesh", fContext.get());
-    SkASSERT(customMesh.vb);
+    GR_CREATE_TRACE_MARKER_CONTEXT("skgpu::v1::Device", "drawMesh", fContext.get());
+    SkASSERT(mesh.isValid());
 
     GrPaint grPaint;
     if (!init_vertices_paint(fContext.get(),
@@ -895,14 +893,11 @@ void Device::drawCustomMesh(SkCustomMesh customMesh,
                              paint,
                              this->asMatrixProvider(),
                              std::move(blender),
-                             SkCustomMeshSpecificationPriv::HasColors(*customMesh.spec),
+                             SkMeshSpecificationPriv::HasColors(*mesh.spec()),
                              &grPaint)) {
         return;
     }
-    fSurfaceDrawContext->drawCustomMesh(this->clip(),
-                                        std::move(grPaint),
-                                        this->asMatrixProvider(),
-                                        std::move(customMesh));
+    fSurfaceDrawContext->drawMesh(this->clip(), std::move(grPaint), this->asMatrixProvider(), mesh);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -960,10 +955,11 @@ void Device::drawAtlas(const SkRSXform xform[],
 #if defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG)
 void Device::testingOnly_drawGlyphRunListWithSlug(SkCanvas* canvas,
                                                   const SkGlyphRunList& glyphRunList,
-                                                  const SkPaint& paint) {
-    auto slug = this->convertGlyphRunListToSlug(glyphRunList, paint);
+                                                  const SkPaint& initialPaint,
+                                                  const SkPaint& drawingPaint) {
+    auto slug = this->convertGlyphRunListToSlug(glyphRunList, initialPaint, drawingPaint);
     if (slug != nullptr) {
-        this->drawSlug(canvas, slug.get());
+        this->drawSlug(canvas, slug.get(), drawingPaint);
     }
 }
 #endif
@@ -971,16 +967,18 @@ void Device::testingOnly_drawGlyphRunListWithSlug(SkCanvas* canvas,
 #if defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG_SERIALIZE)
 void Device::testingOnly_drawGlyphRunListWithSerializedSlug(SkCanvas* canvas,
                                                             const SkGlyphRunList& glyphRunList,
-                                                            const SkPaint& paint) {
+                                                            const SkPaint& initialPaint,
+                                                            const SkPaint& drawingPaint) {
     // This is not a text blob draw. Handle using glyphRunList conversion.
     if (glyphRunList.blob() == nullptr) {
-        auto slug = this->convertGlyphRunListToSlug(glyphRunList, paint);
+        auto slug = this->convertGlyphRunListToSlug(glyphRunList, initialPaint, drawingPaint);
         if (slug != nullptr) {
-            this->drawSlug(canvas, slug.get());
+            this->drawSlug(canvas, slug.get(), drawingPaint);
         }
         return;
     }
-    auto srcSlug = GrSlug::ConvertBlob(canvas, *glyphRunList.blob(), glyphRunList.origin(), paint);
+    auto srcSlug = GrSlug::ConvertBlob(
+            canvas, *glyphRunList.blob(), glyphRunList.origin(), initialPaint);
 
     // There is nothing to draw.
     if (srcSlug == nullptr) {
@@ -992,7 +990,7 @@ void Device::testingOnly_drawGlyphRunListWithSerializedSlug(SkCanvas* canvas,
     auto dstSlug = GrSlug::Deserialize(dstSlugData->data(), dstSlugData->size());
     SkASSERT(dstSlug != nullptr);
     if (dstSlug != nullptr) {
-        this->drawSlug(canvas, dstSlug.get());
+        this->drawSlug(canvas, dstSlug.get(), drawingPaint);
     }
 }
 #endif
@@ -1052,10 +1050,15 @@ private:
 }  // namespace
 
 void Device::testingOnly_drawGlyphRunListWithSerializedSlugAndStrike(
-        SkCanvas* canvas, const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+        SkCanvas* canvas,
+        const SkGlyphRunList& glyphRunList,
+        const SkPaint& initialPaint,
+        const SkPaint& drawingPaint) {
     if (glyphRunList.blob() == nullptr) {
-        fSurfaceDrawContext->drawGlyphRunList(
-                canvas, this->clip(), this->asMatrixProvider(), glyphRunList, paint);
+        auto slug = this->convertGlyphRunListToSlug(glyphRunList, initialPaint, drawingPaint);
+        if (slug != nullptr) {
+            this->drawSlug(canvas, slug.get(), drawingPaint);
+        }
         return;
     }
 
@@ -1080,7 +1083,7 @@ void Device::testingOnly_drawGlyphRunListWithSerializedSlugAndStrike(
     auto srcSlug = GrSlug::ConvertBlob(analysisCanvas.get(),
                                        *glyphRunList.blob(),
                                        glyphRunList.origin(),
-                                       paint);
+                                       initialPaint);
 
     if (srcSlug == nullptr) {
         return;
@@ -1095,26 +1098,38 @@ void Device::testingOnly_drawGlyphRunListWithSerializedSlugAndStrike(
 
     auto dstSlugData = srcSlug->serialize();
     auto dstSlug = client.deserializeSlug(dstSlugData->data(), dstSlugData->size());
-    this->drawSlug(canvas, dstSlug.get());
+    this->drawSlug(canvas, dstSlug.get(), drawingPaint);
 }
 #endif
 
 void Device::onDrawGlyphRunList(SkCanvas* canvas,
                                 const SkGlyphRunList& glyphRunList,
-                                const SkPaint& paint) {
+                                const SkPaint& initialPaint,
+                                const SkPaint& drawingPaint) {
     ASSERT_SINGLE_OWNER
     GR_CREATE_TRACE_MARKER_CONTEXT("skgpu::v1::Device", "drawGlyphRunList", fContext.get());
     SkASSERT(!glyphRunList.hasRSXForm());
 
 #if defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG)
-    this->testingOnly_drawGlyphRunListWithSlug(canvas, glyphRunList, paint);
+    this->testingOnly_drawGlyphRunListWithSlug(canvas, glyphRunList, initialPaint, drawingPaint);
 #elif defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG_SERIALIZE)
-    this->testingOnly_drawGlyphRunListWithSerializedSlug(canvas, glyphRunList, paint);
+    this->testingOnly_drawGlyphRunListWithSerializedSlug(
+            canvas, glyphRunList, initialPaint, drawingPaint);
 #elif defined(SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG_STRIKE_SERIALIZE)
-    this->testingOnly_drawGlyphRunListWithSerializedSlugAndStrike(canvas, glyphRunList, paint);
+    this->testingOnly_drawGlyphRunListWithSerializedSlugAndStrike(
+            canvas, glyphRunList, initialPaint, drawingPaint);
 #else
-    fSurfaceDrawContext->drawGlyphRunList(
-            canvas, this->clip(), this->asMatrixProvider(), glyphRunList, paint);
+    if (glyphRunList.blob() == nullptr) {
+        // If the glyphRunList does not have an associated text blob, then it was created by one of
+        // the direct draw APIs (drawGlyphs, etc.). Use a Slug to draw the glyphs.
+        auto slug = this->convertGlyphRunListToSlug(glyphRunList, initialPaint, drawingPaint);
+        if (slug != nullptr) {
+            this->drawSlug(canvas, slug.get(), drawingPaint);
+        }
+    } else {
+        fSurfaceDrawContext->drawGlyphRunList(
+                canvas, this->clip(), this->asMatrixProvider(), glyphRunList, drawingPaint);
+    }
 #endif
 }
 

@@ -1993,6 +1993,10 @@ int main(int argc, const char **argv_) {
    * codec.
    */
   argv = argv_dup(argc - 1, argv_ + 1);
+  if (!argv) {
+    fprintf(stderr, "Error allocating argument list\n");
+    return EXIT_FAILURE;
+  }
   parse_global_config(&global, &argv);
 
   if (argc < 2) usage_exit();

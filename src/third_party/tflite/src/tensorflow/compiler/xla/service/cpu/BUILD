@@ -1,8 +1,5 @@
 # Description:
 #    LLVM-based CPU backend for XLA.
-
-load("//tensorflow:tensorflow.bzl", "get_compatible_with_cloud")
-
 # buildifier: disable=same-origin-load
 load("//tensorflow:tensorflow.bzl", "get_compatible_with_portable")
 load("//tensorflow/compiler/xla:xla.bzl", "ORC_JIT_MEMORY_MAPPER_TARGETS")
@@ -16,6 +13,7 @@ load("//tensorflow:tensorflow.bzl", "filegroup")
 load("//tensorflow:tensorflow.bzl", "tf_cc_binary", "tf_cc_test", "tf_openmp_copts")
 load(":build_defs.bzl", "runtime_copts")
 load("//tensorflow/core/platform:build_config.bzl", "if_llvm_system_z_available")
+load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
 
 package(
     default_visibility = [":friends"],
@@ -44,6 +42,14 @@ cc_library(
     hdrs = ["test_target_triple_helper.h"],
     deps = [
         "//tensorflow/core:test",
+    ],
+)
+
+# When using mlir based HloLowering, the following utils will sometimes be needed to define used symbols.
+cc_library(
+    name = "runtime_mlir_utils",
+    deps = [
+        "@llvm-project//mlir:mlir_c_runner_utils",
     ],
 )
 
@@ -899,7 +905,7 @@ cc_library(
     name = "runtime_single_threaded_matmul_impl",
     srcs = ["runtime_single_threaded_matmul.cc"],
     hdrs = ["runtime_single_threaded_matmul.h"],
-    compatible_with = get_compatible_with_cloud() + get_compatible_with_portable(),
+    compatible_with = get_compatible_with_portable(),
     copts = runtime_copts(),
     linkstatic = 1,
     visibility = ["//visibility:private"],
@@ -912,7 +918,7 @@ cc_library(
 cc_library(
     name = "runtime_single_threaded_matmul",
     hdrs = ["runtime_single_threaded_matmul.h"],
-    compatible_with = get_compatible_with_cloud() + get_compatible_with_portable(),
+    compatible_with = get_compatible_with_portable(),
     copts = runtime_copts(),
     visibility = ["//visibility:public"],
     deps = [
@@ -925,7 +931,7 @@ cc_library(
 
 cc_library(
     name = "runtime_single_threaded_matmul_nomkl",
-    compatible_with = get_compatible_with_cloud() + get_compatible_with_portable(),
+    compatible_with = get_compatible_with_portable(),
     copts = runtime_copts(),
     visibility = ["//visibility:public"],
     deps = [
@@ -1240,7 +1246,6 @@ cc_library(
     name = "cpu_options",
     srcs = ["cpu_options.cc"],
     hdrs = ["cpu_options.h"],
-    compatible_with = get_compatible_with_cloud(),
     deps = [
         "//tensorflow/compiler/xla/service:hlo_module_config",
         "//tensorflow/core:lib",

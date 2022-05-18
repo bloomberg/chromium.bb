@@ -71,7 +71,7 @@ g.test('shared_with_buffer')
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.dispatch(numGroups[0], numGroups[1], numGroups[2]);
+    pass.dispatchWorkgroups(numGroups[0], numGroups[1], numGroups[2]);
     pass.end();
     t.queue.submit([encoder.finish()]);
 

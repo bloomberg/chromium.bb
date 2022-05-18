@@ -124,7 +124,10 @@ def CheckUnitTestsOnCommit(input_api, output_api):
       'recipes_test.py',
   ]
 
-  py3_only_tests = ['ninjalog_uploader_test.py']
+  py3_only_tests = [
+      'autoninja_test.py',
+      'ninjalog_uploader_test.py',
+  ]
 
   tests = input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,

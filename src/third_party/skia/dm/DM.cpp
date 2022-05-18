@@ -57,9 +57,14 @@
     #include "src/utils/mac/SkUniqueCFRef.h"
 #endif
 
+#if defined(SK_ENABLE_SVG)
+    #include "modules/svg/include/SkSVGOpenTypeSVGDecoder.h"
+#endif
+
 extern bool gSkForceRasterPipelineBlitter;
 extern bool gUseSkVMBlitter;
 extern bool gSkVMAllowJIT;
+extern bool gSkVMJITViaDylib;
 extern bool gSkBlobAsSlugTesting;
 
 static DEFINE_string(src, "tests gm skp mskp lottie rive svg image colorImage",
@@ -96,6 +101,7 @@ static DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp 
 static DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 static DEFINE_bool(skvm, false, "sets gUseSkVMBlitter");
 static DEFINE_bool(jit,  true,  "sets gSkVMAllowJIT");
+static DEFINE_bool(dylib, false, "JIT via dylib (much slower compile but easier to debug/profile)");
 static DEFINE_bool(blobAsSlugTesting, false, "sets gSkBlobAsSlugTesting");
 
 static DEFINE_string(bisect, "",
@@ -1513,6 +1519,7 @@ int main(int argc, char** argv) {
     gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
     gUseSkVMBlitter               = FLAGS_skvm;
     gSkVMAllowJIT                 = FLAGS_jit;
+    gSkVMJITViaDylib              = FLAGS_dylib;
     gSkBlobAsSlugTesting          = FLAGS_blobAsSlugTesting;
 
     // The bots like having a verbose.log to upload, so always touch the file even if --verbose.
@@ -1530,6 +1537,9 @@ int main(int argc, char** argv) {
     dump_json();  // It's handy for the bots to assume this is ~never missing.
 
     SkAutoGraphics ag;
+#if defined(SK_ENABLE_SVG)
+    SkGraphics::SetOpenTypeSVGDecoderFactory(SkSVGOpenTypeSVGDecoder::Make);
+#endif
     SkTaskGroup::Enabler enabled(FLAGS_threads);
 
     if (nullptr == GetResourceAsData("images/color_wheel.png")) {
@@ -1544,8 +1554,7 @@ int main(int argc, char** argv) {
     // TODO(dogben): This is a bit ugly. Find a cleaner way to do this.
     bool defaultConfigs = true;
     for (int i = 0; i < argc; i++) {
-        static constexpr char kConfigArg[] = "--config";
-        if (strcmp(argv[i], kConfigArg) == 0) {
+        if (strcmp(argv[i], "--config") == 0) {
             defaultConfigs = false;
             break;
         }

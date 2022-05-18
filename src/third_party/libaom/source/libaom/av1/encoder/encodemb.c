@@ -167,7 +167,8 @@ void av1_dropout_qcoeff_num(MACROBLOCK *mb, int plane, int block,
   const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
 
   // Early return if there are not enough non-zero coefficients.
-  if (p->eobs[block] == 0 || p->eobs[block] <= dropout_num_before) {
+  if (p->eobs[block] == 0 || p->eobs[block] <= dropout_num_before ||
+      max_eob <= dropout_num_before + dropout_num_after) {
     return;
   }
 

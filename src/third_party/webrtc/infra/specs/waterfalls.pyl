@@ -164,12 +164,15 @@
         },
       },
       'MacARM64 M1 Release': {
-        'os_type': 'mac',
-        'mixins': ['mac-m1', 'baremetal-pool', 'resultdb-json-format'],
+        'os_type':
+        'mac',
+        'mixins':
+        ['mac11', 'mac-m1-cpu', 'baremetal-pool', 'resultdb-json-format'],
         'test_suites': {
           'isolated_scripts': 'desktop_tests',
         },
       },
+      'MacArm64 Builder': {},
       'Win (more configs)': {
         'os_type': 'win',
         'mixins': ['win7', 'x86-64', 'resultdb-json-format'],
@@ -280,23 +283,24 @@
           'isolated_scripts': 'desktop_perf_tests',
         },
       },
-      # TODO(tikuta): remove this (crbug.com/954875)
-      'Perf Linux Trusty': {
+      'Perf Mac 11': {
         'os_type':
-        'linux',
+        'mac',
         'mixins': [
-          'linux-trusty', 'perf-pool', 'timeout-3h',
+          'mac11', 'x86-64', 'perf-pool', 'timeout-3h',
           'resultdb-gtest-json-format'
         ],
         'test_suites': {
           'isolated_scripts': 'desktop_perf_tests',
         },
       },
-      'Perf Mac 10.11': {
+      'Perf Mac M1 Arm64 12': {
         'os_type':
         'mac',
-        'mixins':
-        ['mac_10.12', 'perf-pool', 'timeout-3h', 'resultdb-gtest-json-format'],
+        'mixins': [
+          'mac_12_beta_arm64', 'mac-m1-cpu', 'perf-pool', 'timeout-3h',
+          'resultdb-gtest-json-format'
+        ],
         'test_suites': {
           'isolated_scripts': 'desktop_perf_tests',
         },
@@ -337,32 +341,6 @@
         },
       },
       'iOS64 Release': {
-        'mixins': [
-          'ios-device-15.3', 'webrtc-xctest', 'chrome-tester-service-account',
-          'xcode_13_main', 'mac_toolchain', 'has_native_resultdb_integration',
-          'out_dir_arg'
-        ],
-        'test_suites': {
-          'isolated_scripts': 'ios_device_tests',
-        },
-      },
-    },
-  },
-  {
-    'name': 'internal.tryserver.webrtc',
-    'mixins': [],
-    'machines': {
-      'ios_arm64_dbg': {
-        'mixins': [
-          'ios-device-15.3', 'webrtc-xctest', 'chrome-tester-service-account',
-          'xcode_13_main', 'mac_toolchain', 'has_native_resultdb_integration',
-          'out_dir_arg'
-        ],
-        'test_suites': {
-          'isolated_scripts': 'ios_device_tests',
-        },
-      },
-      'ios_arm64_rel': {
         'mixins': [
           'ios-device-15.3', 'webrtc-xctest', 'chrome-tester-service-account',
           'xcode_13_main', 'mac_toolchain', 'has_native_resultdb_integration',
@@ -568,8 +546,10 @@
         },
       },
       'mac_dbg_m1': {
-        'os_type': 'mac',
-        'mixins': ['mac-m1', 'baremetal-try-pool', 'resultdb-json-format'],
+        'os_type':
+        'mac',
+        'mixins':
+        ['mac11', 'mac-m1-cpu', 'baremetal-try-pool', 'resultdb-json-format'],
         'test_suites': {
           'isolated_scripts': 'desktop_tests',
         },
@@ -582,8 +562,10 @@
         },
       },
       'mac_rel_m1': {
-        'os_type': 'mac',
-        'mixins': ['mac-m1', 'baremetal-try-pool', 'resultdb-json-format'],
+        'os_type':
+        'mac',
+        'mixins':
+        ['mac11', 'mac-m1-cpu', 'baremetal-try-pool', 'resultdb-json-format'],
         'test_suites': {
           'isolated_scripts': 'desktop_tests',
         },

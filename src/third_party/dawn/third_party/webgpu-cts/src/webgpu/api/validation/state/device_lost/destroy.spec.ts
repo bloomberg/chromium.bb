@@ -194,10 +194,13 @@ Tests creating 2d compressed textures on destroyed device. Tests valid combinati
         );
       })
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const { awaitLost, format, usageType, usageCopy } = t.params;
-    const { blockWidth, blockHeight, feature } = kTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(feature);
+    const { blockWidth, blockHeight } = kTextureFormatInfo[format];
     await t.executeAfterDestroy(() => {
       t.device.createTexture({
         size: { width: blockWidth, height: blockHeight },
@@ -266,10 +269,13 @@ Tests creating texture views on 2d compressed textures from destroyed device. Te
         );
       })
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const { awaitLost, format, usageType, usageCopy } = t.params;
-    const { blockWidth, blockHeight, feature } = kTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(feature);
+    const { blockWidth, blockHeight } = kTextureFormatInfo[format];
     const texture = t.device.createTexture({
       size: { width: blockWidth, height: blockHeight },
       usage: kTextureUsageTypeInfo[usageType] | kTextureUsageCopyInfo[usageCopy],
@@ -482,9 +488,12 @@ Tests creating query sets on destroyed device.
   `
   )
   .params(u => u.combine('type', kQueryTypes).beginSubcases().combine('awaitLost', [true, false]))
+  .beforeAllSubcases(t => {
+    const { type } = t.params;
+    t.selectDeviceForQueryTypeOrSkipTestCase(type);
+  })
   .fn(async t => {
     const { awaitLost, type } = t.params;
-    await t.selectDeviceForQueryTypeOrSkipTestCase(type);
     await t.executeAfterDestroy(() => {
       t.device.createQuerySet({ type, count: 4 });
     }, awaitLost);
@@ -661,9 +670,12 @@ Tests encoding and finishing a writeTimestamp command on destroyed device.
       .combine('stage', kCommandValidationStages)
       .combine('awaitLost', [true, false])
   )
+  .beforeAllSubcases(t => {
+    const { type } = t.params;
+    t.selectDeviceForQueryTypeOrSkipTestCase(type);
+  })
   .fn(async t => {
     const { type, stage, awaitLost } = t.params;
-    await t.selectDeviceForQueryTypeOrSkipTestCase(type);
     const querySet = t.device.createQuerySet({ type, count: 2 });
     await t.executeCommandsAfterDestroy(stage, awaitLost, 'non-pass', maker => {
       maker.encoder.writeTimestamp(querySet, 0);
@@ -716,7 +728,7 @@ Tests encoding and dispatching a simple valid compute pass on destroyed device.
     });
     await t.executeCommandsAfterDestroy(stage, awaitLost, 'compute pass', maker => {
       maker.encoder.setPipeline(pipeline);
-      maker.encoder.dispatch(1);
+      maker.encoder.dispatchWorkgroups(1);
       return maker;
     });
   });
@@ -844,10 +856,13 @@ Tests writeTexture on queue on destroyed device with compressed formats.
       .beginSubcases()
       .combine('awaitLost', [true, false])
   )
+  .beforeAllSubcases(t => {
+    const { format } = t.params;
+    t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+  })
   .fn(async t => {
     const { format, awaitLost } = t.params;
-    const { blockWidth, blockHeight, bytesPerBlock, feature } = kTextureFormatInfo[format];
-    await t.selectDeviceOrSkipTestCase(feature);
+    const { blockWidth, blockHeight, bytesPerBlock } = kTextureFormatInfo[format];
     const data = new Uint8Array(bytesPerBlock);
     const texture = t.device.createTexture({
       size: { width: blockWidth, height: blockHeight },

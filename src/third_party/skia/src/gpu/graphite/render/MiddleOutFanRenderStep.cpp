@@ -39,14 +39,13 @@ void MiddleOutFanRenderStep::writeVertices(DrawWriter* writer, const DrawGeometr
     // paths to SkPath just to iterate their pts/verbs
     SkPath path = geom.shape().asPath();
 
-    const int maxCombinedFanEdges = MaxCombinedFanEdgesInPaths(path.countVerbs());
-    const int maxTrianglesInFans = std::max(maxCombinedFanEdges - 2, 0);
+    const int maxTrianglesInFans = std::max(path.countVerbs() - 2, 0);
 
     float depth = geom.order().depthAsFloat();
 
     DrawWriter::Vertices verts{*writer};
     verts.reserve(maxTrianglesInFans * 3);
-    for (PathMiddleOutFanIter it(path); !it.done();) {
+    for (tess::PathMiddleOutFanIter it(path); !it.done();) {
         for (auto [p0, p1, p2] : it.nextStack()) {
             // TODO: PathMiddleOutFanIter should use SkV2 instead of SkPoint?
             SkV2 p[3] = {{p0.fX, p0.fY}, {p1.fX, p1.fY}, {p2.fX, p2.fY}};

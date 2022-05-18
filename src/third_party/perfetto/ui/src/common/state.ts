@@ -15,6 +15,7 @@
 import {assertTrue} from '../base/logging';
 import {PivotTree} from '../controller/pivot_table_redux_controller';
 import {RecordConfig} from '../controller/record_config_types';
+import {TableColumn} from '../frontend/pivot_table_redux_query_generator';
 
 import {
   AggregationAttrs,
@@ -80,7 +81,11 @@ export const MAX_TIME = 180;
 // serialisation+deserialisation.
 // 15: Added state for Pivot Table V2
 // 16: Added boolean tracking if the flamegraph modal was dismissed
-export const STATE_VERSION = 16;
+// 17:
+// - add currentEngineId to track the id of the current engine
+// - remove nextNoteId, nextAreaId and use nextId as a unique counter for all
+//   indexing except the indexing of the engines
+export const STATE_VERSION = 17;
 
 export const SCROLLING_TRACK_GROUP = 'ScrollingTracks';
 
@@ -180,7 +185,7 @@ export interface EngineConfig {
 
 export interface QueryConfig {
   id: string;
-  engineId: string;
+  engineId?: string;
   query: string;
 }
 
@@ -343,7 +348,7 @@ export interface PivotTableState {
 export interface PivotTableReduxQueryMetadata {
   tableName: string;
   pivotColumns: string[];
-  aggregationColumns: string[];
+  aggregationColumns: TableColumn[];
 }
 
 // Everything that's necessary to run the query for pivot table
@@ -361,16 +366,33 @@ export interface PivotTableReduxResult {
   metadata: PivotTableReduxQueryMetadata;
 }
 
+// Input parameters to check whether the pivot table needs to be re-queried.
+export interface PivotTableReduxAreaState {
+  areaId: string;
+  tracks: string[];
+}
+
+export type SortDirection = 'DESC'|'ASC';
+
 export interface PivotTableReduxState {
   // Currently selected area, if null, pivot table is not going to be visible.
-  selectionArea: Area|null;
-  // Increasing identifier of the query request, used to avoid performing the
-  // same query more than once.
-  queryId: number;
-  // Query request
-  query: PivotTableReduxQuery|null;
+  selectionArea: PivotTableReduxAreaState|null;
   // Query response
   queryResult: PivotTableReduxResult|null;
+  // Whether the panel is in edit mode
+  editMode: boolean;
+  // Selected pivots. Map instead of Set because ES6 Set can't have
+  // non-primitive keys; here keys are concatenated values.
+  selectedPivotsMap: Map<string, TableColumn>;
+  // Selected aggregation columns. Stored same way as pivots.
+  selectedAggregations: Map<string, TableColumn>;
+  // Present if the result should be sorted, and in which direction.
+  sortCriteria?: {column: TableColumn, order: SortDirection};
+  // Whether the pivot table results should be constrained to the selected area.
+  constrainToArea: boolean;
+  // Set to true by frontend to request controller to perform the query to
+  // acquire the necessary data from the engine.
+  queryRequested: boolean;
 }
 
 export interface LoadedConfigNone {
@@ -389,13 +411,14 @@ export interface LoadedConfigNamed {
 export type LoadedConfig =
     LoadedConfigNone|LoadedConfigAutomatic|LoadedConfigNamed;
 
+export interface NonSerializableState {
+  pivotTableRedux: PivotTableReduxState;
+}
+
 export interface State {
-  // tslint:disable-next-line:no-any
-  [key: string]: any;
   version: number;
-  nextId: number;
-  nextNoteId: number;
-  nextAreaId: number;
+  currentEngineId?: string;
+  nextId: string;
 
   /**
    * State of the ConfigEditor.
@@ -432,7 +455,6 @@ export interface State {
   traceConversionInProgress: boolean;
   pivotTableConfig: PivotTableConfig;
   pivotTable: ObjectById<PivotTableState>;
-  pivotTableRedux: PivotTableReduxState;
 
   /**
    * This state is updated on the frontend at 60Hz and eventually syncronised to
@@ -476,6 +498,11 @@ export interface State {
   fetchChromeCategories: boolean;
   chromeCategories: string[]|undefined;
   analyzePageQuery?: string;
+
+  // Special key: this part of the state is not going to be serialized when
+  // using permalink. Can be used to store those parts of the state that can't
+  // be serialized at the moment, such as ES6 Set and Map.
+  nonSerializableState: NonSerializableState;
 }
 
 export const defaultTraceTime = {

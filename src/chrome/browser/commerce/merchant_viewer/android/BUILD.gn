@@ -32,6 +32,8 @@ android_library("java") {
   deps = [
     ":jni_headers",
     "//base:base_java",
+    "//base:jni_java",
+    "//build/android:build_java",
     "//chrome/android:base_module_java",
     "//chrome/android/features/tab_ui:java_resources",
     "//chrome/android/features/tab_ui:java_strings_grd",
@@ -133,7 +135,6 @@ java_library("junit") {
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_deps:robolectric_all_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/junit",
@@ -159,6 +160,7 @@ android_library("javatests") {
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",
+    "//build/android:build_java",
     "//chrome/browser/commerce/merchant_viewer:optimization_guide_protos_java",
     "//chrome/browser/commerce/merchant_viewer/android:java",
     "//chrome/browser/flags:java",
@@ -181,7 +183,6 @@ android_library("javatests") {
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:runner_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",

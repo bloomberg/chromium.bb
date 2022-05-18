@@ -12,14 +12,14 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_list_ctrl.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "third_party/base/check_op.h"
 
 class IPWL_FillerNotify;
 
 class CPWL_ListBox : public CPWL_Wnd, public CPWL_ListCtrl::NotifyIface {
  public:
-  CPWL_ListBox(
-      const CreateParams& cp,
-      std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
+  CPWL_ListBox(const CreateParams& cp,
+               std::unique_ptr<IPWL_FillerNotify::PerWindowData> pAttachedData);
   ~CPWL_ListBox() override;
 
   // CPWL_Wnd:
@@ -77,6 +77,7 @@ class CPWL_ListBox : public CPWL_Wnd, public CPWL_ListCtrl::NotifyIface {
   CFX_FloatRect GetListRect() const;
 
   void SetFillerNotify(IPWL_FillerNotify* pNotify) {
+    CHECK_EQ(pNotify, GetCreationParams()->pFillerNotify);
     m_pFillerNotify = pNotify;
   }
 

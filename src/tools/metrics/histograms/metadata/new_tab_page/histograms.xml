@@ -80,7 +80,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.AppliedDiscount" units="count"
-    expires_after="2022-06-30">
+    expires_after="2022-11-06">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -116,7 +116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.ClickCart.HasDiscount"
-    enum="BooleanHasDiscount" expires_after="2022-08-28">
+    enum="BooleanHasDiscount" expires_after="2022-10-30">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -172,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.DiscountConsentStatusAtLoad"
-    enum="CartDiscountConsentStatus" expires_after="2022-08-21">
+    enum="CartDiscountConsentStatus" expires_after="2022-11-06">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -243,7 +243,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Carts.DiscountCountAtLoad" units="count"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -256,7 +256,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Click" enum="NTPElement" expires_after="2022-08-14">
+<histogram name="NewTabPage.Click" enum="NTPElement" expires_after="2022-10-16">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -845,7 +845,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Drive.FileClick" units="index"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>tiborg@chromium.org</owner>
   <owner>aee@chromium.org</owner>
   <owner>andrevincent@google.com</owner>
@@ -981,7 +981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.MainUi.ShownTime" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
@@ -1077,6 +1077,71 @@ chromium-metrics-reviews@google.com.
     <variant name=".Customize" summary="the customize dialog"/>
     <variant name=".Toast" summary="clicking undo on the module disable toast"/>
   </token>
+</histogram>
+
+<histogram name="NewTabPage.Modules.FreExplicitOptIn" units="count"
+    expires_after="2022-09-15">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs how many time a user saw the FRE when they opt in. Only logged on the
+    1P NTP. Note that even if the user has Google as their default search
+    engine, Incognito and Guest mode NTPs are not considered 1P and don't log
+    this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Modules.FreImplicitOptIn" enum="BooleanEnabled"
+    expires_after="2022-09-15">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs when user is opted in to FRE without taking action. Only logged on the
+    1P NTP. Note that even if the user has Google as their default search
+    engine, Incognito and Guest mode NTPs are not considered 1P and don't log
+    this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Modules.FreImpression" enum="BooleanEnabled"
+    expires_after="2022-09-15">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs if Modular NTP Desktop v1 First Run Experience is set to be visible and
+    on user's screen. Only logged on the 1P NTP. Note that even if the user has
+    Google as their default search engine, Incognito and Guest mode NTPs are not
+    considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Modules.FreLoaded" enum="BooleanEnabled"
+    expires_after="2022-09-15">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs if Modular NTP Desktop v1 First Run Experience is set to be visible
+    whether or not it is on the user's screen. Only logged on the 1P NTP. Note
+    that even if the user has Google as their default search engine, Incognito
+    and Guest mode NTPs are not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Modules.FreOptOut" units="count"
+    expires_after="2022-09-15">
+  <owner>danpeng@google.com</owner>
+  <owner>pauladedeji@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs how many time a user saw the FRE when they opt out. Only logged on the
+    1P NTP. Note that even if the user has Google as their default search
+    engine, Incognito and Guest mode NTPs are not considered 1P and don't log
+    this histogram.
+  </summary>
 </histogram>
 
 <histogram name="NewTabPage.Modules.Hover" enum="NtpModules"
@@ -1291,7 +1356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfTiles" units="units"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1643,7 +1708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.SuggestionsImpression" enum="MostVisitedTileIndex"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1702,7 +1767,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TileTitle" enum="NTPTileTitleSource"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1713,7 +1778,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TileTitleClicked" enum="NTPTileTitleSource"
-    expires_after="2022-08-14">
+    expires_after="2022-10-16">
   <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1749,7 +1814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.TimeSinceLastNTP" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1850,7 +1915,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

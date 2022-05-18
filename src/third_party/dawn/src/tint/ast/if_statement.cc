@@ -24,19 +24,16 @@ IfStatement::IfStatement(ProgramID pid,
                          const Source& src,
                          const Expression* cond,
                          const BlockStatement* b,
-                         ElseStatementList else_stmts)
-    : Base(pid, src),
-      condition(cond),
-      body(b),
-      else_statements(std::move(else_stmts)) {
-  TINT_ASSERT(AST, condition);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition, program_id);
-  TINT_ASSERT(AST, body);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body, program_id);
-  for (auto* el : else_statements) {
-    TINT_ASSERT(AST, el);
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, el, program_id);
-  }
+                         const Statement* else_stmt)
+    : Base(pid, src), condition(cond), body(b), else_statement(else_stmt) {
+    TINT_ASSERT(AST, condition);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition, program_id);
+    TINT_ASSERT(AST, body);
+    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body, program_id);
+    if (else_statement) {
+        TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, else_statement, program_id);
+        TINT_ASSERT(AST, (else_statement->IsAnyOf<ast::IfStatement, ast::BlockStatement>()));
+    }
 }
 
 IfStatement::IfStatement(IfStatement&&) = default;
@@ -44,12 +41,12 @@ IfStatement::IfStatement(IfStatement&&) = default;
 IfStatement::~IfStatement() = default;
 
 const IfStatement* IfStatement::Clone(CloneContext* ctx) const {
-  // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source);
-  auto* cond = ctx->Clone(condition);
-  auto* b = ctx->Clone(body);
-  auto el = ctx->Clone(else_statements);
-  return ctx->dst->create<IfStatement>(src, cond, b, el);
+    // Clone arguments outside of create() call to have deterministic ordering
+    auto src = ctx->Clone(source);
+    auto* cond = ctx->Clone(condition);
+    auto* b = ctx->Clone(body);
+    auto* el = ctx->Clone(else_statement);
+    return ctx->dst->create<IfStatement>(src, cond, b, el);
 }
 
 }  // namespace tint::ast

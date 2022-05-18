@@ -100,10 +100,8 @@ EcheAppManager::EcheAppManager(
           multidevice_setup_client,
           connection_manager_.get())),
       eche_tray_stream_status_observer_(
-          features::IsEcheCustomWidgetEnabled()
-              ? std::make_unique<EcheTrayStreamStatusObserver>(
-                    stream_status_change_handler_.get())
-              : nullptr) {
+          std::make_unique<EcheTrayStreamStatusObserver>(
+              stream_status_change_handler_.get())) {
   ash::GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
   system_info_provider_ = std::make_unique<SystemInfoProvider>(
@@ -137,12 +135,16 @@ void EcheAppManager::BindDisplayStreamHandlerInterface(
   stream_status_change_handler_->Bind(std::move(receiver));
 }
 
+AppsAccessManager* EcheAppManager::GetAppsAccessManager() {
+  return apps_access_manager_.get();
+}
+
 void EcheAppManager::CloseStream() {
   stream_status_change_handler_->CloseStream();
 }
 
-AppsAccessManager* EcheAppManager::GetAppsAccessManager() {
-  return apps_access_manager_.get();
+void EcheAppManager::StreamGoBack() {
+  stream_status_change_handler_->StreamGoBack();
 }
 
 // NOTE: These should be destroyed in the opposite order of how these objects

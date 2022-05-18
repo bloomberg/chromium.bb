@@ -263,7 +263,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
             assert(this.computePassEncoder !== undefined);
             this.computePassEncoder.setPipeline(computePipeline);
             this.computePassEncoder.setBindGroup(0, bindGroup);
-            this.computePassEncoder.dispatch(
+            this.computePassEncoder.dispatchWorkgroups(
               Math.ceil(this.kTextureSize[0] / 8),
               Math.ceil(this.kTextureSize[1] / 8)
             );
@@ -528,7 +528,7 @@ class TextureSyncTestHelper extends OperationContextHelper {
             assert(this.computePassEncoder !== undefined);
             this.computePassEncoder.setPipeline(computePipeline);
             this.computePassEncoder.setBindGroup(0, bindGroup);
-            this.computePassEncoder.dispatch(
+            this.computePassEncoder.dispatchWorkgroups(
               Math.ceil(this.kTextureSize[0] / 8),
               Math.ceil(this.kTextureSize[1] / 8)
             );

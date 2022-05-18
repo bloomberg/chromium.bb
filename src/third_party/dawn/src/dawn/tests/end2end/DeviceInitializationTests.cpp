@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <vector>
+
 #include "dawn/dawn_proc.h"
 #include "dawn/tests/DawnTest.h"
 #include "dawn/utils/SystemUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
 
 class DeviceInitializationTest : public testing::Test {
-    void SetUp() override {
-        dawnProcSetProcs(&dawn::native::GetProcs());
-    }
+    void SetUp() override { dawnProcSetProcs(&dawn::native::GetProcs()); }
 
-    void TearDown() override {
-        dawnProcSetProcs(nullptr);
-    }
+    void TearDown() override { dawnProcSetProcs(nullptr); }
 };
 
 // Test that device operations are still valid if the reference to the instance

@@ -37,12 +37,6 @@ constexpr auto enabled_by_default_desktop_android =
 //     base::FEATURE_DISABLED_BY_DEFAULT;
 // #endif
 
-// Feature that enables the tab-switch suggestions corresponding to an open
-// tab, for a button or dedicated suggestion. Enabled by default on Desktop, iOS
-// and Android.
-const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
 const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
@@ -114,9 +108,9 @@ const base::Feature kClobberTriggersSRPZeroSuggest{
 
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
-// default value of 7 days is used. If enabled, the age threshold is determined
-// by this feature's companion parameter,
-// OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
+// default value of 60 days for Desktop and 7 days for Android and iOS is used.
+// If enabled, the age threshold is determined by this feature's companion
+// parameter, OmniboxFieldTrial::kOmniboxLocalZeroSuggestAgeThresholdParam.
 const base::Feature kOmniboxLocalZeroSuggestAgeThreshold{
     "OmniboxLocalZeroSuggestAgeThreshold", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -150,6 +144,11 @@ const base::Feature kOnFocusSuggestionsContextualWebAllowSRP{
 const base::Feature kOnFocusSuggestionsContextualWebOnContent{
     "OmniboxOnFocusSuggestionsContextualWebOnContent",
     enabled_by_default_android_only};
+
+// Revamps how local search history is extracted and processed for generating
+// zero-prefix and prefix suggestions.
+extern const base::Feature kLocalHistorySuggestRevamp{
+    "LocalHistorySuggestRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the LocalHistoryZeroSuggestProvider to use local search history.
 const base::Feature kLocalHistoryZeroSuggest{
@@ -270,7 +269,7 @@ const base::Feature kOmniboxFuzzyUrlSuggestions{
 // Feature used to enable the first batch of Pedals on Android. The Pedals,
 // which will be enabled on Android, should be already enabled on desktop.
 const base::Feature kOmniboxPedalsAndroidBatch1{
-    "OmniboxPedalsAndroidBatch1", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsAndroidBatch1", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the third batch of Pedals (Find your phone, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').

@@ -17,10 +17,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/core/about_this_site_service.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_manager.h"
+#include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,13 +102,25 @@ ChromePageInfoUiDelegate::GetAboutThisSiteInfo() {
   if (auto* service =
           AboutThisSiteServiceFactory::GetForProfile(GetProfile())) {
     return service->GetAboutThisSiteInfo(
-        site_url_, ukm::GetSourceIdForWebContentsDocument(web_contents_));
+        site_url_, web_contents_->GetMainFrame()->GetPageUkmSourceId());
   }
   return absl::nullopt;
 }
 
 void ChromePageInfoUiDelegate::AboutThisSiteSourceClicked(
     GURL url,
+    const ui::Event& event) {
+  // TODO(crbug.com/1250653): Consider moving this to presenter as other methods
+  // that open web pages.
+  web_contents_->OpenURL(content::OpenURLParams(
+      url, content::Referrer(),
+      ui::DispositionFromEventFlags(event.flags(),
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB),
+      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+}
+
+void ChromePageInfoUiDelegate::OpenMoreAboutThisPageUrl(
+    const GURL& url,
     const ui::Event& event) {
   // TODO(crbug.com/1250653): Consider moving this to presenter as other methods
   // that open web pages.
@@ -187,6 +200,13 @@ permissions::PermissionResult ChromePageInfoUiDelegate::GetPermissionStatus(
     ContentSettingsType type) {
   return PermissionManagerFactory::GetForProfile(GetProfile())
       ->GetPermissionStatusForDisplayOnSettingsUI(type, site_url_);
+}
+
+permissions::PermissionResult ChromePageInfoUiDelegate::GetEmbargoResult(
+    ContentSettingsType type) {
+  return permissions::PermissionsClient::Get()
+      ->GetPermissionDecisionAutoBlocker(GetProfile())
+      ->GetEmbargoResult(site_url_, type);
 }
 
 Profile* ChromePageInfoUiDelegate::GetProfile() const {

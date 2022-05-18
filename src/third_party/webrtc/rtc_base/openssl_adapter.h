@@ -37,6 +37,14 @@
 
 namespace rtc {
 
+namespace webrtc_openssl_adapter_internal {
+
+// Local definition, since absl::StrJoin is not allow-listed. Declared in header
+// file only for unittests.
+std::string StrJoin(const std::vector<std::string>& list, char delimiter);
+
+}  // namespace webrtc_openssl_adapter_internal
+
 class OpenSSLAdapter final : public SSLAdapter,
                              public MessageHandlerAutoCleanup {
  public:
@@ -61,7 +69,7 @@ class OpenSSLAdapter final : public SSLAdapter,
   void SetCertVerifier(SSLCertificateVerifier* ssl_cert_verifier) override;
   void SetIdentity(std::unique_ptr<SSLIdentity> identity) override;
   void SetRole(SSLRole role) override;
-  int StartSSL(const char* hostname) override;
+  int StartSSL(absl::string_view hostname) override;
   int Send(const void* pv, size_t cb) override;
   int SendTo(const void* pv, size_t cb, const SocketAddress& addr) override;
   int Recv(void* pv, size_t cb, int64_t* timestamp) override;
@@ -110,7 +118,7 @@ class OpenSSLAdapter final : public SSLAdapter,
 
   int BeginSSL();
   int ContinueSSL();
-  void Error(const char* context, int err, bool signal = true);
+  void Error(absl::string_view context, int err, bool signal = true);
   void Cleanup();
 
   // Return value and arguments have the same meanings as for Send; `error` is

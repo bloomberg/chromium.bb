@@ -110,33 +110,33 @@ void av1_filter_block_plane_horz(const struct AV1Common *const cm,
                                  const MACROBLOCKD_PLANE *const plane_ptr,
                                  const uint32_t mi_row, const uint32_t mi_col);
 
-void av1_filter_block_plane_vert_rt(const struct AV1Common *const cm,
-                                    const MACROBLOCKD *const xd,
-                                    const MACROBLOCKD_PLANE *const plane_ptr,
-                                    const uint32_t mi_row,
-                                    const uint32_t mi_col,
-                                    AV1_DEBLOCKING_PARAMETERS *params_buf,
-                                    TX_SIZE *tx_buf);
+void av1_filter_block_plane_vert_opt(const struct AV1Common *const cm,
+                                     const MACROBLOCKD *const xd,
+                                     const MACROBLOCKD_PLANE *const plane_ptr,
+                                     const uint32_t mi_row,
+                                     const uint32_t mi_col,
+                                     AV1_DEBLOCKING_PARAMETERS *params_buf,
+                                     TX_SIZE *tx_buf);
 
-void av1_filter_block_plane_vert_rt_chroma(
+void av1_filter_block_plane_vert_opt_chroma(
     const struct AV1Common *const cm, const MACROBLOCKD *const xd,
     const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
     const uint32_t mi_col, AV1_DEBLOCKING_PARAMETERS *params_buf,
-    TX_SIZE *tx_buf);
+    TX_SIZE *tx_buf, int plane, bool joint_filter_chroma);
 
-void av1_filter_block_plane_horz_rt(const struct AV1Common *const cm,
-                                    const MACROBLOCKD *const xd,
-                                    const MACROBLOCKD_PLANE *const plane_ptr,
-                                    const uint32_t mi_row,
-                                    const uint32_t mi_col,
-                                    AV1_DEBLOCKING_PARAMETERS *params_buf,
-                                    TX_SIZE *tx_buf);
+void av1_filter_block_plane_horz_opt(const struct AV1Common *const cm,
+                                     const MACROBLOCKD *const xd,
+                                     const MACROBLOCKD_PLANE *const plane_ptr,
+                                     const uint32_t mi_row,
+                                     const uint32_t mi_col,
+                                     AV1_DEBLOCKING_PARAMETERS *params_buf,
+                                     TX_SIZE *tx_buf);
 
-void av1_filter_block_plane_horz_rt_chroma(
+void av1_filter_block_plane_horz_opt_chroma(
     const struct AV1Common *const cm, const MACROBLOCKD *const xd,
     const MACROBLOCKD_PLANE *const plane_ptr, const uint32_t mi_row,
     const uint32_t mi_col, AV1_DEBLOCKING_PARAMETERS *params_buf,
-    TX_SIZE *tx_buf);
+    TX_SIZE *tx_buf, int plane, bool joint_filter_chroma);
 
 uint8_t av1_get_filter_level(const struct AV1Common *cm,
                              const loop_filter_info_n *lfi_n, const int dir_idx,

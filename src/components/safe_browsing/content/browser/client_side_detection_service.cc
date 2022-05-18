@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -37,8 +38,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
+#include "ipc/ipc_channel_proxy.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/escape.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
@@ -164,19 +166,6 @@ bool ClientSideDetectionService::IsLocalResource(
   return !address.IsValid();
 }
 
-void ClientSideDetectionService::AddClientSideDetectionHost(
-    ClientSideDetectionHost* host) {
-  csd_hosts_.push_back(host);
-}
-
-void ClientSideDetectionService::RemoveClientSideDetectionHost(
-    ClientSideDetectionHost* host) {
-  std::vector<ClientSideDetectionHost*>::iterator position =
-      std::find(csd_hosts_.begin(), csd_hosts_.end(), host);
-  if (position != csd_hosts_.end())
-    csd_hosts_.erase(position);
-}
-
 void ClientSideDetectionService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
     base::Time start_time,
@@ -199,8 +188,10 @@ void ClientSideDetectionService::OnURLLoaderComplete(
 }
 
 void ClientSideDetectionService::SendModelToRenderers() {
-  for (ClientSideDetectionHost* host : csd_hosts_) {
-    host->SendModelToRenderFrame();
+  for (content::RenderProcessHost::iterator it(
+           content::RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    SetPhishingModel(it.GetCurrentValue());
   }
 }
 
@@ -429,7 +420,7 @@ GURL ClientSideDetectionService::GetClientReportUrl(
   GURL url(report_url);
   std::string api_key = google_apis::GetAPIKey();
   if (!api_key.empty())
-    url = url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
+    url = url.Resolve("?key=" + base::EscapeQueryParamValue(api_key, true));
 
   return url;
 }
@@ -454,6 +445,31 @@ const base::File& ClientSideDetectionService::GetVisualTfLiteModel() {
 void ClientSideDetectionService::SetURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   url_loader_factory_ = url_loader_factory;
+}
+
+void ClientSideDetectionService::OnRenderProcessHostCreated(
+    content::RenderProcessHost* rph) {
+  SetPhishingModel(rph);
+}
+
+void ClientSideDetectionService::SetPhishingModel(
+    content::RenderProcessHost* rph) {
+  if (!rph->GetChannel())
+    return;
+  mojo::AssociatedRemote<mojom::PhishingModelSetter> model_setter;
+  rph->GetChannel()->GetRemoteAssociatedInterface(&model_setter);
+  switch (GetModelType()) {
+    case CSDModelType::kNone:
+      return;
+    case CSDModelType::kProtobuf:
+      model_setter->SetPhishingModel(GetModelStr(),
+                                     GetVisualTfLiteModel().Duplicate());
+      return;
+    case CSDModelType::kFlatbuffer:
+      model_setter->SetPhishingFlatBufferModel(
+          GetModelSharedMemoryRegion(), GetVisualTfLiteModel().Duplicate());
+      return;
+  }
 }
 
 }  // namespace safe_browsing

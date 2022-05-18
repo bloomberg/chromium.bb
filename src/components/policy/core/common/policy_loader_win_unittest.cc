@@ -279,7 +279,8 @@ ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   base::win::ScopedDomainStateForTesting scoped_domain(true);
   std::unique_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
-      task_runner, PlatformManagementService::GetInstance(), kTestPolicyKey));
+      task_runner, PlatformManagementService::GetInstance(), kTestPolicyKey,
+      true /* is_dev_registry_key_supported */));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
@@ -410,7 +411,8 @@ class PolicyLoaderWinTest : public PolicyTestBase {
   bool Matches(const PolicyBundle& expected) {
     PolicyLoaderWin loader(task_environment_.GetMainThreadTaskRunner(),
                            PlatformManagementService::GetInstance(),
-                           kTestPolicyKey);
+                           kTestPolicyKey,
+                           true /* is_dev_registry_key_supported */);
     std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
@@ -585,8 +587,8 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   policy.SetIntKey("int", -123);
   policy.SetDoubleKey("double", 456.78e9);
   base::ListValue list;
-  list.Append(std::make_unique<base::Value>(policy.Clone()));
-  list.Append(std::make_unique<base::Value>(policy.Clone()));
+  list.GetList().Append(policy.Clone());
+  list.GetList().Append(policy.Clone());
   policy.SetKey("list", list.Clone());
   // Encode |policy| before adding the "dict" entry.
   std::string encoded_dict;

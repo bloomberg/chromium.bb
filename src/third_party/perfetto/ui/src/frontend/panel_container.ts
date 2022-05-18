@@ -30,6 +30,7 @@ import {
   RunningStatistics,
   runningStatStr
 } from './perf';
+import {TrackGroupAttrs} from './viewer_page';
 
 /**
  * If the panel container scrolls, the backing canvas height is
@@ -62,6 +63,8 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
   private parentHeight = 0;
   private scrollTop = 0;
   private panelInfos: PanelInfo[] = [];
+  private panelContainerTop = 0;
+  private panelContainerHeight = 0;
   private panelByKey = new Map<string, AnyAttrsVnode>();
   private totalPanelHeight = 0;
   private canvasHeight = 0;
@@ -216,21 +219,45 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     perfDisplay.removeContainer(this);
   }
 
+  isTrackGroupAttrs(attrs: unknown): attrs is TrackGroupAttrs {
+    return (attrs as {collapsed?: boolean}).collapsed !== undefined;
+  }
+
+  renderPanel(node: AnyAttrsVnode, key: string, extraClass = ''): m.Vnode {
+    assertFalse(this.panelByKey.has(key));
+    this.panelByKey.set(key, node);
+
+    return m(
+        `.panel${extraClass}`,
+        {key, 'data-key': key},
+        perfDebug() ?
+            [node, m('.debug-panel-border', {key: 'debug-panel-border'})] :
+            node);
+  }
+
+  // Render a tree of panels into one vnode. Argument `path` is used to build
+  // `key` attribute for intermediate tree vnodes: otherwise Mithril internals
+  // will complain about keyed and non-keyed vnodes mixed together.
+  renderTree(node: AnyAttrsVnode, path: string): m.Vnode {
+    if (this.isTrackGroupAttrs(node.attrs)) {
+      return m(
+          'div',
+          {key: path},
+          this.renderPanel(
+              node.attrs.header,
+              `${path}-header`,
+              node.attrs.collapsed ? '' : '.sticky'),
+          ...node.attrs.childTracks.map(
+              (child, index) => this.renderTree(child, `${path}-${index}`)));
+    }
+    return this.renderPanel(node, assertExists(node.key) as string);
+  }
+
   view({attrs}: m.CVnode<Attrs>) {
     this.attrs = attrs;
     this.panelByKey.clear();
-    const children = [];
-    for (const panel of attrs.panels) {
-      const key = assertExists(panel.key) as string;
-      assertFalse(this.panelByKey.has(key));
-      this.panelByKey.set(key, panel);
-      children.push(
-          m('.panel',
-            {key: panel.key, 'data-key': panel.key},
-            perfDebug() ?
-                [panel, m('.debug-panel-border', {key: 'debug-panel-border'})] :
-                panel));
-    }
+    const children = attrs.panels.map(
+        (panel, index) => this.renderTree(panel, `track-tree-${index}`));
 
     return [
       m(
@@ -312,6 +339,9 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     const prevHeight = this.totalPanelHeight;
     this.panelInfos = [];
     this.totalPanelHeight = 0;
+    const domRect = dom.getBoundingClientRect();
+    this.panelContainerTop = domRect.y;
+    this.panelContainerHeight = domRect.height;
 
     dom.parentElement!.querySelectorAll('.panel').forEach(panel => {
       const key = assertExists(panel.getAttribute('data-key'));
@@ -403,11 +433,8 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     if (this.panelInfos.length === 0 || area.tracks.length === 0) return;
 
     // Find the minY and maxY of the selected tracks in this panel container.
-    const panelContainerTop = this.panelInfos[0].y;
-    const panelContainerBottom = this.panelInfos[this.panelInfos.length - 1].y +
-        this.panelInfos[this.panelInfos.length - 1].height;
-    let selectedTracksMinY = panelContainerBottom;
-    let selectedTracksMaxY = panelContainerTop;
+    let selectedTracksMinY = this.panelContainerHeight + this.panelContainerTop;
+    let selectedTracksMaxY = this.panelContainerTop;
     let trackFromCurrentContainerSelected = false;
     for (let i = 0; i < this.panelInfos.length; i++) {
       if (area.tracks.includes(this.panelInfos[i].id)) {
@@ -428,8 +455,8 @@ export class PanelContainer implements m.ClassComponent<Attrs> {
     const startX = globals.frontendLocalState.timeScale.timeToPx(area.startSec);
     const endX = globals.frontendLocalState.timeScale.timeToPx(area.endSec);
     // To align with where to draw on the canvas subtract the first panel Y.
-    selectedTracksMinY -= panelContainerTop;
-    selectedTracksMaxY -= panelContainerTop;
+    selectedTracksMinY -= this.panelContainerTop;
+    selectedTracksMaxY -= this.panelContainerTop;
     this.ctx.save();
     this.ctx.strokeStyle = 'rgba(52,69,150)';
     this.ctx.lineWidth = 1;

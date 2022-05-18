@@ -176,13 +176,11 @@ Tests calling writeBuffer with the buffer missed COPY_DST usage.
 g.test('buffer,device_mismatch')
   .desc('Tests writeBuffer cannot be called with a buffer created from another device')
   .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { mismatched } = t.params;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
-
     const device = mismatched ? t.mismatchedDevice : t.device;
 
     const buffer = device.createBuffer({

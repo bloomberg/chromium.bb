@@ -192,7 +192,7 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateSetMemBinding(VkDeviceMemory mem, const BINDABLE& mem_binding, const char* apiName) const;
     bool ValidateDeviceQueueFamily(uint32_t queue_family, const char* cmd_name, const char* parameter_name, const char* error_code,
                                    bool optional) const;
-    bool ValidateBindBufferMemory(VkBuffer buffer, VkDeviceMemory mem, VkDeviceSize memoryOffset, const char* api_name) const;
+    bool ValidateBindBufferMemory(VkBuffer buffer, VkDeviceMemory mem, VkDeviceSize memoryOffset, const void* pNext, const char* api_name) const;
     bool ValidateGetImageMemoryRequirements2(const VkImageMemoryRequirementsInfo2* pInfo, const char* func_name) const;
     bool CheckCommandBuffersInFlight(const COMMAND_POOL_STATE* pPool, const char* action, const char* error_code) const;
     bool CheckCommandBufferInFlight(const CMD_BUFFER_STATE* cb_node, const char* action, const char* error_code) const;
@@ -217,6 +217,9 @@ class CoreChecks : public ValidationStateTracker {
     bool LogInvalidPnextMessage(const char* type1_string, const RENDER_PASS_STATE* rp1_state, const char* type2_string,
                                 const RENDER_PASS_STATE* rp2_state, const char* msg, const char* caller,
                                 const char* error_code) const;
+    bool LogInvalidDependencyMessage(const char* type1_string, const RENDER_PASS_STATE& rp1_state, const char* type2_string,
+                                     const RENDER_PASS_STATE& rp2_state, const char* msg, const char* caller,
+                                     const char* error_code) const;
     bool ValidateStageMaskHost(const Location& loc, VkPipelineStageFlags2KHR stageMask) const;
     bool ValidateMapMemRange(const DEVICE_MEMORY_STATE* mem_info, VkDeviceSize offset, VkDeviceSize size) const;
     bool ValidateRenderPassDAG(RenderPassCreateVersion rp_version, const VkRenderPassCreateInfo2* pCreateInfo) const;
@@ -226,6 +229,9 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateSubpassCompatibility(const char* type1_string, const RENDER_PASS_STATE* rp1_state, const char* type2_string,
                                       const RENDER_PASS_STATE* rp2_state, const int subpass, const char* caller,
                                       const char* error_code) const;
+    bool ValidateDependencyCompatibility(const char* type1_string, const RENDER_PASS_STATE& rp1_state, const char* type2_string,
+                                         const RENDER_PASS_STATE& rp2_state, const uint32_t dependency, const char* caller,
+                                         const char* error_code) const;
     bool ValidateRenderPassCompatibility(const char* type1_string, const RENDER_PASS_STATE* rp1_state, const char* type2_string,
                                          const RENDER_PASS_STATE* rp2_state, const char* caller, const char* error_code) const;
     bool ReportInvalidCommandBuffer(const CMD_BUFFER_STATE* cb_state, const char* call_source) const;
@@ -1074,6 +1080,7 @@ class CoreChecks : public ValidationStateTracker {
                                        VkResult result) override;
     void PostCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence,
                                     VkResult result) override;
+    bool IsZeroAllocationSizeAllowed(const VkMemoryAllocateInfo* pAllocateInfo) const;
     bool PreCallValidateAllocateMemory(VkDevice device, const VkMemoryAllocateInfo* pAllocateInfo,
                                        const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMemory) const override;
     bool PreCallValidateFreeMemory(VkDevice device, VkDeviceMemory mem, const VkAllocationCallbacks* pAllocator) const override;
@@ -1144,6 +1151,7 @@ class CoreChecks : public ValidationStateTracker {
                                              const VkCopyDescriptorSet* pDescriptorCopies) const override;
     bool PreCallValidateBeginCommandBuffer(VkCommandBuffer commandBuffer,
                                            const VkCommandBufferBeginInfo* pBeginInfo) const override;
+    uint32_t GetQuotientCeil(uint32_t numerator, uint32_t denominator) const;
     bool ValidateCmdBeginRendering(VkCommandBuffer commandBuffer, const VkRenderingInfo* pRenderingInfo, CMD_TYPE cmd_type) const;
     bool PreCallValidateCmdBeginRenderingKHR(VkCommandBuffer commandBuffer,
                                              const VkRenderingInfoKHR* pRenderingInfo) const override;
@@ -1437,7 +1445,8 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateSetEvent(VkDevice device, VkEvent event) const override;
     bool PreCallValidateResetEvent(VkDevice device, VkEvent event) const override;
     bool PreCallValidateGetEventStatus(VkDevice device, VkEvent event) const override;
-    bool ValidateSparseMemoryBind(const VkSparseMemoryBind* bind, const char* func_name, const char* parameter_name) const;
+    bool ValidateSparseMemoryBind(const VkSparseMemoryBind& bind, VkDeviceSize resource_size, const char* func_name,
+                                  const char* parameter_name) const;
     bool PreCallValidateQueueBindSparse(VkQueue queue, uint32_t bindInfoCount, const VkBindSparseInfo* pBindInfo,
                                         VkFence fence) const override;
     bool ValidateSignalSemaphore(VkDevice device, const VkSemaphoreSignalInfo* pSignalInfo, const char* api_name) const;

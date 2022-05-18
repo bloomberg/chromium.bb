@@ -10,8 +10,10 @@
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
 #include "openssl/sha.h"
+#include "quiche/quic/core/quic_types.h"
 #include "quiche/quic/platform/api/quic_flag_utils.h"
 #include "quiche/quic/platform/api/quic_testvalue.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/quiche_text_utils.h"
 
 namespace quic {
@@ -525,5 +527,23 @@ const QuicSocketAddress QuicCryptoServerStream::GetClientAddress() {
 }
 
 SSL* QuicCryptoServerStream::GetSsl() const { return nullptr; }
+
+bool QuicCryptoServerStream::IsCryptoFrameExpectedForEncryptionLevel(
+    EncryptionLevel /*level*/) const {
+  return true;
+}
+
+EncryptionLevel
+QuicCryptoServerStream::GetEncryptionLevelToSendCryptoDataOfSpace(
+    PacketNumberSpace space) const {
+  if (space == INITIAL_DATA) {
+    return ENCRYPTION_INITIAL;
+  }
+  if (space == APPLICATION_DATA) {
+    return ENCRYPTION_ZERO_RTT;
+  }
+  QUICHE_DCHECK(false);
+  return NUM_ENCRYPTION_LEVELS;
+}
 
 }  // namespace quic

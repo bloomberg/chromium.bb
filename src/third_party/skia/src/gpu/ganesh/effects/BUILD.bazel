@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "GrAtlasedShaderHelpers_hdr",
@@ -75,6 +77,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         "//src/core:SkArenaAlloc_hdr",
+        "//src/gpu:AtlasTypes_hdr",
         "//src/gpu/ganesh:GrGeometryProcessor_hdr",
         "//src/gpu/ganesh:GrProcessor_hdr",
     ],
@@ -115,6 +118,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":GrBlendFragmentProcessor_hdr",
+        "//src/gpu:Blend_hdr",
         "//src/gpu:KeyBuilder_hdr",
         "//src/gpu/ganesh:GrFragmentProcessor_hdr",
         "//src/gpu/ganesh:SkGr_hdr",

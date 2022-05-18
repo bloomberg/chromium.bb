@@ -6,7 +6,12 @@ import * as Host from '../../../../../../front_end/core/host/host.js';
 import type * as Platform from '../../../../../../front_end/core/platform/platform.js';
 import * as PanelFeedback from '../../../../../../front_end/ui/components/panel_feedback/panel_feedback.js';
 import * as Coordinator from '../../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
-import {assertElement, assertShadowRoot, dispatchClickEvent, renderElementIntoDOM} from '../../../helpers/DOMHelpers.js';
+import {
+  assertElement,
+  assertShadowRoot,
+  dispatchClickEvent,
+  renderElementIntoDOM,
+} from '../../../helpers/DOMHelpers.js';
 import {describeWithLocale} from '../../../helpers/EnvironmentHelpers.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
@@ -16,7 +21,7 @@ describeWithLocale('Feedback button', () => {
     const openInNewTabStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
     const component = new PanelFeedback.FeedbackButton.FeedbackButton();
     component.data = {
-      feedbackUrl: 'https://feedbackurl.com',
+      feedbackUrl: 'https://feedbackurl.com' as Platform.DevToolsPath.UrlString,
     };
 
     renderElementIntoDOM(component);

@@ -15,19 +15,15 @@
 #ifndef SRC_DAWN_COMMON_IOKITREF_H_
 #define SRC_DAWN_COMMON_IOKITREF_H_
 
-#include "dawn/common/RefBase.h"
-
 #include <IOKit/IOKitLib.h>
+
+#include "dawn/common/RefBase.h"
 
 template <typename T>
 struct IOKitRefTraits {
     static constexpr T kNullValue = IO_OBJECT_NULL;
-    static void Reference(T value) {
-        IOObjectRetain(value);
-    }
-    static void Release(T value) {
-        IOObjectRelease(value);
-    }
+    static void Reference(T value) { IOObjectRetain(value); }
+    static void Release(T value) { IOObjectRelease(value); }
 };
 
 template <typename T>

@@ -30,6 +30,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/opengraph/metadata.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
@@ -166,7 +167,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const base::android::JavaRef<jobject>& jrender_frame_host_android);
 #endif
 
-  ~RenderFrameHost() override {}
+  // Logs UMA metrics related to isolatable sandboxed iframes.
+  static void LogSandboxedIframesIsolationMetrics();
+
+  ~RenderFrameHost() override = default;
 
   // Returns the route id for this frame.
   virtual int GetRoutingID() const = 0;
@@ -964,29 +968,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // state, with some content client method used to update it).
   virtual void UpdateIsAdSubframe(bool is_ad_subframe) = 0;
 
-  // Perform security checks on Web Authentication requests. These can be
-  // called by other |Authenticator| mojo interface implementations in the
-  // browser process so that they don't have to duplicate security policies.
-  // For requests originating from the render process, |effective_origin| will
-  // be the same as the last committed origin. However, for request originating
-  // from the browser process, this may be different.
-  // |is_payment_credential_creation| indicates whether MakeCredential is making
-  // a payment credential.
-  // |PerformGetAssertionWebAuthSecurityChecks| returns a security check result
-  // and a boolean representing whether the given origin is cross-origin with
-  // any frame in this frame's ancestor chain. This extra cross-origin bit is
-  // relevant in case callers need it for crypto signature.
-  virtual std::pair<blink::mojom::AuthenticatorStatus, bool>
-  PerformGetAssertionWebAuthSecurityChecks(
-      const std::string& relying_party_id,
-      const url::Origin& effective_origin,
-      bool is_payment_credential_get_assertion) = 0;
-  virtual blink::mojom::AuthenticatorStatus
-  PerformMakeCredentialWebAuthSecurityChecks(
-      const std::string& relying_party_id,
-      const url::Origin& effective_origin,
-      bool is_payment_credential_creation) = 0;
-
   // Tells the host that this is part of setting up a WebXR DOM Overlay. This
   // starts a short timer that permits entering fullscreen mode, similar to a
   // recent orientation change.
@@ -1036,6 +1017,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // trustworthy.
   virtual void GetCanonicalUrl(
       base::OnceCallback<void(const absl::optional<GURL>&)> callback) = 0;
+
+  // Fetch the OpenGraph metadata from the renderer process. The returned data
+  // has only been validated as follows:
+  // * Contained URLs are web schemes, not other schemes
+  // Any other properties you want, you'll need to check yourself.
+  virtual void GetOpenGraphMetadata(
+      base::OnceCallback<void(blink::mojom::OpenGraphMetadataPtr)>) = 0;
 
   // Returns true if the last navigation in this RenderFrameHost has committed
   // an error document that is a placeholder document installed when the

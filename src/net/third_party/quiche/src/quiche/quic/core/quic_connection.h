@@ -50,11 +50,11 @@
 #include "quiche/quic/core/quic_packet_writer.h"
 #include "quiche/quic/core/quic_packets.h"
 #include "quiche/quic/core/quic_path_validator.h"
+#include "quiche/quic/core/quic_ping_manager.h"
 #include "quiche/quic/core/quic_sent_packet_manager.h"
 #include "quiche/quic/core/quic_time.h"
 #include "quiche/quic/core/quic_types.h"
 #include "quiche/quic/core/uber_received_packet_manager.h"
-#include "quiche/quic/platform/api/quic_containers.h"
 #include "quiche/quic/platform/api/quic_export.h"
 #include "quiche/quic/platform/api/quic_flags.h"
 #include "quiche/quic/platform/api/quic_socket_address.h"
@@ -238,6 +238,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Whether the server address is known to the connection.
   virtual bool IsKnownServerAddress(const QuicSocketAddress& address) const = 0;
+
+  // When bandwidth update alarms.
+  virtual void OnBandwidthUpdateTimeout() = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
@@ -458,7 +461,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       public QuicNetworkBlackholeDetector::Delegate,
       public QuicIdleNetworkDetector::Delegate,
       public QuicPathValidator::SendDelegate,
-      public QuicConnectionIdManagerVisitorInterface {
+      public QuicConnectionIdManagerVisitorInterface,
+      public QuicPingManager::Delegate {
  public:
   // Constructs a new QuicConnection for |connection_id| and
   // |initial_peer_address| using |writer| to write packets. |owns_writer|
@@ -709,6 +713,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // QuicIdleNetworkDetector::Delegate
   void OnHandshakeTimeout() override;
   void OnIdleNetworkDetected() override;
+  void OnBandwidthUpdateTimeout() override;
+
+  // QuicPingManager::Delegate
+  void OnKeepAliveTimeout() override;
+  void OnRetransmittableOnWireTimeout() override;
 
   // QuicConnectionIdManagerVisitorInterface
   void OnPeerIssuedConnectionIdRetired() override;
@@ -741,21 +750,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
   // Used in Chromium, but not internally.
   // Must only be called before ping_alarm_ is set.
-  void set_ping_timeout(QuicTime::Delta ping_timeout) {
-    QUICHE_DCHECK(!ping_alarm_->IsSet());
-    ping_timeout_ = ping_timeout;
-  }
-  const QuicTime::Delta ping_timeout() const { return ping_timeout_; }
+  void set_keep_alive_ping_timeout(QuicTime::Delta keep_alive_ping_timeout);
   // Sets an initial timeout for the ping alarm when there is no retransmittable
   // data in flight, allowing for a more aggressive ping alarm in that case.
   void set_initial_retransmittable_on_wire_timeout(
-      QuicTime::Delta retransmittable_on_wire_timeout) {
-    QUICHE_DCHECK(!ping_alarm_->IsSet());
-    initial_retransmittable_on_wire_timeout_ = retransmittable_on_wire_timeout;
-  }
-  const QuicTime::Delta initial_retransmittable_on_wire_timeout() const {
-    return initial_retransmittable_on_wire_timeout_;
-  }
+      QuicTime::Delta retransmittable_on_wire_timeout);
   // Used in Chromium, but not internally.
   void set_creator_debug_delegate(QuicPacketCreator::DebugDelegate* visitor) {
     packet_creator_.set_debug_delegate(visitor);
@@ -1010,7 +1009,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   EncryptionLevel encryption_level() const { return encryption_level_; }
   EncryptionLevel last_decrypted_level() const {
-    return last_decrypted_packet_level_;
+    return last_received_packet_info_.decrypted_level;
   }
 
   const QuicSocketAddress& last_packet_source_address() const {
@@ -1217,12 +1216,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return connection_migration_use_new_cid_;
   }
 
-  bool count_bytes_on_alternative_path_separately() const {
-    return count_bytes_on_alternative_path_separately_;
-  }
-
   // Instantiates connection ID manager.
   void CreateConnectionIdManager();
+
+  // Log QUIC_BUG if there is pending frames for the stream with |id|.
+  void QuicBugIfHasPendingFrames(QuicStreamId id) const;
 
   QuicConnectionContext* context() { return &context_; }
   const QuicConnectionContext* context() const { return &context_; }
@@ -1295,6 +1293,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |ietf_error| may optionally be be used to directly specify the wire
   // error code. Otherwise if |ietf_error| is NO_IETF_QUIC_ERROR, the
   // QuicErrorCodeToTransportErrorCode mapping of |error| will be used.
+  // Caller may choose to call SendConnectionClosePacket() directly instead of
+  // CloseConnection() to notify peer that the connection is going to be closed,
+  // for example, when the server is tearing down. Given
+  // SendConnectionClosePacket() does not close connection, multiple connection
+  // close packets could be sent to the peer.
   virtual void SendConnectionClosePacket(QuicErrorCode error,
                                          QuicIetfTransportErrorCodes ietf_error,
                                          const std::string& details);
@@ -1336,6 +1339,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
  private:
   friend class test::QuicConnectionPeer;
+
+  enum RetransmittableOnWireBehavior {
+    DEFAULT,                           // Send packet containing a PING frame.
+    SEND_FIRST_FORWARD_SECURE_PACKET,  // Send 1st 1-RTT packet.
+    SEND_RANDOM_BYTES  // Send random bytes which is an unprocessable packet.
+  };
 
   struct QUIC_EXPORT_PRIVATE PendingPathChallenge {
     QuicPathFrameBuffer received_path_challenge;
@@ -1394,39 +1403,51 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     BufferedPacket(const SerializedPacket& packet,
                    const QuicSocketAddress& self_address,
                    const QuicSocketAddress& peer_address);
-    BufferedPacket(char* encrypted_buffer, QuicPacketLength encrypted_length,
+    BufferedPacket(const char* encrypted_buffer,
+                   QuicPacketLength encrypted_length,
+                   const QuicSocketAddress& self_address,
+                   const QuicSocketAddress& peer_address);
+    // Please note, this buffered packet contains random bytes (and is not
+    // *actually* a QUIC packet).
+    BufferedPacket(QuicRandom& random, QuicPacketLength encrypted_length,
                    const QuicSocketAddress& self_address,
                    const QuicSocketAddress& peer_address);
     BufferedPacket(const BufferedPacket& other) = delete;
     BufferedPacket(const BufferedPacket&& other) = delete;
 
-    ~BufferedPacket();
+    ~BufferedPacket() = default;
 
-    // encrypted_buffer is owned by buffered packet.
-    absl::string_view encrypted_buffer;
+    std::unique_ptr<char[]> data;
+    const QuicPacketLength length;
     // Self and peer addresses when the packet is serialized.
     const QuicSocketAddress self_address;
     const QuicSocketAddress peer_address;
   };
 
-  // ReceivedPacketInfo comprises the received packet information, which can be
-  // retrieved before the packet gets successfully decrypted.
+  // ReceivedPacketInfo comprises the received packet information.
+  // TODO(fayang): move more fields to ReceivedPacketInfo.
   struct QUIC_EXPORT_PRIVATE ReceivedPacketInfo {
-    explicit ReceivedPacketInfo(QuicTime receipt_time)
-        : received_bytes_counted(false), receipt_time(receipt_time) {}
+    explicit ReceivedPacketInfo(QuicTime receipt_time);
     ReceivedPacketInfo(const QuicSocketAddress& destination_address,
                        const QuicSocketAddress& source_address,
-                       QuicTime receipt_time)
-        : received_bytes_counted(false),
-          destination_address(destination_address),
-          source_address(source_address),
-          receipt_time(receipt_time) {}
+                       QuicTime receipt_time, QuicByteCount length);
 
-    bool received_bytes_counted;
     QuicSocketAddress destination_address;
     QuicSocketAddress source_address;
-    QuicTime receipt_time;
+    QuicTime receipt_time = QuicTime::Zero();
+    bool received_bytes_counted = false;
+    QuicByteCount length = 0;
+    QuicConnectionId destination_connection_id;
+    // Fields below are only populated if packet gets decrypted successfully.
+    // TODO(fayang): consider using absl::optional for following fields.
+    bool decrypted = false;
+    EncryptionLevel decrypted_level = ENCRYPTION_INITIAL;
+    QuicPacketHeader header;
+    absl::InlinedVector<QuicFrameType, 1> frames;
   };
+
+  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os, const QuicConnection::ReceivedPacketInfo& info);
 
   // UndecrytablePacket comprises a undecryptable packet and related
   // information.
@@ -1842,6 +1863,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool ShouldSetRetransmissionAlarmOnPacketSent(bool in_flight,
                                                 EncryptionLevel level) const;
 
+  // Determines encryption level to send ping in `packet_number_space`.
+  EncryptionLevel GetEncryptionLevelToSendPingForSpace(
+      PacketNumberSpace space) const;
+
   QuicConnectionContext context_;
 
   QuicFramer framer_;
@@ -1905,15 +1930,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // key update but before the first packet has been sent.
   QuicPacketNumber lowest_packet_sent_in_current_key_phase_;
 
-  // True if the last packet has gotten far enough in the framer to be
-  // decrypted.
-  bool last_packet_decrypted_;
-  QuicByteCount last_size_;  // Size of the last received packet.
   // TODO(rch): remove this when b/27221014 is fixed.
   const char* current_packet_data_;  // UDP payload of packet currently being
                                      // parsed or nullptr.
-  EncryptionLevel last_decrypted_packet_level_;
-  QuicPacketHeader last_header_;
   bool should_last_packet_instigate_acks_;
 
   // Track some peer state so we can do less bookkeeping
@@ -1975,8 +1994,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // SendAlarm.
   bool defer_send_in_response_to_packets_;
 
-  // The timeout for PING.
-  QuicTime::Delta ping_timeout_;
+  // TODO(fayang): remove PING related fields below when deprecating
+  // quic_use_ping_manager2.
+  // The timeout for keep-alive PING.
+  QuicTime::Delta keep_alive_ping_timeout_;
 
   // Initial timeout for how long the wire can have no retransmittable packets.
   QuicTime::Delta initial_retransmittable_on_wire_timeout_;
@@ -1998,6 +2019,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // An alarm that is scheduled when the SentPacketManager requires a delay
   // before sending packets and fires when the packet may be sent.
   QuicArenaScopedPtr<QuicAlarm> send_alarm_;
+  // TODO(fayang): remove ping_alarm_ when deprecating quic_use_ping_manager2.
   // An alarm that fires when a ping should be sent.
   QuicArenaScopedPtr<QuicAlarm> ping_alarm_;
   // An alarm that fires when an MTU probe should be sent.
@@ -2037,12 +2059,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // True by default.  False if we've received or sent an explicit connection
   // close.
   bool connected_;
-
-  // Destination connection ID of the last received packet. If this ID is the
-  // original server connection ID chosen by client and server replaces it with
-  // a different ID, last_packet_destination_connection_id_ is set to the
-  // replacement connection ID on the server side.
-  QuicConnectionId last_packet_destination_connection_id_;
 
   // Set to false if the connection should not send truncated connection IDs to
   // the peer, even if the peer supports it.
@@ -2091,8 +2107,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // from the peer. Default to kMaxConsecutiveNonRetransmittablePackets.
   size_t max_consecutive_num_packets_with_no_retransmittable_frames_;
 
-  // If true, bundle an ack-eliciting frame with an ACK if the PTO or RTO alarm
-  // have previously fired.
+  // If true, bundle an ack-eliciting frame with an ACK if the PTO alarm have
+  // previously fired.
   bool bundle_retransmittable_with_pto_ack_;
 
   // If true, the connection will fill up the pipe with extra data whenever the
@@ -2224,12 +2240,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // 2), do not override it on receiving PATH_CHALLENGE (case 1).
   PathState alternative_path_;
 
-  // This field is used to debug b/177312785.
-  QuicFrameType most_recent_frame_type_;
-
-  bool count_bytes_on_alternative_path_separately_ =
-      GetQuicReloadableFlag(quic_count_bytes_on_alternative_path_seperately);
-
   // If true, upon seeing a new client address, validate the client address.
   bool validate_client_addresses_ = false;
 
@@ -2243,17 +2253,25 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const bool flush_after_coalesce_higher_space_packets_ =
       GetQuicReloadableFlag(quic_flush_after_coalesce_higher_space_packets);
 
-  // Records the 1-RTT connection close frame sent.
-  // TODO(b/180103273): remove this after the bug gets fixed.
-  absl::optional<QuicConnectionCloseFrame> connection_close_frame_sent_;
-
   // If true, send connection close packet on INVALID_VERSION.
   bool send_connection_close_for_invalid_version_ = false;
+
+  const bool use_ping_manager_ = GetQuicReloadableFlag(quic_use_ping_manager2);
+
+  QuicPingManager ping_manager_;
+
+  // Records first serialized 1-RTT packet.
+  std::unique_ptr<BufferedPacket> first_serialized_one_rtt_packet_;
+
+  RetransmittableOnWireBehavior retransmittable_on_wire_behavior_ = DEFAULT;
 
   // TODO(b/205023946) Debug-only fields, to be deprecated after the bug is
   // fixed.
   absl::optional<QuicWallTime> quic_bug_10511_43_timestamp_;
   std::string quic_bug_10511_43_error_detail_;
+
+  bool only_send_probing_frames_on_alternative_path_ =
+      GetQuicReloadableFlag(quic_not_bundle_ack_on_alternative_path);
 };
 
 }  // namespace quic

@@ -15,24 +15,20 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_BINDGROUPMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_BINDGROUPMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/BindGroup.h"
 #include "dawn/native/Device.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class BindGroupMock : public BindGroupBase {
-      public:
-        BindGroupMock(DeviceBase* device) : BindGroupBase(device) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->BindGroupBase::DestroyImpl();
-            });
-        }
-        ~BindGroupMock() override = default;
+class BindGroupMock : public BindGroupBase {
+  public:
+    explicit BindGroupMock(DeviceBase* device);
+    ~BindGroupMock() override;
 
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
 }  // namespace dawn::native
 

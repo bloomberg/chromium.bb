@@ -91,6 +91,7 @@ export {PasswordMoveMultiplePasswordsToAccountDialogElement} from './autofill_pa
 export {PasswordMoveToAccountDialogElement} from './autofill_page/password_move_to_account_dialog.js';
 export {SettingsPasswordRemoveConfirmationDialogElement} from './autofill_page/password_remove_confirmation_dialog.js';
 export {PasswordRemoveDialogElement} from './autofill_page/password_remove_dialog.js';
+export {PasswordViewElement} from './autofill_page/password_view.js';
 export {PasswordsDeviceSectionElement} from './autofill_page/passwords_device_section.js';
 export {PasswordsExportDialogElement} from './autofill_page/passwords_export_dialog.js';
 export {PasswordsSectionElement} from './autofill_page/passwords_section.js';
@@ -102,7 +103,7 @@ export {ChromeCleanerScannerResults, ChromeCleanupFilePath, ChromeCleanupIdleRea
 export {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, ItemsToRemoveListElement} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
-export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, InstalledApp} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
+export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, InstalledApp, UpdateSyncStateEvent} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 export {SettingsClearBrowsingDataDialogElement} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 export {SettingsHistoryDeletionDialogElement} from './clear_browsing_data_dialog/history_deletion_dialog.js';
 export {SettingsPasswordsDeletionDialogElement} from './clear_browsing_data_dialog/passwords_deletion_dialog.js';

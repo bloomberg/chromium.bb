@@ -1,3 +1,11 @@
+bug/tint/1118.wgsl:64:31 warning: 'dpdx' must only be called from uniform control flow
+  normalW = normalize(-(cross(dpdx(x_62), dpdy(x_64))));
+                              ^^^^
+
+bug/tint/1118.wgsl:46:19 note: reading from module-scope private variable 'fClipDistance3' may result in a non-uniform value
+  let x_9 : f32 = fClipDistance3;
+                  ^^^^^^^^^^^^^^
+
 static float fClipDistance3 = 0.0f;
 static float fClipDistance4 = 0.0f;
 cbuffer cbuffer_x_29 : register(b0, space0) {

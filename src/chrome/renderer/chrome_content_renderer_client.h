@@ -17,7 +17,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
+#include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/phishing_model_setter_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -151,11 +153,11 @@ class ChromeContentRendererClient
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(
       content::RenderFrame* render_frame) override;
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_SPEECH_SERVICE)
   std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
       content::RenderFrame* render_frame,
       media::SpeechRecognitionClient::OnReadyCallback callback) override;
-#endif
+#endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
   void GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb) override;
   bool IsPluginAllowedToUseCameraDeviceAPI(const GURL& url) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
@@ -273,6 +275,8 @@ class ChromeContentRendererClient
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::set<std::string> allowed_camera_device_origins_;
 #endif
+  std::unique_ptr<safe_browsing::PhishingModelSetterImpl>
+      phishing_model_setter_;
 
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;

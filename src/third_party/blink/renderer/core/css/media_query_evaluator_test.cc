@@ -690,7 +690,7 @@ TEST(MediaQueryEvaluatorTest, CachedDynamicRange) {
   }
   {
     data.device_supports_hdr =
-        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSCRGBLinear())
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSRGBLinear())
             .SupportsHDR();
     MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(media_values);
@@ -1196,35 +1196,19 @@ TEST(MediaQueryEvaluatorTest, GeneralEnclosed) {
       {"not ((unknown: 1px) and (width))", false},
   };
 
-  {
-    ScopedCSSMediaQueries4ForTest media_queries_4_flag(true);
-
-    for (const MediaQueryEvaluatorTestCase& test : tests) {
-      SCOPED_TRACE(test.input);
-      String input(test.input);
-      auto query_set = MediaQueryParser::ParseMediaQuerySet(input, nullptr);
-      ASSERT_TRUE(query_set);
-      ASSERT_EQ(1u, query_set->QueryVector().size());
-      std::unique_ptr<MediaQuery> query =
-          query_set->QueryVector()[0]->CopyIgnoringUnknownForTest();
-      EXPECT_EQ(test.output, media_query_evaluator.Eval(*query));
-    }
-  }
-
-  // Run the same tests again, but avoiding CopyIgnoringUnknownForTest. This
-  // should make any MediaQuery containing "unknown" effectively behave as "not
-  // all".
+  // Run the same tests twice (CSSMediaQueries4 on/off).
   Vector<bool> flag_values = {true, false};
   for (bool flag : flag_values) {
-    // The runtime flag CSSMediaQueries4 should not affect the results.
     ScopedCSSMediaQueries4ForTest media_queries_4_flag(flag);
 
     for (const MediaQueryEvaluatorTestCase& test : tests) {
-      SCOPED_TRACE(test.input);
+      SCOPED_TRACE(String(test.input));
       String input(test.input);
       auto query_set = MediaQueryParser::ParseMediaQuerySet(input, nullptr);
       ASSERT_TRUE(query_set);
-      EXPECT_FALSE(media_query_evaluator.Eval(*query_set));
+      // Always expect `false` with CSSMediaQueries4 disabled, otherwise
+      // expect `test.output`.
+      EXPECT_EQ(flag && test.output, media_query_evaluator.Eval(*query_set));
     }
   }
 }
@@ -1414,7 +1398,7 @@ TEST_F(MediaQueryEvaluatorIdentifiabilityTest,
 }
 
 TEST_F(MediaQueryEvaluatorIdentifiabilityTest,
-       MediaFeatureIdentifiableSurfaceAspectRatio) {
+       MediaFeatureIdentifiableSurfaceAspectRatioNormalized) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       @media all and (min-aspect-ratio: 8/5) {
@@ -1426,17 +1410,18 @@ TEST_F(MediaQueryEvaluatorIdentifiabilityTest,
   )HTML");
 
   UpdateAllLifecyclePhases();
-  EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(
-      static_cast<int>(IdentifiableSurface::MediaFeatureName::kAspectRatio)));
+  EXPECT_TRUE(GetDocument().WasMediaFeatureEvaluated(static_cast<int>(
+      IdentifiableSurface::MediaFeatureName::kAspectRatioNormalized)));
   EXPECT_EQ(collector()->entries().size(), 1u);
 
   auto& entry = collector()->entries().front();
   EXPECT_EQ(entry.metrics.size(), 1u);
-  EXPECT_EQ(entry.metrics.begin()->surface,
-            IdentifiableSurface::FromTypeAndToken(
-                IdentifiableSurface::Type::kMediaFeature,
-                IdentifiableToken(
-                    IdentifiableSurface::MediaFeatureName::kAspectRatio)));
+  EXPECT_EQ(
+      entry.metrics.begin()->surface,
+      IdentifiableSurface::FromTypeAndToken(
+          IdentifiableSurface::Type::kMediaFeature,
+          IdentifiableToken(
+              IdentifiableSurface::MediaFeatureName::kAspectRatioNormalized)));
 }
 
 TEST_F(MediaQueryEvaluatorIdentifiabilityTest,

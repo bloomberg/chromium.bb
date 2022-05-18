@@ -14,6 +14,12 @@
 
 #include "dawn/samples/SampleUtils.h"
 
+#include <algorithm>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "GLFW/glfw3.h"
 #include "dawn/common/Assert.h"
 #include "dawn/common/Log.h"
@@ -26,9 +32,6 @@
 #include "dawn/utils/TerribleCommandBuffer.h"
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/WireServer.h"
-
-#include <algorithm>
-#include <cstring>
 
 void PrintDeviceError(WGPUErrorType errorType, const char* message, void*) {
     const char* errorTypeName = "";
@@ -75,7 +78,7 @@ static wgpu::BackendType backendType = wgpu::BackendType::OpenGLES;
 #elif defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
 static wgpu::BackendType backendType = wgpu::BackendType::OpenGL;
 #else
-#    error
+#error
 #endif
 
 static CmdBufType cmdBufType = CmdBufType::Terrible;

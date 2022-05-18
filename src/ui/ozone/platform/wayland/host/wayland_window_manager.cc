@@ -5,11 +5,14 @@
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 #include "base/observer_list.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
 
 namespace ui {
 
-WaylandWindowManager::WaylandWindowManager() = default;
+WaylandWindowManager::WaylandWindowManager(WaylandConnection* connection)
+    : connection_(connection) {}
 
 WaylandWindowManager::~WaylandWindowManager() = default;
 
@@ -59,7 +62,7 @@ WaylandWindow* WaylandWindowManager::GetWindowWithLargestBounds() const {
       continue;
     }
     WaylandWindow* window = entry.second;
-    if (window_with_largest_bounds->GetBounds() < window->GetBounds())
+    if (window_with_largest_bounds->GetBoundsInDIP() < window->GetBoundsInDIP())
       window_with_largest_bounds = window;
   }
   return window_with_largest_bounds;
@@ -86,6 +89,17 @@ WaylandWindow* WaylandWindowManager::GetCurrentFocusedWindow() const {
 
 WaylandWindow* WaylandWindowManager::GetCurrentPointerOrTouchFocusedWindow()
     const {
+  // In case there is an ongoing window dragging session, favor the window
+  // according to the active drag source.
+  //
+  // TODO(https://crbug.com/1317063): Apply the same logic to data drag sessions
+  // too?
+  if (auto drag_source = connection_->window_drag_controller()->drag_source()) {
+    return *drag_source == WaylandWindowDragController::DragSource::kMouse
+               ? GetCurrentPointerFocusedWindow()
+               : GetCurrentTouchFocusedWindow();
+  }
+
   for (const auto& entry : window_map_) {
     WaylandWindow* window = entry.second;
     if (window->has_pointer_focus() || window->has_touch_focus())

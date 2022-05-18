@@ -48,6 +48,11 @@ const REGISTERED_EXPERIMENTS = [
   'protocolMonitor',
   'sourcesPrettyPrint',
   'wasmDWARFDebugging',
+  'timelineShowAllEvents',
+  'timelineV8RuntimeCallStats',
+  'timelineInvalidationTracking',
+  'ignoreListJSFramesOnTimeline',
+  'instrumentationBreakpoints',
 ];
 
 export async function initializeGlobalVars({reset = true} = {}) {

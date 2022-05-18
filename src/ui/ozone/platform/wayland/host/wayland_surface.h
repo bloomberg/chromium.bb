@@ -10,7 +10,9 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rrect_f.h"
@@ -20,6 +22,7 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
+struct zwp_keyboard_shortcuts_inhibitor_v1;
 struct zwp_linux_buffer_release_v1;
 struct zcr_blending_v1;
 
@@ -34,7 +37,7 @@ class WaylandBufferHandle;
 class WaylandSurface {
  public:
   using ExplicitReleaseCallback =
-      base::RepeatingCallback<void(wl_buffer*, absl::optional<int32_t>)>;
+      base::RepeatingCallback<void(wl_buffer*, base::ScopedFD)>;
 
   WaylandSurface(WaylandConnection* connection, WaylandWindow* ro_window);
   WaylandSurface(const WaylandSurface&) = delete;
@@ -153,6 +156,11 @@ class WaylandSurface {
   // Sets the rounded clip bounds for this surface.
   void SetRoundedClipBounds(const gfx::RRectF& rounded_clip_bounds);
 
+  // Sets the background color for this surface, which will be blended with the
+  // wl_buffer contents during the compositing step on the Wayland compositor
+  // side.
+  void SetBackgroundColor(absl::optional<SkColor> background_color);
+
   // Validates the |pending_state_| and generates the corresponding requests.
   // Then copy |pending_states_| to |states_|.
   void ApplyPendingState();
@@ -165,6 +173,10 @@ class WaylandSurface {
   // SetSurfaceBufferScale() SetOpaqueRegion(), and SetInputRegion() to take
   // effect immediately.
   void SetApplyStateImmediately();
+
+  // Requests to wayland compositor to send key events even if it matches
+  // with the compositor's accelerator keys.
+  void InhibitKeyboardShortcuts();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowTest,
@@ -236,6 +248,11 @@ class WaylandSurface {
 
     gfx::RRectF rounded_clip_bounds;
     gfx::OverlayPriorityHint priority_hint = gfx::OverlayPriorityHint::kRegular;
+
+    // Optional background color for this surface. This information
+    // can be used by Wayland compositor to correctly display delegated textures
+    // which require background color applied.
+    absl::optional<SkColor> background_color;
   };
 
   // Tracks the last sent src and dst values across wayland protocol s.t. we
@@ -271,6 +288,7 @@ class WaylandSurface {
   wl::Object<wl_surface> surface_;
   wl::Object<wp_viewport> viewport_;
   wl::Object<zcr_blending_v1> blending_;
+  wl::Object<zwp_keyboard_shortcuts_inhibitor_v1> keyboard_shortcuts_inhibitor_;
   wl::Object<zwp_linux_surface_synchronization_v1> surface_sync_;
   wl::Object<overlay_prioritized_surface> overlay_priority_surface_;
   wl::Object<augmented_surface> augmented_surface_;
@@ -289,7 +307,7 @@ class WaylandSurface {
   std::vector<uint32_t> entered_outputs_;
 
   void ExplicitRelease(struct zwp_linux_buffer_release_v1* linux_buffer_release,
-                       absl::optional<int32_t> fence);
+                       base::ScopedFD fence);
 
   // wl_surface_listener
   static void Enter(void* data,

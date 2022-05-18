@@ -11,52 +11,55 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 //
 // AsyncTaskTests:
 //     Simple tests for dawn::native::AsyncTask and dawn::native::AsnycTaskManager.
 
-#include <gtest/gtest.h>
-
 #include <memory>
 #include <mutex>
+#include <set>
+#include <utility>
+#include <vector>
 
 #include "dawn/common/NonCopyable.h"
 #include "dawn/native/AsyncTask.h"
 #include "dawn/platform/DawnPlatform.h"
+#include "gtest/gtest.h"
 
 namespace {
 
-    struct SimpleTaskResult {
-        uint32_t id;
-    };
+struct SimpleTaskResult {
+    uint32_t id;
+};
 
-    // A thread-safe queue that stores the task results.
-    class ConcurrentTaskResultQueue : public NonCopyable {
-      public:
-        void AddResult(std::unique_ptr<SimpleTaskResult> result) {
-            std::lock_guard<std::mutex> lock(mMutex);
-            mTaskResults.push_back(std::move(result));
-        }
-
-        std::vector<std::unique_ptr<SimpleTaskResult>> GetAllResults() {
-            std::vector<std::unique_ptr<SimpleTaskResult>> outputResults;
-            {
-                std::lock_guard<std::mutex> lock(mMutex);
-                outputResults.swap(mTaskResults);
-            }
-            return outputResults;
-        }
-
-      private:
-        std::mutex mMutex;
-        std::vector<std::unique_ptr<SimpleTaskResult>> mTaskResults;
-    };
-
-    void DoTask(ConcurrentTaskResultQueue* resultQueue, uint32_t id) {
-        std::unique_ptr<SimpleTaskResult> result = std::make_unique<SimpleTaskResult>();
-        result->id = id;
-        resultQueue->AddResult(std::move(result));
+// A thread-safe queue that stores the task results.
+class ConcurrentTaskResultQueue : public NonCopyable {
+  public:
+    void AddResult(std::unique_ptr<SimpleTaskResult> result) {
+        std::lock_guard<std::mutex> lock(mMutex);
+        mTaskResults.push_back(std::move(result));
     }
+
+    std::vector<std::unique_ptr<SimpleTaskResult>> GetAllResults() {
+        std::vector<std::unique_ptr<SimpleTaskResult>> outputResults;
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            outputResults.swap(mTaskResults);
+        }
+        return outputResults;
+    }
+
+  private:
+    std::mutex mMutex;
+    std::vector<std::unique_ptr<SimpleTaskResult>> mTaskResults;
+};
+
+void DoTask(ConcurrentTaskResultQueue* resultQueue, uint32_t id) {
+    std::unique_ptr<SimpleTaskResult> result = std::make_unique<SimpleTaskResult>();
+    result->id = id;
+    resultQueue->AddResult(std::move(result));
+}
 
 }  // anonymous namespace
 

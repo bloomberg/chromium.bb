@@ -22,6 +22,9 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     this.forceContextualLastOutput();
 
     await importModule(
+        'BackgroundKeyboardHandler',
+        '/chromevox/background/keyboard_handler.js');
+    await importModule(
         'BaseAutomationHandler',
         '/chromevox/background/base_automation_handler.js');
     await importModule(
@@ -31,7 +34,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         'ChromeVoxBackground', '/chromevox/background/classic_background.js');
     await importModule(
         'CustomAutomationEvent',
-        '/chromevox/background/custom_automation_event.js');
+        '/chromevox/common/custom_automation_event.js');
     await importModule(
         'DesktopAutomationInterface',
         '/chromevox/background/desktop_automation_interface.js');
@@ -3239,8 +3242,7 @@ TEST_F(
       p.doDefault();
 
       // This comes when the <select>'s value changes.
-      await TestUtils.waitForEvent(
-          application, EventType.SELECTED_VALUE_CHANGED);
+      await this.waitForEvent(application, EventType.SELECTED_VALUE_CHANGED);
 
       // Nothing should have been spoken.
       assertEquals(undefined, nextSpeech);
@@ -3511,7 +3513,7 @@ TEST_F(
   `;
       const root = await this.runWithLoadedTree(site);
       // Different ways to navigate to the next object.
-      const keyboardHandler = ChromeVoxState.instance.keyboardHandler_;
+      const keyboardHandler = BackgroundKeyboardHandler.instance;
       const nextObjectKeyboard =
           keyboardHandler.onKeyDown.bind(keyboardHandler, {
             keyCode: KeyCode.RIGHT,

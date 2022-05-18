@@ -20,43 +20,41 @@ namespace {
 using GlslGeneratorImplTest_If = TestHelper;
 
 TEST_F(GlslGeneratorImplTest_If, Emit_If) {
-  Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
 
-  auto* cond = Expr("cond");
-  auto* body = Block(Return());
-  auto* i = If(cond, body);
-  WrapInFunction(i);
+    auto* cond = Expr("cond");
+    auto* body = Block(Return());
+    auto* i = If(cond, body);
+    WrapInFunction(i);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  if (cond) {
+    gen.increment_indent();
+    ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+    EXPECT_EQ(gen.result(), R"(  if (cond) {
     return;
   }
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_If, Emit_IfWithElseIf) {
-  Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
-  Global("else_cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("else_cond", ty.bool_(), ast::StorageClass::kPrivate);
 
-  auto* else_cond = Expr("else_cond");
-  auto* else_body = Block(Return());
+    auto* else_cond = Expr("else_cond");
+    auto* else_body = Block(Return());
 
-  auto* cond = Expr("cond");
-  auto* body = Block(Return());
-  auto* i = If(
-      cond, body,
-      ast::ElseStatementList{create<ast::ElseStatement>(else_cond, else_body)});
-  WrapInFunction(i);
+    auto* cond = Expr("cond");
+    auto* body = Block(Return());
+    auto* i = If(cond, body, Else(If(else_cond, else_body)));
+    WrapInFunction(i);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
+    gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  if (cond) {
+    ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+    EXPECT_EQ(gen.result(), R"(  if (cond) {
     return;
   } else {
     if (else_cond) {
@@ -67,23 +65,21 @@ TEST_F(GlslGeneratorImplTest_If, Emit_IfWithElseIf) {
 }
 
 TEST_F(GlslGeneratorImplTest_If, Emit_IfWithElse) {
-  Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
 
-  auto* else_body = Block(Return());
+    auto* else_body = Block(Return());
 
-  auto* cond = Expr("cond");
-  auto* body = Block(Return());
-  auto* i = If(
-      cond, body,
-      ast::ElseStatementList{create<ast::ElseStatement>(nullptr, else_body)});
-  WrapInFunction(i);
+    auto* cond = Expr("cond");
+    auto* body = Block(Return());
+    auto* i = If(cond, body, Else(else_body));
+    WrapInFunction(i);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
+    gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  if (cond) {
+    ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+    EXPECT_EQ(gen.result(), R"(  if (cond) {
     return;
   } else {
     return;
@@ -92,30 +88,26 @@ TEST_F(GlslGeneratorImplTest_If, Emit_IfWithElse) {
 }
 
 TEST_F(GlslGeneratorImplTest_If, Emit_IfWithMultiple) {
-  Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
-  Global("else_cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("cond", ty.bool_(), ast::StorageClass::kPrivate);
+    Global("else_cond", ty.bool_(), ast::StorageClass::kPrivate);
 
-  auto* else_cond = Expr("else_cond");
+    auto* else_cond = Expr("else_cond");
 
-  auto* else_body = Block(Return());
+    auto* else_body = Block(Return());
 
-  auto* else_body_2 = Block(Return());
+    auto* else_body_2 = Block(Return());
 
-  auto* cond = Expr("cond");
-  auto* body = Block(Return());
-  auto* i = If(cond, body,
-               ast::ElseStatementList{
-                   create<ast::ElseStatement>(else_cond, else_body),
-                   create<ast::ElseStatement>(nullptr, else_body_2),
-               });
-  WrapInFunction(i);
+    auto* cond = Expr("cond");
+    auto* body = Block(Return());
+    auto* i = If(cond, body, Else(If(else_cond, else_body, Else(else_body_2))));
+    WrapInFunction(i);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
+    gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(  if (cond) {
+    ASSERT_TRUE(gen.EmitStatement(i)) << gen.error();
+    EXPECT_EQ(gen.result(), R"(  if (cond) {
     return;
   } else {
     if (else_cond) {

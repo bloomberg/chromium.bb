@@ -30,6 +30,31 @@ namespace psm_rlwe = private_membership::rlwe;
 namespace {
 DeviceActivityController* g_ash_device_activity_controller = nullptr;
 
+// Policy device modes that should be classified as not being set.
+static const std::unordered_set<policy::DeviceMode>& DeviceModeNotSet() {
+  static const std::unordered_set<policy::DeviceMode> kModeNotSet(
+      {policy::DeviceMode::DEVICE_MODE_PENDING,
+       policy::DeviceMode::DEVICE_MODE_NOT_SET});
+  return kModeNotSet;
+}
+
+// Policy device modes that should be classified as consumer devices.
+static const std::unordered_set<policy::DeviceMode>& DeviceModeConsumer() {
+  static const std::unordered_set<policy::DeviceMode> kModeConsumer(
+      {policy::DeviceMode::DEVICE_MODE_CONSUMER,
+       policy::DeviceMode::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH});
+  return kModeConsumer;
+}
+
+// Policy device modes that should be classified as enterprise devices.
+static const std::unordered_set<policy::DeviceMode>& DeviceModeEnterprise() {
+  static const std::unordered_set<policy::DeviceMode> kModeEnterprise(
+      {policy::DeviceMode::DEVICE_MODE_ENTERPRISE,
+       policy::DeviceMode::DEVICE_MODE_ENTERPRISE_AD,
+       policy::DeviceMode::DEVICE_MODE_DEMO});
+  return kModeEnterprise;
+}
+
 // Production edge server for reporting device actives.
 // TODO(https://crbug.com/1267432): Enable passing base url as a runtime flag.
 const char kFresnelBaseUrl[] = "https://crosfresnel-pa.googleapis.com";
@@ -80,11 +105,6 @@ void DeviceActivityController::RegisterPrefs(PrefRegistrySimple* registry) {
 // static
 base::TimeDelta DeviceActivityController::DetermineStartUpDelay(
     base::Time chrome_first_run_ts) {
-  // |random_delay| picks a random minute between [0, 29] inclusive (30 buckets)
-  // to delay start. This will distribute the high qps during certain times,
-  // across 30 equally probable buckets.
-  base::TimeDelta random_delay = base::Minutes(base::RandInt(0, 29));
-
   // Wait at least 10 minutes from the first chrome run sentinel file creation
   // time. This creation time is used as an indicator of when the device last
   // reset (powerwashed/recovery/RMA). PSM servers take 10 minutes from CheckIn
@@ -100,15 +120,45 @@ base::TimeDelta DeviceActivityController::DetermineStartUpDelay(
         chrome_first_run_ts + base::Minutes(10) - current_ts;
   }
 
-  return delay_on_first_chrome_run + random_delay;
+  return delay_on_first_chrome_run;
+}
+
+// static
+MarketSegment DeviceActivityController::GetMarketSegment(
+    policy::DeviceMode device_mode,
+    policy::MarketSegment device_market_segment) {
+  // Determine Fresnel market segment using the retrieved device policy
+  // |device_mode| and |device_market_segment|.
+  if (DeviceModeNotSet().count(device_mode)) {
+    return MARKET_SEGMENT_UNKNOWN;
+  }
+
+  if (DeviceModeConsumer().count(device_mode)) {
+    return MARKET_SEGMENT_CONSUMER;
+  }
+
+  if (DeviceModeEnterprise().count(device_mode)) {
+    if (device_market_segment == policy::MarketSegment::ENTERPRISE) {
+      return MARKET_SEGMENT_ENTERPRISE;
+    }
+
+    if (device_market_segment == policy::MarketSegment::EDUCATION) {
+      return MARKET_SEGMENT_EDUCATION;
+    }
+
+    return MARKET_SEGMENT_ENTERPRISE_ENROLLED_BUT_UNKNOWN;
+  }
+
+  return MARKET_SEGMENT_UNKNOWN;
 }
 
 DeviceActivityController::DeviceActivityController(
-    version_info::Channel chromeos_channel,
+    const ChromeDeviceMetadataParameters& chrome_passed_device_params,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::TimeDelta start_up_delay)
-    : statistics_provider_(
+    : chrome_passed_device_params_(chrome_passed_device_params),
+      statistics_provider_(
           chromeos::system::StatisticsProvider::GetInstance()) {
   DeviceActivityClient::RecordDeviceActivityMethodCalled(
       DeviceActivityClient::DeviceActivityMethod::
@@ -120,7 +170,7 @@ DeviceActivityController::DeviceActivityController(
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&device_activity::DeviceActivityController::Start,
-                     weak_factory_.GetWeakPtr(), chromeos_channel, local_state,
+                     weak_factory_.GetWeakPtr(), local_state,
                      url_loader_factory),
       start_up_delay);
 }
@@ -136,7 +186,6 @@ DeviceActivityController::~DeviceActivityController() {
 }
 
 void DeviceActivityController::Start(
-    version_info::Channel chromeos_channel,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DeviceActivityClient::RecordDeviceActivityMethodCalled(
@@ -148,12 +197,11 @@ void DeviceActivityController::Start(
   chromeos::SessionManagerClient::Get()->GetPsmDeviceActiveSecret(
       base::BindOnce(&device_activity::DeviceActivityController::
                          OnPsmDeviceActiveSecretFetched,
-                     weak_factory_.GetWeakPtr(), chromeos_channel, local_state,
+                     weak_factory_.GetWeakPtr(), local_state,
                      url_loader_factory));
 }
 
 void DeviceActivityController::OnPsmDeviceActiveSecretFetched(
-    version_info::Channel chromeos_channel,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& psm_device_active_secret) {
@@ -175,12 +223,11 @@ void DeviceActivityController::OnPsmDeviceActiveSecretFetched(
   // Continue when machine statistics are loaded, to avoid blocking.
   statistics_provider_->ScheduleOnMachineStatisticsLoaded(base::BindOnce(
       &device_activity::DeviceActivityController::OnMachineStatisticsLoaded,
-      weak_factory_.GetWeakPtr(), chromeos_channel, local_state,
-      url_loader_factory, psm_device_active_secret));
+      weak_factory_.GetWeakPtr(), local_state, url_loader_factory,
+      psm_device_active_secret));
 }
 
 void DeviceActivityController::OnMachineStatisticsLoaded(
-    version_info::Channel chromeos_channel,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& psm_device_active_secret) {
@@ -192,9 +239,9 @@ void DeviceActivityController::OnMachineStatisticsLoaded(
   // smallest to largest window. i.e. Daily > Monthly > First Active.
   std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases;
   use_cases.push_back(std::make_unique<DailyUseCaseImpl>(
-      psm_device_active_secret, chromeos_channel, local_state));
+      psm_device_active_secret, chrome_passed_device_params_, local_state));
   use_cases.push_back(std::make_unique<MonthlyUseCaseImpl>(
-      psm_device_active_secret, chromeos_channel, local_state));
+      psm_device_active_secret, chrome_passed_device_params_, local_state));
 
   da_client_network_ = std::make_unique<DeviceActivityClient>(
       chromeos::NetworkHandler::Get()->network_state_handler(),

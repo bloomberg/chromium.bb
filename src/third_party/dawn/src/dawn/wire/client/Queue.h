@@ -15,7 +15,7 @@
 #ifndef SRC_DAWN_WIRE_CLIENT_QUEUE_H_
 #define SRC_DAWN_WIRE_CLIENT_QUEUE_H_
 
-#include <dawn/webgpu.h>
+#include "dawn/webgpu.h"
 
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/client/ObjectBase.h"
@@ -23,34 +23,36 @@
 
 namespace dawn::wire::client {
 
-    class Queue final : public ObjectBase {
-      public:
-        using ObjectBase::ObjectBase;
-        ~Queue();
+class Queue final : public ObjectBase {
+  public:
+    using ObjectBase::ObjectBase;
 
-        bool OnWorkDoneCallback(uint64_t requestSerial, WGPUQueueWorkDoneStatus status);
+    Queue(Client* client, uint32_t refcount, uint32_t id);
+    ~Queue();
 
-        // Dawn API
-        void OnSubmittedWorkDone(uint64_t signalValue,
-                                 WGPUQueueWorkDoneCallback callback,
-                                 void* userdata);
-        void WriteBuffer(WGPUBuffer cBuffer, uint64_t bufferOffset, const void* data, size_t size);
-        void WriteTexture(const WGPUImageCopyTexture* destination,
-                          const void* data,
-                          size_t dataSize,
-                          const WGPUTextureDataLayout* dataLayout,
-                          const WGPUExtent3D* writeSize);
+    bool OnWorkDoneCallback(uint64_t requestSerial, WGPUQueueWorkDoneStatus status);
 
-      private:
-        void CancelCallbacksForDisconnect() override;
-        void ClearAllCallbacks(WGPUQueueWorkDoneStatus status);
+    // Dawn API
+    void OnSubmittedWorkDone(uint64_t signalValue,
+                             WGPUQueueWorkDoneCallback callback,
+                             void* userdata);
+    void WriteBuffer(WGPUBuffer cBuffer, uint64_t bufferOffset, const void* data, size_t size);
+    void WriteTexture(const WGPUImageCopyTexture* destination,
+                      const void* data,
+                      size_t dataSize,
+                      const WGPUTextureDataLayout* dataLayout,
+                      const WGPUExtent3D* writeSize);
 
-        struct OnWorkDoneData {
-            WGPUQueueWorkDoneCallback callback = nullptr;
-            void* userdata = nullptr;
-        };
-        RequestTracker<OnWorkDoneData> mOnWorkDoneRequests;
+  private:
+    void CancelCallbacksForDisconnect() override;
+    void ClearAllCallbacks(WGPUQueueWorkDoneStatus status);
+
+    struct OnWorkDoneData {
+        WGPUQueueWorkDoneCallback callback = nullptr;
+        void* userdata = nullptr;
     };
+    RequestTracker<OnWorkDoneData> mOnWorkDoneRequests;
+};
 
 }  // namespace dawn::wire::client
 

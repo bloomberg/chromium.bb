@@ -22,8 +22,8 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/enrollment/enrollment_status.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/enrollment_status.h"
 #include "chromeos/ash/components/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -577,8 +577,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
+// TODO(crbug.com/1318903): Re-enable this test
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+                       DISABLED_TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   enrollment_helper_.SetupActiveDirectoryJoin(
       enrollment_screen(), kAdUserDomain, std::string(), kDMToken);
@@ -644,8 +645,10 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
+//
+// TODO(crbug.com/1316567): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Streamline) {
+                       DISABLED_TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));

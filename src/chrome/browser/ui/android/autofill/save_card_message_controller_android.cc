@@ -44,6 +44,7 @@ void SaveCardMessageControllerAndroid::Show(
     const CreditCard& card,
     const LegalMessageLines& legal_message_lines,
     std::u16string inferred_name,
+    std::u16string cardholder_account,
     AutofillClient::UploadSaveCardPromptCallback
         upload_save_card_prompt_callback,
     AutofillClient::LocalSaveCardPromptCallback
@@ -56,6 +57,7 @@ void SaveCardMessageControllerAndroid::Show(
   web_contents_ = web_contents;
   options_ = options;
   inferred_name_ = inferred_name;
+  cardholder_account_ = cardholder_account;
 
   upload_save_card_prompt_callback_ =
       std::move(upload_save_card_prompt_callback);
@@ -100,6 +102,14 @@ void SaveCardMessageControllerAndroid::Show(
     // be filled with a tint color.
     message_->DisableIconTint();
   }
+
+  message_->SetSecondaryIconResourceId(
+      ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SETTINGS));
+  message_->SetSecondaryButtonMenuText(
+      l10n_util::GetStringUTF16(IDS_NO_THANKS));
+  message_->SetSecondaryActionCallback(base::BindOnce(
+      &SaveCardMessageControllerAndroid::HandleMessageSecondaryButtonClicked,
+      base::Unretained(this)));
 
   // Client won't request both name and expiration date at the same time.
   request_more_info_ = options.should_request_name_from_user ||
@@ -156,6 +166,11 @@ void SaveCardMessageControllerAndroid::HandleMessageAction() {
   MaybeShowDialog();
 }
 
+void SaveCardMessageControllerAndroid::HandleMessageSecondaryButtonClicked() {
+  messages::MessageDispatcherBridge::Get()->DismissMessage(
+      message_.get(), messages::DismissReason::SECONDARY_ACTION);
+}
+
 void SaveCardMessageControllerAndroid::DismissMessage() {
   if (message_) {
     messages::MessageDispatcherBridge::Get()->DismissMessage(
@@ -185,18 +200,20 @@ void SaveCardMessageControllerAndroid::MaybeShowDialog() {
 
 void SaveCardMessageControllerAndroid::FixName(
     const std::u16string& inferred_cardholder_name) {
-  save_card_message_confirm_controller_->FixName(inferred_cardholder_name,
-                                                 card_label_);
+  save_card_message_confirm_controller_->FixName(
+      inferred_cardholder_name, card_label_, cardholder_account_);
   is_name_confirmed_for_testing_ = true;
 }
 
 void SaveCardMessageControllerAndroid::FixDate() {
-  save_card_message_confirm_controller_->FixDate(card_label_);
+  save_card_message_confirm_controller_->FixDate(card_label_,
+                                                 cardholder_account_);
   is_date_confirmed_for_testing_ = true;
 }
 
 void SaveCardMessageControllerAndroid::ConfirmSaveCard() {
-  save_card_message_confirm_controller_->ConfirmSaveCard(card_label_);
+  save_card_message_confirm_controller_->ConfirmSaveCard(card_label_,
+                                                         cardholder_account_);
   is_save_card_confirmed_for_testing_ = true;
 }
 
@@ -237,7 +254,7 @@ void SaveCardMessageControllerAndroid::DialogDismissed(JNIEnv* env) {
   ResetInternal();
 }
 
-void SaveCardMessageControllerAndroid::OnLegalMessageLinkClicked(
+void SaveCardMessageControllerAndroid::OnLinkClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& url) {
   reprompt_required_ = true;

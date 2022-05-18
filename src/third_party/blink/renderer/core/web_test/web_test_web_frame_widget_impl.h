@@ -42,6 +42,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
       bool never_composited,
       bool is_for_child_local_root,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       content::TestRunner* test_runner);
 
   ~WebTestWebFrameWidgetImpl() override;
@@ -73,6 +74,7 @@ class WebTestWebFrameWidgetImpl : public WebFrameWidgetImpl,
   void ScheduleAnimation() override;
   void WillBeginMainFrame() override;
   void ScheduleAnimationForWebTests() override;
+  bool AllowsScrollResampling() override { return false; }
 
   content::TestRunner* GetTestRunner();
 

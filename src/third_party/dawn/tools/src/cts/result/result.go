@@ -16,9 +16,14 @@
 package result
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"dawn.googlesource.com/dawn/tools/src/container"
 	"dawn.googlesource.com/dawn/tools/src/cts/query"
@@ -26,9 +31,10 @@ import (
 
 // Result holds the result of a CTS test
 type Result struct {
-	Query  query.Query
-	Tags   Tags
-	Status Status
+	Query    query.Query
+	Tags     Tags
+	Status   Status
+	Duration time.Duration
 }
 
 // Format writes the Result to the fmt.State
@@ -37,9 +43,9 @@ type Result struct {
 // This matches the order in which results are sorted.
 func (r Result) Format(f fmt.State, verb rune) {
 	if len(r.Tags) > 0 {
-		fmt.Fprintf(f, "%v %v %v", r.Query, TagsToString(r.Tags), r.Status)
+		fmt.Fprintf(f, "%v %v %v %v", r.Query, TagsToString(r.Tags), r.Status, r.Duration)
 	} else {
-		fmt.Fprintf(f, "%v %v", r.Query, r.Status)
+		fmt.Fprintf(f, "%v %v %v", r.Query, r.Status, r.Duration)
 	}
 }
 
@@ -48,6 +54,34 @@ func (r Result) String() string {
 	sb := strings.Builder{}
 	fmt.Fprint(&sb, r)
 	return sb.String()
+}
+
+// Compare compares the relative order of r and o, returning:
+//  -1 if r should come before o
+//   1 if r should come after o
+//   0 if r and o are identical
+// Note: Result.Duration is not considered in comparison.
+func (r Result) Compare(o Result) int {
+	a, b := r, o
+	switch a.Query.Compare(b.Query) {
+	case -1:
+		return -1
+	case 1:
+		return 1
+	}
+	ta := strings.Join(a.Tags.List(), TagDelimiter)
+	tb := strings.Join(b.Tags.List(), TagDelimiter)
+	switch {
+	case ta < tb:
+		return -1
+	case ta > tb:
+		return 1
+	case a.Status < b.Status:
+		return -1
+	case a.Status > b.Status:
+		return 1
+	}
+	return 0
 }
 
 // Parse parses the result from a string of the form:
@@ -77,25 +111,41 @@ func Parse(in string) (Result, error) {
 	a := token()
 	b := token()
 	c := token()
-	if a == "" || b == "" || token() != "" {
+	d := token()
+	if a == "" || b == "" || c == "" || token() != "" {
 		return Result{}, fmt.Errorf("unable to parse result '%v'", in)
 	}
-	q := query.Parse(a)
-	if c == "" {
+
+	query := query.Parse(a)
+
+	if d == "" {
 		status := Status(b)
-		return Result{q, nil, status}, nil
+		duration, err := time.ParseDuration(c)
+		if err != nil {
+			return Result{}, fmt.Errorf("unable to parse result '%v': %w", in, err)
+		}
+		return Result{query, nil, status, duration}, nil
+	} else {
+		tags := StringToTags(b)
+		status := Status(c)
+		duration, err := time.ParseDuration(d)
+		if err != nil {
+			return Result{}, fmt.Errorf("unable to parse result '%v': %w", in, err)
+		}
+		return Result{query, tags, status, duration}, nil
 	}
-	tags := StringToTags(b)
-	status := Status(c)
-	return Result{q, tags, status}, nil
 }
 
 // List is a list of results
 type List []Result
 
-// Returns the list of unique tags across all results.
-func (l List) UniqueTags() []Tags {
-	tags := container.NewMap[string, Tags]()
+// Variant is a collection of tags that uniquely identify a test
+// configuration (e.g the combination of OS, GPU, validation-modes, etc).
+type Variant = Tags
+
+// Variants returns the list of unique tags (variants) across all results.
+func (l List) Variants() []Variant {
+	tags := container.NewMap[string, Variant]()
 	for _, r := range l {
 		tags.Add(TagsToString(r.Tags), r.Tags)
 	}
@@ -115,9 +165,10 @@ func (l List) TransformTags(f func(Tags) Tags) List {
 			cache[key] = tags
 		}
 		out = append(out, Result{
-			Query:  r.Query,
-			Tags:   tags,
-			Status: r.Status,
+			Query:    r.Query,
+			Tags:     tags,
+			Status:   r.Status,
+			Duration: r.Duration,
 		})
 	}
 	return out
@@ -126,29 +177,56 @@ func (l List) TransformTags(f func(Tags) Tags) List {
 // ReplaceDuplicates returns a new list with duplicate test results replaced.
 // When a duplicate is found, the function f is called with the duplicate
 // results. The returned status will be used as the replaced result.
-func (l List) ReplaceDuplicates(f func(List) Status) List {
+// Merged results will use the average (mean) duration of the duplicates.
+func (l List) ReplaceDuplicates(f func(Statuses) Status) List {
 	type key struct {
 		query query.Query
 		tags  string
 	}
-	m := map[key]List{}
-	for _, r := range l {
+	// Collect all duplicates
+	keyToIndices := map[key][]int{} // key to index
+	for i, r := range l {
 		k := key{r.Query, TagsToString(r.Tags)}
-		m[k] = append(m[k], r)
+		keyToIndices[k] = append(keyToIndices[k], i)
 	}
-	for key, results := range m {
-		if len(results) > 1 {
-			result := results[0]
-			result.Status = f(results)
-			m[key] = List{result}
+	// Resolve duplicates
+	type StatusAndDuration struct {
+		Status   Status
+		Duration time.Duration
+	}
+	merged := map[key]StatusAndDuration{}
+	for key, indices := range keyToIndices {
+		statuses := NewStatuses()
+		duration := time.Duration(0)
+		for _, i := range indices {
+			r := l[i]
+			statuses.Add(r.Status)
+			duration += r.Duration
+		}
+		status := func() Status {
+			if len(statuses) > 1 {
+				return f(statuses)
+			}
+			return statuses.One()
+		}()
+		duration = duration / time.Duration(len(indices))
+		merged[key] = StatusAndDuration{
+			Status:   status,
+			Duration: duration,
 		}
 	}
-	out := make(List, 0, len(m))
+	// Rebuild list
+	out := make(List, 0, len(keyToIndices))
 	for _, r := range l {
 		k := key{r.Query, TagsToString(r.Tags)}
-		if unique, ok := m[k]; ok {
-			out = append(out, unique[0])
-			delete(m, k)
+		if sd, ok := merged[k]; ok {
+			out = append(out, Result{
+				Query:    r.Query,
+				Tags:     r.Tags,
+				Status:   sd.Status,
+				Duration: sd.Duration,
+			})
+			delete(merged, k) // Remove from map to prevent duplicates
 		}
 	}
 	return out
@@ -156,24 +234,7 @@ func (l List) ReplaceDuplicates(f func(List) Status) List {
 
 // Sort sorts the list
 func (l List) Sort() {
-	sort.Slice(l, func(i, j int) bool {
-		a, b := l[i], l[j]
-		switch a.Query.Compare(b.Query) {
-		case -1:
-			return true
-		case 1:
-			return false
-		}
-		ta := strings.Join(a.Tags.List(), TagDelimiter)
-		tb := strings.Join(b.Tags.List(), TagDelimiter)
-		switch {
-		case ta < tb:
-			return true
-		case ta > tb:
-			return false
-		}
-		return a.Status < b.Status
-	})
+	sort.Slice(l, func(i, j int) bool { return l[i].Compare(l[j]) < 0 })
 }
 
 // Filter returns the results that match the given predicate
@@ -201,11 +262,133 @@ func (l List) FilterByTags(tags Tags) List {
 	})
 }
 
+// FilterByVariant returns the results that exactly match the given tags
+func (l List) FilterByVariant(tags Tags) List {
+	str := TagsToString(tags)
+	return l.Filter(func(r Result) bool {
+		return len(r.Tags) == len(tags) && TagsToString(r.Tags) == str
+	})
+}
+
+// Statuses is a set of Status
+type Statuses = container.Set[Status]
+
+// NewStatuses returns a new status set with the provided statuses
+func NewStatuses(s ...Status) Statuses { return container.NewSet(s...) }
+
 // Statuses returns a set of all the statuses in the list
-func (l List) Statuses() container.Set[Status] {
-	set := container.NewSet[Status]()
+func (l List) Statuses() Statuses {
+	set := NewStatuses()
 	for _, r := range l {
 		set.Add(r.Status)
 	}
 	return set
+}
+
+// StatusTree is a query tree of statuses
+type StatusTree = query.Tree[Status]
+
+// StatusTree returns a query.Tree from the List, with the Status as the tree
+// node data.
+func (l List) StatusTree() (StatusTree, error) {
+	tree := StatusTree{}
+	for _, r := range l {
+		if err := tree.Add(r.Query, r.Status); err != nil {
+			return StatusTree{}, err
+		}
+	}
+	return tree, nil
+}
+
+// Load loads the result list from the file with the given path
+func Load(path string) (List, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	results, err := Read(file)
+	if err != nil {
+		return nil, fmt.Errorf("while reading '%v': %w", path, err)
+	}
+	return results, nil
+}
+
+// Save saves the result list to the file with the given path
+func Save(path string, results List) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0777); err != nil {
+		return err
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return Write(file, results)
+}
+
+// Read reads a result list from the given reader
+func Read(r io.Reader) (List, error) {
+	scanner := bufio.NewScanner(r)
+	l := List{}
+	for scanner.Scan() {
+		r, err := Parse(scanner.Text())
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, r)
+	}
+	return l, nil
+}
+
+// Write writes a result list to the given writer
+func Write(w io.Writer, l List) error {
+	for _, r := range l {
+		if _, err := fmt.Fprintln(w, r); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Merge merges and sorts two results lists.
+// Duplicates are removed using the Deduplicate() function.
+func Merge(a, b List) List {
+	merged := make(List, 0, len(a)+len(b))
+	merged = append(merged, a...)
+	merged = append(merged, b...)
+	out := merged.ReplaceDuplicates(Deduplicate)
+	out.Sort()
+	return out
+}
+
+// Deduplicate is the standard algorithm used to de-duplicating mixed results.
+// This function is expected to be handed to List.ReplaceDuplicates().
+func Deduplicate(s Statuses) Status {
+	// If all results have the same status, then use that
+	if len(s) == 1 {
+		return s.One()
+	}
+
+	// Mixed statuses. Replace with something appropriate.
+	switch {
+	// Crash + * = Crash
+	case s.Contains(Crash):
+		return Crash
+	// Abort + * = Abort
+	case s.Contains(Abort):
+		return Abort
+	// Unknown + * = Unknown
+	case s.Contains(Unknown):
+		return Unknown
+	// RetryOnFailure + ~(Crash | Abort | Unknown) = RetryOnFailure
+	case s.Contains(RetryOnFailure):
+		return RetryOnFailure
+	// Pass + ~(Crash | Abort | Unknown | RetryOnFailure | Slow) = RetryOnFailure
+	case s.Contains(Pass):
+		return RetryOnFailure
+	}
+	return Unknown
 }

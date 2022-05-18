@@ -21,7 +21,7 @@ endif()
 target_link_libraries(avifgridapitest avif ${AVIF_PLATFORM_LIBRARIES})
 add_test(NAME avifgridapitest COMMAND avifgridapitest)
 
-add_executable(avifincrtest avifincrtest.c)
+add_executable(avifincrtest avifincrtest.c avifincrtest_helpers.c)
 if(AVIF_LOCAL_LIBGAV1)
     set_target_properties(avifincrtest PROPERTIES LINKER_LANGUAGE "CXX")
 endif()
@@ -42,17 +42,18 @@ if(AVIF_LOCAL_LIBGAV1)
 endif()
 target_link_libraries(avifyuv avif ${AVIF_PLATFORM_LIBRARIES})
 
-add_custom_target(avif_test_all
-    COMMAND $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/data
-    DEPENDS aviftest
-)
+add_custom_target(avif_test_all COMMAND $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/data DEPENDS aviftest)
 
 if(AVIF_ENABLE_COVERAGE)
-    add_custom_target(avif_coverage
-        COMMAND ${CMAKE_COMMAND} -E env "LLVM_PROFILE_FILE=${CMAKE_CURRENT_BINARY_DIR}/aviftest.profraw" $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/data
-        COMMAND ${XCRUN} llvm-profdata merge -sparse ${CMAKE_CURRENT_BINARY_DIR}/aviftest.profraw -o ${CMAKE_CURRENT_BINARY_DIR}/aviftest.profdata
+    add_custom_target(
+        avif_coverage
+        COMMAND ${CMAKE_COMMAND} -E env "LLVM_PROFILE_FILE=${CMAKE_CURRENT_BINARY_DIR}/aviftest.profraw" $<TARGET_FILE:aviftest>
+                ${CMAKE_CURRENT_SOURCE_DIR}/data
+        COMMAND ${XCRUN} llvm-profdata merge -sparse ${CMAKE_CURRENT_BINARY_DIR}/aviftest.profraw -o
+                ${CMAKE_CURRENT_BINARY_DIR}/aviftest.profdata
         COMMAND cmake -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/coverage
-        COMMAND ${XCRUN} llvm-cov show $<TARGET_FILE:aviftest> -instr-profile=${CMAKE_CURRENT_BINARY_DIR}/aviftest.profdata -project-title=libavif --format html -output-dir=${CMAKE_CURRENT_BINARY_DIR}/coverage
+        COMMAND ${XCRUN} llvm-cov show $<TARGET_FILE:aviftest> -instr-profile=${CMAKE_CURRENT_BINARY_DIR}/aviftest.profdata
+                -project-title=libavif --format html -output-dir=${CMAKE_CURRENT_BINARY_DIR}/coverage
         COMMAND echo Coverage report here: ${CMAKE_CURRENT_BINARY_DIR}/coverage/index.html
         DEPENDS aviftest
     )

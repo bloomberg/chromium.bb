@@ -57,7 +57,7 @@ static avifResult svtCodecEncodeImage(avifCodec * codec,
     int y_shift = 0;
     // EbColorRange svt_range;
     if (alpha) {
-        // svt_range = (image->alphaRange == AVIF_RANGE_FULL) ? EB_CR_FULL_RANGE : EB_CR_STUDIO_RANGE;
+        // svt_range = EB_CR_FULL_RANGE;
         y_shift = 1;
     } else {
         // svt_range = (image->yuvRange == AVIF_RANGE_FULL) ? EB_CR_FULL_RANGE : EB_CR_STUDIO_RANGE;
@@ -121,12 +121,10 @@ static avifResult svtCodecEncodeImage(avifCodec * codec,
         }
 
         if (encoder->tileRowsLog2 != 0) {
-            int tileRowsLog2 = AVIF_CLAMP(encoder->tileRowsLog2, 0, 6);
-            svt_config->tile_rows = 1 << tileRowsLog2;
+            svt_config->tile_rows = AVIF_CLAMP(encoder->tileRowsLog2, 0, 6);
         }
         if (encoder->tileColsLog2 != 0) {
-            int tileColsLog2 = AVIF_CLAMP(encoder->tileColsLog2, 0, 6);
-            svt_config->tile_columns = 1 << tileColsLog2;
+            svt_config->tile_columns = AVIF_CLAMP(encoder->tileColsLog2, 0, 6);
         }
         if (encoder->speed != AVIF_SPEED_DEFAULT) {
             int speed = AVIF_CLAMP(encoder->speed, 0, 8);

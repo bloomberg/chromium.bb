@@ -575,7 +575,6 @@ class MockMFCaptureEngine : public MockInterface<IMFCaptureEngine> {
 
   IFACEMETHODIMP StartPreview(void) override {
     OnStartPreview();
-    FireCaptureEvent(MF_CAPTURE_ENGINE_PREVIEW_STARTED, S_OK);
     return S_OK;
   }
 
@@ -583,7 +582,6 @@ class MockMFCaptureEngine : public MockInterface<IMFCaptureEngine> {
 
   IFACEMETHODIMP StopPreview(void) override {
     OnStopPreview();
-    FireCaptureEvent(MF_CAPTURE_ENGINE_PREVIEW_STOPPED, S_OK);
     return S_OK;
   }
 
@@ -994,11 +992,6 @@ class MockCaptureHandleProvider
   // Duplicate as an writable (unsafe) shared memory region.
   base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override {
     return base::UnsafeSharedMemoryRegion();
-  }
-
-  // Duplicate as a writable (unsafe) mojo buffer.
-  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override {
-    return mojo::ScopedSharedBufferHandle();
   }
 
   // Access a |VideoCaptureBufferHandle| for local, writable memory.

@@ -16,9 +16,7 @@ syntax = "proto3";
 
 package cast.v2;
 
-import "proto/bindings/cast_channel.proto";
 import "proto/v2/url_rewrite.proto";
-import "proto/web/message_channel.proto";
 
 option optimize_for = LITE_RUNTIME;
 

@@ -39,12 +39,8 @@ class ASH_PUBLIC_EXPORT ProjectorClient {
   virtual void OpenProjectorApp() const = 0;
   // Minimizes Projector SWA.
   virtual void MinimizeProjectorApp() const = 0;
-
-  // TODO(crbug/1199396): Migrate to IPC after Lacros launch and ash-chrome
-  // deprecation.
-  virtual void ShowSelfieCam() = 0;
-  virtual void CloseSelfieCam() = 0;
-  virtual bool IsSelfieCamVisible() const = 0;
+  // Closes Projector SWA.
+  virtual void CloseProjectorApp() const = 0;
 
   // Registers the AnnotatorMessageHandler that is owned by the WebUI that
   // contains the Projector annotator.

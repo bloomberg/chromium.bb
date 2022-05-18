@@ -10,6 +10,8 @@
  */
 
 #include <cstdlib>
+#include <memory>
+#include <new>
 #include <vector>
 
 #include "av1/encoder/cost.h"
@@ -75,8 +77,10 @@ TEST(TplModelTest, TransformCoeffEntropyTest2) {
 }
 
 TEST(TplModelTest, InitTplStats1) {
-  // We use "new" here to avoid -Wstack-usagea warning
-  TplParams *tpl_data = new TplParams;
+  // We use heap allocation instead of stack allocation here to avoid
+  // -Wstack-usage warning.
+  std::unique_ptr<TplParams> tpl_data(new (std::nothrow) TplParams);
+  ASSERT_NE(tpl_data, nullptr);
   av1_zero(*tpl_data);
   tpl_data->ready = 1;
   EXPECT_EQ(sizeof(tpl_data->tpl_stats_buffer),
@@ -85,12 +89,11 @@ TEST(TplModelTest, InitTplStats1) {
     // Set it to a random non-zero number
     tpl_data->tpl_stats_buffer[i].is_valid = i + 1;
   }
-  av1_init_tpl_stats(tpl_data);
+  av1_init_tpl_stats(tpl_data.get());
   EXPECT_EQ(tpl_data->ready, 0);
   for (int i = 0; i < MAX_LENGTH_TPL_FRAME_STATS; ++i) {
     EXPECT_EQ(tpl_data->tpl_stats_buffer[i].is_valid, 0);
   }
-  delete tpl_data;
 }
 
 TEST(TplModelTest, DeltaRateCostZeroFlow) {

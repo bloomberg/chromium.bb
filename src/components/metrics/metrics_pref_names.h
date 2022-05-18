@@ -25,6 +25,9 @@ extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
 extern const char kMetricsOngoingLogsMetadata[];
 extern const char kMetricsResetIds[];
+#if BUILDFLAG(IS_ANDROID)
+extern const char kUsePostFREFixSamplingTrial[];
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Preferences for cloned installs.
 extern const char kClonedResetCount[];
@@ -45,6 +48,8 @@ extern const char kMetricsLastSeenPrefix[];
 extern const char kStabilityBrowserLastLiveTimeStamp[];
 extern const char kStabilityCrashCount[];
 extern const char kStabilityCrashCountDueToGmsCoreUpdate[];
+// TODO(crbug/1241702): Remove this Local State pref once the new behavior
+// launches on Android Chrome.
 extern const char kStabilityExitedCleanly[];
 extern const char kStabilityExtensionRendererCrashCount[];
 extern const char kStabilityFileMetricsUnsentSamplesCount[];
@@ -53,10 +58,10 @@ extern const char kStabilityGmsCoreVersion[];
 extern const char kStabilityGpuCrashCount[];
 #if BUILDFLAG(IS_ANDROID)
 extern const char kStabilityLaunchCount[];
+extern const char kStabilityRendererLaunchCount[];
 #endif
 extern const char kStabilityPageLoadCount[];
 extern const char kStabilityRendererCrashCount[];
-extern const char kStabilityRendererLaunchCount[];
 extern const char kStabilitySavedSystemProfile[];
 extern const char kStabilitySavedSystemProfileHash[];
 extern const char kStabilityStatsBuildTime[];

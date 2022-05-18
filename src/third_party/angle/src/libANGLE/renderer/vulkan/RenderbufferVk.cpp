@@ -188,8 +188,9 @@ angle::Result RenderbufferVk::setStorageEGLImageTarget(const gl::Context *contex
     if (mImage->isQueueChangeNeccesary(rendererQueueFamilyIndex))
     {
         vk::OutsideRenderPassCommandBuffer *commandBuffer;
-        ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
-        mImage->retain(&contextVk->getResourceUseList());
+        vk::CommandBufferAccess access;
+        access.onExternalAcquireRelease(mImage);
+        ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer(access, &commandBuffer));
         mImage->changeLayoutAndQueue(contextVk, aspect, vk::ImageLayout::ColorAttachment,
                                      rendererQueueFamilyIndex, commandBuffer);
     }
@@ -263,6 +264,7 @@ angle::Result RenderbufferVk::getAttachmentRenderTarget(const gl::Context *conte
 }
 
 angle::Result RenderbufferVk::initializeContents(const gl::Context *context,
+                                                 GLenum binding,
                                                  const gl::ImageIndex &imageIndex)
 {
     // Note: stageSubresourceRobustClear only uses the intended format to count channels.

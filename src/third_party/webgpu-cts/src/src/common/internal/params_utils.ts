@@ -111,7 +111,7 @@ function typeAssert<T extends 'pass'>() {}
   }
 }
 
-export type Merged<A, B> = ResolveType<MergedFromFlat<A, FlattenUnionOfInterfaces<B>>>;
+export type Merged<A, B> = MergedFromFlat<A, FlattenUnionOfInterfaces<B>>;
 export type MergedFromFlat<A, B> = {
   [K in keyof A | keyof B]: K extends keyof B ? B[K] : K extends keyof A ? A[K] : never;
 };

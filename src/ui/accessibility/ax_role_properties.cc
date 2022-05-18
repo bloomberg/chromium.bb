@@ -283,6 +283,18 @@ bool IsDialog(const ax::mojom::Role role) {
   }
 }
 
+bool IsGridLike(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kGrid:
+    case ax::mojom::Role::kListGrid:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsForm(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kForm:
@@ -944,6 +956,20 @@ bool IsUIAEmbeddedObject(ax::mojom::Role role) {
     default:
       return false;
   }
+}
+
+bool IsUIATableLike(ax::mojom::Role role) {
+  if (role == ax::mojom::Role::kLayoutTable)
+    return false;
+
+  return IsTableLike(role);
+}
+
+bool IsUIACellOrTableHeader(ax::mojom::Role role) {
+  if (role == ax::mojom::Role::kLayoutTableCell)
+    return false;
+
+  return IsCellOrTableHeader(role);
 }
 
 bool IsWindow(ax::mojom::Role role) {

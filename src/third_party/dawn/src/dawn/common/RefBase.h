@@ -15,11 +15,11 @@
 #ifndef SRC_DAWN_COMMON_REFBASE_H_
 #define SRC_DAWN_COMMON_REFBASE_H_
 
-#include "dawn/common/Assert.h"
-#include "dawn/common/Compiler.h"
-
 #include <type_traits>
 #include <utility>
+
+#include "dawn/common/Assert.h"
+#include "dawn/common/Compiler.h"
 
 // A common class for various smart-pointers acting on referenceable/releasable pointer-like
 // objects. Logic for each specialization can be customized using a Traits type that looks
@@ -36,16 +36,13 @@ template <typename T, typename Traits>
 class RefBase {
   public:
     // Default constructor and destructor.
-    RefBase() : mValue(Traits::kNullValue) {
-    }
+    RefBase() : mValue(Traits::kNullValue) {}
 
-    ~RefBase() {
-        Release(mValue);
-    }
+    ~RefBase() { Release(mValue); }
 
     // Constructors from nullptr.
-    constexpr RefBase(std::nullptr_t) : RefBase() {
-    }
+    // NOLINTNEXTLINE(runtime/explicit)
+    constexpr RefBase(std::nullptr_t) : RefBase() {}
 
     RefBase<T, Traits>& operator=(std::nullptr_t) {
         Set(Traits::kNullValue);
@@ -53,9 +50,8 @@ class RefBase {
     }
 
     // Constructors from a value T.
-    RefBase(T value) : mValue(value) {
-        Reference(value);
-    }
+    // NOLINTNEXTLINE(runtime/explicit)
+    RefBase(T value) : mValue(value) { Reference(value); }
 
     RefBase<T, Traits>& operator=(const T& value) {
         Set(value);
@@ -63,18 +59,14 @@ class RefBase {
     }
 
     // Constructors from a RefBase<T>
-    RefBase(const RefBase<T, Traits>& other) : mValue(other.mValue) {
-        Reference(other.mValue);
-    }
+    RefBase(const RefBase<T, Traits>& other) : mValue(other.mValue) { Reference(other.mValue); }
 
     RefBase<T, Traits>& operator=(const RefBase<T, Traits>& other) {
         Set(other.mValue);
         return *this;
     }
 
-    RefBase(RefBase<T, Traits>&& other) {
-        mValue = other.Detach();
-    }
+    RefBase(RefBase<T, Traits>&& other) { mValue = other.Detach(); }
 
     RefBase<T, Traits>& operator=(RefBase<T, Traits>&& other) {
         if (&other != this) {
@@ -111,28 +103,16 @@ class RefBase {
     }
 
     // Comparison operators.
-    bool operator==(const T& other) const {
-        return mValue == other;
-    }
+    bool operator==(const T& other) const { return mValue == other; }
 
-    bool operator!=(const T& other) const {
-        return mValue != other;
-    }
+    bool operator!=(const T& other) const { return mValue != other; }
 
-    const T operator->() const {
-        return mValue;
-    }
-    T operator->() {
-        return mValue;
-    }
+    const T operator->() const { return mValue; }
+    T operator->() { return mValue; }
 
     // Smart pointer methods.
-    const T& Get() const {
-        return mValue;
-    }
-    T& Get() {
-        return mValue;
-    }
+    const T& Get() const { return mValue; }
+    T& Get() { return mValue; }
 
     [[nodiscard]] T Detach() {
         T value{std::move(mValue)};

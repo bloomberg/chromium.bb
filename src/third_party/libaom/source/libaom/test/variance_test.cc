@@ -427,8 +427,8 @@ class MseWxHTestClass
         aom_memalign(16, block_size() * sizeof(src_)));
     dst_ = reinterpret_cast<uint8_t *>(
         aom_memalign(16, block_size() * sizeof(dst_)));
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(dst_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(dst_, nullptr);
   }
 
   virtual void TearDown() {
@@ -526,8 +526,8 @@ class MainTestClass
         use_high_bit_depth() ? sizeof(uint16_t) : sizeof(uint8_t);
     src_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size() * unit));
     ref_ = new uint8_t[block_size() * unit];
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(ref_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(ref_, nullptr);
     memset(src_, 0, block_size() * sizeof(src_[0]));
     memset(ref_, 0, block_size() * sizeof(ref_[0]));
     if (use_high_bit_depth()) {
@@ -937,9 +937,9 @@ class SubpelVarianceTest
       ref_ = CONVERT_TO_BYTEPTR(aom_memalign(
           32, (block_size() + width() + height() + 1) * sizeof(uint16_t)));
     }
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(sec_ != NULL);
-    ASSERT_TRUE(ref_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(sec_, nullptr);
+    ASSERT_NE(ref_, nullptr);
   }
 
   virtual void TearDown() {
@@ -1193,9 +1193,9 @@ class ObmcVarianceTest
         aom_memalign(32, block_size() * sizeof(uint32_t)));
     mask_ = reinterpret_cast<int32_t *>(
         aom_memalign(32, block_size() * sizeof(uint32_t)));
-    ASSERT_TRUE(pre_ != NULL);
-    ASSERT_TRUE(wsrc_ != NULL);
-    ASSERT_TRUE(mask_ != NULL);
+    ASSERT_NE(pre_, nullptr);
+    ASSERT_NE(wsrc_, nullptr);
+    ASSERT_NE(mask_, nullptr);
   }
 
   virtual void TearDown() {
@@ -1584,8 +1584,8 @@ class MseHBDWxHTestClass
         aom_memalign(16, block_size() * sizeof(src_)));
     dst_ = reinterpret_cast<uint16_t *>(
         aom_memalign(16, block_size() * sizeof(dst_)));
-    ASSERT_TRUE(src_ != NULL);
-    ASSERT_TRUE(dst_ != NULL);
+    ASSERT_NE(src_, nullptr);
+    ASSERT_NE(dst_, nullptr);
   }
 
   virtual void TearDown() {
@@ -2870,6 +2870,15 @@ const SubpelVarianceParams kArraySubpelVariance_neon[] = {
 };
 INSTANTIATE_TEST_SUITE_P(NEON, AvxSubpelVarianceTest,
                          ::testing::ValuesIn(kArraySubpelVariance_neon));
+
+const GetSseSumParams kArrayGetSseSum8x8Quad_neon[] = {
+  GetSseSumParams(7, 7, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(6, 6, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(5, 5, &aom_get_sse_sum_8x8_quad_neon, 0),
+  GetSseSumParams(5, 4, &aom_get_sse_sum_8x8_quad_neon, 0)
+};
+INSTANTIATE_TEST_SUITE_P(NEON, GetSseSum8x8QuadTest,
+                         ::testing::ValuesIn(kArrayGetSseSum8x8Quad_neon));
 
 #if CONFIG_AV1_HIGHBITDEPTH
 const VarianceParams kArrayHBDVariance_neon[] = {

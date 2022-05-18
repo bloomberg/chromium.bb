@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "Ellipse_src",
@@ -129,6 +131,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":ShapeLayer_hdr",
+        "//include/core:SkCanvas_hdr",
         "//include/private:SkTPin_hdr",
         "//modules/skottie/src:Adapter_hdr",
         "//modules/skottie/src:SkottieJson_hdr",

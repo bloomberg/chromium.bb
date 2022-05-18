@@ -559,7 +559,8 @@ class InputApi(object):
       r'.+\.c$', r'.+\.cc$', r'.+\.cpp$', r'.+\.h$', r'.+\.m$', r'.+\.mm$',
       r'.+\.inl$', r'.+\.asm$', r'.+\.hxx$', r'.+\.hpp$', r'.+\.s$', r'.+\.S$',
       # Scripts
-      r'.+\.js$', r'.+\.py$', r'.+\.sh$', r'.+\.rb$', r'.+\.pl$', r'.+\.pm$',
+      r'.+\.js$', r'.+\.ts$', r'.+\.py$', r'.+\.sh$', r'.+\.rb$', r'.+\.pl$',
+      r'.+\.pm$',
       # Other
       r'.+\.java$', r'.+\.mk$', r'.+\.am$', r'.+\.css$', r'.+\.mojom$',
       r'.+\.fidl$'
@@ -665,12 +666,15 @@ class InputApi(object):
 
     self.owners_client = None
     if self.gerrit:
-      self.owners_client = owners_client.GetCodeOwnersClient(
-          root=change.RepositoryRoot(),
-          upstream=change.UpstreamBranch(),
-          host=self.gerrit.host,
-          project=self.gerrit.project,
-          branch=self.gerrit.branch)
+      try:
+        self.owners_client = owners_client.GetCodeOwnersClient(
+            root=change.RepositoryRoot(),
+            upstream=change.UpstreamBranch(),
+            host=self.gerrit.host,
+            project=self.gerrit.project,
+            branch=self.gerrit.branch)
+      except Exception as e:
+        print('Failed to set owners_client - %s' % str(e))
     self.owners_db = owners_db.Database(
         change.RepositoryRoot(), fopen=open, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
@@ -706,9 +710,11 @@ class InputApi(object):
     script, or subdirectories thereof. Note that files are listed using the OS
     path separator, so backslashes are used as separators on Windows.
     """
-    dir_with_slash = normpath('%s/' % self.PresubmitLocalPath())
-    if len(dir_with_slash) == 1:
-      dir_with_slash = ''
+    dir_with_slash = normpath(self.PresubmitLocalPath())
+    # normpath strips trailing path separators, so the trailing separator has to
+    # be added after the normpath call.
+    if len(dir_with_slash) > 0:
+      dir_with_slash += os.path.sep
 
     return list(filter(
         lambda x: normpath(x.AbsoluteLocalPath()).startswith(dir_with_slash),
@@ -769,6 +775,11 @@ class InputApi(object):
       local_path = affected_file.LocalPath()
       for item in items:
         if self.re.match(item, local_path):
+          return True
+        # Handle the cases where the files regex only handles /, but the local
+        # path uses \.
+        if self.is_windows and self.re.match(item, local_path.replace(
+            '\\', '/')):
           return True
       return False
     return (Find(affected_file, files_to_check) and
@@ -898,7 +909,9 @@ class _GitDiffCache(_DiffCache):
     self._diffs_by_file = None
 
   def GetDiff(self, path, local_root):
-    if not self._diffs_by_file:
+    # Compare against None to distinguish between None and an initialized but
+    # empty dictionary.
+    if self._diffs_by_file == None:
       # Compute a single diff for all files and parse the output; should
       # with git this is much faster than computing one diff for each file.
       diffs = {}

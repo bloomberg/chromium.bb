@@ -2163,12 +2163,10 @@ static AOM_INLINE void wb_write_uniform(struct aom_write_bit_buffer *wb, int n,
 
 static AOM_INLINE void write_tile_info_max_tile(
     const AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
-  int width_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
-  int height_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
-  int width_sb = width_mi >> cm->seq_params->mib_size_log2;
-  int height_sb = height_mi >> cm->seq_params->mib_size_log2;
+  int width_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, cm->seq_params->mib_size_log2);
+  int height_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
   int size_sb, i;
   const CommonTileParams *const tiles = &cm->tiles;
 
@@ -3778,10 +3776,8 @@ void av1_accumulate_pack_bs_thread_data(AV1_COMP *const cpi,
   int do_max_mv_magnitude_update = 1;
   cpi->rc.coefficient_size += td->coefficient_size;
 
-#if CONFIG_FRAME_PARALLEL_ENCODE
   // Disable max_mv_magnitude update for parallel frames based on update flag.
   if (!cpi->do_frame_data_update) do_max_mv_magnitude_update = 0;
-#endif
 
   if (cpi->sf.mv_sf.auto_mv_step_size && do_max_mv_magnitude_update)
     cpi->mv_search_params.max_mv_magnitude =

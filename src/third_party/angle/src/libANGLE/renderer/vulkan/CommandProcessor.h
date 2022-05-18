@@ -344,8 +344,7 @@ class CommandQueueInterface : angle::NonCopyable
     // semaphore, we need to ensure that there are no pending submissions.
     virtual angle::Result ensureNoPendingWork(Context *context) = 0;
 
-    virtual Serial getLastCompletedQueueSerial() const = 0;
-    virtual bool isBusy() const                        = 0;
+    virtual bool isBusy() const = 0;
 };
 
 class CommandQueue final : public CommandQueueInterface
@@ -408,7 +407,8 @@ class CommandQueue final : public CommandQueueInterface
 
     angle::Result ensureNoPendingWork(Context *context) override { return angle::Result::Continue; }
 
-    Serial getLastCompletedQueueSerial() const override;
+    Serial getLastCompletedQueueSerial() const { return mLastCompletedQueueSerial.getSerial(); }
+
     bool isBusy() const override;
 
     angle::Result queueSubmit(Context *context,
@@ -424,6 +424,9 @@ class CommandQueue final : public CommandQueueInterface
     uint32_t getDeviceQueueIndex() const { return mQueueMap.getIndex(); }
 
     VkQueue getQueue(egl::ContextPriority priority) { return mQueueMap[priority]; }
+
+    const angle::VulkanPerfCounters &getPerfCounters() const { return mPerfCounters; }
+    void resetPerFramePerfCounters();
 
   private:
     void releaseToCommandBatch(bool hasProtectedContent,
@@ -471,14 +474,19 @@ class CommandQueue final : public CommandQueueInterface
 
     // Queue serial management.
     AtomicSerialFactory mQueueSerialFactory;
-    Serial mLastCompletedQueueSerial;
     Serial mLastSubmittedQueueSerial;
     Serial mCurrentQueueSerial;
+    // This queue serial can be read/write from different threads, so we need to use atomic
+    // operations to access the underline value. Since we only do load/store on this value, it
+    // should be just a normal uint64_t load/store on most platforms.
+    AtomicQueueSerial mLastCompletedQueueSerial;
 
     // QueueMap
     DeviceQueueMap mQueueMap;
 
     FenceRecycler mFenceRecycler;
+
+    angle::VulkanPerfCounters mPerfCounters;
 };
 
 // CommandProcessor is used to dispatch work to the GPU when the asyncCommandQueue feature is
@@ -558,7 +566,11 @@ class CommandProcessor final : public Context, public CommandQueueInterface
 
     angle::Result ensureNoPendingWork(Context *context) override;
 
-    Serial getLastCompletedQueueSerial() const override;
+    Serial getLastCompletedQueueSerial() const
+    {
+        return mCommandQueue.getLastCompletedQueueSerial();
+    }
+
     bool isBusy() const override;
 
     egl::ContextPriority getDriverPriority(egl::ContextPriority priority)
@@ -567,6 +579,14 @@ class CommandProcessor final : public Context, public CommandQueueInterface
     }
     uint32_t getDeviceQueueIndex() const { return mCommandQueue.getDeviceQueueIndex(); }
     VkQueue getQueue(egl::ContextPriority priority) { return mCommandQueue.getQueue(priority); }
+
+    // Note that due to inheritance from vk::Context, this class has a set of perf counters as well,
+    // but currently only the counters in the member command queue are of interest.
+    const angle::VulkanPerfCounters &getPerfCounters() const
+    {
+        return mCommandQueue.getPerfCounters();
+    }
+    void resetPerFramePerfCounters() { mCommandQueue.resetPerFramePerfCounters(); }
 
   private:
     bool hasPendingError() const

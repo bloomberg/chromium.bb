@@ -8,12 +8,15 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.components.autofill_assistant.AssistantEditor;
 import org.chromium.components.autofill_assistant.AssistantOptionModel;
@@ -46,6 +49,7 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
         }
     }
 
+    protected final Context mContext;
     private final @Nullable View mTitleAddButton;
     private final AssistantVerticalExpander mSectionExpander;
     private final AssistantChoiceList mItemsView;
@@ -54,16 +58,15 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
     private final int mTitleToContentPadding;
     private final List<Item> mItems;
 
-    protected final Context mContext;
-    protected T mSelectedOption;
-
+    private boolean mUiEnabled = true;
     private boolean mIgnoreItemSelectedNotifications;
     private boolean mIgnoreItemChangeNotification;
+    private boolean mRequestReloadOnChange;
     private @Nullable Delegate<T> mDelegate;
     private int mTopPadding;
     private int mBottomPadding;
 
-    private boolean mRequestReloadOnChange;
+    protected T mSelectedOption;
 
     /**
      *
@@ -119,21 +122,31 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
             TextView titleAddButtonLabelView =
                     mSectionExpander.findViewById(R.id.section_title_add_button_label);
             titleAddButtonLabelView.setText(titleAddButton);
+            ImageView titleAddButtonIconView =
+                    mSectionExpander.findViewById(R.id.section_title_add_button_icon);
+            ApiCompatibilityUtils.setImageTintList(titleAddButtonIconView,
+                    ContextCompat.getColorStateList(mContext, R.color.blue_when_enabled_list));
             mTitleAddButton.setOnClickListener(unusedView -> createOrEditItem(null));
         }
 
         parent.addView(mSectionExpander,
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        updateVisibility();
+        updateUi();
     }
 
     View getView() {
         return mSectionExpander;
     }
 
+    /**
+     * Set the view itself visible, if allowed. This can be overruled by the view deciding that
+     * it has no reason to be visible, by being empty (no items) and not having an editor.
+     *
+     * @param visible The flag to decide the visibility.
+     */
     void setVisible(boolean visible) {
-        mSectionExpander.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mSectionExpander.setVisibility(visible && canBeVisible() ? View.VISIBLE : View.GONE);
     }
 
     void setDelegate(@Nullable Delegate<T> delegate) {
@@ -164,7 +177,7 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
                 initiallySelectedItem = item;
             }
         }
-        updateVisibility();
+        updateUi();
 
         if (initiallySelectedItem != null) {
             selectItem(initiallySelectedItem, false, AssistantUserDataEventType.NO_NOTIFICATION);
@@ -309,6 +322,7 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
             editButtonContentDescription = getEditButtonContentDescription(item.mOption);
         }
         mItemsView.addItem(item.mFullView, /* hasEditButton= */ canEditOption,
+                /* itemSelectedListener= */
                 selected
                 -> {
                     if (mIgnoreItemSelectedNotifications || !selected) {
@@ -323,11 +337,12 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
                         createOrEditItem(item.mOption);
                     }
                 },
+                /* itemEditedListener= */
                 ()
                         -> createOrEditItem(item.mOption),
-                /*editButtonDrawable=*/editButtonDrawable,
-                /*editButtonContentDescription=*/editButtonContentDescription);
-        updateVisibility();
+                /* editButtonDrawable= */ editButtonDrawable,
+                /* editButtonContentDescription= */ editButtonContentDescription);
+        updateUi();
     }
 
     private void selectItem(Item item, boolean notify, @AssistantUserDataEventType int eventType) {
@@ -336,7 +351,7 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
         mItemsView.setCheckedItem(item.mFullView);
         mIgnoreItemSelectedNotifications = false;
         updateSummaryView(mSummaryView, item.mOption);
-        updateVisibility();
+        updateUi();
 
         if (notify) {
             notifyDataChanged(item.mOption, eventType);
@@ -392,6 +407,7 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
             if (mRequestReloadOnChange) {
                 int eventType = oldItem == null ? AssistantUserDataEventType.ENTRY_CREATED
                                                 : AssistantUserDataEventType.ENTRY_EDITED;
+                mSectionExpander.post(() -> mSectionExpander.setExpanded(false));
                 notifyDataChanged(editedItem, eventType);
                 return;
             }
@@ -433,14 +449,25 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
     }
 
     /**
-     * Update the visibility if something changed.
+     * Enable or disable UI interactions.
+     * @param enabled The flag to disable the interactions.
      */
-    protected void updateVisibility() {
+    protected void setEnabled(boolean enabled) {
+        mUiEnabled = enabled;
+        updateUi();
+    }
+
+    /**
+     * Update the UI if something changed.
+     */
+    protected void updateUi() {
         boolean hasEditor = getEditor() != null;
         if (mTitleAddButton != null) {
             mTitleAddButton.setVisibility(isEmpty() && hasEditor ? View.VISIBLE : View.GONE);
+            setTitleAddButtonEnabled(mUiEnabled);
         }
         mItemsView.setAddButtonVisible(/* visible= */ hasEditor);
+        mItemsView.setUiEnabled(mUiEnabled);
         mSectionExpander.setFixed(isEmpty());
         mSectionExpander.setCollapsedVisible(!isEmpty());
         mSectionExpander.setExpandedVisible(!isEmpty());
@@ -453,5 +480,16 @@ public abstract class AssistantCollectUserDataSection<T extends AssistantOptionM
     private void setBottomPadding(View view, int padding) {
         view.setPadding(
                 view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), padding);
+    }
+
+    private boolean canBeVisible() {
+        return !isEmpty() || getEditor() != null;
+    }
+
+    private void setTitleAddButtonEnabled(boolean enabled) {
+        assert mTitleAddButton != null;
+        mTitleAddButton.setEnabled(enabled);
+        mTitleAddButton.findViewById(R.id.section_title_add_button_icon).setEnabled(enabled);
+        mTitleAddButton.findViewById(R.id.section_title_add_button_label).setEnabled(enabled);
     }
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
 const path = require('path');
 const rulesDirPlugin = require('eslint-plugin-rulesdir');
 rulesDirPlugin.RULES_DIR = path.join(__dirname, '..', 'scripts', 'eslint_rules', 'lib');
@@ -28,6 +29,7 @@ module.exports = {
       'rules': {
         '@typescript-eslint/explicit-function-return-type': 2,
         'rulesdir/no_importing_images_from_src': 2,
+        'rulesdir/enforce_bound_render_for_schedule_render': 2,
         'rulesdir/enforce_custom_event_names': 2,
         'rulesdir/set_data_type_reference': 2,
         'rulesdir/no_bound_component_methods': 2,
@@ -44,6 +46,7 @@ module.exports = {
         'rulesdir/static_custom_event_names': 2,
         'rulesdir/lit_html_host_this': 2,
         'rulesdir/lit_html_no_attribute_quotes': 2,
+        'rulesdir/lit_template_result_or_nothing': 2,
         '@typescript-eslint/naming-convention': [
           'error', {
             'selector': ['property', 'parameterProperty'],
@@ -117,6 +120,12 @@ module.exports = {
             'selector': 'parameter',
             'format': ['camelCase'],
             'leadingUnderscore': 'allow',
+          },
+          {
+            // Ignore type properties that require quotes
+            'selector': ['typeProperty', 'enumMember'],
+            'format': null,
+            'modifiers': ['requiresQuotes']
           }
         ]
       }
@@ -141,3 +150,4 @@ module.exports = {
     }
   ]
 };
+// clang-format on

@@ -235,8 +235,10 @@ private:
     const ParsedModule& loadGPUModule();
     const ParsedModule& loadFragmentModule();
     const ParsedModule& loadVertexModule();
+    const ParsedModule& loadGraphiteFragmentModule();
+    const ParsedModule& loadGraphiteVertexModule();
     const ParsedModule& loadPublicModule();
-    const ParsedModule& loadRuntimeShaderModule();
+    const ParsedModule& loadPrivateRTShaderModule();
 
     std::shared_ptr<SymbolTable> makeRootSymbolTable() const;
     std::shared_ptr<SymbolTable> makeGLSLRootSymbolTable() const;
@@ -249,7 +251,7 @@ private:
     bool finalize(Program& program);
 
     /** Optimize the module. */
-    bool optimize(LoadedModule& module);
+    bool optimize(LoadedModule& module, const ParsedModule& base);
 
     /** Flattens out function calls when it is safe to do so. */
     bool runInliner(const std::vector<std::unique_ptr<ProgramElement>>& elements,
@@ -265,6 +267,8 @@ private:
     ParsedModule fGPUModule;                 // [Private] + GPU intrinsics, helper functions
     ParsedModule fVertexModule;              // [GPU] + Vertex stage decls
     ParsedModule fFragmentModule;            // [GPU] + Fragment stage decls
+    ParsedModule fGraphiteVertexModule;      // [Vert] + Graphite vertex helpers
+    ParsedModule fGraphiteFragmentModule;    // [Frag] + Graphite fragment helpers
 
     ParsedModule fPublicModule;              // [Root] + Public features
     ParsedModule fRuntimeShaderModule;       // [Public] + Runtime shader decls

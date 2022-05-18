@@ -16,6 +16,7 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
 
@@ -53,6 +54,84 @@
                 android:id="@+id/spinner"
                 android:layout_margin="3dp"
                 android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/toolbar_customizations_text"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            style="?attr/textAppearanceTitleMedium" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginStart="3dp"
+            android:layout_marginBottom="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:text="@string/close_button_position_text"
+                android:layout_marginEnd="16dp"
+                style="?attr/textAppearanceLabelLarge" />
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/close_button_position_toggle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+                <Button
+                    android:id="@+id/start_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/close_button_start_text"
+                    style="?attr/materialButtonOutlinedStyle" />
+                <Button
+                    android:id="@+id/end_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/close_button_end_text"
+                    style="?attr/materialButtonOutlinedStyle" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="3dp"
+            android:layout_marginBottom="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/toolbar_corner_radius_text"
+                android:layout_marginEnd="8dp"
+                android:maxWidth="160sp"
+                style="?attr/textAppearanceLabelLarge" />
+            <TextView
+                android:id="@+id/corner_radius_slider_label"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|end"
+                android:minWidth="40sp"
+                android:labelFor="@+id/corner_radius_slider"
+                android:contentDescription="@string/toolbar_corner_radius_slider_label_desc"
+                style="?attr/textAppearanceLabelLarge" />
+            <SeekBar
+                android:id="@+id/corner_radius_slider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:progress="16"
+                android:max="72"/>
         </LinearLayout>
 
         <Space

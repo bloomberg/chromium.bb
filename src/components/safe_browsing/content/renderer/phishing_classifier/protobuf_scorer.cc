@@ -18,10 +18,10 @@
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/content/common/visual_utils.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "components/safe_browsing/core/common/visual_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -41,7 +41,7 @@ ProtobufModelScorer::ProtobufModelScorer() = default;
 ProtobufModelScorer::~ProtobufModelScorer() = default;
 
 /* static */
-ProtobufModelScorer* ProtobufModelScorer::Create(
+std::unique_ptr<ProtobufModelScorer> ProtobufModelScorer::Create(
     const base::StringPiece& model_str,
     base::File visual_tflite_model) {
   std::unique_ptr<ProtobufModelScorer> scorer(new ProtobufModelScorer());
@@ -86,7 +86,7 @@ ProtobufModelScorer* ProtobufModelScorer::Create(
   }
 
   RecordScorerCreationStatus(SCORER_SUCCESS);
-  return scorer.release();
+  return scorer;
 }
 
 double ProtobufModelScorer::ComputeScore(const FeatureMap& features) const {

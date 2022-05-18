@@ -56,7 +56,7 @@ void DecoderTest::HandlePeekResult(Decoder *const /*decoder*/,
 void DecoderTest::RunLoop(CompressedVideoSource *video,
                           const aom_codec_dec_cfg_t &dec_cfg) {
   Decoder *const decoder = codec_->CreateDecoder(dec_cfg, flags_);
-  ASSERT_TRUE(decoder != NULL);
+  ASSERT_NE(decoder, nullptr);
   bool end_of_file = false;
   bool peeked_stream = false;
 

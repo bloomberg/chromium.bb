@@ -153,10 +153,10 @@ export class ParsedURL {
     return null;
   }
 
-  private static preEncodeSpecialCharactersInPath(path: string): string {
+  static preEncodeSpecialCharactersInPath(path: string): string {
     // Based on net::FilePathToFileURL. Ideally we would handle
     // '\\' as well on non-Windows file systems.
-    for (const specialChar of ['%', ';', '#', '?']) {
+    for (const specialChar of ['%', ';', '#', '?', ' ']) {
       (path as string) = path.replaceAll(specialChar, encodeURIComponent(specialChar));
     }
     return path;
@@ -185,7 +185,7 @@ export class ParsedURL {
    */
   static urlFromParentUrlAndName(parentUrl: Platform.DevToolsPath.UrlString, name: string):
       Platform.DevToolsPath.UrlString {
-    return ParsedURL.concatenate(parentUrl, '/', encodeURIComponent(name));
+    return ParsedURL.concatenate(parentUrl, '/', ParsedURL.preEncodeSpecialCharactersInPath(name));
   }
 
   static encodedPathToRawPathString(encPath: Platform.DevToolsPath.EncodedPathString):
@@ -308,14 +308,14 @@ export class ParsedURL {
     return ParsedURL.urlRegexInstance;
   }
 
-  static extractPath(url: string): Platform.DevToolsPath.EncodedPathString {
+  static extractPath(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.EncodedPathString {
     const parsedURL = this.fromString(url);
     return (parsedURL ? parsedURL.path : '') as Platform.DevToolsPath.EncodedPathString;
   }
 
-  static extractOrigin(url: string): string {
+  static extractOrigin(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
     const parsedURL = this.fromString(url);
-    return parsedURL ? parsedURL.securityOrigin() : '';
+    return parsedURL ? parsedURL.securityOrigin() : Platform.DevToolsPath.EmptyUrlString;
   }
 
   static extractExtension(url: string): string {

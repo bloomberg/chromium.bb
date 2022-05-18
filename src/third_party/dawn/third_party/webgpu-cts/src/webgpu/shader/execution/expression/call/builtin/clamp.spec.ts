@@ -1,10 +1,21 @@
 export const description = `
-Execution Tests for the 'clamp' builtin function
+Execution tests for the 'clamp' builtin function
+
+S is AbstractInt, i32, or u32
+T is S or vecN<S>
+@const fn clamp(e: T , low: T, high: T) -> T
+Returns min(max(e,low),high). Component-wise when T is a vector.
+
+S is AbstractFloat, f32, f16
+T is S or vecN<S>
+@const clamp(e: T , low: T , high: T) -> T
+Returns either min(max(e,low),high), or the median of the three values e, low, high.
+Component-wise when T is a vector.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../../gpu_test.js';
-import { anyOf, correctlyRoundedThreshold } from '../../../../../util/compare.js';
+import { anyOf, correctlyRoundedMatch } from '../../../../../util/compare.js';
 import { kBit } from '../../../../../util/constants.js';
 import {
   f32,
@@ -106,18 +117,19 @@ function generateFloatTestCases(test_values: Array<Scalar>): Array<Case> {
   return cases;
 }
 
-g.test('u32')
-  .uniqueId('386458e12e52645b')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-unsigned clamp:
-T is u32 or vecN<u32> clamp(e: T , low: T, high: T) -> T Returns min(max(e, low), high). Component-wise when T is a vector. (GLSLstd450UClamp)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
+g.test('abstract_int')
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`abstract int tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
+  .unimplemented();
+
+g.test('u32')
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`u32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -146,17 +158,8 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   });
 
 g.test('i32')
-  .uniqueId('da51d3c8cc902ab2')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#integer-builtin-functions')
-  .desc(
-    `
-signed clamp:
-T is i32 or vecN<i32> clamp(e: T , low: T, high: T) -> T Returns min(max(e, low), high). Component-wise when T is a vector. (GLSLstd450SClamp)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
+  .specURL('https://www.w3.org/TR/WGSL/#integer-builtin-functions')
+  .desc(`i32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -186,15 +189,19 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
     );
   });
 
-g.test('f32')
-  .uniqueId('88e39c61e6dbd26f')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-clamp:
-T is f32 or vecN<f32> clamp(e: T , low: T, high: T) -> T Returns either min(max(e,low),high), or the median of the three values e, low, high. Component-wise when T is a vector.
-`
+g.test('abstract_float')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`abstract float tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
+  .unimplemented();
+
+g.test('f32')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`f32 tests`)
   .params(u =>
     u
       .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
@@ -202,7 +209,7 @@ T is f32 or vecN<f32> clamp(e: T , low: T, high: T) -> T Returns either min(max(
   )
   .fn(async t => {
     const cfg: Config = t.params;
-    cfg.cmpFloats = correctlyRoundedThreshold();
+    cfg.cmpFloats = correctlyRoundedMatch();
 
     // This array must be strictly increasing, since that ordering determines
     // the expected values.
@@ -233,3 +240,13 @@ T is f32 or vecN<f32> clamp(e: T , low: T, high: T) -> T Returns either min(max(
       generateFloatTestCases(test_values)
     );
   });
+
+g.test('f16')
+  .specURL('https://www.w3.org/TR/WGSL/#float-builtin-functions')
+  .desc(`f16 tests`)
+  .params(u =>
+    u
+      .combine('storageClass', ['uniform', 'storage_r', 'storage_rw'] as const)
+      .combine('vectorize', [undefined, 2, 3, 4] as const)
+  )
+  .unimplemented();

@@ -54,6 +54,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
+#include "chrome/browser/ash/crosapi/test_crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/test_local_printer_ash.h"
 #include "chromeos/login/login_state/login_state.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -283,7 +284,7 @@ class TestPrintPreviewPrintRenderFrame final : public FakePrintRenderFrame {
       const TestPrintPreviewPrintRenderFrame&) = delete;
   ~TestPrintPreviewPrintRenderFrame() override = default;
 
-  const base::Value& GetSettings() { return settings_; }
+  const base::Value::Dict& GetSettings() { return settings_; }
 
   void SetCompletionClosure(base::OnceClosure closure) {
     closure_ = std::move(closure);
@@ -291,13 +292,13 @@ class TestPrintPreviewPrintRenderFrame final : public FakePrintRenderFrame {
 
  private:
   // FakePrintRenderFrame:
-  void PrintPreview(base::Value settings) override {
+  void PrintPreview(base::Value::Dict settings) override {
     settings_ = std::move(settings);
     std::move(closure_).Run();
   }
 
   base::OnceClosure closure_;
-  base::Value settings_;
+  base::Value::Dict settings_;
 };
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -397,7 +398,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     local_printer_ = std::make_unique<TestLocalPrinterAsh>(profile_, nullptr);
     crosapi::IdleServiceAsh::DisableForTesting();
     chromeos::LoginState::Initialize();
-    manager_ = std::make_unique<crosapi::CrosapiManager>();
+    manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
 #endif
     initiator_web_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_));
@@ -1278,9 +1279,9 @@ TEST_F(PrintPreviewHandlerTest, GetPreview) {
 
   // Verify that the preview was requested from the renderer with the
   // appropriate settings.
-  const base::Value& preview_params = print_render_frame.GetSettings();
+  const base::Value::Dict& preview_params = print_render_frame.GetSettings();
   bool preview_id_found = false;
-  for (auto it : preview_params.DictItems()) {
+  for (auto it : preview_params) {
     if (it.first == kPreviewUIID) {  // This is added by the handler.
       preview_id_found = true;
       continue;
@@ -1306,15 +1307,14 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
       ConstructPreviewArgs(callback_id_in, print_ticket);
   handler()->HandleGetPreview(list_args);
   run_loop.Run();
-  const base::Value& preview_params = print_render_frame.GetSettings();
+  const base::Value::Dict& preview_params = print_render_frame.GetSettings();
 
   // Read the preview UI ID and request ID
-  absl::optional<int> request_value =
-      preview_params.FindIntKey(kPreviewRequestID);
+  absl::optional<int> request_value = preview_params.FindInt(kPreviewRequestID);
   ASSERT_TRUE(request_value.has_value());
   int preview_request_id = request_value.value();
 
-  absl::optional<int> ui_value = preview_params.FindIntKey(kPreviewUIID);
+  absl::optional<int> ui_value = preview_params.FindInt(kPreviewUIID);
   ASSERT_TRUE(ui_value.has_value());
   int preview_ui_id = ui_value.value();
 

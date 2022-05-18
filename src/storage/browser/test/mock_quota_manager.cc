@@ -56,8 +56,7 @@ MockQuotaManager::MockQuotaManager(
 }
 
 void MockQuotaManager::GetOrCreateBucket(
-    const blink::StorageKey& storage_key,
-    const std::string& bucket_name,
+    const BucketInitParams& params,
     base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback) {
   if (db_disabled_) {
     std::move(callback).Run(QuotaError::kDatabaseError);
@@ -65,12 +64,12 @@ void MockQuotaManager::GetOrCreateBucket(
   }
 
   QuotaErrorOr<BucketInfo> bucketOr = FindBucket(
-      storage_key, bucket_name, blink::mojom::StorageType::kTemporary);
+      params.storage_key, params.name, blink::mojom::StorageType::kTemporary);
   if (bucketOr.ok()) {
     std::move(callback).Run(std::move(bucketOr));
     return;
   }
-  BucketInfo bucket = CreateBucket(storage_key, bucket_name,
+  BucketInfo bucket = CreateBucket(params.storage_key, params.name,
                                    blink::mojom::StorageType::kTemporary);
   buckets_.emplace_back(
       BucketData(bucket, storage::AllQuotaClientTypes(), base::Time::Now()));
@@ -96,6 +95,13 @@ void MockQuotaManager::GetOrCreateBucketDeprecated(
   BucketInfo bucket = CreateBucket(storage_key, bucket_name, type);
   buckets_.emplace_back(
       BucketData(bucket, storage::AllQuotaClientTypes(), base::Time::Now()));
+  std::move(callback).Run(std::move(bucket));
+}
+
+void MockQuotaManager::GetBucketById(
+    const BucketId& bucket_id,
+    base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback) {
+  QuotaErrorOr<BucketInfo> bucket = FindBucketById(bucket_id);
   std::move(callback).Run(std::move(bucket));
 }
 
@@ -228,6 +234,18 @@ void MockQuotaManager::NotifyWriteFailed(const StorageKey& storage_key) {
 }
 
 MockQuotaManager::~MockQuotaManager() = default;
+
+QuotaErrorOr<BucketInfo> MockQuotaManager::FindBucketById(
+    const BucketId& bucket_id) {
+  auto it = std::find_if(buckets_.begin(), buckets_.end(),
+                         [bucket_id](const BucketData& bucket_data) {
+                           return bucket_data.bucket.id == bucket_id;
+                         });
+  if (it != buckets_.end()) {
+    return it->bucket;
+  }
+  return QuotaError::kNotFound;
+}
 
 QuotaErrorOr<BucketInfo> MockQuotaManager::FindBucket(
     const blink::StorageKey& storage_key,

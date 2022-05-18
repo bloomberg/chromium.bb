@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "components/embedder_support/user_agent_utils.h"
@@ -97,9 +98,8 @@ WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
 std::unique_ptr<content::BrowserMainParts>
 WebEngineContentBrowserClient::CreateBrowserMainParts(
-    content::MainFunctionParams parameters) {
-  auto browser_main_parts =
-      std::make_unique<WebEngineBrowserMainParts>(this, std::move(parameters));
+    bool /* is_integration_test */) {
+  auto browser_main_parts = std::make_unique<WebEngineBrowserMainParts>(this);
   main_parts_ = browser_main_parts.get();
   return browser_main_parts;
 }
@@ -195,7 +195,6 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableContentDirectories,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
-      switches::kForceProtectedVideoOutputBuffers,
       switches::kMaxDecodedImageSizeMb,
       switches::kPlayreadyKeySystem,
       network::switches::kUnsafelyTreatInsecureOriginAsSecure,

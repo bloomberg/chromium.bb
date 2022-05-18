@@ -36,11 +36,13 @@ struct Swizzle final : public Expression {
     // swizzles (comprised solely of X/Y/W/Z).
     static std::unique_ptr<Expression> Convert(const Context& context,
                                                Position pos,
+                                               Position maskPos,
                                                std::unique_ptr<Expression> base,
                                                ComponentArray inComponents);
 
     static std::unique_ptr<Expression> Convert(const Context& context,
                                                Position pos,
+                                               Position maskPos,
                                                std::unique_ptr<Expression> base,
                                                std::string_view maskString);
 
@@ -67,9 +69,9 @@ struct Swizzle final : public Expression {
         return this->base()->hasProperty(property);
     }
 
-    std::unique_ptr<Expression> clone() const override {
-        return std::unique_ptr<Expression>(new Swizzle(fPosition, &this->type(),
-                this->base()->clone(), this->components()));
+    std::unique_ptr<Expression> clone(Position pos) const override {
+        return std::unique_ptr<Expression>(new Swizzle(pos, &this->type(), this->base()->clone(),
+                                                       this->components()));
     }
 
     std::string description() const override {

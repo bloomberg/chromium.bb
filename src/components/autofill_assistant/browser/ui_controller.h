@@ -107,6 +107,7 @@ class UiController : public ScriptExecutorUiDelegate,
 
   void SetExpandSheetForPromptAction(bool expand) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
+  void SetCollectUserDataUiState(bool enabled) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
                                             collect_user_data_options) override;
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
@@ -190,6 +191,11 @@ class UiController : public ScriptExecutorUiDelegate,
   void OnResetState() override;
   void OnUiShownChanged(bool shown) override;
   void OnShutdown(Metrics::DropOutReason reason) override;
+  bool SupportsExternalActions() override;
+  void ExecuteExternalAction(
+      const external::Action& info,
+      base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+          callback) override;
 
   // Overrides AutofillAssistantTtsController::TtsEventDelegate
   void OnTtsEvent(AutofillAssistantTtsController::TtsEventType event) override;

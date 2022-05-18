@@ -17,6 +17,7 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/notreached.h"
 #include "base/observer_list_internal.h"
 #include "base/ranges/algorithm.h"
@@ -259,7 +260,7 @@ class ObserverList {
       live_iterators_.head()->value()->Invalidate();
     if (check_empty) {
       Compact();
-      DCHECK(observers_.empty()) << GetObserversCreationStackString();
+      DCHECK(observers_.empty()) << "\n" << GetObserversCreationStackString();
     }
   }
 

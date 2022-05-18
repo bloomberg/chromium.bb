@@ -42,7 +42,6 @@
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
-#include "src/sksl/ir/SkSLInlineMarker.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLPostfixExpression.h"
@@ -109,37 +108,6 @@ static int count_returns_at_end_of_control_flow(const FunctionDefinition& funcDe
     };
 
     return CountReturnsAtEndOfControlFlow{funcDef}.fNumReturns;
-}
-
-static bool contains_recursive_call(const FunctionDeclaration& funcDecl) {
-    class ContainsRecursiveCall : public ProgramVisitor {
-    public:
-        bool visit(const FunctionDeclaration& funcDecl) {
-            fFuncDecl = &funcDecl;
-            return funcDecl.definition() ? this->visitProgramElement(*funcDecl.definition())
-                                         : false;
-        }
-
-        bool visitExpression(const Expression& expr) override {
-            if (expr.is<FunctionCall>() && expr.as<FunctionCall>().function().matches(*fFuncDecl)) {
-                return true;
-            }
-            return INHERITED::visitExpression(expr);
-        }
-
-        bool visitStatement(const Statement& stmt) override {
-            if (stmt.is<InlineMarker>() &&
-                stmt.as<InlineMarker>().function().matches(*fFuncDecl)) {
-                return true;
-            }
-            return INHERITED::visitStatement(stmt);
-        }
-
-        const FunctionDeclaration* fFuncDecl;
-        using INHERITED = ProgramVisitor;
-    };
-
-    return ContainsRecursiveCall{}.visit(funcDecl);
 }
 
 static std::unique_ptr<Statement>* find_parent_statement(
@@ -449,7 +417,7 @@ std::unique_ptr<Expression> Inliner::inlineExpression(Position pos,
             if (remap) {
                 return clone_with_ref_kind(**remap, v.refKind());
             }
-            return v.clone();
+            return expression.clone();
         }
         default:
             SkASSERT(false);
@@ -522,8 +490,9 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
                 unrollInfo = std::make_unique<LoopUnrollInfo>(*f.unrollInfo());
                 unrollInfo->fIndex = RemapVariable(unrollInfo->fIndex, varMap);
             }
-            return ForStatement::Make(*fContext, pos, std::move(initializer), expr(f.test()),
-                                      expr(f.next()), stmt(f.statement()), std::move(unrollInfo),
+            return ForStatement::Make(*fContext, pos, ForLoopPositions{}, std::move(initializer),
+                                      expr(f.test()), expr(f.next()), stmt(f.statement()),
+                                      std::move(unrollInfo),
                                       SymbolTable::WrapIfBuiltin(f.symbols()));
         }
         case Statement::Kind::kIf: {
@@ -531,7 +500,6 @@ std::unique_ptr<Statement> Inliner::inlineStatement(Position pos,
             return IfStatement::Make(*fContext, pos, i.isStatic(), expr(i.test()),
                                      stmt(i.ifTrue()), stmt(i.ifFalse()));
         }
-        case Statement::Kind::kInlineMarker:
         case Statement::Kind::kNop:
             return statement.clone();
 
@@ -641,13 +609,11 @@ Inliner::InlinedCall Inliner::inlineCall(FunctionCall* call,
     const ReturnComplexity returnComplexity = GetReturnComplexity(function);
 
     StatementArray inlineStatements;
-    int expectedStmtCount = 1 +                      // Inline marker
-                            1 +                      // Result variable
+    int expectedStmtCount = 1 +                      // Result variable
                             arguments.size() +       // Function argument temp-vars
                             body.children().size();  // Inlined code
 
     inlineStatements.reserve_back(expectedStmtCount);
-    inlineStatements.push_back(InlineMarker::Make(&call->function()));
 
     std::unique_ptr<Expression> resultExpr;
     if (returnComplexity > ReturnComplexity::kSingleSafeReturn &&
@@ -836,7 +802,6 @@ public:
             case Statement::Kind::kBreak:
             case Statement::Kind::kContinue:
             case Statement::Kind::kDiscard:
-            case Statement::Kind::kInlineMarker:
             case Statement::Kind::kNop:
                 break;
 
@@ -1067,9 +1032,7 @@ bool Inliner::candidateCanBeInlined(const InlineCandidate& candidate,
     if (const bool* cachedInlinability = cache->find(&funcDecl)) {
         return *cachedInlinability;
     }
-    // Recursion is forbidden here to avoid an infinite death spiral of inlining.
-    bool inlinability = this->isSafeToInline(funcDecl.definition(), usage) &&
-                        !contains_recursive_call(funcDecl);
+    bool inlinability = this->isSafeToInline(funcDecl.definition(), usage);
     cache->set(&funcDecl, inlinability);
     return inlinability;
 }

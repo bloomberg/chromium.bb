@@ -210,17 +210,17 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,true>
   {
     typedef typename MatrixType::Scalar Scalar;
     
-    typedef typename internal::remove_all<typename ProductType::LhsNested>::type Lhs;
+    typedef internal::remove_all_t<typename ProductType::LhsNested> Lhs;
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhs;
-    typedef typename internal::remove_all<ActualLhs>::type ActualLhs_;
-    typename internal::add_const_on_value_type<ActualLhs>::type actualLhs = LhsBlasTraits::extract(prod.lhs());
+    typedef internal::remove_all_t<ActualLhs> ActualLhs_;
+    internal::add_const_on_value_type_t<ActualLhs> actualLhs = LhsBlasTraits::extract(prod.lhs());
     
-    typedef typename internal::remove_all<typename ProductType::RhsNested>::type Rhs;
+    typedef internal::remove_all_t<typename ProductType::RhsNested> Rhs;
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhs;
-    typedef typename internal::remove_all<ActualRhs>::type ActualRhs_;
-    typename internal::add_const_on_value_type<ActualRhs>::type actualRhs = RhsBlasTraits::extract(prod.rhs());
+    typedef internal::remove_all_t<ActualRhs> ActualRhs_;
+    internal::add_const_on_value_type_t<ActualRhs> actualRhs = RhsBlasTraits::extract(prod.rhs());
 
     Scalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(prod.lhs().derived()) * RhsBlasTraits::extractScalarFactor(prod.rhs().derived());
 
@@ -256,17 +256,17 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,false>
 {
   static void run(MatrixType& mat, const ProductType& prod, const typename MatrixType::Scalar& alpha, bool beta)
   {
-    typedef typename internal::remove_all<typename ProductType::LhsNested>::type Lhs;
+    typedef internal::remove_all_t<typename ProductType::LhsNested> Lhs;
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhs;
-    typedef typename internal::remove_all<ActualLhs>::type ActualLhs_;
-    typename internal::add_const_on_value_type<ActualLhs>::type actualLhs = LhsBlasTraits::extract(prod.lhs());
+    typedef internal::remove_all_t<ActualLhs> ActualLhs_;
+    internal::add_const_on_value_type_t<ActualLhs> actualLhs = LhsBlasTraits::extract(prod.lhs());
     
-    typedef typename internal::remove_all<typename ProductType::RhsNested>::type Rhs;
+    typedef internal::remove_all_t<typename ProductType::RhsNested> Rhs;
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhs;
-    typedef typename internal::remove_all<ActualRhs>::type ActualRhs_;
-    typename internal::add_const_on_value_type<ActualRhs>::type actualRhs = RhsBlasTraits::extract(prod.rhs());
+    typedef internal::remove_all_t<ActualRhs> ActualRhs_;
+    internal::add_const_on_value_type_t<ActualRhs> actualRhs = RhsBlasTraits::extract(prod.rhs());
 
     typename ProductType::Scalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(prod.lhs().derived()) * RhsBlasTraits::extractScalarFactor(prod.rhs().derived());
 

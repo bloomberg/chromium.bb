@@ -90,9 +90,12 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldStyleChildren() const;
   void DidStyleSelf();
   void DidStyleChildren();
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldLayoutChildren() const;
   void DidLayoutChildren();
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldPrePaintChildren() const;
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldPaintChildren() const;
 
   // Returns true if the last style recalc traversal was blocked at this
@@ -214,6 +217,8 @@ class CORE_EXPORT DisplayLockContext final
 
   void ScheduleTopLayerCheck();
 
+  bool IsShapingDeferred() const;
+
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and
   // |NotifyForcedUpdateScopeEnded()|.
@@ -232,7 +237,7 @@ class CORE_EXPORT DisplayLockContext final
   void RequestUnlock();
 
   // Called in |DisplayLockUtilities| to notify the state of scope.
-  void NotifyForcedUpdateScopeStarted(ForcedPhase phase);
+  void NotifyForcedUpdateScopeStarted(ForcedPhase phase, bool emit_warnings);
   void NotifyForcedUpdateScopeEnded(ForcedPhase phase);
 
   // Records the locked context counts on the document as well as context that

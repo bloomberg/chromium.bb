@@ -112,10 +112,24 @@ const char *GetCommandString(CommandID id)
             return "ResetQueryPool";
         case CommandID::ResolveImage:
             return "ResolveImage";
+        case CommandID::SetBlendConstants:
+            return "SetBlendConstants";
+        case CommandID::SetDepthBias:
+            return "SetDepthBias";
         case CommandID::SetEvent:
             return "SetEvent";
+        case CommandID::SetFragmentShadingRate:
+            return "SetFragmentShadingRate";
+        case CommandID::SetLineWidth:
+            return "SetLineWidth";
         case CommandID::SetScissor:
             return "SetScissor";
+        case CommandID::SetStencilCompareMask:
+            return "SetStencilCompareMask";
+        case CommandID::SetStencilReference:
+            return "SetStencilReference";
+        case CommandID::SetStencilWriteMask:
+            return "SetStencilWriteMask";
         case CommandID::SetViewport:
             return "SetViewport";
         case CommandID::WaitEvents:
@@ -529,16 +543,79 @@ void SecondaryCommandBuffer::executeCommands(PrimaryCommandBuffer *primary)
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &params->region);
                     break;
                 }
+                case CommandID::SetBlendConstants:
+                {
+                    const SetBlendConstantsParams *params =
+                        getParamPtr<SetBlendConstantsParams>(currentCommand);
+                    vkCmdSetBlendConstants(cmdBuffer, params->blendConstants);
+                    break;
+                }
+                case CommandID::SetDepthBias:
+                {
+                    const SetDepthBiasParams *params =
+                        getParamPtr<SetDepthBiasParams>(currentCommand);
+                    vkCmdSetDepthBias(cmdBuffer, params->depthBiasConstantFactor,
+                                      params->depthBiasClamp, params->depthBiasSlopeFactor);
+                    break;
+                }
                 case CommandID::SetEvent:
                 {
                     const SetEventParams *params = getParamPtr<SetEventParams>(currentCommand);
                     vkCmdSetEvent(cmdBuffer, params->event, params->stageMask);
                     break;
                 }
+                case CommandID::SetFragmentShadingRate:
+                {
+                    const SetFragmentShadingRateParams *params =
+                        getParamPtr<SetFragmentShadingRateParams>(currentCommand);
+                    const VkExtent2D fragmentSize = {params->fragmentWidth, params->fragmentHeight};
+                    const VkFragmentShadingRateCombinerOpKHR ops[2] = {
+                        VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR,
+                        VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR};
+                    vkCmdSetFragmentShadingRateKHR(cmdBuffer, &fragmentSize, ops);
+                    break;
+                }
+                case CommandID::SetLineWidth:
+                {
+                    const SetLineWidthParams *params =
+                        getParamPtr<SetLineWidthParams>(currentCommand);
+                    vkCmdSetLineWidth(cmdBuffer, params->lineWidth);
+                    break;
+                }
                 case CommandID::SetScissor:
                 {
                     const SetScissorParams *params = getParamPtr<SetScissorParams>(currentCommand);
                     vkCmdSetScissor(cmdBuffer, 0, 1, &params->scissor);
+                    break;
+                }
+                case CommandID::SetStencilCompareMask:
+                {
+                    const SetStencilCompareMaskParams *params =
+                        getParamPtr<SetStencilCompareMaskParams>(currentCommand);
+                    vkCmdSetStencilCompareMask(cmdBuffer, VK_STENCIL_FACE_FRONT_BIT,
+                                               params->compareFrontMask);
+                    vkCmdSetStencilCompareMask(cmdBuffer, VK_STENCIL_FACE_BACK_BIT,
+                                               params->compareBackMask);
+                    break;
+                }
+                case CommandID::SetStencilReference:
+                {
+                    const SetStencilReferenceParams *params =
+                        getParamPtr<SetStencilReferenceParams>(currentCommand);
+                    vkCmdSetStencilReference(cmdBuffer, VK_STENCIL_FACE_FRONT_BIT,
+                                             params->frontReference);
+                    vkCmdSetStencilReference(cmdBuffer, VK_STENCIL_FACE_BACK_BIT,
+                                             params->backReference);
+                    break;
+                }
+                case CommandID::SetStencilWriteMask:
+                {
+                    const SetStencilWriteMaskParams *params =
+                        getParamPtr<SetStencilWriteMaskParams>(currentCommand);
+                    vkCmdSetStencilWriteMask(cmdBuffer, VK_STENCIL_FACE_FRONT_BIT,
+                                             params->writeFrontMask);
+                    vkCmdSetStencilWriteMask(cmdBuffer, VK_STENCIL_FACE_BACK_BIT,
+                                             params->writeBackMask);
                     break;
                 }
                 case CommandID::SetViewport:

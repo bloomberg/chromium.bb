@@ -118,7 +118,7 @@ TEST_F(MediaStreamTest, GetTrackInfo) {
 }
 
 TEST_F(MediaStreamTest, RemoveTrack) {
-  MockObserver observer(stream_);
+  MockObserver observer(stream_.get());
 
   EXPECT_CALL(observer, OnChanged()).Times(Exactly(2));
 
@@ -133,8 +133,8 @@ TEST_F(MediaStreamTest, RemoveTrack) {
   EXPECT_EQ(0u, stream_->GetVideoTracks().size());
   EXPECT_EQ(0u, stream_->GetVideoTracks().size());
 
-  EXPECT_FALSE(stream_->RemoveTrack(static_cast<AudioTrackInterface*>(NULL)));
-  EXPECT_FALSE(stream_->RemoveTrack(static_cast<VideoTrackInterface*>(NULL)));
+  EXPECT_FALSE(stream_->RemoveTrack(rtc::scoped_refptr<AudioTrackInterface>()));
+  EXPECT_FALSE(stream_->RemoveTrack(rtc::scoped_refptr<VideoTrackInterface>()));
 }
 
 TEST_F(MediaStreamTest, ChangeVideoTrack) {

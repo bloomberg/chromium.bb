@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -30,23 +31,26 @@ class FilePath;
 
 // A callback to notify the change of pending screencasts to
 // ProjectorAppClient::Observer. The argument is the set of pending screencasts
-// owned by PendingSreencastManager.
+// owned by PendingScreencastManager.
 using PendingScreencastChangeCallback =
     base::RepeatingCallback<void(const ash::PendingScreencastSet&)>;
 
 // A class that handles pending screencast events.
-class PendingSreencastManager
+class PendingScreencastManager
     : public drivefs::DriveFsHostObserver,
       public user_manager::UserManager::UserSessionStateObserver,
       public session_manager::SessionManagerObserver {
  public:
-  explicit PendingSreencastManager(
+  explicit PendingScreencastManager(
       PendingScreencastChangeCallback pending_screencast_change_callback);
-  PendingSreencastManager(const PendingSreencastManager&) = delete;
-  PendingSreencastManager& operator=(const PendingSreencastManager&) = delete;
-  ~PendingSreencastManager() override;
+  PendingScreencastManager(const PendingScreencastManager&) = delete;
+  PendingScreencastManager& operator=(const PendingScreencastManager&) = delete;
+  ~PendingScreencastManager() override;
 
   // Test only:
+  base::TimeTicks last_pending_screencast_change_tick() const {
+    return last_pending_screencast_change_tick_;
+  }
   bool IsDriveFsObservationObservingSource(drivefs::DriveFsHost* source) const;
 
   // drivefs::DriveFsHostObserver:
@@ -61,6 +65,7 @@ class PendingSreencastManager
  private:
   // Updates `pending_screencast_cache_` and notifies pending screencast change.
   void OnProcessAndGenerateNewScreencastsFinished(
+      const base::TimeTicks task_start_tick,
       const ash::PendingScreencastSet& screencasts);
 
   // session_manager::SessionManagerObserver:
@@ -100,7 +105,13 @@ class PendingSreencastManager
       &user_manager::UserManager::RemoveSessionStateObserver>
       session_state_observation_{this};
 
-  base::WeakPtrFactory<PendingSreencastManager> weak_ptr_factory_{this};
+  // The time tick when last `pending_screencast_change_callback_` was called.
+  // Could be null if last `pending_screencast_change_callback_` was called with
+  // empty screencasts set or no `pending_screencast_change_callback_` invoked
+  // in the current ChromeOS session.
+  base::TimeTicks last_pending_screencast_change_tick_;
+
+  base::WeakPtrFactory<PendingScreencastManager> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_PROJECTOR_PENDING_SCREENCAST_MANAGER_H_

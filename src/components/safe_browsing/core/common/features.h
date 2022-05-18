@@ -96,10 +96,6 @@ extern const base::Feature kOmitNonUserGesturesFromReferrerChain;
 // for Enhanced Safe Browsing users
 extern const base::Feature kSafeBrowsingCsbrrWithToken;
 
-// Controls whether users will see an account compromise specific warning
-// when Safe Browsing determines a file is associated with stealing cookies.
-extern const base::Feature kSafeBrowsingCTDownloadWarning;
-
 // Controls whether we are performing enterprise download checks for users
 // with the appropriate policies enabled.
 extern const base::Feature kSafeBrowsingEnterpriseCsd;
@@ -155,6 +151,9 @@ extern const base::Feature kUseNewDownloadWarnings;
 // checked for the final size of the visual features and the minimum size of
 // the screen.
 extern const base::Feature kVisualFeaturesSizes;
+
+// Controls whether we send visual features in CSPP pings.
+extern const base::Feature kVisualFeaturesInCsppPings;
 
 base::ListValue GetFeatureStatusList();
 

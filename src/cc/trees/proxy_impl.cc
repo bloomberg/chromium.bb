@@ -188,10 +188,34 @@ void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
     scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
 }
 
-void ProxyImpl::SetDeferBeginMainFrameOnImpl(
-    bool defer_begin_main_frame) const {
+bool ProxyImpl::ShouldDeferBeginMainFrame() const {
+  return main_wants_defer_begin_main_frame_ ||
+         impl_wants_defer_begin_main_frame_;
+}
+
+void ProxyImpl::SetDeferBeginMainFrameFromMain(bool defer_begin_main_frame) {
+  // This is the impl-side update of a main-thread request (that is, through
+  // ProxyMain::SetDeferMainFrameUpdate) to defer BeginMainFrame.
   DCHECK(IsImplThread());
-  scheduler_->SetDeferBeginMainFrame(defer_begin_main_frame);
+  bool was_deferring = ShouldDeferBeginMainFrame();
+
+  main_wants_defer_begin_main_frame_ = defer_begin_main_frame;
+
+  bool should_defer = ShouldDeferBeginMainFrame();
+  if (was_deferring != should_defer)
+    scheduler_->SetDeferBeginMainFrame(ShouldDeferBeginMainFrame());
+}
+
+void ProxyImpl::SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) {
+  // This is a request from the impl thread to defer BeginMainFrame.
+  DCHECK(IsImplThread());
+  bool was_deferring = ShouldDeferBeginMainFrame();
+
+  impl_wants_defer_begin_main_frame_ = defer_begin_main_frame;
+
+  bool should_defer = ShouldDeferBeginMainFrame();
+  if (was_deferring != should_defer)
+    scheduler_->SetDeferBeginMainFrame(ShouldDeferBeginMainFrame());
 }
 
 void ProxyImpl::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
@@ -285,6 +309,14 @@ bool ProxyImpl::IsInSynchronousComposite() const {
 void ProxyImpl::FrameSinksToThrottleUpdated(
     const base::flat_set<viz::FrameSinkId>& ids) {
   NOTREACHED();
+}
+
+void ProxyImpl::ReportEventLatency(
+    std::vector<EventLatencyTracker::LatencyData> latencies) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::ReportEventLatency,
+                                proxy_main_weak_ptr_, std::move(latencies)));
 }
 
 void ProxyImpl::NotifyReadyToCommitOnImpl(
@@ -384,6 +416,11 @@ void ProxyImpl::NotifyReadyToActivate() {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToActivate");
   DCHECK(IsImplThread());
   scheduler_->NotifyReadyToActivate();
+}
+
+bool ProxyImpl::IsReadyToActivate() {
+  DCHECK(IsImplThread());
+  return scheduler_->IsReadyToActivate();
 }
 
 void ProxyImpl::NotifyReadyToDraw() {
@@ -725,11 +762,16 @@ void ProxyImpl::ScheduledActionCommit() {
   }
 
   data_for_commit_.reset();
-  scheduler_->DidCommit();
-  // Delay this step until afer the main thread has been released as it's
-  // often a good bit of work to update the tree and prepare the new frame.
-  host_impl_->CommitComplete();
+}
 
+void ProxyImpl::ScheduledActionPostCommit() {
+  TRACE_EVENT0("cc", "ProxyImpl::ScheduledActionPostCommit");
+  DCHECK(IsImplThread());
+
+  // This is run as a separate step from commit because it can be time-consuming
+  // and ought not delay sending the next BeginMainFrame.
+  host_impl_->CommitComplete();
+  // TODO(szager): This should be set at activation time. crbug.com/1323906
   next_frame_is_newly_committed_frame_ = true;
 }
 
@@ -885,11 +927,6 @@ size_t ProxyImpl::CommitDurationSampleCountForTesting() const {
 void ProxyImpl::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   host_impl_->SetRenderFrameObserver(std::move(observer));
-}
-
-void ProxyImpl::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  host_impl_->SetEnableFrameRateThrottling(enable_frame_rate_throttling);
 }
 
 ProxyImpl::DataForCommit::DataForCommit(

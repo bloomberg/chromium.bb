@@ -17,7 +17,6 @@
 #include "quiche/quic/core/quic_tag.h"
 #include "quiche/quic/core/quic_types.h"
 #include "quiche/quic/core/quic_versions.h"
-#include "quiche/quic/platform/api/quic_containers.h"
 #include "quiche/quic/platform/api/quic_socket_address.h"
 
 namespace quic {
@@ -274,8 +273,7 @@ struct QUIC_EXPORT_PRIVATE TransportParameters {
 // TLS extension. The serialized bytes are written to |*out|. Returns if the
 // parameters are valid and serialization succeeded.
 QUIC_EXPORT_PRIVATE bool SerializeTransportParameters(
-    ParsedQuicVersion version, const TransportParameters& in,
-    std::vector<uint8_t>* out);
+    const TransportParameters& in, std::vector<uint8_t>* out);
 
 // Parses bytes from the quic_transport_parameters TLS extension and writes the
 // parsed parameters into |*out|. Input is read from |in| for |in_len| bytes.

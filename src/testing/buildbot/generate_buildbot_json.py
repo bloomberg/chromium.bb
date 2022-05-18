@@ -87,11 +87,19 @@ class GPUTelemetryTestGenerator(BaseGenerator):
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
     for test_name, test_config in sorted(input_tests.items()):
-      test = self.bb_gen.generate_gpu_telemetry_test(
-          waterfall, tester_name, tester_config, test_name, test_config,
-          self._is_android_webview)
-      if test:
-        isolated_scripts.append(test)
+      # Variants allow more than one definition for a given test, and is defined
+      # in array format from resolve_variants().
+      if not isinstance(test_config, list):
+        test_config = [test_config]
+
+      for config in test_config:
+        test = self.bb_gen.generate_gpu_telemetry_test(waterfall, tester_name,
+                                                       tester_config, test_name,
+                                                       config,
+                                                       self._is_android_webview)
+        if test:
+          isolated_scripts.append(test)
+
     return isolated_scripts
 
   def sort(self, tests):
@@ -429,6 +437,12 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def is_win64(self, tester_config):
     return (tester_config.get('os_type') == 'win' and
         tester_config.get('browser_config') == 'release_x64')
+
+  def add_variant_to_test_name(self, test_name, variant_id):
+    return '{} {}'.format(test_name, variant_id)
+
+  def remove_variant_from_test_name(self, test_name, variant_id):
+    return test_name.split(variant_id)[0].strip()
 
   def get_exception_for_test(self, test_name, test_config):
     # gtests may have both "test" and "name" fields, and usually, if the "name"
@@ -936,8 +950,15 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # (At least, this was true some time ago.) Continue to use this
     # naming convention for the time being to minimize changes.
     step_name = test_config.get('name', test_name)
+    variant_id = test_config.get('variant_id')
+    if variant_id:
+      step_name = self.remove_variant_from_test_name(step_name, variant_id)
     if not (step_name.endswith('test') or step_name.endswith('tests')):
       step_name = '%s_tests' % step_name
+    if variant_id:
+      step_name = self.add_variant_to_test_name(step_name, variant_id)
+      if 'name' in test_config:
+        test_config['name'] = step_name
     result = self.generate_isolated_script_test(
       waterfall, tester_name, tester_config, step_name, test_config)
     if not result:
@@ -1211,8 +1232,15 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         # The identifier is used to make the name of the test unique.
         # Generators in the recipe uniquely identify a test by it's name, so we
         # don't want to have the same name for each variant.
-        cloned_config['name'] = '{} {}'.format(test_name,
-                                               cloned_variant['identifier'])
+        cloned_config['name'] = self.add_variant_to_test_name(
+            cloned_config.get('name') or test_name,
+            cloned_variant['identifier'])
+
+        # Attach the variant identifier to the test config so downstream
+        # generators can make modifications based on the original name. This
+        # is mainly used in generate_gpu_telemetry_test().
+        cloned_config['variant_id'] = cloned_variant['identifier']
+
         definitions.append(cloned_config)
       test_suite[test_name] = definitions
     return test_suite
@@ -1583,7 +1611,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'Optional Win10 x64 Release (Intel HD 630)',
         'Optional Win10 x64 Release (NVIDIA)',
         # chromium.fyi
-        'linux-blink-rel-dummy',
         'linux-blink-optional-highdpi-rel-dummy',
         'mac10.12-blink-rel-dummy',
         'mac10.13-blink-rel-dummy',
@@ -1594,15 +1621,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'win7-blink-rel-dummy',
         'win10.20h2-blink-rel-dummy',
         'win11-blink-rel-dummy',
-        'WebKit Linux layout_ng_disabled Builder',
-        # chromium, due to https://crbug.com/878915
-        'win-dbg',
-        'win32-dbg',
-        'win-archive-dbg',
-        'win32-archive-dbg',
-        # TODO crbug.com/1143924: Remove once experimentation is complete
-        'Linux Builder Robocrop',
-        'Linux Tests Robocrop',
     ]
 
   def get_internal_waterfalls(self):

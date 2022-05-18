@@ -167,6 +167,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		nextPtr  = &physicalDeviceGlobalPriorityQueryFeaturesEXT.pNext;
 	}
 
+	vk::VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR physicalDeviceGlobalPriorityQueryFeaturesKHR;
+	deMemset(&physicalDeviceGlobalPriorityQueryFeaturesKHR, 0, sizeof(physicalDeviceGlobalPriorityQueryFeaturesKHR));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_global_priority")) )
+	{
+		physicalDeviceGlobalPriorityQueryFeaturesKHR.sType = getStructureType<VkPhysicalDeviceGlobalPriorityQueryFeaturesKHR>();
+		*nextPtr = &physicalDeviceGlobalPriorityQueryFeaturesKHR;
+		nextPtr  = &physicalDeviceGlobalPriorityQueryFeaturesKHR.pNext;
+	}
+
 	vk::VkPhysicalDeviceHostQueryResetFeaturesEXT physicalDeviceHostQueryResetFeaturesEXT;
 	deMemset(&physicalDeviceHostQueryResetFeaturesEXT, 0, sizeof(physicalDeviceHostQueryResetFeaturesEXT));
 
@@ -175,6 +185,16 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		physicalDeviceHostQueryResetFeaturesEXT.sType = getStructureType<VkPhysicalDeviceHostQueryResetFeaturesEXT>();
 		*nextPtr = &physicalDeviceHostQueryResetFeaturesEXT;
 		nextPtr  = &physicalDeviceHostQueryResetFeaturesEXT.pNext;
+	}
+
+	vk::VkPhysicalDeviceImage2DViewOf3DFeaturesEXT physicalDeviceImage2DViewOf3DFeaturesEXT;
+	deMemset(&physicalDeviceImage2DViewOf3DFeaturesEXT, 0, sizeof(physicalDeviceImage2DViewOf3DFeaturesEXT));
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_image_2d_view_of_3d")) )
+	{
+		physicalDeviceImage2DViewOf3DFeaturesEXT.sType = getStructureType<VkPhysicalDeviceImage2DViewOf3DFeaturesEXT>();
+		*nextPtr = &physicalDeviceImage2DViewOf3DFeaturesEXT;
+		nextPtr  = &physicalDeviceImage2DViewOf3DFeaturesEXT.pNext;
 	}
 
 	vk::VkPhysicalDeviceImagelessFramebufferFeaturesKHR physicalDeviceImagelessFramebufferFeaturesKHR;
@@ -894,6 +914,15 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		}
 	}
 
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_image_2d_view_of_3d")) )
+	{
+		if ( physicalDeviceImage2DViewOf3DFeaturesEXT.image2DViewOf3D == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature image2DViewOf3D not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
 	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_EXT_index_type_uint8")) )
 	{
 		if ( physicalDeviceIndexTypeUint8FeaturesEXT.indexTypeUint8 == VK_FALSE )
@@ -1160,6 +1189,15 @@ bool checkMandatoryFeatures(const vkt::Context& context)
 		if ( physicalDeviceBufferDeviceAddressFeaturesKHR.bufferDeviceAddress == VK_FALSE )
 		{
 			log << tcu::TestLog::Message << "Mandatory feature bufferDeviceAddress not supported" << tcu::TestLog::EndMessage;
+			result = false;
+		}
+	}
+
+	if ( isExtensionSupported(deviceExtensions, RequiredExtension("VK_KHR_global_priority")) )
+	{
+		if ( physicalDeviceGlobalPriorityQueryFeaturesKHR.globalPriorityQuery == VK_FALSE )
+		{
+			log << tcu::TestLog::Message << "Mandatory feature globalPriorityQuery not supported" << tcu::TestLog::EndMessage;
 			result = false;
 		}
 	}

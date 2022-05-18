@@ -22,6 +22,7 @@
 <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="1867772173333403444">4. Izberite Chromium.</translation>
 <translation id="2006345422933397527">Chromium ni mogel preveriti, ali so na voljo posodobitve. Poskusite preveriti internetno povezavo.</translation>
+<translation id="2052320862053429062">Chromium občasno preveri vaša gesla, tako da jih primerja s seznami gesel, objavljenimi v spletu. Pri tem so vaša gesla in uporabniška imena šifrirana, da jih ne more prebrati nihče, vključno z Googlom.</translation>
 <translation id="2054703085270098503">Ostanite varni s Chromiumom</translation>
 <translation id="2168108852149185974">Nekateri dodatki povzročajo zrušitve Chromiuma. Odstranite jih:</translation>
 <translation id="2178608107313874732">Chromium trenutno ne more uporabljati fotoaparata</translation>
@@ -49,6 +50,7 @@
 <translation id="3805899903892079518">Chromium nima dostopa do fotografij ali videoposnetkov. Omogočite dostop v sistemu iOS: Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4043291146360695975">Gesla so shranjena v upravitelju gesel samo v tej napravi.</translation>
 <translation id="4099085513035183040">Ni podprto v Chromiumu Beta</translation>
+<translation id="4432744876818348753">Prijavite se, če želite čim bolje izkoristiti Chromium.</translation>
 <translation id="4555020257205549924">Kadar je vklopljena ta funkcija, bo Chromium ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Zdaj lahko uporabljate Chromium, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
 <translation id="4654936625574199632">Zaradi izboljšanja aplikacije Chromium Googlu pošlje poročila o uporabi in zrušitvah. <ph name="BEGIN_LINK" />Upravljanje<ph name="END_LINK" /></translation>
@@ -81,6 +83,7 @@
 <translation id="632825460376924298">Omogočanje prijave v Chromium</translation>
 <translation id="6337530241089703714">Izberite, ali želite izbrisati podatke v Chromiumu iz te naprave ali jih obdržati.</translation>
 <translation id="6424492062988593837">Chromium je izboljšan! Na voljo je nova različica.</translation>
+<translation id="6625409903340039086">Chromium zdaj podpira uporabniške pravilnike za vaš upravljani račun</translation>
 <translation id="6752854822223394465">Vaša organizacija nastavlja Chromium …</translation>
 <translation id="6820823224820483452">Chromiumu ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
 <translation id="7006920032187763988">Gesla, ki ste jih shranili v upravitelju gesel, lahko uporabite v drugih aplikacijah v iPadu.</translation>
@@ -102,6 +105,7 @@
 <translation id="7674213385180944843">Odprite Settings &gt; Privacy &gt; Camera &gt; Chromium in vklopite fotoaparat.</translation>
 <translation id="7746854981345936341">Nasvet za Chromium. Nekateri gumbi, na primer gumbi za nazaj, naprej in iskanje, so zdaj na dnu zaslona.</translation>
 <translation id="7763454117143368771">Uporabljajte Chromium kot privzeti brskalnik, če se želite zaščititi pred nevarnimi spletnimi mesti in poskrbeti za varnost gesel.</translation>
+<translation id="7812317783196516890">Prijavljeni ste in poteka sinhronizacija podatkov z računom, ki ga upravlja domena <ph name="DOMAIN" />, kjer lahko skrbnik zdaj nastavi uporabniške pravilnike, specifične za ta račun, to pa lahko spremeni način delovanja Chromiuma.</translation>
 <translation id="786327964234957808">Z računa za sinhronizacijo <ph name="USER_EMAIL1" /> boste preklopili na račun <ph name="USER_EMAIL2" />. Obstoječe podatke v Chromiumu upravlja <ph name="DOMAIN" />. S tem boste izbrisali podatke iz te naprave, vendar bodo vaši podatki še vedno na voljo v računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Začnite uporabljati optični bralnik Chromium</translation>
 <translation id="7928628054454574139">Odpiranje Chromiuma ob vsakem dotiku povezav v drugih aplikacijah.</translation>

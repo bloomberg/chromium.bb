@@ -17,9 +17,9 @@ struct SkIPoint16;
 struct SkIRect;
 
 /**
- * This class implements a dynamic size GrRectanizer that grows until it reaches the implementation-
- * dependent max texture size. When finalized, it also creates and stores a GrTextureProxy for the
- * underlying atlas.
+ * This class implements a dynamic size skgpu::Rectanizer that grows until it reaches the
+ * implementation-dependent max texture size. When finalized, it also creates and stores a
+ * GrTextureProxy for the underlying atlas.
  */
 class GrDynamicAtlas {
 public:
@@ -72,7 +72,8 @@ public:
     // 'backingTexture', if provided, is a renderable texture with which to instantiate our proxy.
     // If null then we will create a texture using the resource provider. The purpose of this param
     // is to provide a guaranteed way to recycle textures from previous atlases.
-    void instantiate(GrOnFlushResourceProvider*, sk_sp<GrTexture> backingTexture = nullptr);
+    bool SK_WARN_UNUSED_RESULT instantiate(GrOnFlushResourceProvider*,
+                                           sk_sp<GrTexture> backingTexture = nullptr);
 
 private:
     class Node;

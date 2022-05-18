@@ -42,9 +42,6 @@ IncognitoMenuView::IncognitoMenuView(views::Button* anchor_button,
           browser->profile()->GetOTRProfileID().IsUniqueForCEF()));
   GetViewAccessibility().OverrideName(GetAccessibleWindowTitle());
 
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::INCOGNITO_WINDOW_COUNT);
-
   base::RecordAction(base::UserMetricsAction("IncognitoMenu_Show"));
 }
 

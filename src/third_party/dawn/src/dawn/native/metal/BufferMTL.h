@@ -23,44 +23,47 @@
 
 namespace dawn::native::metal {
 
-    class CommandRecordingContext;
-    class Device;
+class CommandRecordingContext;
+class Device;
 
-    class Buffer final : public BufferBase {
-      public:
-        static ResultOrError<Ref<Buffer>> Create(Device* device,
-                                                 const BufferDescriptor* descriptor);
-        id<MTLBuffer> GetMTLBuffer() const;
+class Buffer final : public BufferBase {
+  public:
+    static ResultOrError<Ref<Buffer>> Create(Device* device, const BufferDescriptor* descriptor);
 
-        bool EnsureDataInitialized(CommandRecordingContext* commandContext);
-        bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
-                                                uint64_t offset,
-                                                uint64_t size);
-        bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
-                                                const CopyTextureToBufferCmd* copy);
+    Buffer(DeviceBase* device, const BufferDescriptor* descriptor);
 
-        static uint64_t QueryMaxBufferLength(id<MTLDevice> mtlDevice);
+    id<MTLBuffer> GetMTLBuffer() const;
 
-      private:
-        using BufferBase::BufferBase;
-        MaybeError Initialize(bool mappedAtCreation);
+    bool EnsureDataInitialized(CommandRecordingContext* commandContext);
+    bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+                                            uint64_t offset,
+                                            uint64_t size);
+    bool EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+                                            const CopyTextureToBufferCmd* copy);
 
-        ~Buffer() override;
-        MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
-        void UnmapImpl() override;
-        void DestroyImpl() override;
-        void* GetMappedPointerImpl() override;
-        bool IsCPUWritableAtCreation() const override;
-        MaybeError MapAtCreationImpl() override;
+    static uint64_t QueryMaxBufferLength(id<MTLDevice> mtlDevice);
 
-        void InitializeToZero(CommandRecordingContext* commandContext);
-        void ClearBuffer(CommandRecordingContext* commandContext,
-                         uint8_t clearValue,
-                         uint64_t offset = 0,
-                         uint64_t size = 0);
+  private:
+    using BufferBase::BufferBase;
+    MaybeError Initialize(bool mappedAtCreation);
 
-        NSPRef<id<MTLBuffer>> mMtlBuffer;
-    };
+    ~Buffer() override;
+
+    MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
+    void UnmapImpl() override;
+    void DestroyImpl() override;
+    void* GetMappedPointerImpl() override;
+    bool IsCPUWritableAtCreation() const override;
+    MaybeError MapAtCreationImpl() override;
+
+    void InitializeToZero(CommandRecordingContext* commandContext);
+    void ClearBuffer(CommandRecordingContext* commandContext,
+                     uint8_t clearValue,
+                     uint64_t offset = 0,
+                     uint64_t size = 0);
+
+    NSPRef<id<MTLBuffer>> mMtlBuffer;
+};
 
 }  // namespace dawn::native::metal
 

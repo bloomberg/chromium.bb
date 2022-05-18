@@ -17,13 +17,13 @@
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/WireServer.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::Mock;
 
 class WireInjectSwapChainTests : public WireTest {
   public:
-    WireInjectSwapChainTests() {
-    }
+    WireInjectSwapChainTests() {}
     ~WireInjectSwapChainTests() override = default;
 };
 
@@ -114,3 +114,5 @@ TEST_F(WireInjectSwapChainTests, ReclaimSwapChainReservation) {
         FlushClient();
     }
 }
+
+}  // namespace dawn::wire

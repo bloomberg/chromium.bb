@@ -144,6 +144,12 @@ __attribute__((unused)) static void WriteFile(const std::string& file_name,
   return WriteFile(file_name, data.data(), data.size());
 }
 
+// Returns true if the |key| is present in |container|.
+template <typename ContainerType, class KeyType>
+bool ContainsKey(const ContainerType& container, const KeyType& key) {
+  return container.find(key) != container.end();
+}
+
 // Represents an opaque (from Perfetto's point of view) thread identifier (e.g.,
 // base::PlatformThreadId in Chromium).
 struct MyThreadId {
@@ -184,6 +190,7 @@ struct TraceTimestampTraits<MyTimestamp> {
 namespace {
 
 using perfetto::TracingInitArgs;
+using perfetto::internal::TrackEventIncrementalState;
 using perfetto::internal::TrackEventInternal;
 using ::testing::_;
 using ::testing::ContainerEq;
@@ -785,6 +792,25 @@ class PerfettoApiTest : public ::testing::TestWithParam<perfetto::BackendType> {
     return 0;
   }
 
+  static std::vector<char> StopSessionAndReturnBytes(
+      TestTracingSessionHandle* tracing_session) {
+    perfetto::TrackEvent::Flush();
+    tracing_session->get()->StopBlocking();
+    return tracing_session->get()->ReadTraceBlocking();
+  }
+
+  static perfetto::protos::gen::Trace StopSessionAndReturnParsedTrace(
+      TestTracingSessionHandle* tracing_session) {
+    std::vector<char> raw_trace = StopSessionAndReturnBytes(tracing_session);
+    perfetto::protos::gen::Trace trace;
+    if (trace.ParseFromArray(raw_trace.data(), raw_trace.size())) {
+      return trace;
+    } else {
+      ADD_FAILURE() << "trace.ParseFromArray failed";
+      return perfetto::protos::gen::Trace();
+    }
+  }
+
   std::map<std::string, TestDataSourceHandle> data_sources_;
   std::list<TestTracingSessionHandle> sessions_;  // Needs stable pointers.
 };
@@ -954,6 +980,122 @@ void TestCategoryAsTemplateParameter() {
   TRACE_EVENT_BEGIN(category, "Name");
 }
 
+// Sleep for |nano_seconds| in a way that this duration is counted in
+// thread_time. i.e. sleep without using OS's sleep method, which blocks the
+// thread and OS doesn't schedule it until expected wake-up-time.
+void SpinForThreadTimeNanos(int64_t nano_seconds) {
+  auto time_now = perfetto::base::GetThreadCPUTimeNs().count();
+  auto goal_time = time_now + nano_seconds;
+  while (perfetto::base::GetThreadCPUTimeNs().count() < goal_time) {
+  }
+}
+
+TEST_P(PerfettoApiTest, TrackEventTimestampUnitAbsolute) {
+  for (auto unit_multiplier : {1u, 1000u}) {
+    perfetto::protos::gen::TrackEventConfig te_cfg;
+    te_cfg.set_disable_incremental_timestamps(true);
+    te_cfg.set_timestamp_unit_multiplier(unit_multiplier);
+    auto* tracing_session = NewTraceWithCategories({"foo"}, te_cfg);
+    tracing_session->get()->StartBlocking();
+    int64_t t_before = static_cast<int64_t>(TrackEventInternal::GetTimeNs());
+    TRACE_EVENT_BEGIN("foo", "Event1");
+    SpinForThreadTimeNanos(1000000);
+    TRACE_EVENT_BEGIN("foo", "Event2");
+    SpinForThreadTimeNanos(1000000);
+    TRACE_EVENT_BEGIN("foo", "Event3");
+    int64_t t_after = static_cast<int64_t>(TrackEventInternal::GetTimeNs());
+    auto trace = StopSessionAndReturnParsedTrace(tracing_session);
+    std::unordered_map<std::string, int64_t> event_map;
+    bool found_absolute_clock = false;
+    for (const auto& packet : trace.packet()) {
+      if (packet.has_interned_data()) {
+        if (packet.interned_data().event_names().size() == 1) {
+          auto& event_name = packet.interned_data().event_names()[0].name();
+          event_map[event_name] = static_cast<int64_t>(packet.timestamp());
+        }
+      }
+      if (packet.has_trace_packet_defaults()) {
+        auto clock_id = packet.trace_packet_defaults().timestamp_clock_id();
+        EXPECT_EQ(unit_multiplier == 1
+                      ? static_cast<uint32_t>(TrackEventInternal::GetClockId())
+                      : TrackEventIncrementalState::kClockIdAbsolute,
+                  clock_id);
+        if (packet.has_clock_snapshot()) {
+          for (auto& clock : packet.clock_snapshot().clocks()) {
+            if (clock.clock_id() ==
+                TrackEventIncrementalState::kClockIdAbsolute) {
+              found_absolute_clock = true;
+              EXPECT_EQ(unit_multiplier, clock.unit_multiplier_ns());
+              EXPECT_FALSE(clock.is_incremental());
+            }
+          }
+        }
+      }
+    }
+
+    EXPECT_EQ((unit_multiplier == 1000), found_absolute_clock);
+
+    auto e1_t = event_map.at("Event1");
+    auto e2_t = event_map.at("Event2");
+    auto e3_t = event_map.at("Event3");
+
+    int64_t min_delta = 1000000 / unit_multiplier;
+    int64_t max_delta = (t_after - t_before) / unit_multiplier;
+
+    EXPECT_LE(t_before / unit_multiplier, e1_t);
+    EXPECT_LE(e3_t, t_after / unit_multiplier);
+
+    EXPECT_GE(e2_t - e1_t, min_delta);
+    EXPECT_GE(e3_t - e2_t, min_delta);
+
+    EXPECT_LE(e2_t - e1_t, max_delta);
+    EXPECT_LE(e3_t - e2_t, max_delta);
+  }
+}
+
+TEST_P(PerfettoApiTest, TrackEventTimestampUnitIncremental) {
+  for (auto unit_multiplier : {1u, 1000u}) {
+    perfetto::protos::gen::TrackEventConfig te_cfg;
+    te_cfg.set_enable_thread_time_sampling(true);
+    te_cfg.set_timestamp_unit_multiplier(unit_multiplier);
+    auto* tracing_session = NewTraceWithCategories({"foo"}, te_cfg);
+    tracing_session->get()->StartBlocking();
+    SpinForThreadTimeNanos(1000000);
+    TRACE_EVENT_BEGIN("foo", "Event1");
+    SpinForThreadTimeNanos(1000000);
+    TRACE_EVENT_BEGIN("foo", "Event2");
+    SpinForThreadTimeNanos(1000000);
+    TRACE_EVENT_BEGIN("foo", "Event3");
+    auto trace = StopSessionAndReturnParsedTrace(tracing_session);
+    struct TimeInfo {
+      int64_t timestamp;
+      int64_t thread_time;
+    };
+    std::unordered_map<std::string, TimeInfo> event_map;
+    for (const auto& packet : trace.packet()) {
+      if (packet.has_interned_data()) {
+        if (packet.interned_data().event_names().size() == 1) {
+          auto& event_name = packet.interned_data().event_names()[0].name();
+          if (packet.has_track_event() &&
+              packet.track_event().extra_counter_values().size() > 0) {
+            auto thread_time = packet.track_event().extra_counter_values()[0];
+            event_map[event_name] = {static_cast<int64_t>(packet.timestamp()),
+                                     thread_time};
+          }
+        }
+      }
+    }
+    int min_delta = 1000 * (unit_multiplier == 1 ? 1000 : 1);
+
+    EXPECT_EQ(0, event_map.at("Event1").timestamp);
+    EXPECT_GT(event_map.at("Event2").timestamp, min_delta);
+    EXPECT_GT(event_map.at("Event3").timestamp, min_delta);
+
+    EXPECT_GT(event_map.at("Event2").thread_time, min_delta);
+    EXPECT_GT(event_map.at("Event3").thread_time, min_delta);
+  }
+}
+
 TEST_P(PerfettoApiTest, TrackEvent) {
   // Create a new trace session.
   auto* tracing_session = NewTraceWithCategories({"test"});
@@ -992,7 +1134,7 @@ TEST_P(PerfettoApiTest, TrackEvent) {
   uint64_t recent_absolute_time_ns = 0;
   bool found_incremental_clock = false;
   constexpr auto kClockIdIncremental =
-      perfetto::internal::TrackEventIncrementalState::kClockIdIncremental;
+      TrackEventIncrementalState::kClockIdIncremental;
 
   for (const auto& packet : trace.packet()) {
     if (packet.has_track_descriptor()) {
@@ -1090,7 +1232,7 @@ TEST_P(PerfettoApiTest, TrackEventWithIncrementalTimestamp) {
     te_cfg.set_disable_incremental_timestamps(disable_incremental_timestamps);
     auto* tracing_session = NewTraceWithCategories({"bar"}, te_cfg);
     constexpr auto kClockIdIncremental =
-        perfetto::internal::TrackEventIncrementalState::kClockIdIncremental;
+        TrackEventIncrementalState::kClockIdIncremental;
     tracing_session->get()->StartBlocking();
 
     std::map<uint64_t, std::string> event_names;
@@ -2142,6 +2284,86 @@ TEST_P(PerfettoApiTest, InlineTrackEventTypedArgs_NestedSingle) {
 
   tracing_session->get()->StopBlocking();
   std::vector<char> raw_trace = tracing_session->get()->ReadTraceBlocking();
+}
+
+TEST_P(PerfettoApiTest, TrackEventThreadTime) {
+  for (auto enable_thread_time : {true, false}) {
+    perfetto::protos::gen::TrackEventConfig te_cfg;
+    te_cfg.set_enable_thread_time_sampling(enable_thread_time);
+    auto* tracing_session = NewTraceWithCategories({"foo"}, te_cfg);
+
+    tracing_session->get()->StartBlocking();
+
+    perfetto::Track custom_track(1);
+
+    TRACE_EVENT_BEGIN("foo", "event1");
+    TRACE_EVENT_BEGIN("foo", "event2");
+    TRACE_EVENT_BEGIN("foo", "event3");
+    TRACE_EVENT_BEGIN("foo", "event4", custom_track);
+    TRACE_EVENT_END("foo");
+    TRACE_EVENT_END("foo");
+    TRACE_EVENT_END("foo");
+    TRACE_EVENT_END("foo");
+
+    tracing_session->get()->StopBlocking();
+
+    std::vector<char> raw_trace = tracing_session->get()->ReadTraceBlocking();
+
+    perfetto::protos::gen::Trace parsed_trace;
+    EXPECT_TRUE(
+        parsed_trace.ParseFromArray(raw_trace.data(), raw_trace.size()));
+
+    bool found_counter_track_descriptor = false;
+    uint64_t thread_time_counter_uuid = 0;
+    uint64_t default_counter_uuid = 0;
+    std::unordered_set<std::string> event_names;
+    for (const auto& packet : parsed_trace.packet()) {
+      if (packet.has_track_descriptor() &&
+          packet.track_descriptor().has_counter()) {
+        EXPECT_FALSE(found_counter_track_descriptor);
+        found_counter_track_descriptor = true;
+        thread_time_counter_uuid = packet.track_descriptor().uuid();
+        EXPECT_EQ("thread_time", packet.track_descriptor().name());
+        auto counter = packet.track_descriptor().counter();
+        EXPECT_EQ(
+            perfetto::protos::gen::
+                CounterDescriptor_BuiltinCounterType_COUNTER_THREAD_TIME_NS,
+            counter.type());
+        EXPECT_TRUE(counter.is_incremental());
+      }
+      if (packet.has_trace_packet_defaults()) {
+        auto& defaults = packet.trace_packet_defaults().track_event_defaults();
+        ASSERT_EQ(enable_thread_time ? 1u : 0u,
+                  defaults.extra_counter_track_uuids().size());
+        if (enable_thread_time) {
+          default_counter_uuid = defaults.extra_counter_track_uuids().at(0);
+        }
+      }
+      if (packet.has_track_event()) {
+        std::string event_name;
+        if (packet.has_interned_data()) {
+          auto& event_names_info = packet.interned_data().event_names();
+          if (event_names_info.size() > 0) {
+            event_name = event_names_info[0].name();
+          }
+        }
+        event_names.insert(event_name);
+        EXPECT_EQ((enable_thread_time && event_name != "event4") ? 1u : 0u,
+                  packet.track_event().extra_counter_values().size());
+      }
+    }
+    EXPECT_TRUE(ContainsKey(event_names, "event1"));
+    EXPECT_TRUE(ContainsKey(event_names, "event2"));
+    EXPECT_TRUE(ContainsKey(event_names, "event3"));
+    EXPECT_TRUE(ContainsKey(event_names, "event4"));
+    EXPECT_EQ(enable_thread_time, found_counter_track_descriptor);
+    EXPECT_EQ(default_counter_uuid, thread_time_counter_uuid);
+    if (enable_thread_time) {
+      EXPECT_GT(thread_time_counter_uuid, 0u);
+    } else {
+      EXPECT_EQ(thread_time_counter_uuid, 0u);
+    }
+  }
 }
 
 TEST_P(PerfettoApiTest, TrackEventArgs_TypedAndUntyped) {

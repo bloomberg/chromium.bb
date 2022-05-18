@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
+#include <set>
+#include <vector>
 
 #include "dawn/common/Math.h"
 #include "dawn/common/SlabAllocator.h"
+#include "gtest/gtest.h"
 
 namespace {
 
-    struct Foo : public PlacementAllocated {
-        Foo(int value) : value(value) {
-        }
+struct Foo : public PlacementAllocated {
+    explicit Foo(int value) : value(value) {}
 
-        int value;
-    };
+    int value;
+};
 
-    struct alignas(256) AlignedFoo : public Foo {
-        using Foo::Foo;
-    };
+struct alignas(256) AlignedFoo : public Foo {
+    using Foo::Foo;
+};
 
 }  // namespace
 

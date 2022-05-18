@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/TestUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
@@ -33,14 +34,14 @@
 
 namespace {
 
-    struct BufferZeroInitInCopyT2BSpec {
-        wgpu::Extent3D textureSize;
-        uint64_t bufferOffset;
-        uint64_t extraBytes;
-        uint32_t bytesPerRow;
-        uint32_t rowsPerImage;
-        uint32_t lazyClearCount;
-    };
+struct BufferZeroInitInCopyT2BSpec {
+    wgpu::Extent3D textureSize;
+    uint64_t bufferOffset;
+    uint64_t extraBytes;
+    uint32_t bytesPerRow;
+    uint32_t rowsPerImage;
+    uint32_t lazyClearCount;
+};
 
 }  // anonymous namespace
 
@@ -189,7 +190,7 @@ class BufferZeroInitTest : public DawnTest {
         wgpu::ComputePassEncoder computePass = encoder.BeginComputePass();
         computePass.SetBindGroup(0, bindGroup);
         computePass.SetPipeline(pipeline);
-        computePass.Dispatch(1u);
+        computePass.DispatchWorkgroups(1u);
         computePass.End();
         wgpu::CommandBuffer commandBuffer = encoder.Finish();
 
@@ -457,7 +458,7 @@ class BufferZeroInitTest : public DawnTest {
         wgpu::ComputePassEncoder computePass = encoder.BeginComputePass();
         computePass.SetBindGroup(0, bindGroup);
         computePass.SetPipeline(pipeline);
-        computePass.DispatchIndirect(indirectBuffer, indirectBufferOffset);
+        computePass.DispatchWorkgroupsIndirect(indirectBuffer, indirectBufferOffset);
         computePass.End();
 
         ExpectLazyClearSubmitAndCheckOutputs(encoder, indirectBuffer, bufferSize, outputTexture);
@@ -1135,8 +1136,8 @@ TEST_P(BufferZeroInitTest, SetVertexBuffer) {
 // draw call. A backend which implements robust buffer access via clamping should
 // still see zeros at the end of the buffer.
 TEST_P(BufferZeroInitTest, PaddingInitialized) {
-    DAWN_SUPPRESS_TEST_IF(IsANGLE());                              // TODO(crbug.com/dawn/1084).
-    DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsNvidia());  // TODO(crbug.com/dawn/1214).
+    DAWN_SUPPRESS_TEST_IF(IsANGLE());                              // TODO(crbug.com/dawn/1084)
+    DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsNvidia());  // TODO(crbug.com/dawn/1214)
 
     constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
     // A small sub-4-byte format means a single vertex can fit entirely within the padded buffer,
@@ -1255,6 +1256,10 @@ TEST_P(BufferZeroInitTest, SetIndexBuffer) {
 // Test the buffer will be lazily initialized correctly when its first use is an indirect buffer for
 // DrawIndirect.
 TEST_P(BufferZeroInitTest, IndirectBufferForDrawIndirect) {
+    // TODO(crbug.com/dawn/1292): Some Intel OpenGL drivers don't seem to like
+    // the offset= that Tint/GLSL produces.
+    DAWN_SUPPRESS_TEST_IF(IsIntel() && IsOpenGL() && IsLinux());
+
     // Bind the whole buffer as an indirect buffer.
     {
         constexpr uint64_t kOffset = 0u;
@@ -1273,7 +1278,7 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDrawIndirect) {
 TEST_P(BufferZeroInitTest, IndirectBufferForDrawIndexedIndirect) {
     // TODO(crbug.com/dawn/1292): Some Intel OpenGL drivers don't seem to like
     // the offset= that Tint/GLSL produces.
-    DAWN_SUPPRESS_TEST_IF(IsIntel() && IsOpenGL());
+    DAWN_SUPPRESS_TEST_IF(IsIntel() && IsOpenGL() && IsLinux());
 
     // Bind the whole buffer as an indirect buffer.
     {

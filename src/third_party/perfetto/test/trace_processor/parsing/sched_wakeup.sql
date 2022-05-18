@@ -13,8 +13,9 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-select ts, tid
-from instants
-inner join thread on instants.ref = thread.utid
-where instants.name = 'sched_wakeup'
-limit 20
+SELECT ts, tid
+FROM thread_state
+JOIN thread USING (utid)
+WHERE state = 'R'
+ORDER BY ts
+LIMIT 20

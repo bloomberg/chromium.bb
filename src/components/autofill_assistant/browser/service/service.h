@@ -55,7 +55,10 @@ class Service {
   // Get user data.
   virtual void GetUserData(const CollectUserDataOptions& options,
                            uint64_t run_id,
+                           const UserData* user_data,
                            ServiceRequestSender::ResponseCallback callback) = 0;
+
+  virtual void SetDisableRpcSigning(bool disable_rpc_signing) {}
 
  protected:
   Service() = default;

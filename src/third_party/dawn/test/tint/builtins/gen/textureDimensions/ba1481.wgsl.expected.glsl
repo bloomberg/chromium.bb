@@ -1,19 +1,30 @@
 #version 310 es
 
+struct GammaTransferParams {
+  float G;
+  float A;
+  float B;
+  float C;
+  float D;
+  float E;
+  float F;
+  uint padding;
+};
+
 struct ExternalTextureParams {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 };
 
 layout(binding = 2) uniform ExternalTextureParams_1 {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 } ext_tex_params;
 
 uniform highp sampler2D arg_0_1;
@@ -27,6 +38,7 @@ vec4 vertex_main() {
 }
 
 void main() {
+  gl_PointSize = 1.0;
   vec4 inner_result = vertex_main();
   gl_Position = inner_result;
   gl_Position.y = -(gl_Position.y);
@@ -36,20 +48,31 @@ void main() {
 #version 310 es
 precision mediump float;
 
+struct GammaTransferParams {
+  float G;
+  float A;
+  float B;
+  float C;
+  float D;
+  float E;
+  float F;
+  uint padding;
+};
+
 struct ExternalTextureParams {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 };
 
 layout(binding = 2) uniform ExternalTextureParams_1 {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 } ext_tex_params;
 
 uniform highp sampler2D arg_0_1;
@@ -67,20 +90,31 @@ void main() {
 }
 #version 310 es
 
+struct GammaTransferParams {
+  float G;
+  float A;
+  float B;
+  float C;
+  float D;
+  float E;
+  float F;
+  uint padding;
+};
+
 struct ExternalTextureParams {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 };
 
 layout(binding = 2) uniform ExternalTextureParams_1 {
   uint numPlanes;
-  float vr;
-  float ug;
-  float vg;
-  float ub;
+  mat3x4 yuvToRgbConversionMatrix;
+  GammaTransferParams gammaDecodeParams;
+  GammaTransferParams gammaEncodeParams;
+  mat3 gamutConversionMatrix;
 } ext_tex_params;
 
 uniform highp sampler2D arg_0_1;

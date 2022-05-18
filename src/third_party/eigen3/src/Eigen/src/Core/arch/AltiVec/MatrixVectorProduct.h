@@ -12,7 +12,7 @@
 
 #include "../../InternalHeaderCheck.h"
 
-#if defined(__MMA__) && !defined(EIGEN_ALTIVEC_DISABLE_MMA)
+#if defined(__MMA__) && !EIGEN_ALTIVEC_DISABLE_MMA
 #if EIGEN_COMP_LLVM || (__GNUC__ > 10 || __GNUC_MINOR__ >= 3)
 #define USE_GEMV_MMA
 #endif
@@ -120,8 +120,8 @@ EIGEN_ALWAYS_INLINE void storeMaddData(ResScalar* res, ResScalar& alpha, ResScal
   GEMV_BUILDPAIR_MMA(b##iter1, GEMV_LOADPACKET_COL(iter2), GEMV_LOADPACKET_COL((iter2) + 1));
 #else
 #define GEMV_LOADPAIR_COL_MMA(iter1, iter2) \
-  const LhsScalar& src##iter1 = lhs(i + 0, j); \
-  __asm__ ("lxvp %x0,%1(%2)" : "=wa" (b##iter1) : "K" (iter1 * 32), "a" (&src##iter1));
+  const LhsScalar& src##iter1 = lhs(i + ((iter1 * 32) / sizeof(LhsScalar)), j); \
+  b##iter1 = *reinterpret_cast<__vector_pair *>(const_cast<LhsScalar *>(&src##iter1));
 #endif
 
 #define GEMV_LOAD1A_COL_MMA(iter, N) \
@@ -503,7 +503,11 @@ EIGEN_ALWAYS_INLINE Packet1cd pconj2(const Packet1cd& a) {
 
 /** \internal packet conjugate with real & imaginary operation inverted */
 EIGEN_ALWAYS_INLINE Packet2cf pconjinv(const Packet2cf& a) {
+#ifdef __POWER8_VECTOR__
+    return Packet2cf(Packet4f(vec_neg(Packet2d(a.v))));
+#else
     return Packet2cf(pxor(a.v, reinterpret_cast<Packet4f>(p16uc_COMPLEX32_CONJ_XOR2)));
+#endif
 }
 
 EIGEN_ALWAYS_INLINE Packet1cd pconjinv(const Packet1cd& a) {
@@ -555,12 +559,20 @@ EIGEN_ALWAYS_INLINE Packet1cd pcplxconjflip(Packet1cd a)
 /** \internal packet negate */
 EIGEN_ALWAYS_INLINE Packet2cf pnegate2(Packet2cf a)
 {
+#ifdef __POWER8_VECTOR__
+    return Packet2cf(vec_neg(a.v));
+#else
     return Packet2cf(pxor(a.v, reinterpret_cast<Packet4f>(p16uc_COMPLEX32_NEGATE)));
+#endif
 }
 
 EIGEN_ALWAYS_INLINE Packet1cd pnegate2(Packet1cd a)
 {
+#ifdef __POWER8_VECTOR__
+    return Packet1cd(vec_neg(a.v));
+#else
     return Packet1cd(pxor(a.v, reinterpret_cast<Packet2d>(p16uc_COMPLEX64_NEGATE)));
+#endif
 }
 
 /** \internal flip the real & imaginary results and negate */
@@ -637,13 +649,24 @@ EIGEN_ALWAYS_INLINE void pload_realimag(RhsScalar* src, Packet2d& r, Packet2d& i
 #endif
 }
 
+#ifndef __POWER8_VECTOR__
+const Packet16uc p16uc_MERGEE = { 0x00, 0x01, 0x02, 0x03, 0x10, 0x11, 0x12, 0x13, 0x08, 0x09, 0x0A, 0x0B, 0x18, 0x19, 0x1A, 0x1B };
+
+const Packet16uc p16uc_MERGEO = { 0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17, 0x0C, 0x0D, 0x0E, 0x0F, 0x1C, 0x1D, 0x1E, 0x1F };
+#endif
+
 /** \internal load two vectors from the interleaved real & imaginary values of src */
 template<typename RhsScalar>
 EIGEN_ALWAYS_INLINE void pload_realimag_row(RhsScalar* src, Packet4f& r, Packet4f& i)
 {
     Packet4f t = ploadu<Packet4f>(reinterpret_cast<float*>(src));
+#ifdef __POWER8_VECTOR__
     r = vec_mergee(t, t);
     i = vec_mergeo(t, t);
+#else
+    r = vec_perm(t, t, p16uc_MERGEE);
+    i = vec_perm(t, t, p16uc_MERGEO);
+#endif
 }
 
 template<typename RhsScalar>
@@ -909,7 +932,7 @@ EIGEN_ALWAYS_INLINE void pstoreu_pmadd_complex(PResPacket& c0, PResPacket& c1, A
 {
     PResPacket c2 = pcplxflipconj(c0);
     PResPacket c3 = pcplxflipconj(c1);
-#if EIGEN_COMP_LLVM
+#if EIGEN_COMP_LLVM || !defined(_ARCH_PWR10)
     ScalarPacket c4 = pload_complex<ResPacket>(res + (iter2 * ResPacketSize));
     ScalarPacket c5 = pload_complex<ResPacket>(res + ((iter2 + 1) * ResPacketSize));
     PResPacket c6 = PResPacket(pmadd_complex<ScalarPacket, AlphaData>(c0.v, c2.v, c4, b0));
@@ -1389,8 +1412,8 @@ EIGEN_ALWAYS_INLINE void disassembleResults(__vector_quad* c0, PacketBlock<Scala
 #else
 #define GEMV_LOADPAIR_COL_COMPLEX_MMA(iter1, iter2) \
   if (sizeof(LhsPacket) == 16) { \
-    const LhsScalar& src = lhs(i + 0, j); \
-    __asm__ ("lxvp %x0,%1(%2)" : "=wa" (a##iter1) : "K" (iter1 * 32), "a" (&src)); \
+    const LhsScalar& src = lhs(i + ((32 * iter1) / sizeof(LhsScalar)), j); \
+    a##iter1 = *reinterpret_cast<__vector_pair *>(const_cast<LhsScalar *>(&src)); \
     EIGEN_UNUSED_VARIABLE(f##iter1); \
   } else { \
     f##iter1 = lhs.template load<PLhsPacket, Unaligned>(i + ((iter2) * ResPacketSize), j); \
@@ -1696,17 +1719,26 @@ template <typename Scalar, int N> struct ScalarBlock {
 };
 
 #ifdef USE_GEMV_MMA
+static Packet16uc p16uc_ELEMENT_3 = { 0x0c,0x0d,0x0e,0x0f, 0x1c,0x1d,0x1e,0x1f, 0x0c,0x0d,0x0e,0x0f, 0x1c,0x1d,0x1e,0x1f };
+
 /** \internal predux (add elements of a vector) from a MMA accumulator - real results */
 template<typename ResScalar, typename ResPacket>
 EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_real(__vector_quad* acc0, __vector_quad* acc1)
 {
-    ScalarBlock<ResScalar, 2> cc0;
+    union {
+      ScalarBlock<ResScalar, 2> cs;
+      double                    cd;
+    } cc0;
     PacketBlock<ResPacket, 4> result0, result1;
     __builtin_mma_disassemble_acc(&result0.packet, acc0);
     __builtin_mma_disassemble_acc(&result1.packet, acc1);
-    cc0.scalar[0] = result0.packet[0][0] + result0.packet[1][1] + result0.packet[2][2] + result0.packet[3][3];
-    cc0.scalar[1] = result1.packet[0][0] + result1.packet[1][1] + result1.packet[2][2] + result1.packet[3][3];
-    return cc0;
+    result0.packet[0] = vec_mergeh(result0.packet[0], result1.packet[0]);
+    result0.packet[1] = vec_mergeo(result0.packet[1], result1.packet[1]);
+    result0.packet[2] = vec_mergel(result0.packet[2], result1.packet[2]);
+    result0.packet[3] = vec_perm(result0.packet[3], result1.packet[3], p16uc_ELEMENT_3);
+    result0.packet[0] = vec_add(vec_add(result0.packet[0], result0.packet[2]), vec_add(result0.packet[1], result0.packet[3]));
+    cc0.cd = pfirst(reinterpret_cast<Packet2d>(result0.packet[0]));
+    return cc0.cs;
 }
 
 template<>
@@ -1996,9 +2028,9 @@ EIGEN_STRONG_INLINE void gemv_row(
     }
 }
 
-#define EIGEN_POWER_GEMV_REAL_SPECIALIZE(Scalar, Major) \
+#define EIGEN_POWER_GEMV_REAL_SPECIALIZE_COL(Scalar) \
 template<typename Index, typename LhsMapper, bool ConjugateLhs, typename RhsMapper, bool ConjugateRhs, int Version> \
-struct general_matrix_vector_product<Index, Scalar, LhsMapper, Major, ConjugateLhs, Scalar, RhsMapper, ConjugateRhs, Version> \
+struct general_matrix_vector_product<Index, Scalar, LhsMapper, ColMajor, ConjugateLhs, Scalar, RhsMapper, ConjugateRhs, Version> \
 { \
     typedef typename ScalarBinaryOpTraits<Scalar, Scalar>::ReturnType ResScalar; \
 \
@@ -2008,18 +2040,30 @@ struct general_matrix_vector_product<Index, Scalar, LhsMapper, Major, ConjugateL
         const RhsMapper& rhs, \
         ResScalar* res, Index resIncr, \
         ResScalar alpha) { \
-        if (Major == ColMajor) { \
-            gemv_col<Index, Scalar, LhsMapper, Scalar, RhsMapper, ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
-        } else { \
-            gemv_row<Index, Scalar, LhsMapper, Scalar, RhsMapper, ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
-        } \
+        gemv_col<Index, Scalar, LhsMapper, Scalar, RhsMapper, ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
     } \
 };
 
-EIGEN_POWER_GEMV_REAL_SPECIALIZE(float,  ColMajor)
-EIGEN_POWER_GEMV_REAL_SPECIALIZE(double, ColMajor)
-EIGEN_POWER_GEMV_REAL_SPECIALIZE(float,  RowMajor)
-EIGEN_POWER_GEMV_REAL_SPECIALIZE(double, RowMajor)
+#define EIGEN_POWER_GEMV_REAL_SPECIALIZE_ROW(Scalar) \
+template<typename Index, typename LhsMapper, bool ConjugateLhs, typename RhsMapper, bool ConjugateRhs, int Version> \
+struct general_matrix_vector_product<Index, Scalar, LhsMapper, RowMajor, ConjugateLhs, Scalar, RhsMapper, ConjugateRhs, Version> \
+{ \
+    typedef typename ScalarBinaryOpTraits<Scalar, Scalar>::ReturnType ResScalar; \
+\
+    EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE static void run( \
+        Index rows, Index cols, \
+        const LhsMapper& lhs, \
+        const RhsMapper& rhs, \
+        ResScalar* res, Index resIncr, \
+        ResScalar alpha) { \
+        gemv_row<Index, Scalar, LhsMapper, Scalar, RhsMapper, ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
+    } \
+};
+
+EIGEN_POWER_GEMV_REAL_SPECIALIZE_COL(float)
+EIGEN_POWER_GEMV_REAL_SPECIALIZE_COL(double)
+EIGEN_POWER_GEMV_REAL_SPECIALIZE_ROW(float)
+EIGEN_POWER_GEMV_REAL_SPECIALIZE_ROW(double)
 
 template<typename ResScalar, typename PResPacket, typename ResPacket, typename LhsPacket, typename RhsPacket>
 EIGEN_ALWAYS_INLINE ScalarBlock<ResScalar, 2> predux_complex(PResPacket& a0, PResPacket& b0, ResPacket& a1, ResPacket& b1)
@@ -2311,9 +2355,9 @@ EIGEN_STRONG_INLINE void gemv_complex_row(
     }
 }
 
-#define EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(Scalar, LhsScalar, RhsScalar, Major) \
+#define EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(Scalar, LhsScalar, RhsScalar) \
 template<typename Index, typename LhsMapper, bool ConjugateLhs, typename RhsMapper, bool ConjugateRhs, int Version> \
-struct general_matrix_vector_product<Index, LhsScalar, LhsMapper, Major, ConjugateLhs, RhsScalar, RhsMapper, ConjugateRhs, Version> \
+struct general_matrix_vector_product<Index, LhsScalar, LhsMapper, ColMajor, ConjugateLhs, RhsScalar, RhsMapper, ConjugateRhs, Version> \
 { \
     typedef typename ScalarBinaryOpTraits<LhsScalar, RhsScalar>::ReturnType ResScalar; \
 \
@@ -2323,26 +2367,38 @@ struct general_matrix_vector_product<Index, LhsScalar, LhsMapper, Major, Conjuga
         const RhsMapper& rhs, \
         ResScalar* res, Index resIncr, \
         ResScalar alpha) { \
-        if (Major == ColMajor) { \
-            gemv_complex_col<Index, Scalar, LhsScalar, LhsMapper, ConjugateLhs, sizeof(Scalar) == sizeof(LhsScalar), RhsScalar, RhsMapper, ConjugateRhs, sizeof(Scalar) == sizeof(RhsScalar), ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
-        } else { \
-            gemv_complex_row<Index, Scalar, LhsScalar, LhsMapper, ConjugateLhs, sizeof(Scalar) == sizeof(LhsScalar), RhsScalar, RhsMapper, ConjugateRhs, sizeof(Scalar) == sizeof(RhsScalar), ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
-        } \
+        gemv_complex_col<Index, Scalar, LhsScalar, LhsMapper, ConjugateLhs, sizeof(Scalar) == sizeof(LhsScalar), RhsScalar, RhsMapper, ConjugateRhs, sizeof(Scalar) == sizeof(RhsScalar), ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
     } \
 };
 
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  float,                std::complex<float>,  ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  std::complex<float>,  float,                ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  std::complex<float>,  std::complex<float>,  ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, double,               std::complex<double>, ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, std::complex<double>, double,               ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, std::complex<double>, std::complex<double>, ColMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  float,                std::complex<float>,  RowMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  std::complex<float>,  float,                RowMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(float,  std::complex<float>,  std::complex<float>,  RowMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, double,               std::complex<double>, RowMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, std::complex<double>, double,               RowMajor)
-EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE(double, std::complex<double>, std::complex<double>, RowMajor)
+#define EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(Scalar, LhsScalar, RhsScalar) \
+template<typename Index, typename LhsMapper, bool ConjugateLhs, typename RhsMapper, bool ConjugateRhs, int Version> \
+struct general_matrix_vector_product<Index, LhsScalar, LhsMapper, RowMajor, ConjugateLhs, RhsScalar, RhsMapper, ConjugateRhs, Version> \
+{ \
+    typedef typename ScalarBinaryOpTraits<LhsScalar, RhsScalar>::ReturnType ResScalar; \
+\
+    EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE static void run( \
+        Index rows, Index cols, \
+        const LhsMapper& lhs, \
+        const RhsMapper& rhs, \
+        ResScalar* res, Index resIncr, \
+        ResScalar alpha) { \
+        gemv_complex_row<Index, Scalar, LhsScalar, LhsMapper, ConjugateLhs, sizeof(Scalar) == sizeof(LhsScalar), RhsScalar, RhsMapper, ConjugateRhs, sizeof(Scalar) == sizeof(RhsScalar), ResScalar>(rows, cols, lhs, rhs, res, resIncr, alpha); \
+    } \
+};
+
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(float,  float,                std::complex<float>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(float,  std::complex<float>,  float)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(float,  std::complex<float>,  std::complex<float>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(double, double,               std::complex<double>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(double, std::complex<double>, double)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_COL(double, std::complex<double>, std::complex<double>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(float,  float,                std::complex<float>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(float,  std::complex<float>,  float)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(float,  std::complex<float>,  std::complex<float>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(double, double,               std::complex<double>)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(double, std::complex<double>, double)
+EIGEN_POWER_GEMV_COMPLEX_SPECIALIZE_ROW(double, std::complex<double>, std::complex<double>)
 
 #endif // EIGEN_MATRIX_VECTOR_PRODUCT_ALTIVEC_H
 

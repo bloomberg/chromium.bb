@@ -300,6 +300,7 @@ const QuicTag kNPCO = TAG('N', 'P', 'C', 'O');    // No pacing offload.
 // Enable bandwidth resumption experiment.
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
 const QuicTag kBWMX = TAG('B', 'W', 'M', 'X');  // Max bandwidth resumption.
+const QuicTag kBWID = TAG('B', 'W', 'I', 'D');  // Send bandwidth when idle.
 const QuicTag kBWRS = TAG('B', 'W', 'R', 'S');  // Server bandwidth resumption.
 const QuicTag kBWS2 = TAG('B', 'W', 'S', '2');  // Server bw resumption v2.
 const QuicTag kBWS3 = TAG('B', 'W', 'S', '3');  // QUIC Initial CWND - Control.
@@ -425,7 +426,17 @@ const QuicTag kIGNP = TAG('I', 'G', 'N', 'P');   // Do not use PING only packet
 const QuicTag kSRWP = TAG('S', 'R', 'W', 'P');   // Enable retransmittable on
                                                  // wire PING (ROWP) on the
                                                  // server side.
-const QuicTag kGSR0 = TAG('G', 'S', 'R', '0');   // Selective Resumption
+const QuicTag kROWF = TAG('R', 'O', 'W', 'F');   // Send first 1-RTT packet on
+                                                 // ROWP timeout.
+const QuicTag kROWR = TAG('R', 'O', 'W', 'R');   // Send random bytes on ROWP
+                                                 // timeout.
+// Selective Resumption variants.
+const QuicTag kGSR0 = TAG('G', 'S', 'R', '0');
+const QuicTag kGSR1 = TAG('G', 'S', 'R', '1');
+const QuicTag kGSR2 = TAG('G', 'S', 'R', '2');
+const QuicTag kGSR3 = TAG('G', 'S', 'R', '3');
+
+const QuicTag kNRES = TAG('N', 'R', 'E', 'S');   // No resumption
 
 const QuicTag kINVC = TAG('I', 'N', 'V', 'C');   // Send connection close for
                                                  // INVALID_VERSION

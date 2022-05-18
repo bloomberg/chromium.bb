@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
-
-#include "dawn/native/SubresourceStorage.h"
+#include <vector>
 
 #include "dawn/common/Log.h"
+#include "dawn/native/SubresourceStorage.h"
+#include "gtest/gtest.h"
 
-using namespace dawn::native;
+namespace dawn::native {
 
-// A fake class that replicates the behavior of SubresourceStorage but without any compression and
-// is used to compare the results of operations on SubresourceStorage against the "ground truth" of
-// FakeStorage.
+// A fake class that replicates the behavior of SubresourceStorage but without any compression
+// and is used to compare the results of operations on SubresourceStorage against the "ground
+// truth" of FakeStorage.
 template <typename T>
 struct FakeStorage {
     FakeStorage(Aspect aspects,
@@ -32,8 +32,7 @@ struct FakeStorage {
         : mAspects(aspects),
           mArrayLayerCount(arrayLayerCount),
           mMipLevelCount(mipLevelCount),
-          mData(GetAspectCount(aspects) * arrayLayerCount * mipLevelCount, initialValue) {
-    }
+          mData(GetAspectCount(aspects) * arrayLayerCount * mipLevelCount, initialValue) {}
 
     template <typename F>
     void Update(const SubresourceRange& range, F&& updateFunc) {
@@ -71,12 +70,11 @@ struct FakeStorage {
         return level + mMipLevelCount * (layer + mArrayLayerCount * aspectIndex);
     }
 
-    // Method that checks that this and real have exactly the same content. It does so via looping
-    // on all subresources and calling Get() (hence testing Get()). It also calls Iterate()
-    // checking that every subresource is mentioned exactly once and that its content is correct
-    // (hence testing Iterate()).
-    // Its implementation requires the RangeTracker below that itself needs FakeStorage<int> so it
-    // cannot be define inline with the other methods.
+    // Method that checks that this and real have exactly the same content. It does so via
+    // looping on all subresources and calling Get() (hence testing Get()). It also calls
+    // Iterate() checking that every subresource is mentioned exactly once and that its content
+    // is correct (hence testing Iterate()). Its implementation requires the RangeTracker below
+    // that itself needs FakeStorage<int> so it cannot be define inline with the other methods.
     void CheckSameAs(const SubresourceStorage<T>& real);
 
     Aspect mAspects;
@@ -90,12 +88,11 @@ struct FakeStorage {
 // a single range (and that each subresource was seen only once).
 struct RangeTracker {
     template <typename T>
-    RangeTracker(const SubresourceStorage<T>& s)
+    explicit RangeTracker(const SubresourceStorage<T>& s)
         : mTracked(s.GetAspectsForTesting(),
                    s.GetArrayLayerCountForTesting(),
                    s.GetMipLevelCountForTesting(),
-                   0) {
-    }
+                   0) {}
 
     void Track(const SubresourceRange& range) {
         // Add +1 to the subresources tracked.
@@ -106,7 +103,8 @@ struct RangeTracker {
     }
 
     void CheckTrackedExactly(const SubresourceRange& range) {
-        // Check that all subresources in the range were tracked once and set the counter back to 0.
+        // Check that all subresources in the range were tracked once and set the counter back
+        // to 0.
         mTracked.Update(range, [](const SubresourceRange&, uint32_t* counter) {
             ASSERT_EQ(*counter, 1u);
             *counter = 0;
@@ -251,14 +249,15 @@ TEST(SubresourceStorageTest, DefaultValue) {
     }
 }
 
-// The tests for Update() all follow the same pattern of setting up a real and a fake storage then
-// performing one or multiple Update()s on them and checking:
+// The tests for Update() all follow the same pattern of setting up a real and a fake storage
+// then performing one or multiple Update()s on them and checking:
 //  - They have the same content.
 //  - The Update() range was correct.
 //  - The aspects and layers have the expected "compressed" status.
 
-// Calls Update both on the read storage and the fake storage but intercepts the call to updateFunc
-// done by the real storage to check their ranges argument aggregate to exactly the update range.
+// Calls Update both on the read storage and the fake storage but intercepts the call to
+// updateFunc done by the real storage to check their ranges argument aggregate to exactly the
+// update range.
 template <typename T, typename F>
 void CallUpdateOnBoth(SubresourceStorage<T>* s,
                       FakeStorage<T>* f,
@@ -430,9 +429,9 @@ TEST(SubresourceStorageTest, UpdateExtremas) {
     CheckAspectCompressed(s, Aspect::Color, true);
 }
 
-// A regression test for an issue found while reworking the implementation where RecompressAspect
-// didn't correctly check that each each layer was compressed but only that their 0th value was
-// the same.
+// A regression test for an issue found while reworking the implementation where
+// RecompressAspect didn't correctly check that each each layer was compressed but only that
+// their 0th value was the same.
 TEST(SubresourceStorageTest, UpdateLevel0sHappenToMatch) {
     SubresourceStorage<int> s(Aspect::Color, 2, 2);
     FakeStorage<int> f(Aspect::Color, 2, 2);
@@ -544,16 +543,16 @@ TEST(SubresourceStorageTest, MergeFullInTwoBand) {
     CheckLayerCompressed(s, Aspect::Depth, 3, false);
     CheckLayerCompressed(s, Aspect::Depth, 4, false);
 
-    // Stencil is decompressed but all its layers are still compressed because there wasn't the mip
-    // band.
+    // Stencil is decompressed but all its layers are still compressed because there wasn't the
+    // mip band.
     CheckAspectCompressed(s, Aspect::Stencil, false);
     CheckLayerCompressed(s, Aspect::Stencil, 1, true);
     CheckLayerCompressed(s, Aspect::Stencil, 2, true);
     CheckLayerCompressed(s, Aspect::Stencil, 3, true);
     CheckLayerCompressed(s, Aspect::Stencil, 4, true);
 }
-// Test the reverse, mergign two-bands in a full resource. This provides coverage for decompressing
-// aspects / and partilly layers to match the compression of `other`
+// Test the reverse, mergign two-bands in a full resource. This provides coverage for
+// decompressing aspects / and partilly layers to match the compression of `other`
 TEST(SubresourceStorageTest, MergeTwoBandInFull) {
     const uint32_t kLayers = 5;
     const uint32_t kLevels = 9;
@@ -581,8 +580,8 @@ TEST(SubresourceStorageTest, MergeTwoBandInFull) {
     CheckLayerCompressed(s, Aspect::Depth, 3, false);
     CheckLayerCompressed(s, Aspect::Depth, 4, false);
 
-    // Stencil is decompressed but all its layers are still compressed because there wasn't the mip
-    // band.
+    // Stencil is decompressed but all its layers are still compressed because there wasn't the
+    // mip band.
     CheckAspectCompressed(s, Aspect::Stencil, false);
     CheckLayerCompressed(s, Aspect::Stencil, 1, true);
     CheckLayerCompressed(s, Aspect::Stencil, 2, true);
@@ -675,3 +674,5 @@ TEST(SubresourceStorageTest, AspectDecompressionUpdatesLayer0) {
 //  - Two != being converted to == during a rework.
 //  - (with ASSERT) that RecompressAspect didn't check that aspect 0 was compressed.
 //  - Missing decompression of layer 0 after introducing mInlineAspectData.
+
+}  // namespace dawn::native

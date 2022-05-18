@@ -116,7 +116,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
     GrResourceProvider* resourceProvider = direct->priv().resourceProvider();
     const GrCaps& caps = *direct->priv().caps();
 
-    int attempt = 0; // useful for debugging
 
     for (auto widthHeight : {100, 128, 1048576}) {
         for (auto ct : {GrColorType::kAlpha_8, GrColorType::kBGR_565, GrColorType::kRGBA_8888,
@@ -135,13 +134,23 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                         {
                             sk_sp<GrTexture> tex;
                             if (SkBackingFit::kApprox == fit) {
-                                tex = resourceProvider->createApproxTexture(
-                                        dims, format, GrTextureType::k2D, GrRenderable::kYes,
-                                        numSamples, GrProtected::kNo);
+                                tex = resourceProvider->createApproxTexture(dims,
+                                                                            format,
+                                                                            GrTextureType::k2D,
+                                                                            GrRenderable::kYes,
+                                                                            numSamples,
+                                                                            GrProtected::kNo,
+                                                                            /*label=*/{});
                             } else {
-                                tex = resourceProvider->createTexture(
-                                        dims, format, GrTextureType::k2D, GrRenderable::kYes,
-                                        numSamples, GrMipmapped::kNo, budgeted, GrProtected::kNo);
+                                tex = resourceProvider->createTexture(dims,
+                                                                      format,
+                                                                      GrTextureType::k2D,
+                                                                      GrRenderable::kYes,
+                                                                      numSamples,
+                                                                      GrMipmapped::kNo,
+                                                                      budgeted,
+                                                                      GrProtected::kNo,
+                                                                      /*label=*/{});
                             }
 
                             sk_sp<GrTextureProxy> proxy = proxyProvider->createProxy(
@@ -171,13 +180,23 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                         {
                             sk_sp<GrTexture> tex;
                             if (SkBackingFit::kApprox == fit) {
-                                tex = resourceProvider->createApproxTexture(
-                                        dims, format, GrTextureType::k2D, GrRenderable::kNo,
-                                        numSamples, GrProtected::kNo);
+                                tex = resourceProvider->createApproxTexture(dims,
+                                                                            format,
+                                                                            GrTextureType::k2D,
+                                                                            GrRenderable::kNo,
+                                                                            numSamples,
+                                                                            GrProtected::kNo,
+                                                                            /*label=*/{});
                             } else {
-                                tex = resourceProvider->createTexture(
-                                        dims, format, GrTextureType::k2D, GrRenderable::kNo,
-                                        numSamples, GrMipmapped::kNo, budgeted, GrProtected::kNo);
+                                tex = resourceProvider->createTexture(dims,
+                                                                      format,
+                                                                      GrTextureType::k2D,
+                                                                      GrRenderable::kNo,
+                                                                      numSamples,
+                                                                      GrMipmapped::kNo,
+                                                                      budgeted,
+                                                                      GrProtected::kNo,
+                                                                      /*label=*/{});
                             }
 
                             sk_sp<GrTextureProxy> proxy(proxyProvider->createProxy(
@@ -198,8 +217,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                                               fit);
                             }
                         }
-
-                        attempt++;
                     }
                 }
             }

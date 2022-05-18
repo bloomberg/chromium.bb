@@ -360,9 +360,17 @@ else()
   endif()
 
   option(EIGEN_TEST_FMA "Enable/Disable FMA/AVX2 in tests/examples" OFF)
-  if(EIGEN_TEST_FMA AND NOT EIGEN_TEST_NEON)
+  option(EIGEN_TEST_AVX2 "Enable/Disable FMA/AVX2 in tests/examples" OFF)
+  if((EIGEN_TEST_FMA AND NOT EIGEN_TEST_NEON) OR EIGEN_TEST_AVX2)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2")
     message(STATUS "Enabling FMA/AVX2 in tests/examples")
+  endif()
+
+  option(EIGEN_TEST_AVX512 "Enable/Disable AVX512 in tests/examples" OFF)
+  option(EIGEN_TEST_AVX512DQ "Enable/Disable AVX512DQ in tests/examples" OFF)
+  if(EIGEN_TEST_AVX512 OR EIGEN_TEST_AVX512DQ)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX512")
+    message(STATUS "Enabling AVX512 in tests/examples")
   endif()
 
 endif()

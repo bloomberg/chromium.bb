@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "cc_library", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_library(
     name = "tests",
@@ -17,7 +19,6 @@ cc_library(
         "//src/lazy:SkDiscardableMemoryPool_src",
         "//src/svg:SkSVGCanvas_src",
         "//tools/fonts:TestEmptyTypeface_hdr",
-        "//tools/gpu/gl/command_buffer:GLTestContext_command_buffer_src",
         "//tools/gpu/gl:GLTestContext_src",
         "//tools/gpu:gpu_tool_utils",
         "//tools:RuntimeBlendUtils_src",
@@ -1456,17 +1457,6 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
-    name = "CustomMeshTest_src",
-    srcs = ["CustomMeshTest.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":Test_hdr",
-        "//include/core:SkCanvas_hdr",
-        "//include/core:SkCustomMesh_hdr",
-    ],
-)
-
-generated_cc_atom(
     name = "DMSAATest_src",
     srcs = ["DMSAATest.cpp"],
     visibility = ["//:__subpackages__"],
@@ -2284,8 +2274,8 @@ generated_cc_atom(
         "//include/core:SkSize_hdr",
         "//include/private:SkTDArray_hdr",
         "//include/utils:SkRandom_hdr",
-        "//src/gpu/ganesh:GrRectanizerPow2_hdr",
-        "//src/gpu/ganesh:GrRectanizerSkyline_hdr",
+        "//src/gpu:RectanizerPow2_hdr",
+        "//src/gpu:RectanizerSkyline_hdr",
     ],
 )
 
@@ -2296,6 +2286,7 @@ generated_cc_atom(
     deps = [
         ":Test_hdr",
         "//include/core:SkCanvas_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkSurface_hdr",
         "//include/core:SkTypes_hdr",
@@ -3055,6 +3046,8 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Test_hdr",
+        "//include/core:SkPoint_hdr",
+        "//include/private:SkTDArray_hdr",
         "//src/utils:SkPolyUtils_hdr",
     ],
 )
@@ -3367,6 +3360,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Test_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkTypes_hdr",
         "//include/ports:SkImageGeneratorNDK_hdr",
         "//tools:Resources_hdr",
@@ -3380,6 +3374,7 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Test_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkColor_hdr",
         "//include/core:SkImageEncoder_hdr",
         "//include/core:SkImageGenerator_hdr",
@@ -3420,6 +3415,8 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Test_hdr",
+        "//include/core:SkPoint_hdr",
+        "//include/private:SkTDArray_hdr",
         "//src/utils:SkPolyUtils_hdr",
     ],
 )
@@ -4649,6 +4646,8 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":Test_hdr",
+        "//include/core:SkPoint_hdr",
+        "//include/private:SkTDArray_hdr",
         "//src/utils:SkPolyUtils_hdr",
     ],
 )
@@ -6110,6 +6109,7 @@ generated_cc_atom(
     deps = [
         ":Test_hdr",
         "//include/core:SkColorPriv_hdr",
+        "//include/core:SkStream_hdr",
         "//include/private:SkColorData_hdr",
         "//src/core:SkCpu_hdr",
         "//src/core:SkMSAN_hdr",
@@ -6939,6 +6939,7 @@ generated_cc_atom(
         ":Test_hdr",
         "//include/core:SkBitmap_hdr",
         "//include/core:SkCanvas_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkImage_hdr",
         "//include/core:SkSurface_hdr",
         "//include/core:SkTypes_hdr",
@@ -7189,8 +7190,8 @@ generated_cc_atom(
         "//src/core:SkStrikeSpec_hdr",
         "//src/core:SkWriteBuffer_hdr",
         "//src/gpu/ganesh:GrResourceProvider_hdr",
-        "//src/gpu/ganesh:GrSubRunAllocator_hdr",
-        "//src/gpu/ganesh/text:GrGlyphVector_hdr",
+        "//src/text/gpu:GlyphVector_hdr",
+        "//src/text/gpu:SubRunAllocator_hdr",
     ],
 )
 
@@ -7219,4 +7220,25 @@ generated_cc_atom(
     srcs = ["TestHarness.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [":TestHarness_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkEnumBitMaskTest_src",
+    srcs = ["SkEnumBitMaskTest.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":Test_hdr",
+        "//src/core:SkEnumBitMask_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "MeshTest_src",
+    srcs = ["MeshTest.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":Test_hdr",
+        "//include/core:SkCanvas_hdr",
+        "//include/core:SkMesh_hdr",
+    ],
 )

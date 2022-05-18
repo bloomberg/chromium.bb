@@ -420,7 +420,9 @@ sk_sp<SkImage> SkImage_Raster::onMakeColorTypeAndColorSpace(SkColorType targetCT
     SkAssertResult(fBitmap.peekPixels(&src));
 
     SkBitmap dst;
-    dst.allocPixels(fBitmap.info().makeColorType(targetCT).makeColorSpace(targetCS));
+    if (!dst.tryAllocPixels(fBitmap.info().makeColorType(targetCT).makeColorSpace(targetCS))) {
+        return nullptr;
+    }
 
     SkAssertResult(dst.writePixels(src));
     dst.setImmutable();
@@ -444,7 +446,7 @@ std::tuple<GrSurfaceProxyView, GrColorType> SkImage_Raster::onAsView(
     if (fPinnedView) {
         // We ignore the mipmap request here. If the pinned view isn't mipmapped then we will
         // fallback to bilinear. The pin API is used by Android Framework which does not expose
-        // mipmapping.Moreover, we're moving towards requiring that images be made with mip levels
+        // mipmapping . Moreover, we're moving towards requiring that images be made with mip levels
         // if mipmapping is desired (skbug.com/10411)
         mipmapped = GrMipmapped::kNo;
         if (policy != GrImageTexGenPolicy::kDraw) {
@@ -453,6 +455,13 @@ std::tuple<GrSurfaceProxyView, GrColorType> SkImage_Raster::onAsView(
         return {fPinnedView, fPinnedColorType};
     }
     if (policy == GrImageTexGenPolicy::kDraw) {
+        // If the draw doesn't require mipmaps but this SkImage has them go ahead and make a
+        // mipmapped texture. There are three reasons for this:
+        // 1) Avoiding another texture creation if a later draw requires mipmaps.
+        // 2) Ensuring we upload the bitmap's levels instead of generating on the GPU from the base.
+        if (this->hasMipmaps()) {
+            mipmapped = GrMipmapped::kYes;
+        }
         return GrMakeCachedBitmapProxyView(rContext, fBitmap, mipmapped);
     }
     auto budgeted = (policy == GrImageTexGenPolicy::kNew_Uncached_Unbudgeted)

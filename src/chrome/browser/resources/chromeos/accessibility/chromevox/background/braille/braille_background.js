@@ -5,14 +5,12 @@
 /**
  * @fileoverview Sends Braille commands to the Braille API.
  */
-import {BrailleDisplayManager} from './braille_display_manager.js';
-import {BrailleInputHandler} from './braille_input_handler.js';
-import {BrailleKeyEventRewriter} from './braille_key_event_rewriter.js';
-import {BrailleTranslatorManager} from './braille_translator_manager.js';
+import {BrailleDisplayManager} from '/chromevox/background/braille/braille_display_manager.js';
+import {BrailleInputHandler} from '/chromevox/background/braille/braille_input_handler.js';
+import {BrailleKeyEventRewriter} from '/chromevox/background/braille/braille_key_event_rewriter.js';
+import {BrailleTranslatorManager} from '/chromevox/background/braille/braille_translator_manager.js';
 
-/**
- * @implements {BrailleInterface}
- */
+/** @implements {BrailleInterface} */
 export class BrailleBackground {
   /**
    * @param {BrailleDisplayManager=} opt_displayManagerForTest
@@ -25,52 +23,39 @@ export class BrailleBackground {
   constructor(
       opt_displayManagerForTest, opt_inputHandlerForTest,
       opt_translatorManagerForTest) {
-    /**
-     * @type {!BrailleTranslatorManager}
-     * @private
-     */
+    /** @private {!BrailleTranslatorManager} */
     this.translatorManager_ =
         opt_translatorManagerForTest || new BrailleTranslatorManager();
-    /**
-     * @type {BrailleDisplayManager}
-     * @private
-     */
+    /** @private {!BrailleDisplayManager} */
     this.displayManager_ = opt_displayManagerForTest ||
         new BrailleDisplayManager(this.translatorManager_);
-    this.displayManager_.setCommandListener(this.onBrailleKeyEvent_.bind(this));
-    /**
-     * @type {NavBraille}
-     * @private
-     */
-    this.lastContent_ = null;
-    /**
-     * @type {?string}
-     * @private
-     */
-    this.lastContentId_ = null;
-    /**
-     * @type {!BrailleInputHandler}
-     * @private
-     */
-    this.inputHandler_ = opt_inputHandlerForTest ||
-        new BrailleInputHandler(this.translatorManager_);
-    this.inputHandler_.init();
+    this.displayManager_.setCommandListener(
+        (evt, content) => this.onBrailleKeyEvent_(evt, content));
 
     /** @private {boolean} */
     this.frozen_ = false;
 
+    /** @private {!BrailleInputHandler} */
+    this.inputHandler_ = opt_inputHandlerForTest ||
+        new BrailleInputHandler(this.translatorManager_);
+    this.inputHandler_.init();
+
     /** @private {BrailleKeyEventRewriter} */
     this.keyEventRewriter_ = new BrailleKeyEventRewriter();
+
+    /** @private {NavBraille} */
+    this.lastContent_ = null;
+    /** @private {?string} */
+    this.lastContentId_ = null;
   }
 
   /** @return {!BrailleBackground} */
-  static getInstance() {
+  static get instance() {
     if (!BrailleBackground.instance_) {
       BrailleBackground.instance_ = new BrailleBackground();
     }
     return BrailleBackground.instance_;
   }
-
 
   /** @override */
   write(params) {
@@ -80,7 +65,7 @@ export class BrailleBackground {
 
     if (localStorage['enableBrailleLogging'] === 'true') {
       const logStr = 'Braille "' + params.text.toString() + '"';
-      LogStore.getInstance().writeTextLog(logStr, LogStore.LogType.BRAILLE);
+      LogStore.getInstance().writeTextLog(logStr, LogType.BRAILLE);
       console.log(logStr);
     }
 
@@ -139,12 +124,12 @@ export class BrailleBackground {
    * @private
    */
   setContent_(newContent, newContentId) {
-    const updateContent = function() {
+    const updateContent = () => {
       this.lastContent_ = newContentId ? newContent : null;
       this.lastContentId_ = newContentId;
       this.displayManager_.setContent(
           newContent, this.inputHandler_.getExpansionType());
-    }.bind(this);
+    };
     this.inputHandler_.onDisplayContentChanged(newContent.text, updateContent);
     updateContent();
   }
@@ -164,9 +149,8 @@ export class BrailleBackground {
     if (this.inputHandler_.onBrailleKeyEvent(brailleEvt)) {
       return;
     }
-    if (ChromeVoxState.instance &&
-        ChromeVoxState.instance.onBrailleKeyEvent(brailleEvt, content)) {
-      return;
+    if (ChromeVoxState.instance) {
+      ChromeVoxState.instance.onBrailleKeyEvent(brailleEvt, content);
     }
   }
 }
@@ -174,11 +158,15 @@ export class BrailleBackground {
 /** @type {?BrailleBackground} */
 BrailleBackground.instance_ = null;
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.target === 'BrailleBackground' &&
-      message.action === 'getDefaultTranslator') {
-    sendResponse(BrailleBackground.getInstance()
-                     .getTranslatorManager()
-                     .getDefaultTranslator());
-  }
-});
+BridgeHelper.registerHandler(
+    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.BACK_TRANSLATE,
+    (cells) => new Promise(resolve => {
+      BrailleBackground.instance.getTranslatorManager()
+          .getDefaultTranslator()
+          .backTranslate(cells, resolve);
+    }));
+
+BridgeHelper.registerHandler(
+    BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.REFRESH_BRAILLE_TABLE,
+    (brailleTable) => BrailleBackground.instance.getTranslatorManager().refresh(
+        brailleTable));

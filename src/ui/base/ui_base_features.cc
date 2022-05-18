@@ -81,13 +81,6 @@ bool IsDeprecateAltClickEnabled() {
   return base::FeatureList::IsEnabled(kDeprecateAltClick);
 }
 
-const base::Feature kRgbKeyboard = {"RgbKeyboard",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsRgbKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(kRgbKeyboard);
-}
-
 const base::Feature kShortcutCustomizationApp = {
     "ShortcutCustomizationApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -95,15 +88,12 @@ bool IsShortcutCustomizationAppEnabled() {
   return base::FeatureList::IsEnabled(kShortcutCustomizationApp);
 }
 
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Share the resource file with ash-chrome. This feature reduces the memory
 // consumption while the disk usage slightly increases.
 // https://crbug.com/1253280.
 const base::Feature kLacrosResourcesFileSharing = {
     "LacrosResourcesFileSharing", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
@@ -242,7 +232,7 @@ bool IsImprovedKeyboardShortcutsEnabled() {
       return instance->IsI18nShortcutPrefEnabled();
     }
   }
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return base::FeatureList::IsEnabled(kImprovedKeyboardShortcuts);
 }

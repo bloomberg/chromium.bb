@@ -49,6 +49,16 @@ unsigned int aom_avg_8x8_neon(const uint8_t *a, int a_stride) {
   return vget_lane_u32(vrshr_n_u32(d, 6), 0);
 }
 
+void aom_avg_8x8_quad_neon(const uint8_t *s, int p, int x16_idx, int y16_idx,
+                           int *avg) {
+  for (int k = 0; k < 4; k++) {
+    const int x8_idx = x16_idx + ((k & 1) << 3);
+    const int y8_idx = y16_idx + ((k >> 1) << 3);
+    const uint8_t *s_tmp = s + y8_idx * p + x8_idx;
+    avg[k] = aom_avg_8x8_neon(s_tmp, p);
+  }
+}
+
 int aom_satd_lp_neon(const int16_t *coeff, int length) {
   const int16x4_t zero = vdup_n_s16(0);
   int32x4_t accum = vdupq_n_s32(0);

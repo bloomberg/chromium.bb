@@ -22,13 +22,9 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
   return SyncCycleSnapshot(
       /*birthday=*/"", /*bag_of_chips=*/"", ModelNeutralState(),
       ProgressMarkerMap(), /*is_silenced-*/ false,
-      /*num_encryption_conflicts=*/5, /*num_hierarchy_conflicts=*/2,
       /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
-      /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
+      /*sync_start_time=*/base::Time::Now(),
       /*poll_finish_time=*/base::Time::Now(),
-      /*num_entries_by_type=*/std::vector<int>(GetNumModelTypes(), 0),
-      /*num_to_delete_entries_by_type=*/
-      std::vector<int>(GetNumModelTypes(), 0),
       /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
       /*poll_interval=*/base::Minutes(30),
       /*has_remaining_local_changes=*/false);

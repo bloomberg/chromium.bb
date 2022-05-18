@@ -12,12 +12,9 @@ export class ShaderValidationTest extends GPUTest {
    * ```ts
    * t.expectCompileResult(true, `wgsl code`); // Expect success
    * t.expectCompileResult(false, `wgsl code`); // Expect validation error with any error string
-   * t.expectCompileResult('substr', `wgsl code`); // Expect validation error containing 'substr'
    * ```
-   *
-   * MAINTENANCE_TODO(gpuweb/gpuweb#1813): Remove the "string" overload if there are no standard error codes.
    */
-  expectCompileResult(expectedResult: boolean | string, code: string) {
+  expectCompileResult(expectedResult: boolean, code: string) {
     let shaderModule: GPUShaderModule;
     this.expectGPUError(
       'validation',
@@ -37,23 +34,6 @@ export class ShaderValidationTest extends GPUTest {
         .join('\n');
       error.extra.compilationInfo = compilationInfo;
 
-      if (typeof expectedResult === 'string') {
-        for (const msg of compilationInfo.messages) {
-          if (msg.type === 'error' && msg.message.indexOf(expectedResult) !== -1) {
-            error.message =
-              `Found expected compilationInfo message substring «${expectedResult}».\n` +
-              messagesLog;
-            this.rec.debug(error);
-            return;
-          }
-        }
-
-        // Here, no error message was found, but one was expected.
-        error.message = `Missing expected substring «${expectedResult}».\n` + messagesLog;
-        this.rec.validationFailed(error);
-        return;
-      }
-
       if (compilationInfo.messages.some(m => m.type === 'error')) {
         if (expectedResult) {
           error.message = `Unexpected compilationInfo 'error' message.\n` + messagesLog;
@@ -72,5 +52,21 @@ export class ShaderValidationTest extends GPUTest {
         }
       }
     });
+  }
+
+  /**
+   * Wraps the code fragment into an entry point.
+   *
+   * @example
+   * ```ts
+   * t.wrapInEntryPoint(`var i = 0;`);
+   * ```
+   */
+  wrapInEntryPoint(code: string) {
+    return `
+      @stage(compute) @workgroup_size(1)
+      fn main() {
+        ${code}
+      }`;
   }
 }

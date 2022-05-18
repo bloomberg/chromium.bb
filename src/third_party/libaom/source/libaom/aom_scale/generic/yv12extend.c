@@ -460,7 +460,7 @@ int aom_yv12_realloc_with_new_border_c(YV12_BUFFER_CONFIG *ybf, int new_border,
     const int error = aom_alloc_frame_buffer(
         &new_buf, ybf->y_crop_width, ybf->y_crop_height, ybf->subsampling_x,
         ybf->subsampling_y, ybf->flags & YV12_FLAG_HIGHBITDEPTH, new_border,
-        byte_alignment);
+        byte_alignment, 0);
     if (error) return error;
     // Copy image buffer
     aom_yv12_copy_frame(ybf, &new_buf, num_planes);

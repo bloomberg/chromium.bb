@@ -612,6 +612,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_neon,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirDualTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_neon,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 // Test speed for all supported architectures
@@ -726,6 +729,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirSpeedTest,
                          ::testing::Values(make_tuple(&cdef_find_dir_neon,
                                                       &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirDualSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_dual_neon,
+                                                      &cdef_find_dir_dual_c)));
 #endif
 
 }  // namespace

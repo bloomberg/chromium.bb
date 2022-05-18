@@ -10,6 +10,7 @@ import { LiveTestCaseResult } from '../internal/logging/result.js';
 import { parseQuery } from '../internal/query/parseQuery.js';
 import { TestQueryWithExpectation } from '../internal/query/query.js';
 import { TestTreeLeaf } from '../internal/tree.js';
+import { Colors } from '../util/colors.js';
 import { setGPUProvider } from '../util/navigator_gpu.js';
 
 import sys from './helper/sys.js';
@@ -18,6 +19,7 @@ function usage(rc: number): never {
   console.log('Usage:');
   console.log(`  tools/run_${sys.type} [OPTIONS...]`);
   console.log('Options:');
+  console.log('  --colors             Enable ANSI colors in output.');
   console.log('  --verbose            Print result/log of every test as it runs.');
   console.log('  --gpu-provider       Path to node module that provides the GPU implementation.');
   console.log('  --gpu-provider-flag  Flag to set on the gpu-provider as <flag>=<value>');
@@ -44,6 +46,8 @@ if (!sys.existsSync('src/common/runtime/cmdline.ts')) {
   usage(1);
 }
 
+Colors.enabled = false;
+
 let debug = false;
 let gpuProviderModule: GPUProviderModule | undefined = undefined;
 
@@ -51,7 +55,9 @@ const gpuProviderFlags: string[] = [];
 for (let i = 0; i < sys.args.length; ++i) {
   const a = sys.args[i];
   if (a.startsWith('-')) {
-    if (a === '--gpu-provider') {
+    if (a === '--colors') {
+      Colors.enabled = true;
+    } else if (a === '--gpu-provider') {
       const modulePath = sys.args[++i];
       gpuProviderModule = require(modulePath);
     } else if (a === '--gpu-provider-flag') {

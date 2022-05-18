@@ -98,13 +98,13 @@ class TensorLazyEvaluatorWritable : public TensorLazyEvaluatorReadOnly<Dimension
 };
 
 template <typename Dimensions, typename Expr, typename Device>
-class TensorLazyEvaluator : public internal::conditional<bool(internal::is_lvalue<Expr>::value),
+class TensorLazyEvaluator : public std::conditional_t<bool(internal::is_lvalue<Expr>::value),
                             TensorLazyEvaluatorWritable<Dimensions, Expr, Device>,
-                            TensorLazyEvaluatorReadOnly<Dimensions, const Expr, Device> >::type {
+                            TensorLazyEvaluatorReadOnly<Dimensions, const Expr, Device> > {
  public:
-  typedef typename internal::conditional<bool(internal::is_lvalue<Expr>::value),
-                                         TensorLazyEvaluatorWritable<Dimensions, Expr, Device>,
-                                         TensorLazyEvaluatorReadOnly<Dimensions, const Expr, Device> >::type Base;
+  typedef std::conditional_t<bool(internal::is_lvalue<Expr>::value),
+                                  TensorLazyEvaluatorWritable<Dimensions, Expr, Device>,
+                                  TensorLazyEvaluatorReadOnly<Dimensions, const Expr, Device> > Base;
   typedef typename Base::Scalar Scalar;
 
   TensorLazyEvaluator(const Expr& expr, const Device& device) : Base(expr, device) {
@@ -137,15 +137,15 @@ template<typename PlainObjectType> class TensorRef : public TensorBase<TensorRef
     typedef Scalar* PointerType;
     typedef PointerType PointerArgType;
 
-    static const Index NumIndices = PlainObjectType::NumIndices;
+    static constexpr Index NumIndices = PlainObjectType::NumIndices;
     typedef typename PlainObjectType::Dimensions Dimensions;
 
+    static constexpr int Layout = PlainObjectType::Layout;
     enum {
       IsAligned = false,
       PacketAccess = false,
       BlockAccess = false,
       PreferBlockAccess = false,
-      Layout = PlainObjectType::Layout,
       CoordAccess = false,  // to be implemented
       RawAccess = false
     };
@@ -296,12 +296,12 @@ struct TensorEvaluator<const TensorRef<Derived>, Device>
   typedef StorageMemory<CoeffReturnType, Device> Storage;
   typedef typename Storage::Type EvaluatorPointerType;
 
+  static constexpr int Layout = TensorRef<Derived>::Layout;
   enum {
     IsAligned = false,
     PacketAccess = false,
     BlockAccess = false,
     PreferBlockAccess = false,
-    Layout = TensorRef<Derived>::Layout,
     CoordAccess = false,  // to be implemented
     RawAccess = false
   };

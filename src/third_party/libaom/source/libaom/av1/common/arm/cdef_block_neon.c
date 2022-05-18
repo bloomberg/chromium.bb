@@ -27,3 +27,14 @@ void cdef_copy_rect8_8bit_to_16bit_neon(uint16_t *dst, int dstride,
     }
   }
 }
+
+void cdef_find_dir_dual_neon(const uint16_t *img1, const uint16_t *img2,
+                             int stride, int32_t *var_out_1st,
+                             int32_t *var_out_2nd, int coeff_shift,
+                             int *out_dir_1st_8x8, int *out_dir_2nd_8x8) {
+  // Process first 8x8.
+  *out_dir_1st_8x8 = cdef_find_dir(img1, stride, var_out_1st, coeff_shift);
+
+  // Process second 8x8.
+  *out_dir_2nd_8x8 = cdef_find_dir(img2, stride, var_out_2nd, coeff_shift);
+}

@@ -16,6 +16,8 @@
 #include "config/aom_dsp_rtcd.h"
 
 #include "aom/aom_integer.h"
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/intrapred_common.h"
 
 //------------------------------------------------------------------------------
 // DC 4x4
@@ -529,67 +531,6 @@ void aom_h_predictor_32x32_neon(uint8_t *dst, ptrdiff_t stride,
     }
   }
 }
-
-static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
-                                       const uint16_t *above,
-                                       const uint16_t *left) {
-  assert(bw >= 4);
-  assert(IS_POWER_OF_TWO(bw));
-  int expected_dc, sum = 0;
-  const int count = bw * 2;
-  uint32x4_t sum_q = vdupq_n_u32(0);
-  uint32x2_t sum_d;
-  uint16_t *dst_1;
-  if (bw >= 8) {
-    for (int i = 0; i < bw; i += 8) {
-      sum_q = vpadalq_u16(sum_q, vld1q_u16(above));
-      sum_q = vpadalq_u16(sum_q, vld1q_u16(left));
-      above += 8;
-      left += 8;
-    }
-    sum_d = vadd_u32(vget_low_u32(sum_q), vget_high_u32(sum_q));
-    sum = vget_lane_s32(vreinterpret_s32_u64(vpaddl_u32(sum_d)), 0);
-    expected_dc = (sum + (count >> 1)) / count;
-    const uint16x8_t dc = vdupq_n_u16((uint16_t)expected_dc);
-    for (int r = 0; r < bw; r++) {
-      dst_1 = dst;
-      for (int i = 0; i < bw; i += 8) {
-        vst1q_u16(dst_1, dc);
-        dst_1 += 8;
-      }
-      dst += stride;
-    }
-  } else {  // 4x4
-    sum_q = vaddl_u16(vld1_u16(above), vld1_u16(left));
-    sum_d = vadd_u32(vget_low_u32(sum_q), vget_high_u32(sum_q));
-    sum = vget_lane_s32(vreinterpret_s32_u64(vpaddl_u32(sum_d)), 0);
-    expected_dc = (sum + (count >> 1)) / count;
-    const uint16x4_t dc = vdup_n_u16((uint16_t)expected_dc);
-    for (int r = 0; r < bw; r++) {
-      vst1_u16(dst, dc);
-      dst += stride;
-    }
-  }
-}
-
-#define INTRA_PRED_HIGHBD_SIZED_NEON(type, width)               \
-  void aom_highbd_##type##_predictor_##width##x##width##_neon(  \
-      uint16_t *dst, ptrdiff_t stride, const uint16_t *above,   \
-      const uint16_t *left, int bd) {                           \
-    (void)bd;                                                   \
-    highbd_##type##_predictor(dst, stride, width, above, left); \
-  }
-
-#define INTRA_PRED_SQUARE(type)          \
-  INTRA_PRED_HIGHBD_SIZED_NEON(type, 4)  \
-  INTRA_PRED_HIGHBD_SIZED_NEON(type, 8)  \
-  INTRA_PRED_HIGHBD_SIZED_NEON(type, 16) \
-  INTRA_PRED_HIGHBD_SIZED_NEON(type, 32) \
-  INTRA_PRED_HIGHBD_SIZED_NEON(type, 64)
-
-INTRA_PRED_SQUARE(dc)
-
-#undef INTRA_PRED_SQUARE
 
 /* ---------------------P R E D I C T I O N   Z 1--------------------------- */
 
@@ -2705,33 +2646,6 @@ void av1_dr_prediction_z3_neon(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
     }
   }
 }
-static const int sm_weight_log2_scale = 8;
-
-// max(block_size_wide[BLOCK_LARGEST], block_size_high[BLOCK_LARGEST])
-#define MAX_BLOCK_DIM 64
-
-/* clang-format off */
-static const uint8_t sm_weight_arrays[2 * MAX_BLOCK_DIM] = {
-    // Unused, because we always offset by bs, which is at least 2.
-    0, 0,
-    // bs = 2
-    255, 128,
-    // bs = 4
-    255, 149, 85, 64,
-    // bs = 8
-    255, 197, 146, 105, 73, 50, 37, 32,
-    // bs = 16
-    255, 225, 196, 170, 145, 123, 102, 84, 68, 54, 43, 33, 26, 20, 17, 16,
-    // bs = 32
-    255, 240, 225, 210, 196, 182, 169, 157, 145, 133, 122, 111, 101, 92, 83, 74,
-    66, 59, 52, 45, 39, 34, 29, 25, 21, 17, 14, 12, 10, 9, 8, 8,
-    // bs = 64
-    255, 248, 240, 233, 225, 218, 210, 203, 196, 189, 182, 176, 169, 163, 156,
-    150, 144, 138, 133, 127, 121, 116, 111, 106, 101, 96, 91, 86, 82, 77, 73,
-    69, 65, 61, 57, 54, 50, 47, 44, 41, 38, 35, 32, 29, 27, 25, 22, 20, 18, 16,
-    15, 13, 12, 10, 9, 8, 7, 6, 6, 5, 5, 4, 4, 4,
-};
-/* clang-format on */
 
 // -----------------------------------------------------------------------------
 // SMOOTH_PRED
@@ -2768,10 +2682,10 @@ static INLINE void load_pixel_w4(const uint8_t *above, const uint8_t *left,
 // weight_h[2]: same as [0], second half for height = 16 only
 // weight_h[3]: same as [1], second half for height = 16 only
 // weight_w[0]: weights_w and scale - weights_w interleave vector
-static INLINE void load_weight_w4(const uint8_t *weight_array, int height,
-                                  uint16x8_t *weight_h, uint16x8_t *weight_w) {
-  const uint16x8_t d = vdupq_n_u16((uint16_t)(1 << sm_weight_log2_scale));
-  const uint8x8_t t = vcreate_u8(((const uint32_t *)(weight_array))[1]);
+static INLINE void load_weight_w4(int height, uint16x8_t *weight_h,
+                                  uint16x8_t *weight_w) {
+  const uint16x8_t d = vdupq_n_u16((uint16_t)(1 << SMOOTH_WEIGHT_LOG2_SCALE));
+  const uint8x8_t t = vcreate_u8(((const uint32_t *)smooth_weights)[0]);
   weight_h[0] = vmovl_u8(t);
   weight_h[1] = vsubw_u8(d, t);
 #if defined(__aarch64__)
@@ -2781,12 +2695,12 @@ static INLINE void load_weight_w4(const uint8_t *weight_array, int height,
 #endif  // (__aarch64__)
 
   if (height == 8) {
-    const uint8x8_t weight = vld1_u8(&weight_array[8]);
+    const uint8x8_t weight = vld1_u8(&smooth_weights[4]);
     weight_h[0] = vmovl_u8(weight);
     weight_h[1] = vsubw_u8(d, weight);
   } else if (height == 16) {
     const uint8x16_t zero = vdupq_n_u8(0);
-    const uint8x16_t weight = vld1q_u8(&weight_array[16]);
+    const uint8x16_t weight = vld1q_u8(&smooth_weights[12]);
     const uint8x16x2_t weight_h_02 = vzipq_u8(weight, zero);
     weight_h[0] = vreinterpretq_u16_u8(weight_h_02.val[0]);
     weight_h[1] = vsubq_u16(d, vreinterpretq_u16_u8(weight_h_02.val[0]));
@@ -2863,7 +2777,7 @@ void aom_smooth_predictor_4x4_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w4(above, left, 4, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w4(sm_weight_arrays, 4, wh, ww);
+  load_weight_w4(4, wh, ww);
 
   smooth_pred_4xh(pixels, wh, ww, 4, dst, stride, 0);
 }
@@ -2874,7 +2788,7 @@ void aom_smooth_predictor_4x8_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w4(above, left, 8, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w4(sm_weight_arrays, 8, wh, ww);
+  load_weight_w4(8, wh, ww);
 
   smooth_pred_4xh(pixels, wh, ww, 8, dst, stride, 0);
 }
@@ -2885,7 +2799,7 @@ void aom_smooth_predictor_4x16_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w4(above, left, 16, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w4(sm_weight_arrays, 16, wh, ww);
+  load_weight_w4(16, wh, ww);
 
   smooth_pred_4xh(pixels, wh, ww, 8, dst, stride, 0);
   dst += stride << 3;
@@ -2935,11 +2849,11 @@ static INLINE void load_pixel_w8(const uint8_t *above, const uint8_t *left,
 // weight_h[7]: same as [1], offset 24
 // weight_w[0]: weights_w and scale - weights_w interleave vector, first half
 // weight_w[1]: weights_w and scale - weights_w interleave vector, second half
-static INLINE void load_weight_w8(const uint8_t *weight_array, int height,
-                                  uint16x8_t *weight_h, uint16x8_t *weight_w) {
+static INLINE void load_weight_w8(int height, uint16x8_t *weight_h,
+                                  uint16x8_t *weight_w) {
   const uint8x16_t zero = vdupq_n_u8(0);
-  const int we_offset = height < 8 ? 4 : 8;
-  uint8x16_t we = vld1q_u8(&weight_array[we_offset]);
+  const int we_offset = height < 8 ? 0 : 4;
+  uint8x16_t we = vld1q_u8(&smooth_weights[we_offset]);
 #if defined(__aarch64__)
   weight_h[0] = vreinterpretq_u16_u8(vzip1q_u8(we, zero));
 #else
@@ -2962,20 +2876,20 @@ static INLINE void load_weight_w8(const uint8_t *weight_array, int height,
   }
 
   if (height == 16) {
-    we = vld1q_u8(&weight_array[16]);
+    we = vld1q_u8(&smooth_weights[12]);
     const uint8x16x2_t weight_h_02 = vzipq_u8(we, zero);
     weight_h[0] = vreinterpretq_u16_u8(weight_h_02.val[0]);
     weight_h[1] = vsubq_u16(d, weight_h[0]);
     weight_h[2] = vreinterpretq_u16_u8(weight_h_02.val[1]);
     weight_h[3] = vsubq_u16(d, weight_h[2]);
   } else if (height == 32) {
-    const uint8x16_t weight_lo = vld1q_u8(&weight_array[32]);
+    const uint8x16_t weight_lo = vld1q_u8(&smooth_weights[28]);
     const uint8x16x2_t weight_h_02 = vzipq_u8(weight_lo, zero);
     weight_h[0] = vreinterpretq_u16_u8(weight_h_02.val[0]);
     weight_h[1] = vsubq_u16(d, weight_h[0]);
     weight_h[2] = vreinterpretq_u16_u8(weight_h_02.val[1]);
     weight_h[3] = vsubq_u16(d, weight_h[2]);
-    const uint8x16_t weight_hi = vld1q_u8(&weight_array[32 + 16]);
+    const uint8x16_t weight_hi = vld1q_u8(&smooth_weights[28 + 16]);
     const uint8x16x2_t weight_h_46 = vzipq_u8(weight_hi, zero);
     weight_h[4] = vreinterpretq_u16_u8(weight_h_46.val[0]);
     weight_h[5] = vsubq_u16(d, weight_h[4]);
@@ -3056,7 +2970,7 @@ void aom_smooth_predictor_8x4_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w8(above, left, 4, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w8(sm_weight_arrays, 4, wh, ww);
+  load_weight_w8(4, wh, ww);
 
   smooth_pred_8xh(pixels, wh, ww, 4, dst, stride, 0);
 }
@@ -3067,7 +2981,7 @@ void aom_smooth_predictor_8x8_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w8(above, left, 8, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w8(sm_weight_arrays, 8, wh, ww);
+  load_weight_w8(8, wh, ww);
 
   smooth_pred_8xh(pixels, wh, ww, 8, dst, stride, 0);
 }
@@ -3078,7 +2992,7 @@ void aom_smooth_predictor_8x16_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w8(above, left, 16, pixels);
 
   uint16x8_t wh[4], ww[2];
-  load_weight_w8(sm_weight_arrays, 16, wh, ww);
+  load_weight_w8(16, wh, ww);
 
   smooth_pred_8xh(pixels, wh, ww, 8, dst, stride, 0);
   dst += stride << 3;
@@ -3091,7 +3005,7 @@ void aom_smooth_predictor_8x32_neon(uint8_t *dst, ptrdiff_t stride,
   load_pixel_w8(above, left, 32, pixels);
 
   uint16x8_t wh[8], ww[2];
-  load_weight_w8(sm_weight_arrays, 32, wh, ww);
+  load_weight_w8(32, wh, ww);
 
   smooth_pred_8xh(&pixels[0], wh, ww, 8, dst, stride, 0);
   dst += stride << 3;
@@ -3106,8 +3020,8 @@ static INLINE void smooth_predictor_wxh(uint8_t *dst, ptrdiff_t stride,
                                         const uint8_t *above,
                                         const uint8_t *left, uint32_t bw,
                                         uint32_t bh) {
-  const uint8_t *const sm_weights_w = sm_weight_arrays + bw;
-  const uint8_t *const sm_weights_h = sm_weight_arrays + bh;
+  const uint8_t *const sm_weights_w = smooth_weights + bw - 4;
+  const uint8_t *const sm_weights_h = smooth_weights + bh - 4;
   const uint16x8_t scale_value = vdupq_n_u16(256);
 
   for (uint32_t y = 0; y < bh; ++y) {
@@ -3226,3 +3140,216 @@ void aom_smooth_predictor_16x64_neon(uint8_t *dst, ptrdiff_t stride,
                                      const uint8_t *left) {
   smooth_predictor_wxh(dst, stride, above, left, 16, 64);
 }
+
+// -----------------------------------------------------------------------------
+// PAETH
+
+static INLINE void paeth_4or8_x_h_neon(uint8_t *dest, ptrdiff_t stride,
+                                       const uint8_t *const top_row,
+                                       const uint8_t *const left_column,
+                                       int width, int height) {
+  const uint8x8_t top_left = vdup_n_u8(top_row[-1]);
+  const uint16x8_t top_left_x2 = vdupq_n_u16(top_row[-1] + top_row[-1]);
+  uint8x8_t top;
+  if (width == 4) {
+    load_u8_4x1(top_row, &top, 0);
+  } else {  // width == 8
+    top = vld1_u8(top_row);
+  }
+
+  for (int y = 0; y < height; ++y) {
+    const uint8x8_t left = vdup_n_u8(left_column[y]);
+
+    const uint8x8_t left_dist = vabd_u8(top, top_left);
+    const uint8x8_t top_dist = vabd_u8(left, top_left);
+    const uint16x8_t top_left_dist =
+        vabdq_u16(vaddl_u8(top, left), top_left_x2);
+
+    const uint8x8_t left_le_top = vcle_u8(left_dist, top_dist);
+    const uint8x8_t left_le_top_left =
+        vmovn_u16(vcleq_u16(vmovl_u8(left_dist), top_left_dist));
+    const uint8x8_t top_le_top_left =
+        vmovn_u16(vcleq_u16(vmovl_u8(top_dist), top_left_dist));
+
+    // if (left_dist <= top_dist && left_dist <= top_left_dist)
+    const uint8x8_t left_mask = vand_u8(left_le_top, left_le_top_left);
+    //   dest[x] = left_column[y];
+    // Fill all the unused spaces with 'top'. They will be overwritten when
+    // the positions for top_left are known.
+    uint8x8_t result = vbsl_u8(left_mask, left, top);
+    // else if (top_dist <= top_left_dist)
+    //   dest[x] = top_row[x];
+    // Add these values to the mask. They were already set.
+    const uint8x8_t left_or_top_mask = vorr_u8(left_mask, top_le_top_left);
+    // else
+    //   dest[x] = top_left;
+    result = vbsl_u8(left_or_top_mask, result, top_left);
+
+    if (width == 4) {
+      store_unaligned_u8_4x1(dest, result, 0);
+    } else {  // width == 8
+      vst1_u8(dest, result);
+    }
+    dest += stride;
+  }
+}
+
+#define PAETH_NXM(W, H)                                                     \
+  void aom_paeth_predictor_##W##x##H##_neon(uint8_t *dst, ptrdiff_t stride, \
+                                            const uint8_t *above,           \
+                                            const uint8_t *left) {          \
+    paeth_4or8_x_h_neon(dst, stride, above, left, W, H);                    \
+  }
+
+PAETH_NXM(4, 4)
+PAETH_NXM(4, 8)
+PAETH_NXM(8, 4)
+PAETH_NXM(8, 8)
+PAETH_NXM(8, 16)
+
+PAETH_NXM(4, 16)
+PAETH_NXM(8, 32)
+
+// Calculate X distance <= TopLeft distance and pack the resulting mask into
+// uint8x8_t.
+static INLINE uint8x16_t x_le_top_left(const uint8x16_t x_dist,
+                                       const uint16x8_t top_left_dist_low,
+                                       const uint16x8_t top_left_dist_high) {
+  const uint8x16_t top_left_dist = vcombine_u8(vqmovn_u16(top_left_dist_low),
+                                               vqmovn_u16(top_left_dist_high));
+  return vcleq_u8(x_dist, top_left_dist);
+}
+
+// Select the closest values and collect them.
+static INLINE uint8x16_t select_paeth(const uint8x16_t top,
+                                      const uint8x16_t left,
+                                      const uint8x16_t top_left,
+                                      const uint8x16_t left_le_top,
+                                      const uint8x16_t left_le_top_left,
+                                      const uint8x16_t top_le_top_left) {
+  // if (left_dist <= top_dist && left_dist <= top_left_dist)
+  const uint8x16_t left_mask = vandq_u8(left_le_top, left_le_top_left);
+  //   dest[x] = left_column[y];
+  // Fill all the unused spaces with 'top'. They will be overwritten when
+  // the positions for top_left are known.
+  uint8x16_t result = vbslq_u8(left_mask, left, top);
+  // else if (top_dist <= top_left_dist)
+  //   dest[x] = top_row[x];
+  // Add these values to the mask. They were already set.
+  const uint8x16_t left_or_top_mask = vorrq_u8(left_mask, top_le_top_left);
+  // else
+  //   dest[x] = top_left;
+  return vbslq_u8(left_or_top_mask, result, top_left);
+}
+
+// Generate numbered and high/low versions of top_left_dist.
+#define TOP_LEFT_DIST(num)                                              \
+  const uint16x8_t top_left_##num##_dist_low = vabdq_u16(               \
+      vaddl_u8(vget_low_u8(top[num]), vget_low_u8(left)), top_left_x2); \
+  const uint16x8_t top_left_##num##_dist_high = vabdq_u16(              \
+      vaddl_u8(vget_high_u8(top[num]), vget_low_u8(left)), top_left_x2)
+
+// Generate numbered versions of XLeTopLeft with x = left.
+#define LEFT_LE_TOP_LEFT(num)                                     \
+  const uint8x16_t left_le_top_left_##num =                       \
+      x_le_top_left(left_##num##_dist, top_left_##num##_dist_low, \
+                    top_left_##num##_dist_high)
+
+// Generate numbered versions of XLeTopLeft with x = top.
+#define TOP_LE_TOP_LEFT(num)                              \
+  const uint8x16_t top_le_top_left_##num = x_le_top_left( \
+      top_dist, top_left_##num##_dist_low, top_left_##num##_dist_high)
+
+static INLINE void paeth16_plus_x_h_neon(uint8_t *dest, ptrdiff_t stride,
+                                         const uint8_t *const top_row,
+                                         const uint8_t *const left_column,
+                                         int width, int height) {
+  const uint8x16_t top_left = vdupq_n_u8(top_row[-1]);
+  const uint16x8_t top_left_x2 = vdupq_n_u16(top_row[-1] + top_row[-1]);
+  uint8x16_t top[4];
+  top[0] = vld1q_u8(top_row);
+  if (width > 16) {
+    top[1] = vld1q_u8(top_row + 16);
+    if (width == 64) {
+      top[2] = vld1q_u8(top_row + 32);
+      top[3] = vld1q_u8(top_row + 48);
+    }
+  }
+
+  for (int y = 0; y < height; ++y) {
+    const uint8x16_t left = vdupq_n_u8(left_column[y]);
+
+    const uint8x16_t top_dist = vabdq_u8(left, top_left);
+
+    const uint8x16_t left_0_dist = vabdq_u8(top[0], top_left);
+    TOP_LEFT_DIST(0);
+    const uint8x16_t left_0_le_top = vcleq_u8(left_0_dist, top_dist);
+    LEFT_LE_TOP_LEFT(0);
+    TOP_LE_TOP_LEFT(0);
+
+    const uint8x16_t result_0 =
+        select_paeth(top[0], left, top_left, left_0_le_top, left_le_top_left_0,
+                     top_le_top_left_0);
+    vst1q_u8(dest, result_0);
+
+    if (width > 16) {
+      const uint8x16_t left_1_dist = vabdq_u8(top[1], top_left);
+      TOP_LEFT_DIST(1);
+      const uint8x16_t left_1_le_top = vcleq_u8(left_1_dist, top_dist);
+      LEFT_LE_TOP_LEFT(1);
+      TOP_LE_TOP_LEFT(1);
+
+      const uint8x16_t result_1 =
+          select_paeth(top[1], left, top_left, left_1_le_top,
+                       left_le_top_left_1, top_le_top_left_1);
+      vst1q_u8(dest + 16, result_1);
+
+      if (width == 64) {
+        const uint8x16_t left_2_dist = vabdq_u8(top[2], top_left);
+        TOP_LEFT_DIST(2);
+        const uint8x16_t left_2_le_top = vcleq_u8(left_2_dist, top_dist);
+        LEFT_LE_TOP_LEFT(2);
+        TOP_LE_TOP_LEFT(2);
+
+        const uint8x16_t result_2 =
+            select_paeth(top[2], left, top_left, left_2_le_top,
+                         left_le_top_left_2, top_le_top_left_2);
+        vst1q_u8(dest + 32, result_2);
+
+        const uint8x16_t left_3_dist = vabdq_u8(top[3], top_left);
+        TOP_LEFT_DIST(3);
+        const uint8x16_t left_3_le_top = vcleq_u8(left_3_dist, top_dist);
+        LEFT_LE_TOP_LEFT(3);
+        TOP_LE_TOP_LEFT(3);
+
+        const uint8x16_t result_3 =
+            select_paeth(top[3], left, top_left, left_3_le_top,
+                         left_le_top_left_3, top_le_top_left_3);
+        vst1q_u8(dest + 48, result_3);
+      }
+    }
+
+    dest += stride;
+  }
+}
+
+#define PAETH_NXM_WIDE(W, H)                                                \
+  void aom_paeth_predictor_##W##x##H##_neon(uint8_t *dst, ptrdiff_t stride, \
+                                            const uint8_t *above,           \
+                                            const uint8_t *left) {          \
+    paeth16_plus_x_h_neon(dst, stride, above, left, W, H);                  \
+  }
+
+PAETH_NXM_WIDE(16, 8)
+PAETH_NXM_WIDE(16, 16)
+PAETH_NXM_WIDE(16, 32)
+PAETH_NXM_WIDE(32, 16)
+PAETH_NXM_WIDE(32, 32)
+PAETH_NXM_WIDE(32, 64)
+PAETH_NXM_WIDE(64, 32)
+PAETH_NXM_WIDE(64, 64)
+
+PAETH_NXM_WIDE(16, 4)
+PAETH_NXM_WIDE(16, 64)
+PAETH_NXM_WIDE(32, 8)
+PAETH_NXM_WIDE(64, 16)

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/rate_limit_table.h"
@@ -119,17 +120,15 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       base::Time delete_begin,
       base::Time delete_end,
       base::RepeatingCallback<bool(const url::Origin&)> filter) override;
-  bool AddAggregatableAttributionForTesting(
-      const AttributionReport& report) override;
 
   void ClearAllDataAllTime() VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Deactivates active, converted sources with the given conversion destination
   // and reporting origin. Returns at most `limit` of those, or null on error.
-  [[nodiscard]] absl::optional<std::vector<DeactivatedSource>>
-  DeactivateSources(const std::string& serialized_conversion_destination,
-                    const std::string& serialized_reporting_origin,
-                    int return_limit) VALID_CONTEXT_REQUIRED(sequence_checker_);
+  [[nodiscard]] absl::optional<std::vector<StoredSource>> DeactivateSources(
+      const std::string& serialized_conversion_destination,
+      const std::string& serialized_reporting_origin,
+      int return_limit) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Returns false on failure.
   [[nodiscard]] bool DeleteSources(
@@ -168,8 +167,9 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
     kError,
   };
 
-  ConversionCapacityStatus CapacityForStoringReport(const AttributionTrigger&)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
+  ConversionCapacityStatus CapacityForStoringReport(
+      const AttributionTrigger&,
+      AttributionReport::ReportType) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   enum class MaybeReplaceLowerPriorityEventLevelReportResult {
     kError,
@@ -196,14 +196,14 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   [[nodiscard]] bool HasCapacityForUniqueDestinationLimitForPendingSource(
       const StorableSource& source) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
-  [[nodiscard]] bool StoreEventLevelReport(
-      StoredSource::Id source_id,
-      uint64_t trigger_data,
-      base::Time trigger_time,
-      base::Time report_time,
-      int64_t priority,
-      const base::GUID& external_report_id,
-      absl::optional<uint64_t> trigger_debug_key)
+  [[nodiscard]] absl::optional<AttributionReport::EventLevelData::Id>
+  StoreEventLevelReport(StoredSource::Id source_id,
+                        uint64_t trigger_data,
+                        base::Time trigger_time,
+                        base::Time report_time,
+                        int64_t priority,
+                        const base::GUID& external_report_id,
+                        absl::optional<uint64_t> trigger_debug_key)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<AttributionReport> ReadReportFromStatement(sql::Statement&)
@@ -257,7 +257,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::EventLevelResult MaybeStoreEventLevelReport(
-      const AttributionReport& report,
+      AttributionReport& report,
       absl::optional<uint64_t> dedup_key,
       int num_conversions,
       absl::optional<AttributionReport>& replaced_report)
@@ -352,13 +352,12 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::AggregatableResult
-  MaybeStoreAggregatableAttributionReport(const AttributionReport& report,
+  MaybeStoreAggregatableAttributionReport(AttributionReport& report,
                                           int64_t aggregatable_budget_consumed)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAggregatableAttributionReport(
-      const AttributionReport& report)
-      VALID_CONTEXT_REQUIRED(sequence_checker_);
+      AttributionReport& report) VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<AttributionReport>
   ReadAggregatableAttributionReportFromStatement(sql::Statement&)

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -319,14 +320,14 @@ void MediaStreamSource::OnDeviceCaptureHandleChange(
     capture_handle = device.display_media_info->capture_handle.Clone();
   }
 
-  platform_source_->SetCaptureHandle(capture_handle.Clone());
+  platform_source_->SetCaptureHandle(std::move(capture_handle));
 
   // Observers may dispatch events which create and add new Observers;
   // take a snapshot so as to safely iterate.
   HeapVector<Member<Observer>> observers;
   CopyToVector(observers_, observers);
   for (auto observer : observers) {
-    observer->SourceChangedCaptureHandle(capture_handle.Clone());
+    observer->SourceChangedCaptureHandle();
   }
 }
 

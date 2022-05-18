@@ -13,10 +13,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
+#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -62,7 +64,6 @@ class WebAppIconManagerBrowserTest : public InProcessBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   apps::AppServiceTest app_service_test_;
-
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
@@ -72,36 +73,35 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   AppId app_id;
   {
-    std::unique_ptr<WebAppInstallInfo> web_application_info =
+    std::unique_ptr<WebAppInstallInfo> install_info =
         std::make_unique<WebAppInstallInfo>();
-    web_application_info->start_url = start_url;
-    web_application_info->scope = start_url.GetWithoutFilename();
-    web_application_info->title = u"App Name";
-    web_application_info->user_display_mode = DisplayMode::kStandalone;
+    install_info->start_url = start_url;
+    install_info->scope = start_url.GetWithoutFilename();
+    install_info->title = u"App Name";
+    install_info->user_display_mode = UserDisplayMode::kStandalone;
 
     {
       SkBitmap bitmap;
       bitmap.allocN32Pixels(icon_size::k32, icon_size::k32, true);
       bitmap.eraseColor(SK_ColorBLUE);
-      web_application_info->icon_bitmaps.any[icon_size::k32] =
-          std::move(bitmap);
+      install_info->icon_bitmaps.any[icon_size::k32] = std::move(bitmap);
     }
 
-    WebAppInstallManager& install_manager =
-        WebAppProvider::GetForTest(browser()->profile())->install_manager();
-
     base::RunLoop run_loop;
-    install_manager.InstallWebAppFromInfo(
-        std::move(web_application_info),
-        /*overwrite_existing_manifest_fields=*/false, ForInstallableSite::kYes,
-        webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindLambdaForTesting(
-            [&app_id, &run_loop](const AppId& installed_app_id,
-                                 webapps::InstallResultCode code) {
+
+    auto* provider = WebAppProvider::GetForTest(browser()->profile());
+    provider->command_manager().ScheduleCommand(
+        std::make_unique<web_app::InstallFromInfoCommand>(
+            std::move(install_info), &provider->install_finalizer(),
+            /*overwrite_existing_manifest_fields=*/false,
+            webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+            base::BindLambdaForTesting([&app_id, &run_loop](
+                                           const AppId& installed_app_id,
+                                           webapps::InstallResultCode code) {
               EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
               app_id = installed_app_id;
               run_loop.Quit();
-            }));
+            })));
 
     run_loop.Run();
   }

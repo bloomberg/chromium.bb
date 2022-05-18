@@ -38,6 +38,9 @@ _PROJECT_ID_KEY = 'project_id'
 _DEFAULT_CUSTOM_METRIC_VAL = 1
 OAUTH_SCOPES = ('https://www.googleapis.com/auth/userinfo.email',)
 OAUTH_ENDPOINTS = ['/api/', '/add_histograms', '/add_point', '/uploads']
+LEGACY_SERVICE_ACCOUNT = (
+    '425761728072-pa1bs18esuhp2cp2qfa1u9vb6p1v6kfu@developer.gserviceaccount.com'
+)
 _CACHE_TIME = 60*60*2 # 2 hours
 
 _AUTOROLL_DOMAINS = (
@@ -850,10 +853,38 @@ def IsMonitored(sheriff_client, test_path):
 
 # temp helper during migration to bbv2
 def IsRunningBuildBucketV2():
-  return False
+  return True
 
 
 def GetBuildbucketUrl(build_id):
   if build_id:
     return 'https://ci.chromium.org/b/%s' % build_id
   return ''
+
+
+def RequestParamsMixed(req):
+  """
+  Returns a dictionary where the values are either single
+  values, or a list of values when a key/value appears more than
+  once in this dictionary.  This is similar to the kind of
+  dictionary often used to represent the variables in a web
+  request.
+  """
+  result = {}
+  multi = {}
+  for key, value in req.form.items(True):
+    if key in result:
+      # We do this to not clobber any lists that are
+      # *actual* values in this dictionary:
+      if key in multi:
+        result[key].append(value)
+      else:
+        result[key] = [result[key], value]
+        multi[key] = None
+    else:
+      result[key] = value
+  return result
+
+
+def IsRunningFlask():
+  return IsStagingEnvironment()

@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 cc_binary(
     name = "skdiff",
@@ -11,7 +13,7 @@ cc_binary(
         ":skdiff_src",
         ":skdiff_utils_src",
         "//:skia_core",
-        "//third_party:skcms",
+        "//third_party/skcms",
         "//tools:Resources_src",
         "//tools:ToolUtils_src",
         "//tools/flags:CommandLineFlags_src",

@@ -926,6 +926,9 @@ def ParseIssueNumberArgument(arg):
 def _create_description_from_log(args):
   """Pulls out the commit log to use as a base for the CL description."""
   log_args = []
+  if len(args) == 1 and args[0] == None:
+    # Handle the case where None is passed as the branch.
+    return ''
   if len(args) == 1 and not args[0].endswith('.'):
     log_args = [args[0] + '..']
   elif len(args) == 1 and args[0].endswith('...'):
@@ -1185,7 +1188,8 @@ class Changelist(object):
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      self.issue = self._GitGetBranchConfigValue(ISSUE_CONFIG_KEY)
+      if self.GetBranch():
+        self.issue = self._GitGetBranchConfigValue(ISSUE_CONFIG_KEY)
       if self.issue is not None:
         self.issue = int(self.issue)
       self.lookedup_issue = True
@@ -1224,7 +1228,8 @@ class Changelist(object):
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      self.patchset = self._GitGetBranchConfigValue(PATCHSET_CONFIG_KEY)
+      if self.GetBranch():
+        self.patchset = self._GitGetBranchConfigValue(PATCHSET_CONFIG_KEY)
       if self.patchset is not None:
         self.patchset = int(self.patchset)
       self.lookedup_patchset = True
@@ -1754,10 +1759,19 @@ class Changelist(object):
       return
 
     status = self._GetChangeDetail()['status']
-    if status in ('MERGED', 'ABANDONED'):
-      DieWithError('Change %s has been %s, new uploads are not allowed' %
-                   (self.GetIssueURL(),
-                    'submitted' if status == 'MERGED' else 'abandoned'))
+    if status == 'ABANDONED':
+       DieWithError(
+           'Change %s has been abandoned, new uploads are not allowed' %
+           (self.GetIssueURL()))
+    if status == 'MERGED':
+      answer = gclient_utils.AskForData(
+          'Change %s has been submitted, new uploads are not allowed. '
+          'Would you like to start a new change (Y/n)?' % self.GetIssueURL()
+      ).lower()
+      if answer not in ('y', ''):
+        DieWithError('New uploads are not allowed.')
+      self.SetIssue()
+      return
 
     # TODO(vadimsh): For some reason the chunk of code below was skipped if
     # 'is_gce' is True. I'm just refactoring it to be 'skip if not cookies'.
@@ -4107,6 +4121,12 @@ def CMDpresubmit(parser, args):
   else:
     description = _create_description_from_log([base_branch])
 
+  if not base_branch:
+    if not options.force:
+      print('use --force to check even when not on a branch.')
+      return 1
+    base_branch = 'HEAD'
+
   cl.RunHook(committing=not options.upload,
              may_prompt=False,
              verbose=options.verbose,
@@ -4650,7 +4670,8 @@ def CMDtry(parser, args):
             'available.'))
   group.add_option(
       '-B', '--bucket', default='',
-      help=('Buildbucket bucket to send the try requests.'))
+      help=('Buildbucket bucket to send the try requests. Format: '
+            '"luci.$LUCI_PROJECT.$LUCI_BUCKET". eg: "luci.chromium.try"'))
   group.add_option(
       '-r', '--revision',
       help='Revision to use for the tryjob; default: the revision will '
@@ -5159,7 +5180,7 @@ def _RunSwiftFormat(opts, swift_diff_files, top_dir, upstream_commit):
 
   cmd = [swift_format_tool]
   if opts.dry_run:
-    cmd.append('lint')
+    cmd += ['lint', '-s']
   else:
     cmd += ['format', '-i']
   cmd += swift_diff_files
@@ -5233,7 +5254,7 @@ def CMDformat(parser, args):
       '--swift-format',
       dest='use_swift_format',
       action='store_true',
-      default=False,
+      default=swift_format.IsSwiftFormatSupported(),
       help='Enables formatting of Swift file types using swift-format '
       '(macOS host only).')
   parser.add_option(

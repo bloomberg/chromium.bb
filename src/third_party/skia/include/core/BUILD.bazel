@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkAnnotation_hdr",
@@ -393,7 +395,6 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         ":SkAlphaType_hdr",
-        ":SkColorSpace_hdr",
         ":SkColorType_hdr",
         ":SkMath_hdr",
         ":SkRect_hdr",
@@ -933,21 +934,6 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
-    name = "SkCustomMesh_hdr",
-    hdrs = ["SkCustomMesh.h"],
-    enforce_iwyu = True,
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkAlphaType_hdr",
-        ":SkRect_hdr",
-        ":SkRefCnt_hdr",
-        ":SkSpan_hdr",
-        ":SkString_hdr",
-        ":SkTypes_hdr",
-    ],
-)
-
-generated_cc_atom(
     name = "SkAlphaType_hdr",
     hdrs = ["SkAlphaType.h"],
     visibility = ["//:__subpackages__"],
@@ -958,4 +944,29 @@ generated_cc_atom(
     hdrs = ["SkColorType.h"],
     visibility = ["//:__subpackages__"],
     deps = [":SkTypes_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkOpenTypeSVGDecoder_hdr",
+    hdrs = ["SkOpenTypeSVGDecoder.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkColor_hdr",
+        ":SkSpan_hdr",
+        ":SkTypes_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkMesh_hdr",
+    hdrs = ["SkMesh.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkAlphaType_hdr",
+        ":SkRect_hdr",
+        ":SkRefCnt_hdr",
+        ":SkSpan_hdr",
+        ":SkString_hdr",
+        ":SkTypes_hdr",
+    ],
 )

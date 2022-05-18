@@ -4,22 +4,26 @@ Template file for use with tools/builtin-gen to generate the wgsl files in the
 ./gen/... subdirectories
 
 See:
-* tools/cmd/builtin-gen/gen for structures used by this template
+* tools/cmd/intrinsic-gen/gen for structures used by this template
 * https://golang.org/pkg/text/template/ for documentation on the template syntax
 --------------------------------------------------------------------------------
 */ -}}
 
 {{- /* For each permutation of each overload of each function... */ -}}
-{{- range .Sem.Functions -}}
+{{- range .Sem.Builtins -}}
+{{- /* TODO(crbug.com/tint/1483): Remove the bodge below after smoothStep is removed from intrinsics.def */}}
+{{- /* TODO(crbug.com/tint/1536): Remove the bodge below after we support [[extension("extension_name")]] in intrinsics.def */}}
+{{- if not (or (eq .Name "smoothStep") (eq .Name "dot4I8Packed") (eq .Name "dot4U8Packed"))}}
 {{-   range .Overloads  -}}
 {{-     range Permute . -}}
 {{- /*    Generate a ./gen/<function>/<permuataion-hash>.wgsl file using
           the Permutation macro defined below                             */ -}}
-{{-       $file := printf "./gen/%v/%v.wgsl" .Function.Name .Hash -}}
+{{-       $file := printf "./gen/%v/%v.wgsl" .Intrinsic.Name .Hash -}}
 {{-       $content := Eval "Permutation" . -}}
 {{-       WriteFile $file $content -}}
 {{-     end  }}
 {{-   end  }}
+{{- end  }}
 {{- end  }}
 
 
@@ -27,8 +31,8 @@ See:
 {{-                          define "Permutation"                            -}}
 {{- /* Emits the body of the intrinsic permuation .wgsl file              */ -}}
 {{- /* ------------------------------------------------------------------ */ -}}
-{{-   $function    := .Function.Name -}}
-{{-   $permutation := printf "%v_%v" $function .Hash -}}
+{{-   $builtin     := .Intrinsic.Name -}}
+{{-   $permutation := printf "%v_%v" $builtin .Hash -}}
 {{-   $args        := Map -}}
 
 {{- /* Generate RW storage buffer parameters */ -}}
@@ -122,7 +126,7 @@ fn {{$permutation}}() {
 {{-   if .ReturnType -}}
   var res{{if IsDeclarable .ReturnType}}: {{template "Type" .ReturnType}}{{end}} = {{/* preserve space after = */ -}}
 {{-   end -}}
-  {{$function}}(
+  {{$builtin}}(
 {{-   range $i, $p := .Parameters -}}
 {{-     if $i -}}, {{end}}{{$args.Get $i -}}
 {{-   end -}}

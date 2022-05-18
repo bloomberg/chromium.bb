@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -52,6 +53,7 @@ cart_db::ChromeCartContentProto BuildProto(const char* domain,
                                            const char* cart_url) {
   cart_db::ChromeCartContentProto proto;
   proto.set_key(domain);
+  proto.set_merchant(domain);
   proto.set_merchant_cart_url(cart_url);
   proto.set_timestamp(base::Time::Now().ToDoubleT());
   return proto;
@@ -308,6 +310,8 @@ class CommerceHintAgentTest : public PlatformBrowserTest {
         satisfied_ &= GURL(found[i].second.merchant_cart_url())
                           .ReplaceComponents(remove_port)
                           .spec() == expected[i].second.merchant_cart_url();
+        satisfied_ &=
+            found[i].second.merchant() == expected[i].second.merchant();
       }
     }
     std::move(closure).Run();
@@ -558,6 +562,9 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, ExtractCart_ScriptFromResource) {
   histogram_tester_.ExpectTotalCount("Commerce.Carts.ExtractionElapsedTime", 1);
   histogram_tester_.ExpectBucketCount("Commerce.Carts.ExtractionTimedOut", 0,
                                       1);
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.Heuristics.CartExtractionScriptSource",
+      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_RESOURCE, 1);
 
   SendXHR("/add-to-cart", "product: 123");
 
@@ -596,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, ExtractCart_ScriptFromComponent) {
   const ShoppingCarts expected_carts = {
       {"guitarcenter.com", expected_cart_protos}};
   WaitForProductCount(expected_carts);
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.Heuristics.CartExtractionScriptSource",
+      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest,
@@ -628,6 +639,37 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest,
   const ShoppingCarts expected_carts = {
       {"guitarcenter.com", expected_cart_protos}};
   WaitForProductCount(expected_carts);
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester_.ExpectBucketCount(
+      "Commerce.Heuristics.CartExtractionScriptSource",
+      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_RESOURCE, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, AddCartFromComponent) {
+  bool is_populated =
+      commerce_hint_service_->InitializeCommerceHeuristicsForTesting(
+          base::Version("0.0.0.1"), R"###(
+          {
+            "guitarcenter.com": {
+              "merchant_name" : "SPECIAL_NAME",
+              "cart_url" : "https://www.guitarcenter.com/special_cart"
+            }
+          }
+      )###",
+          "{}", "", "");
+  DCHECK(is_populated);
+
+  NavigateToURL("https://www.guitarcenter.com/");
+  SendXHR("/add-to-cart", "product: 123");
+
+  // Browser-side commerce heuristics are still correct despite being
+  // used to populate renderer side commerce heuristics.
+  cart_db::ChromeCartContentProto expected_cart_protos = BuildProto(
+      "guitarcenter.com", "https://www.guitarcenter.com/special_cart");
+  expected_cart_protos.set_merchant("SPECIAL_NAME");
+  const ShoppingCarts expected_carts = {
+      {"guitarcenter.com", expected_cart_protos}};
+  WaitForCarts(expected_carts);
 }
 
 class CommerceHintNoRateControlTest : public CommerceHintAgentTest {

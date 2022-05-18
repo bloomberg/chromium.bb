@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/reputation/safety_tip_ui_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
@@ -38,6 +39,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -49,6 +51,8 @@ constexpr int kMinPermissionRowHeight = 40;
 constexpr float kMaxPermissionRowCount = 10.5;
 
 }  // namespace
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PageInfoMainView, kCookieButtonElementId);
 
 PageInfoMainView::ContainerView::ContainerView() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -115,7 +119,8 @@ PageInfoMainView::PageInfoMainView(
     history_controller->InitRow(AddChildView(CreateContainerView()));
   }
 
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+  if (page_info::IsAboutThisSiteFeatureEnabled(
+          g_browser_process->GetApplicationLocale())) {
     about_this_site_section_ = AddChildView(CreateContainerView());
   }
 
@@ -148,6 +153,8 @@ void PageInfoMainView::EnsureCookieInfo() {
             PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
             tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
             .release();
+    cookie_button_->SetProperty(views::kElementIdentifierKey,
+                                kCookieButtonElementId);
     site_settings_view_->AddChildView(cookie_button_.get());
 
     if (base::FeatureList::IsEnabled(
@@ -345,7 +352,8 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
 
     // Show "About this site" section only if connection is secure, because
     // security information has higher priority.
-    if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
+    if (page_info::IsAboutThisSiteFeatureEnabled(
+            g_browser_process->GetApplicationLocale())) {
       auto info = ui_delegate_->GetAboutThisSiteInfo();
       presenter_->SetAboutThisSiteShown(info.has_value());
       if (info.has_value()) {

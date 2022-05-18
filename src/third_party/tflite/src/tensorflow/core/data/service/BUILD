@@ -64,6 +64,16 @@ tf_proto_library(
     ],
 )
 
+tf_proto_library(
+    name = "export_proto",
+    srcs = ["export.proto"],
+    cc_api_version = 2,
+    create_java_proto = False,
+    protodeps = tf_additional_all_protos() + [
+        ":common_proto",
+    ],
+)
+
 cc_library(
     name = "auto_shard_rewriter",
     srcs = ["auto_shard_rewriter.cc"],
@@ -183,6 +193,7 @@ tf_cc_test(
         ":common_proto_cc",
         ":dispatcher_client",
         ":dispatcher_proto_cc",
+        ":export_proto_cc",
         ":test_cluster",
         ":test_util",
         "//tensorflow/core:lib",
@@ -226,6 +237,7 @@ tf_cc_test(
         "//tensorflow/core:test_main",
         "//tensorflow/core:testlib",
         "//tensorflow/core/framework:types_proto_cc",
+        "//tensorflow/core/platform:protobuf",
         "//tensorflow/core/platform:status",
     ],
 )
@@ -324,6 +336,7 @@ cc_library(
         ":dataset_store",
         ":dispatcher_proto_cc",
         ":dispatcher_state",
+        ":export_proto_cc",
         ":grpc_util",
         ":journal",
         ":journal_proto_cc",
@@ -401,6 +414,7 @@ cc_library(
     deps = [
         ":dispatcher_cc_grpc_proto",
         ":dispatcher_impl",
+        ":export_proto_cc",
         "//tensorflow/core:protos_all_cc",
         "//tensorflow/core/distributed_runtime/rpc:grpc_util",
     ] + tf_grpc_cc_dependencies(),
@@ -580,6 +594,7 @@ tf_cc_test(
         "//tensorflow/core:test",
         "//tensorflow/core:test_main",
         "//tensorflow/core/framework:tensor_testutil",
+        "//tensorflow/core/lib/monitoring:cell_reader",
         "//tensorflow/core/platform:env",
         "//tensorflow/core/platform:errors",
         "//tensorflow/core/platform:mutex",
@@ -614,6 +629,7 @@ cc_library(
     deps = [
         ":credentials_factory",
         ":data_transfer",
+        ":export_proto_cc",
         ":grpc_dispatcher_impl",
         ":grpc_util",
         ":grpc_worker_impl",
@@ -716,6 +732,7 @@ cc_library(
         ":data_transfer",
         ":dispatcher_client",
         ":dispatcher_proto_cc",
+        ":export_proto_cc",
         ":server_lib",
         ":test_util",
         ":worker_client",

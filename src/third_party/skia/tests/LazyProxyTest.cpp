@@ -43,12 +43,19 @@ public:
         REPORTER_ASSERT(fReporter, fHasClipTexture);
     }
 
-    void preFlush(GrOnFlushResourceProvider*, SkSpan<const uint32_t>) override {
+    bool preFlush(GrOnFlushResourceProvider* onFlushRP) override {
+#if GR_TEST_UTILS
+        if (onFlushRP->failFlushTimeCallbacks()) {
+            return false;
+        }
+#endif
+
         REPORTER_ASSERT(fReporter, !fHasOpTexture);
         REPORTER_ASSERT(fReporter, !fHasClipTexture);
+        return true;
     }
 
-    void postFlush(GrDeferredUploadToken, SkSpan<const uint32_t>) override {
+    void postFlush(GrDeferredUploadToken) override {
         REPORTER_ASSERT(fReporter, fHasOpTexture);
         REPORTER_ASSERT(fReporter, fHasClipTexture);
     }
@@ -92,15 +99,15 @@ public:
                             return {};
                         } else {
                             static constexpr SkISize kDimensions = {1234, 567};
-                            sk_sp<GrTexture> texture = rp->createTexture(
-                                    kDimensions,
-                                    desc.fFormat,
-                                    desc.fTextureType,
-                                    desc.fRenderable,
-                                    desc.fSampleCnt,
-                                    desc.fMipmapped,
-                                    desc.fBudgeted,
-                                    desc.fProtected);
+                            sk_sp<GrTexture> texture = rp->createTexture(kDimensions,
+                                                                         desc.fFormat,
+                                                                         desc.fTextureType,
+                                                                         desc.fRenderable,
+                                                                         desc.fSampleCnt,
+                                                                         desc.fMipmapped,
+                                                                         desc.fBudgeted,
+                                                                         desc.fProtected,
+                                                                         /*label=*/{});
                             REPORTER_ASSERT(fTest->fReporter, texture);
                             return texture;
                         }
@@ -253,7 +260,8 @@ DEF_GPUTEST(LazyProxyReleaseTest, reporter, /* options */) {
                                                              1,
                                                              GrMipmapped::kNo,
                                                              SkBudgeted::kNo,
-                                                             GrProtected::kNo);
+                                                             GrProtected::kNo,
+                                                             /*label=*/{});
     using LazyInstantiationResult = GrSurfaceProxy::LazyCallbackResult;
     for (bool doInstantiate : {true, false}) {
         for (bool releaseCallback : {false, true}) {
@@ -365,7 +373,8 @@ private:
                                               desc.fSampleCnt,
                                               desc.fMipmapped,
                                               desc.fBudgeted,
-                                              desc.fProtected),
+                                              desc.fProtected,
+                                              /*label=*/{}),
                             true, GrSurfaceProxy::LazyInstantiationKeyMode::kUnsynced};
                 },
                 format, dims, GrMipmapped::kNo, GrMipmapStatus::kNotAllocated,

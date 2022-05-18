@@ -66,6 +66,16 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
       const url::Origin& caller_origin,
       const std::string& relying_party_id);
 
+  // Returns whether |caller_origin| is permitted to use the
+  // RemoteDesktopClientOverride extension.
+  //
+  // This is an access control decision: RP IDs are used to control access to
+  // credentials. If this method returns true, the respective origin is able to
+  // claim any RP ID.
+  virtual bool OriginMayUseRemoteDesktopClientOverride(
+      BrowserContext* browser_context,
+      const url::Origin& caller_origin);
+
 #if !BUILDFLAG(IS_ANDROID)
   // Permits the embedder to override the Relying Party ID for a WebAuthn call,
   // given the claimed relying party ID and the origin of the caller.
@@ -287,6 +297,13 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
 
   virtual bool IsWebAuthnUIEnabled();
 
+  // Configures whether a virtual authenticator environment is enabled. The
+  // embedder might choose to e.g. automate account selection under a virtual
+  // environment.
+  void SetVirtualEnvironment(bool virtual_environment);
+
+  bool IsVirtualEnvironmentEnabled();
+
   // Set to true to enable a mode where a prominent UI is only show for
   // discoverable platform credentials.
   virtual void SetConditionalRequest(bool is_conditional);
@@ -317,6 +334,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void OnSampleCollected(int bio_samples_remaining) override;
   void FinishCollectToken() override;
   void OnRetryUserVerification(int attempts) override;
+
+ private:
+  bool virtual_environment_ = false;
 };
 
 }  // namespace content

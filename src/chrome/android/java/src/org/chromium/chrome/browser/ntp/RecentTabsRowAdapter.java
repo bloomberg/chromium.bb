@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.LruCache;
@@ -26,6 +27,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow;
@@ -44,8 +46,10 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -496,7 +500,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public int getChildrenCount() {
             // The number of children is the number of recently closed tabs, plus one for the "Show
             // full history" item.
-            return 1 + mRecentTabsManager.getRecentlyClosedTabs().size();
+            return 1 + mRecentTabsManager.getRecentlyClosedEntries().size();
         }
 
         @Override
@@ -509,13 +513,13 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
          * @return Whether the item at childPosition is the link to the history page.
          */
         private boolean isHistoryLink(int childPosition) {
-            return childPosition == mRecentTabsManager.getRecentlyClosedTabs().size();
+            return childPosition == mRecentTabsManager.getRecentlyClosedEntries().size();
         }
 
         @Override
-        public RecentlyClosedTab getChild(int childPosition) {
+        public RecentlyClosedEntry getChild(int childPosition) {
             if (isHistoryLink(childPosition)) return null;
-            return mRecentTabsManager.getRecentlyClosedTabs().get(childPosition);
+            return mRecentTabsManager.getRecentlyClosedEntries().get(childPosition);
         }
 
         @Override
@@ -544,16 +548,55 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             viewHolder.itemLayout.getLayoutParams().height =
                     mActivity.getResources().getDimensionPixelSize(
                             R.dimen.recent_tabs_foreign_session_group_item_height);
-            RecentlyClosedTab tab = getChild(childPosition);
-            String title = TitleUtil.getTitleForDisplay(tab.getTitle(), tab.getUrl());
-            viewHolder.textView.setText(title);
+            RecentlyClosedEntry entry = getChild(childPosition);
+            if (!(entry instanceof RecentlyClosedTab)) {
+                assert ChromeFeatureList.isEnabled(ChromeFeatureList.BULK_TAB_RESTORE);
+                int tabCount = 0;
+                if (entry instanceof RecentlyClosedGroup) {
+                    RecentlyClosedGroup recentlyClosedGroup = (RecentlyClosedGroup) entry;
+                    tabCount = recentlyClosedGroup.getTabs().size();
 
-            String domain = UrlUtilities.getDomainAndRegistry(tab.getUrl().getSpec(), false);
-            if (!TextUtils.isEmpty(domain)) {
-                viewHolder.domainView.setText(domain);
-                viewHolder.domainView.setVisibility(View.VISIBLE);
+                    String groupTitle = recentlyClosedGroup.getTitle();
+                    if (TextUtils.isEmpty(groupTitle)) {
+                        viewHolder.textView.setText(mActivity.getResources().getString(
+                                R.string.recent_tabs_group_closure_without_title, tabCount));
+                    } else {
+                        viewHolder.textView.setText(mActivity.getResources().getString(
+                                R.string.recent_tabs_group_closure_with_title, groupTitle));
+                    }
+                }
+                if (entry instanceof RecentlyClosedBulkEvent) {
+                    RecentlyClosedBulkEvent recentlyClosedBulkEvent =
+                            (RecentlyClosedBulkEvent) entry;
+                    tabCount = recentlyClosedBulkEvent.getTabs().size();
+
+                    viewHolder.textView.setText(mActivity.getResources().getString(
+                            R.string.recent_tabs_bulk_closure, tabCount));
+                }
+
+                // Entries without dates have a time of 0. TabRestoreService may not save timestamps
+                // between restarts.
+                if (entry.getDate().getTime() != 0L) {
+                    String dateString =
+                            DateFormat.getDateInstance(DateFormat.LONG, getPreferredLocale())
+                                    .format(entry.getDate());
+                    viewHolder.domainView.setText(dateString);
+                    viewHolder.domainView.setVisibility(View.VISIBLE);
+                }
+                loadTabCount(viewHolder, tabCount);
+            } else {
+                RecentlyClosedTab tab = (RecentlyClosedTab) entry;
+
+                String title = TitleUtil.getTitleForDisplay(tab.getTitle(), tab.getUrl());
+                viewHolder.textView.setText(title);
+
+                String domain = UrlUtilities.getDomainAndRegistry(tab.getUrl().getSpec(), false);
+                if (!TextUtils.isEmpty(domain)) {
+                    viewHolder.domainView.setText(domain);
+                    viewHolder.domainView.setVisibility(View.VISIBLE);
+                }
+                loadFavicon(viewHolder, tab.getUrl(), FaviconLocality.LOCAL);
             }
-            loadFavicon(viewHolder, tab.getUrl(), FaviconLocality.LOCAL);
         }
 
         @Override
@@ -575,10 +618,16 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public boolean onChildClick(int childPosition) {
             if (isHistoryLink(childPosition)) {
                 mRecentTabsManager.openHistoryPage();
-            } else {
-                mRecentTabsManager.openRecentlyClosedTab(getChild(childPosition),
-                        WindowOpenDisposition.CURRENT_TAB);
+                return true;
             }
+            RecentlyClosedEntry entry = getChild(childPosition);
+            if (entry instanceof RecentlyClosedTab) {
+                mRecentTabsManager.openRecentlyClosedTab(
+                        (RecentlyClosedTab) entry, WindowOpenDisposition.CURRENT_TAB);
+                return true;
+            }
+            assert ChromeFeatureList.isEnabled(ChromeFeatureList.BULK_TAB_RESTORE);
+            mRecentTabsManager.openRecentlyClosedEntry(entry);
             return true;
         }
 
@@ -589,8 +638,8 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         @Override
         public void onCreateContextMenuForChild(final int childPosition, ContextMenu menu,
                 Activity activity) {
-            final RecentlyClosedTab recentlyClosedTab = getChild(childPosition);
-            if (recentlyClosedTab == null) return;
+            final RecentlyClosedEntry recentlyClosedEntry = getChild(childPosition);
+            if (recentlyClosedEntry == null) return;
             OnMenuItemClickListener listener = item -> {
                 switch (item.getItemId()) {
                     case ID_REMOVE_ALL:
@@ -598,15 +647,19 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                         break;
                     case ID_OPEN_IN_NEW_TAB:
                         mRecentTabsManager.openRecentlyClosedTab(
-                                recentlyClosedTab, WindowOpenDisposition.NEW_BACKGROUND_TAB);
+                                (RecentlyClosedTab) recentlyClosedEntry,
+                                WindowOpenDisposition.NEW_BACKGROUND_TAB);
                         break;
                     default:
                         assert false;
                 }
                 return true;
             };
-            menu.add(ContextMenu.NONE, ID_OPEN_IN_NEW_TAB, ContextMenu.NONE,
-                    R.string.contextmenu_open_in_new_tab).setOnMenuItemClickListener(listener);
+            if (recentlyClosedEntry instanceof RecentlyClosedTab) {
+                menu.add(ContextMenu.NONE, ID_OPEN_IN_NEW_TAB, ContextMenu.NONE,
+                            R.string.contextmenu_open_in_new_tab)
+                        .setOnMenuItemClickListener(listener);
+            }
             menu.add(ContextMenu.NONE, ID_REMOVE_ALL, ContextMenu.NONE,
                     R.string.remove_all).setOnMenuItemClickListener(listener);
         }
@@ -713,6 +766,12 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         public ImageView imageView;
         public View itemLayout;
         public FaviconImageCallback imageCallback;
+    }
+
+    private void loadTabCount(final ViewHolder viewHolder, int tabCount) {
+        RecentTabCountDrawable image = new RecentTabCountDrawable(mActivity);
+        image.updateTabCount(tabCount);
+        viewHolder.imageView.setImageDrawable(image);
     }
 
     private void loadFavicon(
@@ -880,5 +939,14 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     @Override
     public int getChildTypeCount() {
         return ChildType.NUM_ENTRIES;
+    }
+
+    /**
+     * Retrieves the user's preferred locale from the app's configurations.
+     */
+    private Locale getPreferredLocale() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                ? mActivity.getResources().getConfiguration().getLocales().get(0)
+                : mActivity.getResources().getConfiguration().locale;
     }
 }

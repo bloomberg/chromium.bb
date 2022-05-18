@@ -32,6 +32,8 @@
 
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -44,7 +46,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
-#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_utils.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -105,6 +105,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_size.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
@@ -268,6 +269,14 @@ LayoutUnit FileUploadControlIntrinsicInlineSize(const HTMLInputElement& input,
 LayoutUnit SliderIntrinsicInlineSize(const LayoutBox& box) {
   constexpr int kDefaultTrackLength = 129;
   return LayoutUnit(kDefaultTrackLength * box.StyleRef().EffectiveZoom());
+}
+
+LogicalSize ThemePartIntrinsicSize(const LayoutBox& box,
+                                   WebThemeEngine::Part part) {
+  const auto& style = box.StyleRef();
+  PhysicalSize size(Platform::Current()->ThemeEngine()->GetSize(part));
+  size.Scale(style.EffectiveZoom());
+  return size.ConvertToLogical(style.GetWritingMode());
 }
 
 LayoutUnit ListBoxDefaultItemHeight(const LayoutBox& box) {
@@ -635,11 +644,20 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
   if (HasReflection() && !HasLayer())
     SetHasReflection(false);
 
-  auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent());
-  if (IsFloatingOrOutOfFlowPositioned() && old_style &&
-      !old_style->IsFloating() && !old_style->HasOutOfFlowPosition() &&
-      parent_flow_block)
-    parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
+  if (old_style) {
+    bool was_float_or_oof =
+        old_style->IsFloating() || old_style->HasOutOfFlowPosition();
+    if (IsFloatingOrOutOfFlowPositioned()) {
+      if (!was_float_or_oof) {
+        if (auto* parent_flow_block = DynamicTo<LayoutBlockFlow>(Parent()))
+          parent_flow_block->ChildBecameFloatingOrOutOfFlow(this);
+      }
+    } else if (was_float_or_oof && !IsInline()) {
+      // As a float or OOF, this object may have been part of an inline
+      // formatting context, but that's definitely no longer the case.
+      SetIsInLayoutNGInlineFormattingContext(false);
+    }
+  }
 
   const ComputedStyle& new_style = StyleRef();
   if (NeedsLayout() && old_style)
@@ -710,8 +728,6 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
           !old_style->RadiiEqual(new_style) ||
           (HasControlClip() && !old_style->PaddingEqual(new_style))) {
         SetNeedsPaintPropertyUpdate();
-        if (Layer())
-          Layer()->SetNeedsCompositingInputsUpdate();
       }
     }
 
@@ -1127,126 +1143,6 @@ int LayoutBox::PixelSnappedScrollHeight() const {
   return SnapSizeToPixel(ScrollHeight(), Location().Y() + ClientTop());
 }
 
-LayoutBox* LayoutBox::GetScrollParent(
-    const mojom::blink::ScrollIntoViewParamsPtr& params) {
-  NOT_DESTROYED();
-
-  bool is_fixed_to_frame =
-      StyleRef().GetPosition() == EPosition::kFixed && Container() == View();
-
-  // Within a document scrolls bubble along the containing block chain but if
-  // we're in a position:fixed element, we want to immediately bubble up across
-  // the frame boundary since scrolling the frame won't affect the box's
-  // position.
-  if (ContainingBlock() && !is_fixed_to_frame)
-    return ContainingBlock();
-
-  // Otherwise, we're bubbling across a frame boundary. We may be
-  // prevented from doing so for security or policy reasons. If so, we're
-  // done.
-  if (!GetFrame()->View()->AllowedToPropagateScrollIntoView(params))
-    return nullptr;
-
-  if (!GetFrame()->IsLocalRoot()) {
-    // The parent is a local iframe, convert to the absolute coordinate space
-    // of its document and continue from the owner's LayoutBox.
-    HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
-    DCHECK(owner_element);
-
-    // A display:none iframe can have a LayoutView but its owner element won't
-    // have a LayoutObject. If that happens, don't bubble the scroll.
-    if (!owner_element->GetLayoutObject())
-      return nullptr;
-
-    return owner_element->GetLayoutObject()->EnclosingBox();
-  }
-
-  // If the owner is remote, the scroll must continue via IPC.
-  DCHECK(GetFrame()->IsMainFrame() || GetFrame()->Parent()->IsRemoteFrame());
-  return nullptr;
-}
-
-PhysicalRect LayoutBox::ScrollRectToVisibleLocally(
-    const PhysicalRect& absolute_rect,
-    const mojom::blink::ScrollIntoViewParamsPtr& params) {
-  NOT_DESTROYED();
-  DCHECK(params->type == mojom::blink::ScrollType::kProgrammatic ||
-         params->type == mojom::blink::ScrollType::kUser);
-
-  if (!GetFrameView())
-    return absolute_rect;
-
-  LayoutBox* current_box = this;
-  PhysicalRect absolute_rect_to_scroll = absolute_rect;
-
-  while (current_box) {
-    if (absolute_rect_to_scroll.Width() <= 0)
-      absolute_rect_to_scroll.SetWidth(LayoutUnit(1));
-    if (absolute_rect_to_scroll.Height() <= 0)
-      absolute_rect_to_scroll.SetHeight(LayoutUnit(1));
-
-    // If we've reached the main frame's layout viewport (which is always set to
-    // the global root scroller, see ViewportScrollCallback::SetScroller), abort
-    // if the stop_at_main_frame_layout_viewport option is set. We do this so
-    // that we can allow a smooth "scroll and zoom" animation to do the final
-    // scroll in cases like scrolling a focused editable box into view.
-    if (params->stop_at_main_frame_layout_viewport &&
-        current_box->IsGlobalRootScroller())
-      break;
-
-    ScrollableArea* area_to_scroll = nullptr;
-
-    if (current_box->IsScrollContainer() && !IsA<LayoutView>(current_box)) {
-      area_to_scroll = current_box->GetScrollableArea();
-    } else if (!current_box->ContainingBlock()) {
-      area_to_scroll = params->make_visible_in_visual_viewport
-                           ? current_box->GetFrameView()->GetScrollableArea()
-                           : current_box->GetFrameView()->LayoutViewport();
-    }
-
-    if (area_to_scroll) {
-      absolute_rect_to_scroll =
-          area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
-    }
-
-    bool is_fixed_to_frame =
-        current_box->StyleRef().GetPosition() == EPosition::kFixed &&
-        current_box->Container() == current_box->View();
-
-    if (is_fixed_to_frame && current_box->GetFrame()->IsMainFrame() &&
-        params->make_visible_in_visual_viewport) {
-      // If we're in a position:fixed element, scrolling the layout viewport
-      // won't have any effect and would be wrong so we want to bubble up to
-      // the layout viewport's parent. For subframes that's the frame's owner.
-      // For the main frame that's the visual viewport but it isn't associated
-      // with a LayoutBox so we just scroll it here as a special case.
-      // Note: In non-fixed cases, the visual viewport will have been scrolled
-      // by the frame scroll via the RootFrameViewport
-      // (GetFrameView()->GetScrollableArea() above).
-      absolute_rect_to_scroll =
-          current_box->GetFrame()
-              ->GetPage()
-              ->GetVisualViewport()
-              .ScrollIntoView(absolute_rect_to_scroll, params);
-      break;
-    }
-
-    LayoutBox* next_box = current_box->GetScrollParent(params);
-
-    // If the next box to scroll is in another frame, we need to convert the
-    // scroll box to the new frame's absolute coordinates.
-    if (next_box && next_box->View() != current_box->View()) {
-      absolute_rect_to_scroll = current_box->View()->LocalToAncestorRect(
-          absolute_rect_to_scroll, next_box->View(),
-          kTraverseDocumentBoundaries);
-    }
-
-    current_box = next_box;
-  }
-
-  return absolute_rect_to_scroll;
-}
-
 void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
   NOT_DESTROYED();
   margin_box_outsets_.SetTop(box.top);
@@ -1380,27 +1276,36 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
     return kIndefiniteSize;
   const Element& element = *To<Element>(GetNode());
 
-  auto* select = DynamicTo<HTMLSelectElement>(element);
+  const auto* select = DynamicTo<HTMLSelectElement>(element);
   if (UNLIKELY(select && select->UsesMenuList())) {
     return MenuListIntrinsicInlineSize(*select, *this);
   }
-  auto* input = DynamicTo<HTMLInputElement>(element);
+  const auto* input = DynamicTo<HTMLInputElement>(element);
   if (UNLIKELY(input)) {
     if (input->IsTextField())
       return TextFieldIntrinsicInlineSize(*input, *this);
     const AtomicString& type = input->type();
     if (type == input_type_names::kFile)
       return FileUploadControlIntrinsicInlineSize(*input, *this);
-    else if (type == input_type_names::kRange)
+    if (type == input_type_names::kRange)
       return SliderIntrinsicInlineSize(*this);
+    auto effective_appearance = StyleRef().EffectiveAppearance();
+    if (effective_appearance == kCheckboxPart) {
+      return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartCheckbox)
+          .inline_size;
+    }
+    if (effective_appearance == kRadioPart) {
+      return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartRadio)
+          .inline_size;
+    }
     return kIndefiniteSize;
   }
-  auto* textarea = DynamicTo<HTMLTextAreaElement>(element);
+  const auto* textarea = DynamicTo<HTMLTextAreaElement>(element);
   if (UNLIKELY(textarea))
     return TextAreaIntrinsicInlineSize(*textarea, *this);
-
   if (IsSliderContainer(element))
     return SliderIntrinsicInlineSize(*this);
+
   return kIndefiniteSize;
 }
 
@@ -1411,18 +1316,27 @@ LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
   DCHECK(!HasOverrideIntrinsicContentLogicalHeight());
 
   if (const auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
-    if (select->UsesMenuList()) {
+    if (select->UsesMenuList())
       return MenuListIntrinsicBlockSize(*select, *this);
-    } else {
-      return ListBoxItemHeight(*select, *this) * select->ListBoxSize() -
-             ComputeLogicalScrollbars().BlockSum();
-    }
-  } else if (IsTextFieldIncludingNG()) {
+    return ListBoxItemHeight(*select, *this) * select->ListBoxSize() -
+           ComputeLogicalScrollbars().BlockSum();
+  }
+  if (IsTextFieldIncludingNG())
     return TextFieldIntrinsicBlockSize(*To<HTMLInputElement>(GetNode()), *this);
-  } else if (IsTextAreaIncludingNG()) {
+  if (IsTextAreaIncludingNG()) {
     return TextAreaIntrinsicBlockSize(*To<HTMLTextAreaElement>(GetNode()),
                                       *this);
   }
+
+  auto effective_appearance = StyleRef().EffectiveAppearance();
+  if (effective_appearance == kCheckboxPart) {
+    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartCheckbox)
+        .block_size;
+  }
+  if (effective_appearance == kRadioPart) {
+    return ThemePartIntrinsicSize(*this, WebThemeEngine::kPartRadio).block_size;
+  }
+
   return kIndefiniteSize;
 }
 
@@ -1826,23 +1740,6 @@ bool LayoutBox::CanBeScrolledAndHasScrollableArea() const {
           PixelSnappedScrollWidth() != PixelSnappedClientWidth());
 }
 
-bool LayoutBox::CanBeProgrammaticallyScrolled() const {
-  NOT_DESTROYED();
-  Node* node = GetNode();
-  if (node && node->IsDocumentNode())
-    return true;
-
-  if (!IsScrollContainer())
-    return false;
-
-  bool has_scrollable_overflow =
-      HasScrollableOverflowX() || HasScrollableOverflowY();
-  if (ScrollsOverflow() && has_scrollable_overflow)
-    return true;
-
-  return node && HasEditableStyle(*node);
-}
-
 void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
   NOT_DESTROYED();
   LocalFrame* frame = GetFrame();
@@ -1859,10 +1756,11 @@ void LayoutBox::Autoscroll(const PhysicalOffset& position_in_root_frame) {
       ScrollAlignment::CreateScrollIntoViewParams(
           ScrollAlignment::ToEdgeIfNeeded(), ScrollAlignment::ToEdgeIfNeeded(),
           mojom::blink::ScrollType::kUser);
-  ScrollRectToVisibleLocally(
+  scroll_into_view_util::ScrollRectToVisible(
+      *this,
       PhysicalRect(absolute_position,
                    PhysicalSize(LayoutUnit(1), LayoutUnit(1))),
-      params);
+      std::move(params));
 }
 
 // If specified point is outside the border-belt-excluded box (the border box
@@ -2502,36 +2400,6 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
   if (StyleRef().BoxSizing() == EBoxSizing::kBorderBox)
     result -= CollapsedBorderAndCSSPaddingLogicalHeight();
   return std::max(LayoutUnit(), result);
-}
-
-// Hit Testing
-bool LayoutBox::MayIntersect(const HitTestResult& result,
-                             const HitTestLocation& hit_test_location,
-                             const PhysicalOffset& accumulated_offset) const {
-  NOT_DESTROYED();
-  // Check if we need to do anything at all.
-  // If we have clipping, then we can't have any spillout.
-  // TODO(pdr): Why is this optimization not valid for the effective root?
-  if (UNLIKELY(IsEffectiveRootScroller()))
-    return true;
-
-  PhysicalRect overflow_box;
-  if (UNLIKELY(result.GetHitTestRequest().IsHitTestVisualOverflow())) {
-    overflow_box = PhysicalVisualOverflowRectIncludingFilters();
-  } else {
-    overflow_box = PhysicalBorderBoxRect();
-    if (!ShouldClipOverflowAlongBothAxis() && HasVisualOverflow()) {
-      // PhysicalVisualOverflowRect is an approximation of
-      // PhsyicalLayoutOverflowRect excluding self-painting descendants (which
-      // hit test by themselves), with false-positive (which won't cause any
-      // functional issues) when the point is only in visual overflow, but
-      // excluding self-painting descendants is more important for performance.
-      overflow_box.Unite(PhysicalVisualOverflowRect());
-    }
-  }
-
-  overflow_box.Move(accumulated_offset);
-  return hit_test_location.Intersects(overflow_box);
 }
 
 bool LayoutBox::HitTestAllPhases(HitTestResult& result,
@@ -3571,412 +3439,9 @@ const NGLayoutResult* LayoutBox::GetCachedMeasureResult() const {
   return measure_result_;
 }
 
-const NGLayoutResult* LayoutBox::CachedLayoutResult(
-    const NGConstraintSpace& new_space,
-    const NGBlockBreakToken* break_token,
-    const NGEarlyBreak* early_break,
-    absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
-    NGLayoutCacheStatus* out_cache_status) {
-  NOT_DESTROYED();
-  *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
-
-  const bool use_layout_cache_slot =
-      new_space.CacheSlot() == NGCacheSlot::kLayout &&
-      !layout_results_.IsEmpty();
-  const NGLayoutResult* cached_layout_result = use_layout_cache_slot
-                                                   ? GetCachedLayoutResult()
-                                                   : GetCachedMeasureResult();
-
-  if (!cached_layout_result)
-    return nullptr;
-
-  // TODO(cbiesinger): Support caching fragmented boxes.
-  if (break_token)
-    return nullptr;
-
-  if (early_break)
-    return nullptr;
-
-  DCHECK_EQ(cached_layout_result->Status(), NGLayoutResult::kSuccess);
-
-  // Set our initial temporary cache status to "hit".
-  NGLayoutCacheStatus cache_status = NGLayoutCacheStatus::kHit;
-
-  // If the display-lock blocked child layout, then we don't clear child needs
-  // layout bits. However, we can still use the cached result, since we will
-  // re-layout when unlocking.
-  bool is_blocked_by_display_lock = ChildLayoutBlockedByDisplayLock();
-  bool child_needs_layout_unless_locked =
-      !is_blocked_by_display_lock &&
-      (PosChildNeedsLayout() || NormalChildNeedsLayout());
-
-  const NGPhysicalBoxFragment& physical_fragment =
-      To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
-  if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
-      NeedsSimplifiedNormalFlowLayout() ||
-      (NeedsPositionedMovementLayout() &&
-       !NeedsPositionedMovementLayoutOnly())) {
-    if (!ChildrenInline()) {
-      // Check if we only need "simplified" layout. We don't abort yet, as we
-      // need to check if other things (like floats) will require us to perform
-      // a full layout.
-      if (!NeedsSimplifiedLayoutOnly())
-        return nullptr;
-
-      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
-    } else if (!NeedsSimplifiedLayoutOnly() ||
-               NeedsSimplifiedNormalFlowLayout()) {
-      // We don't regenerate any lineboxes during our "simplified" layout pass.
-      // If something needs "simplified" layout within a linebox, (e.g. an
-      // atomic-inline) we miss the cache.
-
-      // Check if some of line boxes are reusable.
-
-      // Only for the layout cache slot. Measure has several special
-      // optimizations that makes reusing lines complicated.
-      if (!use_layout_cache_slot)
-        return nullptr;
-
-      if (SelfNeedsLayout())
-        return nullptr;
-
-      if (!physical_fragment.HasItems())
-        return nullptr;
-
-      // Propagating OOF needs re-layout.
-      if (physical_fragment.NeedsOOFPositionedInfoPropagation())
-        return nullptr;
-
-      // Any floats might need to move, causing lines to wrap differently,
-      // needing re-layout, either in cached result or in new constraint space.
-      if (!cached_layout_result->ExclusionSpace().IsEmpty() ||
-          new_space.HasFloats())
-        return nullptr;
-
-      cache_status = NGLayoutCacheStatus::kCanReuseLines;
-    } else {
-      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
-    }
-  }
-
-  DCHECK(!physical_fragment.BreakToken());
-
-  NGBlockNode node(this);
-  NGLayoutCacheStatus size_cache_status = CalculateSizeBasedLayoutCacheStatus(
-      node, break_token, *cached_layout_result, new_space,
-      initial_fragment_geometry);
-
-  // If our size may change (or we know a descendants size may change), we miss
-  // the cache.
-  if (size_cache_status == NGLayoutCacheStatus::kNeedsLayout)
-    return nullptr;
-
-  // If we need simplified layout, but the cached fragment's children are not
-  // valid (see comment in `SetCachedLayoutResult`), don't return the fragment,
-  // since it will be used to iteration the invalid children when running
-  // simplified layout.
-  if ((!physical_fragment.ChildrenValid() || IsShapingDeferred()) &&
-      (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
-       cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout))
-    return nullptr;
-
-  // Update our temporary cache status, if the size cache check indicated we
-  // might need simplified layout.
-  if (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      cache_status == NGLayoutCacheStatus::kHit)
-    cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
-
-  // Only allow simplified layout for non-replaced boxes.
-  if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      IsLayoutReplaced())
-    return nullptr;
-
-  LayoutUnit bfc_line_offset = new_space.BfcOffset().line_offset;
-  absl::optional<LayoutUnit> bfc_block_offset =
-      cached_layout_result->BfcBlockOffset();
-  LayoutUnit block_offset_delta;
-  NGMarginStrut end_margin_strut = cached_layout_result->EndMarginStrut();
-
-  bool are_bfc_offsets_equal;
-  bool is_margin_strut_equal;
-  bool is_exclusion_space_equal;
-
-  {
-    const NGConstraintSpace& old_space =
-        cached_layout_result->GetConstraintSpaceForCaching();
-
-    // Check the BFC offset. Even if they don't match, there're some cases we
-    // can still reuse the fragment.
-    are_bfc_offsets_equal =
-        new_space.BfcOffset() == old_space.BfcOffset() &&
-        new_space.ExpectedBfcBlockOffset() ==
-            old_space.ExpectedBfcBlockOffset() &&
-        new_space.ForcedBfcBlockOffset() == old_space.ForcedBfcBlockOffset();
-
-    is_margin_strut_equal = new_space.MarginStrut() == old_space.MarginStrut();
-    is_exclusion_space_equal =
-        new_space.ExclusionSpace() == old_space.ExclusionSpace();
-    bool is_clearance_offset_equal =
-        new_space.ClearanceOffset() == old_space.ClearanceOffset();
-
-    bool is_new_formatting_context =
-        physical_fragment.IsFormattingContextRoot();
-
-    // If a node *doesn't* establish a new formatting context it may be affected
-    // by floats, or clearance.
-    // If anything has changed prior to us (different exclusion space, etc), we
-    // need to perform a series of additional checks if we can still reuse this
-    // layout result.
-    if (!is_new_formatting_context &&
-        (!are_bfc_offsets_equal || !is_exclusion_space_equal ||
-         !is_margin_strut_equal || !is_clearance_offset_equal)) {
-      DCHECK(!CreatesNewFormattingContext());
-
-      // If we have a different BFC offset, or exclusion space we can't perform
-      // "simplified" layout.
-      // This may occur if our %-block-size has changed (allowing "simplified"
-      // layout), and we've been pushed down in the BFC coordinate space by a
-      // sibling.
-      // The "simplified" layout algorithm doesn't have the required logic to
-      // shift any added exclusions within the output exclusion space.
-      if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
-          cache_status == NGLayoutCacheStatus::kCanReuseLines)
-        return nullptr;
-
-      DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
-
-      if (!MaySkipLayoutWithinBlockFormattingContext(
-              *cached_layout_result, new_space, &bfc_block_offset,
-              &block_offset_delta, &end_margin_strut))
-        return nullptr;
-    }
-
-    if (UNLIKELY(new_space.HasBlockFragmentation())) {
-      DCHECK(old_space.HasBlockFragmentation());
-      // We're should currently be checking if the node is unfragmented before
-      // we get here.
-      DCHECK(physical_fragment.IsOnlyForNode());
-
-      // Sometimes we perform simplified layout on a block-flow which is just
-      // growing in block-size. When fragmentation is present we can't hit the
-      // cache for these cases as we may grow past the fragmentation line.
-      if (cache_status != NGLayoutCacheStatus::kHit)
-        return nullptr;
-
-      // Miss the cache if we have nested multicol containers inside that also
-      // have OOF descendants. OOFs in nested multicol containers are handled in
-      // a special way during layout: When we have returned to the outermost
-      // fragmentation context root, we'll go through the nested multicol
-      // containers and lay out the OOFs inside. If we do that after having hit
-      // the cache (and thus kept the fragment with the OOF), we'd end up with
-      // extraneous OOF fragments.
-      if (UNLIKELY(physical_fragment.HasNestedMulticolsWithOOFs()))
-        return nullptr;
-
-      // Any fragmented out-of-flow positioned items will be placed once we
-      // reach the fragmentation context root rather than the containing block,
-      // so we should miss the cache in this case to ensure that such OOF
-      // descendants are laid out correctly.
-      if (physical_fragment.HasOutOfFlowFragmentChild())
-        return nullptr;
-
-      // If the node didn't break into multiple fragments, we might be able to
-      // re-use the result. If the fragmentainer block-size has changed, or if
-      // the fragment's block-offset within the fragmentainer has changed, we
-      // need to check if the node will still fit as one fragment. If we cannot
-      // be sure that this is the case, we need to miss the cache.
-      if (new_space.IsInitialColumnBalancingPass()) {
-        if (!old_space.IsInitialColumnBalancingPass()) {
-          // If the previous result was generated with a known fragmentainer
-          // size (i.e. not in the initial column balancing pass),
-          // TallestUnbreakableBlockSize() won't be stored in the layout result,
-          // because we currently only calculate this in the initial column
-          // balancing pass. Since we're now in an initial column balancing pass
-          // again, we cannot re-use the result, because not propagating the
-          // tallest unbreakable block-size might cause incorrect layout.
-          //
-          // Another problem is OOF descendants. In the initial column balancing
-          // pass, they affect FragmentainerBlockSize() (because OOFs are
-          // supposed to affect column balancing), while in actual layout
-          // passes, OOFs will escape their actual containing block and become
-          // direct children of some fragmentainer. In other words, any relevant
-          // information about OOFs and how they might affect balancing has been
-          // lost.
-          return nullptr;
-        }
-        // (On the other hand, if the previous result was also generated in the
-        // initial column balancing pass, we don't need to perform any
-        // additional checks.)
-      } else if (new_space.FragmentainerBlockSize() !=
-                     old_space.FragmentainerBlockSize() ||
-                 new_space.FragmentainerOffsetAtBfc() !=
-                     old_space.FragmentainerOffsetAtBfc()) {
-        // If the fragment was forced to stay in a fragmentainer (even if it
-        // overflowed), BlockSizeForFragmentation() cannot be used for cache
-        // testing.
-        if (cached_layout_result->IsBlockSizeForFragmentationClamped())
-          return nullptr;
-
-        // Returns true if there are any floats added by |cached_layout_result|
-        // which will end up crossing the fragmentation line.
-        auto DoFloatsCrossFragmentationLine = [&]() -> bool {
-          const auto& result_exclusion_space =
-              cached_layout_result->ExclusionSpace();
-          if (result_exclusion_space != old_space.ExclusionSpace()) {
-            LayoutUnit block_end_offset =
-                new_space.FragmentainerOffsetAtBfc() +
-                result_exclusion_space.ClearanceOffset(EClear::kBoth);
-            if (block_end_offset > new_space.FragmentainerBlockSize())
-              return true;
-          }
-          return false;
-        };
-
-        if (!bfc_block_offset && cached_layout_result->IsSelfCollapsing()) {
-          // Self-collapsing blocks may have floats and OOF descendants.
-          // Checking if floats cross the fragmentation line is easy enough
-          // (check the exclusion space), but we currently have no way of
-          // checking OOF descendants. OOFs are included in
-          // BlockSizeForFragmentation() in the initial column balancing pass
-          // only, but since we don't know the start offset of this node,
-          // there's nothing we can do about it. Give up if this is the case.
-          if (old_space.IsInitialColumnBalancingPass())
-            return nullptr;
-
-          if (DoFloatsCrossFragmentationLine())
-            return nullptr;
-        } else {
-          // If floats were added inside an inline formatting context, they
-          // might extrude (and not included within the block-size for
-          // fragmentation calculation above, unlike block formatting contexts).
-          if (physical_fragment.IsInlineFormattingContext() &&
-              !is_new_formatting_context) {
-            if (DoFloatsCrossFragmentationLine())
-              return nullptr;
-          }
-
-          // Check if we have content which might cross the fragmentation line.
-          //
-          // NOTE: It's fine to use NGLayoutResult::BlockSizeForFragmentation()
-          // directly here, rather than the helper BlockSizeForFragmentation()
-          // in ng_fragmentation_utils.cc, since what the latter does shouldn't
-          // matter, since we're not monolithic content
-          // (HasBlockFragmentation() is true), and we're not a line box.
-          LayoutUnit block_size_for_fragmentation =
-              cached_layout_result->BlockSizeForFragmentation();
-
-          LayoutUnit block_end_offset =
-              new_space.FragmentainerOffsetAtBfc() +
-              bfc_block_offset.value_or(LayoutUnit()) +
-              block_size_for_fragmentation;
-          if (block_end_offset > new_space.FragmentainerBlockSize())
-            return nullptr;
-        }
-
-        // Multi-cols behave differently between the initial column balancing
-        // pass, and the regular pass (specifically when forced breaks are
-        // present), we just miss the cache for these cases.
-        if (old_space.IsInitialColumnBalancingPass()) {
-          if (auto* block = DynamicTo<LayoutBlock>(this)) {
-            if (block->IsFragmentationContextRoot())
-              return nullptr;
-          }
-        }
-      }
-    }
-  }
-
-  // We've performed all of the cache checks at this point. If we need
-  // "simplified" layout then abort now.
-  *out_cache_status = cache_status;
-  if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
-      cache_status == NGLayoutCacheStatus::kCanReuseLines)
-    return cached_layout_result;
-
-  physical_fragment.CheckType();
-
-  DCHECK_EQ(*out_cache_status, NGLayoutCacheStatus::kHit);
-
-  // We can safely re-use this fragment if we are positioned, and only our
-  // position constraints changed (left/top/etc). However we need to clear the
-  // dirty layout bit(s). Note that we may be here because we are display locked
-  // and have cached a locked layout result. In that case, this function will
-  // not clear the child dirty bits.
-  if (NeedsLayout())
-    ClearNeedsLayout();
-
-  // For example, for elements with a transform change we can re-use the cached
-  // result but we still need to recalculate the layout overflow.
-  if (use_layout_cache_slot && !is_blocked_by_display_lock &&
-      NeedsLayoutOverflowRecalc()) {
-#if DCHECK_IS_ON()
-    const NGLayoutResult* cloned_cached_layout_result =
-        NGLayoutResult::CloneWithPostLayoutFragments(*cached_layout_result);
-#endif
-    RecalcLayoutOverflow();
-
-    // We need to update the cached layout result, as the call to
-    // RecalcLayoutOverflow() might have modified it.
-    cached_layout_result = GetCachedLayoutResult();
-#if DCHECK_IS_ON()
-    cloned_cached_layout_result->CheckSameForSimplifiedLayout(
-        *cached_layout_result);
-#endif
-  }
-
-  // Optimization: NGTableConstraintSpaceData can be large, and it is shared
-  // between all the rows in a table. Make constraint space table data for
-  // reused row fragment be identical to the one used by other row fragments.
-  if (IsTableRow() && IsLayoutNGObject()) {
-    const_cast<NGConstraintSpace&>(
-        cached_layout_result->GetConstraintSpaceForCaching())
-        .ReplaceTableRowData(*new_space.TableData(), new_space.TableRowIndex());
-  }
-
-  // OOF-positioned nodes have to two-tier cache. The additional cache check
-  // runs before the OOF-positioned sizing, and positioning calculations.
-  //
-  // This additional check compares the percentage resolution size.
-  //
-  // As a result, the cached layout result always needs to contain the previous
-  // percentage resolution size in order for the first-tier cache to work.
-  // See |NGBlockNode::CachedLayoutResultForOutOfFlowPositioned|.
-  bool needs_cached_result_update =
-      node.IsOutOfFlowPositioned() &&
-      new_space.PercentageResolutionSize() !=
-          cached_layout_result->GetConstraintSpaceForCaching()
-              .PercentageResolutionSize();
-
-  // We can safely reuse this result if our BFC and "input" exclusion spaces
-  // were equal.
-  if (are_bfc_offsets_equal && is_exclusion_space_equal &&
-      is_margin_strut_equal && !needs_cached_result_update) {
-    // In order not to rebuild the internal derived-geometry "cache" of float
-    // data, we need to move this to the new "output" exclusion space.
-    cached_layout_result->ExclusionSpace().MoveAndUpdateDerivedGeometry(
-        new_space.ExclusionSpace());
-    return cached_layout_result;
-  }
-
-  const NGLayoutResult* new_result = MakeGarbageCollected<NGLayoutResult>(
-      *cached_layout_result, new_space, end_margin_strut, bfc_line_offset,
-      bfc_block_offset, block_offset_delta);
-
-  if (needs_cached_result_update && !NGDisableSideEffectsScope::IsDisabled())
-    SetCachedLayoutResult(new_result);
-
-  return new_result;
-}
-
 const NGLayoutResult* LayoutBox::GetLayoutResult(wtf_size_t i) const {
   NOT_DESTROYED();
   return layout_results_[i];
-}
-
-const NGPhysicalBoxFragment* LayoutBox::GetPhysicalFragment(
-    wtf_size_t i) const {
-  NOT_DESTROYED();
-  return &To<NGPhysicalBoxFragment>(layout_results_[i]->PhysicalFragment());
 }
 
 const NGPhysicalBoxFragment&
@@ -7142,35 +6607,6 @@ PositionWithAffinity LayoutBox::PositionForPointInFragments(
 }
 
 DISABLE_CFI_PERF
-bool LayoutBox::ShrinkToAvoidFloats() const {
-  NOT_DESTROYED();
-  // Floating objects don't shrink.  Objects that don't avoid floats don't
-  // shrink.
-  if (IsInline() || !CreatesNewFormattingContext() || IsFloating())
-    return false;
-
-  // Only auto width objects can possibly shrink to avoid floats.
-  if (!StyleRef().Width().IsAuto())
-    return false;
-
-  // If the containing block is LayoutNG, we will not let legacy layout deal
-  // with positioning of floats or sizing of auto-width new formatting context
-  // block level objects adjacent to them.
-  if (const auto* containing_block = ContainingBlock()) {
-    if (containing_block->IsLayoutNGObject())
-      return false;
-  }
-
-  // Legends are taken out of the normal flow, and are laid out at the very
-  // start of the fieldset, and are therefore not affected by floats (that may
-  // appear earlier in the DOM).
-  if (IsRenderedLegend())
-    return false;
-
-  return true;
-}
-
-DISABLE_CFI_PERF
 bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   NOT_DESTROYED();
   if (IsAtomicInlineLevel())
@@ -7953,8 +7389,9 @@ LayoutRect LayoutBox::VisualOverflowRect() const {
 
   const LayoutRect& self_visual_overflow_rect =
       overflow_->visual_overflow->SelfVisualOverflowRect();
-  if (HasMask())
+  if (HasMask()) {
     return self_visual_overflow_rect;
+  }
 
   const OverflowClipAxes overflow_clip_axes = GetOverflowClipAxes();
   if (ShouldApplyOverflowClipMargin()) {
@@ -8053,93 +7490,6 @@ bool LayoutBox::HasRelativeLogicalHeight() const {
   return StyleRef().LogicalHeight().IsPercentOrCalc() ||
          StyleRef().LogicalMinHeight().IsPercentOrCalc() ||
          StyleRef().LogicalMaxHeight().IsPercentOrCalc();
-}
-
-static void MarkBoxForRelayoutAfterSplit(LayoutBoxModelObject* box) {
-  // FIXME: The table code should handle that automatically. If not,
-  // we should fix it and remove the table part checks.
-  if (box->IsTable()) {
-    // Because we may have added some sections with already computed column
-    // structures, we need to sync the table structure with them now. This
-    // avoids crashes when adding new cells to the table.
-    ToInterface<LayoutNGTableInterface>(box)->ForceSectionsRecalc();
-  } else if (box->IsTableSection()) {
-    ToInterface<LayoutNGTableSectionInterface>(box)->SetNeedsCellRecalc();
-  }
-
-  box->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-      layout_invalidation_reason::kAnonymousBlockChange);
-}
-
-static void CollapseLoneAnonymousBlockChild(LayoutBox* parent,
-                                            LayoutObject* child) {
-  auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-  auto* parent_block_flow = DynamicTo<LayoutBlockFlow>(parent);
-  if (!child->IsAnonymousBlock() || !child_block_flow)
-    return;
-  if (!parent_block_flow)
-    return;
-  parent_block_flow->CollapseAnonymousBlockChild(child_block_flow);
-}
-
-// TODO(kojii): Move to `layout_box_model_object.cc`.
-LayoutObject* LayoutBoxModelObject::SplitAnonymousBoxesAroundChild(
-    LayoutObject* before_child) {
-  NOT_DESTROYED();
-  LayoutBox* box_at_top_of_new_branch = nullptr;
-
-  while (before_child->Parent() != this) {
-    auto* box_to_split = To<LayoutBox>(before_child->Parent());
-    if (box_to_split->SlowFirstChild() != before_child &&
-        box_to_split->IsAnonymous()) {
-      // We have to split the parent box into two boxes and move children
-      // from |beforeChild| to end into the new post box.
-      LayoutBox* post_box = CreateAnonymousBoxToSplit(box_to_split);
-      post_box->SetChildrenInline(box_to_split->ChildrenInline());
-      auto* parent_box = To<LayoutBoxModelObject>(box_to_split->Parent());
-      // We need to invalidate the |parentBox| before inserting the new node
-      // so that the table paint invalidation logic knows the structure is
-      // dirty. See for example LayoutTableCell:localVisualRect().
-      MarkBoxForRelayoutAfterSplit(parent_box);
-      parent_box->VirtualChildren()->InsertChildNode(
-          parent_box, post_box, box_to_split->NextSibling());
-      box_to_split->MoveChildrenTo(post_box, before_child, nullptr, true);
-
-      LayoutObject* child = post_box->SlowFirstChild();
-      DCHECK(child);
-      if (child && !child->NextSibling())
-        CollapseLoneAnonymousBlockChild(post_box, child);
-      child = box_to_split->SlowFirstChild();
-      DCHECK(child);
-      if (child && !child->NextSibling())
-        CollapseLoneAnonymousBlockChild(box_to_split, child);
-
-      MarkBoxForRelayoutAfterSplit(box_to_split);
-      MarkBoxForRelayoutAfterSplit(post_box);
-      box_at_top_of_new_branch = post_box;
-
-      before_child = post_box;
-    } else {
-      before_child = box_to_split;
-    }
-  }
-
-  // Splitting the box means the left side of the container chain will lose any
-  // percent height descendants below |boxAtTopOfNewBranch| on the right hand
-  // side.
-  if (box_at_top_of_new_branch) {
-    box_at_top_of_new_branch->ClearPercentHeightDescendants();
-    MarkBoxForRelayoutAfterSplit(this);
-  }
-
-  DCHECK_EQ(before_child->Parent(), this);
-  return before_child;
-}
-
-LayoutBox* LayoutBoxModelObject::CreateAnonymousBoxToSplit(
-    const LayoutBox* box_to_split) const {
-  NOT_DESTROYED();
-  return box_to_split->CreateAnonymousBoxWithSameTypeAs(this);
 }
 
 LayoutUnit LayoutBox::OffsetFromLogicalTopOfFirstPage() const {
@@ -8347,21 +7697,6 @@ LayoutUnit LayoutBox::CalculatePaginationStrutToFitContent(
 LayoutBox* LayoutBox::SnapContainer() const {
   NOT_DESTROYED();
   return rare_data_ ? rare_data_->snap_container_ : nullptr;
-}
-
-void LayoutBox::SetSnapContainer(LayoutBox* new_container) {
-  NOT_DESTROYED();
-  LayoutBox* old_container = SnapContainer();
-  if (old_container == new_container)
-    return;
-
-  if (old_container)
-    old_container->RemoveSnapArea(*this);
-
-  EnsureRareData().snap_container_ = new_container;
-
-  if (new_container)
-    new_container->AddSnapArea(*this);
 }
 
 void LayoutBox::ClearSnapAreas() {

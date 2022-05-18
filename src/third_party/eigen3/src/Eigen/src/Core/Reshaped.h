@@ -157,7 +157,7 @@ class ReshapedImpl_dense<XprType,Rows,Cols,Order,false>
     EIGEN_INHERIT_ASSIGNMENT_OPERATORS(ReshapedImpl_dense)
 
     typedef typename internal::ref_selector<XprType>::non_const_type MatrixTypeNested;
-    typedef typename internal::remove_all<XprType>::type NestedExpression;
+    typedef internal::remove_all_t<XprType> NestedExpression;
 
     class InnerIterator;
 
@@ -187,12 +187,12 @@ class ReshapedImpl_dense<XprType,Rows,Cols,Order,false>
 
     /** \returns the nested expression */
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<XprType>::type&
+    const internal::remove_all_t<XprType>&
     nestedExpression() const { return m_xpr; }
 
     /** \returns the nested expression */
     EIGEN_DEVICE_FUNC
-    typename internal::remove_reference<XprType>::type&
+    std::remove_reference_t<XprType>&
     nestedExpression() { return m_xpr; }
 
   protected:
@@ -232,7 +232,7 @@ class ReshapedImpl_dense<XprType, Rows, Cols, Order, true>
     {}
 
     EIGEN_DEVICE_FUNC
-    const typename internal::remove_all<XprTypeNested>::type& nestedExpression() const
+    const internal::remove_all_t<XprTypeNested>& nestedExpression() const
     {
       return m_xpr;
     }

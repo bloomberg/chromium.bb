@@ -6,7 +6,7 @@ Dawn uses Chromium's continuous integration (CI) infrastructure to continually r
  - [Dawn Try Builders](https://ci.chromium.org/p/dawn/g/try/builders)
  - [chromium.dawn Waterfall](https://ci.chromium.org/p/chromium/g/chromium.dawn/console)
 
-For additional information on GPU testing in Chromium, please see [[chromium/src]//docs/gpu/gpu_testing_bot_details.md](https://chromium.googlesource.com/chromium/src.git/+/master/docs/gpu/gpu_testing_bot_details.md).
+For additional information on GPU testing in Chromium, please see [[chromium/src]//docs/gpu/gpu_testing_bot_details.md](https://chromium.googlesource.com/chromium/src.git/+/main/docs/gpu/gpu_testing_bot_details.md).
 
 ## Dawn CI/Try Builders
 Dawn builders are specified in [[dawn]//infra/config/global/cr-buildbucket.cfg](../infra/config/global/cr-buildbucket.cfg). This file contains a few mixins such as `clang`, `no_clang`, `x64`, `x86`, `debug`, `release` which are used to specify the bot dimensions and build properties (builder_mixins.recipe.properties). At the time of writing, we have the following builders:
@@ -85,7 +85,7 @@ Using the [[chromium/tools/build]//scripts/slave/recipes/chromium_trybot.py](htt
 
 ## Bot Allocation
 
-Bots are physically allocated based on the configuration in [[chromium/infradata/config]//configs/chromium-swarm/starlark/bots/dawn.star](https://chrome-internal.googlesource.com/infradata/config/+/refs/heads/master/configs/chromium-swarm/starlark/bots/dawn.star) (Google only).
+Bots are physically allocated based on the configuration in [[chromium/infradata/config]//configs/chromium-swarm/starlark/bots/dawn.star](https://chrome-internal.googlesource.com/infradata/config/+/refs/heads/main/configs/chromium-swarm/starlark/bots/dawn.star) (Google only).
 
 `dawn/try` bots are using builderless configurations which means they use builderless GCEs shared with Chromium bots and don't need explicit allocation.
 

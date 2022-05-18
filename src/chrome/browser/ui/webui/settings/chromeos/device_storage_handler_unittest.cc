@@ -26,8 +26,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/browser_task_environment.h"
@@ -67,7 +67,7 @@ class StorageHandlerTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
 
     // Initialize fake DBus clients.
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     chromeos::SpacedClient::InitializeFake();
 
     // The storage handler requires an instance of DiskMountManager,
@@ -139,7 +139,7 @@ class StorageHandlerTest : public testing::Test {
     ash::disks::DiskMountManager::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     chromeos::SpacedClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
+    ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 

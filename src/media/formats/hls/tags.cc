@@ -26,6 +26,25 @@ ParseStatus::Or<T> ParseEmptyTag(TagItem tag) {
   return T{};
 }
 
+template <typename T>
+ParseStatus::Or<T> ParseDecimalIntegerTag(TagItem tag,
+                                          types::DecimalInteger T::*field) {
+  DCHECK(tag.GetName() == ToTagName(T::kName));
+  if (!tag.GetContent().has_value()) {
+    return ParseStatusCode::kMalformedTag;
+  }
+
+  auto value = types::ParseDecimalInteger(*tag.GetContent());
+  if (value.has_error()) {
+    return ParseStatus(ParseStatusCode::kMalformedTag)
+        .AddCause(std::move(value).error());
+  }
+
+  T out;
+  out.*field = std::move(value).value();
+  return out;
+}
+
 // Attributes expected in `EXT-X-DEFINE` tag contents.
 // These must remain sorted alphabetically.
 enum class XDefineTagAttribute {
@@ -55,7 +74,9 @@ enum class XStreamInfTagAttribute {
   kAverageBandwidth,
   kBandwidth,
   kCodecs,
+  kFrameRate,
   kProgramId,  // Ignored for backwards compatibility
+  kResolution,
   kScore,
   kMaxValue = kScore,
 };
@@ -68,8 +89,12 @@ constexpr base::StringPiece GetAttributeName(XStreamInfTagAttribute attribute) {
       return "BANDWIDTH";
     case XStreamInfTagAttribute::kCodecs:
       return "CODECS";
+    case XStreamInfTagAttribute::kFrameRate:
+      return "FRAME-RATE";
     case XStreamInfTagAttribute::kProgramId:
       return "PROGRAM-ID";
+    case XStreamInfTagAttribute::kResolution:
+      return "RESOLUTION";
     case XStreamInfTagAttribute::kScore:
       return "SCORE";
   }
@@ -146,26 +171,19 @@ ParseStatus::Or<M3uTag> M3uTag::Parse(TagItem tag) {
 }
 
 ParseStatus::Or<XVersionTag> XVersionTag::Parse(TagItem tag) {
-  DCHECK(tag.GetName() == ToTagName(XVersionTag::kName));
-
-  if (!tag.GetContent().has_value()) {
-    return ParseStatusCode::kMalformedTag;
-  }
-
-  auto value_result = types::ParseDecimalInteger(*tag.GetContent());
-  if (value_result.has_error()) {
-    return ParseStatus(ParseStatusCode::kMalformedTag)
-        .AddCause(std::move(value_result).error());
+  auto result = ParseDecimalIntegerTag(tag, &XVersionTag::version);
+  if (result.has_error()) {
+    return std::move(result).error();
   }
 
   // Reject invalid version numbers.
   // For valid version numbers, caller will decide if the version is supported.
-  auto value = std::move(value_result).value();
-  if (value == 0) {
+  auto out = std::move(result).value();
+  if (out.version == 0) {
     return ParseStatusCode::kInvalidPlaylistVersion;
   }
 
-  return XVersionTag{.version = value};
+  return out;
 }
 
 ParseStatus::Or<InfTag> InfTag::Parse(TagItem tag) {
@@ -398,7 +416,37 @@ ParseStatus::Or<XStreamInfTag> XStreamInfTag::Parse(
     out.codecs = std::string{std::move(codecs).value()};
   }
 
+  // Extract the 'RESOLUTION' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kResolution)) {
+    auto resolution = types::DecimalResolution::Parse(
+        map.GetValue(XStreamInfTagAttribute::kResolution));
+    if (resolution.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(resolution).error());
+    }
+    out.resolution = std::move(resolution).value();
+  }
+
+  // Extract the 'FRAME-RATE' attribute
+  if (map.HasValue(XStreamInfTagAttribute::kFrameRate)) {
+    auto frame_rate = types::ParseDecimalFloatingPoint(
+        map.GetValue(XStreamInfTagAttribute::kFrameRate));
+    if (frame_rate.has_error()) {
+      return ParseStatus(ParseStatusCode::kMalformedTag)
+          .AddCause(std::move(frame_rate).error());
+    }
+    out.frame_rate = std::move(frame_rate).value();
+  }
+
   return out;
+}
+
+ParseStatus::Or<XTargetDurationTag> XTargetDurationTag::Parse(TagItem tag) {
+  return ParseDecimalIntegerTag(tag, &XTargetDurationTag::duration);
+}
+
+ParseStatus::Or<XMediaSequenceTag> XMediaSequenceTag::Parse(TagItem tag) {
+  return ParseDecimalIntegerTag(tag, &XMediaSequenceTag::number);
 }
 
 }  // namespace media::hls

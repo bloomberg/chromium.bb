@@ -537,6 +537,22 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
+      "https://chromium.googlesource.com/chromium/src/+/main/BYTES",
+      "--format",
+      "text",
+      "--attempts",
+      "5"
+    ],
+    "name": "fetch main:BYTES"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
       "https://chromium.googlesource.com/chromium/src/+/main/NONEXISTENT",
       "--format",
       "text",

@@ -92,6 +92,10 @@ AX_BASE_EXPORT bool IsForm(const ax::mojom::Role role);
 // crossing a format boundary.
 AX_BASE_EXPORT bool IsFormatBoundary(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a grid, treegrid, listgrid
+// or tree. Returns false for table.
+AX_BASE_EXPORT bool IsGridLike(const ax::mojom::Role role);
+
 // Returns true if the provided role belongs to a heading.
 AX_BASE_EXPORT bool IsHeading(const ax::mojom::Role role);
 
@@ -224,6 +228,13 @@ AX_BASE_EXPORT bool IsTextField(ax::mojom::Role role);
 // Returns true if the provided role fits the description of a UIA embedded
 // objects. See the method definition for more details.
 AX_BASE_EXPORT bool IsUIAEmbeddedObject(ax::mojom::Role role);
+
+// Returns false if |role| is a layout table, or whatever `IsTableLike` returns.
+AX_BASE_EXPORT bool IsUIATableLike(ax::mojom::Role role);
+
+// Returns false if |role| is a layout table cell, or whatever
+// `IsCellOrTableHeader` returns.
+AX_BASE_EXPORT bool IsUIACellOrTableHeader(ax::mojom::Role role);
 
 // Returns true if the provided role represents a window.
 AX_BASE_EXPORT bool IsWindow(const ax::mojom::Role role);

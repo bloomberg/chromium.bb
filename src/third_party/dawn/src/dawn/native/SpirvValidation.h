@@ -15,17 +15,15 @@
 #ifndef SRC_DAWN_NATIVE_SPIRVVALIDATION_H_
 #define SRC_DAWN_NATIVE_SPIRVVALIDATION_H_
 
-#include "dawn/native/Error.h"
-
 #include <vector>
+
+#include "dawn/native/Error.h"
 
 namespace dawn::native {
 
-    class DeviceBase;
+class DeviceBase;
 
-    MaybeError ValidateSpirv(DeviceBase* device,
-                             const std::vector<uint32_t>& spirv,
-                             bool dumpSpirv);
+MaybeError ValidateSpirv(DeviceBase* device, const std::vector<uint32_t>& spirv, bool dumpSpirv);
 
 }  // namespace dawn::native
 

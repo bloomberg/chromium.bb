@@ -6,7 +6,21 @@
 
 namespace autofill_assistant {
 
-HeadlessUiController::HeadlessUiController() = default;
+HeadlessUiController::HeadlessUiController(
+    ExternalActionDelegate* action_extension_delegate)
+    : action_extension_delegate_(action_extension_delegate) {}
+
+bool HeadlessUiController::SupportsExternalActions() {
+  return action_extension_delegate_ != nullptr;
+}
+void HeadlessUiController::ExecuteExternalAction(
+    const external::Action& info,
+    base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
+        callback) {
+  DCHECK(action_extension_delegate_);
+
+  action_extension_delegate_->OnActionRequested(info, std::move(callback));
+}
 
 // TODO(b/201964911): fail execution instead of just logging a warning if a
 // method is unexpectedly called.
@@ -120,6 +134,9 @@ void HeadlessUiController::SetExpandSheetForPromptAction(bool expand) {
 }
 void HeadlessUiController::SetCollectUserDataOptions(
     CollectUserDataOptions* options) {
+  VLOG(2) << "Unexpected UI method called: " << __func__;
+}
+void HeadlessUiController::SetCollectUserDataUiState(bool enabled) {
   VLOG(2) << "Unexpected UI method called: " << __func__;
 }
 void HeadlessUiController::SetLastSuccessfulUserDataOptions(

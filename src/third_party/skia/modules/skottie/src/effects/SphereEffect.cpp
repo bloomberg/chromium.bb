@@ -7,6 +7,7 @@
 
 #include "modules/skottie/src/effects/Effects.h"
 
+#include "include/core/SkCanvas.h"
 #include "include/core/SkM44.h"
 #include "include/core/SkPictureRecorder.h"
 #include "include/effects/SkRuntimeEffect.h"
@@ -120,7 +121,7 @@ static constexpr char gFancyLightSkSL[] = R"(
         d = l_coeff_diffuse  * max(dot(l_vec, N), 0),
         s = l_coeff_specular * saturate(pow(s_base, l_specular_exp));
 
-        c.rgb = (a + d*l_color)*c.rgb + s*l_color;
+        c.rgb = (a + d*l_color)*c.rgb + s*l_color*c.a;
 
         return c;
     }

@@ -101,7 +101,7 @@ void MetadataVisitor::OnSetting(SpdySettingsId id, uint32_t value) {
         on_support_(true);
       }
     } else {
-      LOG_EVERY_N_SEC(WARNING, 1)
+      QUICHE_LOG_EVERY_N_SEC(WARNING, 1)
           << "Unrecognized value for setting " << id << ": " << value;
     }
   }
@@ -121,8 +121,8 @@ bool MetadataVisitor::OnFrameHeader(SpdyStreamId stream_id, size_t length,
   if (it == metadata_map_.end()) {
     auto state = absl::make_unique<MetadataPayloadState>(
         length, flags & kEndMetadataFlag);
-    auto result = metadata_map_.insert(std::make_pair(stream_id,
-                                                      std::move(state)));
+    auto result =
+        metadata_map_.insert(std::make_pair(stream_id, std::move(state)));
     QUICHE_BUG_IF(bug_if_2781_1, !result.second) << "Map insertion failed.";
     it = result.first;
   } else {

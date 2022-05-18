@@ -1810,11 +1810,11 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                                          AllVkFormatEnums, rendering_struct->stencilAttachmentFormat,
                                                          "VUID-VkGraphicsPipelineCreateInfo-renderPass-06584");
                             if (!FormatHasStencil(rendering_struct->stencilAttachmentFormat)) {
-                                skip |= LogError(
-                                    device, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06588",
-                                    "vkCreateGraphicsPipelines() pCreateInfos[%" PRIu32
-                                    "]: VkPipelineRenderingCreateInfo::stencilAttachmentFormat  (%s) does not have a depth aspect.",
-                                    i, string_VkFormat(rendering_struct->stencilAttachmentFormat));
+                                skip |= LogError(device, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06588",
+                                                 "vkCreateGraphicsPipelines() pCreateInfos[%" PRIu32
+                                                 "]: VkPipelineRenderingCreateInfo::stencilAttachmentFormat  (%s) does not have a "
+                                                 "stencil aspect.",
+                                                 i, string_VkFormat(rendering_struct->stencilAttachmentFormat));
                             }
                         }
 
@@ -1851,12 +1851,6 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                              VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, true,
                                              "VUID-VkGraphicsPipelineCreateInfo-pRasterizationState-06601",
                                              "VUID-VkPipelineRasterizationStateCreateInfo-sType-sType");
-                if (!create_info.layout) {
-                    skip |= LogError(device, "VUID-VkGraphicsPipelineCreateInfo-layout-06602",
-                                     "vkCreateGraphicsPipelines(): pCreateInfos[%" PRIu32
-                                     "].layout is VK_NULL_HANDLE, but %s is not enabled.",
-                                     i, VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME);
-                }
             }
 
             // TODO probably should check dynamic state from graphics libraries, at least when creating an "executable pipeline"
@@ -3848,6 +3842,17 @@ bool StatelessValidation::manual_PreCallValidateCreateSampler(VkDevice device, c
                                  string_VkSamplerReductionMode(sampler_reduction->reductionMode),
                                  VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
             }
+
+            if (!IsExtEnabled(device_extensions.vk_ext_filter_cubic)) {
+                if (pCreateInfo->magFilter == VK_FILTER_CUBIC_EXT || pCreateInfo->minFilter == VK_FILTER_CUBIC_EXT) {
+                    skip |= LogError(device, "VUID-VkSamplerCreateInfo-magFilter-01422",
+                                     "vkCreateSampler(): sampler reduction mode is %s, magFilter is %s and minFilter is %s, but "
+                                     "extension %s is not enabled.",
+                                     string_VkSamplerReductionMode(sampler_reduction->reductionMode),
+                                     string_VkFilter(pCreateInfo->magFilter), string_VkFilter(pCreateInfo->minFilter),
+                                     VK_EXT_FILTER_CUBIC_EXTENSION_NAME);
+                }
+            }
         }
 
         // If any of addressModeU, addressModeV or addressModeW are VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, borderColor must be a
@@ -5660,14 +5665,6 @@ bool StatelessValidation::manual_PreCallValidateCreateQueryPool(VkDevice device,
         if (pCreateInfo->queryCount == 0) {
             skip |= LogError(device, "VUID-VkQueryPoolCreateInfo-queryCount-02763",
                              "vkCreateQueryPool(): queryCount must be greater than zero.");
-        }
-        if (pCreateInfo->queryType == VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT) {
-            const auto *primitives_generated_query_features =
-                LvlFindInChain<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>(device_createinfo_pnext);
-            if (!primitives_generated_query_features || primitives_generated_query_features->primitivesGeneratedQuery == VK_FALSE) {
-                skip |= LogError(device, "VUID-vkCmdBeginQuery-queryType-06688",
-                                 "vkCreateQueryPool(): If pCreateInfo->queryType is VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT primitivesGeneratedQuery feature must be enabled.");
-            }
         }
     }
     return skip;

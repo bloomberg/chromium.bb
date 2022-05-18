@@ -12,6 +12,7 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/download_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -83,12 +84,17 @@ class DownloadBubbleUIController
     return download_notifier_;
   }
 
+  download::AllDownloadItemNotifier* get_original_notifier_for_testing() {
+    return original_notifier_.get();
+  }
+
   void set_manager_for_testing(content::DownloadManager* manager) {
     download_manager_ = manager;
   }
 
  private:
   friend class DownloadBubbleUIControllerTest;
+  friend class DownloadBubbleUIControllerIncognitoTest;
   // AllDownloadItemNotifier::Observer
   void OnDownloadUpdated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
@@ -134,6 +140,8 @@ class DownloadBubbleUIController
   raw_ptr<Profile> profile_;
   raw_ptr<content::DownloadManager> download_manager_;
   download::AllDownloadItemNotifier download_notifier_;
+  // Null if the profile is not off the record.
+  std::unique_ptr<download::AllDownloadItemNotifier> original_notifier_;
   raw_ptr<OfflineContentAggregator> aggregator_;
   raw_ptr<OfflineItemModelManager> offline_manager_;
   base::ScopedObservation<OfflineContentProvider,
@@ -149,6 +157,8 @@ class DownloadBubbleUIController
 
   // set of ids to be shown in partial_view.
   std::set<ContentId> partial_view_ids_;
+
+  absl::optional<base::Time> last_partial_view_shown_time_ = absl::nullopt;
 
   base::WeakPtrFactory<DownloadBubbleUIController> weak_factory_{this};
 };

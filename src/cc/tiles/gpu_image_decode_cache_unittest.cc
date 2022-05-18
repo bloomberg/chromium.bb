@@ -12,6 +12,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -3131,7 +3132,7 @@ TEST_P(GpuImageDecodeCacheTest, HighBitDepthYUVDecoding) {
     // If `draw_image` is tone mapped, then it will be converted to RGBA
     // during tone mapping.
     bool color_converted_to_rgba = use_transfer_cache_ &&
-                                   decoded_cs.IsPQOrHLG() &&
+                                   decoded_cs.IsToneMappedByDefault() &&
                                    cache->SupportsColorSpaceConversion();
 
     if (decodes_to_yuv && !color_converted_to_rgba) {

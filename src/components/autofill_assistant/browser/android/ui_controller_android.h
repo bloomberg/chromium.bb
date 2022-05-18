@@ -19,7 +19,7 @@
 #include "components/autofill_assistant/browser/android/assistant_header_delegate.h"
 #include "components/autofill_assistant/browser/android/assistant_header_model.h"
 #include "components/autofill_assistant/browser/android/assistant_overlay_delegate.h"
-#include "components/autofill_assistant/browser/android/dependencies.h"
+#include "components/autofill_assistant/browser/android/dependencies_android.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/details.h"
@@ -126,6 +126,7 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnCollectUserDataOptionsChanged(
       const CollectUserDataOptions* collect_user_data_options) override;
+  void OnCollectUserDataUiStateChanged(bool enabled) override;
   void OnDetailsChanged(const std::vector<Details>& details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressActiveStepChanged(int active_step) override;
@@ -308,7 +309,7 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
 
   // Java-side AssistantStaticDependencies object. This never changes during the
   // life of the application.
-  const std::unique_ptr<const Dependencies> dependencies_;
+  const std::unique_ptr<const DependenciesAndroid> dependencies_;
 
   // Native controllers for generic UI.
   std::unique_ptr<GenericUiRootControllerAndroid>

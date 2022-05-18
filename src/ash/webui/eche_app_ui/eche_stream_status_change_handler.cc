@@ -27,13 +27,7 @@ void EcheStreamStatusChangeHandler::OnStreamStatusChanged(
                << status;
   NotifyStreamStatusChanged(status);
 
-  // This is for the connection reliability metric and only supported in the
-  // bubble widget. The reason is the bubble widget replaces SWA and we can
-  // identify the notification swap case easily there. The SWA widget is not
-  // deprecated yet, so we check the feature flag temporarily to avoid recording
-  // some SWA data if users disable the bubble widget.
-  if (status == mojom::StreamStatus::kStreamStatusStarted &&
-      features::IsEcheCustomWidgetEnabled()) {
+  if (status == mojom::StreamStatus::kStreamStatusStarted) {
     base::UmaHistogramEnumeration("Eche.StreamEvent",
                                   mojom::StreamStatus::kStreamStatusStarted);
   }
@@ -46,18 +40,30 @@ void EcheStreamStatusChangeHandler::SetStreamActionObserver(
   observer_remote_.Bind(std::move(observer));
 }
 
-void EcheStreamStatusChangeHandler::Bind(
-    mojo::PendingReceiver<mojom::DisplayStreamHandler> receiver) {
-  display_stream_receiver_.reset();
-  display_stream_receiver_.Bind(std::move(receiver));
-}
-
 void EcheStreamStatusChangeHandler::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void EcheStreamStatusChangeHandler::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void EcheStreamStatusChangeHandler::Bind(
+    mojo::PendingReceiver<mojom::DisplayStreamHandler> receiver) {
+  display_stream_receiver_.reset();
+  display_stream_receiver_.Bind(std::move(receiver));
+}
+
+void EcheStreamStatusChangeHandler::CloseStream() {
+  if (!observer_remote_.is_bound())
+    return;
+  observer_remote_->OnStreamAction(mojom::StreamAction::kStreamActionClose);
+}
+
+void EcheStreamStatusChangeHandler::StreamGoBack() {
+  if (!observer_remote_.is_bound())
+    return;
+  observer_remote_->OnStreamAction(mojom::StreamAction::kStreamActionGoBack);
 }
 
 void EcheStreamStatusChangeHandler::NotifyStartStreaming() {
@@ -69,12 +75,6 @@ void EcheStreamStatusChangeHandler::NotifyStreamStatusChanged(
     mojom::StreamStatus status) {
   for (auto& observer : observer_list_)
     observer.OnStreamStatusChanged(status);
-}
-
-void EcheStreamStatusChangeHandler::CloseStream() {
-  if (!observer_remote_.is_bound())
-    return;
-  observer_remote_->OnStreamAction(mojom::StreamAction::kStreamActionClose);
 }
 
 }  // namespace eche_app

@@ -73,12 +73,13 @@ snippet: "
 "
 frame size: 1
 parameter count: 1
-bytecode array length: 14
+bytecode array length: 15
 bytecodes: [
   /*   42 S> */ B(LdaSmi), I8(1),
                 B(Star0),
-  /*   45 S> */ B(JumpIfTrue), U8(4),
-                B(Jump), U8(6),
+  /*   45 S> */ B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -96,12 +97,13 @@ snippet: "
 "
 frame size: 1
 parameter count: 1
-bytecode array length: 13
+bytecode array length: 14
 bytecodes: [
   /*   42 S> */ B(LdaTrue),
                 B(Star0),
-  /*   48 S> */ B(JumpIfFalse), U8(4),
-                B(Jump), U8(6),
+  /*   48 S> */ B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -119,11 +121,13 @@ snippet: "
 "
 frame size: 1
 parameter count: 1
-bytecode array length: 12
+bytecode array length: 15
 bytecodes: [
   /*   42 S> */ B(LdaSmi), I8(1),
                 B(Star0),
-  /*   45 S> */ B(JumpIfTrue), U8(6),
+  /*   45 S> */ B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -139,14 +143,17 @@ snippet: "
   var a = false;
   return false !== null ? 1 : 2;
 "
-frame size: 1
+frame size: 2
 parameter count: 1
-bytecode array length: 12
+bytecode array length: 16
 bytecodes: [
   /*   42 S> */ B(LdaFalse),
                 B(Star0),
   /*   49 S> */ B(LdaNull),
-                B(JumpIfFalse), U8(6),
+                B(Star1),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(1),
+                B(JumpIfTrue), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -166,11 +173,13 @@ snippet: "
 "
 frame size: 1
 parameter count: 1
-bytecode array length: 9
+bytecode array length: 12
 bytecodes: [
   /*   42 S> */ B(LdaZero),
                 B(Star0),
-  /*   45 S> */ B(JumpIfTrue), U8(5),
+  /*   45 S> */ B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(5),
   /*   65 S> */ B(LdaSmi), I8(1),
   /*   74 S> */ B(Return),
                 B(LdaUndefined),
@@ -191,18 +200,19 @@ snippet: "
 "
 frame size: 2
 parameter count: 1
-bytecode array length: 18
+bytecode array length: 20
 bytecodes: [
   /*   42 S> */ B(LdaTrue),
                 B(Star0),
   /*   56 S> */ B(LdaZero),
                 B(Star1),
-  /*   68 S> */ B(Ldar), R(0),
-                B(JumpIfTrue), U8(10),
+  /*   68 S> */ B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(11),
   /*   82 S> */ B(Ldar), R(1),
                 B(Inc), U8(0),
                 B(Star1),
-  /*   59 E> */ B(JumpLoop), U8(9), I8(0),
+  /*   59 E> */ B(JumpLoop), U8(10), I8(0), U8(1),
                 B(LdaUndefined),
   /*   89 S> */ B(Return),
 ]
@@ -215,13 +225,15 @@ handlers: [
 snippet: "
   (0 === true) ? 1 : 2;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 13
+bytecode array length: 15
 bytecodes: [
   /*   34 S> */ B(LdaZero),
-                B(JumpIfTrue), U8(4),
-                B(Jump), U8(6),
+                B(Star0),
+                B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -237,11 +249,14 @@ handlers: [
 snippet: "
   (0 !== true) ? 1 : 2;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 11
+bytecode array length: 15
 bytecodes: [
   /*   34 S> */ B(LdaZero),
+                B(Star0),
+                B(LdaTrue),
+                B(TestReferenceEqual), R(0),
                 B(JumpIfTrue), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
@@ -258,13 +273,15 @@ handlers: [
 snippet: "
   (false === 0) ? 1 : 2;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 13
+bytecode array length: 15
 bytecodes: [
   /*   34 S> */ B(LdaZero),
-                B(JumpIfFalse), U8(4),
-                B(Jump), U8(6),
+                B(Star0),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -280,15 +297,20 @@ handlers: [
 snippet: "
   (0 === true || 0 === false) ? 1 : 2;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 16
+bytecode array length: 22
 bytecodes: [
   /*   34 S> */ B(LdaZero),
-                B(JumpIfTrue), U8(7),
+                B(Star0),
+                B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(9),
                 B(LdaZero),
-                B(JumpIfFalse), U8(4),
-                B(Jump), U8(6),
+                B(Star0),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(6),
                 B(LdaSmi), I8(1),
                 B(Jump), U8(4),
                 B(LdaSmi), I8(2),
@@ -304,15 +326,20 @@ handlers: [
 snippet: "
   if (0 === true || 0 === false) return 1;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 13
+bytecode array length: 19
 bytecodes: [
   /*   34 S> */ B(LdaZero),
-                B(JumpIfTrue), U8(7),
+                B(Star0),
+                B(LdaTrue),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(9),
                 B(LdaZero),
-                B(JumpIfFalse), U8(4),
-                B(Jump), U8(5),
+                B(Star0),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(5),
   /*   65 S> */ B(LdaSmi), I8(1),
   /*   74 S> */ B(Return),
                 B(LdaUndefined),
@@ -327,12 +354,15 @@ handlers: [
 snippet: "
   if (!('false' === false)) return 1;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 9
+bytecode array length: 13
 bytecodes: [
   /*   34 S> */ B(LdaConstant), U8(0),
-                B(JumpIfFalse), U8(5),
+                B(Star0),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfTrue), U8(5),
   /*   60 S> */ B(LdaSmi), I8(1),
   /*   69 S> */ B(Return),
                 B(LdaUndefined),
@@ -348,13 +378,15 @@ handlers: [
 snippet: "
   if (!('false' !== false)) return 1;
 "
-frame size: 0
+frame size: 1
 parameter count: 1
-bytecode array length: 11
+bytecode array length: 13
 bytecodes: [
   /*   34 S> */ B(LdaConstant), U8(0),
-                B(JumpIfFalse), U8(4),
-                B(Jump), U8(5),
+                B(Star0),
+                B(LdaFalse),
+                B(TestReferenceEqual), R(0),
+                B(JumpIfFalse), U8(5),
   /*   60 S> */ B(LdaSmi), I8(1),
   /*   69 S> */ B(Return),
                 B(LdaUndefined),

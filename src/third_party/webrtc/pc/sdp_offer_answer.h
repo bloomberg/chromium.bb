@@ -41,8 +41,6 @@
 #include "media/base/media_channel.h"
 #include "media/base/stream_params.h"
 #include "p2p/base/port_allocator.h"
-#include "pc/channel.h"
-#include "pc/channel_manager.h"
 #include "pc/connection_context.h"
 #include "pc/data_channel_controller.h"
 #include "pc/jsep_transport_controller.h"
@@ -65,6 +63,10 @@
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/unique_id_generator.h"
 #include "rtc_base/weak_ptr.h"
+
+namespace cricket {
+class ChannelManager;
+}
 
 namespace webrtc {
 
@@ -528,9 +530,6 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   // This method will also delete any existing media channels before creating.
   RTCError CreateChannels(const cricket::SessionDescription& desc);
 
-  // Helper methods to create media channels.
-  cricket::VoiceChannel* CreateVoiceChannel(const std::string& mid);
-  cricket::VideoChannel* CreateVideoChannel(const std::string& mid);
   bool CreateDataChannel(const std::string& mid);
 
   // Destroys the RTP data channel transport and/or the SCTP data channel

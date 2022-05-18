@@ -277,16 +277,16 @@ class level3_blocking
 template<int StorageOrder, typename LhsScalar_, typename RhsScalar_, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
 class gemm_blocking_space<StorageOrder,LhsScalar_,RhsScalar_,MaxRows, MaxCols, MaxDepth, KcFactor, true /* == FiniteAtCompileTime */>
   : public level3_blocking<
-      typename conditional<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>::type,
-      typename conditional<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>::type>
+      std::conditional_t<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>,
+      std::conditional_t<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>>
 {
     enum {
       Transpose = StorageOrder==RowMajor,
       ActualRows = Transpose ? MaxCols : MaxRows,
       ActualCols = Transpose ? MaxRows : MaxCols
     };
-    typedef typename conditional<Transpose,RhsScalar_,LhsScalar_>::type LhsScalar;
-    typedef typename conditional<Transpose,LhsScalar_,RhsScalar_>::type RhsScalar;
+    typedef std::conditional_t<Transpose,RhsScalar_,LhsScalar_> LhsScalar;
+    typedef std::conditional_t<Transpose,LhsScalar_,RhsScalar_> RhsScalar;
     typedef gebp_traits<LhsScalar,RhsScalar> Traits;
     enum {
       SizeA = ActualRows * MaxDepth,
@@ -328,14 +328,14 @@ class gemm_blocking_space<StorageOrder,LhsScalar_,RhsScalar_,MaxRows, MaxCols, M
 template<int StorageOrder, typename LhsScalar_, typename RhsScalar_, int MaxRows, int MaxCols, int MaxDepth, int KcFactor>
 class gemm_blocking_space<StorageOrder,LhsScalar_,RhsScalar_,MaxRows, MaxCols, MaxDepth, KcFactor, false>
   : public level3_blocking<
-      typename conditional<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>::type,
-      typename conditional<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>::type>
+      std::conditional_t<StorageOrder==RowMajor,RhsScalar_,LhsScalar_>,
+      std::conditional_t<StorageOrder==RowMajor,LhsScalar_,RhsScalar_>>
 {
     enum {
       Transpose = StorageOrder==RowMajor
     };
-    typedef typename conditional<Transpose,RhsScalar_,LhsScalar_>::type LhsScalar;
-    typedef typename conditional<Transpose,LhsScalar_,RhsScalar_>::type RhsScalar;
+    typedef std::conditional_t<Transpose,RhsScalar_,LhsScalar_> LhsScalar;
+    typedef std::conditional_t<Transpose,LhsScalar_,RhsScalar_> RhsScalar;
     typedef gebp_traits<LhsScalar,RhsScalar> Traits;
 
     Index m_sizeA;
@@ -415,11 +415,11 @@ struct generic_product_impl<Lhs,Rhs,DenseShape,DenseShape,GemmProduct>
 
   typedef internal::blas_traits<Lhs> LhsBlasTraits;
   typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhsType;
-  typedef typename internal::remove_all<ActualLhsType>::type ActualLhsTypeCleaned;
+  typedef internal::remove_all_t<ActualLhsType> ActualLhsTypeCleaned;
 
   typedef internal::blas_traits<Rhs> RhsBlasTraits;
   typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhsType;
-  typedef typename internal::remove_all<ActualRhsType>::type ActualRhsTypeCleaned;
+  typedef internal::remove_all_t<ActualRhsType> ActualRhsTypeCleaned;
 
   enum {
     MaxDepthAtCompileTime = min_size_prefer_fixed(Lhs::MaxColsAtCompileTime, Rhs::MaxRowsAtCompileTime)
@@ -485,8 +485,8 @@ struct generic_product_impl<Lhs,Rhs,DenseShape,DenseShape,GemmProduct>
         ::scaleAndAddTo(dst_vec, a_lhs.row(0), a_rhs, alpha);
     }
 
-    typename internal::add_const_on_value_type<ActualLhsType>::type lhs = LhsBlasTraits::extract(a_lhs);
-    typename internal::add_const_on_value_type<ActualRhsType>::type rhs = RhsBlasTraits::extract(a_rhs);
+    add_const_on_value_type_t<ActualLhsType> lhs = LhsBlasTraits::extract(a_lhs);
+    add_const_on_value_type_t<ActualRhsType> rhs = RhsBlasTraits::extract(a_rhs);
 
     Scalar actualAlpha = combine_scalar_factors(alpha, a_lhs, a_rhs);
 

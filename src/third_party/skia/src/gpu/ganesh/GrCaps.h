@@ -119,11 +119,6 @@ public:
 
     bool avoidWritePixelsFastPath() const { return fAvoidWritePixelsFastPath; }
 
-    // http://skbug.com/9739
-    bool requiresManualFBBarrierAfterTessellatedStencilDraw() const {
-        return fRequiresManualFBBarrierAfterTessellatedStencilDraw;
-    }
-
     // glDrawElementsIndirect fails GrMeshTest on every Win10 Intel bot.
     bool nativeDrawIndexedIndirectIsBroken() const { return fNativeDrawIndexedIndirectIsBroken; }
 
@@ -218,11 +213,6 @@ public:
     bool isWindowRectanglesSupportedForRT(const GrBackendRenderTarget& rt) const {
         return this->maxWindowRectangles() > 0 && this->onIsWindowRectanglesSupportedForRT(rt);
     }
-
-    // Hardware tessellation seems to have a fixed upfront cost. If there is a somewhat small number
-    // of verbs, we seem to be faster emulating tessellation with instanced draws instead.
-    int minPathVerbsForHwTessellation() const { return fMinPathVerbsForHwTessellation; }
-    int minStrokeVerbsForHwTessellation() const { return fMinStrokeVerbsForHwTessellation; }
 
     uint32_t maxPushConstantsSize() const { return fMaxPushConstantsSize; }
 
@@ -402,9 +392,6 @@ public:
     /// op instead of using glClear seems to resolve the issue.
     bool performStencilClearsAsDraws() const { return fPerformStencilClearsAsDraws; }
 
-    // Should we disable the clip mask atlas due to a faulty driver?
-    bool driverDisableMSAAClipAtlas() const { return fDriverDisableMSAAClipAtlas; }
-
     // Should we disable TessellationPathRenderer due to a faulty driver?
     bool disableTessellationPathRenderer() const { return fDisableTessellationPathRenderer; }
 
@@ -577,11 +564,9 @@ protected:
     bool fMustSyncGpuDuringAbandon                   : 1;
 
     // Driver workaround
-    bool fDriverDisableMSAAClipAtlas                 : 1;
     bool fDisableTessellationPathRenderer            : 1;
     bool fAvoidStencilBuffers                        : 1;
     bool fAvoidWritePixelsFastPath                   : 1;
-    bool fRequiresManualFBBarrierAfterTessellatedStencilDraw : 1;
     bool fNativeDrawIndexedIndirectIsBroken          : 1;
     bool fAvoidReorderingRenderTasks                 : 1;
     bool fAvoidDithering                             : 1;
@@ -611,8 +596,6 @@ protected:
     int fMaxTextureSize;
     int fMaxWindowRectangles;
     int fInternalMultisampleCount;
-    int fMinPathVerbsForHwTessellation = 25;
-    int fMinStrokeVerbsForHwTessellation = 50;
     uint32_t fMaxPushConstantsSize = 0;
     size_t fTransferBufferAlignment = 1;
 

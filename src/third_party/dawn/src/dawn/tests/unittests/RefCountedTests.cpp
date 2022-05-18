@@ -12,21 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <gtest/gtest.h>
 #include <thread>
+#include <utility>
 
 #include "dawn/common/RefCounted.h"
+#include "gtest/gtest.h"
 
 class RCTest : public RefCounted {
   public:
-    RCTest() : RefCounted() {
-    }
+    RCTest() : RefCounted() {}
 
-    RCTest(uint64_t payload) : RefCounted(payload) {
-    }
+    explicit RCTest(uint64_t payload) : RefCounted(payload) {}
 
-    RCTest(bool* deleted) : mDeleted(deleted) {
-    }
+    explicit RCTest(bool* deleted) : mDeleted(deleted) {}
 
     ~RCTest() override {
         if (mDeleted != nullptr) {
@@ -34,9 +32,7 @@ class RCTest : public RefCounted {
         }
     }
 
-    RCTest* GetThis() {
-        return this;
-    }
+    RCTest* GetThis() { return this; }
 
   private:
     bool* mDeleted = nullptr;
@@ -49,7 +45,7 @@ struct RCTestDerived : public RCTest {
 // Test that RCs start with one ref, and removing it destroys the object.
 TEST(RefCounted, StartsWithOneRef) {
     bool deleted = false;
-    auto test = new RCTest(&deleted);
+    auto* test = new RCTest(&deleted);
 
     test->Release();
     EXPECT_TRUE(deleted);
@@ -58,7 +54,7 @@ TEST(RefCounted, StartsWithOneRef) {
 // Test adding refs keep the RC alive.
 TEST(RefCounted, AddingRefKeepsAlive) {
     bool deleted = false;
-    auto test = new RCTest(&deleted);
+    auto* test = new RCTest(&deleted);
 
     test->Reference();
     test->Release();

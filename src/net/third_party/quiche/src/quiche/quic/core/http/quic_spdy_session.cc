@@ -74,7 +74,7 @@ class AlpsFrameDecoder : public HttpDecoder::Visitor {
 
   // HttpDecoder::Visitor implementation.
   void OnError(HttpDecoder* /*decoder*/) override {}
-  bool OnMaxPushIdFrame(const MaxPushIdFrame& /*frame*/) override {
+  bool OnMaxPushIdFrame() override {
     error_detail_ = "MAX_PUSH_ID frame forbidden";
     return false;
   }
@@ -776,21 +776,12 @@ void QuicSpdySession::SendHttp3GoAway(QuicErrorCode error_code,
 
   stream_id = QuicUtils::GetMaxClientInitiatedBidirectionalStreamId(
       transport_version());
-  if (last_sent_http3_goaway_id_.has_value()) {
-    if (last_sent_http3_goaway_id_.value() == stream_id) {
-      // Do not send GOAWAY twice.
-      return;
-    }
-    if (last_sent_http3_goaway_id_.value() < stream_id) {
-      // A previous GOAWAY frame was sent with smaller stream ID.  This is not
-      // possible, because the only time a GOAWAY frame with non-maximal
-      // stream ID is sent is right before closing connection.
-      QUIC_BUG(quic_bug_10360_3)
-          << "Not sending GOAWAY frame with " << stream_id
-          << " because one with " << last_sent_http3_goaway_id_.value()
-          << " already sent on connection " << connection()->connection_id();
-      return;
-    }
+  if (last_sent_http3_goaway_id_.has_value() &&
+      last_sent_http3_goaway_id_.value() <= stream_id) {
+    // Do not send GOAWAY frame with a higher id, because it is forbidden.
+    // Do not send one with same stream id as before, since frames on the
+    // control stream are guaranteed to be processed in order.
+    return;
   }
 
   send_control_stream_->SendGoAway(stream_id);
@@ -879,8 +870,6 @@ void QuicSpdySession::OnNewEncryptionKeyAvailable(
 }
 
 bool QuicSpdySession::ShouldNegotiateWebTransport() { return false; }
-
-bool QuicSpdySession::ShouldNegotiateDatagramContexts() { return false; }
 
 bool QuicSpdySession::ShouldValidateWebTransportVersion() const { return true; }
 
@@ -1225,13 +1214,8 @@ bool QuicSpdySession::OnSetting(uint64_t id, uint64_t value) {
       QUIC_DVLOG(1) << ENDPOINT
                     << "SETTINGS_HEADER_TABLE_SIZE received with value "
                     << value;
-      if (GetQuicReloadableFlag(quic_limit_encoder_dynamic_table_size)) {
-        QUIC_RELOADABLE_FLAG_COUNT(quic_limit_encoder_dynamic_table_size);
-        spdy_framer_.UpdateHeaderEncoderTableSize(
-            std::min<uint64_t>(value, kHpackEncoderDynamicTableSizeLimit));
-        break;
-      }
-      spdy_framer_.UpdateHeaderEncoderTableSize(value);
+      spdy_framer_.UpdateHeaderEncoderTableSize(
+          std::min<uint64_t>(value, kHpackEncoderDynamicTableSizeLimit));
       break;
     case spdy::SETTINGS_ENABLE_PUSH:
       if (perspective() == Perspective::IS_SERVER) {
@@ -1535,18 +1519,9 @@ void QuicSpdySession::BeforeConnectionCloseSent() {
   }
   if (last_sent_http3_goaway_id_.has_value() &&
       last_sent_http3_goaway_id_.value() <= stream_id) {
-    // A previous GOAWAY frame was sent with smaller stream ID.  This is not
-    // possible, because this is the only method sending a GOAWAY frame with
-    // non-maximal stream ID, and this must only be called once, right
-    // before closing connection.
-    QUIC_BUG(QuicGoawayFrameAlreadySent)
-        << "Not sending GOAWAY frame with " << stream_id << " because one with "
-        << last_sent_http3_goaway_id_.value() << " already sent on connection "
-        << connection()->connection_id();
-
-    // MUST not send GOAWAY with identifier larger than previously sent.
-    // Do not bother sending one with same identifier as before, since GOAWAY
-    // frames on the control stream are guaranteed to be processed in order.
+    // Do not send GOAWAY frame with a higher id, because it is forbidden.
+    // Do not send one with same stream id as before, since frames on the
+    // control stream are guaranteed to be processed in order.
     return;
   }
 
@@ -1558,38 +1533,6 @@ void QuicSpdySession::OnCanCreateNewOutgoingStream(bool unidirectional) {
   if (unidirectional && VersionUsesHttp3(transport_version())) {
     MaybeInitializeHttp3UnidirectionalStreams();
   }
-}
-
-bool QuicSpdySession::OnMaxPushIdFrame(PushId max_push_id) {
-  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
-  QUICHE_DCHECK_EQ(Perspective::IS_SERVER, perspective());
-
-  if (max_push_id_.has_value()) {
-    QUIC_DVLOG(1) << "Setting max_push_id to:  " << max_push_id
-                  << " from: " << max_push_id_.value();
-  } else {
-    QUIC_DVLOG(1) << "Setting max_push_id to:  " << max_push_id
-                  << " from unset";
-  }
-  absl::optional<PushId> old_max_push_id = max_push_id_;
-  max_push_id_ = max_push_id;
-
-  if (!old_max_push_id.has_value() || max_push_id > old_max_push_id.value()) {
-    OnCanCreateNewOutgoingStream(true);
-    return true;
-  }
-
-  // Equal value is not considered an error.
-  if (max_push_id < old_max_push_id.value()) {
-    CloseConnectionWithDetails(
-        QUIC_HTTP_INVALID_MAX_PUSH_ID,
-        absl::StrCat("MAX_PUSH_ID received with value ", max_push_id,
-                     " which is smaller that previously received value ",
-                     old_max_push_id.value()));
-    return false;
-  }
-
-  return true;
 }
 
 bool QuicSpdySession::goaway_received() const {
@@ -1656,10 +1599,8 @@ void QuicSpdySession::LogHeaderCompressionRatioHistogram(
   }
 }
 
-MessageStatus QuicSpdySession::SendHttp3Datagram(
-    QuicDatagramStreamId stream_id,
-    absl::optional<QuicDatagramContextId> context_id,
-    absl::string_view payload) {
+MessageStatus QuicSpdySession::SendHttp3Datagram(QuicDatagramStreamId stream_id,
+                                                 absl::string_view payload) {
   if (!SupportsH3Datagram()) {
     QUIC_BUG(send http datagram too early)
         << "Refusing to send HTTP Datagram before SETTINGS received";
@@ -1672,9 +1613,6 @@ MessageStatus QuicSpdySession::SendHttp3Datagram(
   }
   size_t slice_length =
       QuicDataWriter::GetVarInt62Len(stream_id_to_write) + payload.length();
-  if (context_id.has_value()) {
-    slice_length += QuicDataWriter::GetVarInt62Len(context_id.value());
-  }
   quiche::QuicheBuffer buffer(
       connection()->helper()->GetStreamSendBufferAllocator(), slice_length);
   QuicDataWriter writer(slice_length, buffer.data());
@@ -1682,13 +1620,6 @@ MessageStatus QuicSpdySession::SendHttp3Datagram(
     QUIC_BUG(h3 datagram stream ID write fail)
         << "Failed to write HTTP/3 datagram stream ID";
     return MESSAGE_STATUS_INTERNAL_ERROR;
-  }
-  if (context_id.has_value()) {
-    if (!writer.WriteVarInt62(context_id.value())) {
-      QUIC_BUG(h3 datagram context ID write fail)
-          << "Failed to write HTTP/3 datagram context ID";
-      return MESSAGE_STATUS_INTERNAL_ERROR;
-    }
   }
   if (!writer.WriteBytes(payload.data(), payload.length())) {
     QUIC_BUG(h3 datagram payload write fail)

@@ -345,7 +345,7 @@ export function isEditing(): boolean {
     return true;
   }
 
-  const focused = document.deepActiveElement();
+  const focused = Platform.DOMUtilities.deepActiveElement(document);
   if (!focused) {
     return false;
   }
@@ -645,7 +645,7 @@ export class ElementFocusRestorer {
   private previous: HTMLElement|null;
   constructor(element: Element) {
     this.element = (element as HTMLElement | null);
-    this.previous = (element.ownerDocument.deepActiveElement() as HTMLElement | null);
+    this.previous = (Platform.DOMUtilities.deepActiveElement(element.ownerDocument) as HTMLElement | null);
     (element as HTMLElement).focus();
   }
 
@@ -1490,25 +1490,25 @@ let measureTextWidthCache: Map<string, Map<string, number>>|null = null;
 /**
  * Adds a 'utm_source=devtools' as query parameter to the url.
  */
-export function addReferrerToURL(url: string): string {
+export function addReferrerToURL(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
   if (/(\?|&)utm_source=devtools/.test(url)) {
     return url;
   }
   if (url.indexOf('?') === -1) {
     // If the URL does not contain a query, add the referrer query after path
     // and before (potential) anchor.
-    return url.replace(/^([^#]*)(#.*)?$/g, '$1?utm_source=devtools$2');
+    return url.replace(/^([^#]*)(#.*)?$/g, '$1?utm_source=devtools$2') as Platform.DevToolsPath.UrlString;
   }
   // If the URL already contains a query, add the referrer query after the last query
   // and before (potential) anchor.
-  return url.replace(/^([^#]*)(#.*)?$/g, '$1&utm_source=devtools$2');
+  return url.replace(/^([^#]*)(#.*)?$/g, '$1&utm_source=devtools$2') as Platform.DevToolsPath.UrlString;
 }
 
 /**
  * We want to add a referrer query param to every request to
  * 'web.dev' or 'developers.google.com'.
  */
-export function addReferrerToURLIfNecessary(url: string): string {
+export function addReferrerToURLIfNecessary(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
   if (/(\/\/developers.google.com\/|\/\/web.dev\/|\/\/developer.chrome.com\/)/.test(url)) {
     return addReferrerToURL(url);
   }

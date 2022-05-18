@@ -20,6 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/public/child/child_thread.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -274,8 +275,13 @@ void DWriteFontCollectionProxy::PrewarmFamily(
     const blink::WebString& family_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!prewarm_task_runner_)
+  if (!prewarm_task_runner_) {
+    // |BindHostReceiverOnMainThread| requires |ChildThread::Get()|, but it may
+    // not be available in some tests. Disable the prewarmer.
+    if (UNLIKELY(!ChildThread::Get()))
+      return;
     InitializePrewarmer();
+  }
 
   DCHECK(prewarm_task_runner_);
   prewarm_task_runner_->PostTask(
@@ -565,6 +571,14 @@ blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
     }
   }
   return *font_proxy;
+}
+
+void DWriteFontCollectionProxy::BindFontProxyUsingBroker(
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* interface_broker) {
+  mojo::Remote<blink::mojom::DWriteFontProxy>& font_proxy =
+      font_proxy_.GetOrCreateValue();
+  DCHECK(!font_proxy);
+  interface_broker->GetInterface(font_proxy.BindNewPipeAndPassReceiver());
 }
 
 void DWriteFontCollectionProxy::BindFontProxy(

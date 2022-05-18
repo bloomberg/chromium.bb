@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestAmbientProvider extends TestBrowserProxy implements
@@ -37,13 +38,20 @@ export class TestAmbientProvider extends TestBrowserProxy implements
     },
     {
       id: '3',
-      checked: false,
+      checked: true,
       title: '3',
       description: '3',
       numberOfPhotos: 1,
       topicSource: TopicSource.kGooglePhotos,
       url: {url: 'http://test_url3'}
     }
+  ];
+
+  public googlePhotosAlbumsPreviews: Url[] = [
+    {url: 'http://preview0'},
+    {url: 'http://preview1'},
+    {url: 'http://preview2'},
+    {url: 'http://preview#'},
   ];
 
   constructor() {
@@ -82,6 +90,8 @@ export class TestAmbientProvider extends TestBrowserProxy implements
     this.ambientObserverRemote!.onTopicSourceChanged(TopicSource.kArtGallery);
     this.ambientObserverRemote!.onTemperatureUnitChanged(
         TemperatureUnit.kFahrenheit);
+    this.ambientObserverRemote!.onGooglePhotosAlbumsPreviewsFetched(
+        this.googlePhotosAlbumsPreviews);
   }
 
   setAmbientModeEnabled(ambientModeEnabled: boolean) {
@@ -92,16 +102,16 @@ export class TestAmbientProvider extends TestBrowserProxy implements
     this.methodCalled('setAnimationTheme', animationTheme);
   }
 
-  setTopicSource(topic_source: TopicSource) {
-    this.methodCalled('setTopicSource', topic_source);
+  setTopicSource(topicSource: TopicSource) {
+    this.methodCalled('setTopicSource', topicSource);
   }
 
-  setTemperatureUnit(temperature_unit: TemperatureUnit) {
-    this.methodCalled('setTemperatureUnit', temperature_unit);
+  setTemperatureUnit(temperatureUnit: TemperatureUnit) {
+    this.methodCalled('setTemperatureUnit', temperatureUnit);
   }
 
-  setAlbumSelected(id: string, topic_source: TopicSource, selected: boolean) {
-    this.methodCalled('setAlbumSelected', id, topic_source, selected);
+  setAlbumSelected(id: string, topicSource: TopicSource, selected: boolean) {
+    this.methodCalled('setAlbumSelected', id, topicSource, selected);
   }
 
   setPageViewed() {

@@ -71,6 +71,7 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
   Status WaitForAllTasks(
       const CoordinationServiceDeviceInfo& local_devices) override;
   const CoordinationServiceDeviceInfo& GetClusterDeviceInfo() override;
+  StatusOr<CoordinatedTask> GetOwnTask() override;
   StatusOr<TaskState> GetTaskStatus(const CoordinatedTask& task) override;
   Status ReportError(const Status& error) override;
   Status Shutdown() override;
@@ -81,6 +82,10 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
                                     absl::Duration timeout) override;
   void GetKeyValueAsync(const std::string& key,
                         StatusOrValueCallback done) override;
+  StatusOr<std::vector<KeyValueEntry>> GetKeyValueDir(
+      const std::string& key) override;
+  void GetKeyValueDirAsync(const std::string& key,
+                           StatusOrValueDirCallback done) override;
   Status InsertKeyValue(const std::string& key,
                         const std::string& value) override;
   Status DeleteKeyValue(const std::string& key) override;
@@ -257,6 +262,7 @@ Status CoordinationServiceAgentImpl::Connect() {
     }
   }
 
+  LOG(INFO) << "Coordination agent has successfully connected.";
   heartbeat_thread_.reset(
       env_->StartThread(ThreadOptions(), kHeartbeatThread, [this]() -> void {
         HeartbeatRequest request;
@@ -331,6 +337,15 @@ CoordinationServiceAgentImpl::GetClusterDeviceInfo() {
   return cluster_devices_;
 }
 
+StatusOr<CoordinatedTask> CoordinationServiceAgentImpl::GetOwnTask() {
+  if (!IsInitialized()) {
+    return MakeCoordinationError(
+        errors::FailedPrecondition("Agent has not been initialized; we do not "
+                                   "know the associated task yet."));
+  }
+  return task_;
+}
+
 StatusOr<CoordinationServiceAgentImpl::TaskState>
 CoordinationServiceAgentImpl::GetTaskStatus(const CoordinatedTask& task) {
   return MakeCoordinationError(errors::Unimplemented(
@@ -397,7 +412,9 @@ Status CoordinationServiceAgentImpl::Shutdown() {
                                         n.Notify();
                                       });
     n.WaitForNotification();
-    if (!status.ok()) {
+    if (status.ok()) {
+      LOG(INFO) << "Coordination agent has successfully shut down.";
+    } else {
       LOG(ERROR)
           << "Failed to disconnect from coordination service with status: "
           << status << ". Proceeding with agent shutdown anyway.";
@@ -454,6 +471,8 @@ Status CoordinationServiceAgentImpl::Reset() {
     mutex_lock l(heartbeat_thread_shutdown_mu_);
     shutting_down_ = false;
   }
+
+  LOG(INFO) << "Coordination agent has been reset.";
   return status;
 }
 
@@ -479,6 +498,39 @@ StatusOr<std::string> CoordinationServiceAgentImpl::GetKeyValue(
         absl::FormatDuration(timeout))));
   }
   return *result;
+}
+
+StatusOr<std::vector<KeyValueEntry>>
+CoordinationServiceAgentImpl::GetKeyValueDir(const std::string& key) {
+  absl::Notification n;
+  StatusOr<std::vector<KeyValueEntry>> result;
+  GetKeyValueDirAsync(
+      key, [&n, &result](StatusOr<std::vector<KeyValueEntry>> status_or_value) {
+        result = std::move(status_or_value);
+        n.Notify();
+      });
+
+  n.WaitForNotification();
+  return result;
+}
+
+void CoordinationServiceAgentImpl::GetKeyValueDirAsync(
+    const std::string& key, StatusOrValueDirCallback done) {
+  auto request = std::make_shared<GetKeyValueDirRequest>();
+  request->set_directory_key(key);
+  auto response = std::make_shared<GetKeyValueDirResponse>();
+  leader_client_->GetKeyValueDirAsync(
+      request.get(), response.get(),
+      [request, response, done = std::move(done)](const Status& s) {
+        if (!s.ok()) {
+          done(s);
+        } else {
+          std::vector<KeyValueEntry> kv_in_directory = {
+              std::make_move_iterator(response->kv().begin()),
+              std::make_move_iterator(response->kv().end())};
+          done(kv_in_directory);
+        }
+      });
 }
 
 Status CoordinationServiceAgentImpl::InsertKeyValue(const std::string& key,
@@ -552,6 +604,8 @@ void CoordinationServiceAgentImpl::SetError(const Status& error) {
   assert(!error.ok());
   mutex_lock l(state_mu_);
   if (state_ == State::ERROR) return;
+
+  LOG(ERROR) << "Coordination agent is in ERROR: " << error;
   state_ = State::ERROR;
   status_ = error;
   error_fn_(error);

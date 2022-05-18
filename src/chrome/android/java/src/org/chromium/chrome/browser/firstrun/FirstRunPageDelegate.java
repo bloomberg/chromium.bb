@@ -77,7 +77,7 @@ public interface FirstRunPageDelegate {
     void recordFreProgressHistogram(@MobileFreProgress int state);
 
     /** Records MobileFre.FromLaunch.NativeAndPoliciesLoaded histogram. **/
-    void recordNativeAndPoliciesLoadedHistogram();
+    void recordNativePolicyAndChildStatusLoadedHistogram();
 
     /**
      * The supplier that supplies whether reading policy value is necessary.
@@ -88,5 +88,5 @@ public interface FirstRunPageDelegate {
     /**
      * Returns the supplier that supplies child account status.
      */
-    OneshotSupplier<Boolean> getChildAccountStatusListener();
+    OneshotSupplier<Boolean> getChildAccountStatusSupplier();
 }

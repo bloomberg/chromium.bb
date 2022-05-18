@@ -4,6 +4,8 @@
 
 #include "content/services/auction_worklet/bidder_worklet.h"
 
+#include <stdint.h>
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -140,12 +142,12 @@ class BidderWorkletTest : public testing::Test {
 
     interest_group_ads_.clear();
     interest_group_ads_.emplace_back(blink::InterestGroup::Ad(
-        GURL("https://response.test/"), absl::nullopt /* metadata */));
+        GURL("https://response.test/"), /*metadata=*/absl::nullopt));
 
     interest_group_ad_components_.reset();
     interest_group_ad_components_.emplace();
     interest_group_ad_components_->emplace_back(blink::InterestGroup::Ad(
-        GURL("https://ad_component.test/"), absl::nullopt /* metadata */));
+        GURL("https://ad_component.test/"), /*metadata=*/absl::nullopt));
 
     daily_update_url_.reset();
 
@@ -160,6 +162,7 @@ class BidderWorkletTest : public testing::Test {
     per_buyer_signals_ = "[\"per_buyer_signals\"]";
     per_buyer_timeout_ = absl::nullopt;
     top_window_origin_ = url::Origin::Create(GURL("https://top.window.test/"));
+    experiment_group_id_ = absl::nullopt;
     browser_signal_seller_origin_ =
         url::Origin::Create(GURL("https://browser.signal.seller.test/"));
     browser_signal_top_level_seller_origin_.reset();
@@ -282,6 +285,7 @@ class BidderWorkletTest : public testing::Test {
         browser_signal_made_highest_scoring_other_bid_,
         browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
         data_version_.value_or(0), data_version_.has_value(),
+        /*trace_id=*/1,
         base::BindOnce(
             [](const absl::optional<GURL>& expected_report_url,
                const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
@@ -351,7 +355,7 @@ class BidderWorkletTest : public testing::Test {
         v8_helper_, pause_for_debugger_on_start, std::move(url_loader_factory),
         url.is_empty() ? interest_group_bidding_url_ : url,
         interest_group_wasm_url_, interest_group_trusted_bidding_signals_url_,
-        top_window_origin_);
+        top_window_origin_, experiment_group_id_);
     auto* bidder_worklet_ptr = bidder_worklet_impl.get();
     mojo::Remote<mojom::BidderWorklet> bidder_worklet;
     mojo::ReceiverId receiver_id =
@@ -374,6 +378,7 @@ class BidderWorkletTest : public testing::Test {
         per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindOnce(&BidderWorkletTest::GenerateBidCallback,
                        base::Unretained(this)));
     bidder_worklet->SendPendingSignalsRequests();
@@ -387,6 +392,7 @@ class BidderWorkletTest : public testing::Test {
         per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindOnce([](mojom::BidderWorkletBidPtr bid, uint32_t data_version,
                           bool has_data_version,
                           const absl::optional<GURL>& debug_loss_report_url,
@@ -492,6 +498,7 @@ class BidderWorkletTest : public testing::Test {
   absl::optional<std::string> per_buyer_signals_;
   absl::optional<base::TimeDelta> per_buyer_timeout_;
   url::Origin top_window_origin_;
+  absl::optional<uint16_t> experiment_group_id_;
   url::Origin browser_signal_seller_origin_;
   absl::optional<url::Origin> browser_signal_top_level_seller_origin_;
 
@@ -681,7 +688,7 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueBid) {
   // Bids <= 0.
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: ["ad"], bid:0, render:"https://response.test/"})",
-      mojom::BidderWorkletBidPtr() /* expected_bid */);
+      /*expected_bid=*/mojom::BidderWorkletBidPtr());
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: ["ad"], bid:-10, render:"https://response.test/"})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
@@ -1536,6 +1543,7 @@ TEST_F(BidderWorkletTest, GenerateBidParallel) {
           per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
           browser_signal_top_level_seller_origin_,
           CreateBiddingBrowserSignals(), auction_start_time_,
+          /*trace_id=*/1,
           base::BindLambdaForTesting(
               [&run_loop, &num_generate_bid_calls, bid_value](
                   mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1627,6 +1635,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched1) {
         per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1724,6 +1733,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched2) {
         per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1827,6 +1837,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched3) {
         per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1909,6 +1920,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
         per_buyer_timeout_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
         auction_start_time_,
+        /*trace_id=*/1,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -2113,7 +2125,7 @@ TEST_F(BidderWorkletTest, GenerateBidAds) {
   // Adding an ad with a corresponding `renderUrl` should result in success.
   // Also check the `interestGroup.ads` field passed to Javascript.
   interest_group_ads_.emplace_back(blink::InterestGroup::Ad(
-      GURL("https://response2.test/"), R"(["metadata"])" /* metadata */));
+      GURL("https://response2.test/"), /*metadata=*/R"(["metadata"])"));
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: interestGroup.ads, bid:1, render:"https://response2.test/"})",
       mojom::BidderWorkletBid::New(
@@ -2320,6 +2332,7 @@ TEST_F(BidderWorkletTest, WasmReportWin) {
       browser_signal_made_highest_scoring_other_bid_,
       browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
       data_version_.value_or(0), data_version_.has_value(),
+      /*trace_id=*/1,
       base::BindLambdaForTesting(
           [&run_loop](const absl::optional<GURL>& report_url,
                       const base::flat_map<std::string, GURL>& ad_beacon_map,
@@ -2606,6 +2619,23 @@ TEST_F(BidderWorkletTest, GenerateBidWithSetBid) {
           /*ad_components=*/absl::nullopt, base::TimeDelta()));
 }
 
+TEST_F(BidderWorkletTest, GenerateBidExperimentGroupId) {
+  experiment_group_id_ = 48384u;
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  interest_group_trusted_bidding_signals_keys_.emplace();
+  interest_group_trusted_bidding_signals_keys_->push_back("key1");
+  AddJsonResponse(
+      &url_loader_factory_,
+      GURL("https://signals.test/?hostname=top.window.test&keys=key1"
+           "&experimentGroupId=48384"),
+      R"({"key1":1})");
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: "ad", bid:123, render:"https://response.test/"})",
+      mojom::BidderWorkletBid::New(
+          R"("ad")", 123, GURL("https://response.test/"),
+          /*ad_components=*/absl::nullopt, base::TimeDelta()));
+}
+
 TEST_F(BidderWorkletTest, GenerateBidTimedOut) {
   // The bidding script has an endless while loop. It will time out due to
   // AuctionV8Helper's default script timeout (50 ms).
@@ -2759,6 +2789,7 @@ TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
       browser_signal_made_highest_scoring_other_bid_,
       browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
       data_version_.value_or(0), data_version_.has_value(),
+      /*trace_id=*/1,
       base::BindOnce([](const absl::optional<GURL>& report_url,
                         const base::flat_map<std::string, GURL>& ad_beacon_map,
                         const std::vector<std::string>& errors) {
@@ -2801,6 +2832,7 @@ TEST_F(BidderWorkletTest, ReportWinParallel) {
           browser_signal_seller_origin_,
           browser_signal_top_level_seller_origin_, data_version_.value_or(0),
           data_version_.has_value(),
+          /*trace_id=*/1,
           base::BindLambdaForTesting(
               [&run_loop, &num_report_win_calls, i](
                   const absl::optional<GURL>& report_url,
@@ -2843,6 +2875,7 @@ TEST_F(BidderWorkletTest, ReportWinParallelLoadFails) {
         browser_signal_made_highest_scoring_other_bid_,
         browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
         data_version_.value_or(0), data_version_.has_value(),
+        /*trace_id=*/1,
         base::BindOnce(
             [](const absl::optional<GURL>& report_url,
                const base::flat_map<std::string, GURL>& ad_beacon_map,
@@ -3054,6 +3087,7 @@ TEST_F(BidderWorkletTest, ScriptIsolation) {
         browser_signal_made_highest_scoring_other_bid_,
         browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
         data_version_.value_or(0), data_version_.has_value(),
+        /*trace_id=*/1,
         base::BindLambdaForTesting(
             [&run_loop](const absl::optional<GURL>& report_url,
                         const base::flat_map<std::string, GURL>& ad_beacon_map,
@@ -3288,10 +3322,10 @@ TEST_F(BidderWorkletTest, BasicDevToolsDebug) {
   AddJavascriptResponse(&url_loader_factory_, GURL(kUrl2), bid_script);
 
   auto worklet1 =
-      CreateWorklet(GURL(kUrl1), true /* pause_for_debugger_on_start */);
+      CreateWorklet(GURL(kUrl1), /*pause_for_debugger_on_start=*/true);
   GenerateBid(worklet1.get());
   auto worklet2 =
-      CreateWorklet(GURL(kUrl2), true /* pause_for_debugger_on_start */);
+      CreateWorklet(GURL(kUrl2), /*pause_for_debugger_on_start=*/true);
   GenerateBid(worklet2.get());
 
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent1, agent2;
@@ -3299,9 +3333,9 @@ TEST_F(BidderWorkletTest, BasicDevToolsDebug) {
   worklet2->ConnectDevToolsAgent(agent2.BindNewEndpointAndPassReceiver());
 
   TestDevToolsAgentClient debug1(std::move(agent1), "123",
-                                 true /* use_binary_protocol */);
+                                 /*use_binary_protocol=*/true);
   TestDevToolsAgentClient debug2(std::move(agent2), "456",
-                                 true /* use_binary_protocol */);
+                                 /*use_binary_protocol=*/true);
 
   debug1.RunCommandAndWaitForResult(
       TestDevToolsAgentClient::Channel::kMain, 1, "Runtime.enable",
@@ -3426,14 +3460,14 @@ TEST_F(BidderWorkletTest, InstrumentationBreakpoints) {
       CreateReportWinScript(R"(sendReportTo("https://foo.test"))"));
 
   auto worklet =
-      CreateWorklet(GURL(kUrl), true /* pause_for_debugger_on_start */);
+      CreateWorklet(GURL(kUrl), /*pause_for_debugger_on_start=*/true);
   GenerateBid(worklet.get());
 
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent;
   worklet->ConnectDevToolsAgent(agent.BindNewEndpointAndPassReceiver());
 
   TestDevToolsAgentClient debug(std::move(agent), "123",
-                                true /* use_binary_protocol */);
+                                /*use_binary_protocol=*/true);
 
   debug.RunCommandAndWaitForResult(
       TestDevToolsAgentClient::Channel::kMain, 1, "Runtime.enable",

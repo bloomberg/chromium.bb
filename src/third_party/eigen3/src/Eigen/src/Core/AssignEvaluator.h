@@ -113,7 +113,7 @@ public:
               || int(Traversal) == SliceVectorizedTraversal
   };
 
-  typedef typename conditional<int(Traversal)==LinearVectorizedTraversal, LinearPacketType, InnerPacketType>::type PacketType;
+  typedef std::conditional_t<int(Traversal)==LinearVectorizedTraversal, LinearPacketType, InnerPacketType> PacketType;
 
 private:
   enum {
@@ -846,7 +846,7 @@ void call_assignment(const Dst& dst, const Src& src)
 // Deal with "assume-aliasing"
 template<typename Dst, typename Src, typename Func>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-void call_assignment(Dst& dst, const Src& src, const Func& func, typename enable_if< evaluator_assume_aliasing<Src>::value, void*>::type = 0)
+void call_assignment(Dst& dst, const Src& src, const Func& func, std::enable_if_t< evaluator_assume_aliasing<Src>::value, void*> = 0)
 {
   typename plain_matrix_type<Src>::type tmp(src);
   call_assignment_no_alias(dst, tmp, func);
@@ -854,7 +854,7 @@ void call_assignment(Dst& dst, const Src& src, const Func& func, typename enable
 
 template<typename Dst, typename Src, typename Func>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-void call_assignment(Dst& dst, const Src& src, const Func& func, typename enable_if<!evaluator_assume_aliasing<Src>::value, void*>::type = 0)
+void call_assignment(Dst& dst, const Src& src, const Func& func, std::enable_if_t<!evaluator_assume_aliasing<Src>::value, void*> = 0)
 {
   call_assignment_no_alias(dst, src, func);
 }
@@ -879,8 +879,8 @@ void call_assignment_no_alias(Dst& dst, const Src& src, const Func& func)
                       ) && int(Dst::SizeAtCompileTime) != 1
   };
 
-  typedef typename internal::conditional<NeedToTranspose, Transpose<Dst>, Dst>::type ActualDstTypeCleaned;
-  typedef typename internal::conditional<NeedToTranspose, Transpose<Dst>, Dst&>::type ActualDstType;
+  typedef std::conditional_t<NeedToTranspose, Transpose<Dst>, Dst> ActualDstTypeCleaned;
+  typedef std::conditional_t<NeedToTranspose, Transpose<Dst>, Dst&> ActualDstType;
   ActualDstType actualDst(dst);
 
   // TODO check whether this is the right place to perform these checks:

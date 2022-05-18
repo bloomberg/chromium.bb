@@ -42,15 +42,15 @@ set_aom_detect_var(HAVE_MSA 0 "Enables MSA optimizations.")
 set_aom_detect_var(HAVE_VSX 0 "Enables VSX optimizations.")
 
 # x86/x86_64 feature flags.
-set_aom_detect_var(HAVE_AVX 0 "Enables AVX optimizations.")
-set_aom_detect_var(HAVE_AVX2 0 "Enables AVX2 optimizations.")
 set_aom_detect_var(HAVE_MMX 0 "Enables MMX optimizations. ")
 set_aom_detect_var(HAVE_SSE 0 "Enables SSE optimizations.")
 set_aom_detect_var(HAVE_SSE2 0 "Enables SSE2 optimizations.")
 set_aom_detect_var(HAVE_SSE3 0 "Enables SSE3 optimizations.")
+set_aom_detect_var(HAVE_SSSE3 0 "Enables SSSE3 optimizations.")
 set_aom_detect_var(HAVE_SSE4_1 0 "Enables SSE 4.1 optimizations.")
 set_aom_detect_var(HAVE_SSE4_2 0 "Enables SSE 4.2 optimizations.")
-set_aom_detect_var(HAVE_SSSE3 0 "Enables SSSE3 optimizations.")
+set_aom_detect_var(HAVE_AVX 0 "Enables AVX optimizations.")
+set_aom_detect_var(HAVE_AVX2 0 "Enables AVX2 optimizations.")
 
 # Flags describing the build environment.
 set_aom_detect_var(HAVE_FEXCEPT 0
@@ -71,35 +71,35 @@ set_aom_config_var(AOM_RTCD_FLAGS ""
 set_aom_config_var(CONFIG_AV1_DECODER 1 "Enable AV1 decoder.")
 set_aom_config_var(CONFIG_AV1_ENCODER 1 "Enable AV1 encoder.")
 set_aom_config_var(CONFIG_BIG_ENDIAN 0 "Internal flag.")
+set_aom_config_var(CONFIG_FPMT_TEST 0 "Enable FPMT testing.")
 set_aom_config_var(CONFIG_FRAME_PARALLEL_ENCODE 0
                    "Enable frame parallelism during encode.")
 set_aom_config_var(
   CONFIG_FRAME_PARALLEL_ENCODE_2 0
   "Enable frame parallelism during encode for frames in lower layer depths.")
-set_aom_config_var(CONFIG_FPMT_TEST 0 "Enable FPMT testing.")
 set_aom_config_var(CONFIG_GCC 0 "Building with GCC (detect).")
 set_aom_config_var(CONFIG_GCOV 0 "Enable gcov support.")
 set_aom_config_var(CONFIG_GPROF 0 "Enable gprof support.")
 set_aom_config_var(CONFIG_LIBYUV 1 "Enables libyuv scaling/conversion support.")
 
-set_aom_config_var(CONFIG_MULTITHREAD 1 "Multithread support.")
-set_aom_config_var(CONFIG_OS_SUPPORT 0 "Internal flag.")
-set_aom_config_var(CONFIG_PIC 0 "Build with PIC enabled.")
-set_aom_config_var(CONFIG_RUNTIME_CPU_DETECT 1 "Runtime CPU detection support.")
-set_aom_config_var(CONFIG_SHARED 0 "Build shared libs.")
-set_aom_config_var(CONFIG_WEBM_IO 1 "Enables WebM support.")
-set_aom_config_var(CONFIG_REALTIME_ONLY 0
-                   "Build for RTC-only. See aomcx.h for all disabled features.")
 set_aom_config_var(CONFIG_AV1_HIGHBITDEPTH 1
                    "Build with high bitdepth support.")
 set_aom_config_var(CONFIG_AV1_TEMPORAL_DENOISING 0
                    "Build with temporal denoising support.")
+set_aom_config_var(CONFIG_MULTITHREAD 1 "Multithread support.")
+set_aom_config_var(CONFIG_OS_SUPPORT 0 "Internal flag.")
+set_aom_config_var(CONFIG_PIC 0 "Build with PIC enabled.")
+set_aom_config_var(CONFIG_REALTIME_ONLY 0
+                   "Build for RTC-only. See aomcx.h for all disabled features.")
+set_aom_config_var(CONFIG_RUNTIME_CPU_DETECT 1 "Runtime CPU detection support.")
+set_aom_config_var(CONFIG_SHARED 0 "Build shared libs.")
+set_aom_config_var(CONFIG_WEBM_IO 1 "Enables WebM support.")
 
 # Debugging flags.
 set_aom_config_var(CONFIG_DEBUG 0 "Enable debug-only code.")
-set_aom_config_var(CONFIG_MISMATCH_DEBUG 0 "Mismatch debugging flag.")
 set_aom_config_var(CONFIG_EXCLUDE_SIMD_MISMATCH 0
                    "Exclude mismatch in SIMD functions for testing/debugging.")
+set_aom_config_var(CONFIG_MISMATCH_DEBUG 0 "Mismatch debugging flag.")
 
 # AV1 feature flags.
 set_aom_config_var(CONFIG_ACCOUNTING 0 "Enables bit accounting.")
@@ -115,53 +115,55 @@ set_aom_config_var(FORCE_HIGHBITDEPTH_DECODING 0
 mark_as_advanced(FORCE_HIGHBITDEPTH_DECODING)
 set_aom_config_var(CONFIG_MAX_DECODE_PROFILE 2
                    "Max profile to support decoding.")
-set_aom_config_var(CONFIG_NORMAL_TILE_MODE 0 "Only enables normal tile mode.")
+set_aom_config_var(
+  CONFIG_NORMAL_TILE_MODE 0
+  "Only enables general decoding (disables large scale tile decoding).")
 set_aom_config_var(CONFIG_SIZE_LIMIT 0 "Limit max decode width/height.")
 set_aom_config_var(CONFIG_SPATIAL_RESAMPLING 1 "Spatial resampling.")
-set_aom_config_var(DECODE_HEIGHT_LIMIT 0 "Set limit for decode height.")
-set_aom_config_var(DECODE_WIDTH_LIMIT 0 "Set limit for decode width.")
-set_aom_config_var(CONFIG_TUNE_VMAF 0 "Enable encoding tuning for VMAF.")
 set_aom_config_var(CONFIG_TUNE_BUTTERAUGLI 0
                    "Enable encoding tuning for Butteraugli.")
+set_aom_config_var(CONFIG_TUNE_VMAF 0 "Enable encoding tuning for VMAF.")
+set_aom_config_var(DECODE_HEIGHT_LIMIT 0 "Set limit for decode height.")
+set_aom_config_var(DECODE_WIDTH_LIMIT 0 "Set limit for decode width.")
 set_aom_config_var(STATIC_LINK_JXL 0 "Statically link the JPEG-XL library.")
 
 # AV1 experiment flags.
-set_aom_config_var(CONFIG_TFLITE 0
-                   "AV1 experiment: Enable tensorflow lite library.")
-set_aom_config_var(CONFIG_SPEED_STATS 0 "AV1 experiment.")
-set_aom_config_var(CONFIG_COLLECT_RD_STATS 0 "AV1 experiment.")
-set_aom_config_var(CONFIG_ENTROPY_STATS 0 "AV1 experiment.")
-set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 "AV1 experiment.")
+set_aom_config_var(CONFIG_BITRATE_ACCURACY 0
+                   "AV1 experiment: Improve bitrate accuracy.")
+set_aom_config_var(
+  CONFIG_BITRATE_ACCURACY_BL 0
+  "AV1 experiment: Baseline of improve bitrate accuracy experiment.")
 set_aom_config_var(CONFIG_BITSTREAM_DEBUG 0
                    "AV1 experiment: Bitstream debugging.")
-set_aom_config_var(CONFIG_RD_DEBUG 0 "AV1 experiment.")
-set_aom_config_var(CONFIG_RD_COMMAND 0
-                   "AV1 experiment: Use external rdmult and q_index.")
-set_aom_config_var(
-  CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
-  "AV1 experiment: Disable full_pixel_motion_search_based_split on BLOCK_8X8.")
-set_aom_config_var(
-  CONFIG_COLLECT_PARTITION_STATS 0
-  "AV1 experiment: Collect partition timing stats. Can be 1 or 2.")
 set_aom_config_var(
   CONFIG_COLLECT_COMPONENT_TIMING 0
   "AV1 experiment: Collect encoding component timing information.")
+set_aom_config_var(
+  CONFIG_COLLECT_PARTITION_STATS 0
+  "AV1 experiment: Collect partition timing stats. Can be 1 or 2.")
+set_aom_config_var(CONFIG_COLLECT_RD_STATS 0 "AV1 experiment.")
+set_aom_config_var(
+  CONFIG_DISABLE_FULL_PIXEL_SPLIT_8X8 1
+  "AV1 experiment: Disable full_pixel_motion_search_based_split on BLOCK_8X8.")
+set_aom_config_var(CONFIG_ENTROPY_STATS 0 "AV1 experiment.")
+set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 "AV1 experiment.")
 set_aom_config_var(CONFIG_NN_V2 0
                    "AV1 experiment: Fully-connected neural nets ver.2.")
 set_aom_config_var(CONFIG_OPTICAL_FLOW_API 0
                    "AV1 experiment: for optical flow API.")
+set_aom_config_var(CONFIG_PARTITION_SEARCH_ORDER 0
+                   "AV1 experiment: Use alternative partition search order.")
+set_aom_config_var(CONFIG_RATECTRL_LOG 0
+                   "AV1 experiment: Log rate control decision.")
+set_aom_config_var(CONFIG_RD_COMMAND 0
+                   "AV1 experiment: Use external rdmult and q_index.")
+set_aom_config_var(CONFIG_RD_DEBUG 0 "AV1 experiment.")
 set_aom_config_var(
   CONFIG_RT_ML_PARTITIONING 0
   "AV1 experiment: Build with ML-based partitioning for Real Time.")
-set_aom_config_var(CONFIG_PARTITION_SEARCH_ORDER 0
-                   "AV1 experiment: Use alternative partition search order.")
-set_aom_config_var(
-  CONFIG_BITRATE_ACCURACY_BL 0
-  "AV1 experiment: Baseline of improve bitrate accuracy experiment.")
-set_aom_config_var(CONFIG_BITRATE_ACCURACY 0
-                   "AV1 experiment: Improve bitrate accuracy.")
-set_aom_config_var(CONFIG_RATECTRL_LOG 0
-                   "AV1 experiment: Log rate control decision.")
+set_aom_config_var(CONFIG_SPEED_STATS 0 "AV1 experiment.")
+set_aom_config_var(CONFIG_TFLITE 0
+                   "AV1 experiment: Enable tensorflow lite library.")
 set_aom_config_var(CONFIG_THREE_PASS 0
                    "AV1 experiment: Enable three-pass encoding.")
 

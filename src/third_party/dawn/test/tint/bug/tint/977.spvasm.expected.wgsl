@@ -60,7 +60,7 @@ fn main_1() {
   var param_1 : f32;
   let x_54 : u32 = gl_GlobalInvocationID.x;
   index = bitcast<i32>(x_54);
-  a_1 = -10;
+  a_1 = -10i;
   let x_63 : i32 = index;
   param = -4.0;
   param_1 = -3.0;
@@ -69,7 +69,7 @@ fn main_1() {
   return;
 }
 
-@stage(compute) @workgroup_size(1, 1, 1)
+@stage(compute) @workgroup_size(1i, 1i, 1i)
 fn main(@builtin(global_invocation_id) gl_GlobalInvocationID_param : vec3<u32>) {
   gl_GlobalInvocationID = gl_GlobalInvocationID_param;
   main_1();

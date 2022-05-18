@@ -16,25 +16,25 @@
 
 namespace dawn::native {
 
-    ShaderModuleMock::ShaderModuleMock(DeviceBase* device) : ShaderModuleBase(device) {
-        ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-            this->ShaderModuleBase::DestroyImpl();
-        });
-    }
+ShaderModuleMock::ShaderModuleMock(DeviceBase* device) : ShaderModuleBase(device) {
+    ON_CALL(*this, DestroyImpl).WillByDefault([this]() { this->ShaderModuleBase::DestroyImpl(); });
+}
 
-    ResultOrError<Ref<ShaderModuleMock>> ShaderModuleMock::Create(DeviceBase* device,
-                                                                  const char* source) {
-        ShaderModuleMock* mock = new ShaderModuleMock(device);
+ShaderModuleMock::~ShaderModuleMock() = default;
 
-        ShaderModuleWGSLDescriptor wgslDesc;
-        wgslDesc.source = source;
-        ShaderModuleDescriptor desc;
-        desc.nextInChain = &wgslDesc;
+ResultOrError<Ref<ShaderModuleMock>> ShaderModuleMock::Create(DeviceBase* device,
+                                                              const char* source) {
+    ShaderModuleMock* mock = new ShaderModuleMock(device);
 
-        ShaderModuleParseResult parseResult;
-        DAWN_TRY(ValidateShaderModuleDescriptor(device, &desc, &parseResult, nullptr));
-        DAWN_TRY(mock->InitializeBase(&parseResult));
-        return AcquireRef(mock);
-    }
+    ShaderModuleWGSLDescriptor wgslDesc;
+    wgslDesc.source = source;
+    ShaderModuleDescriptor desc;
+    desc.nextInChain = &wgslDesc;
+
+    ShaderModuleParseResult parseResult;
+    DAWN_TRY(ValidateAndParseShaderModule(device, &desc, &parseResult, nullptr));
+    DAWN_TRY(mock->InitializeBase(&parseResult, nullptr));
+    return AcquireRef(mock);
+}
 
 }  // namespace dawn::native

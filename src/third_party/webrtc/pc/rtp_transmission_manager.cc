@@ -17,7 +17,8 @@
 #include "api/peer_connection_interface.h"
 #include "api/rtp_transceiver_direction.h"
 #include "pc/audio_rtp_receiver.h"
-#include "pc/channel.h"
+#include "pc/channel_interface.h"
+#include "pc/channel_manager.h"
 #include "pc/stats_collector_interface.h"
 #include "pc/video_rtp_receiver.h"
 #include "rtc_base/checks.h"
@@ -81,10 +82,9 @@ cricket::VoiceMediaChannel* RtpTransmissionManager::voice_media_channel()
     const {
   RTC_DCHECK_RUN_ON(signaling_thread());
   RTC_DCHECK(!IsUnifiedPlan());
-  auto* voice_channel = static_cast<cricket::VoiceChannel*>(
-      GetAudioTransceiver()->internal()->channel());
+  auto* voice_channel = GetAudioTransceiver()->internal()->channel();
   if (voice_channel) {
-    return voice_channel->media_channel();
+    return voice_channel->voice_media_channel();
   } else {
     return nullptr;
   }
@@ -94,10 +94,9 @@ cricket::VideoMediaChannel* RtpTransmissionManager::video_media_channel()
     const {
   RTC_DCHECK_RUN_ON(signaling_thread());
   RTC_DCHECK(!IsUnifiedPlan());
-  auto* video_channel = static_cast<cricket::VideoChannel*>(
-      GetVideoTransceiver()->internal()->channel());
+  auto* video_channel = GetVideoTransceiver()->internal()->channel();
   if (video_channel) {
-    return video_channel->media_channel();
+    return video_channel->video_media_channel();
   } else {
     return nullptr;
   }
@@ -177,7 +176,7 @@ RtpTransmissionManager::AddTrackUnifiedPlan(
       transceiver->internal()->set_direction(
           RtpTransceiverDirection::kSendOnly);
     }
-    transceiver->sender()->SetTrack(track);
+    transceiver->sender()->SetTrack(track.get());
     transceiver->internal()->sender_internal()->set_stream_ids(stream_ids);
     transceiver->internal()->set_reused_for_addtrack(true);
   } else {
@@ -227,7 +226,7 @@ RtpTransmissionManager::CreateSender(
         signaling_thread(), VideoRtpSender::Create(worker_thread(), id, this));
     NoteUsageEvent(UsageEvent::VIDEO_ADDED);
   }
-  bool set_track_succeeded = sender->SetTrack(track);
+  bool set_track_succeeded = sender->SetTrack(track.get());
   RTC_DCHECK(set_track_succeeded);
   sender->internal()->set_stream_ids(stream_ids);
   sender->internal()->set_init_send_encodings(send_encodings);
@@ -409,7 +408,7 @@ void RtpTransmissionManager::RemoveAudioTrack(AudioTrackInterface* track,
                         << " doesn't exist.";
     return;
   }
-  GetAudioTransceiver()->internal()->RemoveSender(sender);
+  GetAudioTransceiver()->internal()->RemoveSender(sender.get());
 }
 
 void RtpTransmissionManager::AddVideoTrack(VideoTrackInterface* track,
@@ -448,7 +447,7 @@ void RtpTransmissionManager::RemoveVideoTrack(VideoTrackInterface* track,
                         << " doesn't exist.";
     return;
   }
-  GetVideoTransceiver()->internal()->RemoveSender(sender);
+  GetVideoTransceiver()->internal()->RemoveSender(sender.get());
 }
 
 void RtpTransmissionManager::CreateAudioReceiver(
@@ -511,9 +510,9 @@ RtpTransmissionManager::RemoveAndStopReceiver(
     return nullptr;
   }
   if (receiver->media_type() == cricket::MEDIA_TYPE_AUDIO) {
-    GetAudioTransceiver()->internal()->RemoveReceiver(receiver);
+    GetAudioTransceiver()->internal()->RemoveReceiver(receiver.get());
   } else {
-    GetVideoTransceiver()->internal()->RemoveReceiver(receiver);
+    GetVideoTransceiver()->internal()->RemoveReceiver(receiver.get());
   }
   return receiver;
 }

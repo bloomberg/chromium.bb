@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
@@ -40,9 +41,7 @@ class OcclusionExpectation : public detail::Expectation {
 
     ~OcclusionExpectation() override = default;
 
-    OcclusionExpectation(Result expected) {
-        mExpected = expected;
-    }
+    explicit OcclusionExpectation(Result expected) { mExpected = expected; }
 
     testing::AssertionResult Check(const void* data, size_t size) override {
         ASSERT(size % sizeof(uint64_t) == 0);

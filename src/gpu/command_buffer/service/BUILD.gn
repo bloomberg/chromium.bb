@@ -282,10 +282,14 @@ target(link_target_type, "gles2_sources") {
 
   if (use_dawn) {
     sources += [
+      "dawn_instance.cc",
+      "dawn_instance.h",
       "dawn_platform.cc",
       "dawn_platform.h",
       "dawn_service_memory_transfer_service.cc",
       "dawn_service_memory_transfer_service.h",
+      "dawn_service_serializer.cc",
+      "dawn_service_serializer.h",
       "webgpu_decoder_impl.cc",
       "webgpu_decoder_impl.h",
     ]
@@ -353,6 +357,14 @@ target(link_target_type, "gles2_sources") {
       "//ui/base:features",
       "//ui/ozone",
     ]
+
+    # Adding this dependency for collecting some metrics checking GL
+    # extensions used on Ozone platforms. Will be removed once the
+    # metrics are collected (in 2-3 months hopefully).
+    # Ref bug: https://crbug.com/1310028
+    if (ozone_platform_x11) {
+      deps += [ "//ui/gfx/x" ]
+    }
   }
 
   if (enable_vulkan) {

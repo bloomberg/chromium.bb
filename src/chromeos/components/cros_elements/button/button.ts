@@ -1,8 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { Button as MwcButton } from '@material/mwc-button';
-import { css, customElement, property, query, CSSResult, CSSResultArray } from 'lit-element';
+import { Button as MwcButton } from '//resources/mwc/@material/mwc-button/mwc-button.js';
+import { css, CSSResult } from '//resources/mwc/lit-element/lit-element.js';
+import { customElement, property, query } from '//resources/mwc/lit/decorators.js';
 
 function linearGradientOf(color : CSSResult) : CSSResult {
   return css`linear-gradient(${color}, ${color})`;
@@ -40,12 +41,12 @@ export class CrosButton extends MwcButton {
   hideLabel: boolean = false;
 
   @property({type: String, reflect: true, attribute: 'aria-expanded'})
-  ariaExpanded?: string;
+  ariaExpanded: string|null = null;
 
   @query('button') htmlButton?: HTMLButtonElement;
 
   updateAriaLabels() {
-    if (this.ariaExpanded !== undefined) {
+    if (this.ariaExpanded !== null) {
       this.htmlButton!.setAttribute('aria-expanded', this.ariaExpanded);
       this.htmlButton!.setAttribute('aria-haspopup', 'true');
     } else {
@@ -70,7 +71,7 @@ export class CrosButton extends MwcButton {
     this.updateAriaLabels();
   }
 
-  static getStyles(): CSSResultArray {
+  static override get styles() {
     const crosStyles = css`
       :host {
         /* Public API */
@@ -188,7 +189,7 @@ export class CrosButton extends MwcButton {
         box-shadow: none;
       }
     `;
-    return [MwcButton.styles, crosStyles];
+    return [...MwcButton.styles, crosStyles];
   }
 }
 

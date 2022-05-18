@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_change_success_tracker_impl.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 namespace password_manager {
@@ -36,7 +37,13 @@ PasswordChangeSuccessTrackerFactory::GetForBrowserContext(
 
 KeyedService* PasswordChangeSuccessTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  return new PasswordChangeSuccessTrackerImpl();
+  auto* tracker = new PasswordChangeSuccessTrackerImpl(
+      user_prefs::UserPrefs::Get(browser_context));
+  tracker->AddMetricsRecorder(
+      std::make_unique<PasswordChangeMetricsRecorderUma>());
+  tracker->AddMetricsRecorder(
+      std::make_unique<PasswordChangeMetricsRecorderUkm>());
+  return tracker;
 }
 
 }  // namespace password_manager

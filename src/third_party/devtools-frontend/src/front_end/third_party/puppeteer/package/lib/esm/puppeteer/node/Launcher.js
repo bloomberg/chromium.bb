@@ -120,6 +120,7 @@ class ChromeLauncher {
     }
     defaultArgs(options = {}) {
         const chromeArguments = [
+            '--allow-pre-commit-input',
             '--disable-background-networking',
             '--enable-features=NetworkService,NetworkServiceInProcess',
             '--disable-background-timer-throttling',
@@ -130,7 +131,7 @@ class ChromeLauncher {
             '--disable-default-apps',
             '--disable-dev-shm-usage',
             '--disable-extensions',
-            '--disable-features=Translate',
+            '--disable-features=Translate,BackForwardCache',
             '--disable-hang-monitor',
             '--disable-ipc-flooding-protection',
             '--disable-popup-blocking',
@@ -154,7 +155,7 @@ class ChromeLauncher {
         if (devtools)
             chromeArguments.push('--auto-open-devtools-for-tabs');
         if (headless) {
-            chromeArguments.push('--headless', '--hide-scrollbars', '--mute-audio');
+            chromeArguments.push(headless === 'chrome' ? '--headless=chrome' : '--headless', '--hide-scrollbars', '--mute-audio');
         }
         if (args.every((arg) => arg.startsWith('-')))
             chromeArguments.push('about:blank');

@@ -2,56 +2,67 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {InstanceChecker} from '../../common/instance_checker.js';
-
-import {BrailleCommandHandler} from './braille/braille_command_handler.js';
-import {ChromeVoxBackground} from './classic_background.js';
-import {CommandHandler} from './command_handler.js';
-import {DesktopAutomationHandler} from './desktop_automation_handler.js';
-import {DesktopAutomationInterface} from './desktop_automation_interface.js';
-import {DownloadHandler} from './download_handler.js';
-import {Earcons} from './earcons.js';
-import {FindHandler} from './find_handler.js';
-import {FocusAutomationHandler} from './focus_automation_handler.js';
-import {GestureCommandHandler} from './gesture_command_handler.js';
-import {BackgroundKeyboardHandler} from './keyboard_handler.js';
-import {LiveRegions} from './live_regions.js';
-import {MathHandler} from './math_handler.js';
-import {MediaAutomationHandler} from './media_automation_handler.js';
-import {PageLoadSoundHandler} from './page_load_sound_handler.js';
-import {RangeAutomationHandler} from './range_automation_handler.js';
+import {BrailleCommandHandler} from '/chromevox/background/braille/braille_command_handler.js';
+import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
+import {CommandHandler} from '/chromevox/background/command_handler.js';
+import {DesktopAutomationHandler} from '/chromevox/background/desktop_automation_handler.js';
+import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
+import {DownloadHandler} from '/chromevox/background/download_handler.js';
+import {Earcons} from '/chromevox/background/earcons.js';
+import {FindHandler} from '/chromevox/background/find_handler.js';
+import {FocusAutomationHandler} from '/chromevox/background/focus_automation_handler.js';
+import {GestureCommandHandler} from '/chromevox/background/gesture_command_handler.js';
+import {BackgroundKeyboardHandler} from '/chromevox/background/keyboard_handler.js';
+import {LiveRegions} from '/chromevox/background/live_regions.js';
+import {MathHandler} from '/chromevox/background/math_handler.js';
+import {MediaAutomationHandler} from '/chromevox/background/media_automation_handler.js';
+import {PageLoadSoundHandler} from '/chromevox/background/page_load_sound_handler.js';
+import {PanelBackground} from '/chromevox/background/panel/panel_background.js';
+import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
+import {RangeAutomationHandler} from '/chromevox/background/range_automation_handler.js';
+import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
+import {InstanceChecker} from '/common/instance_checker.js';
 
 /**
- * @fileoverview The entry point for all ChromeVox2 related code for the
+ * @fileoverview The entry point for all ChromeVox related code for the
  * background page.
  */
 
-const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
-const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
 
-/**
- * ChromeVox2 background page.
- */
+/** ChromeVox background page. */
 export class Background extends ChromeVoxState {
   constructor() {
     super();
 
     // Initialize legacy background page first.
     ChromeVoxBackground.init();
-    LocaleOutputHelper.init();
 
     /** @private {cursors.Range} */
     this.currentRange_ = null;
 
-    /** @private {cursors.Range} */
-    this.previousRange_ = null;
-
     /** @type {!AbstractEarcons} @private */
     this.earcons_ = new Earcons();
 
+    /** @private {string|undefined} */
+    this.lastClipboardEvent_;
+
+    /** @private {cursors.Range} */
+    this.pageSel_;
+
+    /** @private {cursors.Range} */
+    this.previousRange_ = null;
+
+    /** @type {boolean} */
+    this.talkBackEnabled = false;
+
+    this.init_();
+  }
+
+  /** @private */
+  init_() {
     // Read-only earcons.
     Object.defineProperty(ChromeVox, 'earcons', {
       get: () => this.earcons_,
@@ -59,33 +70,12 @@ export class Background extends ChromeVoxState {
 
     Object.defineProperty(ChromeVox, 'typingEcho', {
       get() {
-        return parseInt(localStorage['typingEcho'], 10);
-      },
-      set(v) {
-        localStorage['typingEcho'] = v;
-      }
-    });
-
-    Object.defineProperty(ChromeVox, 'typingEcho', {
-      get() {
-        const typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
-        return typingEcho;
+        return parseInt(localStorage['typingEcho'], 10) || 0;
       },
       set(value) {
         localStorage['typingEcho'] = value;
       }
     });
-
-    ExtensionBridge.addMessageListener(this.onMessage_);
-
-    /** @type {!BackgroundKeyboardHandler} @private */
-    this.keyboardHandler_ = new BackgroundKeyboardHandler();
-
-    /** @type {!LiveRegions} @private */
-    this.liveRegions_ = new LiveRegions(this);
-
-    /** @private {string|undefined} */
-    this.lastClipboardEvent_;
 
     chrome.clipboard.onClipboardDataChanged.addListener(() => {
       this.onClipboardDataChanged_();
@@ -94,35 +84,25 @@ export class Background extends ChromeVoxState {
       this.onClipboardCopyEvent_(event);
     });
 
-    /** @private {cursors.Range} */
-    this.pageSel_;
-
-    /** @type {boolean} */
-    this.talkBackEnabled = false;
-
-    // Initialize various handlers for automation.
+    BackgroundKeyboardHandler.init();
     DesktopAutomationHandler.init();
-    /** @private {!RangeAutomationHandler} */
-    this.rangeAutomationHandler_ = new RangeAutomationHandler();
-    /** @private {!FocusAutomationHandler} */
-    this.focusAutomationHandler_ = new FocusAutomationHandler();
-    /** @private {!MediaAutomationHandler} */
-    this.mediaAutomationHandler_ = new MediaAutomationHandler();
-    /** @private {!PageLoadSoundHandler} */
-    this.pageLoadSoundHandler_ = new PageLoadSoundHandler();
-
-    FindHandler.init();
     DownloadHandler.init();
+    FindHandler.init();
+    FocusAutomationHandler.init();
     JaPhoneticData.init(JaPhoneticMap.MAP);
+    LiveRegions.init(this);
+    LocaleOutputHelper.init();
+    MediaAutomationHandler.init();
+    PageLoadSoundHandler.init();
+    PanelBackground.init();
+    RangeAutomationHandler.init();
 
     chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
         (announceText) => {
           ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
         });
     chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled.addListener(
-        (enabled) => {
-          this.talkBackEnabled = enabled;
-        });
+        (enabled) => this.talkBackEnabled = enabled);
     chrome.accessibilityPrivate.onShowChromeVoxTutorial.addListener(() => {
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
     });
@@ -132,9 +112,7 @@ export class Background extends ChromeVoxState {
     sessionStorage.setItem('darkScreen', 'false');
   }
 
-  /**
-   * @override
-   */
+  /** @override */
   getCurrentRange() {
     if (this.currentRange_ && this.currentRange_.isValid()) {
       return this.currentRange_;
@@ -142,9 +120,12 @@ export class Background extends ChromeVoxState {
     return null;
   }
 
-  /**
-   * @override
-   */
+  /** @override */
+  get pageSel() {
+    return this.pageSel_;
+  }
+
+  /** @override */
   getCurrentRangeWithoutRecovery() {
     return this.currentRange_;
   }
@@ -169,9 +150,8 @@ export class Background extends ChromeVoxState {
     this.previousRange_ = this.currentRange_;
     this.currentRange_ = newRange;
 
-    ChromeVoxState.observers.forEach(function(observer) {
-      observer.onCurrentRangeChanged(newRange, opt_fromEditing);
-    });
+    ChromeVoxState.observers.forEach(
+        observer => observer.onCurrentRangeChanged(newRange, opt_fromEditing));
 
     if (!this.currentRange_) {
       ChromeVoxState.instance.setFocusBounds([]);
@@ -194,6 +174,11 @@ export class Background extends ChromeVoxState {
     let url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
     ChromeVox.position[url] = position;
+  }
+
+  /** @override */
+  set pageSel(newPageSel) {
+    this.pageSel_ = newPageSel;
   }
 
   /**
@@ -297,55 +282,18 @@ export class Background extends ChromeVoxState {
     }
   }
 
-  /**
-   * Open the options page in a new tab.
-   */
-  showOptionsPage() {
-    const optionsPage = {url: '/chromevox/options/options.html'};
-    chrome.tabs.create(optionsPage);
-  }
-
-  /**
-   * @override
-   */
+  /** @override */
   onBrailleKeyEvent(evt, content) {
     return BrailleCommandHandler.onBrailleKeyEvent(evt, content);
   }
 
-  /**
-   * @param {Object} msg A message sent from a content script.
-   * @param {Port} port
-   * @private
-   */
-  onMessage_(msg, port) {
-    const target = msg['target'];
-    const action = msg['action'];
-
-    switch (target) {
-      case 'next':
-        if (action === 'getIsClassicEnabled') {
-          const url = msg['url'];
-          const isClassicEnabled = false;
-          port.postMessage({target: 'next', isClassicEnabled});
-        } else if (action === 'onCommand') {
-          CommandHandlerInterface.instance.onCommand(msg['command']);
-        } else if (action === 'flushNextUtterance') {
-          Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-        }
-        break;
-    }
-  }
-
-  /**
-   * @override
-   */
+  /** @override */
   restoreLastValidRangeIfNeeded() {
     // Never restore range when TalkBack is enabled as commands such as
     // Search+Left, go directly to TalkBack.
     if (this.talkBackEnabled) {
       return;
     }
-
 
     if (!this.currentRange_ || !this.currentRange_.isValid()) {
       this.setCurrentRange(this.previousRange_);
@@ -391,14 +339,13 @@ export class Background extends ChromeVoxState {
   }
 
   /** @private */
-  setCurrentRangeToFocus_() {
-    chrome.automation.getFocus((focus) => {
-      if (focus) {
-        this.setCurrentRange(cursors.Range.fromNode(focus));
-      } else {
-        this.setCurrentRange(null);
-      }
-    });
+  async setCurrentRangeToFocus_() {
+    const focus = await new Promise(chrome.automation.getFocus);
+    if (focus) {
+      this.setCurrentRange(cursors.Range.fromNode(focus));
+    } else {
+      this.setCurrentRange(null);
+    }
   }
 
   /**
@@ -432,10 +379,9 @@ export class Background extends ChromeVoxState {
       return;
     }
 
-    const isFocusableLinkOrControl = function(node) {
-      return node.state[StateType.FOCUSABLE] &&
-          AutomationPredicate.linkOrControl(node);
-    };
+    const isFocusableLinkOrControl = (node) =>
+        node.state[StateType.FOCUSABLE] &&
+        AutomationPredicate.linkOrControl(node);
 
     // Next, try to focus the start or end node.
     if (!AutomationPredicate.structuralContainer(start) &&
@@ -485,11 +431,10 @@ export class Background extends ChromeVoxState {
     return new RegExp(
         '^(' +
         globs
-            .map(function(glob) {
-              return glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
-                  .replace(/\*/g, '.*')
-                  .replace(/\?/g, '.');
-            })
+            .map(
+                glob => glob.replace(/[.+^$(){}|[\]\\]/g, '\\$&')
+                            .replace(/\*/g, '.*')
+                            .replace(/\?/g, '.'))
             .join('|') +
         ')$');
   }

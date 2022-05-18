@@ -4,14 +4,14 @@ fn func(value : i32, pointer : ptr<function, i32>) -> i32 {
 }
 
 fn main_1() {
-  var i : i32 = 0;
-  i = 123;
+  var i : i32 = 0i;
+  i = 123i;
   let x_19 : i32 = i;
   let x_18 : i32 = func(x_19, &(i));
   return;
 }
 
-@stage(compute) @workgroup_size(1, 1, 1)
+@stage(compute) @workgroup_size(1i, 1i, 1i)
 fn main() {
   main_1();
 }

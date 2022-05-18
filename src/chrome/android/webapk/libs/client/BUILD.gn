@@ -17,7 +17,6 @@ android_library("client_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//components/webapk/android/libs/common:java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 }
 
@@ -31,6 +30,7 @@ junit_binary("webapk_client_junit_tests") {
     ":client_java",
     "//base:base_java",
     "//base:base_junit_test_support",
+    "//build/android:build_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/android/webapk/test:junit_test_support",

@@ -236,7 +236,11 @@ template<> struct unpacket_traits<Packet8f> {
   typedef Packet4f  half;
   typedef Packet8i  integer_packet;
   typedef uint8_t   mask_t;
-  enum {size=8, alignment=Aligned32, vectorizable=true, masked_load_available=true, masked_store_available=true};
+  enum {size=8, alignment=Aligned32, vectorizable=true, masked_load_available=true, masked_store_available=true
+#ifdef EIGEN_VECTORIZE_AVX512
+    , masked_fpops_available=true
+#endif
+  };
 };
 template<> struct unpacket_traits<Packet4d> {
   typedef double type;
@@ -464,6 +468,16 @@ template<> EIGEN_STRONG_INLINE Packet8f pload1<Packet8f>(const float*  from) { r
 template<> EIGEN_STRONG_INLINE Packet4d pload1<Packet4d>(const double* from) { return _mm256_broadcast_sd(from); }
 
 template<> EIGEN_STRONG_INLINE Packet8f padd<Packet8f>(const Packet8f& a, const Packet8f& b) { return _mm256_add_ps(a,b); }
+#ifdef EIGEN_VECTORIZE_AVX512
+template <>
+EIGEN_STRONG_INLINE Packet8f padd<Packet8f>(const Packet8f& a, const Packet8f& b, uint8_t umask) {
+  __mmask16 mask = static_cast<__mmask16>(umask & 0x00FF);
+  return _mm512_castps512_ps256(_mm512_maskz_add_ps(
+                                    mask,
+                                    _mm512_castps256_ps512(a),
+                                    _mm512_castps256_ps512(b)));
+}
+#endif
 template<> EIGEN_STRONG_INLINE Packet4d padd<Packet4d>(const Packet4d& a, const Packet4d& b) { return _mm256_add_pd(a,b); }
 template<> EIGEN_STRONG_INLINE Packet8i padd<Packet8i>(const Packet8i& a, const Packet8i& b) {
 #ifdef EIGEN_VECTORIZE_AVX2
@@ -848,11 +862,16 @@ template<> EIGEN_STRONG_INLINE Packet4d ploadu<Packet4d>(const double* from) { E
 template<> EIGEN_STRONG_INLINE Packet8i ploadu<Packet8i>(const int* from) { EIGEN_DEBUG_UNALIGNED_LOAD return _mm256_loadu_si256(reinterpret_cast<const __m256i*>(from)); }
 
 template<> EIGEN_STRONG_INLINE Packet8f ploadu<Packet8f>(const float* from, uint8_t umask) {
+#ifdef EIGEN_VECTORIZE_AVX512
+  __mmask16 mask = static_cast<__mmask16>(umask & 0x00FF);
+  EIGEN_DEBUG_UNALIGNED_LOAD return  _mm512_castps512_ps256(_mm512_maskz_loadu_ps(mask, from));
+#else
   Packet8i mask = _mm256_set1_epi8(static_cast<char>(umask));
   const Packet8i bit_mask = _mm256_set_epi32(0xffffff7f, 0xffffffbf, 0xffffffdf, 0xffffffef, 0xfffffff7, 0xfffffffb, 0xfffffffd, 0xfffffffe);
   mask = por<Packet8i>(mask, bit_mask);
   mask = pcmp_eq<Packet8i>(mask, _mm256_set1_epi32(0xffffffff));
   EIGEN_DEBUG_UNALIGNED_LOAD return _mm256_maskload_ps(from, mask);
+#endif
 }
 
 // Loads 4 floats from memory a returns the packet {a0, a0  a1, a1, a2, a2, a3, a3}
@@ -911,11 +930,16 @@ template<> EIGEN_STRONG_INLINE void pstoreu<double>(double* to, const Packet4d& 
 template<> EIGEN_STRONG_INLINE void pstoreu<int>(int*       to, const Packet8i& from) { EIGEN_DEBUG_UNALIGNED_STORE _mm256_storeu_si256(reinterpret_cast<__m256i*>(to), from); }
 
 template<> EIGEN_STRONG_INLINE void pstoreu<float>(float*   to, const Packet8f& from, uint8_t umask) {
+#ifdef EIGEN_VECTORIZE_AVX512
+  __mmask16 mask = static_cast<__mmask16>(umask & 0x00FF);
+  EIGEN_DEBUG_UNALIGNED_STORE return _mm512_mask_storeu_ps(to, mask, _mm512_castps256_ps512(from));
+#else
   Packet8i mask = _mm256_set1_epi8(static_cast<char>(umask));
   const Packet8i bit_mask = _mm256_set_epi32(0xffffff7f, 0xffffffbf, 0xffffffdf, 0xffffffef, 0xfffffff7, 0xfffffffb, 0xfffffffd, 0xfffffffe);
   mask = por<Packet8i>(mask, bit_mask);
   mask = pcmp_eq<Packet8i>(mask, _mm256_set1_epi32(0xffffffff));
   EIGEN_DEBUG_UNALIGNED_STORE return _mm256_maskstore_ps(to, mask, from);
+#endif
 }
 
 // NOTE: leverage _mm256_i32gather_ps and _mm256_i32gather_pd if AVX2 instructions are available

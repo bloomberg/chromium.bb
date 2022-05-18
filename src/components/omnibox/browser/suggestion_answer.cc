@@ -11,12 +11,12 @@
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
-#include "net/base/escape.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -35,6 +35,7 @@ static constexpr char kAnswerJsonImageLine[] = "il";
 static constexpr char kAnswerJsonText[] = "t";
 static constexpr char kAnswerJsonAdditionalText[] = "at";
 static constexpr char kAnswerJsonStatusText[] = "st";
+static constexpr char kAnswerJsonAccessibilityLabel[] = "al";
 static constexpr char kAnswerJsonTextType[] = "tt";
 static constexpr char kAnswerJsonNumLines[] = "ln";
 static constexpr char kAnswerJsonImage[] = "i";
@@ -73,7 +74,7 @@ bool SuggestionAnswer::TextField::ParseTextField(
   const bool parsed = text && !text->empty() && type;
   if (parsed) {
     text_field->type_ = *type;
-    text_field->text_ = net::UnescapeForHTML(base::UTF8ToUTF16(*text));
+    text_field->text_ = base::UnescapeForHTML(base::UTF8ToUTF16(*text));
 
     absl::optional<int> num_lines = field_json.FindInt(kAnswerJsonNumLines);
     text_field->has_num_lines_ = num_lines.has_value();
@@ -99,8 +100,7 @@ size_t SuggestionAnswer::TextField::EstimateMemoryUsage() const {
 
 // SuggestionAnswer::ImageLine -------------------------------------------------
 
-SuggestionAnswer::ImageLine::ImageLine()
-    : num_text_lines_(1) {}
+SuggestionAnswer::ImageLine::ImageLine() : num_text_lines_(1) {}
 SuggestionAnswer::ImageLine::ImageLine(const ImageLine& line) = default;
 SuggestionAnswer::ImageLine::ImageLine(ImageLine&&) noexcept = default;
 
@@ -161,6 +161,12 @@ bool SuggestionAnswer::ImageLine::ParseImageLine(
     }
   }
 
+  const std::string* accessibility_label =
+      inner_json->FindString(kAnswerJsonAccessibilityLabel);
+  if (accessibility_label) {
+    image_line->accessibility_label_ = base::UTF8ToUTF16(*accessibility_label);
+  }
+
   const base::Value::Dict* image_json = inner_json->FindDict(kAnswerJsonImage);
   if (image_json) {
     const std::string* url_string =
@@ -218,6 +224,10 @@ bool SuggestionAnswer::ImageLine::Equals(const ImageLine& line) const {
     }
   }
 
+  if (accessibility_label_ != line.accessibility_label_) {
+    return false;
+  }
+
   return image_url_ == line.image_url_;
 }
 
@@ -248,6 +258,11 @@ size_t SuggestionAnswer::ImageLine::EstimateMemoryUsage() const {
     res += base::trace_event::EstimateMemoryUsage(status_text_.value());
   } else {
     res += sizeof(TextField);
+  }
+  if (accessibility_label_) {
+    res += base::trace_event::EstimateMemoryUsage(accessibility_label_.value());
+  } else {
+    res += sizeof(std::u16string);
   }
   res += base::trace_event::EstimateMemoryUsage(image_url_);
 

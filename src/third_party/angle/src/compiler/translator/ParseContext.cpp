@@ -210,6 +210,7 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mChecksPrecisionErrors(checksPrecErrors),
       mFragmentPrecisionHighOnESSL1(false),
       mEarlyFragmentTestsSpecified(false),
+      mSampleQualifierSpecified(false),
       mDefaultUniformMatrixPacking(EmpColumnMajor),
       mDefaultUniformBlockStorage(sh::IsWebGLBasedSpec(spec) ? EbsStd140 : EbsShared),
       mDefaultBufferMatrixPacking(EmpColumnMajor),
@@ -1427,7 +1428,8 @@ void TParseContext::checkIsParameterQualifierValid(
     TType *type)
 {
     // The only parameter qualifiers a parameter can have are in, out, inout or const.
-    TTypeQualifier typeQualifier = typeQualifierBuilder.getParameterTypeQualifier(mDiagnostics);
+    TTypeQualifier typeQualifier =
+        typeQualifierBuilder.getParameterTypeQualifier(type->getBasicType(), mDiagnostics);
 
     if (typeQualifier.qualifier == EvqParamOut || typeQualifier.qualifier == EvqParamInOut)
     {
@@ -2593,6 +2595,11 @@ TPublicType TParseContext::addFullySpecifiedType(const TTypeQualifierBuilder &ty
 
     checkEarlyFragmentTestsIsNotSpecified(typeSpecifier.getLine(),
                                           returnType.layoutQualifier.earlyFragmentTests);
+
+    if (returnType.qualifier == EvqSampleIn || returnType.qualifier == EvqSampleOut)
+    {
+        mSampleQualifierSpecified = true;
+    }
 
     if (mShaderVersion < 300)
     {
@@ -3941,7 +3948,7 @@ TIntermFunctionPrototype *TParseContext::addFunctionPrototypeDeclaration(
     // function is declared multiple times.
     bool hadPrototypeDeclaration = false;
     const TFunction *function    = symbolTable.markFunctionHasPrototypeDeclaration(
-        parsedFunction.getMangledName(), &hadPrototypeDeclaration);
+           parsedFunction.getMangledName(), &hadPrototypeDeclaration);
 
     if (hadPrototypeDeclaration && mShaderVersion == 100)
     {
@@ -6809,9 +6816,9 @@ void TParseContext::checkTextureOffset(TIntermAggregate *functionCall)
         TIntermAggregate *offsetAggregate = offset->getAsAggregate();
         TIntermSymbol *offsetSymbol       = offset->getAsSymbolNode();
 
-        const TConstantUnion *offsetValues =
-            offsetAggregate ? offsetAggregate->getConstantValue()
-                            : offsetSymbol ? offsetSymbol->getConstantValue() : nullptr;
+        const TConstantUnion *offsetValues = offsetAggregate ? offsetAggregate->getConstantValue()
+                                             : offsetSymbol  ? offsetSymbol->getConstantValue()
+                                                             : nullptr;
 
         if (offsetValues == nullptr)
         {

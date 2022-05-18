@@ -130,6 +130,16 @@ void FakeAudioReceiveStream::SetRtpExtensions(
   config_.rtp.extensions = std::move(extensions);
 }
 
+const std::vector<webrtc::RtpExtension>&
+FakeAudioReceiveStream::GetRtpExtensions() const {
+  return config_.rtp.extensions;
+}
+
+webrtc::RtpHeaderExtensionMap FakeAudioReceiveStream::GetRtpExtensionMap()
+    const {
+  return webrtc::RtpHeaderExtensionMap(config_.rtp.extensions);
+}
+
 webrtc::AudioReceiveStream::Stats FakeAudioReceiveStream::GetStats(
     bool get_and_clear_legacy_stats) const {
   return stats_;
@@ -259,7 +269,7 @@ void FakeVideoSendStream::ReconfigureVideoEncoder(
   }
   video_streams_ =
       config.video_stream_factory->CreateEncoderStreams(width, height, config);
-  if (config.encoder_specific_settings != NULL) {
+  if (config.encoder_specific_settings != nullptr) {
     const unsigned char num_temporal_layers = static_cast<unsigned char>(
         video_streams_.back().num_temporal_layers.value_or(1));
     if (config_.rtp.payload_name == "VP8") {
@@ -286,7 +296,7 @@ void FakeVideoSendStream::ReconfigureVideoEncoder(
                     << config_.rtp.payload_name;
     }
   }
-  codec_settings_set_ = config.encoder_specific_settings != NULL;
+  codec_settings_set_ = config.encoder_specific_settings != nullptr;
   encoder_config_ = std::move(config);
   ++num_encoder_reconfigurations_;
 }
@@ -380,6 +390,11 @@ void FakeVideoReceiveStream::SetRtpExtensions(
   config_.rtp.extensions = std::move(extensions);
 }
 
+webrtc::RtpHeaderExtensionMap FakeVideoReceiveStream::GetRtpExtensionMap()
+    const {
+  return webrtc::RtpHeaderExtensionMap(config_.rtp.extensions);
+}
+
 void FakeVideoReceiveStream::Start() {
   receiving_ = true;
 }
@@ -394,12 +409,17 @@ void FakeVideoReceiveStream::SetStats(
 }
 
 FakeFlexfecReceiveStream::FakeFlexfecReceiveStream(
-    const webrtc::FlexfecReceiveStream::Config& config)
-    : config_(config) {}
+    const webrtc::FlexfecReceiveStream::Config config)
+    : config_(std::move(config)) {}
 
 void FakeFlexfecReceiveStream::SetRtpExtensions(
     std::vector<webrtc::RtpExtension> extensions) {
   config_.rtp.extensions = std::move(extensions);
+}
+
+webrtc::RtpHeaderExtensionMap FakeFlexfecReceiveStream::GetRtpExtensionMap()
+    const {
+  return webrtc::RtpHeaderExtensionMap(config_.rtp.extensions);
 }
 
 const webrtc::FlexfecReceiveStream::Config&
@@ -585,8 +605,9 @@ void FakeCall::DestroyVideoReceiveStream(
 }
 
 webrtc::FlexfecReceiveStream* FakeCall::CreateFlexfecReceiveStream(
-    const webrtc::FlexfecReceiveStream::Config& config) {
-  FakeFlexfecReceiveStream* fake_stream = new FakeFlexfecReceiveStream(config);
+    const webrtc::FlexfecReceiveStream::Config config) {
+  FakeFlexfecReceiveStream* fake_stream =
+      new FakeFlexfecReceiveStream(std::move(config));
   flexfec_receive_streams_.push_back(fake_stream);
   ++num_created_receive_streams_;
   return fake_stream;

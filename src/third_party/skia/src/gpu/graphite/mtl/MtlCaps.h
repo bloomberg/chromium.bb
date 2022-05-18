@@ -26,11 +26,9 @@ public:
                                              Protected,
                                              Renderable) const override;
 
-    TextureInfo getDefaultMSAATextureInfo(SkColorType,
-                                          uint32_t sampleCount,
-                                          Protected) const override;
+    TextureInfo getDefaultMSAATextureInfo(const TextureInfo& singleSampledInfo) const override;
 
-    TextureInfo getDefaultDepthStencilTextureInfo(Mask<DepthStencilFlags>,
+    TextureInfo getDefaultDepthStencilTextureInfo(SkEnumBitMask<DepthStencilFlags>,
                                                   uint32_t sampleCount,
                                                   Protected) const override;
 
@@ -103,7 +101,7 @@ private:
         std::unique_ptr<ColorTypeInfo[]> fColorTypeInfos;
         int fColorTypeInfoCount = 0;
     };
-    inline static constexpr size_t kNumMtlFormats = 8;
+    inline static constexpr size_t kNumMtlFormats = 9;
 
     static size_t GetFormatIndex(MTLPixelFormat);
     FormatInfo fFormatTable[kNumMtlFormats];

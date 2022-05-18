@@ -22,8 +22,11 @@ def TopoSort : Pass<"tfg-toposort"> {
     The main purpose is readability, as well as potentially faster processing
     of the body by analyses/transformation as it'll ensure that all uses appear
     after the producer (but note that cycles are allowed in TensorFlow graphs).
-    This is supposed to not change the semantics, and could be graduated to a
-    canonicalization in the future.
+
+    Note that some Grappler optimizers are sensitive to the textual order of the
+    operations in the graph. This pass is meant to be approximately stable, in
+    that the order of operations in the input graph is preserved as much as
+    possible so as to not alter the results of these optimizers.
   }];
 
   // A constructor must be provided to specify how to create a default instance.
@@ -245,6 +248,10 @@ def ControlFlowSink : Pass<"tfg-cf-sink", "GraphFuncOp"> {
   }];
 
   let constructor = "CreateControlFlowSinkPass()";
+
+  let statistics = [
+    Statistic<"num_sunk", "num-sunk", "Number of operations sunk">,
+  ];
 }
 
 def Remapper : Pass<"remapper"> {
@@ -264,7 +271,7 @@ def Remapper : Pass<"remapper"> {
   let options = [
     Option<"enable_mkl_patterns_", "enable-mkl-patterns", "bool",
     /*default=*/"false",
-    "Enable the the MKL related patterns.">,
+    "Enable the MKL related patterns.">,
   ];
   let constructor = "CreateRemapperPass()";
 }
@@ -389,4 +396,31 @@ def ShapeInference : Pass<"shape-inference"> {
            "The graph producer version">
   ];
   let constructor = "CreateShapeInferencePass()";
+}
+
+def ConstantFoldingPass : Pass<"constant-folding"> {
+  let summary = "constant-folding on tfg";
+  let description = [{
+    This pass will fold operations into constants and do full/partial propagte
+    the constants iteratively.
+  }];
+
+  let constructor = "CreateConstantFoldingPass()";
+  let options = [
+   ListOption<"nodes_to_preserve_", "nodes-to-preserve", "std::string",
+              "Comma separated list of ops that won't be optimized.",
+              "llvm::cl::ZeroOrMore">,
+   ListOption<"feeds_", "feeds", "std::string",
+              "Comma separated list of feed ops.", "llvm::cl::ZeroOrMore">,
+   ListOption<"fetches_", "fetches", "std::string",
+              "Comma separated list of fetch ops.", "llvm::cl::ZeroOrMore">,
+   Option<"disable_compressed_tensor_optimization_",
+          "disable-compressed-tensor-optimization", "bool",
+          /*default=*/"false",
+          "Determine if we should disable compressed tensor optimization">,
+   Option<"fold_quantization_emulation_",
+          "fold-quantization-emulation", "bool",
+          /*default=*/"true",
+          "Determine if we should fold quantization emulation ops">
+  ];
 }

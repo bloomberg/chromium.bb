@@ -60,14 +60,12 @@ g.test('color_attachments,device_mismatch')
       target1Mismatched: true,
     },
   ])
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { view0Mismatched, target0Mismatched, view1Mismatched, target1Mismatched } = t.params;
-
     const mismatched = view0Mismatched || target0Mismatched || view1Mismatched || target1Mismatched;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
 
     const view0Texture = view0Mismatched
       ? t.getDeviceMismatchedRenderTexture(4)
@@ -111,12 +109,11 @@ g.test('depth_stencil_attachment,device_mismatch')
     'Tests beginRenderPass cannot be called with a depth stencil attachment whose texture view is created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { mismatched } = t.params;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
 
     const descriptor: GPUTextureDescriptor = {
       size: { width: 4, height: 4, depthOrArrayLayers: 1 },
@@ -151,13 +148,11 @@ g.test('occlusion_query_set,device_mismatch')
     'Tests beginRenderPass cannot be called with an occlusion query set created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .beforeAllSubcases(t => {
+    t.selectMismatchedDeviceOrSkipTestCase(undefined);
+  })
   .fn(async t => {
     const { mismatched } = t.params;
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
-    }
-
     const device = mismatched ? t.mismatchedDevice : t.device;
 
     const occlusionQuerySet = device.createQuerySet({

@@ -23,47 +23,49 @@
 
 namespace dawn::native::metal {
 
-    class Device;
+class Device;
 
-    class RenderPipeline final : public RenderPipelineBase {
-      public:
-        static Ref<RenderPipelineBase> CreateUninitialized(
-            Device* device,
-            const RenderPipelineDescriptor* descriptor);
-        static void InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
-                                    WGPUCreateRenderPipelineAsyncCallback callback,
-                                    void* userdata);
+class RenderPipeline final : public RenderPipelineBase {
+  public:
+    static Ref<RenderPipelineBase> CreateUninitialized(Device* device,
+                                                       const RenderPipelineDescriptor* descriptor);
+    static void InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                WGPUCreateRenderPipelineAsyncCallback callback,
+                                void* userdata);
 
-        MTLPrimitiveType GetMTLPrimitiveTopology() const;
-        MTLWinding GetMTLFrontFace() const;
-        MTLCullMode GetMTLCullMode() const;
+    RenderPipeline(DeviceBase* device, const RenderPipelineDescriptor* descriptor);
+    ~RenderPipeline() override;
 
-        void Encode(id<MTLRenderCommandEncoder> encoder);
+    MTLPrimitiveType GetMTLPrimitiveTopology() const;
+    MTLWinding GetMTLFrontFace() const;
+    MTLCullMode GetMTLCullMode() const;
 
-        id<MTLDepthStencilState> GetMTLDepthStencilState();
+    void Encode(id<MTLRenderCommandEncoder> encoder);
 
-        // For each Dawn vertex buffer, give the index in which it will be positioned in the Metal
-        // vertex buffer table.
-        uint32_t GetMtlVertexBufferIndex(VertexBufferSlot slot) const;
+    id<MTLDepthStencilState> GetMTLDepthStencilState();
 
-        wgpu::ShaderStage GetStagesRequiringStorageBufferLength() const;
+    // For each Dawn vertex buffer, give the index in which it will be positioned in the Metal
+    // vertex buffer table.
+    uint32_t GetMtlVertexBufferIndex(VertexBufferSlot slot) const;
 
-        MaybeError Initialize() override;
+    wgpu::ShaderStage GetStagesRequiringStorageBufferLength() const;
 
-      private:
-        using RenderPipelineBase::RenderPipelineBase;
+    MaybeError Initialize() override;
 
-        NSRef<MTLVertexDescriptor> MakeVertexDesc();
+  private:
+    using RenderPipelineBase::RenderPipelineBase;
 
-        MTLPrimitiveType mMtlPrimitiveTopology;
-        MTLWinding mMtlFrontFace;
-        MTLCullMode mMtlCullMode;
-        NSPRef<id<MTLRenderPipelineState>> mMtlRenderPipelineState;
-        NSPRef<id<MTLDepthStencilState>> mMtlDepthStencilState;
-        ityp::array<VertexBufferSlot, uint32_t, kMaxVertexBuffers> mMtlVertexBufferIndices;
+    NSRef<MTLVertexDescriptor> MakeVertexDesc();
 
-        wgpu::ShaderStage mStagesRequiringStorageBufferLength = wgpu::ShaderStage::None;
-    };
+    MTLPrimitiveType mMtlPrimitiveTopology;
+    MTLWinding mMtlFrontFace;
+    MTLCullMode mMtlCullMode;
+    NSPRef<id<MTLRenderPipelineState>> mMtlRenderPipelineState;
+    NSPRef<id<MTLDepthStencilState>> mMtlDepthStencilState;
+    ityp::array<VertexBufferSlot, uint32_t, kMaxVertexBuffers> mMtlVertexBufferIndices;
+
+    wgpu::ShaderStage mStagesRequiringStorageBufferLength = wgpu::ShaderStage::None;
+};
 
 }  // namespace dawn::native::metal
 

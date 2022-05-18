@@ -888,6 +888,12 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int use_fixed_qp_offsets;
 
+  /*!\brief Deprecated and ignored. DO NOT USE.
+   *
+   * TODO(aomedia:3269): Remove fixed_qp_offsets in libaom v4.0.0.
+   */
+  int fixed_qp_offsets[5];
+
   /*!\brief Options defined per config file
    *
    */

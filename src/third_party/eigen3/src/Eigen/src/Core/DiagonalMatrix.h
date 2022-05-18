@@ -200,6 +200,10 @@ class DiagonalMatrix
     explicit EIGEN_STRONG_INLINE DiagonalMatrix(const std::initializer_list<std::initializer_list<Scalar>>& list)
       : m_diagonal(list) {}
 
+    /** \brief Constructs a DiagonalMatrix from an r-value diagonal vector type */
+    EIGEN_DEVICE_FUNC
+    explicit inline DiagonalMatrix(DiagonalVectorType&& diag) : m_diagonal(std::move(diag)) {}
+
     /** Copy constructor. */
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC

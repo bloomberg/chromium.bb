@@ -466,13 +466,8 @@ void SharedImageBackingAHB::EndOverlayAccess() {
 }
 
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
-    const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info) {
+    const gles2::FeatureInfo* feature_info) {
   DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
-  scoped_refptr<gles2::FeatureInfo> feature_info =
-      new gles2::FeatureInfo(workarounds, gpu_feature_info);
-  feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2, false,
-                           gles2::DisallowedFeatures());
   const gles2::Validators* validators = feature_info->validators();
   const bool is_egl_image_supported =
       gl::g_current_gl_driver->ext.b_GL_OES_EGL_image;
@@ -529,11 +524,6 @@ SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_gl_texture_size_);
 
-  // TODO(vikassoni): Check vulkan image size restrictions also.
-  if (workarounds.max_texture_size) {
-    max_gl_texture_size_ =
-        std::min(max_gl_texture_size_, workarounds.max_texture_size);
-  }
   // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
   // can be used to accurately represent all valid sub-rects, with overflow
   // cases, clamped to INT_MAX, always invalid.

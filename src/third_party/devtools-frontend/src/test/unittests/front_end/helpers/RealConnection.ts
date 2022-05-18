@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Common from '../../../../front_end/core/common/common.js';
 import * as Host from '../../../../front_end/core/host/host.js';
 import * as Root from '../../../../front_end/core/root/root.js';
 import * as SDK from '../../../../front_end/core/sdk/sdk.js';
@@ -16,8 +17,12 @@ import {deinitializeGlobalVars} from './EnvironmentHelpers.js';
 // In describeWithRealConnection we await this promise and call real `describe`
 // only when the promise is resolved. This ensures that tests suites with real
 // connection get registered last, which makes mocha also run them last.
-export let markStaticTestsLoaded: () => void;
-const staticTestsLoaded = new Promise<void>(resolve => {
+export interface StaticTestsLoadedEvent {
+  hasOnly: boolean;
+}
+
+export let markStaticTestsLoaded: (event: StaticTestsLoadedEvent) => void;
+const staticTestsLoaded = new Promise<StaticTestsLoadedEvent>(resolve => {
   markStaticTestsLoaded = resolve;
 });
 
@@ -51,6 +56,7 @@ function describeBody(title: string, fn: (this: Mocha.Suite) => void) {
 
   beforeEach(() => {
     resetHostBindingStubState();
+    Common.Settings.Settings.instance().clearAll();
   });
 
   describe(title, fn);
@@ -62,8 +68,8 @@ export function describeWithRealConnection(title: string, fn: (this: Mocha.Suite
     return;
   }
   staticTestsLoaded
-      .then(() => {
-        if (hasOnly) {
+      .then(event => {
+        if (hasOnly || event.hasOnly) {
           return;
         }
         describe(`real-${title}`, () => {

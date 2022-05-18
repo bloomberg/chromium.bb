@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkSLPrecompile_src",
@@ -21,6 +23,7 @@ generated_cc_atom(
         "//src/sksl:SkSLUtil_hdr",
         "//src/sksl/ir:SkSLUnresolvedFunction_hdr",
         "//src/sksl/ir:SkSLVarDeclarations_hdr",
+        "//src/utils:SkOSPath_hdr",
         "//src/utils:SkShaderUtils_hdr",
     ],
 )

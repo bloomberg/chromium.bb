@@ -71,7 +71,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   bool ShouldShowWindowTitle() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size CalculatePreferredSize() const override;
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // ui::SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;
@@ -191,9 +191,6 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   raw_ptr<views::View> error_view_ = nullptr;
   raw_ptr<views::View> advanced_view_source_ = nullptr;
   raw_ptr<views::View> advanced_view_target_ = nullptr;
-
-  std::unique_ptr<SourceLanguageComboboxModel> source_language_combobox_model_;
-  std::unique_ptr<TargetLanguageComboboxModel> target_language_combobox_model_;
 
   raw_ptr<views::Combobox> source_language_combobox_ = nullptr;
   raw_ptr<views::Combobox> target_language_combobox_ = nullptr;

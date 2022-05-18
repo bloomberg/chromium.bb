@@ -38,12 +38,13 @@
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/features.h"
@@ -175,9 +176,10 @@ class AppSearchProviderTest : public AppListTestBase {
   void CreateSearch() {
     clock_.SetNow(kTestCurrentTime);
     search_controller_ = std::make_unique<TestSearchController>();
-    app_search_ = std::make_unique<AppSearchProvider>(
+    auto app_search = std::make_unique<AppSearchProvider>(
         profile_.get(), nullptr, &clock_, model_updater_.get());
-    app_search_->set_controller(search_controller_.get());
+    app_search_ = app_search.get();
+    search_controller_->AddProvider(0, std::move(app_search));
   }
 
   void CreateSearchWithContinueReading() {
@@ -194,7 +196,11 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
+    if (query.empty()) {
+      search_controller_->StartZeroState(base::DoNothing(), base::TimeDelta());
+    } else {
+      search_controller_->StartSearch(base::UTF8ToUTF16(query));
+    }
 
     // Sort results by relevance.
     std::vector<ChromeSearchResult*> sorted_results;
@@ -221,7 +227,7 @@ class AppSearchProviderTest : public AppListTestBase {
   // container based on index flags instead of relevance, use this methodology
   // to generate list of test results.
   std::string RunQueryNotSortingByRelevance(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
+    search_controller_->StartSearch(base::UTF8ToUTF16(query));
 
     std::vector<ChromeSearchResult*> non_relevance_results;
     std::vector<ChromeSearchResult*> priority_results;
@@ -329,7 +335,7 @@ class AppSearchProviderTest : public AppListTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<TestSearchController> search_controller_;
-  std::unique_ptr<AppSearchProvider> app_search_;
+  AppSearchProvider* app_search_ = nullptr;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
 
@@ -477,6 +483,81 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 }
 
+TEST_F(AppSearchProviderTest, DefaultRecommendedAppRanking) {
+  // Disable the pre-installed high-priority extensions. This test simulates
+  // a brand new profile being added to a device, and should not include these.
+  service_->UninstallExtension(
+      kHostedAppId, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  service_->UninstallExtension(
+      kPackagedApp1Id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  service_->UninstallExtension(
+      kPackagedApp2Id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+
+  base::RunLoop().RunUntilIdle();
+
+  profile_->SetIsNewProfile(true);
+  ASSERT_TRUE(profile()->IsNewProfile());
+
+  // There are four default web apps. We use real app IDs here, as these are
+  // used internally by the ranking logic. We can use arbitrary app names.
+  //
+  // TODO(crbug.com/1235272): There is one default ARC app (PlayStore). Figure
+  // out how to test-install PlayStore as a default ARC app.
+  const std::vector<std::string> kDefaultRecommendedWebAppIds = {
+      web_app::kCanvasAppId, web_app::kHelpAppId, web_app::kOsSettingsAppId,
+      web_app::kCameraAppId};
+  const std::vector<std::string> kDefaultRecommendedWebAppNames = {
+      "Canvas", "Help", "OsSettings", "Camera"};
+
+  ASSERT_EQ(kDefaultRecommendedWebAppNames.size(),
+            kDefaultRecommendedWebAppIds.size());
+
+  // Install the default recommended web apps.
+  // N.B. These are web apps and not extensions, but these installations are
+  // simulated using extensions because it allows us to set the app ID.
+  for (size_t i = 0; i < kDefaultRecommendedWebAppNames.size(); ++i) {
+    AddExtension(kDefaultRecommendedWebAppIds[i],
+                 kDefaultRecommendedWebAppNames[i],
+                 ManifestLocation::kExternalPrefDownload,
+                 extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+    service_->EnableExtension(kDefaultRecommendedWebAppIds[i]);
+  }
+
+  // Allow app installations to finish.
+  base::RunLoop().RunUntilIdle();
+  CreateSearch();
+
+  EXPECT_EQ("OsSettings,Help,Canvas,Camera", RunQuery(""));
+
+  // Install a normal (non-default-installed) app.
+  const std::string normal_app_id =
+      crx_file::id_util::GenerateId(kRankingNormalAppName);
+  AddExtension(normal_app_id, kRankingNormalAppName,
+               ManifestLocation::kExternalPrefDownload,
+               extensions::Extension::NO_FLAGS);
+  WaitTimeUpdated();
+
+  extensions::ExtensionPrefs* const prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  ASSERT_TRUE(prefs);
+
+  // Simulate launching the normal app. Expect that an app with a recorded
+  // launch time takes precedence over the default-installed apps.
+  prefs->SetLastLaunchTime(normal_app_id, base::Time::Now());
+  CreateSearch();
+  EXPECT_EQ(
+      std::string(kRankingNormalAppName) + ",OsSettings,Help,Canvas,Camera",
+      RunQuery(""));
+
+  // Simulate launching one of the default apps. Expect that this brings it to
+  // higher precedence than all the others.
+  prefs->SetLastLaunchTime(web_app::kCanvasAppId, base::Time::Now());
+  CreateSearch();
+  EXPECT_EQ("Canvas," + std::string(kRankingNormalAppName) +
+                ",OsSettings,Help,Camera",
+            RunQuery(""));
+}
+
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   CreateSearch();
 
@@ -562,9 +643,9 @@ class AppSearchProviderCrostiniTest : public AppSearchProviderTest {
  public:
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
+    ash::SeneschalClient::InitializeFake();
     AppSearchProviderTest::SetUp();
   }
 
@@ -577,45 +658,12 @@ class AppSearchProviderCrostiniTest : public AppSearchProviderTest {
     // DBusThreadManager to ensure all keyed services that might rely on DBus
     // clients are destroyed.
     profile_.reset();
-    chromeos::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::SeneschalClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 };
-
-TEST_F(AppSearchProviderCrostiniTest, CrostiniTerminal) {
-  CreateSearch();
-
-  // Crostini UI is not allowed yet.
-  EXPECT_EQ("", RunQuery("terminal"));
-  EXPECT_EQ("", RunQuery("linux"));
-
-  // This both allows Crostini UI and enables Crostini.
-  crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
-  crostini_test_helper.ReInitializeAppServiceIntegration();
-  CreateSearch();
-  EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
-  EXPECT_EQ("Terminal", RunQuery("ter"));
-  EXPECT_EQ("Terminal", RunQuery("terminal"));
-  EXPECT_EQ("Terminal", RunQuery("li"));
-  EXPECT_EQ("Terminal", RunQuery("linux"));
-  EXPECT_EQ("Terminal", RunQuery("crosti"));
-
-  // If Crostini UI is allowed but disabled (i.e. not installed), a match score
-  // of 0.8 is required before surfacing search results.
-  crostini::CrostiniTestHelper::DisableCrostini(testing_profile());
-  CreateSearch();
-  EXPECT_EQ("Hosted App", RunQuery("te"));
-  EXPECT_EQ("Terminal", RunQuery("ter"));
-  EXPECT_EQ("Terminal", RunQuery("terminal"));
-  EXPECT_EQ("", RunQuery("li"));
-  EXPECT_EQ("Terminal", RunQuery("lin"));
-  EXPECT_EQ("Terminal", RunQuery("linux"));
-  EXPECT_EQ("", RunQuery("cr"));
-  EXPECT_EQ("Terminal", RunQuery("cro"));
-  EXPECT_EQ("Terminal", RunQuery("cros"));
-}
 
 TEST_F(AppSearchProviderCrostiniTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.

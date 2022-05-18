@@ -33,8 +33,7 @@ public:
     SurfaceFillContext(GrRecordingContext*,
                        GrSurfaceProxyView readView,
                        GrSurfaceProxyView writeView,
-                       const GrColorInfo&,
-                       bool flushTimeOpsTask = false);
+                       const GrColorInfo&);
 
     void discard() override;
 
@@ -53,7 +52,7 @@ public:
     bool wrapsVkSecondaryCB() const { return this->asRenderTargetProxy()->wrapsVkSecondaryCB(); }
 
     SkArenaAlloc* arenaAlloc() { return this->arenas()->arenaAlloc(); }
-    GrSubRunAllocator* subRunAlloc() { return this->arenas()->subRunAlloc(); }
+    sktext::gpu::SubRunAllocator* subRunAlloc() { return this->arenas()->subRunAlloc(); }
 
 #if GR_TEST_UTILS
     OpsTask* testingOnly_PeekLastOpsTask() { return fOpsTask.get(); }
@@ -96,8 +95,6 @@ private:
     // The OpsTask can be closed by some other surface context that has picked it up. For this
     // reason, the OpsTask should only ever be accessed via 'getOpsTask'.
     sk_sp<OpsTask> fOpsTask;
-
-    bool fFlushTimeOpsTask;
 
     using INHERITED = skgpu::SurfaceFillContext;
 };

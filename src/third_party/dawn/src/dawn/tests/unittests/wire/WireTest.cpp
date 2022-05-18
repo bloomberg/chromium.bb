@@ -19,20 +19,21 @@
 #include "dawn/wire/WireClient.h"
 #include "dawn/wire/WireServer.h"
 
-using namespace testing;
-using namespace dawn::wire;
+using testing::_;
+using testing::AnyNumber;
+using testing::Exactly;
+using testing::Mock;
+using testing::Return;
 
-WireTest::WireTest() {
-}
+WireTest::WireTest() {}
 
-WireTest::~WireTest() {
-}
+WireTest::~WireTest() {}
 
-client::MemoryTransferService* WireTest::GetClientMemoryTransferService() {
+dawn::wire::client::MemoryTransferService* WireTest::GetClientMemoryTransferService() {
     return nullptr;
 }
 
-server::MemoryTransferService* WireTest::GetServerMemoryTransferService() {
+dawn::wire::server::MemoryTransferService* WireTest::GetServerMemoryTransferService() {
     return nullptr;
 }
 
@@ -50,19 +51,19 @@ void WireTest::SetUp() {
     mS2cBuf = std::make_unique<utils::TerribleCommandBuffer>();
     mC2sBuf = std::make_unique<utils::TerribleCommandBuffer>(mWireServer.get());
 
-    WireServerDescriptor serverDesc = {};
+    dawn::wire::WireServerDescriptor serverDesc = {};
     serverDesc.procs = &mockProcs;
     serverDesc.serializer = mS2cBuf.get();
     serverDesc.memoryTransferService = GetServerMemoryTransferService();
 
-    mWireServer.reset(new WireServer(serverDesc));
+    mWireServer.reset(new dawn::wire::WireServer(serverDesc));
     mC2sBuf->SetHandler(mWireServer.get());
 
-    WireClientDescriptor clientDesc = {};
+    dawn::wire::WireClientDescriptor clientDesc = {};
     clientDesc.serializer = mC2sBuf.get();
     clientDesc.memoryTransferService = GetClientMemoryTransferService();
 
-    mWireClient.reset(new WireClient(clientDesc));
+    mWireClient.reset(new dawn::wire::WireClient(clientDesc));
     mS2cBuf->SetHandler(mWireClient.get());
 
     dawnProcSetProcs(&dawn::wire::client::GetProcs());

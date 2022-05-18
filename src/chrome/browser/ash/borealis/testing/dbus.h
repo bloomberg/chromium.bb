@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_ASH_BOREALIS_TESTING_DBUS_H_
 #define CHROME_BROWSER_ASH_BOREALIS_TESTING_DBUS_H_
 
-namespace chromeos {
+namespace ash {
 class FakeCiceroneClient;
 class FakeConciergeClient;
 class FakeSeneschalClient;
+}  // namespace ash
+
+namespace chromeos {
 class FakeDlcserviceClient;
 }  // namespace chromeos
 
@@ -26,7 +29,7 @@ class FakeCiceroneHelper {
   ~FakeCiceroneHelper();
 
   // Returns a handle to the dbus fake for cicerone.
-  chromeos::FakeCiceroneClient* FakeCiceroneClient();
+  ash::FakeCiceroneClient* FakeCiceroneClient();
 };
 
 class FakeSeneschalHelper {
@@ -35,7 +38,7 @@ class FakeSeneschalHelper {
   ~FakeSeneschalHelper();
 
   // Returns a handle to the dbus fake for seneschal.
-  chromeos::FakeSeneschalClient* FakeSeneschalClient();
+  ash::FakeSeneschalClient* FakeSeneschalClient();
 };
 
 class FakeDlcserviceHelper {
@@ -52,7 +55,7 @@ class FakeConciergeHelper {
   ~FakeConciergeHelper();
 
   // Returns a handle to the dbus fake for concierge.
-  chromeos::FakeConciergeClient* FakeConciergeClient();
+  ash::FakeConciergeClient* FakeConciergeClient();
 };
 
 class FakeVmServicesHelper : public BasicDBusHelper,

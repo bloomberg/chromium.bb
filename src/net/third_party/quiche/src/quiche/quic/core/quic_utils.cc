@@ -170,8 +170,6 @@ const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
     RETURN_STRING_LITERAL(NEUTERED);
     RETURN_STRING_LITERAL(HANDSHAKE_RETRANSMITTED);
     RETURN_STRING_LITERAL(LOST);
-    RETURN_STRING_LITERAL(TLP_RETRANSMITTED);
-    RETURN_STRING_LITERAL(RTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PROBE_RETRANSMITTED);
     RETURN_STRING_LITERAL(NOT_CONTRIBUTING_RTT);
@@ -289,10 +287,6 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
       return HANDSHAKE_RETRANSMITTED;
     case LOSS_RETRANSMISSION:
       return LOST;
-    case TLP_RETRANSMISSION:
-      return TLP_RETRANSMITTED;
-    case RTO_RETRANSMISSION:
-      return RTO_RETRANSMITTED;
     case PTO_RETRANSMISSION:
       return PTO_RETRANSMITTED;
     case PROBING_RETRANSMISSION:
@@ -601,7 +595,7 @@ PacketNumberSpace QuicUtils::GetPacketNumberSpace(
 }
 
 // static
-EncryptionLevel QuicUtils::GetEncryptionLevel(
+EncryptionLevel QuicUtils::GetEncryptionLevelToSendAckofSpace(
     PacketNumberSpace packet_number_space) {
   switch (packet_number_space) {
     case INITIAL_DATA:

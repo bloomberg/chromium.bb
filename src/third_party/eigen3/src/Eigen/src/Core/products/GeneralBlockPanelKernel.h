@@ -356,7 +356,7 @@ struct RhsPanelHelper {
  private:
   static const int remaining_registers = EIGEN_ARCH_DEFAULT_NUMBER_OF_REGISTERS - registers_taken;
  public:
-  typedef typename conditional<remaining_registers>=4, RhsPacketx4, RhsPacket>::type type;
+  typedef std::conditional_t<remaining_registers>=4, RhsPacketx4, RhsPacket> type;
 };
 
 template <typename Packet>
@@ -459,9 +459,9 @@ public:
   };
 
 
-  typedef typename conditional<Vectorizable,LhsPacket_,LhsScalar>::type LhsPacket;
-  typedef typename conditional<Vectorizable,RhsPacket_,RhsScalar>::type RhsPacket;
-  typedef typename conditional<Vectorizable,ResPacket_,ResScalar>::type ResPacket;
+  typedef std::conditional_t<Vectorizable,LhsPacket_,LhsScalar> LhsPacket;
+  typedef std::conditional_t<Vectorizable,RhsPacket_,RhsScalar> RhsPacket;
+  typedef std::conditional_t<Vectorizable,ResPacket_,ResScalar> ResPacket;
   typedef LhsPacket LhsPacket4Packing;
 
   typedef QuadPacket<RhsPacket> RhsPacketx4;
@@ -578,9 +578,9 @@ public:
     RhsProgress = 1
   };
 
-  typedef typename conditional<Vectorizable,LhsPacket_,LhsScalar>::type LhsPacket;
-  typedef typename conditional<Vectorizable,RhsPacket_,RhsScalar>::type RhsPacket;
-  typedef typename conditional<Vectorizable,ResPacket_,ResScalar>::type ResPacket;
+  typedef std::conditional_t<Vectorizable,LhsPacket_,LhsScalar> LhsPacket;
+  typedef std::conditional_t<Vectorizable,RhsPacket_,RhsScalar> RhsPacket;
+  typedef std::conditional_t<Vectorizable,ResPacket_,ResScalar> ResPacket;
   typedef LhsPacket LhsPacket4Packing;
 
   typedef QuadPacket<RhsPacket> RhsPacketx4;
@@ -614,7 +614,7 @@ public:
   
   EIGEN_STRONG_INLINE void loadRhsQuad(const RhsScalar* b, RhsPacket& dest) const
   {
-    loadRhsQuad_impl(b,dest, typename conditional<RhsPacketSize==16,true_type,false_type>::type());
+    loadRhsQuad_impl(b,dest, std::conditional_t<RhsPacketSize==16,true_type,false_type>());
   }
 
   EIGEN_STRONG_INLINE void loadRhsQuad_impl(const RhsScalar* b, RhsPacket& dest, const true_type&) const
@@ -645,7 +645,7 @@ public:
   template <typename LhsPacketType, typename RhsPacketType, typename AccPacketType, typename LaneIdType>
   EIGEN_STRONG_INLINE void madd(const LhsPacketType& a, const RhsPacketType& b, AccPacketType& c, RhsPacketType& tmp, const LaneIdType&) const
   {
-    madd_impl(a, b, c, tmp, typename conditional<Vectorizable,true_type,false_type>::type());
+    madd_impl(a, b, c, tmp, std::conditional_t<Vectorizable,true_type,false_type>());
   }
 
   template <typename LhsPacketType, typename RhsPacketType, typename AccPacketType>
@@ -703,7 +703,7 @@ DoublePacket<Packet> padd(const DoublePacket<Packet> &a, const DoublePacket<Pack
 template<typename Packet>
 const DoublePacket<Packet>&
 predux_half_dowto4(const DoublePacket<Packet> &a,
-                   typename enable_if<unpacket_traits<Packet>::size<=8>::type* = 0)
+                   std::enable_if_t<unpacket_traits<Packet>::size<=8>* = 0)
 {
   return a;
 }
@@ -711,7 +711,7 @@ predux_half_dowto4(const DoublePacket<Packet> &a,
 template<typename Packet>
 DoublePacket<typename unpacket_traits<Packet>::half>
 predux_half_dowto4(const DoublePacket<Packet> &a,
-                   typename enable_if<unpacket_traits<Packet>::size==16>::type* = 0)
+                   std::enable_if_t<unpacket_traits<Packet>::size==16>* = 0)
 {
   // yes, that's pretty hackish :(
   DoublePacket<typename unpacket_traits<Packet>::half> res;
@@ -725,7 +725,7 @@ predux_half_dowto4(const DoublePacket<Packet> &a,
 // same here, "quad" actually means "8" in terms of real coefficients
 template<typename Scalar, typename RealPacket>
 void loadQuadToDoublePacket(const Scalar* b, DoublePacket<RealPacket>& dest,
-                            typename enable_if<unpacket_traits<RealPacket>::size<=8>::type* = 0)
+                            std::enable_if_t<unpacket_traits<RealPacket>::size<=8>* = 0)
 {
   dest.first  = pset1<RealPacket>(numext::real(*b));
   dest.second = pset1<RealPacket>(numext::imag(*b));
@@ -733,7 +733,7 @@ void loadQuadToDoublePacket(const Scalar* b, DoublePacket<RealPacket>& dest,
 
 template<typename Scalar, typename RealPacket>
 void loadQuadToDoublePacket(const Scalar* b, DoublePacket<RealPacket>& dest,
-                            typename enable_if<unpacket_traits<RealPacket>::size==16>::type* = 0)
+                            std::enable_if_t<unpacket_traits<RealPacket>::size==16>* = 0)
 {
   // yes, that's pretty hackish too :(
   typedef typename NumTraits<Scalar>::Real RealScalar;
@@ -791,11 +791,11 @@ public:
   
   typedef DoublePacket<RealPacket>                 DoublePacketType;
 
-  typedef typename conditional<Vectorizable,ScalarPacket,Scalar>::type LhsPacket4Packing;
-  typedef typename conditional<Vectorizable,RealPacket,  Scalar>::type LhsPacket;
-  typedef typename conditional<Vectorizable,DoublePacketType,Scalar>::type RhsPacket;
-  typedef typename conditional<Vectorizable,ScalarPacket,Scalar>::type ResPacket;
-  typedef typename conditional<Vectorizable,DoublePacketType,Scalar>::type AccPacket;
+  typedef std::conditional_t<Vectorizable,ScalarPacket,Scalar> LhsPacket4Packing;
+  typedef std::conditional_t<Vectorizable,RealPacket,  Scalar> LhsPacket;
+  typedef std::conditional_t<Vectorizable,DoublePacketType,Scalar> RhsPacket;
+  typedef std::conditional_t<Vectorizable,ScalarPacket,Scalar> ResPacket;
+  typedef std::conditional_t<Vectorizable,DoublePacketType,Scalar> AccPacket;
 
   // this actually holds 8 packets!
   typedef QuadPacket<RhsPacket> RhsPacketx4;
@@ -868,7 +868,7 @@ public:
 
   template<typename LhsPacketType, typename RhsPacketType, typename ResPacketType, typename TmpType, typename LaneIdType>
   EIGEN_STRONG_INLINE
-  typename enable_if<!is_same<RhsPacketType,RhsPacketx4>::value>::type
+  std::enable_if_t<!is_same<RhsPacketType,RhsPacketx4>::value>
   madd(const LhsPacketType& a, const RhsPacketType& b, DoublePacket<ResPacketType>& c, TmpType& /*tmp*/, const LaneIdType&) const
   {
     c.first   = padd(pmul(a,b.first), c.first);
@@ -960,9 +960,9 @@ public:
     RhsProgress = 1
   };
 
-  typedef typename conditional<Vectorizable,LhsPacket_,LhsScalar>::type LhsPacket;
-  typedef typename conditional<Vectorizable,RhsPacket_,RhsScalar>::type RhsPacket;
-  typedef typename conditional<Vectorizable,ResPacket_,ResScalar>::type ResPacket;
+  typedef std::conditional_t<Vectorizable,LhsPacket_,LhsScalar> LhsPacket;
+  typedef std::conditional_t<Vectorizable,RhsPacket_,RhsScalar> RhsPacket;
+  typedef std::conditional_t<Vectorizable,ResPacket_,ResScalar> ResPacket;
   typedef LhsPacket LhsPacket4Packing;
   typedef QuadPacket<RhsPacket> RhsPacketx4;
   typedef ResPacket AccPacket;
@@ -1011,7 +1011,7 @@ public:
   template <typename LhsPacketType, typename RhsPacketType, typename AccPacketType, typename LaneIdType>
   EIGEN_STRONG_INLINE void madd(const LhsPacketType& a, const RhsPacketType& b, AccPacketType& c, RhsPacketType& tmp, const LaneIdType&) const
   {
-    madd_impl(a, b, c, tmp, typename conditional<Vectorizable,true_type,false_type>::type());
+    madd_impl(a, b, c, tmp, std::conditional_t<Vectorizable,true_type,false_type>());
   }
 
   template <typename LhsPacketType, typename RhsPacketType, typename AccPacketType>
@@ -1976,10 +1976,10 @@ void gebp_kernel<LhsScalar,RhsScalar,Index,DataMapper,mr,nr,ConjugateLhs,Conjuga
             if(SwappedTraits::LhsProgress==8)
             {
               // Special case where we have to first reduce the accumulation register C0
-              typedef typename conditional<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SResPacket>::half,SResPacket>::type SResPacketHalf;
-              typedef typename conditional<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SLhsPacket>::half,SLhsPacket>::type SLhsPacketHalf;
-              typedef typename conditional<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SRhsPacket>::half,SRhsPacket>::type SRhsPacketHalf;
-              typedef typename conditional<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SAccPacket>::half,SAccPacket>::type SAccPacketHalf;
+              typedef std::conditional_t<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SResPacket>::half,SResPacket> SResPacketHalf;
+              typedef std::conditional_t<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SLhsPacket>::half,SLhsPacket> SLhsPacketHalf;
+              typedef std::conditional_t<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SRhsPacket>::half,SRhsPacket> SRhsPacketHalf;
+              typedef std::conditional_t<SwappedTraits::LhsProgress>=8,typename unpacket_traits<SAccPacket>::half,SAccPacket> SAccPacketHalf;
 
               SResPacketHalf R = res.template gatherPacket<SResPacketHalf>(i, j2);
               SResPacketHalf alphav = pset1<SResPacketHalf>(alpha);

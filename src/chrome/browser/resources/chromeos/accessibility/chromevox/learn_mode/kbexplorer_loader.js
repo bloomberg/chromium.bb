@@ -6,6 +6,7 @@
  * @fileoverview Description of this file.
  */
 
+goog.require('BackgroundBridge');
 goog.require('BrailleKeyCommand');
 goog.require('BrailleKeyEvent');
 goog.require('ChromeVox');
@@ -15,3 +16,4 @@ goog.require('LibLouis');
 goog.require('Msgs');
 goog.require('NavBraille');
 goog.require('Spannable');
+goog.require('UserActionMonitor');

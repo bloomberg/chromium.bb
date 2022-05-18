@@ -134,6 +134,17 @@ else()
   ei_add_property(EIGEN_MISSING_BACKENDS "SPQR, ")
 endif()
 
+find_package(Accelerate)
+if(Accelerate_FOUND)
+  add_definitions("-DEIGEN_ACCELERATE_SUPPORT")
+  include_directories(${Accelerate_INCLUDES})
+  set(SPARSE_LIBS ${SPARSE_LIBS} ${Accelerate_LIBRARIES})
+  set(Accelerate_ALL_LIBS ${Accelerate_LIBRARIES})
+  ei_add_property(EIGEN_TESTED_BACKENDS "Accelerate, ")
+else()
+  ei_add_property(EIGEN_MISSING_BACKENDS "Accelerate, ")
+endif()
+
 option(EIGEN_TEST_NOQT "Disable Qt support in unit tests" OFF)
 if(NOT EIGEN_TEST_NOQT)
   find_package(Qt4)
@@ -342,6 +353,10 @@ endif()
 
 if(METIS_FOUND)
 ei_add_test(metis_support "" "${METIS_LIBRARIES}")
+endif()
+
+if(Accelerate_FOUND)
+  ei_add_test(accelerate_support "" "${Accelerate_ALL_LIBS}")
 endif()
 
 string(TOLOWER "${CMAKE_CXX_COMPILER}" cmake_cxx_compiler_tolower)

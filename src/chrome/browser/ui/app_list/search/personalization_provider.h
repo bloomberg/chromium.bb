@@ -11,11 +11,13 @@
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;
@@ -52,8 +54,10 @@ class PersonalizationResult : public ChromeSearchResult {
 
 // Provides search results for Personalization App based on a search query. No
 // results are provided for zero-state.
-class PersonalizationProvider : public SearchProvider,
-                                public ::apps::AppRegistryCache::Observer {
+class PersonalizationProvider
+    : public SearchProvider,
+      public ::ash::personalization_app::mojom::SearchResultsObserver,
+      public ::apps::AppRegistryCache::Observer {
  public:
   explicit PersonalizationProvider(Profile* profile);
   ~PersonalizationProvider() override;
@@ -66,6 +70,9 @@ class PersonalizationProvider : public SearchProvider,
   ash::AppListSearchResultType ResultType() const override;
   void ViewClosing() override;
 
+  // ::ash::personalization_app::mojom::SearchResultsObserver:
+  void OnSearchResultsChanged() override;
+
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
@@ -73,6 +80,7 @@ class PersonalizationProvider : public SearchProvider,
 
  private:
   void OnSearchDone(
+      base::TimeTicks start_time,
       std::vector<::ash::personalization_app::mojom::SearchResultPtr> results);
 
   void StartLoadIcon();
@@ -84,6 +92,8 @@ class PersonalizationProvider : public SearchProvider,
   std::u16string current_query_;
   gfx::ImageSkia icon_;
   raw_ptr<::ash::personalization_app::SearchHandler> search_handler_;
+  mojo::Receiver<::ash::personalization_app::mojom::SearchResultsObserver>
+      search_results_observer_{this};
   base::WeakPtrFactory<PersonalizationProvider> weak_ptr_factory_{this};
   base::WeakPtrFactory<PersonalizationProvider> app_service_weak_ptr_factory_{
       this};

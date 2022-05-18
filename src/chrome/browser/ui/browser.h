@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/zoom/zoom_observer.h"
@@ -73,6 +75,12 @@ class TabStripModel;
 class TabStripModelDelegate;
 class TabMenuModelDelegate;
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+namespace screen_ai {
+class AXScreenAIAnnotator;
+}
+#endif
+
 namespace blink {
 enum class ProtocolHandlerSecurityLevel;
 }
@@ -109,6 +117,7 @@ class WebContentsModalDialogHost;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
+                public base::SupportsUserData,
                 public BookmarkTabHelperObserver,
                 public zoom::ZoomObserver,
                 public content::PageNavigator,
@@ -146,6 +155,10 @@ class Browser : public TabStripModelObserver,
     // CustomTabToolbarview.
     TYPE_CUSTOM_TAB,
 #endif
+    // Document picture-in-picture browser.  It's mostly the same as a
+    // TYPE_POPUP, except that it floats above other windows.  It also has some
+    // additional restrictions, like it cannot navigated, to prevent misuse.
+    TYPE_PICTURE_IN_PICTURE,
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
   };
@@ -712,6 +725,9 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_type_custom_tab() const { return type_ == TYPE_CUSTOM_TAB; }
 #endif
+  bool is_type_picture_in_picture() const {
+    return type_ == TYPE_PICTURE_IN_PICTURE;
+  }
 
   // True when the mouse cursor is locked.
   bool IsMouseLocked() const;
@@ -740,6 +756,10 @@ class Browser : public TabStripModelObserver,
   void SetWindowUserTitle(const std::string& user_title);
 
   StatusBubble* GetStatusBubbleForTesting();
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  void RunScreenAIAnnotator();
+#endif
 
  private:
   friend class BrowserTest;
@@ -1092,6 +1112,10 @@ class Browser : public TabStripModelObserver,
   bool CustomTabBrowserSupportsWindowFeature(WindowFeature feature) const;
 #endif
 
+  bool PictureInPictureBrowserSupportsWindowFeature(
+      WindowFeature feature,
+      bool check_can_support) const;
+
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of
   // the browser, otherwise the set of features reflect the possible state of
@@ -1283,6 +1307,11 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
+#endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // Manages the snapshot processing by ScreenAI, if enabled.
+  std::unique_ptr<screen_ai::AXScreenAIAnnotator> screen_ai_annotator_;
 #endif
 
 #if BUILDFLAG(ENABLE_CEF)

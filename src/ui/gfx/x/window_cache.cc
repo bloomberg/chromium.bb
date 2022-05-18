@@ -47,12 +47,12 @@ ScopedShapeEventSelector::ScopedShapeEventSelector(Connection* connection,
                                                    Window window)
     : connection_(connection), window_(window) {
   connection_->shape().SelectInput(
-      {.destination_window = window_, .enable = true});
+      {.destination_window = window_, .enable = true}).IgnoreError();
 }
 
 ScopedShapeEventSelector::~ScopedShapeEventSelector() {
   connection_->shape().SelectInput(
-      {.destination_window = window_, .enable = false});
+      {.destination_window = window_, .enable = false}).IgnoreError();
 }
 
 WindowCache::WindowInfo::WindowInfo() = default;
@@ -152,13 +152,13 @@ Window WindowCache::GetWindowAtPoint(gfx::Point point_px,
     }
   }
 
-  if (info->has_wm_name)
-    return window;
   for (Window child : base::Reversed(info->children)) {
     Window ret = GetWindowAtPoint(point_px, child, ignore);
     if (ret != Window::None)
       return ret;
   }
+  if (info->has_wm_name)
+    return window;
   return Window::None;
 }
 

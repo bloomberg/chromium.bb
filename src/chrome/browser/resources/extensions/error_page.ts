@@ -12,7 +12,7 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import './code_section.js';
-import './shared_style.js';
+import './shared_style.css.js';
 
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
@@ -20,8 +20,8 @@ import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_man
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getTemplate} from './error_page.html.js';
 
+import {getTemplate} from './error_page.html.js';
 import {navigation, Page} from './navigation_helper.js';
 
 type ManifestError = chrome.developerPrivate.ManifestError;
@@ -50,7 +50,7 @@ function getRelativeUrl(
  * Given 3 strings, this function returns the correct one for the type of
  * error that |item| is.
  */
-function getErrorSeverityText_(
+function getErrorSeverityText(
     item: ManifestError|RuntimeError, log: string, warn: string,
     error: string): string {
   if (item.type === chrome.developerPrivate.ErrorType.RUNTIME) {
@@ -179,11 +179,11 @@ export class ExtensionsErrorPageElement extends ExtensionsErrorPageElementBase {
 
   private computeErrorIcon_(error: ManifestError|RuntimeError): string {
     // Do not i18n these strings, they're CSS classes.
-    return getErrorSeverityText_(error, 'info', 'warning', 'error');
+    return getErrorSeverityText(error, 'info', 'warning', 'error');
   }
 
   private computeErrorTypeLabel_(error: ManifestError|RuntimeError): string {
-    return getErrorSeverityText_(
+    return getErrorSeverityText(
         error, loadTimeData.getString('logLevel'),
         loadTimeData.getString('warnLevel'),
         loadTimeData.getString('errorLevel'));

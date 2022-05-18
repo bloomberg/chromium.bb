@@ -86,7 +86,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -95,6 +94,7 @@
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/input/touch_action_util.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -118,6 +118,7 @@
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -158,19 +159,6 @@ namespace blink {
 namespace {
 
 using ::ui::mojom::blink::DragOperation;
-
-const int kCaretPadding = 10;
-const float kIdealPaddingRatio = 0.3f;
-
-// Returns a rect which is offset and scaled accordingly to |base_rect|'s
-// location and size.
-gfx::RectF NormalizeRect(const gfx::Rect& to_normalize,
-                         const gfx::Rect& base_rect) {
-  gfx::RectF result(to_normalize);
-  result.Offset(base_rect.OffsetFromOrigin());
-  result.Scale(1.0 / base_rect.width(), 1.0 / base_rect.height());
-  return result;
-}
 
 void ForEachLocalFrameControlledByWidget(
     LocalFrame* frame,
@@ -266,16 +254,20 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(
     bool hidden,
     bool never_composited,
     bool is_for_child_local_root,
-    bool is_for_nested_main_frame)
-    : widget_base_(std::make_unique<WidgetBase>(/*widget_base_client=*/this,
-                                                std::move(widget_host),
-                                                std::move(widget),
-                                                task_runner,
-                                                hidden,
-                                                never_composited,
-                                                is_for_child_local_root)),
+    bool is_for_nested_main_frame,
+    bool is_for_scalable_page)
+    : widget_base_(std::make_unique<WidgetBase>(
+          /*widget_base_client=*/this,
+          std::move(widget_host),
+          std::move(widget),
+          task_runner,
+          hidden,
+          never_composited,
+          /*is_embedded=*/is_for_child_local_root || is_for_nested_main_frame,
+          is_for_scalable_page)),
       frame_sink_id_(frame_sink_id),
-      is_for_child_local_root_(is_for_child_local_root) {
+      is_for_child_local_root_(is_for_child_local_root),
+      is_for_scalable_page_(is_for_scalable_page) {
   DCHECK(task_runner);
   if (is_for_nested_main_frame)
     main_data().is_for_nested_main_frame = is_for_nested_main_frame;
@@ -305,7 +297,7 @@ void WebFrameWidgetImpl::SetIsNestedMainFrameWidget(bool is_nested) {
 
 void WebFrameWidgetImpl::Close() {
   LocalFrameView* frame_view;
-  if (is_for_child_local_root_) {
+  if (ForSubframe()) {
     frame_view = LocalRootImpl()->GetFrame()->View();
   } else {
     // Scrolling for the root frame is special we need to pass null indicating
@@ -760,8 +752,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
     }
   }
 
-  PageWidgetEventHandler::HandleMouseDown(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseDown(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return;
 
@@ -789,8 +781,8 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& local_root,
                                           const WebMouseEvent& event) {
   View()->SetMouseOverURL(WebURL());
-  PageWidgetEventHandler::HandleMouseLeave(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+  WidgetEventHandler::HandleMouseLeave(local_root, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
@@ -831,8 +823,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseUp(
     LocalFrame& local_root,
     const WebMouseEvent& event) {
   WebInputEventResult result =
-      PageWidgetEventHandler::HandleMouseUp(local_root, event);
-  // PageWidgetEventHandler may have detached the frame.
+      WidgetEventHandler::HandleMouseUp(local_root, event);
+  // WidgetEventHandler may have detached the frame.
   if (!LocalRootImpl())
     return result;
 
@@ -1004,8 +996,8 @@ WebInputEventResult WebFrameWidgetImpl::HandleMouseWheel(
     LocalFrame& frame,
     const WebMouseWheelEvent& event) {
   View()->CancelPagePopup();
-  return PageWidgetEventHandler::HandleMouseWheel(frame, event);
-  // PageWidgetEventHandler may have detached the frame.
+  return WidgetEventHandler::HandleMouseWheel(frame, event);
+  // WidgetEventHandler may have detached the frame.
 }
 
 WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
@@ -1286,8 +1278,13 @@ WebFrameWidgetImpl::AllocateNewLayerTreeFrameSink() {
 }
 
 void WebFrameWidgetImpl::DidBeginMainFrame() {
-  DCHECK(LocalRootImpl()->GetFrame());
-  PageWidgetDelegate::DidBeginFrame(*LocalRootImpl()->GetFrame());
+  LocalFrame* root_frame = LocalRootImpl()->GetFrame();
+  DCHECK(root_frame);
+
+  if (LocalFrameView* frame_view = root_frame->View())
+    frame_view->RunPostLifecycleSteps();
+  if (Page* page = root_frame->GetPage())
+    page->Animator().PostAnimate();
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
@@ -1296,8 +1293,8 @@ void WebFrameWidgetImpl::UpdateLifecycle(WebLifecycleUpdate requested_update,
   if (!LocalRootImpl())
     return;
 
-  PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
-                                      requested_update, reason);
+  GetPage()->UpdateLifecycle(*LocalRootImpl()->GetFrame(), requested_update,
+                             reason);
   if (requested_update != WebLifecycleUpdate::kAll)
     return;
 
@@ -1352,6 +1349,9 @@ void WebFrameWidgetImpl::DidCompletePageScaleAnimation() {
     if (focused_frame->AutofillClient())
       focused_frame->AutofillClient()->DidCompleteFocusChangeInFrame();
   }
+
+  if (page_scale_animation_for_testing_callback_)
+    std::move(page_scale_animation_for_testing_callback_).Run();
 }
 
 void WebFrameWidgetImpl::ScheduleAnimation() {
@@ -1478,10 +1478,9 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
         /*is_pinch_gesture_active=*/false);
   }
 
-  // TODO(crbug.com/939118): ScrollFocusedNodeIntoViewForWidget does not work
-  // when the focused node is inside an OOPIF. This code path where
-  // scroll_focused_node_into_view is set is used only for WebView, crbug
-  // 939118 tracks fixing webviews to not use scroll_focused_node_into_view.
+  // TODO(crbug.com/939118): This code path where scroll_focused_node_into_view
+  // is set is used only for WebView, crbug 939118 tracks fixing webviews to
+  // not use scroll_focused_node_into_view.
   if (visual_properties.scroll_focused_node_into_view)
     ScrollFocusedEditableElementIntoView();
 }
@@ -1923,49 +1922,58 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   if (!element->GetLayoutObject())
     return false;
 
+  // The page scale animation started by ZoomAndScrollToFocusedEditableRect
+  // will scroll only the visual and layout viewports. Call ScrollRectToVisible
+  // first to ensure the editable is visible within the document (i.e. scroll
+  // it into view in any subscrollers). By setting `for_focused_editable`,
+  // ScrollRectToVisible will stop bubbling when it reaches the layout viewport
+  // so that can be animated by the PageScaleAnimation.
+  mojom::blink::ScrollIntoViewParamsPtr params =
+      ScrollAlignment::CreateScrollIntoViewParams(
+          ScrollAlignment::CenterIfNeeded(), ScrollAlignment::CenterIfNeeded(),
+          mojom::blink::ScrollType::kProgrammatic,
+          /*make_visible_in_visual_viewport=*/false,
+          mojom::blink::ScrollBehavior::kInstant);
+  params->for_focused_editable = mojom::blink::FocusedEditableParams::New();
+  params->for_focused_editable->relative_location = gfx::Vector2dF();
+  params->for_focused_editable->size = gfx::SizeF();
+
+  // When deciding whether to zoom in on a focused text box, we should
+  // decide not to zoom in if the user won't be able to zoom out. e.g if the
+  // textbox is within a touch-action: none container the user can't zoom
+  // back out.
+  TouchAction action = touch_action_util::ComputeEffectiveTouchAction(*element);
+  params->for_focused_editable->can_zoom =
+      static_cast<int>(action) & static_cast<int>(TouchAction::kPinchZoom);
+
+  PhysicalRect absolute_element_bounds;
+  PhysicalRect absolute_caret_bounds;
+
   if (edit_context) {
-    // Scroll the |EditContext| into view.
     gfx::Rect control_bounds_in_physical_pixels;
     gfx::Rect selection_bounds_in_physical_pixels;
     edit_context->GetLayoutBounds(&control_bounds_in_physical_pixels,
                                   &selection_bounds_in_physical_pixels);
 
-    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
-
-    View()->ZoomAndScrollToFocusedEditableElementRect(
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                control_bounds_in_physical_pixels)),
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                selection_bounds_in_physical_pixels)),
-        View()->ShouldZoomToLegibleScale(*element));
-
-    return true;
+    absolute_element_bounds = PhysicalRect(control_bounds_in_physical_pixels);
+    absolute_caret_bounds = PhysicalRect(selection_bounds_in_physical_pixels);
+  } else {
+    absolute_element_bounds =
+        PhysicalRect(element->GetLayoutObject()->AbsoluteBoundingBoxRect());
+    absolute_caret_bounds = PhysicalRect(
+        element->GetDocument().GetFrame()->Selection().ComputeRectToScroll(
+            kRevealExtent));
   }
 
-  PhysicalRect rect_to_scroll;
-  auto params =
-      GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll);
-  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll,
-                                                  std::move(params));
+  gfx::Vector2dF editable_offset_from_caret(absolute_element_bounds.offset -
+                                            absolute_caret_bounds.offset);
+  gfx::SizeF editable_size(absolute_element_bounds.size);
 
-  // Second phase for main frames is to schedule a zoom animation.
-  if (ForMainFrame()) {
-    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
+  params->for_focused_editable->relative_location = editable_offset_from_caret;
+  params->for_focused_editable->size = editable_size;
 
-    View()->ZoomAndScrollToFocusedEditableElementRect(
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                element->GetLayoutObject()->AbsoluteBoundingBoxRect())),
-        main_frame_view->RootFrameToDocument(
-            element->GetDocument().View()->ConvertToRootFrame(
-                element->GetDocument()
-                    .GetFrame()
-                    ->Selection()
-                    .ComputeRectToScroll(kDoNotRevealExtent))),
-        View()->ShouldZoomToLegibleScale(*element));
-  }
+  scroll_into_view_util::ScrollRectToVisible(
+      *element->GetLayoutObject(), absolute_caret_bounds, std::move(params));
 
   return true;
 }
@@ -1985,11 +1993,11 @@ void WebFrameWidgetImpl::InitializeCompositing(
   DCHECK(View()->does_composite());
   DCHECK(!non_composited_client_);  // Assure only one initialize is called.
   widget_base_->InitializeCompositing(
-      agent_group_scheduler, is_for_child_local_root_, screen_infos, settings,
+      agent_group_scheduler, screen_infos, settings,
       input_handler_weak_ptr_factory_.GetWeakPtr());
 
   LocalFrameView* frame_view;
-  if (is_for_child_local_root_) {
+  if (ForSubframe()) {
     frame_view = LocalRootImpl()->GetFrame()->View();
   } else {
     // Scrolling for the root frame is special we need to pass null indicating
@@ -2074,7 +2082,7 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
                           .GetScopedTimer(LocalFrameUkmAggregator::kAnimate));
   }
 
-  PageWidgetDelegate::Animate(*GetPage(), last_frame_time);
+  GetPage()->Animate(last_frame_time);
   // Animate can cause the local frame to detach.
   if (!LocalRootImpl())
     return;
@@ -2530,7 +2538,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
 
   // FIXME: This should take in the intended frame, not the local frame
   // root.
-  return PageWidgetDelegate::HandleInputEvent(*this, coalesced_event,
+  return WidgetEventHandler::HandleInputEvent(coalesced_event,
                                               LocalRootImpl()->GetFrame());
 }
 
@@ -3735,6 +3743,13 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoRect(
   local_frame->ScrollFocusedEditableElementIntoRect(rect_in_dips);
 }
 
+void WebFrameWidgetImpl::WaitForPageScaleAnimationForTesting(
+    WaitForPageScaleAnimationForTestingCallback callback) {
+  DCHECK(ForMainFrame());
+  DCHECK(LocalRootImpl()->GetFrame()->IsOutermostMainFrame());
+  page_scale_animation_for_testing_callback_ = std::move(callback);
+}
+
 void WebFrameWidgetImpl::ZoomToFindInPageRect(
     const gfx::Rect& rect_in_root_frame) {
   if (ForMainFrame()) {
@@ -3857,11 +3872,6 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
     *bounding_box_in_root_frame = visual_viewport.RootFrameToViewport(
         local_frame->View()->ConvertToRootFrame(bounding_box));
   }
-}
-
-void WebFrameWidgetImpl::BatterySavingsChanged(BatterySavingsFlags savings) {
-  widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
-      savings & kAllowReducedFrameRate);
 }
 
 const viz::LocalSurfaceId& WebFrameWidgetImpl::LocalSurfaceIdFromParent() {
@@ -4147,7 +4157,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   HitTestResult result =
       LocalRootImpl()->GetFrame()->View()->HitTestWithThrottlingAllowed(
           location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 
@@ -4367,77 +4376,6 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
     child_data().did_suspend_parsing = true;
     LocalRootImpl()->GetFrame()->Loader().GetDocumentLoader()->BlockParser();
   }
-}
-
-mojom::blink::ScrollIntoViewParamsPtr
-WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
-    const Element& element,
-    PhysicalRect& out_rect_to_scroll) {
-  // For main frames, scrolling takes place in two phases.
-  if (ForMainFrame()) {
-    // Since the page has been resized, the layout may have changed. The page
-    // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
-    // only the visual and layout viewports. We'll call ScrollRectToVisible with
-    // the stop_at_main_frame_layout_viewport param to ensure the element is
-    // actually visible in the page.
-    mojom::blink::ScrollIntoViewParamsPtr params =
-        ScrollAlignment::CreateScrollIntoViewParams(
-            ScrollAlignment::CenterIfNeeded(),
-            ScrollAlignment::CenterIfNeeded(),
-            mojom::blink::ScrollType::kProgrammatic, false,
-            mojom::blink::ScrollBehavior::kInstant);
-    params->stop_at_main_frame_layout_viewport = true;
-    out_rect_to_scroll =
-        PhysicalRect(element.GetLayoutObject()->AbsoluteBoundingBoxRect());
-    return params;
-  }
-
-  LocalFrameView& frame_view = *element.GetDocument().View();
-  gfx::Rect absolute_element_bounds =
-      element.GetLayoutObject()->AbsoluteBoundingBoxRect();
-  gfx::Rect absolute_caret_bounds =
-      element.GetDocument().GetFrame()->Selection().AbsoluteCaretBounds();
-  // Ideally, the chosen rectangle includes the element box and caret bounds
-  // plus some margin on the left. If this does not work (i.e., does not fit
-  // inside the frame view), then choose a subrect which includes the caret
-  // bounds. It is preferable to also include element bounds' location and left
-  // align the scroll. If this cant be satisfied, the scroll will be right
-  // aligned.
-  gfx::Rect maximal_rect =
-      UnionRects(absolute_element_bounds, absolute_caret_bounds);
-
-  // Set the ideal margin.
-  int width =
-      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.width());
-  maximal_rect.set_x(maximal_rect.right() - width);
-  maximal_rect.set_height(width);
-
-  bool maximal_rect_fits_in_frame =
-      !(frame_view.Size() - maximal_rect.size()).IsEmpty();
-
-  if (!maximal_rect_fits_in_frame) {
-    gfx::Rect frame_rect(maximal_rect.origin(), frame_view.Size());
-    maximal_rect.Intersect(frame_rect);
-    gfx::Point point_forced_to_be_visible =
-        absolute_caret_bounds.bottom_right() +
-        gfx::Vector2d(kCaretPadding, kCaretPadding);
-    if (!maximal_rect.Contains(point_forced_to_be_visible)) {
-      // Move the rect towards the point until the point is barely contained.
-      maximal_rect.Offset(point_forced_to_be_visible -
-                          maximal_rect.bottom_right());
-    }
-  }
-
-  mojom::blink::ScrollIntoViewParamsPtr params =
-      ScrollAlignment::CreateScrollIntoViewParams();
-  params->zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
-  params->relative_element_bounds = NormalizeRect(
-      IntersectRects(absolute_element_bounds, maximal_rect), maximal_rect);
-  params->relative_caret_bounds = NormalizeRect(
-      IntersectRects(absolute_caret_bounds, maximal_rect), maximal_rect);
-  params->behavior = mojom::blink::ScrollBehavior::kInstant;
-  out_rect_to_scroll = PhysicalRect(maximal_rect);
-  return params;
 }
 
 bool WebFrameWidgetImpl::ShouldAutoDetermineCompositingToLCDTextSetting() {

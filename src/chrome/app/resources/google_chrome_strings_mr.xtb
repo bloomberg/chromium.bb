@@ -14,7 +14,6 @@
 <translation id="1154147086299354128">Chrome मध्‍ये &amp;उघडा</translation>
 <translation id="1178374936842835197">या पेजवर सेटिंग दिसत नसल्यास, तुमची <ph name="LINK_BEGIN" />
         ChromeOS Flex सेटिंग्ज<ph name="LINK_END" /> यामध्ये पहा</translation>
-<translation id="1182414570724401860">Chrome अशी शिफारस करते, की तुम्ही ही फाइल डाउनलोड करू नये किंवा उघडू नये</translation>
 <translation id="1278833599417554002">&amp;Chrome अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टम अपडेट इंस्टॉल करताना प्रतीक्षा करा.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> नुसार तुम्ही हे डिव्हाइस वापरण्यापूर्वी खालील सेवा अटी वाचणे आणि स्वीकारणे आवश्यक आहे. या अटी Google ChromeOS Flex अटींचा विस्तार करत नाहीत, त्यामध्ये सुधारणा करत नाहीत किंवा त्या मर्यादित करत नाहीत.</translation>
@@ -43,7 +42,6 @@
 <translation id="1698376642261615901">Google Chrome एक वेब ब्राउझर आहे जे वेब पेज आणि अ‍ॅप्स विजेच्या गतीने चालविते. ते जलद, स्थिर आणि वापरण्यास सोपे आहे. Google Chrome मध्ये तयार केलेल्या मालवेअर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome एका तासामध्ये पुन्हा लाँच होईल}other{Chrome # तासांमध्ये पुन्हा लाँच होईल}}</translation>
 <translation id="1734234790201236882">Chrome हा पासवर्ड तुमच्या Google खात्यामध्ये सेव्ह करेल. तुम्हाला लक्षात ठेवावा लागणार नाही.</translation>
-<translation id="174539241580958092">साइन इन करण्यात एरर आल्यामुळे Google Chrome तुमचा डेटा सिंक करू शकले नाही.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085">तुम्ही तुमच्या <ph name="TARGET_DEVICE_NAME" /> वर Chrome मध्ये साइन इन केले असल्याची खात्री करा आणि त्यानंतर पुन्हा पाठवून पहा.</translation>
 <translation id="1812689907177901597">हे बंद करून, तुम्ही Chrome वर साइन इन न करता Gmail सारख्या Google साइटवर साइन इन करू शकता</translation>
@@ -74,7 +72,6 @@
 <translation id="235650106824528204">या प्रोफाइलच्या वापरादरम्यान जनरेट केला गेलेला कोणताही Chrome डेटा (जसे की बुकमार्क, इतिहास, पासवर्ड आणि इतर सेटिंग्जची निर्मिती) कार्य प्रोफाइल अ‍ॅडमिनिस्ट्रेटरला हटवता येतो. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2401189691232800402">ChromeOS सिस्टीम</translation>
-<translation id="2429317896000329049">आपल्या डोमेनसाठी सिंक उपलब्ध नसल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="2467438592969358367">Google Chrome ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
 <translation id="2534507159460261402">Google Pay (Chrome वर कॉपी केले)</translation>
@@ -290,10 +287,10 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 तुम्ही वेबसाइट आणि अ‍ॅप्सना आधीपासून दिलेल्या परवानग्या या खात्याला लागू होऊ शकतात. तुम्ही तुमची Google खाती <ph name="SETTINGS_LINK_BEGIN" />सेटिंग्ज<ph name="SETTINGS_LINK_END" /> मध्ये व्यवस्थापित करू शकता.</translation>
 <translation id="7398801000654795464">तुम्ही <ph name="USER_EMAIL_ADDRESS" /> या रुपात Chrome मध्ये साइन इन केले होते. कृपया पुन्हा साइन इन करण्यासाठी समान खाते वापरा.</translation>
 <translation id="7410958280246779049">ही फाइल धोकादायक असल्यामुळे, Chrome ने ती ब्लॉक केली आहे</translation>
+<translation id="7426611252293106642">Google Chrome कदाचित योग्यरीत्या काम करणार नाही, कारण त्याला आता या Linux डिस्ट्रिब्यूशनवर सपोर्ट नाही</translation>
 <translation id="7481213027396403996">Chrome ची सर्वात मजबूत सुरक्षा मिळवा</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
 <translation id="7535429826459677826">Google Chrome डेव्हलपर</translation>
-<translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
 <translation id="7626072681686626474"><ph name="MANAGER" /> नुसार, तुम्ही हे डिव्हाइस वापरण्यापूर्वी खालील सेवा अटी वाचणे आणि स्वीकारणे आवश्यक आहे. या अटी Google ChromeOS अटी यांचा विस्तार करत नाहीत, त्यामध्ये सुधारणा करत नाहीत किंवा त्या मर्यादित करत नाहीत.</translation>
@@ -302,6 +299,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7651907282515937834">Chrome एंटरप्राइझ लोगो</translation>
 <translation id="7655455401911432608">तुमचा ब्राउझिंग इतिहास, ज्यामध्ये या डिव्हाइसवर तुम्ही Chrome वापरून भेट दिलेल्या साइटची नोंद असते.</translation>
 <translation id="7747138024166251722">इन्स्टॉलर तात्पुरती डिरेक्टरी तयार करू शकत नाही. कृपया सॉफ्टवेअर इंस्टॉल करण्यासाठी रिक्त डिस्क स्थान आणि परवानगी पहा.</translation>
+<translation id="7748512868279796735">खालील खाती या Chrome प्रोफाइलसाठी उपलब्ध आहेत</translation>
 <translation id="7761834446675418963">Chrome उघडण्यासाठी तुमचे नाव क्लिक करा आणि ब्राउझिंग सुरू करा.</translation>
 <translation id="7777080907402804672">इमेजचे उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. वर्णने तयार करण्यासाठी, इमेज Google ला पाठवल्या जातात. तुम्ही हे सेटिंग्जमध्ये कधीही बंद करू शकता.</translation>
 <translation id="7781002470561365167">Google Chrome ची नवी आवृत्ती उपलब्ध आहे. </translation>
@@ -321,7 +319,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8013993649590906847">इमेजचे उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. वर्णने तयार करण्यासाठी, इमेज Google ला पाठवल्या जातात.</translation>
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8129812357326543296">&amp;Google Chrome विषयी</translation>
-<translation id="822971176939352383">पुढील खात्यांनी कोणत्याही Chrome प्रोफाइलमध्ये साइन इन केलेले नाही. तुम्हाला दुसऱ्या प्रोफाइलमध्ये एखादे खाते वापरायचे असल्यास, सर्वप्रथम ती प्रोफाइल काढून टाका.</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="828798499196665338">तुमच्या पालकांनी Chrome साठी "साइट, अ‍ॅप्स आणि एक्स्टेंशनकरिता परवानग्या" सुरू केल्या आहेत. हे <ph name="EXTENSION_TYPE_PARAMETER" /> सुरू करण्यास अनुमती नाही.</translation>

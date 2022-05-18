@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdio>
+#include <cstdlib>
+#include <vector>
+
 #include "dawn/samples/SampleUtils.h"
 
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/ScopedAutoreleasePool.h"
 #include "dawn/utils/SystemUtils.h"
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <cstdio>
-#include <cstdlib>
-#include <vector>
 
 wgpu::Device device;
 wgpu::Queue queue;
@@ -31,7 +31,8 @@ wgpu::BindGroup bindGroup;
 wgpu::Buffer ubo;
 
 float RandomFloat(float min, float max) {
-    float zeroOne = rand() / float(RAND_MAX);
+    // NOLINTNEXTLINE(runtime/threadsafe_fn)
+    float zeroOne = rand() / static_cast<float>(RAND_MAX);
     return zeroOne * (max - min) + min;
 }
 

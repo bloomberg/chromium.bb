@@ -1388,7 +1388,7 @@ struct zeta_impl {
             };
 
         const Scalar maxnum = NumTraits<Scalar>::infinity();
-        const Scalar zero = 0.0, half = 0.5, one = 1.0;
+        const Scalar zero = Scalar(0.0), half = Scalar(0.5), one = Scalar(1.0);
         const Scalar machep = cephes_helper<Scalar>::machep();
         const Scalar nan = NumTraits<Scalar>::quiet_NaN();
 
@@ -1430,11 +1430,19 @@ struct zeta_impl {
             return s;
         }
 
+        // If b is zero, then the tail sum will also end up being zero.
+        // Exiting early here can prevent NaNs for some large inputs, where
+        // the tail sum computed below has term `a` which can overflow to `inf`.
+        if (numext::equal_strict(b, zero)) {
+          return s;
+        }
+
         w = a;
         s += b*w/(x-one);
         s -= half * b;
         a = one;
         k = zero;
+        
         for( i=0; i<12; i++ )
         {
             a *= x + k;

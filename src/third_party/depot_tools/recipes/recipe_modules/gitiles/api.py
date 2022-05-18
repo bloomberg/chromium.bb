@@ -158,11 +158,15 @@ class Gitiles(recipe_api.RecipeApi):
         **kwargs)
     if step_result.json.output['value'] is None:
       return None
-    # TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+
     value = base64.b64decode(step_result.json.output['value'])
-    if sys.version_info >= (3,):
-      return value.decode('utf-8')
-    return value
+    try:
+      # TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+      # If the file is not utf-8 encodable, return the bytes
+      if sys.version_info >= (3,):
+        value = value.decode('utf-8')
+    finally:
+      return value
 
   def download_archive(self, repository_url, destination,
                        revision='refs/heads/main'):

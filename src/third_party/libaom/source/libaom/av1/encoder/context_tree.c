@@ -111,6 +111,12 @@ PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
   return ctx;
 }
 
+void av1_reset_pmc(PICK_MODE_CONTEXT *ctx) {
+  av1_zero_array(ctx->blk_skip, ctx->num_4x4_blk);
+  av1_zero_array(ctx->tx_type_map, ctx->num_4x4_blk);
+  av1_invalid_rd_stats(&ctx->rd_stats);
+}
+
 void av1_free_pmc(PICK_MODE_CONTEXT *ctx, int num_planes) {
   if (ctx == NULL) return;
 

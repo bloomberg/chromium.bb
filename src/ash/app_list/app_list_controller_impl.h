@@ -21,6 +21,7 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
+#include "ash/public/cpp/feature_discovery_duration_reporter.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -62,20 +63,22 @@ enum class AppListSortOrder;
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state. It also controls the "home launcher", the tablet mode app list.
-class ASH_EXPORT AppListControllerImpl : public AppListController,
-                                         public SessionObserver,
-                                         public AppListViewDelegate,
-                                         public ShellObserver,
-                                         public OverviewObserver,
-                                         public SplitViewObserver,
-                                         public TabletModeObserver,
-                                         public KeyboardControllerObserver,
-                                         public WallpaperControllerObserver,
-                                         public AssistantStateObserver,
-                                         public WindowTreeHostManager::Observer,
-                                         public aura::WindowObserver,
-                                         public AssistantControllerObserver,
-                                         public AssistantUiModelObserver {
+class ASH_EXPORT AppListControllerImpl
+    : public AppListController,
+      public SessionObserver,
+      public AppListViewDelegate,
+      public ShellObserver,
+      public OverviewObserver,
+      public SplitViewObserver,
+      public TabletModeObserver,
+      public KeyboardControllerObserver,
+      public WallpaperControllerObserver,
+      public AssistantStateObserver,
+      public WindowTreeHostManager::Observer,
+      public aura::WindowObserver,
+      public AssistantControllerObserver,
+      public AssistantUiModelObserver,
+      public FeatureDiscoveryDurationReporter::ReporterObserver {
  public:
   AppListControllerImpl();
   AppListControllerImpl(const AppListControllerImpl&) = delete;
@@ -110,6 +113,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   aura::Window* GetWindow() override;
   bool IsVisible(const absl::optional<int64_t>& display_id) override;
   bool IsVisible() override;
+  void HideContinueSection() override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
@@ -176,7 +180,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
                     int event_flags,
                     AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
-                           bool add_sort_options,
+                           AppListItemContext item_context,
                            GetContextMenuModelCallback callback) override;
   ui::ImplicitAnimationObserver* GetAnimationObserver(
       AppListViewState target_state) override;
@@ -203,6 +207,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
   void LoadIcon(const std::string& app_id) override;
   bool HasValidProfile() const override;
+  bool ShouldHideContinueSection() const override;
+  void SetHideContinueSection(bool hide) override;
+  void CommitTemporarySortOrder() override;
 
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
@@ -425,6 +432,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // Called when all the window minimize animations triggered by a tablet mode
   // "Go Home" have ended. |display_id| is the home screen display ID.
   void OnGoHomeWindowAnimationsEnded(int64_t display_id);
+
+  // FeatureDiscoveryDurationReporter::ReporterObserver:
+  void OnReporterActivated() override;
 
   // Whether the home launcher is
   // * being shown (either through an animation or a drag)

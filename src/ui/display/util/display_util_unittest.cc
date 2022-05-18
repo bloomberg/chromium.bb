@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/test/display_test_util.h"
 #include "ui/display/util/edid_parser.h"
 
 namespace display {
@@ -306,6 +307,68 @@ TEST(DisplayUtilTest, GetInvalidColorSpaceFromEdid) {
       1);
   histogram_tester.ExpectTotalCount(
       "DrmUtil.GetColorSpaceFromEdid.ChecksOutcome", 5);
+}
+
+TEST(DisplayUtilTest, MultipleInternalDisplayIds) {
+  // using base::flat_set as base::FixedFlatSet with different N are different
+  // types.
+  const base::flat_set<int64_t> kTestIdsList[] = {
+      base::flat_set<int64_t>({1}),
+      base::flat_set<int64_t>({2, 3}),
+      base::flat_set<int64_t>({4, 5, 6}),
+      base::flat_set<int64_t>(
+          {7, 10, 100, std::numeric_limits<int64_t>::max()}),
+  };
+
+  int64_t from_last_set = 0;
+  for (const auto& id_set : kTestIdsList) {
+    SetInternalDisplayIds(id_set);
+    for (int64_t id : id_set)
+      EXPECT_TRUE(IsInternalDisplayId(id));
+    EXPECT_FALSE(IsInternalDisplayId(from_last_set));
+    from_last_set = *id_set.rbegin();
+  }
+
+  // Reset the internal display.
+  SetInternalDisplayIds({});
+  for (auto id_set : kTestIdsList) {
+    for (int64_t id : id_set)
+      EXPECT_FALSE(IsInternalDisplayId(id));
+  }
+}
+
+TEST(DisplayUtilTest, CompareDisplayIdsWithMultipleDisplays) {
+  // Internal display is always first.
+  EXPECT_TRUE(CompareDisplayIds(10, 12));
+  {
+    ScopedSetInternalDisplayIds set_internal(10);
+    EXPECT_TRUE(CompareDisplayIds(10, 12));
+    EXPECT_TRUE(CompareDisplayIds(10, 9));
+    EXPECT_TRUE(CompareDisplayIds(10, 15));
+    EXPECT_FALSE(CompareDisplayIds(12, 10));
+    EXPECT_FALSE(CompareDisplayIds(12, 9));
+    EXPECT_TRUE(CompareDisplayIds(12, 15));
+  }
+  {
+    ScopedSetInternalDisplayIds set_internal(12);
+    EXPECT_FALSE(CompareDisplayIds(10, 12));
+    EXPECT_FALSE(CompareDisplayIds(10, 9));
+    EXPECT_TRUE(CompareDisplayIds(10, 15));
+    EXPECT_TRUE(CompareDisplayIds(12, 10));
+    EXPECT_TRUE(CompareDisplayIds(12, 9));
+    EXPECT_TRUE(CompareDisplayIds(12, 15));
+  }
+  // Internal displays are always first but compares values between internal
+  // displays.
+  {
+    ScopedSetInternalDisplayIds set_internal({12, 10});
+    EXPECT_TRUE(CompareDisplayIds(10, 12));
+    EXPECT_TRUE(CompareDisplayIds(10, 9));
+    EXPECT_TRUE(CompareDisplayIds(10, 15));
+    EXPECT_FALSE(CompareDisplayIds(12, 10));
+    EXPECT_TRUE(CompareDisplayIds(12, 9));
+    EXPECT_TRUE(CompareDisplayIds(12, 15));
+  }
 }
 
 }  // namespace display

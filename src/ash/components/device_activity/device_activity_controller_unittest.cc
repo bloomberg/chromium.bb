@@ -4,12 +4,14 @@
 
 #include "ash/components/device_activity/device_activity_controller.h"
 
+#include "ash/components/device_activity/device_active_use_case.h"
 #include "ash/components/device_activity/fresnel_pref_names.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/channel.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -22,8 +24,10 @@ namespace device_activity {
 
 namespace {
 
-const version_info::Channel kFakeChromeOSChannel =
-    version_info::Channel::STABLE;
+constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
+    version_info::Channel::STABLE /* chromeos_channel */,
+    MarketSegment::MARKET_SEGMENT_UNKNOWN /* market_segment */,
+};
 
 }  // namespace
 
@@ -52,7 +56,7 @@ class DeviceActivityControllerTest : public testing::Test {
             &test_url_loader_factory_);
 
     device_activity_controller_ = std::make_unique<DeviceActivityController>(
-        kFakeChromeOSChannel, local_state(), test_shared_loader_factory_,
+        kFakeChromeParameters, local_state(), test_shared_loader_factory_,
         /* start_up_delay */ base::Minutes(0));
   }
 

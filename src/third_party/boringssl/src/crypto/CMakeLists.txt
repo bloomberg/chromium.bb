@@ -121,6 +121,7 @@ if(ARCH STREQUAL "aarch64")
 
     chacha/chacha-armv8.${ASM_EXT}
     test/trampoline-armv8.${ASM_EXT}
+    cipher_extra/chacha20_poly1305_armv8.${ASM_EXT}
   )
 endif()
 
@@ -159,6 +160,7 @@ perlasm(chacha/chacha-x86.${ASM_EXT} chacha/asm/chacha-x86.pl)
 perlasm(chacha/chacha-x86_64.${ASM_EXT} chacha/asm/chacha-x86_64.pl)
 perlasm(cipher_extra/aes128gcmsiv-x86_64.${ASM_EXT} cipher_extra/asm/aes128gcmsiv-x86_64.pl)
 perlasm(cipher_extra/chacha20_poly1305_x86_64.${ASM_EXT} cipher_extra/asm/chacha20_poly1305_x86_64.pl)
+perlasm(cipher_extra/chacha20_poly1305_armv8.${ASM_EXT} cipher_extra/asm/chacha20_poly1305_armv8.pl)
 perlasm(test/trampoline-armv4.${ASM_EXT} test/asm/trampoline-armv4.pl)
 perlasm(test/trampoline-armv8.${ASM_EXT} test/asm/trampoline-armv8.pl)
 perlasm(test/trampoline-ppc.${ASM_EXT} test/asm/trampoline-ppc.pl)
@@ -435,6 +437,12 @@ add_library(
   ${CRYPTO_ARCH_SOURCES}
   ${CRYPTO_FIPS_OBJECTS}
 )
+target_include_directories(crypto INTERFACE
+ $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+ $<INSTALL_INTERFACE:include>
+)
+install(TARGETS crypto EXPORT OpenSSLTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
+set_property(TARGET crypto PROPERTY EXPORT_NAME Crypto)
 
 if(FIPS_SHARED)
   # Rewrite libcrypto.so to inject the correct module hash value. This assumes
@@ -518,7 +526,7 @@ add_executable(
   fipsmodule/aes/aes_test.cc
   fipsmodule/bn/bn_test.cc
   fipsmodule/ec/ec_test.cc
-  fipsmodule/ec/p256-x86_64_test.cc
+  fipsmodule/ec/p256-nistz_test.cc
   fipsmodule/ecdsa/ecdsa_test.cc
   fipsmodule/md5/md5_test.cc
   fipsmodule/modes/gcm_test.cc

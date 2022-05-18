@@ -147,7 +147,7 @@ static void SetNSExceptionAnnotations(NSException* exception,
 
   @try {
     reason = base::SysNSStringToUTF8(exception.reason);
-    static StringAnnotation<512> reasonKey("exceptionReason");
+    static StringAnnotation<1024> reasonKey("exceptionReason");
     reasonKey.Set(reason);
   } @catch (id reason_exception) {
     LOG(ERROR) << "Unable to read uncaught Objective-C exception reason.";
@@ -155,7 +155,7 @@ static void SetNSExceptionAnnotations(NSException* exception,
 
   @try {
     if (exception.userInfo) {
-      static StringAnnotation<512> userInfoKey("exceptionUserInfo");
+      static StringAnnotation<1024> userInfoKey("exceptionUserInfo");
       userInfoKey.Set(base::SysNSStringToUTF8(
           [NSString stringWithFormat:@"%@", exception.userInfo]));
     }
@@ -527,7 +527,7 @@ id ObjcExceptionPreprocessor(id exception) {
           LoggingUnwStep(&cursor) > 0 &&
           unw_get_proc_info(&cursor, &caller_frame_info) == UNW_ESUCCESS) {
         auto uiwindowimp_lambda = [](IMP* max) {
-          IMP min = *max = bit_cast<IMP>(nullptr);
+          IMP min = *max = base::bit_cast<IMP>(nullptr);
           unsigned int method_count = 0;
           std::unique_ptr<Method[], base::FreeDeleter> method_list(
               class_copyMethodList(NSClassFromString(@"UIWindow"),

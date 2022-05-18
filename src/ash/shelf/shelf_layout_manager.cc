@@ -267,6 +267,11 @@ absl::optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
   return absl::nullopt;
 }
 
+bool IsInImmersiveFullscreen() {
+  WindowState* active_window = WindowState::ForActiveWindow();
+  return active_window && active_window->IsInImmersiveFullscreen();
+}
+
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
 // when it is kExtended.
 class HotseatEventHandler : public ui::EventHandler,
@@ -1605,12 +1610,17 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
       // The work area is initialized with BOTTOM_LOCKED insets to prevent
       // window movement on async preference initialization in tests:
       // crbug.com/834369
+      auto* shelf_native_window = shelf_widget_->GetNativeWindow();
       display_ = display::Screen::GetScreen()->GetDisplayNearestWindow(
-          shelf_widget_->GetNativeWindow());
-      bool in_overview =
+          shelf_native_window);
+      const bool in_overview =
           Shell::Get()->overview_controller()->InOverviewSession();
+      const bool in_splitview =
+          SplitViewController::Get(shelf_native_window)->InSplitViewMode();
       const WorkAreaInsets* const work_area =
-          WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
+          WorkAreaInsets::ForWindow(shelf_native_window);
+      const gfx::Insets user_work_area_insets =
+          work_area->user_work_area_insets();
       if (state_.IsActiveSessionState()) {
         if (!in_overview &&
             (shelf_->alignment() != ShelfAlignment::kBottomLocked ||
@@ -1621,14 +1631,17 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
           // area only if keyboard is not shown.
           // TODO(agawronska): Could this be called from WorkAreaInsets?
           if (!state_.IsAddingSecondaryUser() || work_area->IsKeyboardShown())
-            insets = work_area->user_work_area_insets();
-          Shell::Get()->SetDisplayWorkAreaInsets(
-              shelf_widget_->GetNativeWindow(), insets);
+            insets = user_work_area_insets;
+          Shell::Get()->SetDisplayWorkAreaInsets(shelf_native_window, insets);
+        } else if (in_overview && in_splitview) {
+          // When in the split view with Overview enabled, the display work area
+          // should be updated to guarantee snapped window has correct bounds.
+          Shell::Get()->SetDisplayWorkAreaInsets(shelf_native_window,
+                                                 user_work_area_insets);
         }
       } else {
         Shell::Get()->SetDisplayWorkAreaInsets(
-            shelf_widget_->GetNativeWindow(),
-            work_area->GetAccessibilityInsets());
+            shelf_native_window, work_area->GetAccessibilityInsets());
       }
     }
   }
@@ -2098,6 +2111,7 @@ ShelfLayoutManager::CalculateAutoHideStateBasedOnCursorLocation() const {
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
+
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   const aura::Window* navigation_window =
       shelf_->navigation_widget()->GetNativeWindow();
@@ -2388,9 +2402,10 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
   }
 
   // Clamshell ProductivityLauncher does not support shelf drags unless autohide
-  // is enabled.
+  // is enabled or the shelf is autohidden for immersive fullscreen.
   if (!is_tablet_mode && features::IsProductivityLauncherEnabled() &&
-      CalculateShelfVisibility() != SHELF_AUTO_HIDE) {
+      CalculateShelfVisibility() != SHELF_AUTO_HIDE &&
+      !IsInImmersiveFullscreen()) {
     return false;
   }
 

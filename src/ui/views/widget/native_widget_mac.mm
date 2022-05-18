@@ -55,24 +55,24 @@ static base::RepeatingCallback<void(NativeWidgetMac*)>*
 
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
-  // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
-  // parent window still accepts input.
-  // NSFullSizeContentViewWindowMask ensures that calculating the modal's
+  // it has NSWindowStyleMaskTitled. For example, with
+  // NSWindowStyleMaskBorderless, the parent window still accepts input.
+  // NSWindowStyleMaskFullSizeContentView ensures that calculating the modal's
   // content rect doesn't account for a nonexistent title bar.
   if (params.delegate &&
       params.delegate->GetModalType() == ui::MODAL_TYPE_WINDOW)
-    return NSTitledWindowMask | NSFullSizeContentViewWindowMask;
+    return NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
 
   // TODO(tapted): Determine better masks when there are use cases for it.
   if (params.remove_standard_frame)
-    return NSBorderlessWindowMask;
+    return NSWindowStyleMaskBorderless;
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    return NSTitledWindowMask | NSClosableWindowMask |
-           NSMiniaturizableWindowMask | NSResizableWindowMask |
-           NSTexturedBackgroundWindowMask;
+    return NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+           NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable |
+           NSWindowStyleMaskTexturedBackground;
   }
-  return NSBorderlessWindowMask;
+  return NSWindowStyleMaskBorderless;
 }
 
 CGWindowLevel CGWindowLevelForZOrderLevel(ui::ZOrderLevel level,
@@ -217,10 +217,6 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
         [CreateNSWindow(create_window_params.get()) retain]);
     ns_window_host_->CreateInProcessNSWindowBridge(std::move(window));
   }
-  // TODO(https://crbug.com/1302857): Remove this once FullscreenControllerMac
-  // is on by default.
-  if (base::FeatureList::IsEnabled(features::kFullscreenControllerMac))
-    GetNSWindowMojo()->CreateFullscreenController();
   ns_window_host_->SetParent(parent_host);
   ns_window_host_->InitWindow(params,
                               ConvertBoundsToScreenIfNeeded(params.bounds));
@@ -646,20 +642,15 @@ bool NativeWidgetMac::IsMinimized() const {
 void NativeWidgetMac::Restore() {
   if (!GetNSWindowMojo())
     return;
-  if (base::FeatureList::IsEnabled(features::kFullscreenControllerMac)) {
-    GetNSWindowMojo()->ExitFullscreen();
-  } else {
-    GetNSWindowMojo()->SetFullscreen(false);
-  }
+  GetNSWindowMojo()->ExitFullscreen();
   GetNSWindowMojo()->SetMiniaturized(false);
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen,
-                                    const base::TimeDelta& delay,
                                     int64_t target_display_id) {
   if (!ns_window_host_)
     return;
-  ns_window_host_->SetFullscreen(fullscreen, delay, target_display_id);
+  ns_window_host_->SetFullscreen(fullscreen, target_display_id);
 }
 
 bool NativeWidgetMac::IsFullscreen() const {

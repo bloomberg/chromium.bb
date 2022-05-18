@@ -90,23 +90,11 @@ struct bool_constant<true> : true_type {};
 template<>
 struct bool_constant<false> : false_type {};
 
-template<bool Condition, typename Then, typename Else>
-struct conditional { typedef Then type; };
-
-template<typename Then, typename Else>
-struct conditional <false, Then, Else> { typedef Else type; };
-
-template<typename T> struct remove_reference { typedef T type; };
-template<typename T> struct remove_reference<T&> { typedef T type; };
-
-template<typename T> struct remove_pointer { typedef T type; };
-template<typename T> struct remove_pointer<T*> { typedef T type; };
-template<typename T> struct remove_pointer<T*const> { typedef T type; };
-
-template <class T> struct remove_const { typedef T type; };
-template <class T> struct remove_const<const T> { typedef T type; };
-template <class T> struct remove_const<const T[]> { typedef T type[]; };
-template <class T, unsigned int Size> struct remove_const<const T[Size]> { typedef T type[Size]; };
+// Third-party libraries rely on these.
+using std::conditional;
+using std::remove_reference;
+using std::remove_pointer;
+using std::remove_const;
 
 template<typename T> struct remove_all { typedef T type; };
 template<typename T> struct remove_all<const T>   { typedef typename remove_all<T>::type type; };
@@ -114,6 +102,9 @@ template<typename T> struct remove_all<T const&>  { typedef typename remove_all<
 template<typename T> struct remove_all<T&>        { typedef typename remove_all<T>::type type; };
 template<typename T> struct remove_all<T const*>  { typedef typename remove_all<T>::type type; };
 template<typename T> struct remove_all<T*>        { typedef typename remove_all<T>::type type; };
+
+template<typename T>
+using remove_all_t = typename remove_all<T>::type;
 
 template<typename T> struct is_arithmetic      { enum { value = false }; };
 template<> struct is_arithmetic<float>         { enum { value = true }; };
@@ -134,16 +125,13 @@ template<typename T, typename U> struct is_same { enum { value = 0 }; };
 template<typename T> struct is_same<T,T> { enum { value = 1 }; };
 
 template< class T >
-struct is_void : is_same<void, typename remove_const<T>::type> {};
+struct is_void : is_same<void, std::remove_const_t<T>> {};
 
 template<> struct is_arithmetic<signed long long>   { enum { value = true }; };
 template<> struct is_arithmetic<unsigned long long> { enum { value = true }; };
 using std::is_integral;
 
 using std::make_unsigned;
-
-template <typename T> struct add_const { typedef const T type; };
-template <typename T> struct add_const<T&> { typedef T& type; };
 
 template <typename T> struct is_const { enum { value = 0 }; };
 template <typename T> struct is_const<T const> { enum { value = 1 }; };
@@ -154,15 +142,10 @@ template<typename T> struct add_const_on_value_type<T*>        { typedef T const
 template<typename T> struct add_const_on_value_type<T* const>  { typedef T const* const type; };
 template<typename T> struct add_const_on_value_type<T const* const>  { typedef T const* const type; };
 
+template<typename T>
+using add_const_on_value_type_t = typename add_const_on_value_type<T>::type;
+
 using std::is_convertible;
-
-/** \internal Allows to enable/disable an overload
-  * according to a compile time condition.
-  */
-template<bool Condition, typename T=void> struct enable_if;
-
-template<typename T> struct enable_if<true,T>
-{ typedef T type; };
 
 /** \internal
   * A base class do disable default copy ctor and copy assignment operator.
@@ -194,7 +177,7 @@ template<typename T, typename EnableIf = void> struct array_size {
   enum { value = Dynamic };
 };
 
-template<typename T> struct array_size<T,typename internal::enable_if<((T::SizeAtCompileTime&0)==0)>::type> {
+template<typename T> struct array_size<T, std::enable_if_t<((T::SizeAtCompileTime&0)==0)>> {
   enum { value = T::SizeAtCompileTime };
 };
 
@@ -256,24 +239,24 @@ template<typename T> struct result_of;
 template<typename F, typename... ArgTypes>
 struct result_of<F(ArgTypes...)> {
   typedef typename std::invoke_result<F, ArgTypes...>::type type1;
-  typedef typename remove_all<type1>::type type;
+  typedef remove_all_t<type1> type;
 };
 
 template<typename F, typename... ArgTypes>
 struct invoke_result {
   typedef typename std::invoke_result<F, ArgTypes...>::type type1;
-  typedef typename remove_all<type1>::type type;
+  typedef remove_all_t<type1> type;
 };
 #else
 template<typename T> struct result_of {
   typedef typename std::result_of<T>::type type1;
-  typedef typename remove_all<type1>::type type;
+  typedef remove_all_t<type1> type;
 };
 
 template<typename F, typename... ArgTypes>
 struct invoke_result {
     typedef typename result_of<F(ArgTypes...)>::type type1;
-    typedef typename remove_all<type1>::type type;
+    typedef remove_all_t<type1> type;
 };
 #endif
 
@@ -305,7 +288,7 @@ template<typename T> const T* return_ptr();
 template <typename T, typename IndexType=Index>
 struct has_nullary_operator
 {
-  template <typename C> static meta_yes testFunctor(C const *,typename enable_if<(sizeof(return_ptr<C>()->operator()())>0)>::type * = 0);
+  template <typename C> static meta_yes testFunctor(C const *,std::enable_if_t<(sizeof(return_ptr<C>()->operator()())>0)> * = 0);
   static meta_no testFunctor(...);
 
   enum { value = sizeof(testFunctor(static_cast<T*>(0))) == sizeof(meta_yes) };
@@ -314,7 +297,7 @@ struct has_nullary_operator
 template <typename T, typename IndexType=Index>
 struct has_unary_operator
 {
-  template <typename C> static meta_yes testFunctor(C const *,typename enable_if<(sizeof(return_ptr<C>()->operator()(IndexType(0)))>0)>::type * = 0);
+  template <typename C> static meta_yes testFunctor(C const *,std::enable_if_t<(sizeof(return_ptr<C>()->operator()(IndexType(0)))>0)> * = 0);
   static meta_no testFunctor(...);
 
   enum { value = sizeof(testFunctor(static_cast<T*>(0))) == sizeof(meta_yes) };
@@ -323,7 +306,7 @@ struct has_unary_operator
 template <typename T, typename IndexType=Index>
 struct has_binary_operator
 {
-  template <typename C> static meta_yes testFunctor(C const *,typename enable_if<(sizeof(return_ptr<C>()->operator()(IndexType(0),IndexType(0)))>0)>::type * = 0);
+  template <typename C> static meta_yes testFunctor(C const *,std::enable_if_t<(sizeof(return_ptr<C>()->operator()(IndexType(0),IndexType(0)))>0)> * = 0);
   static meta_no testFunctor(...);
 
   enum { value = sizeof(testFunctor(static_cast<T*>(0))) == sizeof(meta_yes) };
@@ -335,8 +318,7 @@ struct has_binary_operator
 template<int Y,
          int InfX = 0,
          int SupX = ((Y==1) ? 1 : Y/2),
-         bool Done = ((SupX-InfX)<=1 ? true : ((SupX*SupX <= Y) && ((SupX+1)*(SupX+1) > Y))) >
-                                // use ?: instead of || just to shut up a stupid gcc 4.3 warning
+         bool Done = ((SupX - InfX) <= 1 || ((SupX * SupX <= Y) && ((SupX + 1) * (SupX + 1) > Y)))>
 class meta_sqrt
 {
     enum {
@@ -382,7 +364,7 @@ template<typename T, typename U> struct scalar_product_traits
 // FIXME quick workaround around current limitation of result_of
 // template<typename Scalar, typename ArgType0, typename ArgType1>
 // struct result_of<scalar_product_op<Scalar>(ArgType0,ArgType1)> {
-// typedef typename scalar_product_traits<typename remove_all<ArgType0>::type, typename remove_all<ArgType1>::type>::ReturnType type;
+// typedef typename scalar_product_traits<remove_all_t<ArgType0>, remove_all_t<ArgType1>>::ReturnType type;
 // };
 
 /** \internal Obtains a POD type suitable to use as storage for an object of a size
@@ -532,6 +514,14 @@ inline constexpr bool logical_xor(bool a, bool b) {
 inline constexpr bool check_implication(bool a, bool b) {
   return !a || b;
 }
+
+/// \internal Provide fallback for std::is_constant_evaluated for pre-C++20.
+#if EIGEN_COMP_CXXVER >= 20
+using std::is_constant_evaluated;
+#else
+constexpr bool is_constant_evaluated() { return false; }
+#endif
+
 } // end namespace internal
 
 } // end namespace Eigen

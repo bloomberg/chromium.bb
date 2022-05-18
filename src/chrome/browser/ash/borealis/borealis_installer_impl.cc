@@ -20,8 +20,8 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dlcservice/dlcservice.pb.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/prefs/pref_service.h"
@@ -269,7 +269,7 @@ class BorealisInstallerImpl::Uninstallation
     request.set_cryptohome_id(
         ash::ProfileHelper::GetUserIdHashFromProfile(profile_));
     request.set_vm_name(uninstall_info_->vm_name);
-    chromeos::ConciergeClient::Get()->DestroyDiskImage(
+    ash::ConciergeClient::Get()->DestroyDiskImage(
         std::move(request), base::BindOnce(&Uninstallation::OnDiskRemoved,
                                            weak_factory_.GetWeakPtr()));
   }

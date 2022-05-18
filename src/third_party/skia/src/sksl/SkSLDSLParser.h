@@ -12,7 +12,6 @@
 #include "include/private/SkSLDefines.h"
 #include "include/private/SkSLProgramKind.h"
 #include "include/private/SkTArray.h"
-#include "include/private/SkTHash.h"
 #include "include/sksl/DSLCore.h"
 #include "include/sksl/DSLExpression.h"
 #include "include/sksl/DSLLayout.h"
@@ -52,20 +51,6 @@ class AutoDSLDepth;
  */
 class DSLParser {
 public:
-    enum class LayoutToken {
-        LOCATION,
-        OFFSET,
-        BINDING,
-        INDEX,
-        SET,
-        BUILTIN,
-        INPUT_ATTACHMENT_INDEX,
-        ORIGIN_UPPER_LEFT,
-        BLEND_SUPPORT_ALL_EQUATIONS,
-        PUSH_CONSTANT,
-        COLOR,
-    };
-
     DSLParser(Compiler* compiler, const ProgramSettings& settings, ProgramKind kind,
               std::string text);
 
@@ -78,8 +63,6 @@ public:
     Position position(Token token);
 
 private:
-    static void InitLayoutMap();
-
     /**
      * Return the next token, including whitespace tokens, from the parse stream.
      */
@@ -189,10 +172,10 @@ private:
     bool parseInitializer(Position pos, dsl::DSLExpression* initializer);
 
     void globalVarDeclarationEnd(Position position, const dsl::DSLModifiers& mods,
-            dsl::DSLType baseType, std::string_view name);
+            dsl::DSLType baseType, Token name);
 
     dsl::DSLStatement localVarDeclarationEnd(Position position, const dsl::DSLModifiers& mods,
-            dsl::DSLType baseType, std::string_view name);
+            dsl::DSLType baseType, Token name);
 
     std::optional<dsl::DSLWrapper<dsl::DSLParameter>> parameter(size_t paramIndex);
 
@@ -271,7 +254,7 @@ private:
     dsl::DSLExpression postfixExpression();
 
     dsl::DSLExpression swizzle(Position pos, dsl::DSLExpression base,
-            std::string_view swizzleMask);
+            std::string_view swizzleMask, Position maskPos);
 
     dsl::DSLExpression call(Position pos, dsl::DSLExpression base, ExpressionArray args);
 
@@ -354,8 +337,6 @@ private:
         ErrorReporter* fOldErrorReporter;
         bool fOldEncounteredFatalError;
     };
-
-    static SkTHashMap<std::string_view, LayoutToken>* sLayoutTokens;
 
     Compiler& fCompiler;
     ProgramSettings fSettings;

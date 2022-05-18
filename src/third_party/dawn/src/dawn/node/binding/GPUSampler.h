@@ -15,30 +15,29 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPUSAMPLER_H_
 #define SRC_DAWN_NODE_BINDING_GPUSAMPLER_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
-    // GPUSampler is an implementation of interop::GPUSampler that wraps a wgpu::Sampler.
-    class GPUSampler final : public interop::GPUSampler {
-      public:
-        GPUSampler(wgpu::Sampler sampler);
+// GPUSampler is an implementation of interop::GPUSampler that wraps a wgpu::Sampler.
+class GPUSampler final : public interop::GPUSampler {
+  public:
+    explicit GPUSampler(wgpu::Sampler sampler);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::Sampler&() const {
-            return sampler_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::Sampler&() const { return sampler_; }
 
-        // interop::GPUSampler interface compliance
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPUSampler interface compliance
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::Sampler sampler_;
-    };
+  private:
+    wgpu::Sampler sampler_;
+};
 
 }  // namespace wgpu::binding
 

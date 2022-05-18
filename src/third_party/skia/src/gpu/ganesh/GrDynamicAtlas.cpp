@@ -8,22 +8,24 @@
 #include "src/gpu/ganesh/GrDynamicAtlas.h"
 
 #include "src/core/SkIPoint16.h"
+#include "src/gpu/RectanizerPow2.h"
+#include "src/gpu/RectanizerSkyline.h"
 #include "src/gpu/ganesh/GrCaps.h"
 #include "src/gpu/ganesh/GrOnFlushResourceProvider.h"
 #include "src/gpu/ganesh/GrProxyProvider.h"
-#include "src/gpu/ganesh/GrRectanizerPow2.h"
-#include "src/gpu/ganesh/GrRectanizerSkyline.h"
 #include "src/gpu/ganesh/GrRenderTarget.h"
 #include "src/gpu/ganesh/GrResourceProvider.h"
 #include "src/gpu/ganesh/GrSurfaceProxyPriv.h"
 #include "src/gpu/ganesh/GrSurfaceProxyView.h"
+
+using namespace skgpu;
 
 // Each Node covers a sub-rectangle of the final atlas. When a GrDynamicAtlas runs out of room, we
 // create a new Node the same size as all combined nodes in the atlas as-is, and then place the new
 // Node immediately below or beside the others (thereby doubling the size of the GyDynamicAtlas).
 class GrDynamicAtlas::Node {
 public:
-    Node(Node* previous, GrRectanizer* rectanizer, int x, int y)
+    Node(Node* previous, Rectanizer* rectanizer, int x, int y)
             : fPrevious(previous), fRectanizer(rectanizer), fX(x), fY(y) {}
 
     Node* previous() const { return fPrevious; }
@@ -46,7 +48,7 @@ public:
 
 private:
     Node* const fPrevious;
-    GrRectanizer* const fRectanizer;
+    Rectanizer* const fRectanizer;
     const int fX, fY;
 };
 
@@ -93,15 +95,16 @@ void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
     fTextureProxy = MakeLazyAtlasProxy(
             [this](GrResourceProvider* resourceProvider, const LazyAtlasDesc& desc) {
                 if (!fBackingTexture) {
-                    fBackingTexture = resourceProvider->createTexture(
-                            fTextureProxy->backingStoreDimensions(),
-                            desc.fFormat,
-                            desc.fTextureType,
-                            desc.fRenderable,
-                            desc.fSampleCnt,
-                            desc.fMipmapped,
-                            desc.fBudgeted,
-                            desc.fProtected);
+                    fBackingTexture =
+                            resourceProvider->createTexture(fTextureProxy->backingStoreDimensions(),
+                                                            desc.fFormat,
+                                                            desc.fTextureType,
+                                                            desc.fRenderable,
+                                                            desc.fSampleCnt,
+                                                            desc.fMipmapped,
+                                                            desc.fBudgeted,
+                                                            desc.fProtected,
+                                                            desc.fLabel);
                 }
                 return GrSurfaceProxy::LazyCallbackResult(fBackingTexture);
             },
@@ -112,9 +115,9 @@ void GrDynamicAtlas::reset(SkISize initialSize, const GrCaps& caps) {
 GrDynamicAtlas::Node* GrDynamicAtlas::makeNode(Node* previous, int l, int t, int r, int b) {
     int width = r - l;
     int height = b - t;
-    GrRectanizer* rectanizer = (fRectanizerAlgorithm == RectanizerAlgorithm::kSkyline)
-            ? (GrRectanizer*)fNodeAllocator.make<GrRectanizerSkyline>(width, height)
-            : fNodeAllocator.make<GrRectanizerPow2>(width, height);
+    Rectanizer* rectanizer = (fRectanizerAlgorithm == RectanizerAlgorithm::kSkyline)
+            ? (Rectanizer*)fNodeAllocator.make<RectanizerSkyline>(width, height)
+            : fNodeAllocator.make<RectanizerPow2>(width, height);
     return fNodeAllocator.make<Node>(previous, rectanizer, l, t);
 }
 
@@ -185,7 +188,7 @@ bool GrDynamicAtlas::internalPlaceRect(int w, int h, SkIPoint16* loc) {
     return true;
 }
 
-void GrDynamicAtlas::instantiate(GrOnFlushResourceProvider* onFlushRP,
+bool GrDynamicAtlas::instantiate(GrOnFlushResourceProvider* onFlushRP,
                                  sk_sp<GrTexture> backingTexture) {
     SkASSERT(!this->isInstantiated());  // This method should only be called once.
     // Caller should have cropped any paths to the destination render target instead of asking for
@@ -208,7 +211,9 @@ void GrDynamicAtlas::instantiate(GrOnFlushResourceProvider* onFlushRP,
         SkASSERT(backingRT->numSamples() == fTextureProxy->asRenderTargetProxy()->numSamples());
         SkASSERT(backingRT->dimensions() == fTextureProxy->backingStoreDimensions());
 #endif
+        // This works bc 'fTextureProxy' is a lazy proxy and, in its LazyInstantiateAtlasCallback,
+        // it will just wrap 'fBackingTexture' if it is non-null.
         fBackingTexture = std::move(backingTexture);
     }
-    onFlushRP->instatiateProxy(fTextureProxy.get());
+    return onFlushRP->instatiateProxy(fTextureProxy.get());
 }

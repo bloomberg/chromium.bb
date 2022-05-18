@@ -68,7 +68,8 @@ public:
                                          GrTextureType textureType,
                                          GrRenderable renderable,
                                          int renderTargetSampleCnt,
-                                         GrProtected isProtected);
+                                         GrProtected isProtected,
+                                         std::string_view label);
 
     /** Create an exact fit texture with no initial data to upload. */
     sk_sp<GrTexture> createTexture(SkISize dimensions,
@@ -76,9 +77,10 @@ public:
                                    GrTextureType textureType,
                                    GrRenderable renderable,
                                    int renderTargetSampleCnt,
-                                   GrMipmapped mipMapped,
+                                   GrMipmapped mipmapped,
                                    SkBudgeted budgeted,
-                                   GrProtected isProtected);
+                                   GrProtected isProtected,
+                                   std::string_view label);
 
     /**
      * Create an exact fit texture with initial data to upload. The color type must be valid
@@ -92,9 +94,10 @@ public:
                                    GrRenderable renderable,
                                    int renderTargetSampleCnt,
                                    SkBudgeted budgeted,
-                                   GrMipMapped mipMapped,
+                                   GrMipmapped mipmapped,
                                    GrProtected isProtected,
-                                   const GrMipLevel texels[]);
+                                   const GrMipLevel texels[],
+                                   std::string_view label);
 
     /**
      * Create a potentially loose fit texture with the provided data. The color type must be valid
@@ -110,13 +113,14 @@ public:
                                    SkBudgeted,
                                    SkBackingFit,
                                    GrProtected,
-                                   const GrMipLevel& mipLevel);
+                                   const GrMipLevel& mipLevel,
+                                   std::string_view label);
 
     /**
      * Search the cache for a scratch texture matching the provided arguments. Failing that
      * it returns null. If non-null, the resulting texture is always budgeted.
      */
-    sk_sp<GrTexture> findAndRefScratchTexture(const skgpu::ScratchKey&);
+    sk_sp<GrTexture> findAndRefScratchTexture(const skgpu::ScratchKey&, std::string_view label);
     sk_sp<GrTexture> findAndRefScratchTexture(SkISize dimensions,
                                               const GrBackendFormat&,
                                               GrTextureType textureType,
@@ -134,7 +138,8 @@ public:
                                              SkBudgeted,
                                              GrMipmapped,
                                              GrProtected,
-                                             SkData* data);
+                                             SkData* data,
+                                             std::string_view label);
 
     ///////////////////////////////////////////////////////////////////////////
     // Wrapped Backend Surfaces
@@ -365,7 +370,8 @@ private:
                                                  const GrBackendFormat&,
                                                  int sampleCnt,
                                                  GrProtected,
-                                                 GrMemoryless memoryless);
+                                                 GrMemoryless memoryless,
+                                                 std::string_view label);
 
     // Used to perform any conversions necessary to texel data before creating a texture with
     // existing data or uploading to a scratch texture.

@@ -7,8 +7,8 @@
  * extension API.
  */
 
-import {AbstractTts} from '../common/abstract_tts.js';
-import {ChromeTtsBase} from '../common/tts_base.js';
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {ChromeTtsBase} from '/chromevox/common/tts_base.js';
 
 const Utterance = class {
   /**
@@ -200,11 +200,6 @@ export class TtsBackground extends ChromeTtsBase {
 
     if (this.currentVoice && this.currentVoice !== constants.SYSTEM_VOICE) {
       mergedProperties['voiceName'] = this.currentVoice;
-    }
-
-    if (queueMode === QueueMode.CATEGORY_FLUSH &&
-        !mergedProperties['category']) {
-      queueMode = QueueMode.FLUSH;
     }
 
     const utterance = new Utterance(textString, mergedProperties, queueMode);

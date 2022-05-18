@@ -34,7 +34,9 @@
 #if GTEST_OS_ESP8266
 extern "C" {
 #endif
-void setup() { testing::InitGoogleTest(); }
+void setup() {
+  testing::InitGoogleTest();
+}
 
 void loop() { RUN_ALL_TESTS(); }
 

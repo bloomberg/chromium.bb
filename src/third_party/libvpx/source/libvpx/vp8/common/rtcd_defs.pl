@@ -38,10 +38,10 @@ add_proto qw/void vp8_dequant_idct_add/, "short *input, short *dq, unsigned char
 specialize qw/vp8_dequant_idct_add mmx neon dspr2 msa mmi/;
 
 add_proto qw/void vp8_dequant_idct_add_y_block/, "short *q, short *dq, unsigned char *dst, int stride, char *eobs";
-specialize qw/vp8_dequant_idct_add_y_block sse2 neon dspr2 msa mmi/;
+specialize qw/vp8_dequant_idct_add_y_block sse2 neon dspr2 msa mmi lsx/;
 
 add_proto qw/void vp8_dequant_idct_add_uv_block/, "short *q, short *dq, unsigned char *dst_u, unsigned char *dst_v, int stride, char *eobs";
-specialize qw/vp8_dequant_idct_add_uv_block sse2 neon dspr2 msa mmi/;
+specialize qw/vp8_dequant_idct_add_uv_block sse2 neon dspr2 msa mmi lsx/;
 
 #
 # Loopfilter
@@ -216,11 +216,6 @@ specialize qw/vp8_mbuverror sse2 msa/;
 #
 # Motion search
 #
-add_proto qw/int vp8_full_search_sad/, "struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int sad_per_bit, int distance, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv";
-specialize qw/vp8_full_search_sad sse3 sse4_1/;
-$vp8_full_search_sad_sse3=vp8_full_search_sadx3;
-$vp8_full_search_sad_sse4_1=vp8_full_search_sadx8;
-
 add_proto qw/int vp8_refining_search_sad/, "struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, int error_per_bit, int search_range, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv";
 specialize qw/vp8_refining_search_sad sse2 msa/;
 $vp8_refining_search_sad_sse2=vp8_refining_search_sadx4;

@@ -4,9 +4,11 @@
 
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
+import {MetricsReporterImpl} from 'chrome://resources/js/metrics_reporter/metrics_reporter.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {ProfileData, RecentlyClosedTab, Tab, TabAlertState, TabGroupColor, TabSearchApiProxyImpl, TabSearchAppElement, TabSearchItem} from 'chrome://tab-search.top-chrome/tab_search.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {MockedMetricsReporter} from 'chrome://webui-test/metrics_reporter/mocked_metrics_reporter.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 import {createProfileData, createTab, generateSampleDataFromSiteNames, generateSampleRecentlyClosedTabs, generateSampleRecentlyClosedTabsFromSiteNames, generateSampleTabsFromSiteNames, SAMPLE_RECENTLY_CLOSED_DATA, SAMPLE_WINDOW_DATA, SAMPLE_WINDOW_DATA_WITH_MEDIA_TAB, SAMPLE_WINDOW_HEIGHT, sampleToken} from './tab_search_test_data.js';
@@ -41,6 +43,8 @@ suite('TabSearchAppTest', () => {
       sampleData: ProfileData,
       loadTimeOverriddenData?: {[key: string]: number|string|boolean}) {
     initLoadTimeDataWithDefaults(loadTimeOverriddenData);
+
+    MetricsReporterImpl.setInstanceForTest(new MockedMetricsReporter());
 
     testProxy = new TestTabSearchApiProxy();
     testProxy.setProfileData(sampleData);
@@ -242,7 +246,7 @@ suite('TabSearchAppTest', () => {
       recentlyClosedSectionExpanded: true
     }));
 
-    let tabSearchItem = tabSearchApp.$.tabsList.querySelector<HTMLElement>(
+    const tabSearchItem = tabSearchApp.$.tabsList.querySelector<HTMLElement>(
         'tab-search-item[id="100"]')!;
     tabSearchItem.click();
     const [tabId, withSearch, isTab, index] =
@@ -278,7 +282,7 @@ suite('TabSearchAppTest', () => {
       recentlyClosedSectionExpanded: true
     }));
 
-    let tabSearchItem =
+    const tabSearchItem =
         tabSearchApp.$.tabsList.querySelector('tab-search-group-item')!;
     tabSearchItem.click();
     const [id, withSearch, isTab, index] =
@@ -769,7 +773,7 @@ suite('TabSearchAppTest', () => {
       tabGroups: [tabGroup],
     }));
 
-    let tabSearchItem = tabSearchApp.$.tabsList.querySelector<TabSearchItem>(
+    const tabSearchItem = tabSearchApp.$.tabsList.querySelector<TabSearchItem>(
         'tab-search-item[id="1"]')!;
     assertEquals('Google', tabSearchItem.data.tab.title);
     assertEquals('Search Engines', tabSearchItem.data.tabGroup!.title);

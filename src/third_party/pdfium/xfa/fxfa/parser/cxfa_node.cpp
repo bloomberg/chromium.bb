@@ -32,7 +32,6 @@
 #include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/span.h"
@@ -654,23 +653,21 @@ WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
     wsSrcNum.Delete(0, 1);
   }
 
-  auto dot_index = wsSrcNum.Find('.');
-  dot_index = !dot_index.has_value() ? wsSrcNum.GetLength() : dot_index;
-
-  if (dot_index.value() < 1)
+  size_t dot_index = wsSrcNum.Find('.').value_or(wsSrcNum.GetLength());
+  if (dot_index == 0)
     return WideString();
 
-  size_t nPos = dot_index.value() % 3;
+  size_t nPos = dot_index % 3;
   WideString wsOutput;
-  for (size_t i = 0; i < dot_index.value(); i++) {
+  for (size_t i = 0; i < dot_index; i++) {
     if (i % 3 == nPos && i != 0)
       wsOutput += wsGroupSymbol;
 
     wsOutput += wsSrcNum[i];
   }
-  if (dot_index.value() < wsSrcNum.GetLength()) {
+  if (dot_index < wsSrcNum.GetLength()) {
     wsOutput += pLocale->GetDecimalSymbol();
-    wsOutput += wsSrcNum.Last(wsSrcNum.GetLength() - dot_index.value() - 1);
+    wsOutput += wsSrcNum.Last(wsSrcNum.GetLength() - dot_index - 1);
   }
   if (bNeg)
     return pLocale->GetMinusSymbol() + wsOutput;
@@ -3107,7 +3104,7 @@ void CXFA_Node::ResetData() {
     }
     case XFA_FFWidgetType::kChoiceList:
       ClearAllSelections();
-      FALLTHROUGH;
+      [[fallthrough]];
     default: {
       CXFA_Value* defValue = GetDefaultValueIfExists();
       if (defValue)
@@ -3937,8 +3934,7 @@ RetainPtr<CFGAS_GEFont> CXFA_Node::GetFGASFont(CXFA_FFDoc* doc) {
 
     wsFontName = font->GetTypeface();
   }
-  return doc->GetApp()->GetXFAFontMgr()->GetFont(doc, wsFontName.AsStringView(),
-                                                 dwFontStyle);
+  return doc->GetApp()->GetXFAFontMgr()->GetFont(doc, wsFontName, dwFontStyle);
 }
 
 bool CXFA_Node::HasButtonRollover() const {

@@ -24,6 +24,7 @@ from dashboard.services import isolate
 from tracing.value import histogram_set
 from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import reserved_infos
+import six
 
 
 class ReadValue(quest.Quest):
@@ -305,7 +306,7 @@ def _GetValuesOrStatistic(statistic, hist):
 
 def IsWindows(arguments):
   dimensions = arguments.get('dimensions', ())
-  if isinstance(dimensions, basestring):
+  if isinstance(dimensions, six.string_types):
     dimensions = json.loads(dimensions)
   for dimension in dimensions:
     if dimension['key'] == 'os' and dimension['value'].startswith('Win'):
@@ -343,7 +344,14 @@ def RetrieveCASOutput(cas_root_ref, path, client=None):
     cas_client = cas_service.GetRBECASService()
 
   def _GetTree(cas_ref):
-    return cas_client.GetTree(cas_ref)[0]['directories'][0]
+    for i in range(3):
+      try:
+        return cas_client.GetTree(cas_ref)[0]['directories'][0]
+      except Exception as e:  # pylint: disable=broad-except
+        logging.debug('_GetTree iteration %s raised %s', i, str(e))
+        exc = e
+        continue
+    raise exc
 
   def _GetNodeByName(name, nodes):
     for node in nodes:
@@ -389,7 +397,7 @@ def ExtractValuesFromHistograms(test_paths_to_match, histograms_by_path,
           histograms_by_path.get(histogram)
           for histogram in test_paths_to_match
           if histogram in histograms_by_path))
-  logging.debug('Histograms in results: %s', histograms_by_path.keys())
+  logging.debug('Histograms in results: %s', list(histograms_by_path.keys()))
   if matching_histograms:
     logging.debug('Found %s matching histograms: %s', len(matching_histograms),
                   [h.name for h in matching_histograms])

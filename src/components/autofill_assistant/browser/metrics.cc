@@ -11,7 +11,6 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/intent_strings.h"
 #include "components/autofill_assistant/browser/startup_util.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill_assistant {
@@ -48,6 +47,10 @@ const char kDependenciesInvalidated[] =
     "Android.AutofillAssistant.DependenciesInvalidated";
 const char kOnboardingFetcherResultStatus[] =
     "Android.AutofillAssistant.OnboardingFetcher.ResultStatus";
+const char kServiceRequestSuccessRetryCount[] =
+    "Android.AutofillAssistant.ServiceRequestSender.SuccessRetryCount";
+const char kServiceRequestFailureRetryCount[] =
+    "Android.AutofillAssistant.ServiceRequestSender.FailureRetryCount";
 static bool DROPOUT_RECORDED = false;
 
 std::string GetSuffixForIntent(const std::string& intent) {
@@ -110,7 +113,7 @@ Metrics::AutofillAssistantIntent ExtractIntentFromScriptParameters(
     return Metrics::AutofillAssistantIntent::UNDEFINED_INTENT;
   }
   return enum_value_iter->second;
-}  // namespace
+}
 
 // Extracts the enum value corresponding to the caller specified in
 // |script_parameters|.
@@ -560,6 +563,15 @@ void Metrics::RecordOnboardingFetcherResult(
     OnboardingFetcherResultStatus status) {
   DCHECK_LE(status, OnboardingFetcherResultStatus::kMaxValue);
   base::UmaHistogramEnumeration(kOnboardingFetcherResultStatus, status);
+}
+
+// static
+void Metrics::RecordServiceRequestRetryCount(int count, bool success) {
+  DCHECK_GE(count, 0);
+  base::UmaHistogramExactLinear(success ? kServiceRequestSuccessRetryCount
+                                        : kServiceRequestFailureRetryCount,
+                                /* sample= */ count,
+                                /* exclusive_max= */ 11);
 }
 
 std::ostream& operator<<(std::ostream& out,

@@ -95,9 +95,9 @@
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
 #include "components/language/core/common/language_experiments.h"
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
@@ -279,14 +279,14 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
   html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
                           base::FeatureList::IsEnabled(
                               language::kDesktopRestructuredLanguageSettings));
   html_source->AddBoolean(
       "enableDesktopDetailedLanguageSettings",
       base::FeatureList::IsEnabled(language::kDesktopDetailedLanguageSettings));
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -312,16 +312,17 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("userCannotManuallyEnterPassword", false);
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  html_source->AddBoolean(
-      "privacyGuideEnabled",
-      !chrome::ShouldDisplayManagedUi(profile) &&
-          base::FeatureList::IsEnabled(features::kPrivacyGuide));
+  bool privacy_guide_enabled =
+      !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild() &&
+      !PrivacySandboxServiceFactory::GetForProfile(profile)
+           ->IsPrivacySandboxRestricted() &&
+      base::FeatureList::IsEnabled(features::kPrivacyGuide);
+  html_source->AddBoolean("privacyGuideEnabled", privacy_guide_enabled);
 
   html_source->AddBoolean(
       "privacyGuide2Enabled",
-      !chrome::ShouldDisplayManagedUi(profile) &&
-          // #privacy-guide-2 only has effect if #privacy-guide is enabled too.
-          base::FeatureList::IsEnabled(features::kPrivacyGuide) &&
+      // #privacy-guide-2 only has effect if #privacy-guide is enabled too.
+      privacy_guide_enabled &&
           base::FeatureList::IsEnabled(features::kPrivacyGuide2));
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
@@ -366,12 +367,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
   // Privacy Sandbox
-  bool isPrivacySandboxRestricted =
+  bool is_privacy_sandbox_restricted =
       PrivacySandboxServiceFactory::GetForProfile(profile)
           ->IsPrivacySandboxRestricted();
   html_source->AddBoolean("isPrivacySandboxRestricted",
-                          isPrivacySandboxRestricted);
-  if (!isPrivacySandboxRestricted) {
+                          is_privacy_sandbox_restricted);
+  if (!is_privacy_sandbox_restricted) {
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
   }

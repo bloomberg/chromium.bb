@@ -50,7 +50,7 @@ struct compute_inverse_size4<Architecture::Target, float, MatrixType, ResultType
     ResultAlignment = traits<ResultType>::Alignment,
     StorageOrdersMatch = (MatrixType::Flags & RowMajorBit) == (ResultType::Flags & RowMajorBit)
   };
-  typedef typename conditional<(MatrixType::Flags & LinearAccessBit), MatrixType const &, typename MatrixType::PlainObject>::type ActualMatrixType;
+  typedef std::conditional_t<(MatrixType::Flags & LinearAccessBit), MatrixType const &, typename MatrixType::PlainObject> ActualMatrixType;
 
   static void run(const MatrixType &mat, ResultType &result)
   {
@@ -175,9 +175,9 @@ struct compute_inverse_size4<Architecture::Target, double, MatrixType, ResultTyp
     ResultAlignment = traits<ResultType>::Alignment,
     StorageOrdersMatch = (MatrixType::Flags & RowMajorBit) == (ResultType::Flags & RowMajorBit)
   };
-  typedef typename conditional<(MatrixType::Flags & LinearAccessBit),
-                               MatrixType const &,
-                               typename MatrixType::PlainObject>::type
+  typedef std::conditional_t<(MatrixType::Flags & LinearAccessBit),
+                         MatrixType const &,
+                         typename MatrixType::PlainObject>
       ActualMatrixType;
 
   static void run(const MatrixType &mat, ResultType &result)

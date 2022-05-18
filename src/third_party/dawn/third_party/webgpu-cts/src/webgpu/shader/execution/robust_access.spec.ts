@@ -84,7 +84,7 @@ function runShaderTest(
   pass.setPipeline(pipeline);
   pass.setBindGroup(0, testGroup, dynamicOffsets);
   pass.setBindGroup(1, group);
-  pass.dispatch(1);
+  pass.dispatchWorkgroups(1);
   pass.end();
 
   t.queue.submit([encoder.finish()]);

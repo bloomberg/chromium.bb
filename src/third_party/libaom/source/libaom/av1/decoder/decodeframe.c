@@ -116,11 +116,9 @@ static AOM_INLINE void set_planes_to_neutral_grey(
   }
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void loop_restoration_read_sb_coeffs(
     const AV1_COMMON *const cm, MACROBLOCKD *xd, aom_reader *const r, int plane,
     int runit_idx);
-#endif
 
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
   return len != 0 && len <= (size_t)(end - start);
@@ -915,14 +913,6 @@ static AOM_INLINE void decode_token_recon_block(AV1Decoder *const pbi,
           if (plane && !xd->is_chroma_ref) break;
           const struct macroblockd_plane *const pd = &xd->plane[plane];
           const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-#if CONFIG_REALTIME_ONLY
-          // Realtime only build doesn't support 4x rectangular txfm sizes.
-          if (tx_size >= TX_4X16) {
-            aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_FEATURE,
-                               "Realtime only build doesn't support 4x "
-                               "rectangular txfm sizes");
-          }
-#endif
           const int stepr = tx_size_high_unit[tx_size];
           const int stepc = tx_size_wide_unit[tx_size];
 
@@ -1282,9 +1272,6 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
   if (parse_decode_flag & 1) {
     const int num_planes = av1_num_planes(cm);
     for (int plane = 0; plane < num_planes; ++plane) {
-#if CONFIG_REALTIME_ONLY
-      assert(cm->rst_info[plane].frame_restoration_type == RESTORE_NONE);
-#else
       int rcol0, rcol1, rrow0, rrow1;
       if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                              &rcol0, &rcol1, &rrow0, &rrow1)) {
@@ -1296,7 +1283,6 @@ static AOM_INLINE void decode_partition(AV1Decoder *const pbi,
           }
         }
       }
-#endif
     }
 
     partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
@@ -1525,10 +1511,6 @@ static AOM_INLINE void decode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
-#if CONFIG_REALTIME_ONLY
-    aom_internal_error(cm->error, AOM_CODEC_UNSUP_FEATURE,
-                       "Realtime only build doesn't support loop restoration");
-#endif
     assert(cm->seq_params->sb_size == BLOCK_64X64 ||
            cm->seq_params->sb_size == BLOCK_128X128);
     const int sb_size = cm->seq_params->sb_size == BLOCK_128X128 ? 128 : 64;
@@ -1565,7 +1547,6 @@ static AOM_INLINE void decode_restoration_mode(AV1_COMMON *cm,
   }
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void read_wiener_filter(int wiener_win,
                                           WienerInfo *wiener_info,
                                           WienerInfo *ref_wiener_info,
@@ -1706,7 +1687,6 @@ static AOM_INLINE void loop_restoration_read_sb_coeffs(
     }
   }
 }
-#endif  // !CONFIG_REALTIME_ONLY
 
 static AOM_INLINE void setup_loopfilter(AV1_COMMON *cm,
                                         struct aom_read_bit_buffer *rb) {
@@ -1911,10 +1891,8 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                        width, height, DECODE_WIDTH_LIMIT, DECODE_HEIGHT_LIMIT);
 #endif
   if (cm->width != width || cm->height != height) {
-    const int new_mi_rows =
-        ALIGN_POWER_OF_TWO(height, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
-    const int new_mi_cols =
-        ALIGN_POWER_OF_TWO(width, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
+    const int new_mi_rows = CEIL_POWER_OF_TWO(height, MI_SIZE_LOG2);
+    const int new_mi_cols = CEIL_POWER_OF_TWO(width, MI_SIZE_LOG2);
 
     // Allocations in av1_alloc_context_buffers() depend on individual
     // dimensions as well as the overall size.
@@ -1951,7 +1929,7 @@ static AOM_INLINE void setup_buffer_pool(AV1_COMMON *cm) {
           &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
           seq_params->subsampling_y, seq_params->use_highbitdepth,
           AOM_DEC_BORDER_IN_PIXELS, cm->features.byte_alignment,
-          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv,
+          &cm->cur_frame->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0,
           0)) {
     unlock_buffer_pool(pool);
     aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
@@ -2095,12 +2073,10 @@ static AOM_INLINE void read_tile_info_max_tile(
     AV1_COMMON *const cm, struct aom_read_bit_buffer *const rb) {
   const SequenceHeader *const seq_params = cm->seq_params;
   CommonTileParams *const tiles = &cm->tiles;
-  int width_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
-  int height_mi =
-      ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
-  int width_sb = width_mi >> seq_params->mib_size_log2;
-  int height_sb = height_mi >> seq_params->mib_size_log2;
+  int width_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_cols, seq_params->mib_size_log2);
+  int height_sb =
+      CEIL_POWER_OF_TWO(cm->mi_params.mi_rows, seq_params->mib_size_log2);
 
   av1_get_tile_limits(cm);
   tiles->uniform_spacing = aom_rb_read_bit(rb);
@@ -4345,14 +4321,10 @@ static int read_global_motion_params(WarpedMotionParams *params,
                        trans_dec_factor;
   }
 
-#if !CONFIG_REALTIME_ONLY
-  // For realtime only build, warped motion is disabled, so this section is not
-  // needed.
   if (params->wmtype <= AFFINE) {
     int good_shear_params = av1_get_shear_params(params);
     if (!good_shear_params) return 0;
   }
-#endif
 
   return 1;
 }
@@ -4790,7 +4762,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                   seq_params->max_frame_height, seq_params->subsampling_x,
                   seq_params->subsampling_y, seq_params->use_highbitdepth,
                   AOM_BORDER_IN_PIXELS, features->byte_alignment,
-                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0)) {
+                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv, 0,
+                  0)) {
             decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&pbi->error, AOM_CODEC_MEM_ERROR,
@@ -5144,7 +5117,6 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   return (BITSTREAM_PROFILE)profile;
 }
 
-#if !CONFIG_REALTIME_ONLY
 static AOM_INLINE void superres_post_decode(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
@@ -5154,7 +5126,6 @@ static AOM_INLINE void superres_post_decode(AV1Decoder *pbi) {
 
   av1_superres_upscale(cm, pool);
 }
-#endif
 
 uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                                             struct aom_read_bit_buffer *rb,
@@ -5240,13 +5211,12 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 static AOM_INLINE void setup_frame_info(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
 
-#if !CONFIG_REALTIME_ONLY
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     av1_alloc_restoration_buffers(cm);
   }
-#endif
+
   const int use_highbd = cm->seq_params->use_highbitdepth;
   const int buf_size = MC_TEMP_BUF_PELS << use_highbd;
   if (pbi->td.mc_buf_size != buf_size) {
@@ -5303,8 +5273,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
          cm->cdef_info.cdef_uv_strengths[0]);
     const int do_superres = av1_superres_scaled(cm);
     const int optimized_loop_restoration = !do_cdef && !do_superres;
-
-#if !CONFIG_REALTIME_ONLY
     const int do_loop_restoration =
         cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
@@ -5357,20 +5325,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
         }
       }
     }
-#else
-    if (!optimized_loop_restoration) {
-      if (do_cdef) {
-        if (pbi->num_workers > 1) {
-          av1_cdef_frame_mt(cm, &pbi->dcb.xd, pbi->cdef_worker,
-                            pbi->tile_workers, &pbi->cdef_sync,
-                            pbi->num_workers, av1_cdef_init_fb_row_mt);
-        } else {
-          av1_cdef_frame(&pbi->common.cur_frame->buf, cm, &pbi->dcb.xd,
-                         av1_cdef_init_fb_row);
-        }
-      }
-    }
-#endif  // !CONFIG_REALTIME_ONLY
   }
 
   if (!pbi->dcb.corrupted) {

@@ -243,6 +243,11 @@ std::vector<url::Origin>
 SavedPasswordsCapabilitiesFetcher::GetOriginsOfStoredPasswords() const {
   std::vector<url::Origin> origins;
   for (const auto& form : saved_passwords_presenter_.GetSavedPasswords()) {
+    if (form.url.SchemeIs(url::kHttpScheme)) {
+      // Http schemes are not supported.
+      continue;
+    }
+
     url::Origin origin = url::Origin::Create(form.url);
     if (!origin.opaque()) {
       origins.push_back(origin);
@@ -311,6 +316,18 @@ SavedPasswordsCapabilitiesFetcher::GetDebugInformationForInternals() const {
   result.Set("cache state", cache_state);
 
   return result;
+}
+
+base::Value::List SavedPasswordsCapabilitiesFetcher::GetCacheEntries() const {
+  base::Value::List cache_entries;
+  for (const auto& [origin, capabilities] : cache_) {
+    base::Value::Dict entry;
+    entry.Set("url", origin.Serialize());
+    entry.Set("has_script", capabilities.has_script);
+    cache_entries.Append(std::move(entry));
+  }
+
+  return cache_entries;
 }
 
 }  // namespace password_manager

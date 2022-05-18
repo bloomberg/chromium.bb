@@ -32,6 +32,9 @@ message ApplicationConfig {
     CastWebApplicationConfig cast_web_app_config = 4;
     NativeApplicationConfig native_app_config = 5;
   }
+
+  // Cast features requested by the application.
+  repeated CastFeature cast_features = 6;
 }
 
 // Config for applications running in CastLite runtime.
@@ -39,14 +42,6 @@ message CastLiteApplicationConfig {
   // Cast application URL (https). Will be augumented with URL rewrite rules to
   // add appropriate headers/parameters.
   string url = 1;
-  // Below definitions are used only with legacy MSP API implementation of
-  // CastLite.
-  string api_url = 2;
-  string api_key = 3;
-  bool uses_server_session = 4;
-  bool uses_grpc = 5;
-  bool is_default_audio_receiver = 6;
-  string session_id = 7;
 }
 
 // Config for applications running in Cast Web runtime.
@@ -84,4 +79,25 @@ message NativeApplicationConfig {
   // NOTE: this field is added ONLY FOR TESTING purposes. Proper integration
   // with native runtimes is still TBD.
   string url = 1;
+}
+
+  // A Cast feature definition.
+message CastFeature {
+  message Value {
+    // Value key.
+    string key = 1;
+
+    // Actual value.
+    oneof value {
+      bool flag = 2;
+      string text = 3;
+    }
+  }
+
+  // Feature name.
+  string name = 1;
+
+  // Optional list of feature values. If not specified, the feature is
+  // considered enabled.
+  repeated Value values = 2;
 }

@@ -9,10 +9,9 @@
 #include <cstdint>
 
 #include "absl/base/macros.h"
-#include "quiche/http2/platform/api/http2_bug_tracker.h"
-#include "quiche/http2/platform/api/http2_flag_utils.h"
-#include "quiche/http2/platform/api/http2_flags.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/common/platform/api/quiche_bug_tracker.h"
+#include "quiche/common/platform/api/quiche_flag_utils.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 
 namespace http2 {
 namespace {
@@ -80,13 +79,13 @@ DecodeStatus HpackEntryDecoder::Start(DecodeBuffer* db,
       state_ = EntryDecoderState::kResumeDecodingType;
       return status;
     case DecodeStatus::kDecodeError:
-      HTTP2_CODE_COUNT_N(decompress_failure_3, 11, 23);
+      QUICHE_CODE_COUNT_N(decompress_failure_3, 11, 23);
       error_ = HpackDecodingError::kIndexVarintError;
       // The varint must have been invalid (too long).
       return status;
   }
 
-  HTTP2_BUG(http2_bug_63_1) << "Unreachable";
+  QUICHE_BUG(http2_bug_63_1) << "Unreachable";
   return DecodeStatus::kDecodeError;
 }
 
@@ -101,11 +100,11 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
     switch (state_) {
       case EntryDecoderState::kResumeDecodingType:
         // entry_type_decoder_ returned kDecodeInProgress when last called.
-        HTTP2_DVLOG(1) << "kResumeDecodingType: db->Remaining="
-                       << db->Remaining();
+        QUICHE_DVLOG(1) << "kResumeDecodingType: db->Remaining="
+                        << db->Remaining();
         status = entry_type_decoder_.Resume(db);
         if (status == DecodeStatus::kDecodeError) {
-          HTTP2_CODE_COUNT_N(decompress_failure_3, 12, 23);
+          QUICHE_CODE_COUNT_N(decompress_failure_3, 12, 23);
           error_ = HpackDecodingError::kIndexVarintError;
         }
         if (status != DecodeStatus::kDecodeDone) {
@@ -117,7 +116,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
       case EntryDecoderState::kDecodedType:
         // entry_type_decoder_ returned kDecodeDone, now need to decide how
         // to proceed.
-        HTTP2_DVLOG(1) << "kDecodedType: db->Remaining=" << db->Remaining();
+        QUICHE_DVLOG(1) << "kDecodedType: db->Remaining=" << db->Remaining();
         if (DispatchOnType(listener)) {
           // All done.
           return DecodeStatus::kDecodeDone;
@@ -125,8 +124,8 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
         continue;
 
       case EntryDecoderState::kStartDecodingName:
-        HTTP2_DVLOG(1) << "kStartDecodingName: db->Remaining="
-                       << db->Remaining();
+        QUICHE_DVLOG(1) << "kStartDecodingName: db->Remaining="
+                        << db->Remaining();
         {
           NameDecoderListener ncb(listener);
           status = string_decoder_.Start(db, &ncb);
@@ -138,7 +137,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           // is too long.
           state_ = EntryDecoderState::kResumeDecodingName;
           if (status == DecodeStatus::kDecodeError) {
-            HTTP2_CODE_COUNT_N(decompress_failure_3, 13, 23);
+            QUICHE_CODE_COUNT_N(decompress_failure_3, 13, 23);
             error_ = HpackDecodingError::kNameLengthVarintError;
           }
           return status;
@@ -147,14 +146,14 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
         ABSL_FALLTHROUGH_INTENDED;
 
       case EntryDecoderState::kStartDecodingValue:
-        HTTP2_DVLOG(1) << "kStartDecodingValue: db->Remaining="
-                       << db->Remaining();
+        QUICHE_DVLOG(1) << "kStartDecodingValue: db->Remaining="
+                        << db->Remaining();
         {
           ValueDecoderListener vcb(listener);
           status = string_decoder_.Start(db, &vcb);
         }
         if (status == DecodeStatus::kDecodeError) {
-          HTTP2_CODE_COUNT_N(decompress_failure_3, 14, 23);
+          QUICHE_CODE_COUNT_N(decompress_failure_3, 14, 23);
           error_ = HpackDecodingError::kValueLengthVarintError;
         }
         if (status == DecodeStatus::kDecodeDone) {
@@ -171,8 +170,8 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
 
       case EntryDecoderState::kResumeDecodingName:
         // The literal name was split across decode buffers.
-        HTTP2_DVLOG(1) << "kResumeDecodingName: db->Remaining="
-                       << db->Remaining();
+        QUICHE_DVLOG(1) << "kResumeDecodingName: db->Remaining="
+                        << db->Remaining();
         {
           NameDecoderListener ncb(listener);
           status = string_decoder_.Resume(db, &ncb);
@@ -184,7 +183,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           // is too long.
           state_ = EntryDecoderState::kResumeDecodingName;
           if (status == DecodeStatus::kDecodeError) {
-            HTTP2_CODE_COUNT_N(decompress_failure_3, 15, 23);
+            QUICHE_CODE_COUNT_N(decompress_failure_3, 15, 23);
             error_ = HpackDecodingError::kNameLengthVarintError;
           }
           return status;
@@ -194,14 +193,14 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
 
       case EntryDecoderState::kResumeDecodingValue:
         // The literal value was split across decode buffers.
-        HTTP2_DVLOG(1) << "kResumeDecodingValue: db->Remaining="
-                       << db->Remaining();
+        QUICHE_DVLOG(1) << "kResumeDecodingValue: db->Remaining="
+                        << db->Remaining();
         {
           ValueDecoderListener vcb(listener);
           status = string_decoder_.Resume(db, &vcb);
         }
         if (status == DecodeStatus::kDecodeError) {
-          HTTP2_CODE_COUNT_N(decompress_failure_3, 16, 23);
+          QUICHE_CODE_COUNT_N(decompress_failure_3, 16, 23);
           error_ = HpackDecodingError::kValueLengthVarintError;
         }
         if (status == DecodeStatus::kDecodeDone) {
@@ -252,7 +251,7 @@ bool HpackEntryDecoder::DispatchOnType(HpackEntryDecoderListener* listener) {
       return true;
   }
 
-  HTTP2_BUG(http2_bug_63_2) << "Unreachable, entry_type=" << entry_type;
+  QUICHE_BUG(http2_bug_63_2) << "Unreachable, entry_type=" << entry_type;
   return true;
 }
 

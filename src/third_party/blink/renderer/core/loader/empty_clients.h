@@ -234,8 +234,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override {}
   void InstallSupplements(LocalFrame&) override {}
   void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override {}
-  void BatterySavingsChanged(LocalFrame& main_frame,
-                             BatterySavingsFlags savings) override {}
 
  private:
   const display::ScreenInfos empty_screen_infos_{display::ScreenInfo()};
@@ -291,7 +289,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,
-      const absl::optional<WebImpression>&,
+      const absl::optional<Impression>&,
       const LocalFrameToken* initiator_frame_token,
       std::unique_ptr<SourceLocation>,
       mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>)
@@ -302,12 +300,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidStartLoading() override {}
   void DidStopLoading() override {}
 
-  DocumentLoader* CreateDocumentLoader(
-      LocalFrame*,
-      WebNavigationType,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<PolicyContainer> policy_container,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+  void DidCreateDocumentLoader(DocumentLoader*) override {}
 
   String UserAgentOverride() override { return ""; }
   String UserAgent() override { return ""; }

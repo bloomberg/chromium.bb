@@ -26,14 +26,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.StringRes;
-import androidx.annotation.VisibleForTesting;
 
 import com.google.android.material.color.MaterialColors;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabCreator;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AutoSignInCancelButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ContinueButtonProperties;
@@ -68,13 +65,6 @@ class AccountSelectionViewBinder {
      * in https://www.w3.org/TR/appmanifest/
      */
     private static final float MASKABLE_ICON_SAFE_ZONE_DIAMETER_RATIO = 0.8f;
-
-    private static TabCreator sTabCreatorForTesting;
-
-    @VisibleForTesting
-    static void setTabCreatorForTesting(TabCreator creator) {
-        sTabCreatorForTesting = creator;
-    }
 
     /**
      * Returns bitmap with the maskable bitmap's safe zone as defined in
@@ -159,20 +149,13 @@ class AccountSelectionViewBinder {
         }
     }
 
-    static void openTab(String url) {
-        TabCreator tabCreator = (sTabCreatorForTesting == null)
-                ? new TabDelegate(/* incognito */ false)
-                : sTabCreatorForTesting;
-        tabCreator.launchUrl(url, TabLaunchType.FROM_CHROME_UI);
-    }
-
     static SpanApplier.SpanInfo createLink(Context context, String url, String tag) {
         if (TextUtils.isEmpty(url)) return null;
 
         String startTag = "<" + tag + ">";
         String endTag = "</" + tag + ">";
         Callback<View> onClickCallback = v -> {
-            openTab(url);
+            CustomTabActivity.showInfoPage(context, url);
         };
         return new SpanApplier.SpanInfo(
                 startTag, endTag, new NoUnderlineClickableSpan(context, onClickCallback));
@@ -195,19 +178,23 @@ class AccountSelectionViewBinder {
             SpanApplier.SpanInfo termsOfServiceSpan =
                     createLink(context, properties.mTermsOfServiceUrl, "link_terms_of_service");
 
-            int consentTextId = termsOfServiceSpan == null
-                    ? R.string.account_selection_data_sharing_consent_no_tos
-                    : R.string.account_selection_data_sharing_consent;
+            int consentTextId;
+            if (privacyPolicySpan == null && termsOfServiceSpan == null) {
+                consentTextId = R.string.account_selection_data_sharing_consent_no_pp_or_tos;
+            } else if (privacyPolicySpan == null) {
+                consentTextId = R.string.account_selection_data_sharing_consent_no_pp;
+            } else if (termsOfServiceSpan == null) {
+                consentTextId = R.string.account_selection_data_sharing_consent_no_tos;
+            } else {
+                consentTextId = R.string.account_selection_data_sharing_consent;
+            }
             String consentText = String.format(
                     context.getString(consentTextId), properties.mFormattedIdpEtldPlusOne);
 
-            // |privacyPolicySpan| cannot be null due to the following:
-            // 1. We check that the privacy URL is valid in
-            // FederatedAuthRequestImpl::OnClientMetadataResponseReceived(), and an empty URL is
-            // invalid.
-            // 2. createLink() only returns null if the provided URL is empty.
             List<SpanApplier.SpanInfo> spans = new ArrayList<>();
-            spans.add(privacyPolicySpan);
+            if (privacyPolicySpan != null) {
+                spans.add(privacyPolicySpan);
+            }
             if (termsOfServiceSpan != null) {
                 spans.add(termsOfServiceSpan);
             }

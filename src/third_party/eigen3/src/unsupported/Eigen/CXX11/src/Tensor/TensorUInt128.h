@@ -57,7 +57,7 @@ struct TensorUInt128
   template<typename T>
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
   explicit TensorUInt128(const T& x) : high(0), low(x) {
-    eigen_assert((static_cast<typename conditional<sizeof(T) == 8, uint64_t, uint32_t>::type>(x) <= NumTraits<uint64_t>::highest()));
+    eigen_assert((static_cast<std::conditional_t<sizeof(T) == 8, uint64_t, uint32_t>>(x) <= NumTraits<uint64_t>::highest()));
     eigen_assert(x >= 0);
   }
 

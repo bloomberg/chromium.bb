@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_column_spanner_path.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
@@ -408,6 +409,9 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
         has_inflow_child_break_inside_ = true;
     }
 
+    if (child_layout_result.ShouldForceSameFragmentationFlow())
+      has_inflow_child_break_inside_ = true;
+
     // Downgrade the appeal of breaking inside this container, if the break
     // inside the child is less appealing than what we've found so far.
     NGBreakAppeal appeal_inside =
@@ -420,26 +424,25 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
         child_layout_result.TallestUnbreakableBlockSize());
   }
 
-  if (child_layout_result.HasForcedBreak()) {
+  if (child_layout_result.HasForcedBreak())
     SetHasForcedBreak();
-  } else if (!IsInitialColumnBalancingPass()) {
-    LayoutUnit space_shortage = child_layout_result.MinimalSpaceShortage();
-    // Only nodes that fragmented report any useful space shortage.
-    if (space_shortage)
-      PropagateSpaceShortage(space_shortage);
-  }
+  else if (!IsInitialColumnBalancingPass())
+    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
 
   // If a spanner was found inside the child, we need to finish up and propagate
   // the spanner to the column layout algorithm, so that it can take care of it.
   if (UNLIKELY(ConstraintSpace()->IsInColumnBfc())) {
-    if (NGBlockNode spanner_node = child_layout_result.ColumnSpanner()) {
+    if (const NGColumnSpannerPath* child_spanner_path =
+            child_layout_result.ColumnSpannerPath()) {
       DCHECK(HasInflowChildBreakInside() ||
              !child_layout_result.PhysicalFragment().IsBox());
-      SetColumnSpanner(spanner_node);
+      const auto* spanner_path =
+          MakeGarbageCollected<NGColumnSpannerPath>(Node(), child_spanner_path);
+      SetColumnSpannerPath(spanner_path);
       SetIsEmptySpannerParent(child_layout_result.IsEmptySpannerParent());
     }
   } else {
-    DCHECK(!child_layout_result.ColumnSpanner());
+    DCHECK(!child_layout_result.ColumnSpannerPath());
   }
 }
 
@@ -584,13 +587,12 @@ void NGBoxFragmentBuilder::SetLastBaselineToBlockEndMarginEdgeIfNeeded() {
   SetLastBaseline(FragmentBlockSize() + margins.block_end);
 }
 
-void NGBoxFragmentBuilder::AdjustOffsetsForFragmentainerDescendant(
+void NGBoxFragmentBuilder::AdjustFragmentainerDescendant(
     NGLogicalOOFNodeForFragmentation& descendant,
     bool only_fixedpos_containing_block) {
-  if (!PreviousBreakToken())
-    return;
-  LayoutUnit previous_consumed_block_size =
-      PreviousBreakToken()->ConsumedBlockSize();
+  LayoutUnit previous_consumed_block_size;
+  if (PreviousBreakToken())
+    previous_consumed_block_size = PreviousBreakToken()->ConsumedBlockSize();
 
   // If the containing block is fragmented, adjust the offset to be from the
   // first containing block fragment to the fragmentation context root. Also,
@@ -602,6 +604,8 @@ void NGBoxFragmentBuilder::AdjustOffsetsForFragmentainerDescendant(
         -previous_consumed_block_size);
     descendant.static_position.offset.block_offset +=
         previous_consumed_block_size;
+    descendant.containing_block.SetRequiresContentBeforeBreaking(
+        RequiresContentBeforeBreaking());
   }
 
   // If the fixedpos containing block is fragmented, adjust the offset to be
@@ -611,6 +615,8 @@ void NGBoxFragmentBuilder::AdjustOffsetsForFragmentainerDescendant(
        descendant.fixedpos_inline_container.container)) {
     descendant.fixedpos_containing_block.IncreaseBlockOffset(
         -previous_consumed_block_size);
+    descendant.fixedpos_containing_block.SetRequiresContentBeforeBreaking(
+        RequiresContentBeforeBreaking());
   }
 }
 
@@ -623,12 +629,12 @@ LayoutUnit NGBoxFragmentBuilder::BlockOffsetAdjustmentForFragmentainer(
 
 void NGBoxFragmentBuilder::
     AdjustFixedposContainingBlockForFragmentainerDescendants() {
-  if (!HasOutOfFlowFragmentainerDescendants() || !PreviousBreakToken())
+  if (!HasOutOfFlowFragmentainerDescendants())
     return;
 
   for (auto& descendant : oof_positioned_fragmentainer_descendants_) {
-    AdjustOffsetsForFragmentainerDescendant(
-        descendant, /* only_fixedpos_containing_block */ true);
+    AdjustFragmentainerDescendant(descendant,
+                                  /* only_fixedpos_containing_block */ true);
   }
 }
 
@@ -662,7 +668,7 @@ void NGBoxFragmentBuilder::CheckNoBlockFragmentation() const {
   DCHECK(!DidBreakSelf());
   DCHECK(!has_forced_break_);
   DCHECK(!HasBreakTokenData());
-  DCHECK_EQ(minimal_space_shortage_, LayoutUnit::Max());
+  DCHECK_EQ(minimal_space_shortage_, kIndefiniteSize);
   if (ConstraintSpace() &&
       !ConstraintSpace()->ShouldPropagateChildBreakValues()) {
     DCHECK(!initial_break_before_);

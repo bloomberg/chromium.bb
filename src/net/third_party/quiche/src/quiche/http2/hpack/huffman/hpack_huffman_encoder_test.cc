@@ -16,8 +16,7 @@ class HuffmanEncoderTest : public ::testing::TestWithParam<bool> {
   HuffmanEncoderTest() : use_fast_encoder_(GetParam()) {}
   virtual ~HuffmanEncoderTest() = default;
 
-  void Encode(absl::string_view input,
-              size_t encoded_size,
+  void Encode(absl::string_view input, size_t encoded_size,
               std::string* output) {
     use_fast_encoder_ ? HuffmanEncodeFast(input, encoded_size, output)
                       : HuffmanEncode(input, encoded_size, output);
@@ -55,7 +54,7 @@ TEST_P(HuffmanEncoderTest, SpecRequestExamples) {
     size_t encoded_size = HuffmanSize(plain_string);
     EXPECT_EQ(huffman_encoded.size(), encoded_size);
     std::string buffer;
-    buffer.reserve();
+    buffer.reserve(huffman_encoded.size());
     Encode(plain_string, encoded_size, &buffer);
     EXPECT_EQ(buffer, huffman_encoded) << "Error encoding " << plain_string;
   }

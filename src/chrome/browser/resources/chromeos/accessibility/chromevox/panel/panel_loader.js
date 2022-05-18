@@ -8,7 +8,8 @@
 
 goog.require('AutomationTreeWalker');
 goog.require('AutomationUtil');
-goog.require('ChromeVoxState');
+goog.require('BackgroundBridge');
+goog.require('BridgeHelper');
 goog.require('EventSourceType');
 goog.require('KeyCode');
 goog.require('KeySequence');
@@ -17,7 +18,10 @@ goog.require('Msgs');
 goog.require('Output');
 goog.require('Output');
 goog.require('PanelCommand');
+goog.require('PanelNodeMenuData');
 goog.require('QueueMode');
+goog.require('UserActionMonitor');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
+goog.require('ALL_NODE_MENU_DATA');

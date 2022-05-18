@@ -24,7 +24,7 @@
 #include "libANGLE/renderer/d3d/formatutilsD3D.h"
 #include "libANGLE/renderer/renderer_utils.h"
 #include "libANGLE/renderer/serial_utils.h"
-#include "platform/FeaturesD3D.h"
+#include "platform/FeaturesD3D_autogen.h"
 
 namespace egl
 {
@@ -402,6 +402,7 @@ class RendererD3D : public BufferFactoryD3D
     const gl::TextureCapsMap &getNativeTextureCaps() const;
     const gl::Extensions &getNativeExtensions() const;
     const gl::Limitations &getNativeLimitations() const;
+    virtual void initializeFrontendFeatures(angle::FrontendFeatures *features) const = 0;
 
     // Necessary hack for default framebuffers in D3D.
     virtual FramebufferImpl *createDefaultFramebuffer(const gl::FramebufferState &state) = 0;

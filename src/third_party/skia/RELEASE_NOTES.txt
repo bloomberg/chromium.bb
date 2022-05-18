@@ -2,6 +2,12 @@ Skia Graphics Release Notes
 
 This file includes a list of high level updates for each milestone release.
 
+Milestone 103
+-------------
+  * SkSamplingOptions now includes anisotropic filtering. Implemented on GPU only.
+
+* * *
+
 Milestone 102
 -------------
   * Add glGetFloatv and glSamplerParameterf to GrGLInterface.
@@ -16,6 +22,11 @@ Milestone 102
     use SkImage::makeSubset() to make a subset image and draw that. The previous GPU behavior is
     similar, though not exactly, equivalent to making a mipmapped image shader from the original
     image and applying that to a rectangle.
+  * Fully disable experimental support for HW tessellation shaders.
+    GrContextOptions::fEnableExperimentalHardwareTessellation is ignored and behaves as if it is
+    false. The optimized path renderer no longer requires hardware tessellation at all, and
+    is automatically enabled when drawing to an SkSurface created with MSAA, or when
+    GrContextOptions::fInternalMultisampleCount is set to a non-zero value.
 
 * * *
 

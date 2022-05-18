@@ -18,18 +18,25 @@
 #include "dawn/tests/MockCallback.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::Exactly;
+using testing::InvokeWithoutArgs;
+using testing::MockCallback;
+using testing::Return;
+using testing::Sequence;
+using testing::StrEq;
 
 namespace {
 
-    class WireDisconnectTests : public WireTest {};
+class WireDisconnectTests : public WireTest {};
 
 }  // anonymous namespace
 
 // Test that commands are not received if the client disconnects.
 TEST_F(WireDisconnectTests, CommandsAfterDisconnect) {
-    // Sanity check that commands work at all.
+    // Check that commands work at all.
     wgpuDeviceCreateCommandEncoder(device, nullptr);
 
     WGPUCommandEncoder apiCmdBufEncoder = api.GetNewCommandEncoder();
@@ -49,7 +56,7 @@ TEST_F(WireDisconnectTests, CommandsAfterDisconnect) {
 // Test that commands that are serialized before a disconnect but flushed
 // after are received.
 TEST_F(WireDisconnectTests, FlushAfterDisconnect) {
-    // Sanity check that commands work at all.
+    // Check that commands work at all.
     wgpuDeviceCreateCommandEncoder(device, nullptr);
 
     // Disconnect.
@@ -75,7 +82,8 @@ TEST_F(WireDisconnectTests, CallsDeviceLostCallback) {
     GetWireClient()->Disconnect();
 }
 
-// Check that disconnecting the wire client after a device loss does not trigger the callback again.
+// Check that disconnecting the wire client after a device loss does not trigger the callback
+// again.
 TEST_F(WireDisconnectTests, ServerLostThenDisconnect) {
     MockCallback<WGPUDeviceLostCallback> mockDeviceLostCallback;
     wgpuDeviceSetDeviceLostCallback(device, mockDeviceLostCallback.Callback(),
@@ -172,3 +180,5 @@ TEST_F(WireDisconnectTests, DeleteClientDestroysObjects) {
     // Signal that we already released and cleared callbacks for |apiDevice|
     DefaultApiDeviceWasReleased();
 }
+
+}  // namespace dawn::wire

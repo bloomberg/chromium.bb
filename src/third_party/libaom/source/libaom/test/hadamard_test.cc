@@ -399,4 +399,10 @@ INSTANTIATE_TEST_SUITE_P(AVX2, HadamardLowbdLP8x8DualTest,
                              &aom_hadamard_8x8_dual_avx2, 8, 16)));
 #endif  // HAVE_AVX2
 
+#if HAVE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, HadamardLowbdLP8x8DualTest,
+                         ::testing::Values(HadamardLP8x8DualFuncWithSize(
+                             &aom_hadamard_8x8_dual_neon, 8, 16)));
+#endif  // HAVE_NEON
+
 }  // namespace

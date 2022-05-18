@@ -71,7 +71,7 @@
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 #endif
 
@@ -332,7 +332,7 @@ ChromeExtensionsAPIClient::CreateDevicePermissionsPrompt(
   return std::make_unique<ChromeDevicePermissionsPrompt>(web_contents);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 bool ChromeExtensionsAPIClient::ShouldAllowDetachingUsb(int vid,
                                                         int pid) const {
   // TOOD(huangs): Figure out how to do the following in Lacros, which does not
@@ -351,7 +351,7 @@ bool ChromeExtensionsAPIClient::ShouldAllowDetachingUsb(int vid,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 std::unique_ptr<VirtualKeyboardDelegate>
 ChromeExtensionsAPIClient::CreateVirtualKeyboardDelegate(
@@ -430,7 +430,7 @@ ChromeExtensionsAPIClient::GetNonNativeFileSystemDelegate() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 void ChromeExtensionsAPIClient::SaveImageDataToClipboard(
     std::vector<uint8_t> image_data,
     api::clipboard::ImageType type,
@@ -443,7 +443,7 @@ void ChromeExtensionsAPIClient::SaveImageDataToClipboard(
       std::move(image_data), type, std::move(additional_items),
       std::move(success_callback), std::move(error_callback));
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 AutomationInternalApiDelegate*
 ChromeExtensionsAPIClient::GetAutomationInternalApiDelegate() {

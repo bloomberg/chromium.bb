@@ -38,6 +38,7 @@
 #include "quiche/quic/test_tools/quic_stream_peer.h"
 #include "quiche/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "quiche/quic/test_tools/quic_test_utils.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/quiche_mem_slice_storage.h"
 
 using spdy::kV3HighestPriority;
@@ -180,6 +181,26 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   }
 
   SSL* GetSsl() const override { return nullptr; }
+
+  bool IsCryptoFrameExpectedForEncryptionLevel(
+      EncryptionLevel level) const override {
+    return level != ENCRYPTION_ZERO_RTT;
+  }
+
+  EncryptionLevel GetEncryptionLevelToSendCryptoDataOfSpace(
+      PacketNumberSpace space) const override {
+    switch (space) {
+      case INITIAL_DATA:
+        return ENCRYPTION_INITIAL;
+      case HANDSHAKE_DATA:
+        return ENCRYPTION_HANDSHAKE;
+      case APPLICATION_DATA:
+        return ENCRYPTION_FORWARD_SECURE;
+      default:
+        QUICHE_DCHECK(false);
+        return NUM_ENCRYPTION_LEVELS;
+    }
+  }
 
  private:
   using QuicCryptoStream::session;
@@ -2483,7 +2504,7 @@ TEST_P(QuicSessionTestServer, RetransmitFrames) {
   EXPECT_CALL(*stream6, RetransmitStreamData(_, _, _, _))
       .WillOnce(Return(true));
   EXPECT_CALL(*send_algorithm, OnApplicationLimited(_));
-  session_.RetransmitFrames(frames, TLP_RETRANSMISSION);
+  session_.RetransmitFrames(frames, PTO_RETRANSMISSION);
 }
 
 // Regression test of b/110082001.
@@ -2954,7 +2975,11 @@ TEST_P(QuicSessionTestServer, WriteBufferedCryptoFrames) {
 
   EXPECT_CALL(*connection_, SendCryptoData(ENCRYPTION_INITIAL, 350, 1000))
       .WillOnce(Return(350));
-  EXPECT_CALL(*connection_, SendCryptoData(ENCRYPTION_ZERO_RTT, 1350, 0))
+  EXPECT_CALL(
+      *connection_,
+      SendCryptoData(crypto_stream->GetEncryptionLevelToSendCryptoDataOfSpace(
+                         QuicUtils::GetPacketNumberSpace(ENCRYPTION_ZERO_RTT)),
+                     1350, 0))
       .WillOnce(Return(1350));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.HasPendingHandshake());

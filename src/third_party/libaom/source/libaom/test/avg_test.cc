@@ -57,8 +57,8 @@ class AverageTestBase : public ::testing::Test {
 
     source_data_ = static_cast<Pixel *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(source_data_[0])));
+    ASSERT_NE(source_data_, nullptr);
     memset(source_data_, 0, kDataBlockSize * sizeof(source_data_[0]));
-    ASSERT_TRUE(source_data_ != NULL);
     source_stride_ = (width_ + 31) & ~31;
     bit_depth_ = 8;
     rnd_.Reset(ACMRandom::DeterministicSeed());
@@ -362,7 +362,7 @@ class IntProRowTest : public AverageTestBase<uint8_t>,
   virtual void SetUp() {
     source_data_ = static_cast<uint8_t *>(
         aom_memalign(kDataAlignment, kDataBlockSize * sizeof(source_data_[0])));
-    ASSERT_TRUE(source_data_ != NULL);
+    ASSERT_NE(source_data_, nullptr);
 
     hbuf_asm_ = static_cast<int16_t *>(
         aom_memalign(kDataAlignment, sizeof(*hbuf_asm_) * 16));
@@ -535,10 +535,10 @@ class VectorVarTestBase : public ::testing::Test {
 
     ref_vector = static_cast<int16_t *>(
         aom_memalign(kDataAlignment, width * sizeof(ref_vector[0])));
-    ASSERT_TRUE(ref_vector != NULL);
+    ASSERT_NE(ref_vector, nullptr);
     src_vector = static_cast<int16_t *>(
         aom_memalign(kDataAlignment, width * sizeof(src_vector[0])));
-    ASSERT_TRUE(src_vector != NULL);
+    ASSERT_NE(src_vector, nullptr);
 
     rnd_.Reset(ACMRandom::DeterministicSeed());
   }
@@ -749,6 +749,12 @@ INSTANTIATE_TEST_SUITE_P(
                       make_tuple(64, &aom_int_pro_col_neon, &aom_int_pro_col_c),
                       make_tuple(128, &aom_int_pro_col_neon,
                                  &aom_int_pro_col_c)));
+
+INSTANTIATE_TEST_SUITE_P(
+    NEON, AvgTest8bpp_avg_8x8_quad,
+    ::testing::Values(make_tuple(16, 16, 8, 0, 16, &aom_avg_8x8_quad_neon),
+                      make_tuple(32, 32, 8, 16, 16, &aom_avg_8x8_quad_neon),
+                      make_tuple(32, 32, 8, 8, 16, &aom_avg_8x8_quad_neon)));
 #endif
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -801,7 +807,7 @@ class SatdTestBase
     rnd_.Reset(ACMRandom::DeterministicSeed());
     src_ = reinterpret_cast<CoeffType *>(
         aom_memalign(32, sizeof(*src_) * satd_size_));
-    ASSERT_TRUE(src_ != NULL);
+    ASSERT_NE(src_, nullptr);
   }
   virtual void TearDown() { aom_free(src_); }
   void FillConstant(const CoeffType val) {

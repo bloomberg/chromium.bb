@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup"
-    enum="BooleanChecked" expires_after="2022-05-01">
+    enum="BooleanChecked" expires_after="2022-10-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -81,7 +81,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.EulaScreen.UserActions" enum="EulaScreenUserAction"
-    expires_after="2022-05-01">
+    expires_after="2022-10-01">
   <owner>raleksandrov@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -165,6 +165,18 @@ chromium-metrics-reviews@google.com.
     Records the amount of time that each page within the gesture navigation OOBE
     screen is shown. Recorded when the gesture navigation oobe screen is
     exiting.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.HidDetectionScreen.HidConnected" enum="HidType"
+    expires_after="2023-05-06">
+  <owner>gordonseto@google.com</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Records the type of a connected human interface device (HID). This metric is
+    emitted each time a HID is connected during the HID detection screen in
+    OOBE. It does not include devices connected before the screen is shown or
+    after the screen is hidden.
   </summary>
 </histogram>
 

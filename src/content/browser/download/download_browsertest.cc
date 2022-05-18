@@ -50,6 +50,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1519,19 +1520,28 @@ class DownloadFencedFrameTest
 
     // FencedFrameTestHelper only supports the MPArch version of fenced frames.
     // So need to maually create a fenced frame for the ShadowDOM version.
-    TestNavigationManager navigation(shell()->web_contents(), url);
     constexpr char kAddFencedFrameScript[] = R"({
         const fenced_frame = document.createElement('fencedframe');
-        fenced_frame.src = $1;
         document.body.appendChild(fenced_frame);
     })";
-    EXPECT_TRUE(
-        ExecJs(fenced_frame_parent, JsReplace(kAddFencedFrameScript, url)));
+    EXPECT_TRUE(ExecJs(fenced_frame_parent, kAddFencedFrameScript));
+
+    // Navigate the fenced frame from inside itself, just like the
+    // `FencedFrameTestHelper` does for MPArch.
+    RenderFrameHostImpl* rfh =
+        static_cast<RenderFrameHostImpl*>(ChildFrameAt(fenced_frame_parent, 0));
+    FrameTreeNode* target_node = rfh->frame_tree_node();
+    constexpr char kNavigateInFencedFrameScript[] = R"({
+        location.href = $1;
+    })";
+
+    TestNavigationManager navigation(shell()->web_contents(), url);
+    EXPECT_EQ(url.spec(),
+              EvalJs(rfh, JsReplace(kNavigateInFencedFrameScript, url)));
     navigation.WaitForNavigationFinished();
 
-    RenderFrameHost* new_frame = ChildFrameAt(fenced_frame_parent, 0);
-
-    return new_frame;
+    EXPECT_FALSE(target_node->current_frame_host()->IsErrorDocument());
+    return target_node->current_frame_host();
   }
 
  private:
@@ -4830,8 +4840,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 
 // Verify WebUI download will success with an associated renderer process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
-  GURL webui_url(
-      GetWebUIURL("resources/images/apps/topbar_button_maximize.png"));
+  GURL webui_url(GetWebUIURL("resources/images/error.svg"));
   EXPECT_TRUE(NavigateToURL(shell(), webui_url));
   SetupEnsureNoPendingDownloads();
 
@@ -4854,7 +4863,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUI) {
 // Verify WebUI download will gracefully fail without an associated renderer
 // process.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadFromWebUIWithoutRenderer) {
-  GURL webui_url("chrome://resources/images/apps/topbar_button_maximize.png");
+  GURL webui_url("chrome://resources/images/error.svg");
   EXPECT_TRUE(NavigateToURL(shell(), webui_url));
   SetupEnsureNoPendingDownloads();
 

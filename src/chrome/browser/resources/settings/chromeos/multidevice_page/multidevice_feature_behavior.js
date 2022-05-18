@@ -102,13 +102,25 @@ const MultiDeviceFeatureBehaviorImpl = {
   },
 
   /**
+   * @return {boolean} Whether or not Phone Hub apps access is
+   *     prohibited (i.e., due to the apps streaming policy of the phone is
+   * disabled).
+   */
+  isPhoneHubAppsAccessProhibited() {
+    return this.pageContentData &&
+        this.pageContentData.appsAccessStatus ===
+        PhoneHubFeatureAccessStatus.PROHIBITED;
+  },
+
+  /**
    * Whether Camera Roll requires user action to finish set up.
    * @return {boolean}
    */
   isPhoneHubCameraRollSetupRequired() {
     return this.isFeatureSupported(MultiDeviceFeature.PHONE_HUB_CAMERA_ROLL) &&
         this.pageContentData.cameraRollAccessStatus ===
-        PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+        PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED &&
+        this.isFeatureAllowedByPolicy(MultiDeviceFeature.PHONE_HUB_CAMERA_ROLL);
   },
 
   /**
@@ -118,7 +130,9 @@ const MultiDeviceFeatureBehaviorImpl = {
   isPhoneHubAppsSetupRequired() {
     return this.isFeatureSupported(MultiDeviceFeature.ECHE) &&
         this.pageContentData.isPhoneHubPermissionsDialogSupported &&
-        !this.pageContentData.isPhoneHubAppsAccessGranted;
+        this.pageContentData.appsAccessStatus ===
+        PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED &&
+        this.isFeatureAllowedByPolicy(MultiDeviceFeature.ECHE);
   },
 
   /**
@@ -127,7 +141,9 @@ const MultiDeviceFeatureBehaviorImpl = {
    */
   isPhoneHubNotificationsSetupRequired() {
     return this.pageContentData.notificationAccessStatus ===
-        PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+        PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED &&
+        this.isFeatureAllowedByPolicy(
+            MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS);
   },
 
   /**
@@ -154,6 +170,13 @@ const MultiDeviceFeatureBehaviorImpl = {
     // prohibited.
     if (feature === MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS &&
         this.isPhoneHubNotificationAccessProhibited()) {
+      return false;
+    }
+
+    // Cannot edit the Phone Hub apps toggle if apps access is
+    // prohibited.
+    if (feature === MultiDeviceFeature.ECHE &&
+        this.isPhoneHubAppsAccessProhibited()) {
       return false;
     }
 

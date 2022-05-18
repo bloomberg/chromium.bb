@@ -454,7 +454,6 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-
     DownloadJob::CancelRequestCallback cancel_request_callback)
     : request_info_(url),
       guid_(base::GenerateGUID()),
@@ -545,23 +544,6 @@ void DownloadItemImpl::ValidateMixedContentDownload() {
   DVLOG(20) << __func__ << "() download=" << DebugString(true);
 
   mixed_content_status_ = MixedContentStatus::VALIDATED;
-
-  UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
-                      // may not be in a consistent state or around at all after
-                      // invoking observers, but we keep it here because it is
-                      // used in ValidateDangerousDownload(), too.
-                      // http://crbug.com/586610
-
-  MaybeCompleteDownload();
-}
-
-void DownloadItemImpl::AcceptIncognitoWarning() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!incognito_warning_accepted_);
-
-  DVLOG(20) << __func__ << "() download=" << DebugString(true);
-
-  incognito_warning_accepted_ = true;
 
   UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
                       // may not be in a consistent state or around at all after
@@ -1061,11 +1043,6 @@ bool DownloadItemImpl::IsMixedContent() const {
   return mixed_content_status_ == MixedContentStatus::WARN ||
          mixed_content_status_ == MixedContentStatus::BLOCK ||
          mixed_content_status_ == MixedContentStatus::SILENT_BLOCK;
-}
-
-bool DownloadItemImpl::ShouldShowIncognitoWarning() const {
-  return base::FeatureList::IsEnabled(features::kIncognitoDownloadsWarning) &&
-         delegate_->IsOffTheRecord() && !incognito_warning_accepted_;
 }
 
 DownloadDangerType DownloadItemImpl::GetDangerType() const {
@@ -1759,6 +1736,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
     const base::FilePath& display_name,
+    const std::string& mime_type,
     absl::optional<DownloadSchedule> download_schedule,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1805,6 +1783,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   mixed_content_status_ = mixed_content_status;
   if (!display_name.empty())
     SetDisplayName(display_name);
+  if (!mime_type.empty())
+    mime_type_ = mime_type;
 
   // This was an interrupted download that was looking for a filename. Resolve
   // early without performing the intermediate rename. If there is a
@@ -2402,10 +2382,6 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
   // completion.
   if (IsMixedContent())
     return false;
-
-  if (ShouldShowIncognitoWarning()) {
-    return false;
-  }
 
   // Check for consistency before invoking delegate. Since there are no pending
   // target determination calls and the download is in progress, both the target

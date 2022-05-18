@@ -12,6 +12,11 @@ bool FollowProvider::GetFollowStatus(FollowWebPageURLs* follow_web_page_urls) {
   return false;
 }
 
+bool FollowProvider::GetRecommendedStatus(
+    FollowWebPageURLs* follow_web_page_urls) {
+  return false;
+}
+
 NSArray<FollowedWebChannel*>* FollowProvider::GetFollowedWebChannels() {
   return nil;
 }
@@ -26,3 +31,7 @@ void FollowProvider::AddFollowManagementUIUpdater(
 
 void FollowProvider::RemoveFollowManagementUIUpdater(
     id<FollowManagementUIUpdater> follow_management_ui_updater) {}
+
+bool FollowProvider::DoesFollowingFeedHaveContent() {
+  return false;
+}

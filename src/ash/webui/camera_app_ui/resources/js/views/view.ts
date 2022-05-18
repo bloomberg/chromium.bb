@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof} from '../assert.js';
+import {assertExists, assertInstanceof} from '../assert.js';
 import * as dom from '../dom.js';
+import {I18nString} from '../i18n_string.js';
+import * as state from '../state.js';
 import {ViewName} from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
 
@@ -45,11 +47,46 @@ export class PTZPanelOptions {
   }
 }
 
+export interface StateOption {
+  readonly label: I18nString;
+
+  readonly ariaLabel: I18nString;
+
+  readonly state: state.State;
+
+  readonly isDisableOption?: boolean;
+}
+
+/**
+ * Options for open Option panel.
+ */
+export class OptionPanelOptions {
+  readonly triggerButton: HTMLElement;
+
+  readonly titleLabel: I18nString;
+
+  readonly stateOptions: StateOption[];
+
+  readonly onStateChanged: (newState: state.State|null) => void;
+
+  constructor({triggerButton, titleLabel, stateOptions, onStateChanged}: {
+    triggerButton: HTMLElement,
+    titleLabel: I18nString,
+    stateOptions: StateOption[],
+    onStateChanged: (newState: state.State|null) => void,
+  }) {
+    this.triggerButton = triggerButton;
+    this.titleLabel = titleLabel;
+    this.stateOptions = stateOptions;
+    this.onStateChanged = onStateChanged;
+  }
+}
+
 // TODO(pihsun): After we migrate all files into TypeScript, we can have some
 // sort of "global" view registration, so we can enforce the enter / leave type
 // at compile time.
 export type EnterOptions =
-    DialogEnterOptions|PTZPanelOptions|WarningEnterOptions;
+    DialogEnterOptions|OptionPanelOptions|PTZPanelOptions|WarningEnterOptions;
 
 export type LeaveCondition = {
   kind: 'BACKGROUND_CLICKED',
@@ -79,7 +116,7 @@ interface ViewOptions {
 }
 
 /**
- * Base controller of a view for views' navigation sessions (nav.js).
+ * Base controller of a view for views' navigation sessions (nav.ts).
  */
 export class View {
   root: HTMLElement;
@@ -92,6 +129,8 @@ export class View {
   private readonly dismissByEsc: boolean;
 
   private readonly defaultFocusSelector: string;
+
+  protected lastFocusedElement: HTMLElement|null = null;
 
   /**
    * @param name Unique name of view which should be same as its DOM element id.
@@ -148,12 +187,80 @@ export class View {
   }
 
   /**
-   * Focuses the default element on the view if applicable.
+   * Deactivates the view to be unfocusable.
    */
-  focus(): void {
+  protected setUnfocusable(): void {
+    this.root.setAttribute('aria-hidden', 'true');
+    for (const element of dom.getAllFrom(
+             this.root, '[tabindex]', HTMLElement)) {
+      element.dataset['tabindex'] =
+          assertExists(element.getAttribute('tabindex'));
+      element.setAttribute('tabindex', '-1');
+    }
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLElement) {
+      activeElement.blur();
+    }
+  }
+
+  /**
+   * Activates the view to be focusable.
+   */
+  protected setFocusable(): void {
+    this.root.setAttribute('aria-hidden', 'false');
+    for (const element of dom.getAllFrom(
+             this.root, '[tabindex]', HTMLElement)) {
+      if (element.dataset['tabindex'] === undefined) {
+        // First activation, no need to restore tabindex from data-tabindex.
+        continue;
+      }
+      element.setAttribute('tabindex', element.dataset['tabindex']);
+      element.removeAttribute('data-tabindex');
+    }
+  }
+
+  /**
+   * The view is newly shown as the topmost view.
+   */
+  onShownAsTop(): void {
+    this.setFocusable();
+    // Focus on the default selector on enter.
     const el = this.root.querySelector(this.defaultFocusSelector);
     if (el !== null) {
       assertInstanceof(el, HTMLElement).focus();
+    }
+  }
+
+  /**
+   * The view was the topmost shown view and is being hidden.
+   */
+  onHideAsTop(): void {
+    this.lastFocusedElement = null;
+    this.setUnfocusable();
+  }
+
+  /**
+   * The view was the topmost shown view and is being covered by newly shown
+   * view.
+   */
+  onCoveredAsTop(): void {
+    this.lastFocusedElement = document.activeElement === null ?
+        null :
+        assertInstanceof(document.activeElement, HTMLElement);
+    this.setUnfocusable();
+  }
+
+  /**
+   * The view becomes the new topmost shown view after some upper view is
+   * hidden.
+   *
+   * @param _viewName The name of the upper view that is hidden.
+   */
+  onUncoveredAsTop(_viewName: ViewName): void {
+    this.setFocusable();
+    if (this.lastFocusedElement !== null) {
+      this.lastFocusedElement.focus();
+      this.lastFocusedElement = null;
     }
   }
 
@@ -169,7 +276,7 @@ export class View {
    *
    * @param _options Optional rest parameters for entering the view.
    */
-  entering(_options?: EnterOptions): void {
+  protected entering(_options?: EnterOptions): void {
     // To be overridden by subclasses.
   }
 
@@ -195,7 +302,7 @@ export class View {
    * @param _condition Optional condition for leaving the view.
    * @return Whether able to leaving the view or not.
    */
-  leaving(_condition: LeaveCondition): boolean {
+  protected leaving(_condition: LeaveCondition): boolean {
     return true;
   }
 

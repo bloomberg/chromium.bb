@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
+
 #include "dawn/tests/DawnTest.h"
 
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
-#include <array>
-
 constexpr static unsigned int kRTSize = 16;
 
 class DrawQuad {
   public:
-    DrawQuad() {
-    }
+    DrawQuad() {}
     DrawQuad(wgpu::Device device, const char* vsSource, const char* fsSource) : device(device) {
         vsModule = utils::CreateShaderModule(device, vsSource);
         fsModule = utils::CreateShaderModule(device, fsSource);

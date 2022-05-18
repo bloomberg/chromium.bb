@@ -190,6 +190,7 @@ class PrintRenderFrameHelper
     OK,
     FAIL_PRINT_INIT,
     FAIL_PRINT,
+    INVALID_PAGE_RANGE,
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     FAIL_PREVIEW,
     INVALID_SETTINGS,
@@ -255,6 +256,7 @@ class PrintRenderFrameHelper
 
   // printing::mojom::PrintRenderFrame:
   void PrintRequestedPages() override;
+  void PrintWithParams(mojom::PrintPagesParamsPtr params) override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void PrintForSystemDialog() override;
   void SetPrintPreviewUI(
@@ -262,7 +264,7 @@ class PrintRenderFrameHelper
   void InitiatePrintPreview(
       mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
       bool has_selection) override;
-  void PrintPreview(base::Value settings) override;
+  void PrintPreview(base::Value::Dict settings) override;
   void OnPrintPreviewDialogClosed() override;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void PrintFrameContent(mojom::PrintFrameContentParamsPtr params,
@@ -367,7 +369,7 @@ class PrintRenderFrameHelper
   void PrintPages();
   bool PrintPagesNative(blink::WebLocalFrame* frame,
                         uint32_t page_count,
-                        bool is_pdf);
+                        const std::vector<uint32_t>& pages_to_print);
   void FinishFramePrinting();
   // Render the frame for printing.
   bool RenderPagesForPrint(blink::WebLocalFrame* frame,
@@ -409,12 +411,6 @@ class PrintRenderFrameHelper
       const mojom::PrintParams& default_params,
       bool ignore_css_margins,
       double* scale_factor);
-
-  // Return an array of pages to print given the print |params| and an expected
-  // |page_count|. Page numbers are zero-based.
-  static std::vector<uint32_t> GetPrintedPages(
-      const mojom::PrintPagesParams& params,
-      uint32_t page_count);
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
@@ -491,7 +487,7 @@ class PrintRenderFrameHelper
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Settings used by a PrintRenderer to create a preview document.
-  base::Value print_renderer_job_settings_;
+  base::Value::Dict print_renderer_job_settings_;
 
   // Used to render print documents from an external source (ARC, Crostini,
   // etc.).
@@ -532,7 +528,7 @@ class PrintRenderFrameHelper
     // Create the print preview document. |pages| is empty to print all pages.
     bool CreatePreviewDocument(
         std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
-        const std::vector<uint32_t>& pages,
+        const PageRanges& pages,
         mojom::SkiaDocumentType doc_type,
         int document_cookie,
         bool require_document_metafile);

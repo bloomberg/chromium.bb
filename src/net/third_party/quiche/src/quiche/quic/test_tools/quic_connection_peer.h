@@ -53,6 +53,10 @@ class QuicConnectionPeer {
 
   static QuicTime::Delta GetHandshakeTimeout(QuicConnection* connection);
 
+  static QuicTime::Delta GetBandwidthUpdateTimeout(QuicConnection* connection);
+
+  static void DisableBandwidthUpdate(QuicConnection* connection);
+
   static void SetPerspective(QuicConnection* connection,
                              Perspective perspective);
 
@@ -128,8 +132,6 @@ class QuicConnectionPeer {
   static bool SupportsReleaseTime(QuicConnection* connection);
   static QuicConnection::PacketContent GetCurrentPacketContent(
       QuicConnection* connection);
-  static void SetLastHeaderFormat(QuicConnection* connection,
-                                  PacketHeaderFormat format);
   static void AddBytesReceived(QuicConnection* connection, size_t length);
   static void SetAddressValidated(QuicConnection* connection);
 

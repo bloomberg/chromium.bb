@@ -110,9 +110,7 @@ public:
             , fCapabilities(0)
             , fIdCount(1)
             , fCurrentBlock(0)
-            , fSynthetics(fContext, /*builtin=*/true) {
-        this->setupIntrinsics();
-    }
+            , fSynthetics(fContext, /*builtin=*/true) {}
 
     bool generateCode() override;
 
@@ -120,7 +118,8 @@ private:
     enum IntrinsicOpcodeKind {
         kGLSL_STD_450_IntrinsicOpcodeKind,
         kSPIRV_IntrinsicOpcodeKind,
-        kSpecial_IntrinsicOpcodeKind
+        kSpecial_IntrinsicOpcodeKind,
+        kInvalid_IntrinsicOpcodeKind,
     };
 
     enum SpecialIntrinsic {
@@ -151,8 +150,6 @@ private:
         std::unique_ptr<SPIRVCodeGenerator::LValue> lvalue;
     };
 
-    void setupIntrinsics();
-
     /**
      * Pass in the type to automatically add a RelaxedPrecision decoration for the id when
      * appropriate, or null to never add one.
@@ -160,8 +157,6 @@ private:
     SpvId nextId(const Type* type);
 
     SpvId nextId(Precision precision);
-
-    const Type& getActualType(const Type& type);
 
     SpvId getType(const Type& type);
 
@@ -333,9 +328,6 @@ private:
                                SpvId rhs, SpvOp_ ifFloat, SpvOp_ ifInt, SpvOp_ ifUInt,
                                SpvOp_ ifBool, OutputStream& out);
 
-    SpvId writeBinaryOperation(const BinaryExpression& expr, SpvOp_ ifFloat, SpvOp_ ifInt,
-                               SpvOp_ ifUInt, OutputStream& out);
-
     SpvId writeReciprocal(const Type& type, SpvId value, OutputStream& out);
 
     SpvId writeBinaryExpression(const Type& leftType, SpvId lhs, Operator op,
@@ -383,8 +375,6 @@ private:
     void writeWord(int32_t word, OutputStream& out);
 
     void writeString(std::string_view s, OutputStream& out);
-
-    void writeLabel(SpvId id, OutputStream& out);
 
     void writeInstruction(SpvOp_ opCode, OutputStream& out);
 
@@ -446,15 +436,54 @@ private:
     SpvId writeOpCompositeExtract(const Type& type, SpvId base, int component, OutputStream& out);
     SpvId writeOpCompositeExtract(const Type& type, SpvId base, int componentA, int componentB,
                                   OutputStream& out);
+    SpvId writeOpLoad(SpvId type, Precision precision, SpvId pointer, OutputStream& out);
+    void writeOpStore(SpvStorageClass_ storageClass, SpvId pointer, SpvId value, OutputStream& out);
 
     // Converts the provided SpvId(s) into an array of scalar OpConstants, if it can be done.
     bool toConstants(SpvId value, SkTArray<SpvId>* constants);
     bool toConstants(SkSpan<const SpvId> values, SkTArray<SpvId>* constants);
 
     // Extracts the requested component SpvId from a composite instruction, if it can be done.
-    SpvId toComponent(const Instruction& instr, int component);
+    Instruction* resultTypeForInstruction(const Instruction& instr);
+    int numComponentsForVecInstruction(const Instruction& instr);
+    SpvId toComponent(SpvId id, int component);
 
-    void pruneReachableOps(size_t numReachableOps);
+    struct ConditionalOpCounts {
+        size_t numReachableOps;
+        size_t numStoreOps;
+    };
+    ConditionalOpCounts getConditionalOpCounts();
+    void pruneConditionalOps(ConditionalOpCounts ops);
+
+    enum StraightLineLabelType {
+        // Use "BranchlessBlock" for blocks which are never explicitly branched-to at all. This
+        // happens at the start of a function, or when we find unreachable code.
+        kBranchlessBlock,
+
+        // Use "BranchIsOnPreviousLine" when writing a label that comes immediately after its
+        // associated branch. Example usage:
+        // - SPIR-V does not implicitly fall through from one block to the next, so you may need to
+        //   use an OpBranch to explicitly jump to the next block, even when they are adjacent in
+        //   the code.
+        // - The block immediately following an OpBranchConditional or OpSwitch.
+        kBranchIsOnPreviousLine,
+    };
+
+    enum BranchingLabelType {
+        // Use "BranchIsAbove" for labels which are referenced by OpBranch or OpBranchConditional
+        // ops that are above the label in the code--i.e., the branch skips forward in the code.
+        kBranchIsAbove,
+
+        // Use "BranchIsBelow" for labels which are referenced by OpBranch or OpBranchConditional
+        // ops below the label in the code--i.e., the branch jumps backward in the code.
+        kBranchIsBelow,
+
+        // Use "BranchesOnBothSides" for labels which have branches coming from both directions.
+        kBranchesOnBothSides,
+    };
+    void writeLabel(SpvId label, StraightLineLabelType type, OutputStream& out);
+    void writeLabel(SpvId label, BranchingLabelType type, ConditionalOpCounts ops,
+                    OutputStream& out);
 
     bool isDead(const Variable& var) const;
 
@@ -491,7 +520,7 @@ private:
         int32_t unsignedOp;
         int32_t boolOp;
     };
-    SkTHashMap<IntrinsicKind, Intrinsic> fIntrinsicMap;
+    Intrinsic getIntrinsic(IntrinsicKind) const;
     SkTHashMap<const FunctionDeclaration*, SpvId> fFunctionMap;
     SkTHashMap<const Variable*, SpvId> fVariableMap;
     SkTHashMap<const Type*, SpvId> fStructMap;
@@ -507,6 +536,7 @@ private:
     // it back to its source).
     SkTHashMap<Instruction, SpvId, Instruction::Hash> fOpCache;  // maps instruction -> SpvId
     SkTHashMap<SpvId, Instruction> fSpvIdCache;                  // maps SpvId -> instruction
+    SkTHashMap<SpvId, SpvId> fStoreCache;                        // maps ptr SpvId -> value SpvId
 
     // "Reachable" ops are instructions which can safely be accessed from the current block.
     // For instance, if our SPIR-V contains `%3 = OpFAdd %1 %2`, we would be able to access and
@@ -516,6 +546,12 @@ private:
     // same logic applies to other control-flow blocks as well. Once an instruction becomes
     // unreachable, we remove it from both op-caches.
     std::vector<SpvId> fReachableOps;
+
+    // The "store-ops" list contains a running list of all the pointers in the store cache. If a
+    // store occurs inside of a conditional block, once that block exits, we no longer know what is
+    // stored in that particular SpvId. At that point, we must remove any associated entry from the
+    // store cache.
+    std::vector<SpvId> fStoreOps;
 
     // label of the current block, or 0 if we are not in a block
     SpvId fCurrentBlock;

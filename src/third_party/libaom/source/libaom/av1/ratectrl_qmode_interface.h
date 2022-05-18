@@ -20,7 +20,7 @@
 namespace aom {
 
 constexpr int kBlockRefCount = 2;
-constexpr int kRefFrameTableSize = 8;
+constexpr int kRefFrameTableSize = 7;
 
 struct MotionVector {
   int row;          // subpel row
@@ -33,6 +33,8 @@ struct RateControlParam {
   int min_gop_show_frame_count;
   int max_ref_frames;
   int base_q_index;
+  int frame_width;
+  int frame_height;
 };
 
 struct TplBlockStats {
@@ -50,6 +52,23 @@ enum class EncodeRefMode {
   kRegular,
   kOverlay,
   kShowExisting,
+};
+
+enum class ReferenceName {
+  kNoneFrame = -1,
+  kIntraFrame = 0,
+  kLastFrame = 1,
+  kLast2Frame = 2,
+  kLast3Frame = 3,
+  kGoldenFrame = 4,
+  kBwdrefFrame = 5,
+  kAltref2Frame = 6,
+  kAltrefFrame = 7,
+};
+
+struct ReferenceFrame {
+  int index;  // Index of reference slot containing the reference frame
+  ReferenceName name;
 };
 
 struct GopFrame {
@@ -72,19 +91,29 @@ struct GopFrame {
   EncodeRefMode encode_ref_mode;
   int colocated_ref_idx;  // colocated_ref_idx == -1 when encode_ref_mode ==
                           // EncodeRefMode::kRegular
-  int update_ref_idx;  // The reference index that this frame should be updated
-                       // to. update_ref_idx == -1 when this frame will not
-                       // serve as a reference frame
-  std::vector<int>
-      ref_idx_list;     // The indices of reference frames.
-                        // The size should be less or equal to max_ref_frames.
-  int layer_depth;      // Layer depth in the GOP structure
-  int primary_ref_idx;  // We will use the primary reference to update current
-                        // frame's initial probability model
+  int update_ref_idx;     // The reference index that this frame should be
+                          // updated to. update_ref_idx == -1 when this frame
+                          // will not serve as a reference frame
+  std::vector<ReferenceFrame>
+      ref_frame_list;  // A list of available reference frames in priority order
+                       // for the current to-be-coded frame. The list size
+                       // should be less or equal to kRefFrameTableSize. The
+                       // reference frames with smaller indices are more likely
+                       // to be a good reference frame. Therefore, they should
+                       // be prioritized when the reference frame count is
+                       // limited. For example, if we plan to use 3 reference
+                       // frames, we should choose ref_frame_list[0],
+                       // ref_frame_list[1] and ref_frame_list[2].
+  int layer_depth;     // Layer depth in the GOP structure
+  ReferenceFrame primary_ref_frame;  // We will use the primary reference frame
+                                     // to update current frame's initial
+                                     // probability model
 };
 
 struct GopStruct {
   int show_frame_count;
+  int global_coding_idx_offset;
+  int global_order_idx_offset;
   std::vector<GopFrame> gop_frame_list;
 };
 
@@ -95,7 +124,12 @@ struct FrameEncodeParameters {
   int rdmult;
 };
 
-using FirstpassInfo = std::vector<FIRSTPASS_STATS>;
+struct FirstpassInfo {
+  int num_mbs_16x16;  // Count of 16x16 unit blocks in each frame.
+                      // FIRSTPASS_STATS's unit block size is 16x16
+  std::vector<FIRSTPASS_STATS> stats_list;
+};
+
 using RefFrameTable = std::array<GopFrame, kRefFrameTableSize>;
 
 struct GopEncodeInfo {
@@ -121,7 +155,7 @@ class AV1RateControlQModeInterface {
 
   virtual void SetRcParam(const RateControlParam &rc_param) = 0;
   virtual GopStructList DetermineGopInfo(
-      const FirstpassInfo &firstpass_stats_list) = 0;
+      const FirstpassInfo &firstpass_info) = 0;
   // Accept firstpass and tpl info from the encoder and return q index and
   // rdmult. This needs to be called with consecutive GOPs as returned by
   // DetermineGopInfo.

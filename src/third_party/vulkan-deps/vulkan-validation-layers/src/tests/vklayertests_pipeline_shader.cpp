@@ -15643,7 +15643,8 @@ TEST_F(VkLayerTest, CreateGraphicsPipelineNullRenderPass) {
 
     m_errorMonitor->VerifyNotFound();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06575");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06574");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06603");
     pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
     m_errorMonitor->VerifyFound();
 }
@@ -16293,6 +16294,41 @@ TEST_F(VkLayerTest, DynamicSampleLocations) {
     m_commandBuffer->end();
 }
 
+TEST_F(VkLayerTest, TestShaderInputOutputMismatch) {
+    TEST_DESCRIPTION("Test mismatch between vertex shader output and fragment shader input.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    const char vsSource[] = R"glsl(
+        #version 450
+        layout(location = 1) out int v;
+        void main() {
+            v = 1;
+        }
+    )glsl";
+
+    const char fsSource[] = R"glsl(
+        #version 450
+        layout(location = 0) out vec4 color;
+        layout(location = 1) in float v;
+        void main() {
+           color = vec4(v);
+        }
+    )glsl";
+    VkShaderObj vs(this, vsSource, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    CreatePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
+    pipe.InitState();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-Shader-InterfaceTypeMismatch");
+    pipe.CreateGraphicsPipeline();
+    m_errorMonitor->VerifyFound();
+}
+
 TEST_F(VkLayerTest, PrimitivesGeneratedQueryAndDiscardEnabled) {
     TEST_DESCRIPTION("Test missing primitivesGeneratedQueryWithRasterizerDiscard feature.");
 
@@ -16308,8 +16344,13 @@ TEST_F(VkLayerTest, PrimitivesGeneratedQueryAndDiscardEnabled) {
         return;
     }
     auto primitives_generated_features = LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>();
-    primitives_generated_features.primitivesGeneratedQueryWithRasterizerDiscard = VK_FALSE;
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&primitives_generated_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
+        printf("%s primitivesGeneratedQuery feature is not supported.\n", kSkipPrefix);
+        return;
+    }
+    primitives_generated_features.primitivesGeneratedQueryWithRasterizerDiscard = VK_FALSE;
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
@@ -16366,6 +16407,10 @@ TEST_F(VkLayerTest, PrimitivesGeneratedQueryStreams) {
         LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>(&transform_feedback_features);
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&primitives_generated_features);
     vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
+        printf("%s primitivesGeneratedQuery feature is not supported.\n", kSkipPrefix);
+        return;
+    }
     if (transform_feedback_features.geometryStreams == VK_FALSE) {
         printf("%s geometryStreams feature not supported, skipping tests.\n", kSkipPrefix);
     }
@@ -16517,4 +16562,239 @@ TEST_F(VkLayerTest, TestMaxFragmentDualSrcAttachments) {
 
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, TestSubgroupUniformControlFlow) {
+    TEST_DESCRIPTION("Test SubgroupUniformControlFlow spirv execution mode");
+
+    AddRequiredExtensions(VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix,
+               VK_KHR_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_EXTENSION_NAME);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+
+    const std::string source = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpExecutionMode %main SubgroupUniformControlFlowKHR
+
+               ; Debug Information
+               OpSource GLSL 450
+               OpName %main "main"  ; id %4
+
+               ; Annotations
+               OpDecorate %gl_WorkGroupSize BuiltIn WorkgroupSize
+
+               ; Types, variables and constants
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %v3uint = OpTypeVector %uint 3
+     %uint_1 = OpConstant %uint 1
+%gl_WorkGroupSize = OpConstantComposite %v3uint %uint_1 %uint_1 %uint_1
+
+               ; Function main
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    CreateComputePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.cs_.reset(new VkShaderObj(this, source, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    pipe.InitState();
+    pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-SubgroupUniformControlFlowKHR-06379");
+    pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestLocalSizeIdExecutionMode) {
+    TEST_DESCRIPTION("Test LocalSizeId spirv execution mode");
+
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+    ASSERT_NO_FATAL_FAILURE(Init());
+    if (DeviceValidationVersion() != VK_API_VERSION_1_2) {
+        printf("%s Test requires Vulkan = 1.2.\n", kSkipPrefix);
+        return;
+    }
+
+    const std::string source = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionModeId %main LocalSizeId %uint_1 %uint_1 %uint_1
+               OpSource GLSL 450
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %uint_1 = OpConstant %uint 1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    CreateComputePipelineHelper pipe(*this);
+    pipe.InitInfo();
+    pipe.cs_.reset(new VkShaderObj(this, source, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_3, SPV_SOURCE_ASM));
+    pipe.InitState();
+    pipe.pipeline_layout_ = VkPipelineLayoutObj(m_device, {});
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-LocalSizeId-06433");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-LocalSizeId-06434");
+    pipe.CreateComputePipeline();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, TestComputeLocalWorkgroupSize) {
+    TEST_DESCRIPTION("Test size of local workgroud with requiredSubgroupSize.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping tests.\n", kSkipPrefix, VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME);
+        return;
+    }
+
+    auto sscf = LvlInitStruct<VkPhysicalDeviceSubgroupSizeControlFeaturesEXT>();
+    auto features2  = LvlInitStruct<VkPhysicalDeviceFeatures2>(&sscf);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (sscf.subgroupSizeControl == VK_FALSE || sscf.computeFullSubgroups == VK_FALSE) {
+        printf("%s Required features are not supported, skipping test.\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    auto subgroup_properties = LvlInitStruct<VkPhysicalDeviceSubgroupSizeControlPropertiesEXT>();
+    auto props = LvlInitStruct<VkPhysicalDeviceProperties2>(&subgroup_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &props);
+    auto subgroup_size_control = LvlInitStruct<VkPipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>();
+    subgroup_size_control.requiredSubgroupSize = subgroup_properties.minSubgroupSize;
+
+    uint32_t size = static_cast<uint32_t>(
+        std::ceil(std::sqrt(subgroup_size_control.requiredSubgroupSize * subgroup_properties.maxComputeWorkgroupSubgroups)));
+
+
+    if (size <= 1024) {
+        std::stringstream csSource;
+        csSource << R"glsl(
+        #version 450
+        layout(local_size_x=
+    )glsl";
+        csSource << size;
+        csSource << R"glsl(, local_size_y=
+    )glsl";
+        csSource << size;
+        csSource << R"glsl(, local_size_z=2) in;
+        void main(){
+           if (gl_GlobalInvocationID.x >= 0) { return; }
+        }
+    )glsl";
+
+        CreateComputePipelineHelper pipe(*this);
+        pipe.InitInfo();
+        pipe.cs_.reset(new VkShaderObj(this, csSource.str().c_str(), VK_SHADER_STAGE_COMPUTE_BIT));
+        pipe.InitState();
+        pipe.LateBindPipelineInfo();
+        pipe.cp_ci_.stage.pNext = &subgroup_size_control;
+        if (size * size * 2 > m_device->props.limits.maxComputeWorkGroupInvocations) {
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-RuntimeSpirv-x-06432");
+        }
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-pNext-02756");
+        pipe.CreateComputePipeline(true, false);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (subgroup_properties.maxSubgroupSize > 1) {
+        std::stringstream csSource;
+        csSource << R"glsl(
+            #version 450
+            layout(local_size_x=
+        )glsl";
+        csSource << subgroup_properties.maxSubgroupSize - 1;
+        csSource << R"glsl(, local_size_y=1, local_size_z=1) in;
+            void main(){
+            if (gl_GlobalInvocationID.x >= 0) { return; }
+            }
+        )glsl";
+
+        CreateComputePipelineHelper pipe(*this);
+        pipe.InitInfo();
+        pipe.cs_.reset(new VkShaderObj(this, csSource.str().c_str(), VK_SHADER_STAGE_COMPUTE_BIT));
+        pipe.InitState();
+        pipe.LateBindPipelineInfo();
+        pipe.cp_ci_.stage.pNext = &subgroup_size_control;
+        pipe.cp_ci_.stage.flags = VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineShaderStageCreateInfo-pNext-02757");
+        pipe.CreateComputePipeline(true, false);
+        m_errorMonitor->VerifyFound();
+    }
+}
+
+TEST_F(VkLayerTest, InvalidRayTracingPipelineFlags) {
+    TEST_DESCRIPTION("Validate ray tracing pipeline flags.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+        return;
+    }
+    auto ray_tracing_features = LvlInitStruct<VkPhysicalDeviceRayTracingPipelineFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&ray_tracing_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!ray_tracing_features.rayTracingPipeline) {
+        printf("%s Feature rayTracing is not supported.\n", kSkipPrefix);
+        return;
+    }
+    if (!ray_tracing_features.rayTraversalPrimitiveCulling) {
+        printf("%s Feature rayTraversalPrimitiveCulling is not supported.\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    auto vkCreateRayTracingPipelinesKHR =
+        reinterpret_cast<PFN_vkCreateRayTracingPipelinesKHR>(vk::GetInstanceProcAddr(instance(), "vkCreateRayTracingPipelinesKHR"));
+
+    const VkPipelineLayoutObj empty_pipeline_layout(m_device, {});
+    const std::string empty_shader = R"glsl(
+        #version 460
+        void main() {}
+    )glsl";
+    VkShaderObj rgen_shader(this, empty_shader, VK_SHADER_STAGE_RAYGEN_BIT_KHR);
+
+    VkPipelineShaderStageCreateInfo stage_create_info = LvlInitStruct<VkPipelineShaderStageCreateInfo>();
+    stage_create_info.stage = VK_SHADER_STAGE_RAYGEN_BIT_NV;
+    stage_create_info.module = rgen_shader.handle();
+    stage_create_info.pName = "main";
+
+    VkRayTracingPipelineCreateInfoKHR create_info = LvlInitStruct<VkRayTracingPipelineCreateInfoKHR>();
+    create_info.flags = VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR | VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR;
+    create_info.layout = empty_pipeline_layout.handle();
+    create_info.stageCount = 1;
+    create_info.pStages = &stage_create_info;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRayTracingPipelineCreateInfoKHR-flags-06546");
+    VkPipeline pipeline;
+    vkCreateRayTracingPipelinesKHR(device(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &create_info, nullptr, &pipeline);
+    m_errorMonitor->VerifyFound();
 }

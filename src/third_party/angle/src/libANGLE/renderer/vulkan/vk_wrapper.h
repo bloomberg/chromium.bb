@@ -318,9 +318,19 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
                        uint32_t size,
                        const void *data);
 
+    void setBlendConstants(const float blendConstants[4]);
+    void setDepthBias(float depthBiasConstantFactor,
+                      float depthBiasClamp,
+                      float depthBiasSlopeFactor);
     void setEvent(VkEvent event, VkPipelineStageFlags stageMask);
-    void setViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *viewports);
+    void setFragmentShadingRate(const VkExtent2D *fragmentSize,
+                                VkFragmentShadingRateCombinerOpKHR ops[2]);
+    void setLineWidth(float lineWidth);
     void setScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D *scissors);
+    void setStencilCompareMask(uint32_t compareFrontMask, uint32_t compareBackMask);
+    void setStencilReference(uint32_t frontReference, uint32_t backReference);
+    void setStencilWriteMask(uint32_t writeFrontMask, uint32_t writeBackMask);
+    void setViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport *viewports);
     VkResult reset();
     void resetEvent(VkEvent event, VkPipelineStageFlags stageMask);
     void resetQueryPool(const QueryPool &queryPool, uint32_t firstQuery, uint32_t queryCount);
@@ -659,6 +669,7 @@ class VirtualBlock final : public WrappedObject<VirtualBlock, VmaVirtualBlock>
 
     VkResult allocate(VkDeviceSize size, VkDeviceSize alignment, VkDeviceSize *offsetOut);
     void free(VkDeviceSize offset);
+    void calculateStats(vma::StatInfo *pStatInfo) const;
 };
 
 // CommandPool implementation.
@@ -947,18 +958,37 @@ ANGLE_INLINE void CommandBuffer::pushConstants(const PipelineLayout &layout,
     vkCmdPushConstants(mHandle, layout.getHandle(), flag, 0, size, data);
 }
 
+ANGLE_INLINE void CommandBuffer::setBlendConstants(const float blendConstants[4])
+{
+    ASSERT(valid());
+    vkCmdSetBlendConstants(mHandle, blendConstants);
+}
+
+ANGLE_INLINE void CommandBuffer::setDepthBias(float depthBiasConstantFactor,
+                                              float depthBiasClamp,
+                                              float depthBiasSlopeFactor)
+{
+    ASSERT(valid());
+    vkCmdSetDepthBias(mHandle, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor);
+}
+
 ANGLE_INLINE void CommandBuffer::setEvent(VkEvent event, VkPipelineStageFlags stageMask)
 {
     ASSERT(valid() && event != VK_NULL_HANDLE);
     vkCmdSetEvent(mHandle, event, stageMask);
 }
 
-ANGLE_INLINE void CommandBuffer::setViewport(uint32_t firstViewport,
-                                             uint32_t viewportCount,
-                                             const VkViewport *viewports)
+ANGLE_INLINE void CommandBuffer::setFragmentShadingRate(const VkExtent2D *fragmentSize,
+                                                        VkFragmentShadingRateCombinerOpKHR ops[2])
 {
-    ASSERT(valid() && viewports != nullptr);
-    vkCmdSetViewport(mHandle, firstViewport, viewportCount, viewports);
+    ASSERT(valid() && fragmentSize != nullptr);
+    vkCmdSetFragmentShadingRateKHR(mHandle, fragmentSize, ops);
+}
+
+ANGLE_INLINE void CommandBuffer::setLineWidth(float lineWidth)
+{
+    ASSERT(valid());
+    vkCmdSetLineWidth(mHandle, lineWidth);
 }
 
 ANGLE_INLINE void CommandBuffer::setScissor(uint32_t firstScissor,
@@ -967,6 +997,38 @@ ANGLE_INLINE void CommandBuffer::setScissor(uint32_t firstScissor,
 {
     ASSERT(valid() && scissors != nullptr);
     vkCmdSetScissor(mHandle, firstScissor, scissorCount, scissors);
+}
+
+ANGLE_INLINE void CommandBuffer::setStencilCompareMask(uint32_t compareFrontMask,
+                                                       uint32_t compareBackMask)
+{
+    ASSERT(valid());
+    vkCmdSetStencilCompareMask(mHandle, VK_STENCIL_FACE_FRONT_BIT, compareFrontMask);
+    vkCmdSetStencilCompareMask(mHandle, VK_STENCIL_FACE_BACK_BIT, compareBackMask);
+}
+
+ANGLE_INLINE void CommandBuffer::setStencilReference(uint32_t frontReference,
+                                                     uint32_t backReference)
+{
+    ASSERT(valid());
+    vkCmdSetStencilReference(mHandle, VK_STENCIL_FACE_FRONT_BIT, frontReference);
+    vkCmdSetStencilReference(mHandle, VK_STENCIL_FACE_BACK_BIT, backReference);
+}
+
+ANGLE_INLINE void CommandBuffer::setStencilWriteMask(uint32_t writeFrontMask,
+                                                     uint32_t writeBackMask)
+{
+    ASSERT(valid());
+    vkCmdSetStencilWriteMask(mHandle, VK_STENCIL_FACE_FRONT_BIT, writeFrontMask);
+    vkCmdSetStencilWriteMask(mHandle, VK_STENCIL_FACE_BACK_BIT, writeBackMask);
+}
+
+ANGLE_INLINE void CommandBuffer::setViewport(uint32_t firstViewport,
+                                             uint32_t viewportCount,
+                                             const VkViewport *viewports)
+{
+    ASSERT(valid() && viewports != nullptr);
+    vkCmdSetViewport(mHandle, firstViewport, viewportCount, viewports);
 }
 
 ANGLE_INLINE void CommandBuffer::resetEvent(VkEvent event, VkPipelineStageFlags stageMask)
@@ -1848,6 +1910,11 @@ ANGLE_INLINE VkResult VirtualBlock::allocate(VkDeviceSize size,
 ANGLE_INLINE void VirtualBlock::free(VkDeviceSize offset)
 {
     vma::VirtualFree(mHandle, offset);
+}
+
+ANGLE_INLINE void VirtualBlock::calculateStats(vma::StatInfo *pStatInfo) const
+{
+    vma::CalculateVirtualBlockStats(mHandle, pStatInfo);
 }
 }  // namespace vk
 }  // namespace rx

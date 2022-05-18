@@ -73,6 +73,10 @@ Config::Config() {
       internal::kOmniboxAction, "omnibox_action_on_urls",
       omnibox_action_on_urls);
 
+  omnibox_action_on_noisy_urls = base::GetFieldTrialParamByFeatureAsBool(
+      internal::kOmniboxAction, "omnibox_action_on_noisy_urls",
+      omnibox_action_on_noisy_urls);
+
   non_user_visible_debug =
       base::FeatureList::IsEnabled(internal::kNonUserVisibleDebug);
 
@@ -209,25 +213,18 @@ Config::Config() {
       features::kOnDeviceClustering, "split_clusters_at_search_visits",
       split_clusters_at_search_visits);
 
-  should_label_clusters = GetFieldTrialParamByFeatureAsBool(
-      features::kOnDeviceClustering, "should_label_clusters",
-      should_label_clusters);
+  should_label_clusters =
+      base::FeatureList::IsEnabled(internal::kJourneysLabels);
 
   labels_from_hostnames = GetFieldTrialParamByFeatureAsBool(
-      features::kOnDeviceClustering, "labels_from_hostnames",
+      internal::kJourneysLabels, "labels_from_hostnames",
       labels_from_hostnames);
 
   labels_from_entities = GetFieldTrialParamByFeatureAsBool(
-      features::kOnDeviceClustering, "labels_from_entities",
-      labels_from_entities);
+      internal::kJourneysLabels, "labels_from_entities", labels_from_entities);
 
-  const base::FeatureParam<std::string> kHostsToSkipClusteringFor{
-      &features::kOnDeviceClusteringBlocklists, "hosts_to_skip_clustering_for",
-      ""};
-  auto hosts = base::SplitString(kHostsToSkipClusteringFor.Get(), ",",
-                                 base::WhitespaceHandling::TRIM_WHITESPACE,
-                                 base::SplitResult::SPLIT_WANT_NONEMPTY);
-  hosts_to_skip_clustering_for = {hosts.begin(), hosts.end()};
+  should_check_hosts_to_skip_clustering_for =
+      base::FeatureList::IsEnabled(features::kOnDeviceClusteringBlocklists);
 
   use_continue_on_shutdown = base::FeatureList::IsEnabled(
       internal::kHistoryClustersUseContinueOnShutdown);

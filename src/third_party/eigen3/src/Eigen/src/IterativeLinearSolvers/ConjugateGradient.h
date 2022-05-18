@@ -207,12 +207,12 @@ public:
                       &&  (!MatrixType::IsRowMajor)
                       &&  (!NumTraits<Scalar>::IsComplex)
     };
-    typedef typename internal::conditional<TransposeInput,Transpose<const ActualMatrixType>, ActualMatrixType const&>::type RowMajorWrapper;
+    typedef std::conditional_t<TransposeInput,Transpose<const ActualMatrixType>, ActualMatrixType const&> RowMajorWrapper;
     EIGEN_STATIC_ASSERT(internal::check_implication(MatrixWrapper::MatrixFree,UpLo==(Lower|Upper)),MATRIX_FREE_CONJUGATE_GRADIENT_IS_COMPATIBLE_WITH_UPPER_UNION_LOWER_MODE_ONLY);
-    typedef typename internal::conditional<UpLo==(Lower|Upper),
-                                           RowMajorWrapper,
-                                           typename MatrixWrapper::template ConstSelfAdjointViewReturnType<UpLo>::Type
-                                          >::type SelfAdjointWrapper;
+    typedef std::conditional_t<UpLo==(Lower|Upper),
+                                    RowMajorWrapper,
+                                    typename MatrixWrapper::template ConstSelfAdjointViewReturnType<UpLo>::Type
+                                   > SelfAdjointWrapper;
 
     m_iterations = Base::maxIterations();
     m_error = Base::m_tolerance;

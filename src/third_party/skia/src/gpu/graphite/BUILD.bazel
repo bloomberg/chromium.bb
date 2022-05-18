@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "Attribute_hdr",
@@ -44,6 +46,7 @@ generated_cc_atom(
         ":ResourceTypes_hdr",
         "//include/core:SkImageInfo_hdr",
         "//include/core:SkRefCnt_hdr",
+        "//src/core:SkEnumBitMask_hdr",
         "//src/gpu:ResourceKey_hdr",
         "//src/gpu:Swizzle_hdr",
     ],
@@ -190,8 +193,8 @@ generated_cc_atom(
     deps = [
         ":ClipStack_graphite_hdr",
         ":DrawOrder_hdr",
-        ":EnumBitMask_hdr",
         "//src/core:SkDevice_hdr",
+        "//src/core:SkEnumBitMask_hdr",
         "//src/gpu/graphite/geom:Rect_hdr",
         "//src/gpu/graphite/geom:Transform_graphite_hdr",
     ],
@@ -216,11 +219,13 @@ generated_cc_atom(
         ":Renderer_hdr",
         ":TextureProxy_hdr",
         ":TextureUtils_hdr",
+        "//include/core:SkColorSpace_hdr",
         "//include/core:SkPathEffect_hdr",
         "//include/core:SkPath_hdr",
         "//include/core:SkStrokeRec_hdr",
         "//include/gpu/graphite:Recorder_hdr",
         "//include/gpu/graphite:SkStuff_hdr",
+        "//include/private:SkImageInfoPriv_hdr",
         "//src/core:SkConvertPixels_hdr",
         "//src/core:SkMatrixPriv_hdr",
         "//src/core:SkPaintPriv_hdr",
@@ -230,6 +235,7 @@ generated_cc_atom(
         "//src/gpu/graphite/geom:IntersectionTree_hdr",
         "//src/gpu/graphite/geom:Shape_hdr",
         "//src/gpu/graphite/geom:Transform_graphite_hdr",
+        "//src/shaders:SkImageShader_hdr",
     ],
 )
 
@@ -342,6 +348,7 @@ generated_cc_atom(
         "//include/core:SkColor_hdr",
         "//include/core:SkRect_hdr",
         "//include/core:SkRefCnt_hdr",
+        "//src/core:SkEnumBitMask_hdr",
         "//src/core:SkTBlockList_hdr",
     ],
 )
@@ -407,13 +414,6 @@ generated_cc_atom(
         ":DrawWriter_hdr",
         "//src/gpu:BufferWriter_hdr",
     ],
-)
-
-generated_cc_atom(
-    name = "EnumBitMask_hdr",
-    hdrs = ["EnumBitMask.h"],
-    visibility = ["//:__subpackages__"],
-    deps = ["//include/gpu/graphite:GraphiteTypes_hdr"],
 )
 
 generated_cc_atom(
@@ -535,6 +535,7 @@ generated_cc_atom(
         ":PipelineDataCache_hdr",
         ":ResourceProvider_hdr",
         ":TaskGraph_hdr",
+        ":UploadBufferManager_hdr",
         "//include/gpu/graphite:Recorder_hdr",
         "//include/gpu/graphite:Recording_hdr",
         "//src/core:SkPipelineData_hdr",
@@ -585,11 +586,11 @@ generated_cc_atom(
     deps = [
         ":Attribute_hdr",
         ":DrawTypes_hdr",
-        ":EnumBitMask_hdr",
         ":ResourceTypes_hdr",
         "//include/core:SkSpan_hdr",
         "//include/core:SkString_hdr",
         "//include/core:SkTypes_hdr",
+        "//src/core:SkEnumBitMask_hdr",
         "//src/core:SkUniform_hdr",
     ],
 )
@@ -633,8 +634,8 @@ generated_cc_atom(
     hdrs = ["ResourceTypes.h"],
     visibility = ["//:__subpackages__"],
     deps = [
-        ":EnumBitMask_hdr",
         "//include/gpu/graphite:GraphiteTypes_hdr",
+        "//src/core:SkEnumBitMask_hdr",
     ],
 )
 
@@ -803,8 +804,11 @@ generated_cc_atom(
         ":PaintParams_hdr",
         "//include/core:SkShader_hdr",
         "//src/core:SkBlenderBase_hdr",
+        "//src/core:SkKeyContext_hdr",
         "//src/core:SkKeyHelpers_hdr",
         "//src/core:SkPaintParamsKey_hdr",
+        "//src/core:SkPipelineData_hdr",
+        "//src/core:SkUniform_hdr",
         "//src/shaders:SkShaderBase_hdr",
     ],
 )
@@ -933,6 +937,29 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
+    name = "UploadBufferManager_hdr",
+    hdrs = ["UploadBufferManager.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":DrawTypes_hdr",
+        "//include/core:SkRefCnt_hdr",
+        "//src/gpu:BufferWriter_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "UploadBufferManager_src",
+    srcs = ["UploadBufferManager.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":Buffer_hdr",
+        ":CommandBuffer_hdr",
+        ":ResourceProvider_hdr",
+        ":UploadBufferManager_hdr",
+    ],
+)
+
+generated_cc_atom(
     name = "UploadTask_hdr",
     hdrs = ["UploadTask.h"],
     visibility = ["//:__subpackages__"],
@@ -957,9 +984,9 @@ generated_cc_atom(
         ":ResourceProvider_hdr",
         ":TextureProxy_hdr",
         ":Texture_hdr",
+        ":UploadBufferManager_hdr",
         ":UploadTask_hdr",
         "//include/gpu/graphite:Recorder_hdr",
-        "//src/core:SkConvertPixels_hdr",
         "//src/core:SkTraceEvent_hdr",
     ],
 )

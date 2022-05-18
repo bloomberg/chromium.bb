@@ -19,7 +19,6 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/thread.h"
 #include "rtc_base/time_utils.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/clock.h"
@@ -30,21 +29,9 @@ VCMDecodedFrameCallback::VCMDecodedFrameCallback(
     VCMTiming* timing,
     Clock* clock,
     const FieldTrialsView& field_trials)
-    : _clock(clock),
-      _timing(timing),
-      _timestampMap(kDecoderFrameMemoryLength),
-      _extra_decode_time("t", absl::nullopt),
-      low_latency_renderer_enabled_("enabled", true),
-      low_latency_renderer_include_predecode_buffer_("include_predecode_buffer",
-                                                     true) {
+    : _clock(clock), _timing(timing), _timestampMap(kDecoderFrameMemoryLength) {
   ntp_offset_ =
       _clock->CurrentNtpInMilliseconds() - _clock->TimeInMilliseconds();
-
-  ParseFieldTrial({&_extra_decode_time},
-                  field_trials.Lookup("WebRTC-SlowDownDecoder"));
-  ParseFieldTrial({&low_latency_renderer_enabled_,
-                   &low_latency_renderer_include_predecode_buffer_},
-                  field_trials.Lookup("WebRTC-LowLatencyRenderer"));
 }
 
 VCMDecodedFrameCallback::~VCMDecodedFrameCallback() {}
@@ -82,11 +69,6 @@ int32_t VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
 void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
                                       absl::optional<int32_t> decode_time_ms,
                                       absl::optional<uint8_t> qp) {
-  // Wait some extra time to simulate a slow decoder.
-  if (_extra_decode_time) {
-    rtc::Thread::SleepMs(_extra_decode_time->ms());
-  }
-
   RTC_DCHECK(_receiveCallback) << "Callback must not be null at this point";
   TRACE_EVENT_INSTANT1("webrtc", "VCMDecodedFrameCallback::Decoded",
                        "timestamp", decodedImage.timestamp());
@@ -123,19 +105,15 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
   decodedImage.set_packet_infos(frameInfo->packet_infos);
   decodedImage.set_rotation(frameInfo->rotation);
 
-  if (low_latency_renderer_enabled_) {
-    absl::optional<int> max_composition_delay_in_frames =
-        _timing->MaxCompositionDelayInFrames();
-    if (max_composition_delay_in_frames) {
-      // Subtract frames that are in flight.
-      if (low_latency_renderer_include_predecode_buffer_) {
-        *max_composition_delay_in_frames -= timestamp_map_size;
-        *max_composition_delay_in_frames =
-            std::max(0, *max_composition_delay_in_frames);
-      }
-      decodedImage.set_max_composition_delay_in_frames(
-          max_composition_delay_in_frames);
-    }
+  absl::optional<int> max_composition_delay_in_frames =
+      _timing->MaxCompositionDelayInFrames();
+  if (max_composition_delay_in_frames) {
+    // Subtract frames that are in flight.
+    *max_composition_delay_in_frames -= timestamp_map_size;
+    *max_composition_delay_in_frames =
+        std::max(0, *max_composition_delay_in_frames);
+    decodedImage.set_max_composition_delay_in_frames(
+        max_composition_delay_in_frames);
   }
 
   RTC_DCHECK(frameInfo->decodeStart);

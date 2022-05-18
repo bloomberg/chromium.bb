@@ -223,7 +223,63 @@ class LocalDeviceInstrumentationTestRun(
         # concurrent adb with this option specified, this should be safe.
         steps.insert(0, remove_packages)
 
+      def install_helper(apk,
+                         modules=None,
+                         fake_modules=None,
+                         permissions=None,
+                         additional_locales=None,
+                         instant_app=False):
+
+        @instrumentation_tracing.no_tracing
+        @trace_event.traced
+        def install_helper_internal(d, apk_path=None):
+          # pylint: disable=unused-argument
+          d.Install(apk,
+                    modules=modules,
+                    fake_modules=fake_modules,
+                    permissions=permissions,
+                    additional_locales=additional_locales,
+                    instant_app=instant_app)
+
+        return install_helper_internal
+
+      def incremental_install_helper(apk, json_path, permissions):
+
+        @trace_event.traced
+        def incremental_install_helper_internal(d, apk_path=None):
+          # pylint: disable=unused-argument
+          installer.Install(d, json_path, apk=apk, permissions=permissions)
+
+        return incremental_install_helper_internal
+
+      permissions = self._test_instance.test_apk.GetPermissions()
+      if self._test_instance.test_apk_incremental_install_json:
+        if self._test_instance.test_apk_as_instant:
+          raise Exception('Test APK cannot be installed as an instant '
+                          'app if it is incremental')
+
+        steps.append(
+            incremental_install_helper(
+                self._test_instance.test_apk,
+                self._test_instance.test_apk_incremental_install_json,
+                permissions))
+      else:
+        steps.append(
+            install_helper(self._test_instance.test_apk,
+                           permissions=permissions,
+                           instant_app=self._test_instance.test_apk_as_instant))
+
+      steps.extend(
+          install_helper(apk) for apk in self._test_instance.additional_apks)
+
+      # We'll potentially need the package names later for setting app
+      # compatibility workarounds.
+      for apk in (self._test_instance.additional_apks +
+                  [self._test_instance.test_apk]):
+        self._installed_packages.append(apk_helper.GetPackageName(apk))
+
       if self._test_instance.use_webview_provider:
+
         @trace_event.traced
         def use_webview_provider(dev):
           # We need the context manager to be applied before modifying any
@@ -234,6 +290,9 @@ class LocalDeviceInstrumentationTestRun(
           # applying the context manager up in test_runner. Instead, we
           # manually invoke its __enter__ and __exit__ methods in setup and
           # teardown.
+          # We do this after installing additional APKs so that
+          # we can install trichrome library before installing the webview
+          # provider
           webview_context = webview_app.UseWebViewProvider(
               dev, self._test_instance.use_webview_provider)
           # Pylint is not smart enough to realize that this field has
@@ -244,53 +303,6 @@ class LocalDeviceInstrumentationTestRun(
           self._context_managers[str(dev)].append(webview_context)
 
         steps.append(use_webview_provider)
-
-      def install_helper(apk,
-                         modules=None,
-                         fake_modules=None,
-                         permissions=None,
-                         additional_locales=None):
-
-        @instrumentation_tracing.no_tracing
-        @trace_event.traced
-        def install_helper_internal(d, apk_path=None):
-          # pylint: disable=unused-argument
-          d.Install(apk,
-                    modules=modules,
-                    fake_modules=fake_modules,
-                    permissions=permissions,
-                    additional_locales=additional_locales)
-
-        return install_helper_internal
-
-      def incremental_install_helper(apk, json_path, permissions):
-
-        @trace_event.traced
-        def incremental_install_helper_internal(d, apk_path=None):
-          # pylint: disable=unused-argument
-          installer.Install(d, json_path, apk=apk, permissions=permissions)
-        return incremental_install_helper_internal
-
-      permissions = self._test_instance.test_apk.GetPermissions()
-      if self._test_instance.test_apk_incremental_install_json:
-        steps.append(incremental_install_helper(
-                         self._test_instance.test_apk,
-                         self._test_instance.
-                             test_apk_incremental_install_json,
-                         permissions))
-      else:
-        steps.append(
-            install_helper(
-                self._test_instance.test_apk, permissions=permissions))
-
-      steps.extend(
-          install_helper(apk) for apk in self._test_instance.additional_apks)
-
-      # We'll potentially need the package names later for setting app
-      # compatibility workarounds.
-      for apk in (self._test_instance.additional_apks +
-                  [self._test_instance.test_apk]):
-        self._installed_packages.append(apk_helper.GetPackageName(apk))
 
       # The apk under test needs to be installed last since installing other
       # apks after will unintentionally clear the fake module directory.

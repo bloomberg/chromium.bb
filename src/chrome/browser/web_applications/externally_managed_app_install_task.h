@@ -35,8 +35,9 @@ namespace web_app {
 
 class WebAppUrlLoader;
 class WebAppInstallFinalizer;
-class WebAppInstallManager;
+class WebAppCommandManager;
 class WebAppUiManager;
+class WebAppDataRetriever;
 
 // Class to install WebApp from a WebContents. A queue of such tasks is owned by
 // ExternallyManagedAppManager. Can only be called from the UI thread.
@@ -54,7 +55,7 @@ class ExternallyManagedAppInstallTask {
       WebAppRegistrar* registrar,
       WebAppUiManager* ui_manager,
       WebAppInstallFinalizer* install_finalizer,
-      WebAppInstallManager* install_manager,
+      WebAppCommandManager* command_manager,
       ExternalInstallOptions install_options);
 
   ExternallyManagedAppInstallTask(const ExternallyManagedAppInstallTask&) =
@@ -71,6 +72,11 @@ class ExternallyManagedAppInstallTask {
                        ResultCallback result_callback);
 
   const ExternalInstallOptions& install_options() { return install_options_; }
+
+  using DataRetrieverFactory =
+      base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
+  void SetDataRetrieverFactoryForTesting(
+      DataRetrieverFactory data_retriever_factory);
 
  private:
   // Install directly from a fully specified WebAppInstallInfo struct. Used
@@ -126,12 +132,13 @@ class ExternallyManagedAppInstallTask {
   const raw_ptr<WebAppUrlLoader> url_loader_;
   const raw_ptr<WebAppRegistrar> registrar_;
   const raw_ptr<WebAppInstallFinalizer> install_finalizer_;
-  const raw_ptr<WebAppInstallManager> install_manager_;
+  const raw_ptr<WebAppCommandManager> command_manager_;
   const raw_ptr<WebAppUiManager> ui_manager_;
 
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   const ExternalInstallOptions install_options_;
+  DataRetrieverFactory data_retriever_factory_;
 
   base::WeakPtrFactory<ExternallyManagedAppInstallTask> weak_ptr_factory_{this};
 };

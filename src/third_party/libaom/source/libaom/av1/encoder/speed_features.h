@@ -833,6 +833,17 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 2 prune inter modes w.r.t BWDREF, ALTREF2 and ALTREF reference frames
   int alt_ref_search_fp;
 
+  // Prune compound reference frames
+  // 0 no pruning
+  // 1 prune compound references which do not satisfy the two conditions:
+  //   a) The references are at a nearest distance from the current frame in
+  //   both past and future direction.
+  //   b) The references have minimum pred_mv_sad in both past and future
+  //   direction.
+  // 2 prune compound references except the one with nearest distance from the
+  //   current frame in both past and future direction.
+  int prune_comp_ref_frames;
+
   // Skip the current ref_mv in NEW_MV mode based on mv, rate cost, etc.
   // This speed feature equaling 0 means no skipping.
   // If the speed feature equals 1 or 2, skip the current ref_mv in NEW_MV mode
@@ -1241,13 +1252,13 @@ typedef struct WINNER_MODE_SPEED_FEATURES {
   // tx_search_best_inter_candidates.
   int winner_mode_ifs;
 
-  // Flag used to enable the pruning of winner mode processing for blocks with
-  // low source variance.
-  int prune_winner_mode_processing_using_src_var;
-
-  // If on, disables transform refinement for winner mode if the normal mode
-  // evaluation resulted in transform skip.
-  int disable_winner_mode_eval_for_txskip;
+  // Controls the disabling of winner mode processing. The method considered for
+  // disabling, depends on the sf level value and it is described as below.
+  // 0: Do not disable
+  // 1: Disable for blocks with low source variance.
+  // 2: Disable for blocks which turn out to be transform skip during MODE_EVAL
+  // stage.
+  int prune_winner_mode_eval_level;
 } WINNER_MODE_SPEED_FEATURES;
 
 typedef struct LOOP_FILTER_SPEED_FEATURES {
@@ -1447,7 +1458,11 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // by a negative number.
   int var_part_split_threshold_shift;
 
-  // Qindex based variance partition threshold index.
+  // Qindex based variance partition threshold index, which determines
+  // the aggressiveness of partition pruning
+  // 0: disabled for speeds 9,10
+  // 1,2: (rd-path) lowers qindex thresholds conditionally (for low SAD sb)
+  // 3,4: (non-rd path) uses pre-tuned qindex thresholds
   int var_part_based_on_qidx;
 
   // Enable GF refresh based on Q value.
@@ -1484,6 +1499,9 @@ typedef struct REAL_TIME_SPEED_FEATURES {
 
   // Level of aggressiveness for obtaining tx size based on qstep
   int tx_size_level_based_on_qstep;
+
+  // Reduce the mv resolution for zero mv if the variance is low.
+  bool reduce_zeromv_mvres;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

@@ -6,9 +6,11 @@
 #define CC_METRICS_FRAME_SEQUENCE_METRICS_H_
 
 #include <bitset>
+#include <cmath>
 #include <memory>
 
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
@@ -232,6 +234,12 @@ class CC_EXPORT FrameSequenceMetrics {
     uint32_t frames_expected = 0;
     uint32_t frames_dropped = 0;
   } v2_;
+
+  // Track state for measuring the PercentDroppedFrames v3 metrics.
+  struct {
+    uint32_t frames_expected = 0;
+    uint32_t frames_dropped = 0;
+  } v3_;
 
   ThroughputData impl_throughput_;
   ThroughputData main_throughput_;

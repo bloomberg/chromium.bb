@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -543,8 +545,6 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
 }
 
 TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
-  ScopedCSSTargetTextPseudoElementForTest scoped_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body::target-text, body::selection {
@@ -1625,7 +1625,6 @@ TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
 }
 
 TEST_F(StyleResolverTest, BodyPropagationLayoutImageContain) {
-  ScopedCSSContainedBodyPropagationForTest enable_scope(true);
   GetDocument().documentElement()->setAttribute(
       html_names::kStyleAttr,
       "contain:size; display:inline-table; content:url(img);");

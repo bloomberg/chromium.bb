@@ -76,7 +76,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       base::WritableSharedMemoryMapping ukm_smoothness_data) override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
-  void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling) override;
   uint32_t GetAverageThroughput() const override;
 
   void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -95,6 +94,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawIfPossible() override;
   DrawResult ScheduledActionDrawForced() override;
   void ScheduledActionCommit() override;
+  void ScheduledActionPostCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginLayerTreeFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
@@ -112,12 +112,14 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidReceiveCompositorFrameAckOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
+  bool IsReadyToActivate() override;
   void NotifyReadyToDraw() override;
   void SetNeedsRedrawOnImplThread() override;
   void SetNeedsOneBeginImplFrameOnImplThread() override;
   void SetNeedsPrepareTilesOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
+  void SetDeferBeginMainFrameFromImpl(bool defer_begin_main_frame) override {}
   bool IsInsideDraw() override;
   void RenewTreePriority() override;
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
@@ -145,6 +147,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       const base::flat_set<viz::FrameSinkId>& ids) override;
   void ClearHistory() override;
   size_t CommitDurationSampleCountForTesting() const override;
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override;
 
   void RequestNewLayerTreeFrameSink();
 
@@ -168,6 +172,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DoBeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
   void DoPainting(const viz::BeginFrameArgs& commit_args);
   void DoCommit(const viz::BeginFrameArgs& commit_args);
+  void DoPostCommit();
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();

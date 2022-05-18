@@ -95,10 +95,12 @@ class MockScriptExecutorDelegate : public ScriptExecutorDelegate {
   MOCK_METHOD(void, SetBrowseModeInvisible, (bool invisible), (override));
   MOCK_METHOD(ProcessedActionStatusDetailsProto&, GetLogInfo, (), (override));
   MOCK_METHOD(bool, ShouldShowWarning, (), (override));
+  MOCK_METHOD(bool, MustUseBackendData, (), (const override));
 
  private:
   ClientSettings client_settings_;
   ProcessedActionStatusDetailsProto log_info_;
+  const GURL default_url_ = GURL("https://example.com/");
 };
 
 }  // namespace autofill_assistant

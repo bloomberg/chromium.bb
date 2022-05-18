@@ -137,9 +137,11 @@ class PageLoadMetricsUpdateDispatcher {
         const std::vector<mojom::ResourceDataUpdatePtr>& resources) = 0;
     virtual void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                                       const mojom::CpuTiming& timing) = 0;
-    virtual void OnFrameIntersectionUpdate(
+    virtual void OnMainFrameIntersectionRectChanged(
         content::RenderFrameHost* rfh,
-        const mojom::FrameIntersectionUpdate& frame_intersection_update) = 0;
+        const gfx::Rect& main_frame_intersection_rect) = 0;
+    virtual void OnMainFrameViewportRectChanged(
+        const gfx::Rect& main_frame_viewport_rect) = 0;
     virtual void SetUpSharedMemoryForSmoothness(
         base::ReadOnlySharedMemoryRegion shared_memory) = 0;
   };
@@ -251,8 +253,10 @@ class PageLoadMetricsUpdateDispatcher {
       const blink::MobileFriendliness& mobile_friendliness);
 
   void UpdatePageInputTiming(const mojom::InputTiming& input_timing_delta);
-  void MaybeUpdateFrameIntersection(
+  void MaybeUpdateMainFrameIntersectionRect(
       content::RenderFrameHost* render_frame_host,
+      const mojom::FrameMetadataPtr& frame_metadata);
+  void MaybeUpdateMainFrameViewportRect(
       const mojom::FrameMetadataPtr& frame_metadata);
 
   void UpdatePageRenderData(const mojom::FrameRenderDataUpdate& render_data);
@@ -320,10 +324,13 @@ class PageLoadMetricsUpdateDispatcher {
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
 
-  // The last main frame intersection dispatched to page load metrics
+  // The last main frame intersection rects dispatched to page load metrics
   // observers.
-  std::map<FrameTreeNodeId, mojom::FrameIntersectionUpdate>
-      frame_intersection_updates_;
+  std::map<FrameTreeNodeId, gfx::Rect> main_frame_intersection_rects_;
+
+  // The last main frame viewport rect dispatched to page load metrics
+  // observers.
+  absl::optional<gfx::Rect> main_frame_viewport_rect_;
 
   LayoutShiftNormalization layout_shift_normalization_;
   // Layout shift normalization data for bfcache which needs to be reset each

@@ -26,6 +26,7 @@ namespace SkSL {
 class Compiler;
 class ErrorReporter;
 class Position;
+struct ForLoopPositions;
 struct Program;
 struct ProgramSettings;
 
@@ -141,7 +142,7 @@ DSLStatement Do(DSLStatement stmt, DSLExpression test, Position pos = {});
  * for (initializer; test; next) stmt;
  */
 DSLStatement For(DSLStatement initializer, DSLExpression test, DSLExpression next,
-                 DSLStatement stmt, Position pos = {});
+                 DSLStatement stmt, Position pos = {}, ForLoopPositions positions = {});
 
 /**
  * if (test) ifTrue; [else ifFalse;]
@@ -214,25 +215,29 @@ DSLStatement While(DSLExpression test, DSLStatement stmt,
  */
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
-                      Position pos = {});
+                      Position pos = {},
+                      Position maskPos = {});
 
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
                       SkSL::SwizzleComponent::Type b,
-                      Position pos = {});
+                      Position pos = {},
+                      Position maskPos = {});
 
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
                       SkSL::SwizzleComponent::Type b,
                       SkSL::SwizzleComponent::Type c,
-                      Position pos = {});
+                      Position pos = {},
+                      Position maskPos = {});
 
 DSLExpression Swizzle(DSLExpression base,
                       SkSL::SwizzleComponent::Type a,
                       SkSL::SwizzleComponent::Type b,
                       SkSL::SwizzleComponent::Type c,
                       SkSL::SwizzleComponent::Type d,
-                      Position pos = {});
+                      Position pos = {},
+                      Position maskPos = {});
 
 /**
  * Returns the absolute value of x. If x is a vector, operates componentwise.

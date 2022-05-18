@@ -17,7 +17,9 @@
 #include "ash/wm/desks/templates/restore_data_collector.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/ui/wm/desks/desks_helper.h"
 #include "components/account_id/account_id.h"
@@ -29,6 +31,26 @@ class Window;
 }  // namespace aura
 
 namespace ash {
+
+// Determines how a desk will be closed when it is removed in the `RemoveDesk`
+// and `RemoveDeskInternal` functions. This allows for the desk removal
+// functions to support a range of different close methods, such as combining
+// desks and closing desks with windows, as well as closing desks with windows
+// and providing an undo toast when done manually.
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// DeskCloseType in src/tools/metrics/histograms/enums.xml.
+enum class DeskCloseType {
+  // Closes the target desk and moves its windows to another desk.
+  kCombineDesks = 0,
+  // Closes the target desk and all of its windows.
+  kCloseAllWindows = 1,
+  // Closes the target desk, saves its data to the `temporary_removed_desk_`
+  // member variable, and creates a toast that will fully destroy the desk if
+  // the user does not interact with it before it expires.
+  kCloseAllWindowsAndWait = 2,
+  kMaxValue = kCloseAllWindowsAndWait,
+};
 
 class Desk;
 class DeskAnimationBase;
@@ -46,7 +68,8 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   class Observer {
    public:
     // Called when |desk| has been created and added to
-    // `DesksController::desks_`.
+    // `DesksController::desks_`. It's important to note that `desk` can be
+    // added at any position in `DesksController::desks_`.
     virtual void OnDeskAdded(const Desk* desk) = 0;
 
     // Called when |desk| has been removed from `DesksController::desks_`.
@@ -77,6 +100,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
     virtual ~Observer() = default;
   };
 
+  // The timeout duration that we allow an app window on a closed desk to run
+  // its "close" hooks before being forcefully closed.
+  static constexpr base::TimeDelta kCloseAllWindowCloseTimeout =
+      base::Seconds(1);
+
   DesksController();
 
   DesksController(const DesksController&) = delete;
@@ -87,7 +115,7 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // Convenience method for returning the DesksController instance.
   static DesksController* Get();
 
-  // Returns the default name for a desk at |desk_index|.
+  // Returns the default name for a desk at `desk_index`.
   static std::u16string GetDeskDefaultName(size_t desk_index);
 
   const std::vector<std::unique_ptr<Desk>>& desks() const { return desks_; }
@@ -99,6 +127,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   }
 
   DeskAnimationBase* animation() const { return animation_.get(); }
+
+  // Finds and returns the name of the desk that `desk` would be combined with
+  // when the user clicks or presses the combine desks button or context menu
+  // item.
+  const std::u16string& GetCombineDesksTargetName(const Desk* desk) const;
 
   // Returns the current |active_desk()| or the soon-to-be active desk if a desk
   // switch animation is in progress.
@@ -148,11 +181,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // CanRemoveDesks() must be checked before this.
   // This will trigger the `DeskRemovalAnimation` if the active desk is being
   // removed outside of overview.
-  // If `close_windows` is true, the function will close all of the `desk`'s
-  // windows as well. Otherwise, it will move `desk`'s windows to another desk.
+  // `close_type` determines how the desk will be closed. See the
+  // `DeskCloseType` enum for details on what each value does.
   void RemoveDesk(const Desk* desk,
                   DesksCreationRemovalSource source,
-                  bool close_windows);
+                  DeskCloseType close_type);
 
   // Reorder the desk at |old_index| to |new_index|.
   void ReorderDesk(int old_index, int new_index);
@@ -306,9 +339,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
  private:
   class DeskTraversalsMetricsHelper;
+  class RemovedDeskData;
   friend class DeskAnimationBase;
   friend class DeskActivationAnimation;
   friend class DeskRemovalAnimation;
+  friend class DesksTestApi;
 
   void OnAnimationFinished(DeskAnimationBase* animation);
 
@@ -328,11 +363,32 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   void ActivateDeskInternal(const Desk* desk, bool update_window_activation);
 
   // Removes `desk` without animation.
-  // If `close_windows` is true, the removed `desk`'s windows are closed along
-  // with the desk. Otherwise, they are moved to another desk.
+  // `close_type` determines how the desk will be closed. See `DeskCloseType`
+  // for more information on what each value does.
   void RemoveDeskInternal(const Desk* desk,
                           DesksCreationRemovalSource source,
-                          bool close_windows);
+                          DeskCloseType close_type);
+
+  // Inserts the desk contained in `temporary_removed_desk_->desk()` back into
+  // its original position of `temporary_removed_desk_->index()`. Activates the
+  // removed desk if it was active before.
+  void UndoDeskRemoval();
+
+  // Records and reports metrics on the desk contained in `removed_desk_data`
+  // and closes all of its windows. Because all app windows would already be
+  // moved to another desk during a combine desk operation, the action of
+  // closing all windows in the desk would become a no-op, so we can still use
+  // this function in the combine desks process.
+  void FinalizeDeskRemoval(RemovedDeskData* removed_desk_data);
+
+  // Saves metrics and resets `temporary_removed_desk_` if `toast_id` is empty
+  // or it matches the toast ID stored in `temporary_removed_desk_`.
+  void MaybeCommitPendingDeskRemoval(
+      const std::string& toast_id = std::string());
+
+  // Forcefully cleans up app windows that should be closed.
+  void CleanUpClosedAppWindowsTask(
+      std::unique_ptr<aura::WindowTracker> closing_window_tracker);
 
   // Moves all the windows that are visible on all desks that currently
   // reside on |active_desk_| to |new_desk|.
@@ -397,6 +453,10 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // done within a span of X seconds.
   std::unique_ptr<DeskTraversalsMetricsHelper> metrics_helper_;
 
+  // Holds a desk when it has been removed but we are still waiting for the user
+  // to confirm that they want the desk to be removed.
+  std::unique_ptr<RemovedDeskData> temporary_removed_desk_;
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Scheduler for reporting the weekly active desks metric.
@@ -404,6 +464,10 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
   // Does the job for the `CaptureActiveDeskAsTemplate()` method.
   mutable RestoreDataCollector restore_data_collector_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DesksController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

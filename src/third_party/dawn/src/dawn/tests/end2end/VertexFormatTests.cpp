@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <limits>
+#include <string>
+#include <vector>
 
 #include "dawn/common/Assert.h"
 #include "dawn/common/Math.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
@@ -48,10 +51,6 @@ class VertexFormatTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-
-        // TODO(crbug.com/dawn/259): Failing because of a SPIRV-Cross issue.
-        DAWN_SUPPRESS_TEST_IF(IsMetal() && IsIntel());
-
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
     }
 

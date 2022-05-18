@@ -15,71 +15,88 @@
 #ifndef SRC_DAWN_NATIVE_PASSRESOURCEUSAGETRACKER_H_
 #define SRC_DAWN_NATIVE_PASSRESOURCEUSAGETRACKER_H_
 
+#include <map>
+#include <set>
+#include <vector>
+
 #include "dawn/native/PassResourceUsage.h"
 
 #include "dawn/native/dawn_platform.h"
 
-#include <map>
-
 namespace dawn::native {
 
-    class BindGroupBase;
-    class BufferBase;
-    class ExternalTextureBase;
-    class QuerySetBase;
-    class TextureBase;
+class BindGroupBase;
+class BufferBase;
+class ExternalTextureBase;
+class QuerySetBase;
+class TextureBase;
 
-    using QueryAvailabilityMap = std::map<QuerySetBase*, std::vector<bool>>;
+using QueryAvailabilityMap = std::map<QuerySetBase*, std::vector<bool>>;
 
-    // Helper class to build SyncScopeResourceUsages
-    class SyncScopeUsageTracker {
-      public:
-        void BufferUsedAs(BufferBase* buffer, wgpu::BufferUsage usage);
-        void TextureViewUsedAs(TextureViewBase* texture, wgpu::TextureUsage usage);
-        void AddRenderBundleTextureUsage(TextureBase* texture,
-                                         const TextureSubresourceUsage& textureUsage);
+// Helper class to build SyncScopeResourceUsages
+class SyncScopeUsageTracker {
+  public:
+    SyncScopeUsageTracker();
+    SyncScopeUsageTracker(SyncScopeUsageTracker&&);
+    ~SyncScopeUsageTracker();
 
-        // Walks the bind groups and tracks all its resources.
-        void AddBindGroup(BindGroupBase* group);
+    SyncScopeUsageTracker& operator=(SyncScopeUsageTracker&&);
 
-        // Returns the per-pass usage for use by backends for APIs with explicit barriers.
-        SyncScopeResourceUsage AcquireSyncScopeUsage();
+    void BufferUsedAs(BufferBase* buffer, wgpu::BufferUsage usage);
+    void TextureViewUsedAs(TextureViewBase* texture, wgpu::TextureUsage usage);
+    void AddRenderBundleTextureUsage(TextureBase* texture,
+                                     const TextureSubresourceUsage& textureUsage);
 
-      private:
-        std::map<BufferBase*, wgpu::BufferUsage> mBufferUsages;
-        std::map<TextureBase*, TextureSubresourceUsage> mTextureUsages;
-        std::set<ExternalTextureBase*> mExternalTextureUsages;
-    };
+    // Walks the bind groups and tracks all its resources.
+    void AddBindGroup(BindGroupBase* group);
 
-    // Helper class to build ComputePassResourceUsages
-    class ComputePassResourceUsageTracker {
-      public:
-        void AddDispatch(SyncScopeResourceUsage scope);
-        void AddReferencedBuffer(BufferBase* buffer);
-        void AddResourcesReferencedByBindGroup(BindGroupBase* group);
+    // Returns the per-pass usage for use by backends for APIs with explicit barriers.
+    SyncScopeResourceUsage AcquireSyncScopeUsage();
 
-        ComputePassResourceUsage AcquireResourceUsage();
+  private:
+    std::map<BufferBase*, wgpu::BufferUsage> mBufferUsages;
+    std::map<TextureBase*, TextureSubresourceUsage> mTextureUsages;
+    std::set<ExternalTextureBase*> mExternalTextureUsages;
+};
 
-      private:
-        ComputePassResourceUsage mUsage;
-    };
+// Helper class to build ComputePassResourceUsages
+class ComputePassResourceUsageTracker {
+  public:
+    ComputePassResourceUsageTracker();
+    ~ComputePassResourceUsageTracker();
 
-    // Helper class to build RenderPassResourceUsages
-    class RenderPassResourceUsageTracker : public SyncScopeUsageTracker {
-      public:
-        void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
-        const QueryAvailabilityMap& GetQueryAvailabilityMap() const;
+    void AddDispatch(SyncScopeResourceUsage scope);
+    void AddReferencedBuffer(BufferBase* buffer);
+    void AddResourcesReferencedByBindGroup(BindGroupBase* group);
 
-        RenderPassResourceUsage AcquireResourceUsage();
+    ComputePassResourceUsage AcquireResourceUsage();
 
-      private:
-        // Hide AcquireSyncScopeUsage since users of this class should use AcquireResourceUsage
-        // instead.
-        using SyncScopeUsageTracker::AcquireSyncScopeUsage;
+  private:
+    ComputePassResourceUsage mUsage;
+};
 
-        // Tracks queries used in the render pass to validate that they aren't written twice.
-        QueryAvailabilityMap mQueryAvailabilities;
-    };
+// Helper class to build RenderPassResourceUsages
+class RenderPassResourceUsageTracker : public SyncScopeUsageTracker {
+  public:
+    RenderPassResourceUsageTracker();
+    RenderPassResourceUsageTracker(RenderPassResourceUsageTracker&&);
+    ~RenderPassResourceUsageTracker();
+
+    RenderPassResourceUsageTracker& operator=(RenderPassResourceUsageTracker&&);
+
+    void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
+    const QueryAvailabilityMap& GetQueryAvailabilityMap() const;
+
+    RenderPassResourceUsage AcquireResourceUsage();
+
+  private:
+    // Hide AcquireSyncScopeUsage since users of this class should use AcquireResourceUsage
+    // instead.
+    using SyncScopeUsageTracker::AcquireSyncScopeUsage;
+
+    // Tracks queries used in the render pass to validate that they aren't written twice.
+    QueryAvailabilityMap mQueryAvailabilities;
+};
 
 }  // namespace dawn::native
 

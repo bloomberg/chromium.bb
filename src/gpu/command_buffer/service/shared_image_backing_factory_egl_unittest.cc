@@ -87,7 +87,6 @@ class SharedImageBackingFactoryEGLThreadSafeTest
 
   void SetUp() override {
     GpuDriverBugWorkarounds workarounds;
-    workarounds.max_texture_size = INT_MAX - 1;
 
     scoped_refptr<gles2::FeatureInfo> feature_info;
     CreateSharedContext(workarounds, surface_, context_, context_state_,
@@ -96,7 +95,7 @@ class SharedImageBackingFactoryEGLThreadSafeTest
     GpuPreferences preferences;
     preferences.use_passthrough_cmd_decoder = use_passthrough();
     backing_factory_ = std::make_unique<SharedImageBackingFactoryEGL>(
-        preferences, workarounds, GpuFeatureInfo(),
+        preferences, workarounds, context_state_->feature_info(),
         shared_image_manager_->batch_access_manager());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);

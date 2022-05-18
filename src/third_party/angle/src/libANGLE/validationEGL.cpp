@@ -551,6 +551,13 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
                 return false;
             }
             break;
+        case EGL_PLATFORM_GBM_KHR:
+            if (!clientExtensions.platformGbmKHR)
+            {
+                val->setError(EGL_BAD_PARAMETER, "Platform GBM extension is not active");
+                return false;
+            }
+            break;
         default:
             val->setError(EGL_BAD_CONFIG, "Bad platform type.");
             return false;
@@ -558,7 +565,7 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
 
     attribMap.initializeWithoutValidation();
 
-    if (platform == EGL_PLATFORM_ANGLE_ANGLE)
+    if (platform != EGL_PLATFORM_DEVICE_EXT)
     {
         EGLAttrib platformType       = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
         bool enableAutoTrimSpecified = false;
@@ -920,7 +927,7 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
             return false;
         }
     }
-    else if (platform == EGL_PLATFORM_DEVICE_EXT)
+    else
     {
         const Device *eglDevice = static_cast<const Device *>(native_display);
         if (eglDevice == nullptr || !Device::IsValidDevice(eglDevice))
@@ -930,10 +937,6 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
                           "platform equals EGL_PLATFORM_DEVICE_EXT");
             return false;
         }
-    }
-    else
-    {
-        UNREACHABLE();
     }
 
     if (attribMap.contains(EGL_POWER_PREFERENCE_ANGLE))
@@ -2445,8 +2448,7 @@ bool ValidateCreateWindowSurface(const ValidationContext *val,
                     case EGL_BACK_BUFFER:
                         break;
                     case EGL_SINGLE_BUFFER:
-                        val->setError(EGL_BAD_MATCH);
-                        return false;  // Rendering directly to front buffer not supported
+                        break;
                     default:
                         val->setError(EGL_BAD_ATTRIBUTE);
                         return false;
@@ -2493,8 +2495,12 @@ bool ValidateCreateWindowSurface(const ValidationContext *val,
                 break;
 
             case EGL_VG_COLORSPACE:
-                val->setError(EGL_BAD_MATCH);
-                return false;
+                if (value != EGL_VG_COLORSPACE_sRGB)
+                {
+                    val->setError(EGL_BAD_MATCH);
+                    return false;
+                }
+                break;
 
             case EGL_GL_COLORSPACE:
                 ANGLE_VALIDATION_TRY(ValidateColorspaceAttribute(val, displayExtensions, value));
@@ -2577,14 +2583,6 @@ bool ValidateCreateWindowSurface(const ValidationContext *val,
                 val->setError(EGL_BAD_ATTRIBUTE);
                 return false;
         }
-    }
-
-    if ((config->surfaceType & EGL_MUTABLE_RENDER_BUFFER_BIT_KHR) != 0 &&
-        !displayExtensions.mutableRenderBufferKHR)
-    {
-        val->setError(EGL_BAD_ATTRIBUTE,
-                      "EGL_MUTABLE_RENDER_BUFFER_BIT_KHR requires EGL_KHR_mutable_render_buffer.");
-        return false;
     }
 
     if (Display::hasExistingWindowSurface(window))
@@ -5335,14 +5333,6 @@ bool ValidateSurfaceAttrib(const ValidationContext *val,
             break;
 
         case EGL_RENDER_BUFFER:
-            if (!display->getExtensions().mutableRenderBufferKHR)
-            {
-                val->setError(
-                    EGL_BAD_ATTRIBUTE,
-                    "Attribute EGL_RENDER_BUFFER requires EGL_KHR_mutable_render_buffer.");
-                return false;
-            }
-
             if (value != EGL_BACK_BUFFER && value != EGL_SINGLE_BUFFER)
             {
                 val->setError(EGL_BAD_ATTRIBUTE,
@@ -5350,12 +5340,23 @@ bool ValidateSurfaceAttrib(const ValidationContext *val,
                 return false;
             }
 
-            if ((surface->getConfig()->surfaceType & EGL_MUTABLE_RENDER_BUFFER_BIT_KHR) == 0)
+            if (value == EGL_SINGLE_BUFFER)
             {
-                val->setError(EGL_BAD_MATCH,
-                              "EGL_RENDER_BUFFER requires the surface type bit "
-                              "EGL_MUTABLE_RENDER_BUFFER_BIT_KHR.");
-                return false;
+                if (!display->getExtensions().mutableRenderBufferKHR)
+                {
+                    val->setError(
+                        EGL_BAD_ATTRIBUTE,
+                        "Attribute EGL_RENDER_BUFFER requires EGL_KHR_mutable_render_buffer.");
+                    return false;
+                }
+
+                if ((surface->getConfig()->surfaceType & EGL_MUTABLE_RENDER_BUFFER_BIT_KHR) == 0)
+                {
+                    val->setError(EGL_BAD_MATCH,
+                                  "EGL_RENDER_BUFFER requires the surface type bit "
+                                  "EGL_MUTABLE_RENDER_BUFFER_BIT_KHR.");
+                    return false;
+                }
             }
             break;
 
@@ -6270,7 +6271,11 @@ bool ValidateGetProcAddress(const ValidationContext *val, const char *procname)
 
 bool ValidateQueryString(const ValidationContext *val, const Display *dpyPacked, EGLint name)
 {
-    if (name != EGL_EXTENSIONS || dpyPacked != nullptr)
+    // The only situation where EGL_NO_DISPLAY is allowed is when querying
+    // EGL_EXTENSIONS or EGL_VERSION.
+    const bool canQueryWithoutDisplay = (name == EGL_VERSION || name == EGL_EXTENSIONS);
+
+    if (dpyPacked != nullptr || !canQueryWithoutDisplay)
     {
         ANGLE_VALIDATION_TRY(ValidateDisplay(val, dpyPacked));
     }

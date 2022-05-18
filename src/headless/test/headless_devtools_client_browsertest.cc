@@ -859,12 +859,14 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
           node_dict->SetInteger("styleIndex", layout_node->GetStyleIndex());
 
         if (layout_node->HasInlineTextNodes()) {
-          base::ListValue inline_text_nodes;
+          base::Value::List inline_text_nodes;
           for (const std::unique_ptr<dom_snapshot::InlineTextBox>&
                    inline_text_box : *layout_node->GetInlineTextNodes()) {
-            inline_text_nodes.Append(inline_text_box->Serialize());
+            inline_text_nodes.Append(
+                base::Value::FromUniquePtrValue(inline_text_box->Serialize()));
           }
-          node_dict->SetKey("inlineTextNodes", std::move(inline_text_nodes));
+          node_dict->GetDict().Set("inlineTextNodes",
+                                   std::move(inline_text_nodes));
         }
       }
     }
@@ -933,7 +935,13 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
   }
 };
 
+// TODO(crbug.com/1090930): Fix this test on Fuchsia and re-enable.
+// NOTE: These macros expand to: DomTreeExtractionBrowserTest.RunAsyncTest
+#if BUILDFLAG(IS_FUCHSIA)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
+#endif
 
 // This feature uses network observation and works exactly and only for
 // network::ErrorReason::BLOCKED_BY_CLIENT modifications that are initiated
@@ -1126,8 +1134,11 @@ class DevtoolsInterceptionWithAuthProxyTest
   std::set<std::string> files_loaded_;
 };
 
-#if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
+#if (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)) || BUILDFLAG(IS_FUCHSIA)
 // TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
+// TODO(crbug.com/1090933): Reenable on Fuchsia when fixed.
+// NOTE: This macro expands to:
+//   DevtoolsInterceptionWithAuthProxyTest.RunAsyncTest
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);
 #else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);

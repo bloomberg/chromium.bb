@@ -106,6 +106,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   // fragmentation? If not, what should |allow_first_tier_oof_cache_| be set to
   // in this case?
   if (!container_builder->HasOutOfFlowPositionedCandidates() &&
+      !container_builder->HasOutOfFlowFragmentainerDescendants() &&
+      !container_builder->HasMulticolsWithPendingOOFs() &&
       !To<LayoutBlock>(container_builder_->GetLayoutObject())
            ->HasPositionedObjects())
     return;
@@ -395,33 +397,32 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
   const auto* container_object = container_builder_->GetLayoutObject();
   const auto& node_style = candidate.Node().Style();
 
-  if (container_object->IsLayoutNGGrid()) {
-    // If the out of flow item has the grid container as a containing block,
-    // then we don't need to go through placement.
-    const bool requires_grid_placement =
-        !node_style.GridColumnStart().IsAuto() ||
-        !node_style.GridColumnEnd().IsAuto() ||
-        !node_style.GridRowStart().IsAuto() ||
-        !node_style.GridRowEnd().IsAuto();
+  auto IsPlacedWithinGridArea = [&](const auto* containing_block) {
+    if (!containing_block->IsLayoutNGGrid())
+      return false;
 
-    if (requires_grid_placement) {
-      const auto& container_style = container_builder_->Style();
-      const auto& placement_data =
-          To<LayoutNGGrid>(container_object)->CachedPlacementData();
+    return !node_style.GridColumnStart().IsAuto() ||
+           !node_style.GridColumnEnd().IsAuto() ||
+           !node_style.GridRowStart().IsAuto() ||
+           !node_style.GridRowEnd().IsAuto();
+  };
 
-      GridItemData grid_item(candidate.Node(), container_style,
-                             default_writing_direction_.GetWritingMode());
+  auto GridAreaContainingBlockInfo =
+      [&](const LayoutNGGrid& containing_grid,
+          const NGGridLayoutData& grid_layout_data, const NGBoxStrut& borders,
+          const LogicalSize& size)
+      -> NGOutOfFlowLayoutPart::ContainingBlockInfo {
+    const auto& grid_style = containing_grid.StyleRef();
+    const auto& placement_data = containing_grid.CachedPlacementData();
 
-      return {default_writing_direction_,
-              NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
-                  NGGridPlacement(container_style, placement_data),
-                  container_builder_->GridLayoutData(),
-                  container_builder_->Borders(),
-                  {container_builder_->InlineSize(),
-                   container_builder_->FragmentsTotalBlockSize()},
-                  &grid_item)};
-    }
-  }
+    GridItemData grid_item(candidate.Node(), grid_style,
+                           grid_style.GetWritingMode());
+
+    return {grid_style.GetWritingDirection(),
+            NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
+                NGGridPlacement(grid_style, placement_data), grid_layout_data,
+                borders, size, &grid_item)};
+  };
 
   if (candidate.inline_container.container) {
     const auto it =
@@ -441,8 +442,11 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
       const LayoutObject* containing_block =
           containing_block_fragment->GetLayoutObject();
       DCHECK(containing_block);
+
+      bool is_placed_within_grid_area =
+          IsPlacedWithinGridArea(containing_block);
       auto it = containing_blocks_map_.find(containing_block);
-      if (it != containing_blocks_map_.end())
+      if (it != containing_blocks_map_.end() && !is_placed_within_grid_area)
         return it->value;
 
       const auto writing_direction =
@@ -452,12 +456,18 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
       size.block_size =
           LayoutBoxUtils::TotalBlockSize(*To<LayoutBox>(containing_block));
 
-      const NGPhysicalBoxFragment* fragment =
-          To<NGPhysicalBoxFragment>(containing_block_fragment);
-
       // TODO(1079031): This should eventually include scrollbar and border.
-      NGBoxStrut border =
-          fragment->Borders().ConvertToLogical(writing_direction);
+      NGBoxStrut border = To<NGPhysicalBoxFragment>(containing_block_fragment)
+                              ->Borders()
+                              .ConvertToLogical(writing_direction);
+
+      if (is_placed_within_grid_area) {
+        return GridAreaContainingBlockInfo(
+            *To<LayoutNGGrid>(containing_block),
+            *To<LayoutNGGrid>(containing_block)->GridLayoutData(), border,
+            size);
+      }
+
       LogicalSize content_size = ShrinkLogicalSize(size, border);
       LogicalOffset container_offset =
           LogicalOffset(border.inline_start, border.block_start);
@@ -472,6 +482,14 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
           .insert(containing_block, containing_block_info)
           .stored_value->value;
     }
+  }
+
+  if (IsPlacedWithinGridArea(container_object)) {
+    return GridAreaContainingBlockInfo(
+        *To<LayoutNGGrid>(container_object),
+        container_builder_->GridLayoutData(), container_builder_->Borders(),
+        {container_builder_->InlineSize(),
+         container_builder_->FragmentBlockSize()});
   }
 
   return node_style.GetPosition() == EPosition::kAbsolute
@@ -761,7 +779,7 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
           if (layout_box != only_layout)
             container_builder_->InsertLegacyPositionedObject(candidate.Node());
           NGLogicalOOFNodeForFragmentation fragmentainer_descendant(candidate);
-          container_builder_->AdjustOffsetsForFragmentainerDescendant(
+          container_builder_->AdjustFragmentainerDescendant(
               fragmentainer_descendant);
           container_builder_->AdjustFixedposContainingBlockForInnerMulticols();
           container_builder_->AddOutOfFlowFragmentainerDescendant(
@@ -859,7 +877,7 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
     const ComputedStyle& style = multicol_box_fragment->Style();
     const WritingModeConverter converter(writing_direction,
                                          multicol_box_fragment->Size());
-    wtf_size_t current_column_index = 0;
+    wtf_size_t current_column_index = kNotFound;
 
     if (column_inline_progression == kIndefiniteSize) {
       // TODO(almaher): This should eventually include scrollbar, as well.
@@ -904,7 +922,8 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
     // child break tokens and update the stored MulticolChildInfo if found.
     const NGBlockBreakToken* break_token =
         To<NGBlockBreakToken>(multicol_box_fragment->BreakToken());
-    if (break_token && break_token->ChildBreakTokens().size()) {
+    if (current_column_index != kNotFound && break_token &&
+        break_token->ChildBreakTokens().size()) {
       // If there is a column break token, it will be the last item in its
       // parent's list of break tokens.
       const auto children = break_token->ChildBreakTokens();
@@ -985,12 +1004,15 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
           NGContainingBlock<LogicalOffset>(
               containing_block_offset, containing_block_rel_offset,
               containing_block_fragment,
-              descendant.containing_block.IsInsideColumnSpanner()),
+              descendant.containing_block.IsInsideColumnSpanner(),
+              descendant.containing_block.RequiresContentBeforeBreaking()),
           NGContainingBlock<LogicalOffset>(
               fixedpos_containing_block_offset,
               fixedpos_containing_block_rel_offset,
               fixedpos_containing_block_fragment,
-              descendant.fixedpos_containing_block.IsInsideColumnSpanner()),
+              descendant.fixedpos_containing_block.IsInsideColumnSpanner(),
+              descendant.fixedpos_containing_block
+                  .RequiresContentBeforeBreaking()),
           fixedpos_inline_container};
       oof_nodes_to_layout.push_back(node);
     }
@@ -1249,6 +1271,8 @@ NGOutOfFlowLayoutPart::NodeInfo NGOutOfFlowLayoutPart::SetupNodeInfo(
   PhysicalSize container_physical_content_size = ToPhysicalSize(
       container_content_size, default_writing_direction_.GetWritingMode());
 
+  bool requires_content_before_breaking = false;
+
   // Adjust the |static_position| (which is currently relative to the default
   // container's border-box). ng_absolute_utils expects the static position to
   // be relative to the container's padding-box. Since
@@ -1257,8 +1281,11 @@ NGOutOfFlowLayoutPart::NodeInfo NGOutOfFlowLayoutPart::SetupNodeInfo(
   NGLogicalStaticPosition static_position = oof_node.static_position;
   static_position.offset -= container_info.rect.offset;
   if (containing_block_fragment) {
-    static_position.offset += To<NGLogicalOOFNodeForFragmentation>(oof_node)
-                                  .containing_block.Offset();
+    const auto& containing_block_for_fragmentation =
+        To<NGLogicalOOFNodeForFragmentation>(oof_node).containing_block;
+    static_position.offset += containing_block_for_fragmentation.Offset();
+    requires_content_before_breaking =
+        containing_block_for_fragmentation.RequiresContentBeforeBreaking();
   }
 
   NGLogicalStaticPosition oof_static_position =
@@ -1299,7 +1326,8 @@ NGOutOfFlowLayoutPart::NodeInfo NGOutOfFlowLayoutPart::SetupNodeInfo(
                   default_writing_direction_,
                   /* is_fragmentainer_descendant */ containing_block_fragment,
                   fixedpos_containing_block, fixedpos_inline_container,
-                  oof_node.inline_container.container);
+                  oof_node.inline_container.container,
+                  requires_content_before_breaking);
 }
 
 const NGLayoutResult* NGOutOfFlowLayoutPart::LayoutOOFNode(
@@ -1502,7 +1530,8 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::Layout(
         node_info.node, container_content_size_in_candidate_writing_mode,
         offset_info.block_estimate, offset_info.node_dimensions,
         offset.block_offset, oof_node_to_layout.break_token,
-        fragmentainer_constraint_space, should_use_fixed_block_size);
+        fragmentainer_constraint_space, should_use_fixed_block_size,
+        node_info.requires_content_before_breaking);
   }
 
   if (layout_result->Status() != NGLayoutResult::kSuccess) {
@@ -1564,7 +1593,8 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::GenerateFragment(
     const LayoutUnit block_offset,
     const NGBlockBreakToken* break_token,
     const NGConstraintSpace* fragmentainer_constraint_space,
-    bool should_use_fixed_block_size) {
+    bool should_use_fixed_block_size,
+    bool requires_content_before_breaking) {
   const auto& style = node.Style();
 
   LayoutUnit inline_size = node_dimensions.size.inline_size;
@@ -1575,10 +1605,9 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::GenerateFragment(
 
   // As the |block_estimate| is always in the node's writing mode, we build the
   // constraint space in the node's writing mode.
-  NGConstraintSpaceBuilder builder(
-      style.GetWritingMode(), style.GetWritingDirection(),
-      /* is_new_fc */ true,
-      /* requires_content_before_breaking */ false);
+  NGConstraintSpaceBuilder builder(style.GetWritingMode(),
+                                   style.GetWritingDirection(),
+                                   /* is_new_fc */ true);
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(
       container_content_size_in_candidate_writing_mode);
@@ -1586,12 +1615,6 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::GenerateFragment(
   if (should_use_fixed_block_size)
     builder.SetIsFixedBlockSize(true);
   if (fragmentainer_constraint_space) {
-    // Unlike in-flow elements, OOFs are never pushed to the next fragmentainer
-    // even if there's monolithic content that doesn't fit inside. See
-    // RequiresContentBeforeBreaking(), which we need to call for in-flow
-    // elements. For OOFs we can just pass true unconditionally.
-    bool requires_content_before_breaking = true;
-
     SetupSpaceBuilderForFragmentation(
         *fragmentainer_constraint_space, node, block_offset, &builder,
         /* is_new_fc */ true, requires_content_before_breaking);
@@ -1647,25 +1670,6 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInFragmentainer(
       To<NGPhysicalBoxFragment>(fragmentainer.fragment.Get());
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, node, /* break_token */ nullptr);
-
-  // If the last existing fragmentainer does not have a break token, and we will
-  // need to add a new subsequent fragmentainer to hold an OOF, create a break
-  // token for the old fragmentainer now.
-  if (is_new_fragment && !fragment->BreakToken()) {
-    const NGBlockBreakToken* previous_break_token =
-        PreviousFragmentainerBreakToken(*container_builder_, index);
-    NGLayoutAlgorithmParams params(node, fragment_geometry, space,
-                                   previous_break_token,
-                                   /* early_break */ nullptr);
-    NGSimplifiedOOFLayoutAlgorithm algorithm(params, *fragment,
-                                             /* is_new_fragment */ false,
-                                             /* should_break_for_oof */ true);
-    ReplaceFragmentainer(index, fragmentainer.offset,
-                         /* create_new_fragment */ false, &algorithm);
-    fragment = To<NGPhysicalBoxFragment>(
-        container_builder_->Children()[index].fragment.Get());
-  }
-
   LogicalOffset fragmentainer_offset = UpdatedFragmentainerOffset(
       fragmentainer.offset, index, fragmentainer_progression, is_new_fragment);
 
@@ -1844,18 +1848,10 @@ void NGOutOfFlowLayoutPart::ReplaceFragmentainer(
 
     if (multicol_children_ && index < multicol_children_->size()) {
       // We are in a nested fragmentation context. Replace the column entry
-      // (that already existed) and break token directly in the existing
-      // multicol fragment. If there any new columns, they will be appended as
-      // part of regenerating the multicol fragment.
+      // (that already existed) directly in the existing multicol fragment. If
+      // there any new columns, they will be appended as part of regenerating
+      // the multicol fragment.
       MulticolChildInfo& column_info = (*multicol_children_)[index];
-      if (auto& parent_break_token = column_info.parent_break_token) {
-        DCHECK_GT(parent_break_token->ChildBreakTokens().size(), 0u);
-        parent_break_token->GetMutableForOutOfFlow().ReplaceChildBreakToken(
-            new_fragment->BreakToken(),
-            base::checked_cast<wtf_size_t>(
-                parent_break_token->ChildBreakTokens().size()) -
-                1);
-      }
       column_info.mutable_link->fragment = new_fragment;
     }
   }
@@ -2030,8 +2026,14 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
 
   if (box.IsOutOfFlowPositioned()) {
     // If the inner multicol is out-of-flow positioned, its fragments will be
-    // found as direct children of fragmentainers in the nearest ancestor
-    // fragmentation context.
+    // found as direct children of fragmentainers in some ancestor fragmentation
+    // context. It may not be the *nearest* fragmentation context, though, since
+    // the OOF inner multicol may be contained by other OOFs, which in turn may
+    // not be contained by the innermost multicol container, and so on. Skip
+    // above all OOFs in the containing block chain, to find the right
+    // fragmentation context root.
+    while (containing_block->IsOutOfFlowPositioned())
+      containing_block = containing_block->ContainingNGBlock();
     containing_block = containing_block->ContainingFragmentationContextRoot();
 
     // Since this is treated as a nested multicol container, we should always

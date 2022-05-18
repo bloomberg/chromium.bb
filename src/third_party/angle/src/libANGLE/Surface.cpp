@@ -98,7 +98,8 @@ Surface::Surface(EGLint surfaceType,
       mLockBufferPitch(0),
       mBufferAgeQueriedSinceLastSwap(false),
       mIsDamageRegionSet(false),
-      mInitState(gl::InitState::Initialized),
+      mColorInitState(gl::InitState::Initialized),
+      mDepthStencilInitState(gl::InitState::Initialized),
       mImplObserverBinding(this, kSurfaceImplSubjectIndex)
 {
     mPostSubBufferRequested =
@@ -114,6 +115,11 @@ Surface::Surface(EGLint surfaceType,
         mRenderBuffer = EGL_SINGLE_BUFFER;
     }
 
+    if (mType == EGL_WINDOW_BIT)
+    {
+        mRenderBuffer = mState.attributes.getAsInt(EGL_RENDER_BUFFER, EGL_BACK_BUFFER);
+    }
+
     mGLColorspace =
         static_cast<EGLenum>(attributes.get(EGL_GL_COLORSPACE, EGL_GL_COLORSPACE_LINEAR));
     mVGAlphaFormat =
@@ -126,7 +132,8 @@ Surface::Surface(EGLint surfaceType,
         (attributes.get(EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE, EGL_FALSE) == EGL_TRUE);
     if (mRobustResourceInitialization)
     {
-        mInitState = gl::InitState::MayNeedInit;
+        mColorInitState        = gl::InitState::MayNeedInit;
+        mDepthStencilInitState = gl::InitState::MayNeedInit;
     }
 
     mFixedSize = (attributes.get(EGL_FIXED_SIZE_ANGLE, EGL_FALSE) == EGL_TRUE);
@@ -174,7 +181,8 @@ void Surface::postSwap(const gl::Context *context)
 {
     if (mRobustResourceInitialization && mState.swapBehavior != EGL_BUFFER_PRESERVED)
     {
-        mInitState = gl::InitState::MayNeedInit;
+        mColorInitState        = gl::InitState::MayNeedInit;
+        mDepthStencilInitState = gl::InitState::MayNeedInit;
         onStateChange(angle::SubjectMessage::SubjectChanged);
     }
 
@@ -640,20 +648,38 @@ Error Surface::getBufferAge(const gl::Context *context, EGLint *age)
     return err;
 }
 
-gl::Framebuffer *Surface::createDefaultFramebuffer(const gl::Context *context,
-                                                   egl::Surface *readSurface)
+gl::InitState Surface::initState(GLenum binding, const gl::ImageIndex & /*imageIndex*/) const
 {
-    return new gl::Framebuffer(context, this, readSurface);
+    switch (binding)
+    {
+        case GL_BACK:
+            return mColorInitState;
+        case GL_DEPTH:
+        case GL_STENCIL:
+            return mDepthStencilInitState;
+        default:
+            UNREACHABLE();
+            return gl::InitState::Initialized;
+    }
 }
 
-gl::InitState Surface::initState(const gl::ImageIndex & /*imageIndex*/) const
+void Surface::setInitState(GLenum binding,
+                           const gl::ImageIndex & /*imageIndex*/,
+                           gl::InitState initState)
 {
-    return mInitState;
-}
-
-void Surface::setInitState(const gl::ImageIndex & /*imageIndex*/, gl::InitState initState)
-{
-    mInitState = initState;
+    switch (binding)
+    {
+        case GL_BACK:
+            mColorInitState = initState;
+            break;
+        case GL_DEPTH:
+        case GL_STENCIL:
+            mDepthStencilInitState = initState;
+            break;
+        default:
+            UNREACHABLE();
+            break;
+    }
 }
 
 void Surface::setTimestampsEnabled(bool enabled)

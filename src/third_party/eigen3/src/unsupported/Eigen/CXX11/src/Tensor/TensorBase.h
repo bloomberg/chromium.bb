@@ -34,8 +34,8 @@ class TensorBase<Derived, ReadOnlyAccessors>
     typedef internal::traits<Derived> DerivedTraits;
     typedef typename DerivedTraits::Scalar Scalar;
     typedef typename DerivedTraits::Index Index;
-    typedef typename internal::remove_const<Scalar>::type CoeffReturnType;
-    static const int NumDimensions = DerivedTraits::NumDimensions;
+    typedef std::remove_const_t<Scalar> CoeffReturnType;
+    static constexpr int NumDimensions = DerivedTraits::NumDimensions;
 
     // Generic nullary operation support.
     template <typename CustomNullaryOp> EIGEN_DEVICE_FUNC
@@ -318,9 +318,9 @@ class TensorBase<Derived, ReadOnlyAccessors>
     }
 
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const typename internal::conditional<NumTraits<CoeffReturnType>::IsComplex,
-                                                             TensorCwiseUnaryOp<internal::scalar_conjugate_op<Scalar>, const Derived>,
-                                                             Derived>::type
+    EIGEN_STRONG_INLINE const std::conditional_t<NumTraits<CoeffReturnType>::IsComplex,
+                                                      TensorCwiseUnaryOp<internal::scalar_conjugate_op<Scalar>, const Derived>,
+                                                      Derived>
     conjugate() const {
       return choose(Cond<NumTraits<CoeffReturnType>::IsComplex>(), unaryExpr(internal::scalar_conjugate_op<Scalar>()), derived());
     }
@@ -419,9 +419,9 @@ class TensorBase<Derived, ReadOnlyAccessors>
 
     template<typename NewType>
     EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const typename internal::conditional<internal::is_same<NewType, CoeffReturnType>::value,
-                                                             Derived,
-                                                             TensorConversionOp<NewType, const Derived> >::type
+    EIGEN_STRONG_INLINE const std::conditional_t<internal::is_same<NewType, CoeffReturnType>::value,
+                                                      Derived,
+                                                      TensorConversionOp<NewType, const Derived> >
     cast() const {
       return choose(Cond<internal::is_same<NewType, CoeffReturnType>::value>(), derived(), TensorConversionOp<NewType, const Derived>(derived()));
     }
@@ -717,26 +717,26 @@ class TensorBase<Derived, ReadOnlyAccessors>
     }
 
     template <typename Dims> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorReductionOp<internal::AndReducer, const Dims, const typename internal::conditional<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> >::type >
+    const TensorReductionOp<internal::AndReducer, const Dims, const std::conditional_t<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> > >
     all(const Dims& dims) const {
       return cast<bool>().reduce(dims, internal::AndReducer());
     }
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorReductionOp<internal::AndReducer, const DimensionList<Index, NumDimensions>, const typename internal::conditional<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> >::type >
+    const TensorReductionOp<internal::AndReducer, const DimensionList<Index, NumDimensions>, const std::conditional_t<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> > >
     all() const {
       DimensionList<Index, NumDimensions> in_dims;
       return cast<bool>().reduce(in_dims, internal::AndReducer());
     }
 
     template <typename Dims> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorReductionOp<internal::OrReducer, const Dims, const typename internal::conditional<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> >::type >
+    const TensorReductionOp<internal::OrReducer, const Dims, const std::conditional_t<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> > >
     any(const Dims& dims) const {
       return cast<bool>().reduce(dims, internal::OrReducer());
     }
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorReductionOp<internal::OrReducer, const DimensionList<Index, NumDimensions>, const typename internal::conditional<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> >::type >
+    const TensorReductionOp<internal::OrReducer, const DimensionList<Index, NumDimensions>, const std::conditional_t<internal::is_same<bool, CoeffReturnType>::value, Derived, TensorConversionOp<bool, const Derived> > >
     any() const {
       DimensionList<Index, NumDimensions> in_dims;
       return cast<bool>().reduce(in_dims, internal::OrReducer());
@@ -988,7 +988,7 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
     typedef typename DerivedTraits::Scalar Scalar;
     typedef typename DerivedTraits::Index Index;
     typedef Scalar CoeffReturnType;
-    static const int NumDimensions = DerivedTraits::NumDimensions;
+    static constexpr int NumDimensions = DerivedTraits::NumDimensions;
 
     template <typename Scalar, int NumIndices, int Options, typename IndexType> friend class Tensor;
     template <typename Scalar, typename Dimensions, int Option, typename IndexTypes> friend class TensorFixedSize;

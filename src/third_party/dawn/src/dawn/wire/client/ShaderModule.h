@@ -15,33 +15,35 @@
 #ifndef SRC_DAWN_WIRE_CLIENT_SHADERMODULE_H_
 #define SRC_DAWN_WIRE_CLIENT_SHADERMODULE_H_
 
-#include <dawn/webgpu.h>
+#include "dawn/webgpu.h"
 
 #include "dawn/wire/client/ObjectBase.h"
 #include "dawn/wire/client/RequestTracker.h"
 
 namespace dawn::wire::client {
 
-    class ShaderModule final : public ObjectBase {
-      public:
-        using ObjectBase::ObjectBase;
-        ~ShaderModule();
+class ShaderModule final : public ObjectBase {
+  public:
+    using ObjectBase::ObjectBase;
 
-        void GetCompilationInfo(WGPUCompilationInfoCallback callback, void* userdata);
-        bool GetCompilationInfoCallback(uint64_t requestSerial,
-                                        WGPUCompilationInfoRequestStatus status,
-                                        const WGPUCompilationInfo* info);
+    ShaderModule(Client* client, uint32_t refcount, uint32_t id);
+    ~ShaderModule();
 
-      private:
-        void CancelCallbacksForDisconnect() override;
-        void ClearAllCallbacks(WGPUCompilationInfoRequestStatus status);
+    void GetCompilationInfo(WGPUCompilationInfoCallback callback, void* userdata);
+    bool GetCompilationInfoCallback(uint64_t requestSerial,
+                                    WGPUCompilationInfoRequestStatus status,
+                                    const WGPUCompilationInfo* info);
 
-        struct CompilationInfoRequest {
-            WGPUCompilationInfoCallback callback = nullptr;
-            void* userdata = nullptr;
-        };
-        RequestTracker<CompilationInfoRequest> mCompilationInfoRequests;
+  private:
+    void CancelCallbacksForDisconnect() override;
+    void ClearAllCallbacks(WGPUCompilationInfoRequestStatus status);
+
+    struct CompilationInfoRequest {
+        WGPUCompilationInfoCallback callback = nullptr;
+        void* userdata = nullptr;
     };
+    RequestTracker<CompilationInfoRequest> mCompilationInfoRequests;
+};
 
 }  // namespace dawn::wire::client
 

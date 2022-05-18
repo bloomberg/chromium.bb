@@ -772,14 +772,26 @@ void ShillToONCTranslator::TranslateEap() {
     const std::string* shill_phase2_auth =
         shill_dictionary_->FindStringKey(shill::kEapPhase2AuthProperty);
     if (shill_phase2_auth && !shill_phase2_auth->empty()) {
-      TranslateWithTableAndSet(shill::kEapPhase2AuthProperty,
-                               kEAP_TTLS_InnerTable, ::onc::eap::kInner);
+      const StringTranslationEntry* table =
+          GetEapInnerTranslationTableForShillOuter(*shill_eap_method);
+      if (table) {
+        TranslateWithTableAndSet(shill::kEapPhase2AuthProperty, table,
+                                 ::onc::eap::kInner);
+      }
+    } else {
+      if ((*shill_eap_method == ::onc::eap::kPEAP) ||
+          (*shill_eap_method == ::onc::eap::kEAP_TTLS)) {
+        // For outer tunneling protocols, translate ONC's Inner as its default
+        // value if the Phase2 property has been omitted in shill.
+        onc_object_.SetKey(::onc::eap::kInner,
+                           base::Value(::onc::eap::kAutomatic));
+      }
     }
   }
 
   const std::string* shill_cert_id =
       shill_dictionary_->FindStringKey(shill::kEapCertIdProperty);
-  if (shill_cert_id) {
+  if (shill_cert_id && !shill_cert_id->empty()) {
     onc_object_.SetKey(::onc::client_cert::kClientCertType,
                        base::Value(::onc::client_cert::kPKCS11Id));
     // Note: shill::kEapCertIdProperty is already in the format slot:key_id.

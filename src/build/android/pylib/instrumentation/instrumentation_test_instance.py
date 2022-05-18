@@ -38,9 +38,11 @@ _ACTIVITY_RESULT_OK = -1
 _COMMAND_LINE_PARAMETER = 'cmdlinearg-parameter'
 _DEFAULT_ANNOTATIONS = [
     'SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest', 'IntegrationTest']
+# This annotation is for disabled tests that should not be run in Test Reviver.
+_DO_NOT_REVIVE_ANNOTATIONS = ['DoNotRevive']
 _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS = [
     'DisabledTest', 'FlakyTest', 'Manual']
-_VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS +
+_VALID_ANNOTATIONS = set(_DEFAULT_ANNOTATIONS + _DO_NOT_REVIVE_ANNOTATIONS +
                          _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS)
 
 _TEST_LIST_JUNIT4_RUNNERS = [
@@ -501,24 +503,41 @@ def _GetTestsFromDexdump(test_apk):
   dex_dumps = dexdump.Dump(test_apk)
   tests = []
 
-  def get_test_methods(methods):
-    return [
-        {
-          'method': m,
-          # No annotation info is available from dexdump.
-          # Set MediumTest annotation for default.
-          'annotations': {'MediumTest': None},
-        } for m in methods if m.startswith('test')]
+  def get_test_methods(methods, annotations):
+    test_methods = []
+
+    for method in methods:
+      if method.startswith('test'):
+        method_annotations = annotations.get(method, {})
+
+        # Dexdump used to not return any annotation info
+        # So MediumTest annotation was added to all methods
+        # Preserving this behaviour by adding MediumTest if none of the
+        # size annotations are included in these annotations
+        if not any(valid in method_annotations for valid in _VALID_ANNOTATIONS):
+          method_annotations.update({'MediumTest': None})
+
+        test_methods.append({
+            'method': method,
+            'annotations': method_annotations
+        })
+
+    return test_methods
 
   for dump in dex_dumps:
     for package_name, package_info in six.iteritems(dump):
       for class_name, class_info in six.iteritems(package_info['classes']):
-        if class_name.endswith('Test'):
+        if class_name.endswith('Test') and not class_info['is_abstract']:
+          classAnnotations, methodsAnnotations = class_info['annotations']
           tests.append({
-              'class': '%s.%s' % (package_name, class_name),
-              'annotations': {},
-              'methods': get_test_methods(class_info['methods']),
-              'superclass': class_info['superclass'],
+              'class':
+              '%s.%s' % (package_name, class_name),
+              'annotations':
+              classAnnotations,
+              'methods':
+              get_test_methods(class_info['methods'], methodsAnnotations),
+              'superclass':
+              class_info['superclass'],
           })
   return tests
 
@@ -618,6 +637,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._package_info = None
     self._suite = None
     self._test_apk = None
+    self._test_apk_as_instant = False
     self._test_apk_incremental_install_json = None
     self._test_jar = None
     self._test_package = None
@@ -711,6 +731,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._test_apk = apk_helper.ToHelper(test_apk_path)
     self._suite = os.path.splitext(os.path.basename(args.test_apk))[0]
+
+    self._test_apk_as_instant = args.test_apk_as_instant
 
     self._apk_under_test_incremental_install_json = (
         args.apk_under_test_incremental_install_json)
@@ -819,7 +841,11 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       self._excluded_annotations = []
 
     requested_annotations = set(a[0] for a in self._annotations)
-    if not args.run_disabled:
+    if args.run_disabled:
+      self._excluded_annotations.extend(
+          annotation_element(a) for a in _DO_NOT_REVIVE_ANNOTATIONS
+          if a not in requested_annotations)
+    else:
       self._excluded_annotations.extend(
           annotation_element(a) for a in _EXCLUDE_UNLESS_REQUESTED_ANNOTATIONS
           if a not in requested_annotations)
@@ -983,6 +1009,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def test_apk(self):
     return self._test_apk
+
+  @property
+  def test_apk_as_instant(self):
+    return self._test_apk_as_instant
 
   @property
   def test_apk_incremental_install_json(self):

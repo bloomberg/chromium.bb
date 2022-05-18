@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/test/fake_intent_helper_host.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
@@ -87,7 +87,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize();
     dbus_thread_manager_initialized_ = true;
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
   }
   arc::SetArcAvailableCommandLineForTesting(
       base::CommandLine::ForCurrentProcess());
@@ -259,7 +259,7 @@ void ArcAppTest::TearDown() {
   // ash::AshTestHelper::SetUp(), so Shutdown() only when it is initialized in
   // ArcAppTest::SetUp().
   if (dbus_thread_manager_initialized_) {
-    chromeos::ConciergeClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;
   }

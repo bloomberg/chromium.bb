@@ -3630,18 +3630,31 @@ TEST_F(VkLayerTest, ThreadUpdateDescriptorUpdateAfterBindNoCollision) {
 }
 #endif  // GTEST_IS_THREADSAFE
 
-TEST_F(VkLayerTest, ExecuteUnrecordedPrimaryCB) {
+TEST_F(VkLayerTest, ExecuteUnrecordedCB) {
     TEST_DESCRIPTION("Attempt vkQueueSubmit with a CB in the initial state");
+    m_errorMonitor->ExpectSuccess();
+
     ASSERT_NO_FATAL_FAILURE(Init());
     // never record m_commandBuffer
+    m_errorMonitor->VerifyNotFound();
 
     VkSubmitInfo si = LvlInitStruct<VkSubmitInfo>();
     si.commandBufferCount = 1;
     si.pCommandBuffers = &m_commandBuffer->handle();
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkQueueSubmit-pCommandBuffers-00072");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkQueueSubmit-pCommandBuffers-00070");
     vk::QueueSubmit(m_device->m_queue, 1, &si, VK_NULL_HANDLE);
     m_errorMonitor->VerifyFound();
+
+    // Testing an "unfinished secondary CB" crashes on some HW/drivers (notably Pixel 3 and RADV)
+    // VkCommandBufferObj cb(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+    // m_commandBuffer->begin();
+    // vk::CmdExecuteCommands(m_commandBuffer->handle(), 1u, &cb.handle());
+    // m_commandBuffer->end();
+
+    // m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkQueueSubmit-pCommandBuffers-00072");
+    // vk::QueueSubmit(m_device->m_queue, 1, &si, VK_NULL_HANDLE);
+    // m_errorMonitor->VerifyFound();
 }
 
 TEST_F(VkLayerTest, Maintenance1AndNegativeViewport) {
@@ -12057,13 +12070,18 @@ TEST_F(VkLayerTest, ValidateVertexInputDynamicStateEnabled) {
 
     // VUID-VkVertexInputAttributeDescription2EXT-format-04805
     {
-        VkVertexInputBindingDescription2EXT binding = {
-            VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT, nullptr, 0, 0, VK_VERTEX_INPUT_RATE_VERTEX, 1};
-        VkVertexInputAttributeDescription2EXT attribute = {
-            VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT, nullptr, 0, 0, VK_FORMAT_D16_UNORM, 0};
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkVertexInputAttributeDescription2EXT-format-04805");
-        vkCmdSetVertexInputEXT(m_commandBuffer->handle(), 1, &binding, 1, &attribute);
-        m_errorMonitor->VerifyFound();
+        const VkFormat format = VK_FORMAT_D16_UNORM;
+        VkFormatProperties format_props;
+        vk::GetPhysicalDeviceFormatProperties(gpu(), format, &format_props);
+        if ((format_props.bufferFeatures & VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT) == 0) {
+            VkVertexInputBindingDescription2EXT binding = {
+                VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT, nullptr, 0, 0, VK_VERTEX_INPUT_RATE_VERTEX, 1};
+            VkVertexInputAttributeDescription2EXT attribute = {
+                VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT, nullptr, 0, 0, format, 0};
+            m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkVertexInputAttributeDescription2EXT-format-04805");
+            vkCmdSetVertexInputEXT(m_commandBuffer->handle(), 1, &binding, 1, &attribute);
+            m_errorMonitor->VerifyFound();
+        }
     }
 
     m_commandBuffer->end();
@@ -12844,6 +12862,84 @@ TEST_F(VkLayerTest, InvalidCmdEndQueryIndexedEXTIndex) {
 
     fpCmdEndQueryIndexedEXT(m_commandBuffer->handle(), query_pool, 0, 0);
     m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, InvalidCmdEndQueryIndexedEXTPrimitiveGenerated) {
+    TEST_DESCRIPTION("Test InvalidCmdEndQueryIndexedEXT with invalid index");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
+    AddRequiredExtensions(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test does not run on Vulkan 1.0, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s or %s not supported, skipping test\n", kSkipPrefix, VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME,
+               VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+        return;
+    }
+
+    auto primitives_generated_features = LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&primitives_generated_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+
+    if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
+        printf("%s primitivesGeneratedQuery feature is not supported.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    auto transform_feedback_properties = LvlInitStruct<VkPhysicalDeviceTransformFeedbackPropertiesEXT>();
+
+    auto phys_dev_props_2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&transform_feedback_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &phys_dev_props_2);
+
+    auto fpCmdBeginQueryIndexedEXT =
+        reinterpret_cast<PFN_vkCmdBeginQueryIndexedEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginQueryIndexedEXT"));
+    auto fpCmdEndQueryIndexedEXT =
+        reinterpret_cast<PFN_vkCmdEndQueryIndexedEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdEndQueryIndexedEXT"));
+
+    VkQueryPoolCreateInfo qpci = LvlInitStruct<VkQueryPoolCreateInfo>();
+    qpci.queryCount = 1;
+
+    vk_testing::QueryPool tf_query_pool;
+    qpci.queryType = VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT;
+    tf_query_pool.init(*m_device, qpci);
+
+    vk_testing::QueryPool pg_query_pool;
+    qpci.queryType = VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT;
+    pg_query_pool.init(*m_device, qpci);
+
+    vk_testing::QueryPool query_pool;
+    qpci.queryType = VK_QUERY_TYPE_OCCLUSION;
+    query_pool.init(*m_device, qpci);
+
+    m_commandBuffer->begin();
+
+    fpCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), tf_query_pool.handle(), 0, 0,
+                              transform_feedback_properties.maxTransformFeedbackStreams);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndQueryIndexedEXT-queryType-06694");
+    fpCmdEndQueryIndexedEXT(m_commandBuffer->handle(), tf_query_pool.handle(), 0,
+                            transform_feedback_properties.maxTransformFeedbackStreams);
+    m_errorMonitor->VerifyFound();
+
+    fpCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), pg_query_pool.handle(), 0, 0,
+                              transform_feedback_properties.maxTransformFeedbackStreams);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndQueryIndexedEXT-queryType-06694");
+    fpCmdEndQueryIndexedEXT(m_commandBuffer->handle(), pg_query_pool.handle(), 0,
+                            transform_feedback_properties.maxTransformFeedbackStreams);
+    m_errorMonitor->VerifyFound();
+
+    fpCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 0, 0);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndQueryIndexedEXT-queryType-06695");
+    fpCmdEndQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 1);
+    m_errorMonitor->VerifyFound();
 }
 
 TEST_F(VkLayerTest, Features12AndppEnabledExtensionNames) {
@@ -14165,6 +14261,7 @@ TEST_F(VkLayerTest, PrimitivesGeneratedQuery) {
     TEST_DESCRIPTION("Test unsupported primitives generated queries");
 
     SetTargetApiVersion(VK_API_VERSION_1_1);
+    AddRequiredExtensions(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
     AddRequiredExtensions(VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
@@ -14178,13 +14275,19 @@ TEST_F(VkLayerTest, PrimitivesGeneratedQuery) {
 
     auto primitives_generated_features = LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>();
     auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&primitives_generated_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
 
     if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
         printf("%s primitivesGeneratedQuery feature is not supported.\n", kSkipPrefix);
         return;
     }
+    primitives_generated_features.primitivesGeneratedQueryWithNonZeroStreams = VK_FALSE;
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+    auto transform_feedback_properties = LvlInitStruct<VkPhysicalDeviceTransformFeedbackPropertiesEXT>();
+
+    auto phys_dev_props_2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&transform_feedback_properties);
+    vk::GetPhysicalDeviceProperties2(gpu(), &phys_dev_props_2);
 
     uint32_t compute_queue_family_index = m_device->QueueFamilyMatching(VK_QUEUE_COMPUTE_BIT, VK_QUEUE_GRAPHICS_BIT);
     if (compute_queue_family_index == std::numeric_limits<uint32_t>::max()) {
@@ -14207,7 +14310,34 @@ TEST_F(VkLayerTest, PrimitivesGeneratedQuery) {
     vk::CmdBeginQuery(command_buffer.handle(), query_pool.handle(), 0, 0);
     m_errorMonitor->VerifyFound();
 
-    command_buffer.end();
+    auto fpvkCmdBeginQueryIndexedEXT =
+        reinterpret_cast<PFN_vkCmdBeginQueryIndexedEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginQueryIndexedEXT"));
+    auto fpvkCmdEndQueryIndexedEXT =
+        reinterpret_cast<PFN_vkCmdEndQueryIndexedEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdEndQueryIndexedEXT"));
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-06689");
+    fpvkCmdBeginQueryIndexedEXT(command_buffer.handle(), query_pool.handle(), 0, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->begin();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-06690");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-06691");
+    fpvkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 0,
+                                transform_feedback_properties.maxTransformFeedbackStreams);
+    m_errorMonitor->VerifyFound();
+
+    query_pool_ci.queryType = VK_QUERY_TYPE_OCCLUSION;
+
+    vk_testing::QueryPool occlusion_query_pool;
+    occlusion_query_pool.init(*m_device, query_pool_ci);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-06692");
+    fpvkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), occlusion_query_pool.handle(), 0, 0, 1);
+    m_errorMonitor->VerifyFound();
+
+    fpvkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 0, 0);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndQueryIndexedEXT-queryType-06696");
+    fpvkCmdEndQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 1);
+    m_errorMonitor->VerifyFound();
+
 }
 
 TEST_F(VkLayerTest, TestCopyMemoryToAsBuffer) {
@@ -14266,20 +14396,35 @@ TEST_F(VkLayerTest, TestCopyMemoryToAsBuffer) {
 TEST_F(VkLayerTest, PrimitivesGeneratedQueryFeature) {
     TEST_DESCRIPTION("Test missing primitives generated query feature");
 
+    AddRequiredExtensions(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
     AddRequiredExtensions(VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(Init());
     if (!AreRequestedExtensionsEnabled()) {
         printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_EXT_PRIMITIVES_GENERATED_QUERY_EXTENSION_NAME);
-        //return;
+        return;
     }
-
+    auto primitives_generated_features = LvlInitStruct<VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&primitives_generated_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (primitives_generated_features.primitivesGeneratedQuery == VK_FALSE) {
+        printf("%s primitivesGeneratedQuery feature is not supported.\n", kSkipPrefix);
+        return;
+    }
     VkQueryPoolCreateInfo query_pool_ci = LvlInitStruct<VkQueryPoolCreateInfo>();
     query_pool_ci.queryType = VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT;
     query_pool_ci.queryCount = 1;
 
-    VkQueryPool query_pool;
+    vk_testing::QueryPool query_pool;
+    query_pool.init(*m_device, query_pool_ci);
+    m_commandBuffer->begin();
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQuery-queryType-06688");
-    vk::CreateQueryPool(device(), &query_pool_ci, nullptr, &query_pool);
+    vk::CmdBeginQuery(m_commandBuffer->handle(), query_pool.handle(), 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    auto fpvkCmdBeginQueryIndexedEXT =
+        reinterpret_cast<PFN_vkCmdBeginQueryIndexedEXT>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginQueryIndexedEXT"));
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginQueryIndexedEXT-queryType-06693");
+    fpvkCmdBeginQueryIndexedEXT(m_commandBuffer->handle(), query_pool.handle(), 0, 0, 0);
     m_errorMonitor->VerifyFound();
 }
 
@@ -14420,4 +14565,262 @@ TEST_F(VkLayerTest, RayTracingPipelineDeferredOp) {
     vk::DestroyPipeline(m_device->handle(), library, nullptr);
 
     m_errorMonitor->VerifyNotFound();
+}
+
+TEST_F(VkLayerTest, TestMultipleQueuesWaitingOnSemaphore) {
+    TEST_DESCRIPTION("Test submitting two command buffers that wait on the same semaphore to different queues.");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    if (m_device->graphics_queues().size() < 2) {
+        printf("%s 2 graphics queues are needed.\n", kSkipPrefix);
+        return;
+    }
+
+    auto sem_info = LvlInitStruct<VkSemaphoreCreateInfo>();
+
+    vk_testing::Semaphore semaphore;
+    semaphore.init(*m_device, sem_info);
+
+    VkPipelineStageFlags stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+    auto signal_submit_info = LvlInitStruct<VkSubmitInfo>();
+    signal_submit_info.signalSemaphoreCount = 1;
+    signal_submit_info.pSignalSemaphores = &semaphore.handle();
+
+    auto wait_submit_info = LvlInitStruct<VkSubmitInfo>();
+    wait_submit_info.waitSemaphoreCount = 1;
+    wait_submit_info.pWaitSemaphores = &semaphore.handle();
+    wait_submit_info.pWaitDstStageMask = &stageFlags;
+
+    auto wait_and_signal_submit_info = LvlInitStruct<VkSubmitInfo>();
+    wait_and_signal_submit_info.signalSemaphoreCount = 1;
+    wait_and_signal_submit_info.pSignalSemaphores = &semaphore.handle();
+    wait_and_signal_submit_info.waitSemaphoreCount = 1;
+    wait_and_signal_submit_info.pWaitSemaphores = &semaphore.handle();
+    wait_and_signal_submit_info.pWaitDstStageMask = &stageFlags;
+
+    m_errorMonitor->ExpectSuccess();
+
+    VkQueue other = m_device->graphics_queues()[1]->handle();
+
+    vk::QueueSubmit(m_device->m_queue, 1, &signal_submit_info, VK_NULL_HANDLE);
+    vk::QueueSubmit(m_device->m_queue, 1, &wait_and_signal_submit_info, VK_NULL_HANDLE);
+
+    m_errorMonitor->VerifyNotFound();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkQueueSubmit-pWaitSemaphores-00068");
+    vk::QueueSubmit(other, 1, &wait_submit_info, VK_NULL_HANDLE);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, IncompatibleRenderPass) {
+    TEST_DESCRIPTION("Validate if attachments in render pass and descriptor set use the same image subresources");
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    const uint32_t width = 32;
+    const uint32_t height = 32;
+    const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+
+    VkAttachmentReference attach_ref = {};
+    attach_ref.attachment = 0;
+    attach_ref.layout = VK_IMAGE_LAYOUT_GENERAL;
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &attach_ref;
+
+    VkAttachmentDescription attach_desc = {};
+    attach_desc.format = format;
+    attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attach_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attach_desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach_desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDependency dependency = {0,
+                                      0,
+                                      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                      VK_DEPENDENCY_BY_REGION_BIT};
+
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rpci.subpassCount = 1;
+    rpci.pSubpasses = &subpass;
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = &attach_desc;
+    rpci.dependencyCount = 1;
+    rpci.pDependencies = &dependency;
+
+    vk_testing::RenderPass render_pass1(*m_device, rpci);
+    rpci.dependencyCount = 0;
+    vk_testing::RenderPass render_pass2(*m_device, rpci);
+    rpci.dependencyCount = 1;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    vk_testing::RenderPass render_pass3(*m_device, rpci);
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dependencyFlags = 0;
+    vk_testing::RenderPass render_pass4(*m_device, rpci);
+
+    VkImageObj image(m_device);
+    image.InitNoLayout(width, height, 1, format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    auto fb_ci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fb_ci.renderPass = render_pass1.handle();
+    fb_ci.attachmentCount = 1;
+    fb_ci.pAttachments = &imageView;
+    fb_ci.width = width;
+    fb_ci.height = height;
+    fb_ci.layers = 1;
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, fb_ci);
+
+    VkClearValue clear_values[2] = {};
+    clear_values[0].color = {{0, 0, 0, 0}};
+    clear_values[1].color = {{0, 0, 0, 0}};
+
+    VkRenderPassBeginInfo rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbi.framebuffer = framebuffer.handle();
+    rpbi.renderPass = render_pass2.handle();
+    rpbi.renderArea.extent.width = width;
+    rpbi.renderArea.extent.height = height;
+    rpbi.clearValueCount = 2;
+    rpbi.pClearValues = clear_values;
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderPass-00904");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->VerifyFound();
+
+    rpbi.renderPass = render_pass3.handle();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderPass-00904");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->VerifyFound();
+
+    rpbi.renderPass = render_pass4.handle();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderPass-00904");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, IncompatibleRenderPass2) {
+    TEST_DESCRIPTION("Validate if attachments in render pass and descriptor set use the same image subresources");
+
+    SetTargetApiVersion(VK_API_VERSION_1_2);
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+    if (DeviceValidationVersion() < VK_API_VERSION_1_2) {
+        printf("%s Test requires Vulkan 1.2+, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    auto multiview_features = LvlInitStruct<VkPhysicalDeviceMultiviewFeatures>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&multiview_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (multiview_features.multiview == VK_FALSE) {
+        printf("%s multiview feature not supported, skipping test.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    m_errorMonitor->ExpectSuccess();
+
+    const uint32_t width = 32;
+    const uint32_t height = 32;
+    const VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+
+    VkAttachmentReference2 attach_ref = LvlInitStruct<VkAttachmentReference2>();
+    attach_ref.attachment = 0;
+    attach_ref.layout = VK_IMAGE_LAYOUT_GENERAL;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>();
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &attach_ref;
+    subpass.viewMask = 0x1;
+
+    VkAttachmentDescription2 attach_desc = LvlInitStruct<VkAttachmentDescription2>();
+    attach_desc.format = format;
+    attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attach_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attach_desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach_desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkSubpassDependency2 dependency = {VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
+                                       nullptr,
+                                       0,
+                                       0,
+                                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                                       VK_DEPENDENCY_BY_REGION_BIT};
+
+    uint32_t correlated_view_mask = 0x1;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
+    rpci.subpassCount = 1;
+    rpci.pSubpasses = &subpass;
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = &attach_desc;
+    rpci.dependencyCount = 1;
+    rpci.pDependencies = &dependency;
+    rpci.correlatedViewMaskCount = 1;
+    rpci.pCorrelatedViewMasks = &correlated_view_mask;
+
+    vk_testing::RenderPass render_pass1(*m_device, rpci);
+    rpci.correlatedViewMaskCount = 0;
+    vk_testing::RenderPass render_pass2(*m_device, rpci);
+    rpci.correlatedViewMaskCount = 1;
+    correlated_view_mask = 0x2;
+    vk_testing::RenderPass render_pass3(*m_device, rpci);
+
+    VkImageObj image(m_device);
+    image.InitNoLayout(width, height, 1, format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    auto fb_ci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fb_ci.renderPass = render_pass1.handle();
+    fb_ci.attachmentCount = 1;
+    fb_ci.pAttachments = &imageView;
+    fb_ci.width = width;
+    fb_ci.height = height;
+    fb_ci.layers = 1;
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, fb_ci);
+
+    VkClearValue clear_values[2] = {};
+    clear_values[0].color = {{0, 0, 0, 0}};
+    clear_values[1].color = {{0, 0, 0, 0}};
+
+    VkRenderPassBeginInfo rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbi.framebuffer = framebuffer.handle();
+    rpbi.renderPass = render_pass2.handle();
+    rpbi.renderArea.extent.width = width;
+    rpbi.renderArea.extent.height = height;
+    rpbi.clearValueCount = 2;
+    rpbi.pClearValues = clear_values;
+
+    m_commandBuffer->begin();
+    m_errorMonitor->VerifyNotFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderPass-00904");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->VerifyFound();
+
+    rpbi.renderPass = render_pass3.handle();
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkRenderPassBeginInfo-renderPass-00904");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
 }

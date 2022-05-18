@@ -348,7 +348,8 @@ std::string GetProductAndVersion(
   } else {
     if (base::FeatureList::IsEnabled(
             blink::features::kReduceUserAgentMinorVersion)) {
-      return version_info::GetProductNameAndVersionForReducedUserAgent();
+      return version_info::GetProductNameAndVersionForReducedUserAgent(
+          blink::features::kUserAgentFrozenBuildVersion.Get().data());
     } else {
       return version_info::GetProductNameAndVersionForUserAgent();
     }
@@ -485,9 +486,12 @@ blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
     blink::UserAgentBrandVersionType output_version_type) {
   std::string greasey_brand;
   std::string greasey_version;
+  // The updated algorithm is enabled by default, but we maintain the ability
+  // to opt out of it either via Finch (setting updated_algorithm to false) or
+  // via an enterprise policy escape hatch.
   if (enable_updated_grease_by_policy &&
       base::GetFieldTrialParamByFeatureAsBool(features::kGreaseUACH,
-                                              "updated_algorithm", false)) {
+                                              "updated_algorithm", true)) {
     const std::vector<std::string> greasey_chars = {
         " ", "(", ":", "-", ".", "/", ")", ";", "=", "?", "_"};
     const std::vector<std::string> greased_versions = {"8", "99", "24"};
@@ -547,7 +551,7 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
       enable_updated_grease_by_policy, ua_options.force_major_to_minor);
   metadata.full_version = GetVersionNumber(ua_options);
   metadata.platform = GetPlatformForUAMetadata();
-  metadata.architecture = content::GetLowEntropyCpuArchitecture();
+  metadata.architecture = content::GetCpuArchitecture();
   metadata.model = content::BuildModelInfo();
   metadata.mobile = false;
 #if BUILDFLAG(IS_ANDROID)
@@ -563,12 +567,8 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
   metadata.platform_version =
       base::StringPrintf("%d.%d.%d", major, minor, bugfix);
 #endif
-
-  // These methods use the same information as the User-Agent string, but are
-  // "low entropy" in that they reduce the number of options for output to a
-  // set number. For more information, see the respective headers.
-  metadata.architecture = content::GetLowEntropyCpuArchitecture();
-  metadata.bitness = content::GetLowEntropyCpuBitness();
+  metadata.architecture = content::GetCpuArchitecture();
+  metadata.bitness = content::GetCpuBitness();
   metadata.wow64 = content::IsWoW64();
 
   return metadata;

@@ -30,6 +30,8 @@
 #include <new>
 #include <utility>
 
+using MaskFormat = skgpu::MaskFormat;
+
 namespace skgpu::v1 {
 
 inline static constexpr int kVerticesPerGlyph = 4;
@@ -121,7 +123,6 @@ auto AtlasTextOp::Geometry::MakeForBlob(const GrAtlasSubRun& subRun,
                              drawOrigin,
                              clipRect,
                              std::move(supportData),
-                             nullptr,
                              color};
 }
 
@@ -207,7 +208,7 @@ void AtlasTextOp::onPrepareDraws(GrMeshDrawTarget* target) {
 
     GrAtlasManager* atlasManager = target->atlasManager();
 
-    GrMaskFormat maskFormat = this->maskFormat();
+    MaskFormat maskFormat = this->maskFormat();
 
     unsigned int numActiveViews;
     const GrSurfaceProxyView* views = atlasManager->getViews(maskFormat, &numActiveViews);
@@ -340,7 +341,7 @@ void AtlasTextOp::createDrawForGeneratedGlyphs(GrMeshDrawTarget* target,
     auto atlasManager = target->atlasManager();
 
     GrGeometryProcessor* gp = flushInfo->fGeometryProcessor;
-    GrMaskFormat maskFormat = this->maskFormat();
+    MaskFormat maskFormat = this->maskFormat();
 
     unsigned int numActiveViews;
     const GrSurfaceProxyView* views = atlasManager->getViews(maskFormat, &numActiveViews);
@@ -484,7 +485,6 @@ GrGeometryProcessor* AtlasTextOp::setupDfProcessor(SkArenaAlloc* arena,
 
 #if GR_TEST_UTILS
 #include "src/gpu/ganesh/GrDrawOpTest.h"
-
 GrOp::Owner AtlasTextOp::CreateOpTestingOnly(SurfaceDrawContext* sdc,
                                              const SkPaint& skPaint,
                                              const SkFont& font,
@@ -509,7 +509,7 @@ GrOp::Owner AtlasTextOp::CreateOpTestingOnly(SurfaceDrawContext* sdc,
 
     SkGlyphRunListPainter* painter = sdc->glyphRunPainter();
     sk_sp<GrTextBlob> blob = GrTextBlob::Make(
-            glyphRunList, skPaint, drawMatrix, false, control, painter);
+            glyphRunList, skPaint, drawMatrix, control, painter);
 
     const GrAtlasSubRun* subRun = blob->testingOnlyFirstSubRun();
     if (!subRun) {
@@ -518,16 +518,14 @@ GrOp::Owner AtlasTextOp::CreateOpTestingOnly(SurfaceDrawContext* sdc,
 
     GrOp::Owner op;
     std::tie(std::ignore, op) = subRun->makeAtlasTextOp(
-            nullptr, mtxProvider, glyphRunList.origin(), skPaint, sdc, nullptr);
+            nullptr, mtxProvider, glyphRunList.origin(), skPaint, sdc);
     return op;
 }
-
 #endif
 
 } // namespace skgpu::v1
 
 #if GR_TEST_UTILS
-
 GR_DRAW_OP_TEST_DEFINE(AtlasTextOp) {
     SkMatrixProvider matrixProvider(GrTest::TestMatrixInvertible(random));
 
@@ -554,5 +552,4 @@ GR_DRAW_OP_TEST_DEFINE(AtlasTextOp) {
     return skgpu::v1::AtlasTextOp::CreateOpTestingOnly(sdc, skPaint, font, matrixProvider,
                                                        text, xInt, yInt);
 }
-
 #endif

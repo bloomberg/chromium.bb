@@ -16,14 +16,14 @@
 #include "quiche/http2/hpack/decoder/hpack_decoder_state.h"
 #include "quiche/http2/hpack/decoder/hpack_decoder_tables.h"
 #include "quiche/http2/hpack/http2_hpack_constants.h"
-#include "quiche/http2/hpack/tools/hpack_block_builder.h"
-#include "quiche/http2/hpack/tools/hpack_example.h"
 #include "quiche/http2/http2_constants.h"
-#include "quiche/http2/platform/api/http2_logging.h"
+#include "quiche/http2/test_tools/hpack_block_builder.h"
+#include "quiche/http2/test_tools/hpack_example.h"
 #include "quiche/http2/test_tools/http2_random.h"
-#include "quiche/http2/tools/random_util.h"
+#include "quiche/http2/test_tools/random_util.h"
+#include "quiche/http2/test_tools/verify_macros.h"
+#include "quiche/common/platform/api/quiche_logging.h"
 #include "quiche/common/platform/api/quiche_test.h"
-#include "quiche/common/platform/api/quiche_test_helpers.h"
 
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
@@ -62,14 +62,10 @@ typedef std::vector<HpackHeaderEntry> HpackHeaderEntries;
 class MockHpackDecoderListener : public HpackDecoderListener {
  public:
   MOCK_METHOD(void, OnHeaderListStart, (), (override));
-  MOCK_METHOD(void,
-              OnHeader,
-              (const std::string& name, const std::string& value),
-              (override));
+  MOCK_METHOD(void, OnHeader,
+              (const std::string& name, const std::string& value), (override));
   MOCK_METHOD(void, OnHeaderListEnd, (), (override));
-  MOCK_METHOD(void,
-              OnHeaderErrorDetected,
-              (absl::string_view error_message),
+  MOCK_METHOD(void, OnHeaderErrorDetected, (absl::string_view error_message),
               (override));
 };
 
@@ -126,41 +122,41 @@ class HpackDecoderTest : public QuicheTestWithParam<bool>,
   }
 
   AssertionResult DecodeBlock(absl::string_view block) {
-    HTTP2_VLOG(1) << "HpackDecoderTest::DecodeBlock";
+    QUICHE_VLOG(1) << "HpackDecoderTest::DecodeBlock";
 
-    VERIFY_FALSE(decoder_.DetectError());
-    VERIFY_TRUE(error_messages_.empty());
-    VERIFY_FALSE(saw_start_);
-    VERIFY_FALSE(saw_end_);
+    HTTP2_VERIFY_FALSE(decoder_.DetectError());
+    HTTP2_VERIFY_TRUE(error_messages_.empty());
+    HTTP2_VERIFY_FALSE(saw_start_);
+    HTTP2_VERIFY_FALSE(saw_end_);
     header_entries_.clear();
 
-    VERIFY_FALSE(decoder_.DetectError());
-    VERIFY_TRUE(decoder_.StartDecodingBlock());
-    VERIFY_FALSE(decoder_.DetectError());
+    HTTP2_VERIFY_FALSE(decoder_.DetectError());
+    HTTP2_VERIFY_TRUE(decoder_.StartDecodingBlock());
+    HTTP2_VERIFY_FALSE(decoder_.DetectError());
 
     if (fragment_the_hpack_block_) {
       // See note in ctor regarding RNG.
       while (!block.empty()) {
         size_t fragment_size = random_.RandomSizeSkewedLow(block.size());
         DecodeBuffer db(block.substr(0, fragment_size));
-        VERIFY_TRUE(decoder_.DecodeFragment(&db));
-        VERIFY_EQ(0u, db.Remaining());
+        HTTP2_VERIFY_TRUE(decoder_.DecodeFragment(&db));
+        HTTP2_VERIFY_EQ(0u, db.Remaining());
         block.remove_prefix(fragment_size);
       }
     } else {
       DecodeBuffer db(block);
-      VERIFY_TRUE(decoder_.DecodeFragment(&db));
-      VERIFY_EQ(0u, db.Remaining());
+      HTTP2_VERIFY_TRUE(decoder_.DecodeFragment(&db));
+      HTTP2_VERIFY_EQ(0u, db.Remaining());
     }
-    VERIFY_FALSE(decoder_.DetectError());
+    HTTP2_VERIFY_FALSE(decoder_.DetectError());
 
-    VERIFY_TRUE(decoder_.EndDecodingBlock());
+    HTTP2_VERIFY_TRUE(decoder_.EndDecodingBlock());
     if (saw_end_) {
-      VERIFY_FALSE(decoder_.DetectError());
-      VERIFY_TRUE(error_messages_.empty());
+      HTTP2_VERIFY_FALSE(decoder_.DetectError());
+      HTTP2_VERIFY_TRUE(error_messages_.empty());
     } else {
-      VERIFY_TRUE(decoder_.DetectError());
-      VERIFY_FALSE(error_messages_.empty());
+      HTTP2_VERIFY_TRUE(decoder_.DetectError());
+      HTTP2_VERIFY_FALSE(error_messages_.empty());
     }
 
     saw_start_ = saw_end_ = false;
@@ -184,30 +180,29 @@ class HpackDecoderTest : public QuicheTestWithParam<bool>,
   }
 
   // dynamic_index is one-based, because that is the way RFC 7541 shows it.
-  AssertionResult VerifyEntry(size_t dynamic_index,
-                              const char* name,
+  AssertionResult VerifyEntry(size_t dynamic_index, const char* name,
                               const char* value) {
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
-    VERIFY_NE(entry, nullptr);
-    VERIFY_EQ(entry->name, name);
-    VERIFY_EQ(entry->value, value);
+    HTTP2_VERIFY_NE(entry, nullptr);
+    HTTP2_VERIFY_EQ(entry->name, name);
+    HTTP2_VERIFY_EQ(entry->value, value);
     return AssertionSuccess();
   }
   AssertionResult VerifyNoEntry(size_t dynamic_index) {
     const HpackStringPair* entry =
         Lookup(dynamic_index + kFirstDynamicTableIndex - 1);
-    VERIFY_EQ(entry, nullptr);
+    HTTP2_VERIFY_EQ(entry, nullptr);
     return AssertionSuccess();
   }
   AssertionResult VerifyDynamicTableContents(
       const std::vector<std::pair<const char*, const char*>>& entries) {
     size_t index = 1;
     for (const auto& entry : entries) {
-      VERIFY_SUCCESS(VerifyEntry(index, entry.first, entry.second));
+      HTTP2_VERIFY_SUCCESS(VerifyEntry(index, entry.first, entry.second));
       ++index;
     }
-    VERIFY_SUCCESS(VerifyNoEntry(index));
+    HTTP2_VERIFY_SUCCESS(VerifyNoEntry(index));
     return AssertionSuccess();
   }
 

@@ -19,6 +19,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -71,8 +72,10 @@ const char kPsmQueryRequestEndpoint[] = "/v1/fresnel/psmRlweQuery";
 constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
 constexpr char kFakeFresnelApiKey[] = "FAKE_FRESNEL_API_KEY";
 
-const version_info::Channel kFakeChromeOSChannel =
-    version_info::Channel::STABLE;
+constexpr ChromeDeviceMetadataParameters kFakeChromeParameters = {
+    version_info::Channel::STABLE /* chromeos_channel */,
+    MarketSegment::MARKET_SEGMENT_UNKNOWN /* market_segment */,
+};
 
 // Number of test cases exist in cros_test_data.binarypb file, which is part of
 // private_membership third_party library.
@@ -160,11 +163,12 @@ class FakePsmDelegate : public PsmDelegate {
 
 class FakeDailyUseCaseImpl : public DailyUseCaseImpl {
  public:
-  FakeDailyUseCaseImpl(const std::string& psm_device_active_secret,
-                       version_info::Channel chromeos_channel,
-                       PrefService* local_state)
+  FakeDailyUseCaseImpl(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      PrefService* local_state)
       : DailyUseCaseImpl(psm_device_active_secret,
-                         chromeos_channel,
+                         chrome_passed_device_params,
                          local_state) {}
   FakeDailyUseCaseImpl(const FakeDailyUseCaseImpl&) = delete;
   FakeDailyUseCaseImpl& operator=(const FakeDailyUseCaseImpl&) = delete;
@@ -173,11 +177,12 @@ class FakeDailyUseCaseImpl : public DailyUseCaseImpl {
 
 class FakeMonthlyUseCaseImpl : public MonthlyUseCaseImpl {
  public:
-  FakeMonthlyUseCaseImpl(const std::string& psm_device_active_secret,
-                         version_info::Channel chromeos_channel,
-                         PrefService* local_state)
+  FakeMonthlyUseCaseImpl(
+      const std::string& psm_device_active_secret,
+      const ChromeDeviceMetadataParameters& chrome_passed_device_params,
+      PrefService* local_state)
       : MonthlyUseCaseImpl(psm_device_active_secret,
-                           chromeos_channel,
+                           chrome_passed_device_params,
                            local_state) {}
   FakeMonthlyUseCaseImpl(const FakeMonthlyUseCaseImpl&) = delete;
   FakeMonthlyUseCaseImpl& operator=(const FakeMonthlyUseCaseImpl&) = delete;
@@ -248,7 +253,7 @@ class DeviceActivityClientTest : public testing::Test {
 
   // Initialize well formed OPRF response body used to deterministically fake
   // PSM network responses.
-  std::string GetFresnelOprfResponse(
+  const std::string GetFresnelOprfResponse(
       const psm_rlwe::PrivateMembershipRlweClientRegressionTestData::TestCase&
           test_case) {
     FresnelPsmRlweOprfResponse psm_oprf_response;
@@ -258,7 +263,7 @@ class DeviceActivityClientTest : public testing::Test {
 
   // Initialize well formed Query response body used to deterministically fake
   // PSM network responses.
-  std::string GetFresnelQueryResponse(
+  const std::string GetFresnelQueryResponse(
       const psm_rlwe::PrivateMembershipRlweClientRegressionTestData::TestCase&
           test_case) {
     FresnelPsmRlweQueryResponse psm_query_response;
@@ -279,6 +284,11 @@ class DeviceActivityClientTest : public testing::Test {
     // Initialize pointer to our fake |PsmTestData| object.
     psm_test_data_ = GetPsmTestData();
 
+    // Default network to being synchronized and available.
+    SystemClockClient::InitializeFake();
+    GetSystemClockTestInterface()->SetServiceIsAvailable(true);
+    GetSystemClockTestInterface()->SetNetworkSynchronized(true);
+
     network_state_test_helper_ = std::make_unique<NetworkStateTestHelper>(
         /*use_default_devices_and_services=*/false);
     CreateWifiNetworkConfig();
@@ -296,9 +306,9 @@ class DeviceActivityClientTest : public testing::Test {
     // should maintain ownership of.
     std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases;
     use_cases.push_back(std::make_unique<FakeDailyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_));
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
     use_cases.push_back(std::make_unique<FakeMonthlyUseCaseImpl>(
-        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_));
+        kFakePsmDeviceActiveSecret, kFakeChromeParameters, &local_state_));
 
     device_activity_client_ = std::make_unique<DeviceActivityClient>(
         network_state_test_helper_->network_state_handler(),
@@ -312,7 +322,17 @@ class DeviceActivityClientTest : public testing::Test {
         kFakeFresnelApiKey, std::move(use_cases));
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    device_activity_client_.reset();
+
+    // The system clock must be shutdown after the |device_activity_client_| is
+    // destroyed.
+    SystemClockClient::Shutdown();
+  }
+
+  SystemClockClient::TestInterface* GetSystemClockTestInterface() {
+    return SystemClockClient::Get()->GetTestInterface();
+  }
 
   void SimulateLocalStateOnPowerwash() {
     // Simulate powerwashing device by removing the local state prefs.
@@ -320,6 +340,27 @@ class DeviceActivityClientTest : public testing::Test {
         prefs::kDeviceActiveLastKnownDailyPingTimestamp);
     local_state_.RemoveUserPref(
         prefs::kDeviceActiveLastKnownMonthlyPingTimestamp);
+  }
+
+  void SimulateOprfResponse(const std::string& serialized_response_body,
+                            net::HttpStatusCode response_code) {
+    test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
+        serialized_response_body, response_code);
+  }
+
+  void SimulateQueryResponse(const std::string& serialized_response_body,
+                             net::HttpStatusCode response_code) {
+    test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
+        serialized_response_body, response_code);
+  }
+
+  void SimulateImportResponse(const std::string& serialized_response_body,
+                              net::HttpStatusCode response_code) {
+    test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetFresnelTestEndpoint(kPsmImportRequestEndpoint),
+        serialized_response_body, response_code);
   }
 
   void CreateWifiNetworkConfig() {
@@ -354,6 +395,10 @@ class DeviceActivityClientTest : public testing::Test {
             device_activity_client_->GetReportTimer());
     if (mock_timer->IsRunning())
       mock_timer->Fire();
+
+    // Ensure all pending tasks after the timer fires are executed
+    // synchronously.
+    task_environment_.RunUntilIdle();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -372,6 +417,161 @@ class DeviceActivityClientTest : public testing::Test {
   chromeos::system::FakeStatisticsProvider statistics_provider_;
 };
 
+TEST_F(DeviceActivityClientTest,
+       StayIdleIfSystemClockServiceUnavailableOnNetworkConnection) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetServiceIsAvailable(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| is not called because the service for syncing the
+  // clock is unavailble.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+}
+
+TEST_F(DeviceActivityClientTest,
+       StayIdleIfSystemClockIsNotNetworkSynchronized) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetNetworkSynchronized(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| callback is not executed if the network is not
+  // synchronized.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+}
+
+TEST_F(DeviceActivityClientTest,
+       CheckMembershipOnTimerRetryIfSystemClockIsNotInitiallySynced) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  GetSystemClockTestInterface()->SetNetworkSynchronized(false);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+
+  // |OnSystemClockSyncResult| callback is not executed if the network is not
+  // synchronized.
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      0);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  // Timer executes client and blocks to wait for the system clock
+  // synchronization result.
+  FireTimer();
+
+  // Synchronously complete pending tasks before validating histogram counts
+  // below.
+  GetSystemClockTestInterface()->SetNetworkSynchronized(true);
+  GetSystemClockTestInterface()->NotifyObserversSystemClockUpdated();
+  task_environment_.RunUntilIdle();
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      1);
+
+  // Begins check membership flow.
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kCheckingMembershipOprf);
+}
+
+TEST_F(DeviceActivityClientTest,
+       CheckMembershipIfSystemClockServiceAvailableOnNetworkConnection) {
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kIdle);
+
+  // Network has come online.
+  SetWifiNetworkState(shill::kStateOnline);
+
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnNetworkOnline,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientOnSystemClockSyncResult,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Ash.DeviceActivity.MethodCalled",
+      DeviceActivityClient::DeviceActivityMethod::
+          kDeviceActivityClientReportUseCases,
+      1);
+
+  EXPECT_EQ(device_activity_client_->GetState(),
+            DeviceActivityClient::State::kCheckingMembershipOprf);
+}
+
 TEST_F(DeviceActivityClientTest, DefaultStatesAreInitializedProperly) {
   EXPECT_EQ(device_activity_client_->GetState(),
             DeviceActivityClient::State::kIdle);
@@ -381,7 +581,7 @@ TEST_F(DeviceActivityClientTest, DefaultStatesAreInitializedProperly) {
                  << "PSM use case: "
                  << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
 
-    EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
   }
 
   EXPECT_TRUE(device_activity_client_->GetReportTimer()->IsRunning());
@@ -430,15 +630,11 @@ TEST_F(DeviceActivityClientTest, NetworkReconnectsAfterSuccessfulCheckIn) {
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -469,22 +665,18 @@ TEST_F(DeviceActivityClientTest,
     // On first ever ping, we begin the check membership protocol
     // since the local state pref for that use case is by default unix
     // epoch.
-    EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
 
-    EXPECT_NE(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_TRUE(use_case->IsLastKnownPingTimestampSet());
   }
 
   EXPECT_EQ(test_url_loader_factory_.NumPending(), 0);
@@ -511,13 +703,11 @@ TEST_F(DeviceActivityClientTest, CheckInOnLocalStateSetAndPingRequired) {
                  << "PSM use case: "
                  << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
 
-    EXPECT_NE(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_TRUE(use_case->IsLastKnownPingTimestampSet());
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingIn);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
 
     // base::Time::Now() is updated in |DeviceActivityClientTest| constructor.
@@ -541,9 +731,7 @@ TEST_F(DeviceActivityClientTest, TransitionClientToIdleOnInvalidOprfResponse) {
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
     // Return an invalid Fresnel OPRF response.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        /*fresnel_oprf_response*/ std::string(), net::HTTP_OK);
+    SimulateOprfResponse(/*fresnel_oprf_response*/ std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -570,14 +758,11 @@ TEST_F(DeviceActivityClientTest, TransitionClientToIdleOnInvalidQueryResponse) {
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
     // Return a valid OPRF response.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
 
     // Return an invalid Query response.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateQueryResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -603,7 +788,7 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
     // On first ever ping, we begin the check membership protocol
     // since the local state pref for that use case is by default unix
     // epoch.
-    EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
@@ -611,26 +796,20 @@ TEST_F(DeviceActivityClientTest, DailyCheckInFailsButMonthlyCheckInSucceeds) {
         psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY) {
       // Daily use case will terminate while failing to parse
       // this invalid OPRF response.
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmOprfRequestEndpoint), std::string(),
-          net::HTTP_OK);
+      SimulateOprfResponse(std::string(), net::HTTP_OK);
 
       task_environment_.RunUntilIdle();
 
       // Failed to update the local state since the OPRF response was invalid.
-      EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+      EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     } else if (use_case->GetPsmUseCase() ==
                psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
       // Monthly use case will return valid psm network request responses.
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-          GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-          GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-          net::HTTP_OK);
+      SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                           net::HTTP_OK);
+      SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                            net::HTTP_OK);
+      SimulateImportResponse(std::string(), net::HTTP_OK);
 
       task_environment_.RunUntilIdle();
 
@@ -665,22 +844,18 @@ TEST_F(DeviceActivityClientTest, MonthlyCheckInFailsButDailyCheckInSucceeds) {
     // On first ever ping, we begin the check membership protocol
     // since the local state pref for that use case is by default unix
     // epoch.
-    EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+    EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
     if (use_case->GetPsmUseCase() ==
         psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY) {
       // Daily use case will return valid psm network request responses.
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-          GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-          GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-          net::HTTP_OK);
+      SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                           net::HTTP_OK);
+      SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                            net::HTTP_OK);
+      SimulateImportResponse(std::string(), net::HTTP_OK);
 
       task_environment_.RunUntilIdle();
 
@@ -691,14 +866,12 @@ TEST_F(DeviceActivityClientTest, MonthlyCheckInFailsButDailyCheckInSucceeds) {
                psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY) {
       // Monthly use case will terminate while failing to parse
       // this invalid OPRF response.
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmOprfRequestEndpoint), std::string(),
-          net::HTTP_OK);
+      SimulateOprfResponse(std::string(), net::HTTP_OK);
 
       task_environment_.RunUntilIdle();
 
       // Failed to update the local state since the OPRF response was invalid.
-      EXPECT_EQ(use_case->GetLastKnownPingTimestamp(), base::Time::UnixEpoch());
+      EXPECT_FALSE(use_case->IsLastKnownPingTimestampSet());
     } else {
       // Currently we only support daily, and monthly use cases.
       NOTREACHED() << "Invalid Use Case.";
@@ -758,15 +931,11 @@ TEST_F(DeviceActivityClientTest, CheckInIfCheckMembershipReturnsFalse) {
               DeviceActivityClient::State::kCheckingMembershipOprf);
     base::Time prev_time = use_case->GetLastKnownPingTimestamp();
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
 
     // After a PSM identifier is checked in, local state prefs is updated.
@@ -819,15 +988,11 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMidnight) {
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -852,9 +1017,7 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMidnight) {
   // Return well formed Import response body for the DAILY use case.
   // The time was forwarded by 1 day, which means only the daily use case will
   // report actives again.
-  test_url_loader_factory_.SimulateResponseForPendingRequest(
-      GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-      net::HTTP_OK);
+  SimulateImportResponse(std::string(), net::HTTP_OK);
   task_environment_.RunUntilIdle();
 
   // Return back to |kIdle| state after successful check-in of daily use case.
@@ -879,15 +1042,11 @@ TEST_F(DeviceActivityClientTest, DoNotCheckInTwiceBeforeNextUtcDay) {
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -929,15 +1088,11 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMonth) {
     EXPECT_EQ(device_activity_client_->GetState(),
               DeviceActivityClient::State::kCheckingMembershipOprf);
 
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 
@@ -973,9 +1128,7 @@ TEST_F(DeviceActivityClientTest, CheckInAfterNextUtcMonth) {
       EXPECT_EQ(device_activity_client_->GetState(),
                 DeviceActivityClient::State::kCheckingIn);
 
-      test_url_loader_factory_.SimulateResponseForPendingRequest(
-          GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-          net::HTTP_OK);
+      SimulateImportResponse(std::string(), net::HTTP_OK);
       task_environment_.RunUntilIdle();
     }
   }
@@ -1004,19 +1157,15 @@ TEST_F(DeviceActivityClientTest, CheckInAgainOnLocalStateReset) {
     base::Time prev_time = use_case->GetLastKnownPingTimestamp();
 
     // Mock Successful |kCheckingMembershipOprf|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
 
     // Mock Successful |kCheckingMembershipQuery|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
 
     // Mock Successful |kCheckingIn|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
 
     base::Time new_time = use_case->GetLastKnownPingTimestamp();
@@ -1048,19 +1197,15 @@ TEST_F(DeviceActivityClientTest, CheckInAgainOnLocalStateReset) {
     base::Time prev_time = use_case->GetLastKnownPingTimestamp();
 
     // Mock Successful |kCheckingMembershipOprf|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
 
     // Mock Successful |kCheckingMembershipQuery|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
 
     // Mock Successful |kCheckingIn|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
 
     base::Time new_time = use_case->GetLastKnownPingTimestamp();
@@ -1104,19 +1249,15 @@ TEST_F(DeviceActivityClientTest, UmaHistogramStateCountAfterFirstCheckIn) {
                  << psm_rlwe::RlweUseCase_Name(use_case->GetPsmUseCase()));
 
     // Mock Successful |kCheckingMembershipOprf|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmOprfRequestEndpoint),
-        GetFresnelOprfResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateOprfResponse(GetFresnelOprfResponse(nonmember_test_case),
+                         net::HTTP_OK);
 
     // Mock Successful |kCheckingMembershipQuery|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmQueryRequestEndpoint),
-        GetFresnelQueryResponse(nonmember_test_case), net::HTTP_OK);
+    SimulateQueryResponse(GetFresnelQueryResponse(nonmember_test_case),
+                          net::HTTP_OK);
 
     // Mock Successful |kCheckingIn|.
-    test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GetFresnelTestEndpoint(kPsmImportRequestEndpoint), std::string(),
-        net::HTTP_OK);
+    SimulateImportResponse(std::string(), net::HTTP_OK);
     task_environment_.RunUntilIdle();
   }
 

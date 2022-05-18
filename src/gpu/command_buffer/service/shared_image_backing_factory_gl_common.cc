@@ -17,14 +17,13 @@
 #include "ui/gl/progress_reporter.h"
 
 namespace gpu {
-
 ///////////////////////////////////////////////////////////////////////////////
 // SharedImageBackingFactoryGLCommon
 
 SharedImageBackingFactoryGLCommon::SharedImageBackingFactoryGLCommon(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
-    const GpuFeatureInfo& gpu_feature_info,
+    const gles2::FeatureInfo* feature_info,
     gl::ProgressReporter* progress_reporter)
     : use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gles2::PassthroughCommandDecoderSupported()),
@@ -33,24 +32,11 @@ SharedImageBackingFactoryGLCommon::SharedImageBackingFactoryGLCommon(
       progress_reporter_(progress_reporter) {
   gl::GLApi* api = gl::g_current_gl_context;
   api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
-  // When the passthrough command decoder is used, the max_texture_size
-  // workaround is implemented by ANGLE. Trying to adjust the max size here
-  // would cause discrepancy between what we think the max size is and what
-  // ANGLE tells the clients.
-  if (!use_passthrough_ && workarounds.max_texture_size) {
-    max_texture_size_ =
-        std::min(max_texture_size_, workarounds.max_texture_size);
-  }
   // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
   // can be used to accurately represent all valid sub-rects, with overflow
   // cases, clamped to INT_MAX, always invalid.
   max_texture_size_ = std::min(max_texture_size_, INT_MAX - 1);
 
-  // TODO(piman): Can we extract the logic out of FeatureInfo?
-  scoped_refptr<gles2::FeatureInfo> feature_info =
-      new gles2::FeatureInfo(workarounds, gpu_feature_info);
-  feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2,
-                           use_passthrough_, gles2::DisallowedFeatures());
   texture_usage_angle_ = feature_info->feature_flags().angle_texture_usage;
   attribs_.es3_capable = feature_info->IsES3Capable();
   attribs_.desktop_gl = !feature_info->gl_version_info().is_es;
@@ -82,12 +68,12 @@ SharedImageBackingFactoryGLCommon::SharedImageBackingFactoryGLCommon(
       info.gl_format = gl_format;
       info.gl_type = gl_type;
       info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
-          feature_info.get(), gl_format);
+          feature_info, gl_format);
       info.image_internal_format =
           gles2::TextureManager::AdjustTexInternalFormat(
-              feature_info.get(), image_internal_format, gl_type);
+              feature_info, image_internal_format, gl_type);
       info.adjusted_format =
-          gles2::TextureManager::AdjustTexFormat(feature_info.get(), gl_format);
+          gles2::TextureManager::AdjustTexFormat(feature_info, gl_format);
     }
     if (!info.enabled)
       continue;
@@ -99,7 +85,7 @@ SharedImageBackingFactoryGLCommon::SharedImageBackingFactoryGLCommon(
         info.supports_storage = true;
         info.storage_internal_format =
             gles2::TextureManager::AdjustTexStorageFormat(
-                feature_info.get(), storage_internal_format);
+                feature_info, storage_internal_format);
       }
     }
   }

@@ -94,7 +94,7 @@ cc_library(
         ":dstatus",
         ":small_constant_optimization",
         ":tensor_layout",
-        "//tensorflow/c:tf_status_helper",
+        "//tensorflow/c:tf_status_headers",
         "//tensorflow/c/eager:c_api",
         "//tensorflow/c/eager:c_api_experimental",
         "//tensorflow/c/eager:c_api_internal",
@@ -142,7 +142,6 @@ cc_library(
     srcs = ["tpu_system_interface.cc"],
     hdrs = ["tpu_system_interface.h"],
     deps = [
-        "//tensorflow/c/eager:c_api",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
         "@com_google_absl//absl/time",
@@ -253,15 +252,6 @@ cc_library(
 )
 
 cc_library(
-    name = "dtensor_ops_and_kernels",
-    deps = [
-        ":dtensor_kernels",
-        ":dtensor_ops",
-        ":dtensor_tpu_ops",
-    ] + tf_dtensor_tpu_dependencies(),
-)
-
-cc_library(
     name = "dtensor_device_cc",
     srcs = ["dtensor_device.cc"],
     hdrs = ["dtensor_device.h"],
@@ -270,11 +260,18 @@ cc_library(
         ":dstatus",
         ":dtensor_device_util",
         ":dtensor_graph_to_mlir_pass",
+        ":dtensor_kernels",
         ":dtensor_meta_ops",
-        ":dtensor_ops_and_kernels",
+        ":dtensor_ops",
+        ":dtensor_tpu_ops",
         ":small_constant_optimization",
         ":tensor_layout",
         ":tpu_system_interface",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/strings",
         "//tensorflow/c:c_api",
         "//tensorflow/c:c_api_experimental",
         "//tensorflow/c:tf_status_helper",
@@ -298,10 +295,5 @@ cc_library(
         "//tensorflow/stream_executor/tpu:c_api_decl",
         "//tensorflow/stream_executor/tpu:tpu_platform_interface",
         "//tensorflow/stream_executor/tpu:tpu_topology_external",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-    ],
+    ] + tf_dtensor_tpu_dependencies(),
 )

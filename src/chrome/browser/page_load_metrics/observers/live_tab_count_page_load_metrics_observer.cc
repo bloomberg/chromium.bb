@@ -46,6 +46,15 @@ LiveTabCountPageLoadMetricsObserver::LiveTabCountPageLoadMetricsObserver() {}
 
 LiveTabCountPageLoadMetricsObserver::~LiveTabCountPageLoadMetricsObserver() {}
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+LiveTabCountPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class doesn't use information on subframes and inner pages. No need to
+  // forward.
+  return STOP_OBSERVING;
+}
+
 void LiveTabCountPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(

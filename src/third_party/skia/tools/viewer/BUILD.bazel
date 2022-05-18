@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "AnimTimer_hdr",
@@ -257,12 +259,17 @@ generated_cc_atom(
         "//include/core:SkCanvas_hdr",
         "//include/core:SkFont_hdr",
         "//include/core:SkTime_hdr",
+        "//include/private:SkNoncopyable_hdr",
         "//include/private:SkTPin_hdr",
         "//modules/audioplayer:SkAudioPlayer_hdr",
+        "//modules/particles/include:SkParticleEffect_hdr",
+        "//modules/particles/include:SkParticleSerialization_hdr",
+        "//modules/skottie/include:SkottieProperty_hdr",
         "//modules/skottie/include:Skottie_hdr",
         "//modules/skottie/utils:SkottieUtils_hdr",
         "//modules/skresources/include:SkResources_hdr",
         "//src/utils:SkOSPath_hdr",
+        "//tools:Resources_hdr",
         "//tools/timer:TimeUtils_hdr",
     ],
 )
@@ -434,6 +441,7 @@ generated_cc_atom(
         "//include/private:SkTo_hdr",
         "//include/utils:SkPaintFilterCanvas_hdr",
         "//misc/cpp:imgui_stdlib_hdr",
+        "//modules/svg/include:SkSVGOpenTypeSVGDecoder_hdr",
         "//src/core:SkAutoPixmapStorage_hdr",
         "//src/core:SkColorSpacePriv_hdr",
         "//src/core:SkGlyphRun_hdr",

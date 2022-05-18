@@ -5,6 +5,7 @@
 #include "ash/projector/projector_annotation_tray.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/ui/projector_color_button.h"
 #include "ash/public/cpp/projector/annotator_tool.h"
@@ -19,6 +20,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -96,12 +98,13 @@ ProjectorAnnotationTray::ProjectorAnnotationTray(Shelf* shelf)
       image_view_(
           tray_container()->AddChildView(std::make_unique<views::ImageView>())),
       pen_view_(nullptr) {
-  image_view_->SetTooltipText(GetAccessibleNameForTray());
+  image_view_->SetTooltipText(GetTooltip());
   image_view_->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
-  // The default pen color upon creation is magenta.
-  current_pen_color_ = kProjectorMagentaPenColor;
+  ResetTray();
+
+  session_observer_.Observe(Shell::Get()->session_controller());
 }
 
 ProjectorAnnotationTray::~ProjectorAnnotationTray() = default;
@@ -135,8 +138,13 @@ void ProjectorAnnotationTray::ClickedOutsideBubble() {
 }
 
 std::u16string ProjectorAnnotationTray::GetAccessibleNameForTray() {
-  return l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_TITLE);
+  std::u16string enabled_state = l10n_util::GetStringUTF16(
+      GetCurrentTool() == kToolNone
+          ? IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_OFF_STATE
+          : IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_ON_STATE);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_ACCESSIBLE_TITLE,
+      enabled_state);
 }
 
 void ProjectorAnnotationTray::HandleLocaleChange() {}
@@ -200,13 +208,13 @@ void ProjectorAnnotationTray::ShowBubble() {
     marker_view_container->SetLayoutManager(std::move(box_layout));
 
     for (SkColor color : kPenColors) {
-      auto* colorButton = marker_view_container->AddChildView(
+      auto* color_button = marker_view_container->AddChildView(
           std::make_unique<ProjectorColorButton>(
               base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
                                   base::Unretained(this), color),
               color, kColorButtonColorViewSize, kColorButtonViewRadius,
               l10n_util::GetStringUTF16(GetAccessibleNameForColor(color))));
-      colorButton->SetToggled(current_pen_color_ == color);
+      color_button->SetToggled(current_pen_color_ == color);
     }
     setup_layered_view(marker_view_container);
   }
@@ -229,16 +237,38 @@ void ProjectorAnnotationTray::OnThemeChanged() {
   UpdateIcon();
 }
 
+void ProjectorAnnotationTray::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  const uint64_t color =
+      pref_service->GetUint64(prefs::kProjectorAnnotatorLastUsedMarkerColor);
+  current_pen_color_ = !color ? kProjectorDefaultPenColor : color;
+}
+
 void ProjectorAnnotationTray::HideAnnotationTray() {
   SetVisiblePreferred(false);
   UpdateIcon();
-  // Reset pen color to default color.
-  current_pen_color_ = kProjectorMagentaPenColor;
+  PrefService* pref_service =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  pref_service->SetUint64(prefs::kProjectorAnnotatorLastUsedMarkerColor,
+                          current_pen_color_);
+  ResetTray();
+}
+
+void ProjectorAnnotationTray::OnCanvasInitializationFailed() {
+  // Set icon color to kIconColorPrimary with 30% opacity.
+  SkColor disabled_icon_color =
+      SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(
+                      AshColorProvider::ContentLayerType::kIconColorPrimary),
+                  0x4D);
+  image_view_->SetImage(gfx::CreateVectorIcon(kPaletteTrayIconProjectorIcon,
+                                              disabled_icon_color));
+  image_view_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_UNAVAILABLE));
 }
 
 void ProjectorAnnotationTray::ToggleAnnotator() {
   if (GetCurrentTool() == kToolNone) {
-    EnableAnnotatorTool();
+    EnableAnnotatorWithPenColor();
   } else {
     DeactivateActiveTool();
   }
@@ -248,10 +278,13 @@ void ProjectorAnnotationTray::ToggleAnnotator() {
   UpdateIcon();
 }
 
-void ProjectorAnnotationTray::EnableAnnotatorTool() {
+void ProjectorAnnotationTray::EnableAnnotatorWithPenColor() {
   auto* controller = Shell::Get()->projector_controller();
   DCHECK(controller);
-  controller->OnMarkerPressed();
+  AnnotatorTool tool;
+  tool.color = current_pen_color_;
+  controller->SetAnnotatorTool(tool);
+  controller->EnableAnnotatorTool();
 }
 
 void ProjectorAnnotationTray::DeactivateActiveTool() {
@@ -266,16 +299,13 @@ void ProjectorAnnotationTray::UpdateIcon() {
       GetIconForTool(tool, current_pen_color_),
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary)));
+  image_view_->SetTooltipText(GetTooltip());
   SetIsActive(tool != kToolNone);
 }
 
 void ProjectorAnnotationTray::OnPenColorPressed(SkColor color) {
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  DCHECK(projector_controller);
-  AnnotatorTool tool;
-  tool.color = color;
-  projector_controller->SetAnnotatorTool(tool);
   current_pen_color_ = color;
+  EnableAnnotatorWithPenColor();
   CloseBubble();
   UpdateIcon();
 }
@@ -293,6 +323,20 @@ int ProjectorAnnotationTray::GetAccessibleNameForColor(SkColor color) {
   }
   NOTREACHED();
   return IDS_RED_COLOR_BUTTON;
+}
+
+void ProjectorAnnotationTray::ResetTray() {
+  // Disable the tray icon. It is enabled once the ink canvas is initialized.
+  SetEnabled(false);
+}
+
+std::u16string ProjectorAnnotationTray::GetTooltip() {
+  std::u16string enabled_state = l10n_util::GetStringUTF16(
+      GetCurrentTool() == kToolNone
+          ? IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_OFF_STATE
+          : IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_ON_STATE);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_TOOLTIP, enabled_state);
 }
 
 }  // namespace ash

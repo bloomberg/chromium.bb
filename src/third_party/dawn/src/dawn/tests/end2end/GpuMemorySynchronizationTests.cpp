@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <tuple>
+#include <vector>
+
 #include "dawn/common/Assert.h"
 #include "dawn/common/Constants.h"
 #include "dawn/common/Math.h"
@@ -103,7 +106,7 @@ TEST_P(GpuMemorySyncTests, ComputePass) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(compute);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(1);
+        pass.DispatchWorkgroups(1);
         pass.End();
     }
 
@@ -167,7 +170,7 @@ TEST_P(GpuMemorySyncTests, RenderPassToComputePass) {
     wgpu::ComputePassEncoder pass1 = encoder.BeginComputePass();
     pass1.SetPipeline(compute);
     pass1.SetBindGroup(0, bindGroup1);
-    pass1.Dispatch(1);
+    pass1.DispatchWorkgroups(1);
     pass1.End();
 
     wgpu::CommandBuffer commands = encoder.Finish();
@@ -193,7 +196,7 @@ TEST_P(GpuMemorySyncTests, ComputePassToRenderPass) {
     wgpu::ComputePassEncoder pass0 = encoder.BeginComputePass();
     pass0.SetPipeline(compute);
     pass0.SetBindGroup(0, bindGroup1);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
 
     // Read that data in render pass.
@@ -293,7 +296,7 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithSameCommandBuffer) {
     wgpu::ComputePassEncoder pass0 = encoder0.BeginComputePass();
     pass0.SetPipeline(compute);
     pass0.SetBindGroup(0, computeBindGroup);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
 
     // Read that data in render pass.
@@ -326,7 +329,7 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithDifferentCommandBuffers) {
     wgpu::ComputePassEncoder pass0 = encoder0.BeginComputePass();
     pass0.SetPipeline(compute);
     pass0.SetBindGroup(0, computeBindGroup);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
     cb[0] = encoder0.Finish();
 
@@ -361,7 +364,7 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithDifferentQueueSubmits) {
     wgpu::ComputePassEncoder pass0 = encoder0.BeginComputePass();
     pass0.SetPipeline(compute);
     pass0.SetBindGroup(0, computeBindGroup);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
     cb[0] = encoder0.Finish();
     queue.Submit(1, &cb[0]);
@@ -434,9 +437,9 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
             vbContents.pos[1] = vec4<f32>(1.0, 1.0, 0.0, 1.0);
             vbContents.pos[2] = vec4<f32>(1.0, -1.0, 0.0, 1.0);
             vbContents.pos[3] = vec4<f32>(-1.0, -1.0, 0.0, 1.0);
-            let dummy : i32 = 0;
+            let placeholder : i32 = 0;
             ibContents.indices[0] = vec4<i32>(0, 1, 2, 0);
-            ibContents.indices[1] = vec4<i32>(2, 3, dummy, dummy);
+            ibContents.indices[1] = vec4<i32>(2, 3, placeholder, placeholder);
             uniformContents.color = 1.0;
             storageContents.color = 1.0;
         })");
@@ -465,7 +468,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
     wgpu::ComputePassEncoder pass0 = encoder.BeginComputePass();
     pass0.SetPipeline(cp);
     pass0.SetBindGroup(0, bindGroup0);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
 
     // Create pipeline, bind group, and reuse buffers in render pass.
@@ -549,9 +552,9 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
             contents.pos[1] = vec4<f32>(1.0, 1.0, 0.0, 1.0);
             contents.pos[2] = vec4<f32>(1.0, -1.0, 0.0, 1.0);
             contents.pos[3] = vec4<f32>(-1.0, -1.0, 0.0, 1.0);
-            let dummy : i32 = 0;
+            let placeholder : i32 = 0;
             contents.indices[0] = vec4<i32>(0, 1, 2, 0);
-            contents.indices[1] = vec4<i32>(2, 3, dummy, dummy);
+            contents.indices[1] = vec4<i32>(2, 3, placeholder, placeholder);
             contents.color0 = 1.0;
             contents.color1 = 1.0;
         })");
@@ -582,7 +585,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
     wgpu::ComputePassEncoder pass0 = encoder.BeginComputePass();
     pass0.SetPipeline(cp);
     pass0.SetBindGroup(0, bindGroup0);
-    pass0.Dispatch(1);
+    pass0.DispatchWorkgroups(1);
     pass0.End();
 
     // Create pipeline, bind group, and reuse the buffer in render pass.

@@ -20,10 +20,10 @@
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web/element.h"
-#include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/selector_observer.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 class WebController;
 
 // Helper for checking a set of elements at the same time. It avoids duplicate
@@ -84,9 +84,7 @@ class BatchElementChecker {
 
   // Turns on observer mode. When BatchElementChecker runs in observer mode, it
   // waits until any element condition checks or element checks become true.
-  void EnableObserver(base::TimeDelta max_wait_time,
-                      base::TimeDelta periodic_check_interval,
-                      base::TimeDelta extra_timeout);
+  void EnableObserver(const SelectorObserver::Settings& settings);
 
   // Runs the checks. Once all checks are done, calls the callbacks registered
   // to AddAllDoneCallback().
@@ -207,11 +205,10 @@ class BatchElementChecker {
   // Run() was called. Checking elements might or might not have finished yet.
   bool started_ = false;
 
-  // Whether to wait until one of the conditions becomes true.
-  bool use_observers_ = false;
-  base::TimeDelta observer_max_wait_time_;
-  base::TimeDelta observer_periodic_check_interval_;
-  base::TimeDelta observer_extra_timeout_;
+  // Whether to wait until one of the conditions becomes true. If it's a nullopt
+  // it will check only once, if it has a value it will observe the DOM until
+  // one of the conditions becomes true or the observation times out.
+  absl::optional<const SelectorObserver::Settings> observer_settings_;
 
   std::vector<base::OnceCallback<void()>> all_done_;
 

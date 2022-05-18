@@ -333,12 +333,12 @@ namespace internal {
 template<typename Scalar, int StorageOrder, typename PivIndex, int SizeAtCompileTime=Dynamic>
 struct partial_lu_impl
 {
-  static const int UnBlockedBound = 16;
-  static const bool UnBlockedAtCompileTime = SizeAtCompileTime!=Dynamic && SizeAtCompileTime<=UnBlockedBound;
-  static const int ActualSizeAtCompileTime = UnBlockedAtCompileTime ? SizeAtCompileTime : Dynamic;
+  static constexpr int UnBlockedBound = 16;
+  static constexpr bool UnBlockedAtCompileTime = SizeAtCompileTime!=Dynamic && SizeAtCompileTime<=UnBlockedBound;
+  static constexpr int ActualSizeAtCompileTime = UnBlockedAtCompileTime ? SizeAtCompileTime : Dynamic;
   // Remaining rows and columns at compile-time:
-  static const int RRows = SizeAtCompileTime==2 ? 1 : Dynamic;
-  static const int RCols = SizeAtCompileTime==2 ? 1 : Dynamic;
+  static constexpr int RRows = SizeAtCompileTime==2 ? 1 : Dynamic;
+  static constexpr int RCols = SizeAtCompileTime==2 ? 1 : Dynamic;
   typedef Matrix<Scalar, ActualSizeAtCompileTime, ActualSizeAtCompileTime, StorageOrder> MatrixType;
   typedef Ref<MatrixType> MatrixTypeRef;
   typedef Ref<Matrix<Scalar, Dynamic, Dynamic, StorageOrder> > BlockType;

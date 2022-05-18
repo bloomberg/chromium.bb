@@ -71,7 +71,7 @@ class GtkUi : public views::LinuxUI {
       std::unique_ptr<ui::SelectFilePolicy> policy) const override;
 
   // views::LinuxUI:
-  void Initialize() override;
+  bool Initialize() override;
   bool GetTint(int id, color_utils::HSL* tint) const override;
   bool GetColor(int id, SkColor* color, bool use_custom_frame) const override;
   bool GetDisplayProperty(int id, int* result) const override;
@@ -111,6 +111,8 @@ class GtkUi : public views::LinuxUI {
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   std::string GetCursorThemeName() override;
   int GetCursorThemeSize() override;
+  std::vector<std::string> GetAvailableSystemThemeNamesForTest() const override;
+  void SetSystemThemeByNameForTest(const std::string& theme_name) override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
@@ -184,12 +186,6 @@ class GtkUi : public views::LinuxUI {
   gfx::FontRenderParams default_font_render_params_;
 
   std::unique_ptr<SettingsProvider> settings_provider_;
-
-  // Frame button layout state.  If |nav_buttons_set_| is false, then
-  // |leading_buttons_| and |trailing_buttons_| are meaningless.
-  bool nav_buttons_set_ = false;
-  std::vector<views::FrameButton> leading_buttons_;
-  std::vector<views::FrameButton> trailing_buttons_;
 
   // This is only used on GTK3.
   std::unique_ptr<GtkKeyBindingsHandler> key_bindings_handler_;

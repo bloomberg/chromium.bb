@@ -108,6 +108,8 @@ class PLATFORM_EXPORT LayerTreeView
       base::TimeTicks first_scroll_timestamp) override;
   void RunPaintBenchmark(int repeat_count,
                          cc::PaintBenchmarkResult& result) override;
+  void ReportEventLatency(
+      std::vector<cc::EventLatencyTracker::LatencyData> latencies) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -115,7 +117,6 @@ class PLATFORM_EXPORT LayerTreeView
   void ScheduleAnimationForWebTests() override;
 
   // cc::LayerTreeHostSchedulingClient implementation.
-  void DidScheduleBeginMainFrame() override;
   void DidRunBeginMainFrame() override;
 
   // Registers a callback that will be run on the first successful presentation

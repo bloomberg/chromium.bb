@@ -36,6 +36,7 @@ constexpr char kOriginWithScript2[] = "https://mobile.example.com";
 constexpr char kOriginWithScript3[] = "https://test.com";
 constexpr char kOriginWithoutScript[] = "https://no-script.com";
 constexpr char kExampleApp[] = "android://hash@com.example.app";
+constexpr char kHttpOriginWithScript[] = "http://scheme-example.com";
 
 constexpr char16_t kUsername1[] = u"alice";
 constexpr char16_t kUsername2[] = u"bob";
@@ -132,6 +133,10 @@ class SavedPasswordsCapabilitiesFetcherTest : public ::testing::Test {
     store_->AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
                                               "Example App", kOriginWithScript1,
                                               kPassword1));
+    // Set http url. Should not be made part of the cache.
+    store_->AddLogin(
+        MakeSavedPassword(kHttpOriginWithScript, kUsername2, kPassword3));
+
     RunUntilIdle();
   }
 
@@ -162,6 +167,7 @@ class SavedPasswordsCapabilitiesFetcherTest : public ::testing::Test {
   }
 
   void ExpectCacheRefresh() {
+    // Also checks the http credential is not part of the cache.
     EXPECT_CALL(*mock_capabilities_service_,
                 QueryPasswordChangeScriptAvailability(
                     UnorderedElementsAre(
@@ -585,6 +591,32 @@ TEST_F(SavedPasswordsCapabilitiesFetcherTest, DebugInformationForInternals) {
   std::move(callback).Run(std::set<url::Origin>{
       GetOriginWithScript1(), GetOriginWithScript2(), GetOriginWithScript3()});
   CheckScriptAvailabilityDefaultResults();
+}
+
+TEST_F(SavedPasswordsCapabilitiesFetcherTest, CheckCacheEntries) {
+  ExpectCacheRefresh();
+  fetcher_->PrewarmCache();
+
+  // Cache should now contain four entries.
+  base::Value::List cache_entries = fetcher_->GetCacheEntries();
+  EXPECT_EQ(cache_entries.size(), 4u);
+
+  std::vector<std::string> urls;
+  // Only `kOriginWithoutScript` is not expected to have a script.
+  for (auto it = cache_entries.begin(); it != cache_entries.end(); ++it) {
+    base::Value::Dict& entry = it->GetDict();
+    const std::string* url = entry.FindString("url");
+    absl::optional<bool> has_script = entry.FindBool("has_script");
+    EXPECT_TRUE(url);
+    EXPECT_TRUE(has_script.has_value());
+    EXPECT_EQ(*url != kOriginWithoutScript, has_script.value());
+    urls.push_back(*url);
+  }
+
+  // There should be entries for all requested sites.
+  EXPECT_THAT(urls,
+              UnorderedElementsAre(kOriginWithoutScript, kOriginWithScript1,
+                                   kOriginWithScript2, kOriginWithScript3));
 }
 
 }  // namespace password_manager

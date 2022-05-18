@@ -12,45 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/native/Buffer.h"
 #include "dawn/native/CommandEncoder.h"
 #include "dawn/native/d3d12/DeviceD3D12.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/WGPUHelpers.h"
 
+namespace dawn::native::d3d12 {
 namespace {
-    class ExpectBetweenTimestamps : public detail::Expectation {
-      public:
-        ~ExpectBetweenTimestamps() override = default;
+class ExpectBetweenTimestamps : public ::detail::Expectation {
+  public:
+    ~ExpectBetweenTimestamps() override = default;
 
-        ExpectBetweenTimestamps(uint64_t value0, uint64_t value1) {
-            mValue0 = value0;
-            mValue1 = value1;
-        }
+    ExpectBetweenTimestamps(uint64_t value0, uint64_t value1) {
+        mValue0 = value0;
+        mValue1 = value1;
+    }
 
-        // Expect the actual results are between mValue0 and mValue1.
-        testing::AssertionResult Check(const void* data, size_t size) override {
-            const uint64_t* actual = static_cast<const uint64_t*>(data);
-            for (size_t i = 0; i < size / sizeof(uint64_t); ++i) {
-                if (actual[i] < mValue0 || actual[i] > mValue1) {
-                    return testing::AssertionFailure()
-                           << "Expected data[" << i << "] to be between " << mValue0 << " and "
-                           << mValue1 << ", actual " << actual[i] << std::endl;
-                }
+    // Expect the actual results are between mValue0 and mValue1.
+    testing::AssertionResult Check(const void* data, size_t size) override {
+        const uint64_t* actual = static_cast<const uint64_t*>(data);
+        for (size_t i = 0; i < size / sizeof(uint64_t); ++i) {
+            if (actual[i] < mValue0 || actual[i] > mValue1) {
+                return testing::AssertionFailure()
+                       << "Expected data[" << i << "] to be between " << mValue0 << " and "
+                       << mValue1 << ", actual " << actual[i] << std::endl;
             }
-
-            return testing::AssertionSuccess();
         }
 
-      private:
-        uint64_t mValue0;
-        uint64_t mValue1;
-    };
+        return testing::AssertionSuccess();
+    }
+
+  private:
+    uint64_t mValue0;
+    uint64_t mValue1;
+};
 
 }  // anonymous namespace
-
-using namespace dawn::native::d3d12;
 
 class D3D12GPUTimestampCalibrationTests : public DawnTest {
   protected:
@@ -116,3 +116,5 @@ TEST_P(D3D12GPUTimestampCalibrationTests, TimestampsInOrder) {
 
 DAWN_INSTANTIATE_TEST(D3D12GPUTimestampCalibrationTests,
                       D3D12Backend({"disable_timestamp_query_conversion"}));
+
+}  // namespace dawn::native::d3d12

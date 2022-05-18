@@ -23,7 +23,6 @@
 #include "api/scoped_refptr.h"
 #include "p2p/base/transport_description.h"
 #include "p2p/base/transport_description_factory.h"
-#include "pc/channel_manager.h"
 #include "pc/media_session.h"
 #include "pc/sdp_state_provider.h"
 #include "rtc_base/message_handler.h"
@@ -86,7 +85,8 @@ class WebRtcSessionDescriptionFactory : public rtc::MessageHandler,
       std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
       const rtc::scoped_refptr<rtc::RTCCertificate>& certificate,
       std::function<void(const rtc::scoped_refptr<rtc::RTCCertificate>&)>
-          on_certificate_ready);
+          on_certificate_ready,
+      const FieldTrialsView& field_trials);
   virtual ~WebRtcSessionDescriptionFactory();
 
   WebRtcSessionDescriptionFactory(const WebRtcSessionDescriptionFactory&) =

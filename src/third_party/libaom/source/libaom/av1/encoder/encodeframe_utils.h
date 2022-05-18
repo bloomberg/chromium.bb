@@ -455,8 +455,8 @@ static AOM_INLINE void av1_alloc_mb_data(const AV1_COMP *cpi,
     // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is
     // enabled.
     if (sf->rd_sf.use_mb_rd_hash)
-      mb->txfm_search_info.mb_rd_record =
-          (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD));
+      CHECK_MEM_ERROR(cm, mb->txfm_search_info.mb_rd_record,
+                      (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD)));
     if (!frame_is_intra_only(cm))
       CHECK_MEM_ERROR(
           cm, mb->inter_modes_info,

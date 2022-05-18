@@ -13,6 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -222,21 +223,27 @@ void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
     int64_t service_worker_version_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  util::InitializeFileSchemeAccessForExtension(render_process_id, extension_id,
-                                               browser_context_);
-  ProcessManager::Get(browser_context_)
-      ->RegisterServiceWorker({extension_id, render_process_id,
-                               service_worker_version_id, thread_id});
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   DCHECK(registry);
   const Extension* extension =
       registry->enabled_extensions().GetByID(extension_id);
-  DCHECK(extension);
+  // The caller should have validated that the extension is still enabled.
+  CHECK(extension);
 
+  content::RenderProcessHost* process_host =
+      content::RenderProcessHost::FromID(render_process_id);
+  // The caller should have validated that the RenderProcessHost is still
+  // active.
+  CHECK(process_host);
+
+  util::InitializeFileSchemeAccessForExtension(render_process_id, extension_id,
+                                               browser_context_);
+  ProcessManager::Get(browser_context_)
+      ->RegisterServiceWorker({extension_id, render_process_id,
+                               service_worker_version_id, thread_id});
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
-      ->ActivateExtensionInProcess(
-          *extension, content::RenderProcessHost::FromID(render_process_id));
+      ->ActivateExtensionInProcess(*extension, process_host);
 }
 
 void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(

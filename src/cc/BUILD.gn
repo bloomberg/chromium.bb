@@ -178,10 +178,14 @@ cc_component("cc") {
     "metrics/compositor_frame_reporting_controller.h",
     "metrics/compositor_timing_history.cc",
     "metrics/compositor_timing_history.h",
+    "metrics/custom_metrics_recorder.cc",
+    "metrics/custom_metrics_recorder.h",
     "metrics/dropped_frame_counter.cc",
     "metrics/dropped_frame_counter.h",
     "metrics/event_latency_tracing_recorder.cc",
     "metrics/event_latency_tracing_recorder.h",
+    "metrics/event_latency_tracker.cc",
+    "metrics/event_latency_tracker.h",
     "metrics/event_metrics.cc",
     "metrics/event_metrics.h",
     "metrics/events_metrics_manager.cc",
@@ -905,14 +909,15 @@ cc_test("cc_unittests") {
   }
 
   if (is_fuchsia) {
-    use_cfv2 = false
+    use_cfv1 = false
+
+    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
+    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/font_capabilities.test-cmx",
-
-      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
+      "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 
@@ -993,9 +998,6 @@ if (is_android) {
     # Right now, this only includes the Java switches. But if we need more Java
     # files, they should be added here as necessary.
     srcjar_deps = [ ":cc_android_java_enums_srcjar" ]
-    deps = [
-      "//base:base_java",
-      "//third_party/androidx:androidx_annotation_annotation_java",
-    ]
+    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
   }
 }

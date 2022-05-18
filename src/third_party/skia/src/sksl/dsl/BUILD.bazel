@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "enforce_iwyu_on_package", "generated_cc_atom")
+load("//bazel:macros.bzl", "enforce_iwyu_on_package", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 enforce_iwyu_on_package()
 
@@ -116,6 +118,7 @@ generated_cc_atom(
         "//include/private:SkSLStatement_hdr",
         "//include/private:SkSLString_hdr",
         "//include/sksl:DSLFunction_hdr",
+        "//include/sksl:DSLType_hdr",
         "//include/sksl:DSLVar_hdr",
         "//include/sksl:DSLWrapper_hdr",
         "//src/sksl:SkSLProgramSettings_hdr",

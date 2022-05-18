@@ -110,13 +110,13 @@ SkColor GetHighlightColor(absl::optional<SkColor> theme_color) {
 EnterpriseProfileWelcomeHandler::EnterpriseProfileWelcomeHandler(
     Browser* browser,
     EnterpriseProfileWelcomeUI::ScreenType type,
-    bool force_new_profile,
+    bool profile_creation_required_by_policy,
     const AccountInfo& account_info,
     absl::optional<SkColor> profile_color,
     signin::SigninChoiceCallback proceed_callback)
     : browser_(browser),
       type_(type),
-      force_new_profile_(force_new_profile),
+      profile_creation_required_by_policy_(profile_creation_required_by_policy),
       email_(base::UTF8ToUTF16(account_info.email)),
       domain_name_(gaia::ExtractDomainName(account_info.email)),
       account_id_(account_info.account_id),
@@ -141,7 +141,7 @@ void EnterpriseProfileWelcomeHandler::RegisterMessages() {
       "initialized",
       base::BindRepeating(&EnterpriseProfileWelcomeHandler::HandleInitialized,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializedWithSize",
       base::BindRepeating(
           &EnterpriseProfileWelcomeHandler::HandleInitializedWithSize,
@@ -209,11 +209,18 @@ void EnterpriseProfileWelcomeHandler::HandleInitialized(
 }
 
 void EnterpriseProfileWelcomeHandler::HandleInitializedWithSize(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   if (browser_)
     signin::SetInitializedModalHeight(browser_, web_ui(), args);
+}
+
+void EnterpriseProfileWelcomeHandler::HandleProceedForTesting(
+    bool should_link_data) {
+  base::Value::List args;
+  args.Append(should_link_data);
+  HandleProceed(args);
 }
 
 void EnterpriseProfileWelcomeHandler::HandleProceed(
@@ -222,9 +229,8 @@ void EnterpriseProfileWelcomeHandler::HandleProceed(
   if (proceed_callback_) {
     bool use_existing_profile = args[0].GetIfBool().value_or(false);
     std::move(proceed_callback_)
-        .Run(use_existing_profile || !force_new_profile_
-                 ? signin::SIGNIN_CHOICE_CONTINUE
-                 : signin::SIGNIN_CHOICE_NEW_PROFILE);
+        .Run(use_existing_profile ? signin::SIGNIN_CHOICE_CONTINUE
+                                  : signin::SIGNIN_CHOICE_NEW_PROFILE);
   }
 }
 
@@ -287,7 +293,7 @@ base::Value EnterpriseProfileWelcomeHandler::GetProfileInfoValue() {
       dict.SetStringKey(
           "proceedLabel",
           l10n_util::GetStringUTF8(
-              force_new_profile_
+              profile_creation_required_by_policy_
                   ? IDS_ENTERPRISE_PROFILE_WELCOME_CREATE_PROFILE_BUTTON
                   : IDS_WELCOME_SIGNIN_VIEW_SIGNIN));
       break;

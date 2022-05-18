@@ -22,6 +22,7 @@
 <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="1867772173333403444">4. Select Chromium</translation>
 <translation id="2006345422933397527">Chromium couldn't check for updates. Try checking your Internet connection.</translation>
+<translation id="2052320862053429062">Chromium periodically checks your passwords against lists that have been published online. When doing this, your passwords and usernames are encrypted, so they can’t be read by anyone, including Google.</translation>
 <translation id="2054703085270098503">Stay safe with Chromium</translation>
 <translation id="2168108852149185974">Some add-ons cause Chromium to crash. Please uninstall:</translation>
 <translation id="2178608107313874732">Chromium can't use your camera at the moment</translation>
@@ -49,6 +50,7 @@
 <translation id="3805899903892079518">Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4043291146360695975">Passwords are saved to Password Manager on this device only.</translation>
 <translation id="4099085513035183040">Not supported on Chromium beta</translation>
+<translation id="4432744876818348753">Sign in to get the most out of Chromium.</translation>
 <translation id="4555020257205549924">When this feature is turned on, Chromium will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">You can now use Chromium whenever you tap on links in messages, documents and other apps.</translation>
 <translation id="4654936625574199632">To help improve the app, Chromium sends usage and crash data to Google. <ph name="BEGIN_LINK" />Manage<ph name="END_LINK" /></translation>
@@ -81,6 +83,7 @@
 <translation id="632825460376924298">Allow Chromium Sign-in</translation>
 <translation id="6337530241089703714">Choose whether to clear your Chromium data from this device or keep it</translation>
 <translation id="6424492062988593837">Chromium just got better! A new version is available.</translation>
+<translation id="6625409903340039086">Chromium now supports user policies for your managed account</translation>
 <translation id="6752854822223394465">Your organisation is setting up Chromium…</translation>
 <translation id="6820823224820483452">Chromium couldn't check all passwords. Try again tomorrow.</translation>
 <translation id="7006920032187763988">You can use the passwords that you saved to Password Manager in other apps on your iPad.</translation>
@@ -102,6 +105,7 @@
 <translation id="7674213385180944843">Open Settings &gt; Privacy &gt; Camera &gt; Chromium and turn on the camera.</translation>
 <translation id="7746854981345936341">Chromium tip. Some buttons are now at the bottom of your screen, such as Back, Forward and Search.</translation>
 <translation id="7763454117143368771">Use Chromium as your default browser to stay protected from dangerous sites and keep your passwords safe</translation>
+<translation id="7812317783196516890">You are signed in and syncing your data with an account managed by <ph name="DOMAIN" /> where its administrator can now set user policies specific to that account that can change the behaviour of Chromium.</translation>
 <translation id="786327964234957808">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chromium data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Start using Chromium scanner</translation>
 <translation id="7928628054454574139">Open Chromium whenever you tap on links in other apps</translation>

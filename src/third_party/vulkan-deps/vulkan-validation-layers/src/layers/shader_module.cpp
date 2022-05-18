@@ -268,16 +268,6 @@ layer_data::unordered_set<uint32_t> SHADER_MODULE_STATE::MarkAccessibleIds(spirv
     return ids;
 }
 
-layer_data::unordered_set<uint32_t> SHADER_MODULE_STATE::MarkVariableIds() const {
-    layer_data::unordered_set<uint32_t> variable_ids;
-    for (const auto insn : *this) {
-        if (insn.opcode() == spv::OpVariable) {
-            variable_ids.insert(insn.word(2));
-        }
-    }
-    return variable_ids;
-}
-
 layer_data::optional<VkPrimitiveTopology> SHADER_MODULE_STATE::GetTopology(const spirv_inst_iter &entrypoint) const {
     layer_data::optional<VkPrimitiveTopology> result;
 
@@ -378,6 +368,14 @@ SHADER_MODULE_STATE::SpirvStaticData::SpirvStaticData(const SHADER_MODULE_STATE 
             case spv::OpExecutionModeId: {
                 execution_mode_inst[insn.word(1)].push_back(insn);
             } break;
+            // Once https://github.com/KhronosGroup/SPIRV-Headers/issues/276 is added this should be derived from SPIR-V grammar
+            // json
+            case spv::OpTraceRayKHR:
+            case spv::OpTraceRayMotionNV:
+            case spv::OpReportIntersectionKHR:
+            case spv::OpExecuteCallableKHR:
+                has_invocation_repack_instruction = true;
+                break;
 
             default:
                 if (AtomicOperation(insn.opcode()) == true) {
@@ -1533,11 +1531,11 @@ void SHADER_MODULE_STATE::IsSpecificDescriptorType(const spirv_inst_iter &id_it,
 }
 
 std::vector<std::pair<DescriptorSlot, interface_var>> SHADER_MODULE_STATE::CollectInterfaceByDescriptorSlot(
-    layer_data::unordered_set<uint32_t> const &ids) const {
+    layer_data::unordered_set<uint32_t> const &accessible_ids) const {
     std::vector<std::pair<DescriptorSlot, interface_var>> out;
     shader_module_used_operators operators;
 
-    for (auto id : ids) {
+    for (auto id : accessible_ids) {
         auto insn = get_def(id);
         assert(insn != end());
 

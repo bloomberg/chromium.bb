@@ -15,10 +15,11 @@
 #ifndef SRC_DAWN_TESTS_END2END_VIDEOVIEWSTESTS_H_
 #define SRC_DAWN_TESTS_END2END_VIDEOVIEWSTESTS_H_
 
-#include "dawn/tests/DawnTest.h"
-
 #include <array>
 #include <memory>
+#include <vector>
+
+#include "dawn/tests/DawnTest.h"
 
 class VideoViewsTestBackend {
   public:
@@ -28,8 +29,7 @@ class VideoViewsTestBackend {
     virtual ~VideoViewsTestBackend();
 
     virtual void OnSetUp(WGPUDevice device) = 0;
-    virtual void OnTearDown() {
-    }
+    virtual void OnTearDown() {}
 
     class PlatformTexture {
       public:

@@ -23,14 +23,15 @@ Tests that set occlusion query set with all types in render pass descriptor:
 - {undefined} for occlusion query set in render pass descriptor
   `
   )
-  .paramsSubcasesOnly(u => u.combine('type', [undefined, ...kQueryTypes]))
+  .params(u => u.combine('type', [undefined, ...kQueryTypes]))
+  .beforeAllSubcases(t => {
+    const { type } = t.params;
+    if (type) {
+      t.selectDeviceForQueryTypeOrSkipTestCase(type);
+    }
+  })
   .fn(async t => {
     const type = t.params.type;
-
-    if (type) {
-      await t.selectDeviceForQueryTypeOrSkipTestCase(type);
-    }
-
     const querySet = type === undefined ? undefined : createQuerySetWithType(t, type, 1);
 
     const encoder = t.createEncoder('render pass', { occlusionQuerySet: querySet });
@@ -87,10 +88,14 @@ Tests that write timestamp to all types of query set on all possible encoders:
       .beginSubcases()
       .expand('queryIndex', p => (p.type === 'timestamp' ? [0, 2] : [0]))
   )
+  .beforeAllSubcases(t => {
+    const { type } = t.params;
+    if (type) {
+      t.selectDeviceForQueryTypeOrSkipTestCase(type);
+    }
+  })
   .fn(async t => {
     const { type, queryIndex } = t.params;
-
-    await t.selectDeviceForQueryTypeOrSkipTestCase(type);
 
     const count = 2;
     const querySet = createQuerySetWithType(t, type, count);
@@ -108,9 +113,11 @@ Tests that write timestamp to a invalid query set that failed during creation:
   `
   )
   .paramsSubcasesOnly(u => u.combine('querySetState', ['valid', 'invalid'] as const))
+  .beforeAllSubcases(t => {
+    t.selectDeviceForQueryTypeOrSkipTestCase('timestamp');
+  })
   .fn(async t => {
     const { querySetState } = t.params;
-    await t.selectDeviceForQueryTypeOrSkipTestCase('timestamp');
 
     const querySet = t.createQuerySetWithState(querySetState, {
       type: 'timestamp',
@@ -125,15 +132,12 @@ Tests that write timestamp to a invalid query set that failed during creation:
 g.test('timestamp_query,device_mismatch')
   .desc('Tests writeTimestamp cannot be called with a query set created from another device')
   .paramsSubcasesOnly(u => u.combine('mismatched', [true, false]))
+  .beforeAllSubcases(t => {
+    t.selectDeviceForQueryTypeOrSkipTestCase('timestamp');
+    t.selectMismatchedDeviceOrSkipTestCase('timestamp-query');
+  })
   .fn(async t => {
     const { mismatched } = t.params;
-
-    await t.selectDeviceForQueryTypeOrSkipTestCase('timestamp');
-
-    if (mismatched) {
-      await t.selectMismatchedDeviceOrSkipTestCase('timestamp-query');
-    }
-
     const device = mismatched ? t.mismatchedDevice : t.device;
 
     const querySet = device.createQuerySet({

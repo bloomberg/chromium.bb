@@ -227,7 +227,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     client->UseClientConnectionIdLength(override_client_connection_id_length_);
     client->client()->set_connection_debug_visitor(connection_debug_visitor_);
     client->client()->set_enable_web_transport(enable_web_transport_);
-    client->client()->set_use_datagram_contexts(use_datagram_contexts_);
     client->Connect();
     return client;
   }
@@ -367,9 +366,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     if (enable_web_transport_) {
       memory_cache_backend_.set_enable_webtransport(true);
     }
-    if (use_datagram_contexts_) {
-      memory_cache_backend_.set_use_datagram_contexts(true);
-    }
 
     QuicTagVector copt;
     server_config_.SetConnectionOptionsToSend(copt);
@@ -444,12 +440,12 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   }
 
   void StartServer() {
-    auto* test_server = new QuicTestServer(
+    auto test_server = std::make_unique<QuicTestServer>(
         crypto_test_utils::ProofSourceForTesting(), server_config_,
         server_supported_versions_, &memory_cache_backend_,
         expected_server_connection_id_length_);
     server_thread_ =
-        std::make_unique<ServerThread>(test_server, server_address_);
+        std::make_unique<ServerThread>(std::move(test_server), server_address_);
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
     }
@@ -828,7 +824,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   int override_client_connection_id_length_ = -1;
   uint8_t expected_server_connection_id_length_;
   bool enable_web_transport_ = false;
-  bool use_datagram_contexts_ = false;
   std::vector<std::string> received_webtransport_unidirectional_streams_;
 };
 
@@ -1966,6 +1961,31 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   EXPECT_FALSE(client_->client()->ReceivedInchoateReject());
 
   VerifyCleanConnection(false);
+}
+
+TEST_P(EndToEndTest, DisableResumption) {
+  client_extra_copts_.push_back(kNRES);
+  ASSERT_TRUE(Initialize());
+  if (!version_.UsesTls()) {
+    return;
+  }
+  SendSynchronousFooRequestAndCheckResponse();
+  QuicSpdyClientSession* client_session = GetClientSession();
+  ASSERT_TRUE(client_session);
+  EXPECT_EQ(client_session->GetCryptoStream()->EarlyDataReason(),
+            ssl_early_data_no_session_offered);
+  client_->Disconnect();
+
+  SendSynchronousFooRequestAndCheckResponse();
+  client_session = GetClientSession();
+  ASSERT_TRUE(client_session);
+  if (GetQuicReloadableFlag(quic_enable_disable_resumption)) {
+    EXPECT_EQ(client_session->GetCryptoStream()->EarlyDataReason(),
+              ssl_early_data_session_not_resumed);
+  } else {
+    EXPECT_EQ(client_session->GetCryptoStream()->EarlyDataReason(),
+              ssl_early_data_accepted);
+  }
 }
 
 // This is a regression test for b/162595387
@@ -5542,14 +5562,12 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   // Disconnect for next 0-rtt request.
   client_->Disconnect();
 
-  // Client get valid STK now. Do a 0-rtt request.
-  // Buffer a CHLO till another packets sent out.
-  reorder_writer_->SetDelay(1);
+  // Client has valid Session Ticket now. Do a 0-RTT request.
+  // Buffer a CHLO till the request is sent out. HTTP/3 sends two packets: a
+  // SETTINGS frame and a request.
+  reorder_writer_->SetDelay(version_.UsesHttp3() ? 2 : 1);
   // Only send out a CHLO.
   client_->client()->Initialize();
-  client_->client()->StartConnect();
-  EXPECT_TRUE(client_->client()->WaitForOneRttKeysAvailable());
-  ASSERT_TRUE(client_->client()->connected());
 
   // Send a request before handshake finishes.
   SpdyHeaderBlock headers;
@@ -5564,10 +5582,7 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   QuicConnection* client_connection = GetClientConnection();
   ASSERT_TRUE(client_connection);
   QuicConnectionStats client_stats = client_connection->GetStats();
-  // Client sends CHLO in packet 1 and retransmitted in packet 2. Because of
-  // the delay, server processes packet 2 and later drops packet 1. ACK is
-  // bundled with SHLO, such that 1 can be detected loss by time threshold.
-  EXPECT_LE(0u, client_stats.packets_lost);
+  EXPECT_EQ(0u, client_stats.packets_lost);
   EXPECT_TRUE(client_->client()->EarlyDataAccepted());
 }
 
@@ -6574,38 +6589,6 @@ TEST_P(EndToEndTest, WebTransportDatagrams) {
   EXPECT_GT(received, 0);
 }
 
-TEST_P(EndToEndTest, WebTransportDatagramsWithContexts) {
-  enable_web_transport_ = true;
-  use_datagram_contexts_ = true;
-  SetPacketLossPercentage(30);
-  ASSERT_TRUE(Initialize());
-
-  if (!version_.UsesHttp3()) {
-    return;
-  }
-
-  QuicSpdyStream* connect_stream = nullptr;
-  WebTransportHttp3* session = CreateWebTransportSession(
-      "/echo", /*wait_for_server_response=*/true, &connect_stream);
-  ASSERT_TRUE(session != nullptr);
-  ASSERT_TRUE(connect_stream != nullptr);
-  NiceMock<MockWebTransportSessionVisitor>& visitor =
-      SetupWebTransportVisitor(session);
-
-  quiche::SimpleBufferAllocator allocator;
-  for (int i = 0; i < 10; i++) {
-    session->SendOrQueueDatagram(MemSliceFromString("test"));
-  }
-
-  int received = 0;
-  EXPECT_CALL(visitor, OnDatagramReceived(_)).WillRepeatedly([&received]() {
-    received++;
-  });
-  client_->WaitUntil(5000, [&received]() { return received > 0; });
-  EXPECT_GT(received, 0);
-  EXPECT_TRUE(QuicSpdyStreamPeer::use_datagram_contexts(connect_stream));
-}
-
 TEST_P(EndToEndTest, WebTransportSessionClose) {
   enable_web_transport_ = true;
   ASSERT_TRUE(Initialize());
@@ -6830,15 +6813,16 @@ TEST_P(EndToEndTest, RejectExtendedConnect) {
   client_->WaitForResponse();
   CheckResponseHeaders("400");
 
-  // Vanilla CONNECT should be accepted.
+  // Vanilla CONNECT should be sent to backend.
   spdy::SpdyHeaderBlock headers2;
   headers2[":authority"] = "localhost";
   headers2[":method"] = "CONNECT";
 
+  // Backend not configured/implemented to fully handle CONNECT requests, so
+  // expect it to send a 405.
   client_->SendMessage(headers2, "body", /*fin=*/true);
   client_->WaitForResponse();
-  // No :path header, so 404.
-  CheckResponseHeaders("404");
+  CheckResponseHeaders("405");
 }
 
 TEST_P(EndToEndTest, RejectInvalidRequestHeader) {

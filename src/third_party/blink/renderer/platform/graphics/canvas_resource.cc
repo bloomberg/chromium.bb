@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_gpu.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
@@ -776,17 +777,11 @@ CanvasResourceSkiaDawnSharedImage::CanvasResourceSkiaDawnSharedImage(
       GetSkColorInfo().alphaType(), shared_image_usage_flags,
       gpu::kNullSurfaceHandle);
 
-  auto* webgpu = WebGPUInterface();
-
   // Wait for the mailbox to be ready to be used.
   WaitSyncToken(shared_image_interface->GenUnverifiedSyncToken());
 
   // Ensure Dawn wire is initialized.
-  webgpu->RequestAdapterAsync(gpu::webgpu::PowerPreference::kHighPerformance,
-                              /*force_fallback_adapter*/ false,
-                              base::DoNothing());
-  WGPUDeviceProperties properties{};
-  webgpu->RequestDeviceAsync(0, properties, base::DoNothing());
+  WebGPUInterface()->DeprecatedEnsureDefaultDeviceSync();
 
   owning_thread_data().shared_image_mailbox = shared_image_mailbox;
 }

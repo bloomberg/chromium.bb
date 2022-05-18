@@ -41,10 +41,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/test/mock_navigation_handle.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,6 +81,7 @@ MATCHER_P3(MatchesLoginAndURL,
 
 // A random URL.
 constexpr char kExampleUrl[] = "http://example.com";
+constexpr char16_t kExampleUsername[] = u"Bob";
 
 // Number of dismissals that for sure suppresses the bubble.
 constexpr int kGreatDissmisalCount = 10;
@@ -152,7 +151,6 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
                CredentialLeakPrompt*(CredentialLeakDialogController*));
   MOCK_CONST_METHOD0(HasBrowserWindow, bool());
   MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
-  using ManagePasswordsUIController::DidFinishNavigation;
 
  private:
   void UpdateBubbleAndIconVisibility() override;
@@ -288,8 +286,8 @@ void ManagePasswordsUIControllerTest::SetUp() {
   submitted_form_.password_value = u"pass12345";
 
   // We need to be on a "webby" URL for most tests.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kExampleUrl));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
 }
 
 void ManagePasswordsUIControllerTest::ExpectIconStateIs(
@@ -456,8 +454,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleNotSuppressed) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
   // Test on the real controller.
   std::unique_ptr<content::WebContents> web_content(CreateTestWebContents());
-  content::WebContentsTester::For(web_content.get())
-      ->NavigateAndCommit(GURL(kExampleUrl));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_content.get(),
+                                                             GURL(kExampleUrl));
   ManagePasswordsUIController::CreateForWebContents(web_content.get());
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_content.get());
@@ -472,8 +470,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedBubbleCancelled) {
 
   // The tab navigated in background. Because the controller's state has changed
   // the bubble shouldn't pop up anymore.
-  content::WebContentsTester::For(web_content.get())
-      ->NavigateAndCommit(GURL("http://google.com"));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_content.get(), GURL("http://google.com"));
   EXPECT_FALSE(controller->IsAutomaticallyOpeningBubble());
 }
 
@@ -549,9 +547,8 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
     controller()->OnBubbleHidden();
     EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-    content::MockNavigationHandle test_handle(web_contents());
-    test_handle.set_has_committed(true);
-    controller()->DidFinishNavigation(&test_handle);
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL(kExampleUrl));
 
     recorder = nullptr;
     ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -694,9 +691,8 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
   // Fake-navigate. We expect the bubble's state to persist so a user reasonably
   // has been able to interact with the bubble. This happens on
   // `accounts.google.com`, for instance.
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ExpectIconAndControllerStateIs(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
@@ -714,17 +710,16 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
 
   // Fake-navigate. There is no bubble, reset the state.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
   // Navigate to a non-webby URL, then see what happens!
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("chrome://sign-in"));
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("chrome://sign-in"));
 
   std::vector<const PasswordForm*> best_matches;
   auto test_form_manager = CreateFormManagerWithBestMatches(&best_matches);
@@ -963,9 +958,8 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninFirstRunAfterNavigation) {
   // The dialog should survive any navigation.
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  content::MockNavigationHandle test_handle(web_contents());
-  test_handle.set_has_committed(true);
-  controller()->DidFinishNavigation(&test_handle);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kExampleUrl));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&dialog_prompt()));
   EXPECT_CALL(dialog_prompt(), ControllerGone());
 }
@@ -1097,9 +1091,8 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     // state is retained on navigation, and the PasswordFormManager is not
     // destroyed.
     controller()->OnBubbleHidden();
-    content::MockNavigationHandle test_handle(web_contents());
-    test_handle.set_has_committed(true);
-    controller()->DidFinishNavigation(&test_handle);
+    content::NavigationSimulator::NavigateAndCommitFromBrowser(
+        web_contents(), GURL(kExampleUrl));
 
     recorder = nullptr;
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -1188,9 +1181,8 @@ TEST_F(ManagePasswordsUIControllerTest,
     testing::Mock::VerifyAndClearExpectations(controller());
     if (enforce_navigation) {
       // Fake-navigate. The fallback should persist.
-      content::MockNavigationHandle test_handle(web_contents());
-      test_handle.set_has_committed(true);
-      controller()->DidFinishNavigation(&test_handle);
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          web_contents(), GURL(kExampleUrl));
       ExpectIconAndControllerStateIs(
           password_manager::ui::PENDING_PASSWORD_STATE);
     }
@@ -1243,9 +1235,8 @@ TEST_F(ManagePasswordsUIControllerTest,
       // navigation.
       controller()->OnBubbleHidden();
       EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-      content::MockNavigationHandle test_handle(web_contents());
-      test_handle.set_has_committed(true);
-      controller()->DidFinishNavigation(&test_handle);
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          web_contents(), GURL(kExampleUrl));
       ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
     }
     testing::Mock::VerifyAndClearExpectations(controller());
@@ -1415,7 +1406,7 @@ TEST_F(ManagePasswordsUIControllerTest, SaveBubbleAfterLeakCheck) {
           password_manager::IsSaved(false), password_manager::IsReused(false),
           password_manager::IsSyncing(false),
           password_manager::HasChangeScript(false)),
-      GURL(kExampleUrl));
+      GURL(kExampleUrl), kExampleUsername);
   // The bubble is gone.
   EXPECT_FALSE(controller()->opened_bubble());
 
@@ -1447,7 +1438,7 @@ TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
           password_manager::IsSaved(true), password_manager::IsReused(false),
           password_manager::IsSyncing(false),
           password_manager::HasChangeScript(false)),
-      GURL(kExampleUrl));
+      GURL(kExampleUrl), kExampleUsername);
   // The bubble is gone.
   EXPECT_FALSE(controller()->opened_bubble());
 

@@ -44,16 +44,22 @@ interface Step {
 
 /**
  * Indicate the variation of the consent card.
- *   * Default, StringChange, and Dialog has one step.
+ *   * Default, StringChange, Dialog, and NativeDialog has one step.
  *   * Inline has two steps.
+ *
+ * This is the same enum in commerce_feature_list.h,
+ * commerce::DiscountConsentNtpVariation.
+ *
+ * TODO(meiliang@): Use a mojo enum instead.
  */
 export enum DiscountConsentVariation {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  Default = 0,
-  StringChange = 1,
-  Inline = 2,
-  Dialog = 3
+  DEFAULT = 0,
+  STRING_CHANGE = 1,
+  INLINE = 2,
+  DIALOG = 3,
+  NATIVE_DIALOG = 4
 }
 
 // This is a configurable multi-step card. Each step is represented by the Step
@@ -110,7 +116,7 @@ export class DiscountConsentCard extends I18nMixin
   private getTotalStep_(): number {
     // Inline-variation is 2, see ntp_feature::DiscountConsentNtpVariation.
     if (loadTimeData.getInteger('modulesCartDiscountConsentVariation') ===
-        DiscountConsentVariation.Inline) {
+        DiscountConsentVariation.INLINE) {
       return 2;
     }
     return 1;
@@ -135,15 +141,19 @@ export class DiscountConsentCard extends I18nMixin
       actionButton: {
         text: loadTimeData.getString('modulesCartConsentStepOneButton'),
         onClickHandler: () => {
+          chrome.metricsPrivate.recordUserAction(
+              'NewTabPage.Carts.ShowInterestInDiscountConsent');
+          this.dispatchEvent(
+              new CustomEvent('discount-consent-continued', {composed: true}));
+          if (loadTimeData.getInteger('modulesCartDiscountConsentVariation') ===
+              DiscountConsentVariation.NATIVE_DIALOG) {
+            return;
+          }
           if (this.currentStep + 1 < this.getTotalStep_()) {
             this.currentStep++;
           } else {
             this.showDiscountConsentDialog_ = true;
           }
-          chrome.metricsPrivate.recordUserAction(
-              'NewTabPage.Carts.ShowInterestInDiscountConsent');
-          this.dispatchEvent(
-              new CustomEvent('discount-consent-continued', {composed: true}));
         },
       }
     });
@@ -204,7 +214,7 @@ export class DiscountConsentCard extends I18nMixin
 
   private getFaviconUrl_(url: string): string {
     const faviconUrl = new URL('chrome://favicon2/');
-    faviconUrl.searchParams.set('size', '24');
+    faviconUrl.searchParams.set('size', '20');
     faviconUrl.searchParams.set('scale_factor', '1x');
     faviconUrl.searchParams.set('show_fallback_monogram', '');
     faviconUrl.searchParams.set('page_url', url);

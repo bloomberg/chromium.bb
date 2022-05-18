@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
@@ -33,6 +34,7 @@
 #include "build/chromeos_buildflags.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/first_party_sets/first_party_sets_handler_impl.h"
+#include "content/browser/net/http_cache_backend_file_operations_factory.h"
 #include "content/browser/network_sandbox_grant_result.h"
 #include "content/browser/network_service_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,6 +47,8 @@
 #include "content/public/common/network_service_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/features.h"
 #include "net/log/net_log_util.h"
 #include "services/cert_verifier/cert_verifier_service_factory.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
@@ -578,11 +582,18 @@ network::mojom::NetworkService* GetNetworkService() {
         }
       }
 
-      if (absl::optional<FirstPartySetsHandlerImpl::FlattenedSets> sets =
-              FirstPartySetsHandlerImpl::GetInstance()
-                  ->GetSetsIfEnabledAndReady();
-          sets.has_value()) {
-        g_network_service_remote->get()->SetFirstPartySets(*sets);
+      if (FirstPartySetsHandlerImpl::GetInstance()->IsEnabled()) {
+        if (absl::optional<FirstPartySetsHandlerImpl::FlattenedSets> sets =
+                FirstPartySetsHandlerImpl::GetInstance()->GetSets(
+                    base::BindOnce(
+                        [](FirstPartySetsHandlerImpl::FlattenedSets sets) {
+                          GetNetworkService()->SetFirstPartySets(
+                              std::move(sets));
+                        }));
+            sets.has_value()) {
+          g_network_service_remote->get()->SetFirstPartySets(
+              std::move(sets.value()));
+        }
       }
 
       GetContentClient()->browser()->OnNetworkServiceCreated(
@@ -749,9 +760,13 @@ GetCertVerifierServiceFactoryRemoteStorage() {
   return cert_verifier_service_factory_remote.GetOrCreateValue();
 }
 
+}  // namespace
+
 // Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.
 cert_verifier::mojom::CertVerifierServiceFactory*
 GetCertVerifierServiceFactory() {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (g_cert_verifier_service_factory_for_testing)
     return g_cert_verifier_service_factory_for_testing;
 
@@ -776,8 +791,6 @@ GetCertVerifierServiceFactory() {
   }
   return factory_remote_storage.get();
 }
-
-}  // namespace
 
 network::mojom::CertVerifierServiceRemoteParamsPtr GetCertVerifierParams(
     cert_verifier::mojom::CertVerifierCreationParamsPtr
@@ -815,6 +828,16 @@ void CreateNetworkContextInNetworkService(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MaybeCleanCacheDirectory(params.get());
+
+  if (params->http_cache_enabled && params->http_cache_directory &&
+      !params->http_cache_directory->path().empty() &&
+      base::FeatureList::IsEnabled(net::features::kSandboxHttpCache)) {
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<HttpCacheBackendFileOperationsFactory>(
+            params->http_cache_directory->path()),
+        params->http_cache_file_operations_factory
+            .InitWithNewPipeAndPassReceiver());
+  }
 
 #if BUILDFLAG(IS_ANDROID)
   // Create network context immediately without thread hops.

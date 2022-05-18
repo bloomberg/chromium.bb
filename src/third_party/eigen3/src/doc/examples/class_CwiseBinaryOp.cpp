@@ -5,7 +5,6 @@ using Eigen::Matrix4d;
 
 // define a custom template binary functor
 template<typename Scalar> struct MakeComplexOp {
-  EIGEN_EMPTY_STRUCT_CTOR(MakeComplexOp)
   typedef std::complex<Scalar> result_type;
   result_type operator()(const Scalar& a, const Scalar& b) const { return result_type(a,b); }
 };

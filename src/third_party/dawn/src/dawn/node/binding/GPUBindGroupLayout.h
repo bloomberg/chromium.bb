@@ -15,32 +15,31 @@
 #ifndef SRC_DAWN_NODE_BINDING_GPUBINDGROUPLAYOUT_H_
 #define SRC_DAWN_NODE_BINDING_GPUBINDGROUPLAYOUT_H_
 
+#include <string>
+
 #include "dawn/native/DawnNative.h"
 #include "dawn/webgpu_cpp.h"
-
 #include "src/dawn/node/interop/Napi.h"
 #include "src/dawn/node/interop/WebGPU.h"
 
 namespace wgpu::binding {
 
-    // GPUBindGroupLayout is an implementation of interop::GPUBindGroupLayout that wraps a
-    // wgpu::BindGroupLayout.
-    class GPUBindGroupLayout final : public interop::GPUBindGroupLayout {
-      public:
-        GPUBindGroupLayout(wgpu::BindGroupLayout layout);
+// GPUBindGroupLayout is an implementation of interop::GPUBindGroupLayout that wraps a
+// wgpu::BindGroupLayout.
+class GPUBindGroupLayout final : public interop::GPUBindGroupLayout {
+  public:
+    explicit GPUBindGroupLayout(wgpu::BindGroupLayout layout);
 
-        // Implicit cast operator to Dawn GPU object
-        inline operator const wgpu::BindGroupLayout&() const {
-            return layout_;
-        }
+    // Implicit cast operator to Dawn GPU object
+    inline operator const wgpu::BindGroupLayout&() const { return layout_; }
 
-        // interop::GPUBindGroupLayout interface compliance
-        std::variant<std::string, interop::UndefinedType> getLabel(Napi::Env) override;
-        void setLabel(Napi::Env, std::variant<std::string, interop::UndefinedType> value) override;
+    // interop::GPUBindGroupLayout interface compliance
+    std::string getLabel(Napi::Env) override;
+    void setLabel(Napi::Env, std::string value) override;
 
-      private:
-        wgpu::BindGroupLayout layout_;
-    };
+  private:
+    wgpu::BindGroupLayout layout_;
+};
 
 }  // namespace wgpu::binding
 

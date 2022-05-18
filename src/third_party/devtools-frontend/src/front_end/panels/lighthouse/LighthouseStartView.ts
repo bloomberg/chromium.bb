@@ -44,8 +44,8 @@ export class StartView extends UI.Widget.Widget {
   protected controller: LighthouseController;
   private readonly settingsToolbarInternal: UI.Toolbar.Toolbar;
   protected startButton!: HTMLButtonElement;
-  private helpText?: Element;
-  private warningText?: Element;
+  protected helpText?: Element;
+  protected warningText?: Element;
   private shouldConfirm?: boolean;
 
   constructor(controller: LighthouseController) {
@@ -65,6 +65,17 @@ export class StartView extends UI.Widget.Widget {
     if (!runtimeSetting || !runtimeSetting.options) {
       throw new Error(`${settingName} is not a setting with options`);
     }
+
+    const labelEl = document.createElement('div');
+    labelEl.classList.add('lighthouse-form-section-label');
+    labelEl.textContent = label;
+
+    if (runtimeSetting.learnMore) {
+      const link =
+          UI.XLink.XLink.create(runtimeSetting.learnMore, i18nString(UIStrings.learnMore), 'lighthouse-learn-more');
+      labelEl.append(link);
+    }
+    parentElement.appendChild(labelEl);
 
     const control = new RadioSetting(
         runtimeSetting.options, runtimeSetting.setting as Common.Settings.Setting<string>,
@@ -91,20 +102,26 @@ export class StartView extends UI.Widget.Widget {
     }
   }
 
-  private populateFormControls(fragment: UI.Fragment.Fragment): void {
+  protected populateFormControls(fragment: UI.Fragment.Fragment, mode?: string): void {
     // Populate the device type
     const deviceTypeFormElements = fragment.$('device-type-form-elements');
     this.populateRuntimeSettingAsRadio('lighthouse.device_type', i18nString(UIStrings.device), deviceTypeFormElements);
 
     // Populate the categories
-    const categoryFormElements = fragment.$('categories-form-elements');
-    const pluginFormElements = fragment.$('plugins-form-elements');
+    const categoryFormElements = fragment.$('categories-form-elements') as HTMLElement;
+    categoryFormElements.textContent = '';
+    const pluginFormElements = fragment.$('plugins-form-elements') as HTMLElement;
+    pluginFormElements.textContent = '';
     for (const preset of Presets) {
       const formElements = preset.plugin ? pluginFormElements : categoryFormElements;
       preset.setting.setTitle(preset.title());
       const checkbox = new UI.Toolbar.ToolbarSettingCheckbox(preset.setting, preset.description());
       const row = formElements.createChild('div', 'vbox lighthouse-launcher-row');
       row.appendChild(checkbox.element);
+      if (mode && !preset.supportedModes.includes(mode)) {
+        checkbox.setEnabled(false);
+        checkbox.setIndeterminate(true);
+      }
     }
     UI.ARIAUtils.markAsGroup(categoryFormElements);
     UI.ARIAUtils.setAccessibleName(categoryFormElements, i18nString(UIStrings.categories));
@@ -157,9 +174,6 @@ export class StartView extends UI.Widget.Widget {
   </div>
   </div>
   <div class="lighthouse-form-section">
-  <div class="lighthouse-form-section-label">
-  ${i18nString(UIStrings.device)}
-  </div>
   <div class="lighthouse-form-elements" $="device-type-form-elements"></div>
   </div>
   </form>
@@ -173,7 +187,7 @@ export class StartView extends UI.Widget.Widget {
     this.contentElement.style.overflow = 'auto';
   }
 
-  updateStartButton(): void {
+  refresh(): void {
     // Do nothing in default case.
   }
 

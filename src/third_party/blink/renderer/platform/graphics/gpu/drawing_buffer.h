@@ -357,12 +357,16 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool Initialize(const gfx::Size&, bool use_multisampling);
 
   struct RegisteredBitmap {
-    scoped_refptr<cc::CrossThreadSharedBitmap> bitmap;
-    cc::SharedBitmapIdRegistration registration;
+    RegisteredBitmap(scoped_refptr<cc::CrossThreadSharedBitmap> bitmap,
+                     cc::SharedBitmapIdRegistration registration)
+        : bitmap(std::move(bitmap)), registration(std::move(registration)) {}
 
     // Explicitly move-only.
     RegisteredBitmap(RegisteredBitmap&&) = default;
     RegisteredBitmap& operator=(RegisteredBitmap&&) = default;
+
+    scoped_refptr<cc::CrossThreadSharedBitmap> bitmap;
+    cc::SharedBitmapIdRegistration registration;
   };
   // Shared memory bitmaps that were released by the compositor and can be used
   // again by this DrawingBuffer.
@@ -455,6 +459,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     gpu::SyncToken receive_sync_token;
   };
 
+  // CopyFunction(const gpu::MailboxHolder&, viz::ResourceFormat,
+  //              const gfx::Size&, const gfx::ColorSpace&)
   template <typename CopyFunction>
   bool CopyToPlatformInternal(gpu::InterfaceBase* dst_interface,
                               SourceDrawingBuffer src_buffer,

@@ -15,18 +15,21 @@
 #ifndef SRC_DAWN_NATIVE_METAL_BACKENDMTL_H_
 #define SRC_DAWN_NATIVE_METAL_BACKENDMTL_H_
 
+#include <vector>
+
 #include "dawn/native/BackendConnection.h"
 
 namespace dawn::native::metal {
 
-    class Backend : public BackendConnection {
-      public:
-        explicit Backend(InstanceBase* instance);
+class Backend : public BackendConnection {
+  public:
+    explicit Backend(InstanceBase* instance);
+    ~Backend() override;
 
-        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
-            const AdapterDiscoveryOptionsBase* optionsBase) override;
-    };
+    std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+    ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
+        const AdapterDiscoveryOptionsBase* optionsBase) override;
+};
 
 }  // namespace dawn::native::metal
 

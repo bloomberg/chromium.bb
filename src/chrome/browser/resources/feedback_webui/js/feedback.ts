@@ -50,9 +50,6 @@ class FeedbackHelper {
     const ID = Math.round(Date.now() / 1000);
     const FLOW = feedbackInfo.flow;
 
-    if (!useSystemInfo) {
-      feedbackInfo.systemInformation = [];
-    }
     chrome.feedbackPrivate.sendFeedback(
         feedbackInfo, useSystemInfo, formOpenTime,
         function(result, landingPageType) {
@@ -70,9 +67,6 @@ class FeedbackHelper {
             console.warn(
                 'Feedback: Report for request with ID ' + ID +
                 ' will be sent later.');
-          }
-          if (FLOW === chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
-            chrome.feedbackPrivate.loginFeedbackComplete();
           }
           scheduleWindowClose();
         });
@@ -408,6 +402,15 @@ function sendReport(): boolean {
     };
   }
 
+  const consentCheckboxValue: boolean =
+      ($('consent-checkbox') as HTMLInputElement).checked;
+  feedbackInfo.systemInformation = [
+    {
+      key: 'feedbackUserCtlConsent',
+      value: String(consentCheckboxValue),
+    },
+  ];
+
   feedbackInfo.description = textarea.value;
   feedbackInfo.pageUrl = ($('page-url-text') as HTMLInputElement).value;
   feedbackInfo.email = ($('user-email-drop-down') as HTMLSelectElement).value;
@@ -476,9 +479,6 @@ function sendReport(): boolean {
 function cancel(e: Event) {
   e.preventDefault();
   scheduleWindowClose();
-  if (feedbackInfo.flow === chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
-    chrome.feedbackPrivate.loginFeedbackComplete();
-  }
 }
 
 // <if expr="chromeos_ash">

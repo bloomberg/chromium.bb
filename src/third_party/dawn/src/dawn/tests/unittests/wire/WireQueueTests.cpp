@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <memory>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
+namespace dawn::wire {
+
+using testing::_;
+using testing::InvokeWithoutArgs;
+using testing::Mock;
 
 class MockQueueWorkDoneCallback {
   public:
@@ -138,3 +142,5 @@ TEST_F(WireQueueTests, OnSubmittedWorkDoneInsideCallbackBeforeDisconnect) {
 // Only one default queue is supported now so we cannot test ~Queue triggering ClearAllCallbacks
 // since it is always destructed after the test TearDown, and we cannot create a new queue obj
 // with wgpuDeviceGetQueue
+
+}  // namespace dawn::wire

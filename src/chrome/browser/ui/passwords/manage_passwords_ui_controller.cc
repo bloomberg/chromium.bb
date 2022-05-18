@@ -10,9 +10,12 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autofill_assistant/password_change/apc_client.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -55,6 +58,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -274,7 +278,8 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
 
 void ManagePasswordsUIController::OnCredentialLeak(
     const password_manager::CredentialLeakType leak_type,
-    const GURL& origin) {
+    const GURL& url,
+    const std::u16string& username) {
   // Existing dialog shouldn't be closed.
   if (dialog_controller_)
     return;
@@ -286,7 +291,7 @@ void ManagePasswordsUIController::OnCredentialLeak(
     ClearPopUpFlagForBubble();
 
   auto* raw_controller =
-      new CredentialLeakDialogControllerImpl(this, leak_type);
+      new CredentialLeakDialogControllerImpl(this, leak_type, url, username);
   dialog_controller_.reset(raw_controller);
   raw_controller->ShowCredentialLeakPrompt(
       CreateCredentialLeakPrompt(raw_controller));
@@ -630,6 +635,14 @@ void ManagePasswordsUIController::NavigateToPasswordCheckup(
   password_manager::LogPasswordCheckReferrer(referrer);
 }
 
+void ManagePasswordsUIController::StartAutomatedPasswordChange(
+    const GURL& origin,
+    const std::u16string& username) {
+  ApcClient* apc_client = ApcClient::GetOrCreateForWebContents(web_contents());
+  // Start checks that no other run is ongoing, so we can always call it.
+  apc_client->Start(origin, base::UTF16ToUTF8(username), /*skip_login=*/true);
+}
+
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   signin_ui_util::EnableSyncFromSingleAccountPromo(
@@ -754,18 +767,7 @@ bool ManagePasswordsUIController::HasBrowserWindow() const {
   return chrome::FindBrowserWithWebContents(web_contents()) != nullptr;
 }
 
-void ManagePasswordsUIController::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      // Don't react to same-document (fragment) navigations.
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
+void ManagePasswordsUIController::PrimaryPageChanged(content::Page& page) {
   // Keep the state if the bubble is currently open or the fallback for saving
   // should be still available.
   if (IsShowingBubble() || save_fallback_timer_.IsRunning()) {

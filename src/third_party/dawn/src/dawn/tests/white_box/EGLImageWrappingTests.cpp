@@ -12,104 +12,101 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <EGL/egl.h>
+
+#include <utility>
+#include <vector>
 
 #include "dawn/common/DynamicLib.h"
 #include "dawn/native/OpenGLBackend.h"
 #include "dawn/native/opengl/DeviceGL.h"
+#include "dawn/tests/DawnTest.h"
 #include "dawn/utils/ComboRenderPipelineDescriptor.h"
 #include "dawn/utils/WGPUHelpers.h"
 
-#include <EGL/egl.h>
-
 namespace {
 
-    class EGLFunctions {
-      public:
-        EGLFunctions() {
+class EGLFunctions {
+  public:
+    EGLFunctions() {
 #ifdef DAWN_PLATFORM_WINDOWS
-            const char* eglLib = "libEGL.dll";
+        const char* eglLib = "libEGL.dll";
 #else
-            const char* eglLib = "libEGL.so";
+        const char* eglLib = "libEGL.so";
 #endif
-            EXPECT_TRUE(mlibEGL.Open(eglLib));
-            CreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(LoadProc("eglCreateImage"));
-            DestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(LoadProc("eglDestroyImage"));
-            GetCurrentContext =
-                reinterpret_cast<PFNEGLGETCURRENTCONTEXTPROC>(LoadProc("eglGetCurrentContext"));
-            GetCurrentDisplay =
-                reinterpret_cast<PFNEGLGETCURRENTDISPLAYPROC>(LoadProc("eglGetCurrentDisplay"));
+        EXPECT_TRUE(mlibEGL.Open(eglLib));
+        CreateImage = reinterpret_cast<PFNEGLCREATEIMAGEPROC>(LoadProc("eglCreateImage"));
+        DestroyImage = reinterpret_cast<PFNEGLDESTROYIMAGEPROC>(LoadProc("eglDestroyImage"));
+        GetCurrentContext =
+            reinterpret_cast<PFNEGLGETCURRENTCONTEXTPROC>(LoadProc("eglGetCurrentContext"));
+        GetCurrentDisplay =
+            reinterpret_cast<PFNEGLGETCURRENTDISPLAYPROC>(LoadProc("eglGetCurrentDisplay"));
+    }
+
+  private:
+    void* LoadProc(const char* name) {
+        void* proc = mlibEGL.GetProc(name);
+        EXPECT_NE(proc, nullptr);
+        return proc;
+    }
+
+  public:
+    PFNEGLCREATEIMAGEPROC CreateImage;
+    PFNEGLDESTROYIMAGEPROC DestroyImage;
+    PFNEGLGETCURRENTCONTEXTPROC GetCurrentContext;
+    PFNEGLGETCURRENTDISPLAYPROC GetCurrentDisplay;
+
+  private:
+    DynamicLib mlibEGL;
+};
+
+class ScopedEGLImage {
+  public:
+    ScopedEGLImage(PFNEGLDESTROYIMAGEPROC destroyImage,
+                   PFNGLDELETETEXTURESPROC deleteTextures,
+                   EGLDisplay display,
+                   EGLImage image,
+                   GLuint texture)
+        : mDestroyImage(destroyImage),
+          mDeleteTextures(deleteTextures),
+          mDisplay(display),
+          mImage(image),
+          mTexture(texture) {}
+
+    ScopedEGLImage(ScopedEGLImage&& other) {
+        if (mImage != nullptr) {
+            mDestroyImage(mDisplay, mImage);
         }
-
-      private:
-        void* LoadProc(const char* name) {
-            void* proc = mlibEGL.GetProc(name);
-            EXPECT_NE(proc, nullptr);
-            return proc;
+        if (mTexture != 0) {
+            mDeleteTextures(1, &mTexture);
         }
+        mDestroyImage = std::move(other.mDestroyImage);
+        mDeleteTextures = std::move(other.mDeleteTextures);
+        mDisplay = std::move(other.mDisplay);
+        mImage = std::move(other.mImage);
+        mTexture = std::move(other.mTexture);
+    }
 
-      public:
-        PFNEGLCREATEIMAGEPROC CreateImage;
-        PFNEGLDESTROYIMAGEPROC DestroyImage;
-        PFNEGLGETCURRENTCONTEXTPROC GetCurrentContext;
-        PFNEGLGETCURRENTDISPLAYPROC GetCurrentDisplay;
-
-      private:
-        DynamicLib mlibEGL;
-    };
-
-    class ScopedEGLImage {
-      public:
-        ScopedEGLImage(PFNEGLDESTROYIMAGEPROC destroyImage,
-                       PFNGLDELETETEXTURESPROC deleteTextures,
-                       EGLDisplay display,
-                       EGLImage image,
-                       GLuint texture)
-            : mDestroyImage(destroyImage),
-              mDeleteTextures(deleteTextures),
-              mDisplay(display),
-              mImage(image),
-              mTexture(texture) {
+    ~ScopedEGLImage() {
+        if (mTexture != 0) {
+            mDeleteTextures(1, &mTexture);
         }
-
-        ScopedEGLImage(ScopedEGLImage&& other) {
-            if (mImage != nullptr) {
-                mDestroyImage(mDisplay, mImage);
-            }
-            if (mTexture != 0) {
-                mDeleteTextures(1, &mTexture);
-            }
-            mDestroyImage = std::move(other.mDestroyImage);
-            mDeleteTextures = std::move(other.mDeleteTextures);
-            mDisplay = std::move(other.mDisplay);
-            mImage = std::move(other.mImage);
-            mTexture = std::move(other.mTexture);
+        if (mImage != nullptr) {
+            mDestroyImage(mDisplay, mImage);
         }
+    }
 
-        ~ScopedEGLImage() {
-            if (mTexture != 0) {
-                mDeleteTextures(1, &mTexture);
-            }
-            if (mImage != nullptr) {
-                mDestroyImage(mDisplay, mImage);
-            }
-        }
+    EGLImage getImage() const { return mImage; }
 
-        EGLImage getImage() const {
-            return mImage;
-        }
+    GLuint getTexture() const { return mTexture; }
 
-        GLuint getTexture() const {
-            return mTexture;
-        }
-
-      private:
-        PFNEGLDESTROYIMAGEPROC mDestroyImage = nullptr;
-        PFNGLDELETETEXTURESPROC mDeleteTextures = nullptr;
-        EGLDisplay mDisplay = nullptr;
-        EGLImage mImage = nullptr;
-        GLuint mTexture = 0;
-    };
+  private:
+    PFNEGLDESTROYIMAGEPROC mDestroyImage = nullptr;
+    PFNGLDELETETEXTURESPROC mDeleteTextures = nullptr;
+    EGLDisplay mDisplay = nullptr;
+    EGLImage mImage = nullptr;
+    GLuint mTexture = 0;
+};
 
 }  // anonymous namespace
 

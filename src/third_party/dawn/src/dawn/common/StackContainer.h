@@ -7,10 +7,11 @@
 #ifndef SRC_DAWN_COMMON_STACKCONTAINER_H_
 #define SRC_DAWN_COMMON_STACKCONTAINER_H_
 
-#include "dawn/common/Compiler.h"
-
 #include <cstddef>
+#include <memory>
 #include <vector>
+
+#include "dawn/common/Compiler.h"
 
 // This allocator can be used with STL containers to provide a stack buffer
 // from which to allocate memory and overflows onto the heap. This stack buffer
@@ -33,23 +34,18 @@
 template <typename T, size_t stack_capacity>
 class StackAllocator : public std::allocator<T> {
   public:
-    typedef typename std::allocator<T>::pointer pointer;
-    typedef typename std::allocator<T>::size_type size_type;
+    typedef typename std::allocator_traits<std::allocator<T>>::pointer pointer;
+    typedef typename std::allocator_traits<std::allocator<T>>::size_type size_type;
 
     // Backing store for the allocator. The container owner is responsible for
     // maintaining this for as long as any containers using this allocator are
     // live.
     struct Source {
-        Source() : used_stack_buffer_(false) {
-        }
+        Source() : used_stack_buffer_(false) {}
 
         // Casts the buffer in its right type.
-        T* stack_buffer() {
-            return reinterpret_cast<T*>(stack_buffer_);
-        }
-        const T* stack_buffer() const {
-            return reinterpret_cast<const T*>(&stack_buffer_);
-        }
+        T* stack_buffer() { return reinterpret_cast<T*>(stack_buffer_); }
+        const T* stack_buffer() const { return reinterpret_cast<const T*>(&stack_buffer_); }
 
         // The buffer itself. It is not of type T because we don't want the
         // constructors and destructors to be automatically called. Define a POD
@@ -72,8 +68,7 @@ class StackAllocator : public std::allocator<T> {
 
     // For the straight up copy c-tor, we can share storage.
     StackAllocator(const StackAllocator<T, stack_capacity>& rhs)
-        : std::allocator<T>(), source_(rhs.source_) {
-    }
+        : std::allocator<T>(), source_(rhs.source_) {}
 
     // ISO C++ requires the following constructor to be defined,
     // and std::vector in VC++2008SP1 Release fails with an error
@@ -82,21 +77,16 @@ class StackAllocator : public std::allocator<T> {
     // For this constructor, we cannot share storage; there's
     // no guarantee that the Source buffer of Ts is large enough
     // for Us.
-    // TODO: If we were fancy pants, perhaps we could share storage
-    // iff sizeof(T) == sizeof(U).
     template <typename U, size_t other_capacity>
-    StackAllocator(const StackAllocator<U, other_capacity>& other) : source_(nullptr) {
-    }
+    StackAllocator(const StackAllocator<U, other_capacity>& other) : source_(nullptr) {}
 
     // This constructor must exist. It creates a default allocator that doesn't
     // actually have a stack buffer. glibc's std::string() will compare the
     // current allocator against the default-constructed allocator, so this
     // should be fast.
-    StackAllocator() : source_(nullptr) {
-    }
+    StackAllocator() : source_(nullptr) {}
 
-    explicit StackAllocator(Source* source) : source_(source) {
-    }
+    explicit StackAllocator(Source* source) : source_(source) {}
 
     // Actually do the allocation. Use the stack buffer if nobody has used it yet
     // and the size requested fits. Otherwise, fall through to the standard
@@ -155,28 +145,18 @@ class StackContainer {
     // shorter lifetimes than the source. The copy will share the same allocator
     // and therefore the same stack buffer as the original. Use std::copy to
     // copy into a "real" container for longer-lived objects.
-    ContainerType& container() {
-        return container_;
-    }
-    const ContainerType& container() const {
-        return container_;
-    }
+    ContainerType& container() { return container_; }
+    const ContainerType& container() const { return container_; }
 
     // Support operator-> to get to the container. This allows nicer syntax like:
     //   StackContainer<...> foo;
     //   std::sort(foo->begin(), foo->end());
-    ContainerType* operator->() {
-        return &container_;
-    }
-    const ContainerType* operator->() const {
-        return &container_;
-    }
+    ContainerType* operator->() { return &container_; }
+    const ContainerType* operator->() const { return &container_; }
 
     // Retrieves the stack source so that that unit tests can verify that the
     // buffer is being used properly.
-    const typename Allocator::Source& stack_data() const {
-        return stack_data_;
-    }
+    const typename Allocator::Source& stack_data() const { return stack_data_; }
 
   protected:
     typename Allocator::Source stack_data_;
@@ -226,8 +206,7 @@ class StackVector
     : public StackContainer<std::vector<T, StackAllocator<T, stack_capacity>>, stack_capacity> {
   public:
     StackVector()
-        : StackContainer<std::vector<T, StackAllocator<T, stack_capacity>>, stack_capacity>() {
-    }
+        : StackContainer<std::vector<T, StackAllocator<T, stack_capacity>>, stack_capacity>() {}
 
     // We need to put this in STL containers sometimes, which requires a copy
     // constructor. We can't call the regular copy constructor because that will
@@ -245,12 +224,8 @@ class StackVector
 
     // Vectors are commonly indexed, which isn't very convenient even with
     // operator-> (using "->at()" does exception stuff we don't want).
-    T& operator[](size_t i) {
-        return this->container().operator[](i);
-    }
-    const T& operator[](size_t i) const {
-        return this->container().operator[](i);
-    }
+    T& operator[](size_t i) { return this->container().operator[](i); }
+    const T& operator[](size_t i) const { return this->container().operator[](i); }
 
   private:
     // StackVector(const StackVector& rhs) = delete;

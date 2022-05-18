@@ -107,21 +107,23 @@ AXInspectScenario::Directive AXInspectScenario::ParseDirective(
     const std::string& directive) {
   if (directive == "@NO-LOAD-EXPECTED")
     return kNoLoadExpected;
-  if (directive == "@WAIT-FOR")
+  if (directive == "@WAIT-FOR" || directive == directive_prefix + "WAIT-FOR")
     return kWaitFor;
   if (directive == "@EXECUTE-AND-WAIT-FOR")
     return kExecuteAndWaitFor;
   if (directive == "@DEFAULT-ACTION-ON")
     return kDefaultActionOn;
-  if (directive == directive_prefix + "ALLOW")
+  if (directive == directive_prefix + "ALLOW" || directive == "@ALLOW")
     return kPropertyFilterAllow;
-  if (directive == directive_prefix + "ALLOW-EMPTY")
+  if (directive == directive_prefix + "ALLOW-EMPTY" ||
+      directive == "@ALLOW-EMPTY") {
     return kPropertyFilterAllowEmpty;
-  if (directive == directive_prefix + "DENY")
+  }
+  if (directive == directive_prefix + "DENY" || directive == "@DENY")
     return kPropertyFilterDeny;
-  if (directive == directive_prefix + "SCRIPT")
+  if (directive == directive_prefix + "SCRIPT" || directive == "@SCRIPT")
     return kScript;
-  if (directive == directive_prefix + "DENY-NODE")
+  if (directive == directive_prefix + "DENY-NODE" || directive == "@DENY-NODE")
     return kNodeFilter;
 
   return kNone;

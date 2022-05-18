@@ -29,8 +29,8 @@ class SmallPathShapeDataKey;
  * TODO: investigate fusing this class and the GrAtlasManager.
  */
 class SmallPathAtlasMgr final : public GrOnFlushCallbackObject,
-                                public GrDrawOpAtlas::EvictionCallback,
-                                public GrDrawOpAtlas::GenerationCounter {
+                                public skgpu::PlotEvictionCallback,
+                                public skgpu::AtlasGenerationCounter {
 public:
     SmallPathAtlasMgr();
     ~SmallPathAtlasMgr() override;
@@ -45,20 +45,25 @@ public:
     GrDrawOpAtlas::ErrorCode addToAtlas(GrResourceProvider*,
                                         GrDeferredUploadTarget*,
                                         int width, int height, const void* image,
-                                        GrDrawOpAtlas::AtlasLocator*);
+                                        skgpu::AtlasLocator*);
 
     void setUseToken(SmallPathShapeData*, GrDeferredUploadToken);
 
     // GrOnFlushCallbackObject overrides
-    void preFlush(GrOnFlushResourceProvider* onFlushRP,
-                  SkSpan<const uint32_t> /* taskIDs */) override {
+    bool preFlush(GrOnFlushResourceProvider* onFlushRP) override {
+#if GR_TEST_UTILS
+        if (onFlushRP->failFlushTimeCallbacks()) {
+            return false;
+        }
+#endif
+
         if (fAtlas) {
             fAtlas->instantiate(onFlushRP);
         }
+        return true;
     }
 
-    void postFlush(GrDeferredUploadToken startTokenForNextFlush,
-                   SkSpan<const uint32_t> /* taskIDs */) override {
+    void postFlush(GrDeferredUploadToken startTokenForNextFlush) override {
         if (fAtlas) {
             fAtlas->compact(startTokenForNextFlush);
         }
@@ -78,7 +83,7 @@ public:
 private:
     SmallPathShapeData* findOrCreate(const SmallPathShapeDataKey&);
 
-    void evict(GrDrawOpAtlas::PlotLocator) override;
+    void evict(skgpu::PlotLocator) override;
 
     using ShapeCache = SkTDynamicHash<SmallPathShapeData, SmallPathShapeDataKey>;
     typedef SkTInternalLList<SmallPathShapeData> ShapeDataList;

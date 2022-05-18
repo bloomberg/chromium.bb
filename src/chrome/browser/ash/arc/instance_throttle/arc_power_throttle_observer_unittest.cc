@@ -14,7 +14,7 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "content/public/test/browser_task_environment.h"
@@ -47,7 +47,7 @@ class ArcPowerThrottleObserverTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     service_manager_ = std::make_unique<ArcServiceManager>();
     session_manager_ =
         CreateTestArcSessionManager(std::make_unique<ArcSessionRunner>(

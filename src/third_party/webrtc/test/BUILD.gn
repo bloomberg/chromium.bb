@@ -69,7 +69,7 @@ rtc_library("frame_generator_impl") {
     "../rtc_base:checks",
     "../rtc_base:criticalsection",
     "../rtc_base:logging",
-    "../rtc_base:rtc_base_approved",
+    "../rtc_base:random",
     "../rtc_base:rtc_event",
     "../rtc_base/synchronization:mutex",
     "../rtc_base/system:file_wrapper",
@@ -127,7 +127,6 @@ rtc_library("video_test_common") {
     "../rtc_base:criticalsection",
     "../rtc_base:logging",
     "../rtc_base:refcount",
-    "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:timeutils",
     "../rtc_base/synchronization:mutex",
@@ -299,7 +298,10 @@ rtc_library("perf_test") {
 if (is_ios) {
   rtc_library("test_support_objc") {
     testonly = true
-    visibility = [ ":test_support" ]
+    visibility = [
+      ":google_test_runner_objc",
+      ":test_support",
+    ]
     sources = [
       "ios/coverage_util_ios.h",
       "ios/coverage_util_ios.mm",
@@ -313,6 +315,15 @@ if (is_ios) {
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
     configs += [ ":test_support_objc_config" ]
+  }
+
+  rtc_library("google_test_runner_objc") {
+    testonly = true
+    visibility = [ "*" ]
+    sources = [ "ios/google_test_runner.mm" ]
+    deps = [ ":test_support_objc" ]
+    configs += [ "//build/config/ios:xctest_config" ]
+    frameworks = [ "UIKit.framework" ]
   }
 
   config("test_support_objc_config") {
@@ -400,10 +411,10 @@ rtc_library("video_test_support") {
     "../modules/video_coding:webrtc_h264",
     "../modules/video_coding:webrtc_vp8",
     "../modules/video_coding:webrtc_vp9",
+    "../rtc_base:buffer",
     "../rtc_base:checks",
     "../rtc_base:criticalsection",
     "../rtc_base:logging",
-    "../rtc_base:rtc_base_approved",
     "../rtc_base:rtc_event",
     "../rtc_base/system:file_wrapper",
   ]
@@ -452,8 +463,8 @@ if (rtc_include_tests && !build_with_chromium) {
       ":test_support",
       "../rtc_base",
       "../rtc_base:checks",
+      "../rtc_base:event_tracer",
       "../rtc_base:logging",
-      "../rtc_base:rtc_base_approved",
       "../rtc_base:threading",
       "../system_wrappers:field_trial",
       "../system_wrappers:metrics",
@@ -629,7 +640,6 @@ if (is_ios) {
     ]
     deps = [
       "../rtc_base:checks",
-      "../rtc_base:rtc_base_approved",
       "../sdk:helpers_objc",
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/strings:strings" ]
@@ -978,10 +988,7 @@ if (is_mac) {
       "mac/video_renderer_mac.h",
       "mac/video_renderer_mac.mm",
     ]
-    deps = [
-      ":test_renderer_generic",
-      "../rtc_base:rtc_base_approved",
-    ]
+    deps = [ ":test_renderer_generic" ]
     frameworks = [
       "Cocoa.framework",
       "OpenGL.framework",
@@ -1080,7 +1087,7 @@ rtc_library("copy_to_file_audio_capturer") {
     "../api:array_view",
     "../common_audio",
     "../modules/audio_device:audio_device_impl",
-    "../rtc_base:rtc_base_approved",
+    "../rtc_base:buffer",
   ]
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
@@ -1122,4 +1129,21 @@ rtc_library("call_config_utils") {
     "../call:video_stream_api",
     "../rtc_base:rtc_json",
   ]
+}
+
+rtc_library("fake_encoded_frame") {
+  testonly = true
+  sources = [
+    "fake_encoded_frame.cc",
+    "fake_encoded_frame.h",
+  ]
+  deps = [
+    ":test_support",
+    "../api:rtp_packet_info",
+    "../api/video:encoded_frame",
+    "../api/video:encoded_image",
+    "../api/video:video_frame_type",
+    "../api/video:video_rtp_headers",
+  ]
+  absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }

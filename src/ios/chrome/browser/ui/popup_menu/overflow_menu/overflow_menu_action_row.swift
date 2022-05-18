@@ -11,9 +11,14 @@ struct OverflowMenuActionRow: View {
   /// The action for this row.
   @ObservedObject var action: OverflowMenuAction
 
+  weak var metricsHandler: PopupMenuMetricsHandler?
+
   var body: some View {
     Button(
-      action: action.handler,
+      action: {
+        metricsHandler?.popupMenuTookAction()
+        action.handler()
+      },
       label: {
         HStack {
           Text(action.name).lineLimit(1)
@@ -29,7 +34,7 @@ struct OverflowMenuActionRow: View {
     )
     .accessibilityIdentifier(action.accessibilityIdentifier)
     .disabled(!action.enabled || action.enterpriseDisabled)
-    .accentColor(.cr_textPrimaryColor)
-    .listRowSeparatorTint(.overflowMenuSeparatorColor)
+    .accentColor(.textPrimary)
+    .listRowSeparatorTint(.overflowMenuSeparator)
   }
 }

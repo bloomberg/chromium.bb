@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {fakeFeedbackContext, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
+import {fakeFeedbackContext, fakePngData, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeFeedbackServiceProvider} from 'chrome://os-feedback/fake_feedback_service_provider.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
 import {FeedbackFlowElement, FeedbackFlowState} from 'chrome://os-feedback/feedback_flow.js';
 import {setFeedbackServiceProviderForTesting, setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {eventToPromise, flushTasks} from '../../test_util.js';
 
 export function FeedbackFlowTestSuite() {
   /** @type {?FeedbackFlowElement} */
@@ -145,15 +145,36 @@ export function FeedbackFlowTestSuite() {
     // Should stay on search page when click the continue button.
     activePage = page.shadowRoot.querySelector('.iron-selected');
     assertEquals('searchPage', activePage.id);
+    assertEquals(0, feedbackServiceProvider.getScreenshotPngCallCount());
+    feedbackServiceProvider.setFakeScreenshotPng(fakePngData);
+
+    const clickPromise = eventToPromise('continue-click', page);
+
+    let eventDetail;
+    page.addEventListener('continue-click', (event) => {
+      eventDetail = event.detail;
+    });
 
     // Enter some text.
     inputElement.value = 'abc';
     continueButton.click();
+    await clickPromise;
 
-    await flushTasks();
+    assertEquals(FeedbackFlowState.SEARCH, eventDetail.currentState);
+    assertEquals('abc', eventDetail.description);
+
     // Should move to share data page when click the continue button.
     activePage = page.shadowRoot.querySelector('.iron-selected');
     assertEquals('shareDataPage', activePage.id);
+
+    // Verify that the getScreenshotPng is called once.
+    assertEquals(1, feedbackServiceProvider.getScreenshotPngCallCount());
+    const screenshotImg =
+        activePage.shadowRoot.querySelector('#screenshotImage');
+    assertTrue(!!screenshotImg);
+    assertTrue(!!screenshotImg.src);
+    // Verify that the src of the screenshot image is set.
+    assertTrue(screenshotImg.src.startsWith('blob:chrome://os-feedback/'));
   });
 
   // Test the navigation from share data page back to search page when click
@@ -171,6 +192,40 @@ export function FeedbackFlowTestSuite() {
     activePage = page.shadowRoot.querySelector('.iron-selected');
     assertTrue(!!activePage);
     assertEquals('searchPage', activePage.id);
+  });
+
+  // Test the navigation from share data page to confirmation page after the
+  // send button is clicked.
+  test('NavigateFromShareDataPageToConfirmationPage', async () => {
+    await initializePage();
+    page.setCurrentStateForTesting(FeedbackFlowState.SHARE_DATA);
+    // In normal flow, the description should have been set when arriving to the
+    // share data page.
+    page.setDescriptionForTesting('abc123');
+
+    let activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertEquals('shareDataPage', activePage.id);
+
+    const clickPromise = eventToPromise('continue-click', page);
+
+    let eventDetail;
+    page.addEventListener('continue-click', (event) => {
+      eventDetail = event.detail;
+    });
+
+    assertEquals(0, feedbackServiceProvider.getSendReportCallCount());
+
+    activePage.shadowRoot.querySelector('#buttonSend').click();
+    await clickPromise;
+
+    // Verify the sendReport method was invoked.
+    assertEquals(1, feedbackServiceProvider.getSendReportCallCount());
+    assertEquals(FeedbackFlowState.SHARE_DATA, eventDetail.currentState);
+
+    // Should navigate to confirmation page.
+    activePage = page.shadowRoot.querySelector('.iron-selected');
+    assertTrue(!!activePage);
+    assertEquals('confirmationPage', activePage.id);
   });
 
   // Test that the getUserEmail is called after initialization.

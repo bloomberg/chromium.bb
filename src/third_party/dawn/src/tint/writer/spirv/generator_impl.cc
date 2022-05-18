@@ -21,6 +21,7 @@
 #include "src/tint/transform/add_spirv_block_attribute.h"
 #include "src/tint/transform/builtin_polyfill.h"
 #include "src/tint/transform/canonicalize_entry_point_io.h"
+#include "src/tint/transform/disable_uniformity_analysis.h"
 #include "src/tint/transform/expand_compound_assignment.h"
 #include "src/tint/transform/fold_constants.h"
 #include "src/tint/transform/for_loop_to_loop.h"
@@ -38,83 +39,81 @@
 namespace tint::writer::spirv {
 
 SanitizedResult Sanitize(const Program* in, const Options& options) {
-  transform::Manager manager;
-  transform::DataMap data;
+    transform::Manager manager;
+    transform::DataMap data;
 
-  {  // Builtin polyfills
-    transform::BuiltinPolyfill::Builtins polyfills;
-    polyfills.count_leading_zeros = true;
-    polyfills.count_trailing_zeros = true;
-    polyfills.extract_bits =
-        transform::BuiltinPolyfill::Level::kClampParameters;
-    polyfills.first_leading_bit = true;
-    polyfills.first_trailing_bit = true;
-    polyfills.insert_bits = transform::BuiltinPolyfill::Level::kClampParameters;
-    data.Add<transform::BuiltinPolyfill::Config>(polyfills);
-    manager.Add<transform::BuiltinPolyfill>();
-  }
+    manager.Add<transform::DisableUniformityAnalysis>();
 
-  if (options.generate_external_texture_bindings) {
-    auto new_bindings_map = GenerateExternalTextureBindings(in);
-    data.Add<transform::MultiplanarExternalTexture::NewBindingPoints>(
-        new_bindings_map);
-  }
-  manager.Add<transform::MultiplanarExternalTexture>();
+    {  // Builtin polyfills
+        transform::BuiltinPolyfill::Builtins polyfills;
+        polyfills.count_leading_zeros = true;
+        polyfills.count_trailing_zeros = true;
+        polyfills.extract_bits = transform::BuiltinPolyfill::Level::kClampParameters;
+        polyfills.first_leading_bit = true;
+        polyfills.first_trailing_bit = true;
+        polyfills.insert_bits = transform::BuiltinPolyfill::Level::kClampParameters;
+        data.Add<transform::BuiltinPolyfill::Config>(polyfills);
+        manager.Add<transform::BuiltinPolyfill>();
+    }
 
-  manager.Add<transform::Unshadow>();
-  bool disable_workgroup_init_in_sanitizer =
-      options.disable_workgroup_init ||
-      options.use_zero_initialize_workgroup_memory_extension;
-  if (!disable_workgroup_init_in_sanitizer) {
-    manager.Add<transform::ZeroInitWorkgroupMemory>();
-  }
-  manager.Add<transform::RemoveUnreachableStatements>();
-  manager.Add<transform::ExpandCompoundAssignment>();
-  manager.Add<transform::PromoteSideEffectsToDecl>();
-  manager.Add<transform::UnwindDiscardFunctions>();
-  manager.Add<transform::SimplifyPointers>();  // Required for arrayLength()
-  manager.Add<transform::FoldConstants>();
-  manager.Add<transform::VectorizeScalarMatrixConstructors>();
-  manager.Add<transform::ForLoopToLoop>();  // Must come after
-                                            // ZeroInitWorkgroupMemory
-  manager.Add<transform::CanonicalizeEntryPointIO>();
-  manager.Add<transform::AddEmptyEntryPoint>();
-  manager.Add<transform::AddSpirvBlockAttribute>();
-  manager.Add<transform::VarForDynamicIndex>();
+    if (options.generate_external_texture_bindings) {
+        auto new_bindings_map = GenerateExternalTextureBindings(in);
+        data.Add<transform::MultiplanarExternalTexture::NewBindingPoints>(new_bindings_map);
+    }
+    manager.Add<transform::MultiplanarExternalTexture>();
 
-  data.Add<transform::CanonicalizeEntryPointIO::Config>(
-      transform::CanonicalizeEntryPointIO::Config(
-          transform::CanonicalizeEntryPointIO::ShaderStyle::kSpirv, 0xFFFFFFFF,
-          options.emit_vertex_point_size));
+    manager.Add<transform::Unshadow>();
+    bool disable_workgroup_init_in_sanitizer =
+        options.disable_workgroup_init || options.use_zero_initialize_workgroup_memory_extension;
+    if (!disable_workgroup_init_in_sanitizer) {
+        manager.Add<transform::ZeroInitWorkgroupMemory>();
+    }
+    manager.Add<transform::RemoveUnreachableStatements>();
+    manager.Add<transform::ExpandCompoundAssignment>();
+    manager.Add<transform::PromoteSideEffectsToDecl>();
+    manager.Add<transform::UnwindDiscardFunctions>();
+    manager.Add<transform::SimplifyPointers>();  // Required for arrayLength()
+    manager.Add<transform::FoldConstants>();
+    manager.Add<transform::VectorizeScalarMatrixConstructors>();
+    manager.Add<transform::ForLoopToLoop>();  // Must come after
+                                              // ZeroInitWorkgroupMemory
+    manager.Add<transform::CanonicalizeEntryPointIO>();
+    manager.Add<transform::AddEmptyEntryPoint>();
+    manager.Add<transform::AddSpirvBlockAttribute>();
+    manager.Add<transform::VarForDynamicIndex>();
 
-  SanitizedResult result;
-  result.program = std::move(manager.Run(in, data).program);
-  return result;
+    data.Add<transform::CanonicalizeEntryPointIO::Config>(
+        transform::CanonicalizeEntryPointIO::Config(
+            transform::CanonicalizeEntryPointIO::ShaderStyle::kSpirv, 0xFFFFFFFF,
+            options.emit_vertex_point_size));
+
+    SanitizedResult result;
+    result.program = std::move(manager.Run(in, data).program);
+    return result;
 }
 
-GeneratorImpl::GeneratorImpl(const Program* program,
-                             bool zero_initialize_workgroup_memory)
+GeneratorImpl::GeneratorImpl(const Program* program, bool zero_initialize_workgroup_memory)
     : builder_(program, zero_initialize_workgroup_memory) {}
 
 bool GeneratorImpl::Generate() {
-  if (builder_.Build()) {
-    writer_.WriteHeader(builder_.id_bound());
-    writer_.WriteBuilder(&builder_);
-    return true;
-  }
-  return false;
+    if (builder_.Build()) {
+        writer_.WriteHeader(builder_.id_bound());
+        writer_.WriteBuilder(&builder_);
+        return true;
+    }
+    return false;
 }
 
 const std::vector<uint32_t>& GeneratorImpl::result() const {
-  return writer_.result();
+    return writer_.result();
 }
 
 std::vector<uint32_t>& GeneratorImpl::result() {
-  return writer_.result();
+    return writer_.result();
 }
 
 std::string GeneratorImpl::error() const {
-  return builder_.error();
+    return builder_.error();
 }
 
 }  // namespace tint::writer::spirv

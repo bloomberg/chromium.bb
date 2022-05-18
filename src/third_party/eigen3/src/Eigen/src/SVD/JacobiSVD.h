@@ -73,8 +73,8 @@ class qr_preconditioner_impl<MatrixType, Options, FullPivHouseholderQRPreconditi
   void allocate(const SVDType& svd) {
     if (svd.rows() != m_qr.rows() || svd.cols() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.rows(), svd.cols());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.rows(), svd.cols());
     }
     if (svd.m_computeFullU) m_workspace.resize(svd.rows());
   }
@@ -119,8 +119,8 @@ class qr_preconditioner_impl<MatrixType, Options, FullPivHouseholderQRPreconditi
   void allocate(const SVDType& svd) {
     if (svd.cols() != m_qr.rows() || svd.rows() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.cols(), svd.rows());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.cols(), svd.rows());
     }
     m_adjoint.resize(svd.cols(), svd.rows());
     if (svd.m_computeFullV) m_workspace.resize(svd.cols());
@@ -165,8 +165,8 @@ class qr_preconditioner_impl<MatrixType, Options, ColPivHouseholderQRPreconditio
   void allocate(const SVDType& svd) {
     if (svd.rows() != m_qr.rows() || svd.cols() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.rows(), svd.cols());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.rows(), svd.cols());
     }
     if (svd.m_computeFullU) m_workspace.resize(svd.rows());
     else if (svd.m_computeThinU) m_workspace.resize(svd.cols());
@@ -221,8 +221,8 @@ class qr_preconditioner_impl<MatrixType, Options, ColPivHouseholderQRPreconditio
   void allocate(const SVDType& svd) {
     if (svd.cols() != m_qr.rows() || svd.rows() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.cols(), svd.rows());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.cols(), svd.rows());
     }
     if (svd.m_computeFullV) m_workspace.resize(svd.cols());
     else if (svd.m_computeThinV) m_workspace.resize(svd.rows());
@@ -273,8 +273,8 @@ class qr_preconditioner_impl<MatrixType, Options, HouseholderQRPreconditioner, P
   void allocate(const SVDType& svd) {
     if (svd.rows() != m_qr.rows() || svd.cols() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.rows(), svd.cols());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.rows(), svd.cols());
     }
     if (svd.m_computeFullU) m_workspace.resize(svd.rows());
     else if (svd.m_computeThinU) m_workspace.resize(svd.cols());
@@ -328,8 +328,8 @@ class qr_preconditioner_impl<MatrixType, Options, HouseholderQRPreconditioner, P
   void allocate(const SVDType& svd) {
     if (svd.cols() != m_qr.rows() || svd.rows() != m_qr.cols())
     {
-      m_qr.~QRType();
-      ::new (&m_qr) QRType(svd.cols(), svd.rows());
+      internal::destroy_at(&m_qr);
+      internal::construct_at(&m_qr, svd.cols(), svd.rows());
     }
     if (svd.m_computeFullV) m_workspace.resize(svd.cols());
     else if (svd.m_computeThinV) m_workspace.resize(svd.rows());

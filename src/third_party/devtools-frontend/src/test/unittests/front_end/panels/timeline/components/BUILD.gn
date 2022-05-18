@@ -9,6 +9,7 @@ ts_library("components") {
   sources = [ "WebVitalsTimeline_test.ts" ]
 
   deps = [
+    "../../../../../../front_end/models/timeline_model:bundle",
     "../../../../../../front_end/panels/timeline/components:bundle",
     "../../../helpers",
   ]

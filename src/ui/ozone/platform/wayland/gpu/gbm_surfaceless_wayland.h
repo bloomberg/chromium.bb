@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
-#include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace ui {
@@ -35,7 +35,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(const GbmSurfacelessWayland&) = delete;
   GbmSurfacelessWayland& operator=(const GbmSurfacelessWayland&) = delete;
 
-  void QueueOverlayPlane(OverlayPlane plane, BufferId buffer_id);
+  float surface_scale_factor() const { return surface_scale_factor_; }
+
+  void QueueWaylandOverlayConfig(wl::WaylandOverlayConfig config);
 
   // gl::GLSurface:
   bool ScheduleOverlayPlane(
@@ -68,6 +70,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
+  void SetForceGlFlushOnSwapBuffers() override;
 
   BufferId GetOrCreateSolidColorBuffer(SkColor color, const gfx::Size& size);
 
@@ -134,7 +137,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     explicit PendingFrame(uint32_t frame_id);
     ~PendingFrame();
 
-    // Queues overlay configs to |planes|.
+    // Queues overlay configs to |configs|.
     void ScheduleOverlayPlanes(GbmSurfacelessWayland* surfaceless);
     void Flush();
 
@@ -148,13 +151,15 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     std::vector<gfx::OverlayPlaneData> non_backed_overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
+
     // Merged release fence fd. This is taken as the union of all release
     // fences for a particular OnSubmission.
     bool schedule_planes_succeeded = false;
 
-    // Contains |buffer_id|s to OverlayPlanes, used for committing overlays and
-    // wait for OnSubmission's.
-    std::vector<std::pair<BufferId, OverlayPlane>> planes;
+    std::vector<BufferId> in_flight_color_buffers;
+    // Contains |buffer_id|s to gl::GLSurfaceOverlay, used for committing
+    // overlays and wait for OnSubmission's.
+    std::vector<wl::WaylandOverlayConfig> configs;
   };
 
   void MaybeSubmitFrames();
@@ -180,11 +185,13 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   // PendingFrames that have received OnSubmission(), pending OnPresentation()
   // calls.
   std::vector<std::unique_ptr<PendingFrame>> pending_presentation_frames_;
-  bool has_implicit_external_sync_;
+  const bool has_implicit_external_sync_;
+  const bool has_image_flush_external_;
   bool last_swap_buffers_result_ = true;
   bool use_egl_fence_sync_ = true;
 
   bool no_gl_flush_for_tests_ = false;
+  bool requires_gl_flush_on_swap_buffers_ = false;
 
   // Scale factor of the current surface.
   float surface_scale_factor_ = 1.f;

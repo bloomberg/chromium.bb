@@ -125,8 +125,9 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 
 - (NSString*)displayedURL {
   return base::SysUTF16ToNSString(
-      url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
-          self.URL.gurl));
+      url_formatter::
+          FormatUrlForDisplayOmitSchemePathTrivialSubdomainsAndMobilePrefix(
+              self.URL.gurl));
 }
 
 @end
@@ -357,7 +358,7 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
         constraintEqualToAnchor:self.faviconContainerView.centerYAnchor],
   ]];
   [activityView startAnimating];
-  activityView.backgroundColor = [UIColor whiteColor];
+  activityView.backgroundColor = self.faviconContainerView.backgroundColor;
 }
 
 - (void)stopAnimatingActivityIndicator {

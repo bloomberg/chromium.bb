@@ -15,24 +15,23 @@
 // A mock GLFW implementation that supports Fuchsia, but only implements
 // the functions called from Dawn.
 
+#include <dlfcn.h>
+
 // NOTE: This must be included before GLFW/glfw3.h because the latter will
 // include <vulkan/vulkan.h> and "common/vulkan_platform.h" wants to be
-// the first header to do so for sanity reasons (e.g. undefining weird
+// the first header to do so for validity reasons (e.g. undefining weird
 // macros on Windows and Linux).
 // clang-format off
 #include "dawn/common/vulkan_platform.h"
 #include "dawn/common/Assert.h"
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 // clang-format on
-
-#include <dlfcn.h>
 
 int glfwInit(void) {
     return GLFW_TRUE;
 }
 
-void glfwDefaultWindowHints(void) {
-}
+void glfwDefaultWindowHints(void) {}
 
 void glfwWindowHint(int hint, int value) {
     DAWN_UNUSED(hint);

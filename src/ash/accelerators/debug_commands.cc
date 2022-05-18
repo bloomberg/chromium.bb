@@ -102,6 +102,10 @@ void HandleToggleWallpaperMode() {
   }
 }
 
+void HandleDumpCalendarModel() {
+  accelerators::DumpCalendarModel();
+}
+
 void HandleToggleKeyboardBacklight() {
   if (ash::features::IsKeyboardBacklightToggleEnabled()) {
     base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
@@ -166,6 +170,9 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     return;
 
   switch (action) {
+    case DEBUG_DUMP_CALENDAR_MODEL:
+      HandleDumpCalendarModel();
+      break;
     case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
       HandleToggleKeyboardBacklight();
       break;
@@ -185,7 +192,8 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       Shell::Get()->toast_manager()->Show(ToastData(
           /*id=*/"id", ToastCatalogName::kDebugCommand, /*text=*/u"Toast",
           ToastData::kDefaultToastDuration,
-          /*visible_on_lock_screen=*/false, /*dismiss_text=*/u"Dismiss"));
+          /*visible_on_lock_screen=*/false, /*has_dismiss_button=*/true,
+          /*custom_dismiss_text=*/u"Dismiss"));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

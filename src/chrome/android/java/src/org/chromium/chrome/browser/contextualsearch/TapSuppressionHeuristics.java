@@ -11,54 +11,26 @@ import androidx.annotation.Nullable;
  * and can be used as signals to drive an ML tap suppression model.
  */
 public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
-    private CtrSuppression mCtrSuppression;
-
     /**
      * Gets all the heuristics needed for Tap suppression.
      * @param selectionController The {@link ContextualSearchSelectionController}.
      * @param previousTapState The state of the previous tap, or {@code null}.
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
-     * @param contextualSearchContext The {@link ContextualSearchContext} of this tap.
-     * @param tapDurationMs The duration of this tap in milliseconds.
      * @param wasSelectionEmptyBeforeTap Whether the selection was empty before this tap.
-     * @param fontSizeDips The font size from Blink in dips.
-     * @param elementRunLength The length of the text in the element tapped, in characters.
      */
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
             @Nullable ContextualSearchTapState previousTapState, int x, int y,
-            ContextualSearchContext contextualSearchContext, int tapDurationMs,
-            boolean wasSelectionEmptyBeforeTap, int fontSizeDips, int elementRunLength) {
+            boolean wasSelectionEmptyBeforeTap) {
         super();
-        mCtrSuppression = new CtrSuppression();
-        mHeuristics.add(mCtrSuppression);
         mHeuristics.add(new EngagementSuppression());
         mHeuristics.add(new RecentScrollTapSuppression(selectionController));
         mHeuristics.add(new TapFarFromPreviousSuppression(
                 selectionController, previousTapState, x, y, wasSelectionEmptyBeforeTap));
-        mHeuristics.add(new TapDurationSuppression(tapDurationMs));
-        mHeuristics.add(new TapWordLengthSuppression(contextualSearchContext));
-        mHeuristics.add(new TapWordEdgeSuppression(contextualSearchContext));
-        mHeuristics.add(new ContextualSearchEntityHeuristic(contextualSearchContext));
-        mHeuristics.add(new NearTopTapSuppression(selectionController, y));
-        mHeuristics.add(new BarOverlapTapSuppression(selectionController, y));
-        mHeuristics.add(new ShortTextRunSuppression(contextualSearchContext, elementRunLength));
-        mHeuristics.add(new SmallTextSuppression(fontSizeDips));
         // Quick Answer that appears in the Caption via the JS API.
         QuickAnswersHeuristic quickAnswersHeuristic = new QuickAnswersHeuristic();
         setQuickAnswersHeuristic(quickAnswersHeuristic);
         mHeuristics.add(quickAnswersHeuristic);
-    }
-
-    /**
-     * This method should be called to clean up storage when an instance of this class is
-     * no longer in use.
-     */
-    public void destroy() {
-        if (mCtrSuppression != null) {
-            mCtrSuppression.destroy();
-            mCtrSuppression = null;
-        }
     }
 
     @Override

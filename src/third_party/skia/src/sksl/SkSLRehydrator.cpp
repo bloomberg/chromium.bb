@@ -11,6 +11,7 @@
 #include "include/private/SkSLProgramElement.h"
 #include "include/private/SkSLProgramKind.h"
 #include "include/private/SkSLStatement.h"
+#include "include/private/SkSLSymbol.h"
 #include "include/private/SkTArray.h"
 #include "include/sksl/DSLCore.h"
 #include "include/sksl/SkSLOperator.h"
@@ -48,7 +49,6 @@
 #include "src/sksl/ir/SkSLFunctionPrototype.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
-#include "src/sksl/ir/SkSLInlineMarker.h"
 #include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLNop.h"
@@ -193,7 +193,7 @@ const Symbol* Rehydrator::symbol() {
             std::vector<const Variable*> parameters;
             parameters.reserve(parameterCount);
             for (int i = 0; i < parameterCount; ++i) {
-                parameters.push_back(this->symbolRef<Variable>(Symbol::Kind::kVariable));
+                parameters.push_back(this->symbolRef<Variable>());
             }
             const Type* returnType = this->type();
             const FunctionDeclaration* result =
@@ -208,7 +208,7 @@ const Symbol* Rehydrator::symbol() {
             return result;
         }
         case kField_Command: {
-            const Variable* owner = this->symbolRef<Variable>(Symbol::Kind::kVariable);
+            const Variable* owner = this->symbolRef<Variable>();
             uint8_t index = this->readU8();
             const Field* result = fSymbolTable->takeOwnershipOfSymbol(
                     std::make_unique<Field>(Position(), owner, index));
@@ -234,12 +234,7 @@ const Symbol* Rehydrator::symbol() {
             return result;
         }
         case kSymbolRef_Command: {
-            uint16_t id = this->readU16();
-            if (id == kBuiltin_Symbol) {
-                return (*fSymbolTable)[this->readString()];
-            }
-            SkASSERT(fSymbols.size() > id);
-            return fSymbols[id];
+            return this->possiblyBuiltinSymbolRef();
         }
         case kUnresolvedFunction_Command: {
             uint16_t id = this->readU16();
@@ -331,8 +326,7 @@ std::unique_ptr<ProgramElement> Rehydrator::element() {
     int kind = this->readU8();
     switch (kind) {
         case Rehydrator::kFunctionDefinition_Command: {
-            const FunctionDeclaration* decl = this->symbolRef<FunctionDeclaration>(
-                                                                Symbol::Kind::kFunctionDeclaration);
+            const FunctionDeclaration* decl = this->symbolRef<FunctionDeclaration>();
             std::unique_ptr<Statement> body = this->statement();
             auto result = FunctionDefinition::Convert(this->context(), Position(), *decl,
                                                       std::move(body), fSymbolTable->isBuiltin());
@@ -340,8 +334,7 @@ std::unique_ptr<ProgramElement> Rehydrator::element() {
             return std::move(result);
         }
         case Rehydrator::kFunctionPrototype_Command: {
-            const FunctionDeclaration* decl = this->symbolRef<FunctionDeclaration>(
-                                                                Symbol::Kind::kFunctionDeclaration);
+            const FunctionDeclaration* decl = this->symbolRef<FunctionDeclaration>();
             // since we skip over builtin prototypes when dehydrating, we know that this
             // builtin=false
             return std::make_unique<FunctionPrototype>(Position(), decl, /*builtin=*/false);
@@ -420,11 +413,11 @@ std::unique_ptr<Statement> Rehydrator::statement() {
             std::unique_ptr<Expression> next = this->expression();
             std::unique_ptr<Statement> body = this->statement();
             std::unique_ptr<LoopUnrollInfo> unrollInfo =
-                    Analysis::GetLoopUnrollInfo(Position(), initializer.get(), test.get(),
-                                                next.get(), body.get(), /*errors=*/nullptr);
-            return ForStatement::Make(this->context(), Position(), std::move(initializer),
-                                      std::move(test), std::move(next), std::move(body),
-                                      std::move(unrollInfo), fSymbolTable);
+                    Analysis::GetLoopUnrollInfo(Position(), ForLoopPositions{},
+                        initializer.get(), test.get(), next.get(), body.get(), /*errors=*/nullptr);
+            return ForStatement::Make(this->context(), Position(), ForLoopPositions{},
+                                      std::move(initializer), std::move(test), std::move(next),
+                                      std::move(body), std::move(unrollInfo), fSymbolTable);
         }
         case Rehydrator::kIf_Command: {
             bool isStatic = this->readU8();
@@ -433,11 +426,6 @@ std::unique_ptr<Statement> Rehydrator::statement() {
             std::unique_ptr<Statement> ifFalse = this->statement();
             return IfStatement::Make(this->context(), Position(), isStatic, std::move(test),
                                      std::move(ifTrue), std::move(ifFalse));
-        }
-        case Rehydrator::kInlineMarker_Command: {
-            const FunctionDeclaration* funcDecl = this->symbolRef<FunctionDeclaration>(
-                                                          Symbol::Kind::kFunctionDeclaration);
-            return InlineMarker::Make(funcDecl);
         }
         case Rehydrator::kNop_Command:
             return std::make_unique<SkSL::Nop>();
@@ -468,7 +456,7 @@ std::unique_ptr<Statement> Rehydrator::statement() {
                                          std::move(cases), fSymbolTable);
         }
         case Rehydrator::kVarDeclaration_Command: {
-            Variable* var = this->symbolRef<Variable>(Symbol::Kind::kVariable);
+            Variable* var = this->symbolRef<Variable>();
             const Type* baseType = this->type();
             int arraySize = this->readU8();
             std::unique_ptr<Expression> value = this->expression();
@@ -634,7 +622,7 @@ std::unique_ptr<Expression> Rehydrator::expression() {
                                            std::move(ifTrue), std::move(ifFalse));
         }
         case Rehydrator::kVariableReference_Command: {
-            const Variable* var = this->symbolRef<Variable>(Symbol::Kind::kVariable);
+            const Variable* var = &this->possiblyBuiltinSymbolRef()->as<Variable>();
             VariableReference::RefKind refKind = (VariableReference::RefKind) this->readU8();
             return VariableReference::Make(pos, var, refKind);
         }

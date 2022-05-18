@@ -5,13 +5,14 @@
  * found in the LICENSE file.
  */
 
-// This is a GPU-backend specific test. It relies on static intializers to work
+// This is a GPU-backend specific test. It relies on static initializers to work
 
 #include "include/core/SkTypes.h"
 
 #if SK_SUPPORT_GPU && defined(SK_BUILD_FOR_ANDROID) && __ANDROID_API__ >= 26
 
 #include "include/core/SkCanvas.h"
+#include "include/core/SkColorSpace.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"

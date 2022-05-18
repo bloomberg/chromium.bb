@@ -15,6 +15,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -40,7 +41,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
-#include "net/base/escape.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_info.h"
@@ -63,8 +63,8 @@ namespace {
 
 std::string EscapedUtf8ToLower(const std::string& str) {
   std::u16string utf16 = base::UTF8ToUTF16(
-      net::UnescapeURLComponent(str, net::UnescapeRule::NORMAL));
-  return net::EscapeUrlEncodedData(
+      base::UnescapeURLComponent(str, base::UnescapeRule::NORMAL));
+  return base::EscapeUrlEncodedData(
       base::UTF16ToUTF8(base::i18n::ToLower(utf16)),
       false /* do not replace space with plus */);
 }
@@ -339,21 +339,20 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   SetupHandlerHostFileAccessPermissions(
       file_definition_list.get(), extension_.get(), handler_pid);
 
-  std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(action_id_);
-  auto details = std::make_unique<base::DictionaryValue>();
+  std::vector<base::Value> event_args;
+  event_args.emplace_back(action_id_);
+  base::Value::Dict details;
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
   auto file_entries = file_manager::util::ConvertEntryDefinitionListToListValue(
       *entry_definition_list);
 
-  details->SetKey("entries",
-                  base::Value::FromUniquePtrValue(std::move(file_entries)));
-  event_args->Append(std::move(details));
+  details.Set("entries",
+              base::Value::FromUniquePtrValue(std::move(file_entries)));
+  event_args.emplace_back(std::move(details));
   auto event = std::make_unique<extensions::Event>(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
-      "fileBrowserHandler.onExecute",
-      std::move(*event_args).TakeListDeprecated(), profile_);
+      "fileBrowserHandler.onExecute", std::move(event_args), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));
 
   ExecuteDoneOnUIThread(true, "");

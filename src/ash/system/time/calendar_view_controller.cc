@@ -26,10 +26,14 @@ CalendarViewController::CalendarViewController()
     : currently_shown_date_(base::Time::Now()),
       calendar_open_time_(base::TimeTicks::Now()),
       month_dwell_time_(base::TimeTicks::Now()) {
-  MaybeUpdateTimeDifference(currently_shown_date_);
-  InitialFetchEvents();
+  std::set<base::Time> months = calendar_utils::GetSurroundingMonthsUTC(
+      base::Time::Now() + base::Minutes(time_difference_minutes_),
+      calendar_utils::kNumSurroundingMonthsCached);
+  Shell::Get()->system_tray_model()->calendar_model()->AddNonPrunableMonths(
+      months);
   Shell::Get()->system_tray_model()->calendar_model()->ResetLifetimeMetrics(
       currently_shown_date_);
+  MaybeUpdateTimeDifference(currently_shown_date_);
 }
 
 CalendarViewController::~CalendarViewController() {
@@ -179,15 +183,6 @@ int CalendarViewController::GetTodayRowBottomHeight() const {
   return today_row_ * row_height_;
 }
 
-void CalendarViewController::InitialFetchEvents() {
-  std::set<base::Time> months = calendar_utils::GetSurroundingMonthsUTC(
-      base::Time::Now() + base::Minutes(time_difference_minutes_),
-      calendar_utils::kNumSurroundingMonthsCached);
-  Shell::Get()->system_tray_model()->calendar_model()->AddNonPrunableMonths(
-      months);
-  Shell::Get()->system_tray_model()->calendar_model()->FetchEvents(months);
-}
-
 void CalendarViewController::FetchEvents() {
   Shell::Get()->system_tray_model()->calendar_model()->FetchEventsSurrounding(
       calendar_utils::kNumSurroundingMonthsCached,
@@ -200,6 +195,12 @@ SingleDayEventList CalendarViewController::SelectedDateEvents() {
 
   return Shell::Get()->system_tray_model()->calendar_model()->FindEvents(
       ApplyTimeDifference(selected_date_.value()));
+}
+
+int CalendarViewController::GetEventNumber(base::Time date) {
+  return Shell::Get()->system_tray_model()->calendar_model()->EventsNumberOfDay(
+      ApplyTimeDifference(date),
+      /*events =*/nullptr);
 }
 
 void CalendarViewController::ShowEventListView(base::Time selected_date,

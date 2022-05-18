@@ -14,7 +14,10 @@
 
 package container
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // Set is a generic unordered set, which wrap's go's builtin 'map'.
 // T is the set key, which must match the 'key' constraint.
@@ -68,7 +71,7 @@ func (s Set[T]) Contains(item T) bool {
 	return found
 }
 
-// Contains returns true if the set contains all the items in o
+// ContainsAll returns true if the set contains all the items in o
 func (s Set[T]) ContainsAll(o Set[T]) bool {
 	for item := range o {
 		if !s.Contains(item) {
@@ -76,6 +79,16 @@ func (s Set[T]) ContainsAll(o Set[T]) bool {
 		}
 	}
 	return true
+}
+
+// ContainsAny returns true if the set contains any of the items in o
+func (s Set[T]) ContainsAny(o Set[T]) bool {
+	for item := range o {
+		if s.Contains(item) {
+			return true
+		}
+	}
+	return false
 }
 
 // Intersection returns true if the set contains all the items in o
@@ -97,4 +110,25 @@ func (s Set[T]) List() []T {
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
 	return out
+}
+
+// One returns a random item from the set, or an empty item if the set is empty.
+func (s Set[T]) One() T {
+	for item := range s {
+		return item
+	}
+	var zero T
+	return zero
+}
+
+// Format writes the Target to the fmt.State
+func (s Set[T]) Format(f fmt.State, verb rune) {
+	fmt.Fprint(f, "[")
+	for i, item := range s.List() {
+		if i > 0 {
+			fmt.Fprint(f, ", ")
+		}
+		fmt.Fprint(f, item)
+	}
+	fmt.Fprint(f, "]")
 }

@@ -146,7 +146,7 @@ config("icu_code") {
       "-DICU_IS_IN_FUCHSIA",
     ]
   }
-  if (target_cpu == "wasm") {
+  if (current_cpu == "wasm") {
     # Tell ICU that we are a 32 bit platform, otherwise,
     # double-conversion-utils.h doesn't know how to operate.
     defines += [ "__i386__" ]
@@ -233,7 +233,7 @@ template("generate_icu_component") {
 
       # Make icu into a standalone static library. Currently This is only useful
       # on Chrome OS.
-      if (invoker.check_thin_archive && icu_disable_thin_archive) {
+      if (icu_disable_thin_archive) {
         configs -= [ "//build/config/compiler:thin_archive" ]
         complete_static_lib = true
       }
@@ -242,10 +242,6 @@ template("generate_icu_component") {
 }
 
 template("generate_icui18n") {
-  if (!icu_is_in_fuchsia) {
-    check_thin_archive = true
-  }
-
   generate_icu_component(target_name) {
     assert(defined(invoker.icuuc_deps), "Need the 'icuuc_deps' parameter.")
     icuuc_deps = invoker.icuuc_deps
@@ -284,10 +280,6 @@ generate_icui18n("icui18n_hidden_visibility") {
 }
 
 template("generate_icuuc") {
-  if (!icu_is_in_fuchsia) {
-    check_thin_archive = false
-  }
-
   generate_icu_component(target_name) {
     fuchsia_output_name_postfix = ""
     if (defined(invoker.fuchsia_output_name_postfix)) {
@@ -368,7 +360,7 @@ if (is_android) {
   data_dir = "ios"
 } else if (is_chromeos) {
   data_dir = "chromeos"
-} else if (target_cpu == "wasm") {
+} else if (current_cpu == "wasm") {
   data_dir = "flutter"
 } else if (icu_is_in_fuchsia && icu_fuchsia_override_data_dir != "") {
   # See //config.gni for details.
@@ -406,14 +398,14 @@ if (icu_use_data_file) {
     }
   }
 } else {
-  if (target_cpu == "wasm") {
+  if (current_cpu == "wasm") {
     data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cpp"
   } else {
     data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"
   }
   inline_data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.cc"
   action("make_data_assembly") {
-    if (target_cpu == "wasm") {
+    if (current_cpu == "wasm") {
       # See scripts/make_data_cpp.py for details on building ICU for wasm.
       script = "scripts/make_data_cpp.py"
       inputs = [ "$data_dir/$data_bundle" ]

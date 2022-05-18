@@ -21,8 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -188,7 +188,7 @@ class PluginVmDiagnostics : public base::RefCounted<PluginVmDiagnostics> {
     request.set_storage_location(
         vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
 
-    chromeos::ConciergeClient::Get()->ListVmDisks(
+    ash::ConciergeClient::Get()->ListVmDisks(
         std::move(request),
         base::BindOnce(&PluginVmDiagnostics::OnListVmDisks, this,
                        /*plugin_vm_is_allowed=*/true));

@@ -14,30 +14,27 @@
 
 #include "dawn/common/SlabAllocator.h"
 
-#include "dawn/common/Assert.h"
-#include "dawn/common/Math.h"
-
 #include <algorithm>
 #include <cstdlib>
 #include <limits>
 #include <new>
 
+#include "dawn/common/Assert.h"
+#include "dawn/common/Math.h"
+
 // IndexLinkNode
 
 SlabAllocatorImpl::IndexLinkNode::IndexLinkNode(Index index, Index nextIndex)
-    : index(index), nextIndex(nextIndex) {
-}
+    : index(index), nextIndex(nextIndex) {}
 
 // Slab
 
 SlabAllocatorImpl::Slab::Slab(char allocation[], IndexLinkNode* head)
-    : allocation(allocation), freeList(head), prev(nullptr), next(nullptr), blocksInUse(0) {
-}
+    : allocation(allocation), freeList(head), prev(nullptr), next(nullptr), blocksInUse(0) {}
 
 SlabAllocatorImpl::Slab::Slab(Slab&& rhs) = default;
 
-SlabAllocatorImpl::SentinelSlab::SentinelSlab() : Slab(nullptr, nullptr) {
-}
+SlabAllocatorImpl::SentinelSlab::SentinelSlab() : Slab(nullptr, nullptr) {}
 
 SlabAllocatorImpl::SentinelSlab::SentinelSlab(SentinelSlab&& rhs) = default;
 
@@ -60,10 +57,10 @@ SlabAllocatorImpl::Index SlabAllocatorImpl::kInvalidIndex =
 SlabAllocatorImpl::SlabAllocatorImpl(Index blocksPerSlab,
                                      uint32_t objectSize,
                                      uint32_t objectAlignment)
-    : mAllocationAlignment(std::max(static_cast<uint32_t>(alignof(Slab)), objectAlignment)),
-      mSlabBlocksOffset(Align(sizeof(Slab), objectAlignment)),
+    : mAllocationAlignment(std::max(u32_alignof<Slab>, objectAlignment)),
+      mSlabBlocksOffset(Align(u32_sizeof<Slab>, objectAlignment)),
       mIndexLinkNodeOffset(Align(objectSize, alignof(IndexLinkNode))),
-      mBlockStride(Align(mIndexLinkNodeOffset + sizeof(IndexLinkNode), objectAlignment)),
+      mBlockStride(Align(mIndexLinkNodeOffset + u32_sizeof<IndexLinkNode>, objectAlignment)),
       mBlocksPerSlab(blocksPerSlab),
       mTotalAllocationSize(
           // required allocation size
@@ -83,8 +80,7 @@ SlabAllocatorImpl::SlabAllocatorImpl(SlabAllocatorImpl&& rhs)
       mTotalAllocationSize(rhs.mTotalAllocationSize),
       mAvailableSlabs(std::move(rhs.mAvailableSlabs)),
       mFullSlabs(std::move(rhs.mFullSlabs)),
-      mRecycledSlabs(std::move(rhs.mRecycledSlabs)) {
-}
+      mRecycledSlabs(std::move(rhs.mRecycledSlabs)) {}
 
 SlabAllocatorImpl::~SlabAllocatorImpl() = default;
 

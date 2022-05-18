@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/DawnTest.h"
+#include <vector>
 
 #include "dawn/native/d3d12/BufferD3D12.h"
 #include "dawn/native/d3d12/TextureD3D12.h"
+#include "dawn/tests/DawnTest.h"
 
-using namespace dawn::native::d3d12;
+namespace dawn::native::d3d12 {
 
 class D3D12ResourceHeapTests : public DawnTest {
   protected:
@@ -35,9 +36,7 @@ class D3D12ResourceHeapTests : public DawnTest {
         return {wgpu::FeatureName::TextureCompressionBC};
     }
 
-    bool IsBCFormatSupported() const {
-        return mIsBCFormatSupported;
-    }
+    bool IsBCFormatSupported() const { return mIsBCFormatSupported; }
 
   private:
     bool mIsBCFormatSupported = false;
@@ -88,8 +87,9 @@ TEST_P(D3D12ResourceHeapTests, AlignUBO) {
     wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
     Buffer* d3dBuffer = reinterpret_cast<Buffer*>(buffer.Get());
 
-    EXPECT_TRUE((d3dBuffer->GetD3D12Resource()->GetDesc().Width %
-                 static_cast<uint64_t>(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT)) == 0u);
+    EXPECT_EQ((d3dBuffer->GetD3D12Resource()->GetDesc().Width %
+               static_cast<uint64_t>(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT)),
+              0u);
 
     // Create a larger UBO
     descriptor.size = (4 * 1024 * 1024) + 255;
@@ -98,8 +98,11 @@ TEST_P(D3D12ResourceHeapTests, AlignUBO) {
     buffer = device.CreateBuffer(&descriptor);
     d3dBuffer = reinterpret_cast<Buffer*>(buffer.Get());
 
-    EXPECT_TRUE((d3dBuffer->GetD3D12Resource()->GetDesc().Width %
-                 static_cast<uint64_t>(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT)) == 0u);
+    EXPECT_EQ((d3dBuffer->GetD3D12Resource()->GetDesc().Width %
+               static_cast<uint64_t>(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT)),
+              0u);
 }
 
 DAWN_INSTANTIATE_TEST(D3D12ResourceHeapTests, D3D12Backend());
+
+}  // namespace dawn::native::d3d12

@@ -23,8 +23,10 @@ template<typename Visitor, typename Derived, int UnrollCount>
 struct visitor_impl<Visitor, Derived, UnrollCount, false>
 {
   enum {
-    col = (UnrollCount-1) / Derived::RowsAtCompileTime,
-    row = (UnrollCount-1) % Derived::RowsAtCompileTime
+    col = Derived::IsRowMajor ? (UnrollCount-1) % Derived::ColsAtCompileTime
+                              : (UnrollCount-1) / Derived::RowsAtCompileTime,
+    row = Derived::IsRowMajor ? (UnrollCount-1) / Derived::ColsAtCompileTime
+                              : (UnrollCount-1) % Derived::RowsAtCompileTime
   };
 
   EIGEN_DEVICE_FUNC
@@ -60,11 +62,25 @@ struct visitor_impl<Visitor, Derived, Dynamic, /*Vectorize=*/false>
   static inline void run(const Derived& mat, Visitor& visitor)
   {
     visitor.init(mat.coeff(0,0), 0, 0);
-    for(Index i = 1; i < mat.rows(); ++i)
-      visitor(mat.coeff(i, 0), i, 0);
-    for(Index j = 1; j < mat.cols(); ++j)
-      for(Index i = 0; i < mat.rows(); ++i)
-        visitor(mat.coeff(i, j), i, j);
+    if (Derived::IsRowMajor) {
+      for(Index i = 1; i < mat.cols(); ++i) {
+          visitor(mat.coeff(0, i), 0, i);
+      }
+      for(Index j = 1; j < mat.rows(); ++j) {
+        for(Index i = 0; i < mat.cols(); ++i) {
+          visitor(mat.coeff(j, i), j, i);
+        }
+      }
+    } else {
+      for(Index i = 1; i < mat.rows(); ++i) {
+          visitor(mat.coeff(i, 0), i, 0);
+      }
+      for(Index j = 1; j < mat.cols(); ++j) {
+        for(Index i = 0; i < mat.rows(); ++i) {
+          visitor(mat.coeff(i, j), i, j);
+        }
+      }
+    }
   }
 };
 
@@ -114,6 +130,7 @@ public:
     PacketAccess = Evaluator::Flags & PacketAccessBit,
     IsRowMajor = XprType::IsRowMajor,
     RowsAtCompileTime = XprType::RowsAtCompileTime,
+    ColsAtCompileTime = XprType::ColsAtCompileTime,
     CoeffReadCost = Evaluator::CoeffReadCost
   };
 
@@ -122,8 +139,8 @@ public:
   explicit visitor_evaluator(const XprType &xpr) : m_evaluator(xpr), m_xpr(xpr) { }
 
   typedef typename XprType::Scalar Scalar;
-  typedef typename internal::remove_const<typename XprType::CoeffReturnType>::type CoeffReturnType;
-  typedef typename internal::remove_const<typename XprType::PacketReturnType>::type PacketReturnType;
+  typedef std::remove_const_t<typename XprType::CoeffReturnType> CoeffReturnType;
+  typedef std::remove_const_t<typename XprType::PacketReturnType> PacketReturnType;
 
   EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR Index rows() const EIGEN_NOEXCEPT { return m_xpr.rows(); }
   EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR Index cols() const EIGEN_NOEXCEPT { return m_xpr.cols(); }

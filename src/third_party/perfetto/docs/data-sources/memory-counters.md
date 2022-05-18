@@ -201,7 +201,7 @@ data_sources: {
             vmstat_counters: VMSTAT_NR_INACTIVE_ANON
             vmstat_counters: VMSTAT_NR_ACTIVE_ANON
 
-            stat_period_ms: 2500
+            stat_period_ms: 1000
             stat_counters: STAT_CPU_TIMES
             stat_counters: STAT_FORK_COUNT
         }
@@ -286,7 +286,11 @@ Both newer lmkd and legacy kernel-driven lowmemorykiller events are normalized
 at import time and available under the `mem.lmk` key in the `instants` table.
 
 ```sql
-select ts, process.name, process.pid from instants left join process on instants.ref = process.upid where instants.name = 'mem.lmk'
+SELECT ts, process.name, process.pid 
+FROM instant 
+JOIN process_track ON instant.track_id = process_track.id
+JOIN process USING (upid)
+WHERE instant.name = 'mem.lmk'
 ```
 
 | ts | name | pid |

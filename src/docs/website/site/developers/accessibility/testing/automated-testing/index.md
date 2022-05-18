@@ -100,19 +100,19 @@ Here's a sample command line for running the tests:
 
 ```none
 ninja -C out/Debug blink_tests
-python third_party/blink/tools/run-web-tests.py --no-show-results --no-retry-failures --results-directory=results accessibility/
+python third_party/blink/tools/run_web_tests.py --no-show-results --no-retry-failures --results-directory=results accessibility/
 ```
 
 To run just one test:
 
 ```none
-out/Release/content_shell --run-layout-test third_party/blink/web_tests/accessibility/test_name.html
+out/Release/content_shell --run-web-tests third_party/blink/web_tests/accessibility/test_name.html
 ```
 
 To run just one test, on Mac OS X:
 
 ```none
-out/Release/Content\ Shell.app/Contents/MacOS/Content\ Shell --run-layout-test third_party/blink/web_tests/accessibility/test_name.html
+out/Release/Content\ Shell.app/Contents/MacOS/Content\ Shell --run-web-tests third_party/blink/web_tests/accessibility/test_name.html
 ```
 
 ## Audit testing

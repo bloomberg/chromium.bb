@@ -22,7 +22,6 @@
 #include "core/fxcrt/string_view_template.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
-#include "third_party/base/compiler_specific.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -37,9 +36,10 @@ class WideString {
   using const_iterator = const CharType*;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  static WideString Format(const wchar_t* pFormat, ...) WARN_UNUSED_RESULT;
-  static WideString FormatV(const wchar_t* lpszFormat,
-                            va_list argList) WARN_UNUSED_RESULT;
+  [[nodiscard]] static WideString FormatInteger(int i);
+  [[nodiscard]] static WideString Format(const wchar_t* pFormat, ...);
+  [[nodiscard]] static WideString FormatV(const wchar_t* lpszFormat,
+                                          va_list argList);
 
   WideString();
   WideString(const WideString& other);
@@ -66,16 +66,16 @@ class WideString {
 
   ~WideString();
 
-  static WideString FromASCII(ByteStringView str) WARN_UNUSED_RESULT;
-  static WideString FromLatin1(ByteStringView str) WARN_UNUSED_RESULT;
-  static WideString FromDefANSI(ByteStringView str) WARN_UNUSED_RESULT;
-  static WideString FromUTF8(ByteStringView str) WARN_UNUSED_RESULT;
-  static WideString FromUTF16LE(const unsigned short* str,
-                                size_t len) WARN_UNUSED_RESULT;
-  static WideString FromUTF16BE(const unsigned short* wstr,
-                                size_t wlen) WARN_UNUSED_RESULT;
+  [[nodiscard]] static WideString FromASCII(ByteStringView str);
+  [[nodiscard]] static WideString FromLatin1(ByteStringView str);
+  [[nodiscard]] static WideString FromDefANSI(ByteStringView str);
+  [[nodiscard]] static WideString FromUTF8(ByteStringView str);
+  [[nodiscard]] static WideString FromUTF16LE(const unsigned short* str,
+                                              size_t len);
+  [[nodiscard]] static WideString FromUTF16BE(const unsigned short* wstr,
+                                              size_t wlen);
 
-  static size_t WStringLength(const unsigned short* str) WARN_UNUSED_RESULT;
+  [[nodiscard]] static size_t WStringLength(const unsigned short* str);
 
   // Explicit conversion to C-style wide string.
   // Note: Any subsequent modification of |this| will invalidate the result.
@@ -259,7 +259,7 @@ inline WideString operator+(WideStringView str1, wchar_t ch) {
   return WideString(str1, WideStringView(ch));
 }
 inline WideString operator+(wchar_t ch, WideStringView str2) {
-  return WideString(ch, str2);
+  return WideString(WideStringView(ch), str2);
 }
 inline WideString operator+(const WideString& str1, const WideString& str2) {
   return WideString(str1.AsStringView(), str2.AsStringView());
@@ -268,7 +268,7 @@ inline WideString operator+(const WideString& str1, wchar_t ch) {
   return WideString(str1.AsStringView(), WideStringView(ch));
 }
 inline WideString operator+(wchar_t ch, const WideString& str2) {
-  return WideString(ch, str2.AsStringView());
+  return WideString(WideStringView(ch), str2.AsStringView());
 }
 inline WideString operator+(const WideString& str1, const wchar_t* str2) {
   return WideString(str1.AsStringView(), str2);

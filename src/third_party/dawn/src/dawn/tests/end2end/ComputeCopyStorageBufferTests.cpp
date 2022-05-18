@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
+
 #include "dawn/tests/DawnTest.h"
 
 #include "dawn/utils/WGPUHelpers.h"
-
-#include <array>
 
 class ComputeCopyStorageBufferTests : public DawnTest {
   public:
@@ -74,7 +74,7 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
         wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup);
-        pass.Dispatch(kInstances);
+        pass.DispatchWorkgroups(kInstances);
         pass.End();
 
         commands = encoder.Finish();

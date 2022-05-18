@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkSVGAttributeParser_hdr",
@@ -387,6 +389,7 @@ generated_cc_atom(
         "//include/core:SkRect_hdr",
         "//include/core:SkSize_hdr",
         "//include/core:SkTypes_hdr",
+        "//include/private:SkTHash_hdr",
         "//modules/skresources/include:SkResources_hdr",
         "//src/core:SkTLazy_hdr",
     ],
@@ -453,7 +456,9 @@ generated_cc_atom(
         "//include/core:SkPath_hdr",
         "//include/core:SkPoint_hdr",
         "//include/core:SkRect_hdr",
+        "//include/core:SkRefCnt_hdr",
         "//include/core:SkScalar_hdr",
+        "//include/core:SkSpan_hdr",
         "//include/core:SkString_hdr",
         "//include/core:SkTypes_hdr",
         "//include/private:SkTDArray_hdr",
@@ -482,5 +487,17 @@ generated_cc_atom(
         "//include/core:SkPath_hdr",
         "//include/core:SkTypes_hdr",
         "//include/private:SkNoncopyable_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkSVGOpenTypeSVGDecoder_hdr",
+    hdrs = ["SkSVGOpenTypeSVGDecoder.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//include/core:SkColor_hdr",
+        "//include/core:SkOpenTypeSVGDecoder_hdr",
+        "//include/core:SkSpan_hdr",
+        "//include/core:SkTypes_hdr",
     ],
 )

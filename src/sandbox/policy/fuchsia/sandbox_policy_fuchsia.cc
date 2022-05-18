@@ -15,7 +15,6 @@
 #include <fuchsia/intl/cpp/fidl.h>
 #include <fuchsia/logger/cpp/fidl.h>
 #include <fuchsia/media/cpp/fidl.h>
-#include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/memorypressure/cpp/fidl.h>
 #include <fuchsia/net/interfaces/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
@@ -27,6 +26,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
@@ -36,10 +36,11 @@
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/switches.h"
@@ -78,7 +79,7 @@ constexpr auto kMinimalServices = base::make_span((const char* const[]){
 
 // DebugData service is needed only for profiling.
 #if BUILDFLAG(CLANG_PROFILING)
-    "fuchsia.debugdata.DebugData",
+    "fuchsia.debugdata.Publisher",
 #endif
 
     fuchsia::intl::PropertyProvider::Name_,
@@ -119,7 +120,6 @@ constexpr SandboxConfig kRendererConfig = {
         fuchsia::fonts::Provider::Name_,
         // TODO(crbug.com/1224707): Use the fuchsia.scheduler API instead.
         fuchsia::media::ProfileProvider::Name_,
-        fuchsia::mediacodec::CodecFactory::Name_,
         fuchsia::memorypressure::Provider::Name_,
         fuchsia::sysmem::Allocator::Name_,
         fuchsia::ui::composition::Allocator::Name_,
@@ -168,6 +168,26 @@ const SandboxConfig* GetConfigForSandboxType(sandbox::mojom::Sandbox type) {
   }
 }
 
+scoped_refptr<base::SequencedTaskRunner> GetServiceDirectoryTaskRunner() {
+  static base::NoDestructor<base::Thread> service_directory_thread(
+      "svc_directory");
+  if (!service_directory_thread->IsRunning()) {
+    base::Thread::Options options;
+    options.message_pump_type = base::MessagePumpType::IO;
+    CHECK(service_directory_thread->StartWithOptions(std::move(options)));
+  }
+  return service_directory_thread->task_runner();
+}
+
+void AddServiceCallback(const char* service_name, zx_status_t status) {
+  ZX_CHECK(status == ZX_OK, status)
+      << "AddService(" << service_name << ") failed";
+}
+
+void ConnectClientCallback(zx_status_t status) {
+  ZX_CHECK(status == ZX_OK, status) << "ConnectClient failed";
+}
+
 }  // namespace
 
 SandboxPolicyFuchsia::SandboxPolicyFuchsia(sandbox::mojom::Sandbox type) {
@@ -180,38 +200,37 @@ SandboxPolicyFuchsia::SandboxPolicyFuchsia(sandbox::mojom::Sandbox type) {
   // If we need to pass some services for the given sandbox type then create
   // |sandbox_directory_| and initialize it with the corresponding list of
   // services. FilteredServiceDirectory must be initialized on a thread that has
-  // async_dispatcher.
+  // an async_dispatcher.
   const SandboxConfig* config = GetConfigForSandboxType(type_);
   if (config) {
-    service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    service_directory_ = std::make_unique<base::FilteredServiceDirectory>(
-        base::ComponentContextForProcess()->svc().get());
+    filtered_service_directory_ =
+        base::SequenceBound<base::FilteredServiceDirectory>(
+            GetServiceDirectoryTaskRunner(),
+            base::ComponentContextForProcess()->svc());
     for (const char* service_name : kMinimalServices) {
-      zx_status_t status = service_directory_->AddService(service_name);
-      ZX_CHECK(status == ZX_OK, status)
-          << "AddService(" << service_name << ") failed";
+      // |service_name_|  points to a compile-time constant in
+      // |kMinimalServices|. It will remain valid for the duration of the task.
+      filtered_service_directory_
+          .AsyncCall(&base::FilteredServiceDirectory::AddService)
+          .WithArgs(service_name)
+          .Then(base::BindOnce(&AddServiceCallback, service_name));
     }
     for (const char* service_name : config->services) {
-      zx_status_t status = service_directory_->AddService(service_name);
-      ZX_CHECK(status == ZX_OK, status)
-          << "AddService(" << service_name << ") failed";
+      // |service_name_| comes from |config|, which points to a compile-time
+      // constant. It will remain valid for the duration of the task.
+      filtered_service_directory_
+          .AsyncCall(&base::FilteredServiceDirectory::AddService)
+          .WithArgs(service_name)
+          .Then(base::BindOnce(&AddServiceCallback, service_name));
     }
-    // Bind the service directory and store the client channel for
-    // UpdateLaunchOptionsForSandbox()'s use.
-    zx_status_t status = service_directory_->ConnectClient(
-        service_directory_client_.NewRequest());
-    ZX_CHECK(status == ZX_OK, status) << "ConnectClient failed";
-    CHECK(service_directory_client_);
+    filtered_service_directory_
+        .AsyncCall(&base::FilteredServiceDirectory::ConnectClient)
+        .WithArgs(service_directory_client_.NewRequest())
+        .Then(base::BindOnce(&ConnectClientCallback));
   }
 }
 
-SandboxPolicyFuchsia::~SandboxPolicyFuchsia() {
-  if (service_directory_) {
-    service_directory_task_runner_->DeleteSoon(FROM_HERE,
-                                               std::move(service_directory_));
-  }
-}
-
+SandboxPolicyFuchsia::~SandboxPolicyFuchsia() = default;
 
 void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     base::LaunchOptions* options) {

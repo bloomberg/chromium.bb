@@ -14,6 +14,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -45,6 +46,9 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service_factory.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_wayland_server.h"
 #include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
@@ -56,7 +60,7 @@
 #include "chrome/browser/ui/views/crostini/crostini_expired_container_warning_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader/image_loader_client.h"
@@ -82,12 +86,12 @@ namespace crostini {
 
 namespace {
 
-chromeos::CiceroneClient* GetCiceroneClient() {
-  return chromeos::CiceroneClient::Get();
+ash::CiceroneClient* GetCiceroneClient() {
+  return ash::CiceroneClient::Get();
 }
 
-chromeos::ConciergeClient* GetConciergeClient() {
-  return chromeos::ConciergeClient::Get();
+ash::ConciergeClient* GetConciergeClient() {
+  return ash::ConciergeClient::Get();
 }
 
 chromeos::AnomalyDetectorClient* GetAnomalyDetectorClient() {
@@ -237,7 +241,12 @@ class CrostiniManager::CrostiniRestarter
   CrostiniManager::RestartId restart_id() const { return restart_id_; }
   const ContainerId& container_id() { return container_id_; }
   bool is_aborted() const { return !abort_callbacks_.empty(); }
-  bool DidSuccessfulFullRestart() { return did_successful_full_restart_; }
+  // If the restarter was not aborted early (either via Abort() or an option
+  // like start_vm_only), the result can be used to complete other restarters
+  // for the same ContainerId.
+  bool RestartAppliesToEquivalentRestarters() {
+    return restart_applies_to_equivalent_restarters_;
+  }
 
   // This is public so CallRestarterStartLxdContainerFinishedForTesting can call
   // it.
@@ -261,6 +270,7 @@ class CrostiniManager::CrostiniRestarter
                                const base::FilePath& result_path);
   // chromeos::SchedulerConfigurationManagerBase::Observer:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
+  void OnWaylandServerCreated(guest_os::GuestOsWaylandServer::Result result);
   void StartTerminaVmFinished(bool success);
   void SharePathsFinished(bool success, const std::string& failure_reason);
   void StartLxdFinished(CrostiniResult result);
@@ -313,7 +323,8 @@ class CrostiniManager::CrostiniRestarter
       observer_list_;
   CrostiniManager::RestartId restart_id_;
   bool is_running_ = false;
-  bool did_successful_full_restart_ = false;
+  bool restart_applies_to_equivalent_restarters_ = true;
+  size_t num_cores_disabled_ = 0;
   mojom::InstallerState stage_ = mojom::InstallerState::kStart;
   CrostiniResult result_ = CrostiniResult::NEVER_FINISHED;
 
@@ -356,7 +367,7 @@ void CrostiniManager::CrostiniRestarter::Restart() {
   if (!CrostiniFeatures::Get()->IsAllowedNow(profile_)) {
     LOG(ERROR) << "Crostini UI not allowed for profile "
                << profile_->GetProfileUserName();
-    std::move(completed_callback_).Run(CrostiniResult::NOT_ALLOWED);
+    FinishRestart(CrostiniResult::NOT_ALLOWED);
     return;
   }
 
@@ -445,6 +456,7 @@ void CrostiniManager::CrostiniRestarter::Timeout(mojom::InstallerState state) {
 }
 
 void CrostiniManager::CrostiniRestarter::Abort(base::OnceClosure callback) {
+  restart_applies_to_equivalent_restarters_ = false;
   abort_callbacks_.push_back(std::move(callback));
   if (abort_callbacks_.size() > 1) {
     // The subsequent steps only need to be run once.
@@ -541,7 +553,6 @@ void CrostiniManager::CrostiniRestarter::StartLxdContainerFinished(
                                           true);
   }
 
-  did_successful_full_restart_ = true;
   FinishRestart(result);
 }
 
@@ -666,9 +677,27 @@ void CrostiniManager::CrostiniRestarter::OnConfigurationSet(
   g_browser_process->platform_part()
       ->scheduler_configuration_manager()
       ->RemoveObserver(this);
+  num_cores_disabled_ = num_cores_disabled;
+
+  guest_os::GuestOsServiceFactory::GetForProfile(profile_)
+      ->WaylandServer()
+      ->Get(vm_tools::launch::TERMINA,
+            base::BindOnce(&CrostiniRestarter::OnWaylandServerCreated,
+                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniManager::CrostiniRestarter::OnWaylandServerCreated(
+    guest_os::GuestOsWaylandServer::Result result) {
+  if (!result) {
+    LOG(ERROR) << "Wayland server creation failed: "
+               << static_cast<int>(result.Error());
+    FinishRestart(CrostiniResult::WAYLAND_SERVER_CREATION_FAILED);
+    return;
+  }
   StartStage(mojom::InstallerState::kStartTerminaVm);
   crostini_manager_->StartTerminaVm(
-      container_id_.vm_name, disk_path_, num_cores_disabled,
+      container_id_.vm_name, disk_path_, result.Value()->server_path(),
+      num_cores_disabled_,
       base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -696,6 +725,7 @@ void CrostiniManager::CrostiniRestarter::StartTerminaVmFinished(bool success) {
   }
 
   if (options_.start_vm_only) {
+    restart_applies_to_equivalent_restarters_ = false;
     FinishRestart(CrostiniResult::SUCCESS);
     return;
   }
@@ -730,8 +760,13 @@ void CrostiniManager::CrostiniRestarter::StartLxdFinished(
     return;
   }
   EmitMetricIfInIncorrectState(mojom::InstallerState::kStartLxd);
-  if (result != CrostiniResult::SUCCESS || options_.stop_after_lxd_available) {
+  if (result != CrostiniResult::SUCCESS) {
     FinishRestart(result);
+    return;
+  }
+  if (options_.stop_after_lxd_available) {
+    restart_applies_to_equivalent_restarters_ = false;
+    FinishRestart(CrostiniResult::SUCCESS);
     return;
   }
   StartStage(mojom::InstallerState::kCreateContainer);
@@ -1242,6 +1277,7 @@ void CrostiniManager::ListVmDisks(ListVmDisksCallback callback) {
 
 void CrostiniManager::StartTerminaVm(std::string name,
                                      const base::FilePath& disk_path,
+                                     const base::FilePath& wayland_path,
                                      size_t num_cores_disabled,
                                      BoolCallback callback) {
   if (name.empty()) {
@@ -1286,6 +1322,7 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_name(std::move(name));
   request.set_start_termina(true);
   request.set_owner_id(owner_id_);
+  request.mutable_vm()->set_wayland_server(wayland_path.AsUTF8Unsafe());
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
   if (profile_->GetPrefs()->GetBoolean(prefs::kCrostiniMicAllowed) &&
@@ -2552,10 +2589,12 @@ void CrostiniManager::OnContainerStarted(
   // pre-determined configuration to the default container.
   if (container_id == ContainerId::GetDefault() &&
       ShouldConfigureDefaultContainer(profile_)) {
-    AnsibleManagementService::GetForProfile(profile_)
-        ->ConfigureDefaultContainer(
-            base::BindOnce(&CrostiniManager::OnDefaultContainerConfigured,
-                           weak_ptr_factory_.GetWeakPtr()));
+    AnsibleManagementService::GetForProfile(profile_)->ConfigureContainer(
+        ContainerId::GetDefault(),
+        profile_->GetPrefs()->GetFilePath(
+            prefs::kCrostiniAnsiblePlaybookFilePath),
+        base::BindOnce(&CrostiniManager::OnDefaultContainerConfigured,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -2597,6 +2636,10 @@ void CrostiniManager::OnVmStopped(
     const vm_tools::concierge::VmStoppedSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+  if (running_vms_.find(signal.name()) == running_vms_.end()) {
+    LOG(ERROR) << "Ignoring VmStopped for " << signal.name();
+    return;
+  }
   OnVmStoppedCleanup(signal.name());
 }
 
@@ -2706,8 +2749,7 @@ void CrostiniManager::OnApplyAnsiblePlaybookProgress(
 
   // TODO(okalitova): Add an observer.
   AnsibleManagementService::GetForProfile(profile_)
-      ->OnApplyAnsiblePlaybookProgress(signal.status(),
-                                       signal.failure_details());
+      ->OnApplyAnsiblePlaybookProgress(signal);
 }
 
 void CrostiniManager::OnUpgradeContainerProgress(
@@ -3318,7 +3360,7 @@ void CrostiniManager::OnRemoveCrostini(CrostiniResult result) {
 
 void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
                                     CrostiniResult result) {
-  if (restarter->DidSuccessfulFullRestart()) {
+  if (restarter->RestartAppliesToEquivalentRestarters()) {
     // Invoke callbacks for all restarters of that container and then delete
     // the restarters.
     auto range =

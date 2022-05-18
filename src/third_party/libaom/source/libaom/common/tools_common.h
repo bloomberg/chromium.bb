@@ -173,7 +173,8 @@ uint32_t get_fourcc_by_aom_decoder(aom_codec_iface_t *iface);
 int read_yuv_frame(struct AvxInputContext *input_ctx, aom_image_t *yuv_frame);
 
 void aom_img_write(const aom_image_t *img, FILE *file);
-int aom_img_read(aom_image_t *img, FILE *file);
+// Returns true on success, false on failure.
+bool aom_img_read(aom_image_t *img, FILE *file);
 
 double sse_to_psnr(double samples, double peak, double mse);
 void aom_img_upshift(aom_image_t *dst, const aom_image_t *src, int input_shift);

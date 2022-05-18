@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "tools/ToolUtils.h"
+
 #include "include/core/SkBitmap.h"
 #include "include/core/SkBlendMode.h"
 #include "include/core/SkCanvas.h"
@@ -25,7 +27,6 @@
 #include "include/private/SkColorData.h"
 #include "include/private/SkFloatingPoint.h"
 #include "src/core/SkFontPriv.h"
-#include "tools/ToolUtils.h"
 
 #include <cmath>
 #include <cstring>
@@ -34,6 +35,13 @@
 #include "modules/svg/include/SkSVGDOM.h"
 #include "modules/svg/include/SkSVGNode.h"
 #include "src/xml/SkDOM.h"
+#endif
+
+#if SK_SUPPORT_GPU
+#include "include/gpu/GrDirectContext.h"
+#include "include/gpu/GrRecordingContext.h"
+#include "src/gpu/ganesh/GrCaps.h"
+#include "src/gpu/ganesh/GrDirectContextPriv.h"
 #endif
 
 namespace ToolUtils {
@@ -516,5 +524,34 @@ void sniff_paths(const char filepath[], std::function<PathSniffCallback> callbac
         skp->playback(&pathSniffer);
     }
 }
+
+#if SK_SUPPORT_GPU
+sk_sp<SkImage> MakeTextureImage(SkCanvas* canvas, sk_sp<SkImage> orig) {
+    if (!orig) {
+        return nullptr;
+    }
+
+    if (canvas->recordingContext() && canvas->recordingContext()->asDirectContext()) {
+        GrDirectContext* dContext = canvas->recordingContext()->asDirectContext();
+        const GrCaps* caps = dContext->priv().caps();
+
+        if (orig->width() >= caps->maxTextureSize() || orig->height() >= caps->maxTextureSize()) {
+            // Ganesh is able to tile large SkImage draws. Always forcing SkImages to be uploaded
+            // prevents this feature from being tested by our tools. For now, leave excessively
+            // large SkImages as bitmaps.
+            return orig;
+        }
+
+        return orig->makeTextureImage(dContext);
+    }
+#if SK_GRAPHITE_ENABLED
+    else if (canvas->recorder()) {
+        return orig->makeTextureImage(canvas->recorder());
+    }
+#endif
+
+    return orig;
+}
+#endif
 
 }  // namespace ToolUtils

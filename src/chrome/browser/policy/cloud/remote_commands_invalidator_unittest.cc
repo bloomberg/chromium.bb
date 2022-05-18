@@ -6,9 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "components/invalidation/impl/fake_ack_handler.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
-#include "components/invalidation/impl/mock_ack_handler.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
@@ -17,12 +17,14 @@
 
 namespace em = enterprise_management;
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::StrictMock;
 
 namespace policy {
 
+// TODO(crbug.com/1319443): Remove mock and test the actual invalidator.
 class MockRemoteCommandInvalidator : public RemoteCommandsInvalidator {
  public:
   MockRemoteCommandInvalidator()
@@ -80,12 +82,12 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
   }
 
   bool IsInvalidationSent(const invalidation::Invalidation& invalidation) {
-    return !invalidation_service_.GetMockAckHandler()->IsUnsent(invalidation);
+    return !invalidation_service_.GetFakeAckHandler()->IsUnsent(invalidation);
   }
 
   bool IsInvalidationAcknowledged(
       const invalidation::Invalidation& invalidation) {
-    return invalidation_service_.GetMockAckHandler()->IsAcknowledged(
+    return invalidation_service_.GetFakeAckHandler()->IsAcknowledged(
         invalidation);
   }
 
@@ -93,6 +95,27 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
     return !invalidation_service_.invalidator_registrar()
                 .GetRegisteredTopics(&invalidator_)
                 .empty();
+  }
+
+  std::set<std::string> GetSubscribedTopics() {
+    std::set<std::string> topics;
+    for (const auto& topic : invalidation_service_.invalidator_registrar()
+                                 .GetAllSubscribedTopics()) {
+      topics.insert(topic.first);
+    }
+
+    return topics;
+  }
+
+  std::set<std::string> GetRegisteredTopics() {
+    std::set<std::string> topics;
+    for (const auto& topic :
+         invalidation_service_.invalidator_registrar().GetRegisteredTopics(
+             &invalidator_)) {
+      topics.insert(topic.first);
+    }
+
+    return topics;
   }
 
   void VerifyExpectations() {
@@ -141,6 +164,21 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(IsInvalidationSent(invalidation));
     EXPECT_TRUE(IsInvalidationAcknowledged(invalidation));
+    VerifyExpectations();
+  }
+
+  // Fire an invalidation to verify that invalidation is not working. It is
+  // expected that invalidator did not receive/acknowledged the invalidation.
+  void VerifyTopicSubscribedButInvalidationDisabled(
+      const invalidation::Topic& topic) {
+    EXPECT_FALSE(invalidator_.invalidations_enabled());
+    EXPECT_CALL(invalidator_, DoRemoteCommandsFetch(_)).Times(0);
+    const invalidation::Invalidation invalidation = FireInvalidation(topic);
+
+    EXPECT_TRUE(
+        invalidation_service_.GetFakeAckHandler()->IsUnacked(invalidation));
+    EXPECT_FALSE(invalidation_service_.GetFakeAckHandler()->IsAcknowledged(
+        invalidation));
     VerifyExpectations();
   }
 
@@ -227,14 +265,18 @@ TEST_F(RemoteCommandsInvalidatorTest, StartedStateChange) {
   EXPECT_FALSE(invalidator_.invalidations_enabled());
   invalidator_.SetInvalidationTopic(kTestingTopic1);
   VerifyInvalidationEnabled(kTestingTopic1);
+  EXPECT_EQ(GetSubscribedTopics(), std::set<std::string>{kTestingTopic1});
+  EXPECT_EQ(GetRegisteredTopics(), std::set<std::string>{kTestingTopic1});
 
   // Stop and restart invalidator.
   EXPECT_CALL(invalidator_, OnStop()).Times(1);
   invalidator_.Stop();
   VerifyExpectations();
 
-  VerifyInvalidationDisabled(kTestingTopic1);
+  VerifyTopicSubscribedButInvalidationDisabled(kTestingTopic1);
   EXPECT_FALSE(invalidator_.invalidations_enabled());
+  EXPECT_EQ(GetSubscribedTopics(), std::set<std::string>{kTestingTopic1});
+  EXPECT_EQ(GetRegisteredTopics(), std::set<std::string>{});
 
   EXPECT_CALL(invalidator_, OnStart()).Times(1);
   invalidator_.Start();
@@ -243,6 +285,8 @@ TEST_F(RemoteCommandsInvalidatorTest, StartedStateChange) {
   // Invalidator requires topic to work.
   invalidator_.SetInvalidationTopic(kTestingTopic1);
   VerifyInvalidationEnabled(kTestingTopic1);
+  EXPECT_EQ(GetSubscribedTopics(), std::set<std::string>{kTestingTopic1});
+  EXPECT_EQ(GetRegisteredTopics(), std::set<std::string>{kTestingTopic1});
 
   StopAndShutdown();
 }

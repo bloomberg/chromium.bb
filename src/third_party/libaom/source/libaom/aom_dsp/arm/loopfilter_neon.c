@@ -703,6 +703,15 @@ void aom_lpf_vertical_14_dual_neon(
   aom_lpf_vertical_14_neon(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
 }
 
+void aom_lpf_vertical_14_quad_neon(uint8_t *s, int pitch, const uint8_t *blimit,
+                                   const uint8_t *limit,
+                                   const uint8_t *thresh) {
+  aom_lpf_vertical_14_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                                thresh);
+  aom_lpf_vertical_14_dual_neon(s + 2 * MI_SIZE * pitch, pitch, blimit, limit,
+                                thresh, blimit, limit, thresh);
+}
+
 void aom_lpf_vertical_8_neon(uint8_t *src, int stride, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh) {
   uint32x2x2_t p2q2_p1q1, p3q3_p0q0;
@@ -752,6 +761,14 @@ void aom_lpf_vertical_8_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0,
                                   const uint8_t *thresh1) {
   aom_lpf_vertical_8_neon(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_vertical_8_neon(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+}
+
+void aom_lpf_vertical_8_quad_neon(uint8_t *s, int pitch, const uint8_t *blimit,
+                                  const uint8_t *limit, const uint8_t *thresh) {
+  aom_lpf_vertical_8_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                               thresh);
+  aom_lpf_vertical_8_dual_neon(s + 2 * MI_SIZE * pitch, pitch, blimit, limit,
+                               thresh, blimit, limit, thresh);
 }
 
 void aom_lpf_vertical_6_neon(uint8_t *src, int stride, const uint8_t *blimit,
@@ -805,6 +822,14 @@ void aom_lpf_vertical_6_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0,
   aom_lpf_vertical_6_neon(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
 }
 
+void aom_lpf_vertical_6_quad_neon(uint8_t *s, int pitch, const uint8_t *blimit,
+                                  const uint8_t *limit, const uint8_t *thresh) {
+  aom_lpf_vertical_6_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                               thresh);
+  aom_lpf_vertical_6_dual_neon(s + 2 * MI_SIZE * pitch, pitch, blimit, limit,
+                               thresh, blimit, limit, thresh);
+}
+
 void aom_lpf_vertical_4_neon(uint8_t *src, int stride, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh) {
   uint32x2x2_t p1q0_p0q1, p1q1_p0q0, p1p0_q1q0;
@@ -850,6 +875,14 @@ void aom_lpf_vertical_4_dual_neon(uint8_t *s, int pitch, const uint8_t *blimit0,
                                   const uint8_t *thresh1) {
   aom_lpf_vertical_4_neon(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_vertical_4_neon(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
+}
+
+void aom_lpf_vertical_4_quad_neon(uint8_t *s, int pitch, const uint8_t *blimit,
+                                  const uint8_t *limit, const uint8_t *thresh) {
+  aom_lpf_vertical_4_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                               thresh);
+  aom_lpf_vertical_4_dual_neon(s + 2 * MI_SIZE * pitch, pitch, blimit, limit,
+                               thresh, blimit, limit, thresh);
 }
 
 void aom_lpf_horizontal_14_neon(uint8_t *src, int stride, const uint8_t *blimit,
@@ -899,6 +932,18 @@ void aom_lpf_horizontal_14_dual_neon(
   aom_lpf_horizontal_14_neon(s + 4, pitch, blimit1, limit1, thresh1);
 }
 
+// TODO(any): Rewrite in NEON (similar to quad SSE2 functions) for better speed
+// up.
+void aom_lpf_horizontal_14_quad_neon(uint8_t *s, int pitch,
+                                     const uint8_t *blimit,
+                                     const uint8_t *limit,
+                                     const uint8_t *thresh) {
+  aom_lpf_horizontal_14_dual_neon(s, pitch, blimit, limit, thresh, blimit,
+                                  limit, thresh);
+  aom_lpf_horizontal_14_dual_neon(s + 2 * MI_SIZE, pitch, blimit, limit, thresh,
+                                  blimit, limit, thresh);
+}
+
 void aom_lpf_horizontal_8_neon(uint8_t *src, int stride, const uint8_t *blimit,
                                const uint8_t *limit, const uint8_t *thresh) {
   uint8x8_t p0q0, p1q1, p2q2, p3q3;
@@ -936,6 +981,17 @@ void aom_lpf_horizontal_8_dual_neon(
   aom_lpf_horizontal_8_neon(s + 4, pitch, blimit1, limit1, thresh1);
 }
 
+// TODO(any): Rewrite in NEON (similar to quad SSE2 functions) for better speed
+// up.
+void aom_lpf_horizontal_8_quad_neon(uint8_t *s, int pitch,
+                                    const uint8_t *blimit, const uint8_t *limit,
+                                    const uint8_t *thresh) {
+  aom_lpf_horizontal_8_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                                 thresh);
+  aom_lpf_horizontal_8_dual_neon(s + 2 * MI_SIZE, pitch, blimit, limit, thresh,
+                                 blimit, limit, thresh);
+}
+
 void aom_lpf_horizontal_6_neon(uint8_t *src, int stride, const uint8_t *blimit,
                                const uint8_t *limit, const uint8_t *thresh) {
   uint8x8_t p0q0, p1q1, p2q2;
@@ -968,6 +1024,17 @@ void aom_lpf_horizontal_6_dual_neon(
   aom_lpf_horizontal_6_neon(s + 4, pitch, blimit1, limit1, thresh1);
 }
 
+// TODO(any): Rewrite in NEON (similar to quad SSE2 functions) for better speed
+// up.
+void aom_lpf_horizontal_6_quad_neon(uint8_t *s, int pitch,
+                                    const uint8_t *blimit, const uint8_t *limit,
+                                    const uint8_t *thresh) {
+  aom_lpf_horizontal_6_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                                 thresh);
+  aom_lpf_horizontal_6_dual_neon(s + 2 * MI_SIZE, pitch, blimit, limit, thresh,
+                                 blimit, limit, thresh);
+}
+
 void aom_lpf_horizontal_4_neon(uint8_t *src, int stride, const uint8_t *blimit,
                                const uint8_t *limit, const uint8_t *thresh) {
   uint8x8_t p0q0, UNINITIALIZED_IS_SAFE(p1q1);
@@ -991,4 +1058,15 @@ void aom_lpf_horizontal_4_dual_neon(
     const uint8_t *thresh1) {
   aom_lpf_horizontal_4_neon(s, pitch, blimit0, limit0, thresh0);
   aom_lpf_horizontal_4_neon(s + 4, pitch, blimit1, limit1, thresh1);
+}
+
+// TODO(any): Rewrite in NEON (similar to quad SSE2 functions) for better speed
+// up.
+void aom_lpf_horizontal_4_quad_neon(uint8_t *s, int pitch,
+                                    const uint8_t *blimit, const uint8_t *limit,
+                                    const uint8_t *thresh) {
+  aom_lpf_horizontal_4_dual_neon(s, pitch, blimit, limit, thresh, blimit, limit,
+                                 thresh);
+  aom_lpf_horizontal_4_dual_neon(s + 2 * MI_SIZE, pitch, blimit, limit, thresh,
+                                 blimit, limit, thresh);
 }

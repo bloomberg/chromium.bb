@@ -486,9 +486,8 @@ also continue to measure usage by adding the API to the big switch in[
 UseCounter::deprecationMessage](http://src.chromium.org/viewvc/blink/trunk/Source/core/frame/UseCounter.cpp#l120).
 Give developers as many milestones as possible to respond to the deprecation.
 
-Instrument your code by either adding DeprecateAs=\[your enum value here\] to
-the feature's IDL definition.\* -- See window.performance.webkitGetEntries., or
-adding a call to UseCounter::countDeprecation somewhere relevant.
+See [third_party/blink/renderer/core/frame/deprecation](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/frame/deprecation/README.md)
+for information on how to notify developers via a devtools issue.
 
 You should work with the documentation team to ensure the community is prepared
 for this feature deprecation, and estimate when (in what milestone) you would

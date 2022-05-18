@@ -12,53 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "dawn/tests/unittests/wire/WireTest.h"
+#include <memory>
 
+#include "dawn/tests/unittests/wire/WireTest.h"
 #include "dawn/wire/WireClient.h"
 
-using namespace testing;
-using namespace dawn::wire;
-
+namespace dawn::wire {
 namespace {
 
-    // Mock class to add expectations on the wire calling callbacks
-    class MockCreateComputePipelineAsyncCallback {
-      public:
-        MOCK_METHOD(void,
-                    Call,
-                    (WGPUCreatePipelineAsyncStatus status,
-                     WGPUComputePipeline pipeline,
-                     const char* message,
-                     void* userdata));
-    };
+using testing::_;
+using testing::InvokeWithoutArgs;
+using testing::Mock;
+using testing::Return;
+using testing::Sequence;
+using testing::StrEq;
+using testing::StrictMock;
 
-    std::unique_ptr<StrictMock<MockCreateComputePipelineAsyncCallback>>
-        mockCreateComputePipelineAsyncCallback;
-    void ToMockCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
-                                                  WGPUComputePipeline pipeline,
-                                                  const char* message,
-                                                  void* userdata) {
-        mockCreateComputePipelineAsyncCallback->Call(status, pipeline, message, userdata);
-    }
+// Mock class to add expectations on the wire calling callbacks
+class MockCreateComputePipelineAsyncCallback {
+  public:
+    MOCK_METHOD(void,
+                Call,
+                (WGPUCreatePipelineAsyncStatus status,
+                 WGPUComputePipeline pipeline,
+                 const char* message,
+                 void* userdata));
+};
 
-    class MockCreateRenderPipelineAsyncCallback {
-      public:
-        MOCK_METHOD(void,
-                    Call,
-                    (WGPUCreatePipelineAsyncStatus status,
-                     WGPURenderPipeline pipeline,
-                     const char* message,
-                     void* userdata));
-    };
+std::unique_ptr<StrictMock<MockCreateComputePipelineAsyncCallback>>
+    mockCreateComputePipelineAsyncCallback;
+void ToMockCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
+                                              WGPUComputePipeline pipeline,
+                                              const char* message,
+                                              void* userdata) {
+    mockCreateComputePipelineAsyncCallback->Call(status, pipeline, message, userdata);
+}
 
-    std::unique_ptr<StrictMock<MockCreateRenderPipelineAsyncCallback>>
-        mockCreateRenderPipelineAsyncCallback;
-    void ToMockCreateRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
-                                                 WGPURenderPipeline pipeline,
-                                                 const char* message,
-                                                 void* userdata) {
-        mockCreateRenderPipelineAsyncCallback->Call(status, pipeline, message, userdata);
-    }
+class MockCreateRenderPipelineAsyncCallback {
+  public:
+    MOCK_METHOD(void,
+                Call,
+                (WGPUCreatePipelineAsyncStatus status,
+                 WGPURenderPipeline pipeline,
+                 const char* message,
+                 void* userdata));
+};
+
+std::unique_ptr<StrictMock<MockCreateRenderPipelineAsyncCallback>>
+    mockCreateRenderPipelineAsyncCallback;
+void ToMockCreateRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
+                                             WGPURenderPipeline pipeline,
+                                             const char* message,
+                                             void* userdata) {
+    mockCreateRenderPipelineAsyncCallback->Call(status, pipeline, message, userdata);
+}
 
 }  // anonymous namespace
 
@@ -374,3 +381,5 @@ TEST_F(WireCreatePipelineAsyncTest, DeviceDeletedBeforeCallback) {
     FlushClient();
     DefaultApiDeviceWasReleased();
 }
+
+}  // namespace dawn::wire

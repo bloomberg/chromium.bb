@@ -1,6 +1,8 @@
-load("//bazel:macros.bzl", "generated_cc_atom")
+load("//bazel:macros.bzl", "exports_files_legacy", "generated_cc_atom")
 
 licenses(["notice"])
+
+exports_files_legacy()
 
 generated_cc_atom(
     name = "SkSLBinaryExpression_hdr",
@@ -501,6 +503,7 @@ generated_cc_atom(
         ":SkSLExpression_hdr",
         ":SkSLSymbolTable_hdr",
         "//include/private:SkSLStatement_hdr",
+        "//include/sksl:SkSLPosition_hdr",
     ],
 )
 
@@ -695,17 +698,6 @@ generated_cc_atom(
         ":SkSLTypeReference_hdr",
         "//src/sksl:SkSLConstantFolder_hdr",
         "//src/sksl:SkSLProgramSettings_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkSLInlineMarker_hdr",
-    hdrs = ["SkSLInlineMarker.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkSLFunctionDeclaration_hdr",
-        ":SkSLSymbolTable_hdr",
-        "//include/private:SkSLStatement_hdr",
     ],
 )
 
@@ -952,9 +944,10 @@ generated_cc_atom(
     srcs = ["SkSLSwizzle.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":SkSLConstructorCompoundCast_hdr",
+        ":SkSLConstructorCompound_hdr",
         ":SkSLConstructorScalarCast_hdr",
         ":SkSLConstructorSplat_hdr",
-        ":SkSLConstructor_hdr",
         ":SkSLLiteral_hdr",
         ":SkSLSwizzle_hdr",
         "//include/sksl:SkSLErrorReporter_hdr",

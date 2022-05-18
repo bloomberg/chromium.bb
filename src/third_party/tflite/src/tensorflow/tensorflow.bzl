@@ -753,15 +753,15 @@ def tf_cc_shared_object(
             visibility = visibility,
         )
 
-def get_cc_shared_library_target_name(name):
-    return name + "_st"  # Keep short. See b/221093790
-
 # buildozer: disable=function-docstring-args
 def tf_cc_shared_library(
         name,
         srcs = [],
+        dynamic_deps = [],
         static_deps = [],
         deps = [],
+        roots = [],
+        exports_filter = [],
         data = [],
         copts = [],
         linkopts = lrt_if_needed(),
@@ -818,10 +818,11 @@ def tf_cc_shared_library(
             linkstatic = linkstatic,
         )
 
-        cc_shared_library_name = get_cc_shared_library_target_name(name_os_full)
         cc_shared_library(
-            name = cc_shared_library_name,
-            roots = [cc_library_name],
+            name = name_os_full,
+            roots = [cc_library_name] + roots,
+            exports_filter = if_rocm(None, exports_filter),  # b/230048163
+            dynamic_deps = dynamic_deps,
             static_deps = static_deps,
             shared_lib_name = name_os_full,
             user_link_flags = linkopts + _rpath_user_link_flags(name_os_full) + select({
@@ -840,9 +841,10 @@ def tf_cc_shared_library(
             visibility = visibility,
             win_def_file = if_windows(win_def_file, otherwise = None),
         )
+        filegroup_name = name_os_full + "_filegroup"
         filegroup(
-            name = name_os_full,
-            srcs = [cc_shared_library_name],
+            name = filegroup_name,
+            srcs = [name_os_full],
             output_group = "main_shared_library_output",
         )
 
@@ -857,7 +859,7 @@ def tf_cc_shared_library(
             native.genrule(
                 name = name_os_major + "_sym",
                 outs = [name_os_major],
-                srcs = [name_os_full],
+                srcs = [filegroup_name],
                 output_to_bindir = 1,
                 cmd = "ln -sf $$(basename $<) $@",
             )
@@ -958,51 +960,6 @@ def tf_native_cc_binary(
             ],
         }) + linkopts + _rpath_linkopts(name) + lrt_if_needed(),
         **kwargs
-    )
-
-# buildozer: disable=function-docstring-args
-def tf_native_cc_shared_library(
-        name,
-        srcs = [],
-        data = [],
-        static_deps = [],
-        deps = [],
-        copts = tf_copts(),
-        linkopts = [],
-        defines = [],
-        visibility = None):
-    """ A simple wrap around cc_shared_library rule."""
-    cc_library_name = name + "_cclib"
-    cc_library(
-        name = cc_library_name,
-        srcs = srcs,
-        data = data,
-        deps = deps,
-        copts = copts,
-        defines = defines,
-    )
-    cc_shared_library_name = get_cc_shared_library_target_name(name)
-    cc_shared_library(
-        name = cc_shared_library_name,
-        roots = [cc_library_name],
-        static_deps = static_deps,
-        shared_lib_name = name,
-        user_link_flags = select({
-            clean_dep("//tensorflow:windows"): [],
-            clean_dep("//tensorflow:macos"): [
-                "-lm",
-            ],
-            "//conditions:default": [
-                "-lpthread",
-                "-lm",
-            ],
-        }) + linkopts + _rpath_user_link_flags(name) + lrt_if_needed(),
-        visibility = visibility,
-    )
-    native.alias(
-        name = name,
-        actual = cc_shared_library_name,
-        visibility = visibility,
     )
 
 def tf_gen_op_wrapper_cc(
@@ -2498,6 +2455,8 @@ def tf_py_test(
         if to_add not in deps and clean_dep(to_add) not in deps:
             deps.append(clean_dep(to_add))
 
+    env = kwargs.pop("env", {})
+
     # Python version placeholder
     kwargs.setdefault("srcs_version", "PY3")
     py_test(
@@ -2514,9 +2473,14 @@ def tf_py_test(
         visibility = [clean_dep("//tensorflow:internal")] +
                      additional_visibility,
         deps = depset(deps + xla_test_true_list),
+        env = env,
         **kwargs
     )
     if tfrt_enabled_internal:
+        tfrt_env = {}
+        tfrt_env.update(env)
+        tfrt_env["EXPERIMENTAL_ENABLE_TFRT"] = "1"
+
         # None `main` defaults to `name` + ".py" in `py_test` target. However, since we
         # are appending _tfrt. it becomes `name` + "_tfrt.py" effectively. So force
         # set `main` argument without `_tfrt`.
@@ -2524,6 +2488,7 @@ def tf_py_test(
             main = name + ".py"
 
         py_test(
+            env = tfrt_env,
             name = name + "_tfrt",
             size = size,
             srcs = srcs,
@@ -2536,7 +2501,7 @@ def tf_py_test(
             tags = tags + ["tfrt"],
             visibility = [clean_dep("//tensorflow:internal")] +
                          additional_visibility,
-            deps = depset(deps + xla_test_true_list + ["//tensorflow/python:is_tfrt_test_true"]),
+            deps = depset(deps + xla_test_true_list),
             **kwargs
         )
 
@@ -2846,7 +2811,7 @@ def pybind_library(
 def pybind_extension(
         name,
         srcs,
-        module_name,
+        module_name = None,
         hdrs = [],
         static_deps = [],
         deps = [],
@@ -2877,6 +2842,7 @@ def pybind_extension(
         sname = name[p + 1:]
         prefix = name[:p + 1]
     so_file = "%s%s.so" % (prefix, sname)
+    filegroup_name = "%s_filegroup" % name
     pyd_file = "%s%s.pyd" % (prefix, sname)
     exported_symbols = [
         "init%s" % sname,
@@ -2908,20 +2874,19 @@ def pybind_extension(
         testonly = testonly,
     )
 
-    # TODO(b/146808376): Add libtensorflow_framework.so to `dynamic_deps`.
-    # If we are to link to libtensorflow_framework.so, add it as a source.
-    if link_in_framework:
-        srcs += tf_binary_additional_srcs()
-
-    # TODO(b/146808376): Add `or link_in_framework`
     if static_deps:
+        data_extra, deps_extra = [], []
+        if link_in_framework:
+            data_extra = tf_binary_additional_data_deps()
+            deps_extra = [clean_dep("//tensorflow:libtensorflow_framework_import_lib")]
+
         cc_library_name = so_file + "_cclib"
         cc_library(
             name = cc_library_name,
             hdrs = hdrs,
-            srcs = srcs,
-            data = data,
-            deps = deps,
+            srcs = srcs + hdrs,
+            data = data + data_extra,
+            deps = deps + deps_extra,
             compatible_with = compatible_with,
             copts = copts + [
                 "-fno-strict-aliasing",
@@ -2936,11 +2901,11 @@ def pybind_extension(
             features = features + ["-use_header_modules"],
             restricted_to = restricted_to,
             testonly = testonly,
+            visibility = visibility,
         )
 
-        cc_shared_library_name = get_cc_shared_library_target_name(name)
         cc_shared_library(
-            name = cc_shared_library_name,
+            name = so_file,
             roots = [cc_library_name],
             static_deps = static_deps,
             additional_linker_inputs = [exported_symbols_file, version_script_file],
@@ -2967,39 +2932,19 @@ def pybind_extension(
             visibility = visibility,
             win_def_file = if_windows(win_def_file, otherwise = None),
         )
-        native.alias(
-            name = so_file,
-            actual = cc_shared_library_name,
-            compatible_with = compatible_with,
-            deprecation = deprecation,
-            features = features + ["-use_header_modules"],
-            restricted_to = restricted_to,
-            testonly = testonly,
-            visibility = visibility,
-        )
 
         # cc_shared_library can generate more than one file.
         # Solution to avoid the error "variable '$<' : more than one input file."
-        filegroup_name = name + "_filegroup"
         filegroup(
             name = filegroup_name,
             srcs = [so_file],
             output_group = "main_shared_library_output",
             testonly = testonly,
         )
-        native.genrule(
-            name = name + "_pyd_copy",
-            srcs = [filegroup_name],
-            outs = [pyd_file],
-            cmd = "cp $< $@",
-            output_to_bindir = True,
-            visibility = visibility,
-            deprecation = deprecation,
-            restricted_to = restricted_to,
-            compatible_with = compatible_with,
-            testonly = testonly,
-        )
     else:
+        if link_in_framework:
+            srcs += tf_binary_additional_srcs()
+
         cc_binary(
             name = so_file,
             srcs = srcs + hdrs,
@@ -3040,18 +2985,26 @@ def pybind_extension(
             restricted_to = restricted_to,
             compatible_with = compatible_with,
         )
-        native.genrule(
-            name = name + "_pyd_copy",
-            srcs = [so_file],
-            outs = [pyd_file],
-            cmd = "cp $< $@",
-            output_to_bindir = True,
-            visibility = visibility,
-            deprecation = deprecation,
-            restricted_to = restricted_to,
-            compatible_with = compatible_with,
-            testonly = testonly,
+
+        # For Windows, emulate the above filegroup with the shared object.
+        native.alias(
+            name = filegroup_name,
+            actual = so_file,
         )
+
+    # For Windows only.
+    native.genrule(
+        name = name + "_pyd_copy",
+        srcs = [filegroup_name],
+        outs = [pyd_file],
+        cmd = "cp $< $@",
+        output_to_bindir = True,
+        visibility = visibility,
+        deprecation = deprecation,
+        restricted_to = restricted_to,
+        compatible_with = compatible_with,
+        testonly = testonly,
+    )
 
     native.py_library(
         name = name,
@@ -3069,9 +3022,9 @@ def pybind_extension(
         compatible_with = compatible_with,
     )
 
-def tf_python_pybind_static_deps():
+def tf_python_pybind_static_deps(testonly = False):
     # TODO(b/146808376): Reduce the dependencies to those that are really needed.
-    return if_oss([
+    static_deps = [
         "//:__subpackages__",
         "@FP16//:__subpackages__",
         "@FXdiv//:__subpackages__",
@@ -3084,13 +3037,12 @@ def tf_python_pybind_static_deps():
         "@com_github_googlecloudplatform_tensorflow_gcp_tools//:__subpackages__",
         "@com_github_grpc_grpc//:__subpackages__",
         "@com_google_absl//:__subpackages__",
-        "@com_google_benchmark//:__subpackages__",  # testonly
         "@com_google_googleapis//:__subpackages__",
-        "@com_google_googletest//:__subpackages__",  # testonly
         "@com_google_protobuf//:__subpackages__",
         "@com_googlesource_code_re2//:__subpackages__",
         "@compute_library//:__subpackages__",
         "@cpuinfo//:__subpackages__",
+        "@cudnn_frontend_archive//:__subpackages__",  #  TFRT integration for TensorFlow.
         "@curl//:__subpackages__",
         "@dlpack//:__subpackages__",
         "@double_conversion//:__subpackages__",
@@ -3132,22 +3084,28 @@ def tf_python_pybind_static_deps():
         "@sobol_data//:__subpackages__",
         "@upb//:__subpackages__",
         "@zlib//:__subpackages__",
-    ])
+    ]
+    static_deps += [] if not testonly else [
+        "@com_google_benchmark//:__subpackages__",
+        "@com_google_googletest//:__subpackages__",
+    ]
+    return if_oss(static_deps)
 
 # buildozer: enable=function-docstring-args
 def tf_python_pybind_extension(
         name,
         srcs,
-        module_name,
+        module_name = None,
         hdrs = [],
-        static_deps = None,
         deps = [],
+        static_deps = [],
         compatible_with = None,
         copts = [],
         defines = [],
         features = [],
-        testonly = None,
-        visibility = None):
+        testonly = False,
+        visibility = None,
+        win_def_file = None):
     """A wrapper macro for pybind_extension that is used in tensorflow/python/BUILD.
 
     Please do not use it anywhere else as it may behave unexpectedly. b/146445820
@@ -3158,7 +3116,7 @@ def tf_python_pybind_extension(
     pybind_extension(
         name,
         srcs,
-        module_name,
+        module_name = module_name,
         hdrs = hdrs,
         static_deps = static_deps,
         deps = deps + tf_binary_pybind_deps() + if_mkl_ml(["//third_party/mkl:intel_binary_blob"]),
@@ -3169,6 +3127,7 @@ def tf_python_pybind_extension(
         link_in_framework = True,
         testonly = testonly,
         visibility = visibility,
+        win_def_file = win_def_file,
     )
 
 def tf_pybind_cc_library_wrapper(name, deps, visibility = None, **kwargs):

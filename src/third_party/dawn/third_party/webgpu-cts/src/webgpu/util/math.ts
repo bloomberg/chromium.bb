@@ -1,6 +1,6 @@
 import { assert } from '../../common/util/util.js';
 
-import { kBit } from './constants.js';
+import { kBit, kValue } from './constants.js';
 import { f32, f32Bits, i32, Scalar } from './conversion.js';
 
 /**
@@ -33,46 +33,8 @@ export function clamp(n: number, { min, max }: { min: number; max: number }): nu
   return Math.min(Math.max(n, min), max);
 }
 
-/**
- * @returns the (absolute) Units of Last Place difference between the float32 numbers a and b, taken
- * as JS doubles. If either `a` or `b` are not finite numbers, then diffULP() returns Infinity.
- *
- * Subnormal numbers are skipped, so 0 is one ULP from the minimum normal number.
- * Subnormal values are rounded to 0.
- */
-export function diffULP(a: number, b: number): number {
-  if (!Number.isFinite(a) || !Number.isFinite(b)) {
-    return Infinity;
-  }
-
-  const arr = new Uint32Array(new Float32Array([a, b]).buffer);
-  const u32_a = arr[0];
-  const u32_b = arr[1];
-
-  const sign_a = (u32_a & 0x80000000) !== 0;
-  const sign_b = (u32_b & 0x80000000) !== 0;
-  const masked_a = u32_a & 0x7fffffff;
-  const masked_b = u32_b & 0x7fffffff;
-  const subnormal_or_zero_a = (u32_a & 0x7f800000) === 0;
-  const subnormal_or_zero_b = (u32_b & 0x7f800000) === 0;
-
-  // If the number is subnormal, then reduce it to 0 for ULP comparison.
-  // If the number is normal then reduce its bits-representation so to that we
-  // can pretend that the subnormal numbers don't exist, for the purposes of
-  // counting ULP steps from zero (or any subnormal) to any of the normal numbers.
-  const bits_a = subnormal_or_zero_a ? 0 : masked_a - 0x7fffff;
-  const bits_b = subnormal_or_zero_b ? 0 : masked_b - 0x7fffff;
-
-  if (sign_a === sign_b) {
-    return Math.max(bits_a, bits_b) - Math.min(bits_a, bits_b);
-  }
-  return bits_a + bits_b;
-}
-
-/**
- * @returns 0 if |val| is a subnormal f32 number, otherwise returns |val|
- */
-function flushSubnormalNumber(val: number): number {
+/** @returns 0 if |val| is a subnormal f32 number, otherwise returns |val| */
+export function flushSubnormalNumber(val: number): number {
   const u32_val = new Uint32Array(new Float32Array([val]).buffer)[0];
   return (u32_val & 0x7f800000) === 0 ? 0 : val;
 }
@@ -86,9 +48,7 @@ function flushSubnormalBits(val: number): number {
   return (val & 0x7f800000) === 0 ? 0 : val;
 }
 
-/**
- * @returns 0 if |val| is a subnormal f32 number, otherwise returns |val|
- */
+/** @returns 0 if |val| is a subnormal f32 number, otherwise returns |val| */
 export function flushSubnormalScalar(val: Scalar): Scalar {
   return isSubnormalScalar(val) ? f32(0) : val;
 }
@@ -123,7 +83,7 @@ export function isSubnormalNumber(val: number): boolean {
  * If |flush| is false, the next subnormal will be calculated when appropriate,
  * and for -/+0 the nextAfter will be the closest subnormal in the correct
  * direction.
- * |val| must be expressible as a f32.
+ * val needs to be in [min f32, max f32]
  */
 export function nextAfter(val: number, dir: boolean = true, flush: boolean): Scalar {
   if (Number.isNaN(val)) {
@@ -138,6 +98,11 @@ export function nextAfter(val: number, dir: boolean = true, flush: boolean): Sca
     return f32Bits(kBit.f32.infinity.negative);
   }
 
+  assert(
+    val <= kValue.f32.positive.max && val >= kValue.f32.negative.min,
+    `${val} is not in the range of float32`
+  );
+
   val = flush ? flushSubnormalNumber(val) : val;
 
   // -/+0 === 0 returns true
@@ -149,29 +114,118 @@ export function nextAfter(val: number, dir: boolean = true, flush: boolean): Sca
     }
   }
 
-  // number is float64 internally, so need to test if value is expressible as a float32.
   const converted: number = new Float32Array([val])[0];
-  assert(val === converted, `${val} is not expressible as a f32.`);
-
-  const u32_val = new Uint32Array(new Float32Array([val]).buffer)[0];
-  const is_positive = (u32_val & 0x80000000) === 0;
-  let result = u32_val;
-  if (dir === is_positive) {
-    result += 1;
+  let u32_result: number;
+  if (val === converted) {
+    // val is expressible precisely as a float32
+    let u32_val: number = new Uint32Array(new Float32Array([val]).buffer)[0];
+    const is_positive = (u32_val & 0x80000000) === 0;
+    if (dir === is_positive) {
+      u32_val += 1;
+    } else {
+      u32_val -= 1;
+    }
+    u32_result = flush ? flushSubnormalBits(u32_val) : u32_val;
   } else {
-    result -= 1;
+    // val had to be rounded to be expressed as a float32
+    if (dir === converted > val) {
+      // Rounding was in the direction requested
+      u32_result = new Uint32Array(new Float32Array([converted]).buffer)[0];
+    } else {
+      // Round was opposite of the direction requested, so need nextAfter in the requested direction.
+      // This will not recurse since converted is guaranteed to be a float32 due to the conversion above.
+      const next = nextAfter(converted, dir, flush).value.valueOf() as number;
+      u32_result = new Uint32Array(new Float32Array([next]).buffer)[0];
+    }
   }
-  result = flush ? flushSubnormalBits(result) : result;
 
   // Checking for overflow
-  if ((result & 0x7f800000) === 0x7f800000) {
+  if ((u32_result & 0x7f800000) === 0x7f800000) {
     if (dir) {
       return f32Bits(kBit.f32.infinity.positive);
     } else {
       return f32Bits(kBit.f32.infinity.negative);
     }
   }
-  return f32Bits(result);
+
+  return f32Bits(u32_result);
+}
+
+/**
+ * @returns ulp(x), the unit of least precision for a specific number as a 32-bit float
+ *
+ * ulp(x) is the distance between the two floating point numbers nearest x.
+ * This value is also called unit of last place, ULP, and 1 ULP.
+ * See the WGSL spec and http://www.ens-lyon.fr/LIP/Pub/Rapports/RR/RR2005/RR2005-09.pdf
+ * for a more detailed/nuanced discussion of the definition of ulp(x).
+ *
+ * @param target number to calculate ULP for
+ * @param flush should subnormals be flushed to zero
+ */
+export function oneULP(target: number, flush: boolean): number {
+  if (Number.isNaN(target)) {
+    return Number.NaN;
+  }
+
+  if (flush) {
+    target = flushSubnormalNumber(target);
+  }
+
+  // For values at the edge of the range or beyond ulp(x) is defined as  the distance between the two nearest
+  // representable numbers to the appropriate edge.
+  if (target === Number.POSITIVE_INFINITY || target >= kValue.f32.positive.max) {
+    return kValue.f32.positive.max - kValue.f32.positive.nearest_max;
+  } else if (target === Number.NEGATIVE_INFINITY || target <= kValue.f32.negative.min) {
+    return kValue.f32.negative.nearest_min - kValue.f32.negative.min;
+  } else {
+    const converted: number = new Float32Array([target])[0];
+    if (converted === target) {
+      // |target| is precisely representable as a f32 so taking distance between it and the nearest neighbour in the
+      // direction of 0.
+      if (target > 0) {
+        const a = nextAfter(target, false, flush).value.valueOf() as number;
+        return target - a;
+      } else if (target < 0) {
+        const b = nextAfter(target, true, flush).value.valueOf() as number;
+        return b - target;
+      } else {
+        // For 0 both neighbours should be the same distance, so just using the positive value and simplifying.
+        return nextAfter(target, true, flush).value.valueOf() as number;
+      }
+    } else {
+      // |target| is not precisely representable as a f32 so taking distance of neighbouring f32s.
+      const b = nextAfter(target, true, flush).value.valueOf() as number;
+      const a = nextAfter(target, false, flush).value.valueOf() as number;
+      return b - a;
+    }
+  }
+}
+
+/**
+ * @returns if a number is within N * ulp(x) of a target value
+ * @param val number to test
+ * @param target expected number
+ * @param n acceptance range
+ * @param flush should subnormals be flushed to zero
+ */
+export function withinULP(val: number, target: number, n: number = 1) {
+  if (Number.isNaN(val) || Number.isNaN(target)) {
+    return false;
+  }
+
+  const ulp_flush = oneULP(target, true);
+  const ulp_noflush = oneULP(target, false);
+  if (Number.isNaN(ulp_flush) || Number.isNaN(ulp_noflush)) {
+    return false;
+  }
+
+  if (val === target) {
+    return true;
+  }
+
+  const ulp = Math.max(ulp_flush, ulp_noflush);
+  const diff = val > target ? val - target : target - val;
+  return diff <= n * ulp;
 }
 
 /**
@@ -276,7 +330,14 @@ export function lerp(a: number, b: number, t: number): number {
 
 /** @returns a linear increasing range of numbers. */
 export function linearRange(a: number, b: number, num_steps: number): Array<number> {
-  assert(num_steps > 0, '|num_steps| must be greater than 0');
+  if (num_steps <= 0) {
+    return Array<number>();
+  }
+
+  // Avoid division by 0
+  if (num_steps === 1) {
+    return [a];
+  }
 
   return Array.from(Array(num_steps).keys()).map(i => lerp(a, b, i / (num_steps - 1)));
 }
@@ -288,14 +349,56 @@ export function linearRange(a: number, b: number, num_steps: number): Array<numb
  * thus biasing towards 0, but remaining on the [0, 1] range.
  * This biased range is then scaled to the desired range using lerp.
  * Different curves could be generated by changing c, where greater values of c will bias more towards 0.
- * */
+ */
 export function biasedRange(a: number, b: number, num_steps: number): Array<number> {
   const c = 2;
-  assert(num_steps > 0, '|num_steps| must be greater than 0');
+  if (num_steps <= 0) {
+    return Array<number>();
+  }
+
+  // Avoid division by 0
+  if (num_steps === 1) {
+    return [a];
+  }
 
   return Array.from(Array(num_steps).keys()).map(i =>
     lerp(a, b, Math.pow(lerp(0, 1, i / (num_steps - 1)), c))
   );
+}
+
+/**
+ * @returns an ascending sorted array of numbers spread over the entire range of 32-bit floats
+ *
+ * Numbers are divided into 4 regions: negative normals, negative subnormals, positive subnormals & positive normals.
+ * Zero is included. The normal number regions are biased towards zero, and the subnormal regions are linearly spread.
+ *
+ * @param counts structure param with 4 entries indicating the number of entries to be generated each region, values must be 0 or greater.
+ */
+export function fullF32Range(
+  counts: {
+    neg_norm?: number;
+    neg_sub?: number;
+    pos_sub: number;
+    pos_norm: number;
+  } = { pos_sub: 10, pos_norm: 50 }
+): Array<number> {
+  counts.neg_norm = counts.neg_norm === undefined ? counts.pos_norm : (counts.neg_norm as number);
+  counts.neg_sub = counts.neg_sub === undefined ? counts.pos_sub : (counts.neg_sub as number);
+  return [
+    ...biasedRange(kValue.f32.negative.max, kValue.f32.negative.min, counts.neg_norm),
+    ...linearRange(
+      kValue.f32.subnormal.negative.min,
+      kValue.f32.subnormal.negative.max,
+      counts.neg_sub
+    ),
+    0.0,
+    ...linearRange(
+      kValue.f32.subnormal.positive.min,
+      kValue.f32.subnormal.positive.max,
+      counts.pos_sub
+    ),
+    ...biasedRange(kValue.f32.positive.min, kValue.f32.positive.max, counts.pos_norm),
+  ];
 }
 
 /**

@@ -3,6 +3,12 @@ cmake_minimum_required(VERSION 3.5)
 # Defer enabling C and CXX languages.
 project(BoringSSL NONE)
 
+# Don't install BoringSSL to system directories by default; it has no stable
+# ABI. Instead, default to an "install" directory under the source.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install CACHE PATH "" FORCE)
+endif()
+
 if(WIN32)
   # On Windows, prefer cl over gcc if both are available. By default most of
   # the CMake generators prefer gcc, even on Windows.
@@ -13,6 +19,8 @@ include(sources.cmake)
 
 enable_language(C)
 enable_language(CXX)
+
+include(GNUInstallDirs)
 
 # This is a dummy target which all other targets depend on (manually - see other
 # CMakeLists.txt files). This gives us a hook to add any targets which need to
@@ -157,7 +165,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CLANG)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${C_CXX_FLAGS} -Wmissing-declarations")
 
   if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     if(APPLE)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
     endif()
@@ -541,6 +549,7 @@ if(USE_CUSTOM_LIBCXX)
   set_target_properties(libcxxabi PROPERTIES COMPILE_FLAGS "-Wno-missing-prototypes -Wno-implicit-fallthrough")
   # libc++abi depends on libc++ internal headers.
   set_property(TARGET libcxxabi APPEND PROPERTY INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/util/bot/libcxx/src")
+  install(TARGETS libcxxabi EXPORT OpenSSLTargets)
 
   add_library(libcxx ${LIBCXX_SOURCES})
   if(ASAN OR MSAN OR TSAN)
@@ -556,6 +565,7 @@ if(USE_CUSTOM_LIBCXX)
     -DLIBCXX_BUILDING_LIBCXXABI
   )
   target_link_libraries(libcxx libcxxabi)
+  install(TARGETS libcxx EXPORT OpenSSLTargets DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 # Add minimal googletest targets. The provided one has many side-effects, and
@@ -656,3 +666,12 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS all_tests bssl_shim handshaker fips_specific_tests_if_any
     USES_TERMINAL)
+
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT OpenSSLTargets
+  FILE OpenSSLTargets.cmake
+  NAMESPACE OpenSSL::
+  DESTINATION lib/cmake/OpenSSL
+)
+install(FILES OpenSSLConfig.cmake DESTINATION lib/cmake/OpenSSL)

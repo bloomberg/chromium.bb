@@ -16,7 +16,7 @@
 #include "src/gpu/ganesh/glsl/GrGLSLVarying.h"
 #include "src/gpu/ganesh/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ganesh/ops/GrSimpleMeshDrawOpHelper.h"
-#include "src/gpu/ganesh/tessellate/shaders/GrPathTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/GrPathTessellationShader.h"
 #include "src/gpu/tessellate/AffineMatrix.h"
 #include "src/gpu/tessellate/FixedCountBufferUtils.h"
 #include "src/gpu/tessellate/MiddleOutPolygonTriangulator.h"
@@ -163,13 +163,11 @@ void PathStencilCoverOp::prePreparePrograms(const GrTessellationShader::ProgramA
         fTessellator = PathWedgeTessellator::Make(args.fArena,
                                                   args.fCaps->shaderCaps()->infinitySupport());
     }
-    auto* tessShader = GrPathTessellationShader::Make(args.fArena,
+    auto* tessShader = GrPathTessellationShader::Make(*args.fCaps->shaderCaps(),
+                                                      args.fArena,
                                                       shaderMatrix,
                                                       SK_PMColor4fTRANSPARENT,
-                                                      fTotalCombinedPathVerbCnt,
-                                                      *stencilPipeline,
-                                                      fTessellator->patchAttribs(),
-                                                      *args.fCaps);
+                                                      fTessellator->patchAttribs());
     fStencilPathProgram = GrTessellationShader::MakeProgram(args,
                                                             tessShader,
                                                             stencilPipeline,
@@ -237,16 +235,19 @@ void PathStencilCoverOp::onPrepare(GrOpFlushState* flushState) {
         // The inner fan isn't built into the tessellator. Generate a standard Redbook fan with a
         // middle-out topology.
         GrEagerDynamicVertexAllocator vertexAlloc(flushState, &fFanBuffer, &fFanBaseVertex);
-        int maxCombinedFanEdges = MaxCombinedFanEdgesInPaths(fTotalCombinedPathVerbCnt);
+        // Path fans might have an extra edge from an implicit kClose at the end, but they also
+        // always begin with kMove. So the max possible number of edges in a single path is equal to
+        // the number of verbs. Therefore, the max number of combined fan edges in a path list is
+        // the number of combined verbs from the paths in the list.
         // A single n-sided polygon is fanned by n-2 triangles. Multiple polygons with a combined
         // edge count of n are fanned by strictly fewer triangles.
-        int maxTrianglesInFans = std::max(maxCombinedFanEdges - 2, 0);
+        int maxTrianglesInFans = std::max(fTotalCombinedPathVerbCnt - 2, 0);
         int fanTriangleCount = 0;
         if (VertexWriter triangleVertexWriter =
                     vertexAlloc.lockWriter(sizeof(SkPoint), maxTrianglesInFans * 3)) {
             for (auto [pathMatrix, path, color] : *fPathDrawList) {
-                AffineMatrix m(pathMatrix);
-                for (PathMiddleOutFanIter it(path); !it.done();) {
+                tess::AffineMatrix m(pathMatrix);
+                for (tess::PathMiddleOutFanIter it(path); !it.done();) {
                     for (auto [p0, p1, p2] : it.nextStack()) {
                         triangleVertexWriter << m.map2Points(p0, p1) << m.mapPoint(p2);
                         ++fanTriangleCount;
@@ -263,11 +264,9 @@ void PathStencilCoverOp::onPrepare(GrOpFlushState* flushState) {
 
     auto tessShader = &fStencilPathProgram->geomProc().cast<GrPathTessellationShader>();
     fTessellator->prepare(flushState,
-                          tessShader->maxTessellationSegments(*flushState->caps().shaderCaps()),
                           tessShader->viewMatrix(),
                           *fPathDrawList,
-                          fTotalCombinedPathVerbCnt,
-                          tessShader->willUseTessellationShaders());
+                          fTotalCombinedPathVerbCnt);
 
     if (fCoverBBoxProgram) {
         size_t instanceStride = fCoverBBoxProgram->geomProc().instanceStride();
@@ -338,10 +337,7 @@ void PathStencilCoverOp::onExecute(GrOpFlushState* flushState, const SkRect& cha
     // Stencil the rest of the path.
     SkASSERT(fStencilPathProgram);
     flushState->bindPipelineAndScissorClip(*fStencilPathProgram, this->bounds());
-    fTessellator->draw(flushState, fStencilPathProgram->geomProc().willUseTessellationShaders());
-    if (flushState->caps().requiresManualFBBarrierAfterTessellatedStencilDraw()) {
-        flushState->gpu()->insertManualFramebufferBarrier();  // http://skbug.com/9739
-    }
+    fTessellator->draw(flushState);
 
     // Fill in the bounding box (if not in stencil-only mode).
     if (fCoverBBoxProgram) {

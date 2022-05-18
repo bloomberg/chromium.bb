@@ -9,6 +9,7 @@
 #define SkGlyphRun_DEFINED
 
 #include <functional>
+#include <optional>
 #include <vector>
 
 #include "include/core/SkFont.h"
@@ -18,17 +19,39 @@
 #include "include/core/SkSpan.h"
 #include "include/core/SkTypes.h"
 #include "include/private/SkTemplates.h"
+#include "src/core/SkGlyphBuffer.h"
 #include "src/core/SkZip.h"
 
 class SkBaseDevice;
 class SkCanvas;
 class SkGlyph;
+class SkGlyphRunList;
+class SkGlyphRunBuilder;
 class SkTextBlob;
 class SkTextBlobRunIterator;
 
+class SkSubRunBuffers {
+public:
+    class ScopedBuffers {
+    public:
+        ScopedBuffers(SkSubRunBuffers* painter, size_t size);
+        ~ScopedBuffers();
+        std::tuple<SkDrawableGlyphBuffer*, SkSourceGlyphBuffer*> buffers() {
+            return {&fBuffers->fAccepted, &fBuffers->fRejected};
+        }
+
+    private:
+        SkSubRunBuffers* const fBuffers;
+    };
+    static ScopedBuffers SK_WARN_UNUSED_RESULT EnsureBuffers(const SkGlyphRunList& glyphRunList);
+
+private:
+    SkDrawableGlyphBuffer fAccepted;
+    SkSourceGlyphBuffer fRejected;
+};
+
 class SkGlyphRun {
 public:
-    SkGlyphRun() = default;
     SkGlyphRun(const SkFont& font,
                SkSpan<const SkPoint> positions,
                SkSpan<const SkGlyphID> glyphIDs,
@@ -65,16 +88,18 @@ class SkGlyphRunList {
     SkSpan<const SkGlyphRun> fGlyphRuns;
 
 public:
-    SkGlyphRunList();
     // Blob maybe null.
     SkGlyphRunList(
             const SkTextBlob* blob,
             SkRect bounds,
             SkPoint origin,
-            SkSpan<const SkGlyphRun> glyphRunList);
+            SkSpan<const SkGlyphRun> glyphRunList,
+            SkGlyphRunBuilder* builder);
 
-    SkGlyphRunList(const SkGlyphRun& glyphRun, const SkRect& bounds, SkPoint origin);
-
+    SkGlyphRunList(const SkGlyphRun& glyphRun,
+                   const SkRect& bounds,
+                   SkPoint origin,
+                   SkGlyphRunBuilder* builder);
     uint64_t uniqueID() const;
     bool anyRunsLCD() const;
     void temporaryShuntBlobNotifyAddedToCache(uint32_t cacheID) const;
@@ -101,6 +126,8 @@ public:
     SkPoint origin() const { return fOrigin; }
     SkRect sourceBounds() const { return fSourceBounds; }
     const SkTextBlob* blob() const { return fOriginalTextBlob; }
+    SkGlyphRunBuilder* builder() const { return fBuilder; }
+    SkSubRunBuffers* buffers() const;
 
     auto begin() -> decltype(fGlyphRuns.begin())               { return fGlyphRuns.begin();      }
     auto end()   -> decltype(fGlyphRuns.end())                 { return fGlyphRuns.end();        }
@@ -111,15 +138,18 @@ public:
     auto operator [] (size_t i) const -> decltype(fGlyphRuns[i]) { return fGlyphRuns[i];         }
 
 private:
-    // The text blob is needed to hookup the call back that the SkTextBlob destructor calls. It
-    // should be used for nothing else
+    // The text blob is needed to hook up the call back that the SkTextBlob destructor calls. It
+    // should be used for nothing else.
     const SkTextBlob* fOriginalTextBlob{nullptr};
     const SkRect fSourceBounds{SkRect::MakeEmpty()};
     const SkPoint fOrigin = {0, 0};
+    SkGlyphRunBuilder* const fBuilder;
 };
 
 class SkGlyphRunBuilder {
 public:
+    SkGlyphRunList makeGlyphRunList(
+            const SkGlyphRun& run, SkRect bounds, SkPoint origin);
     const SkGlyphRunList& textToGlyphRunList(const SkFont& font,
                                              const SkPaint& paint,
                                              const void* bytes,
@@ -131,6 +161,7 @@ public:
             convertRSXForm(SkSpan<const SkRSXform> xforms);
 
     bool empty() const { return fGlyphRunListStorage.empty(); }
+    SkSubRunBuffers* buffers() { return &fSubRunBuffers; }
 
 private:
     void initialize(const SkTextBlob& blob);
@@ -147,7 +178,7 @@ private:
             SkSpan<const uint32_t> clusters,
             SkSpan<const SkVector> scaledRotations);
 
-    const SkGlyphRunList& makeGlyphRunList(
+    const SkGlyphRunList& setGlyphRunList(
             const SkTextBlob* blob, const SkRect& bounds, SkPoint origin);
 
     int fMaxTotalRunSize{0};
@@ -156,11 +187,15 @@ private:
     SkAutoTMalloc<SkVector> fScaledRotations;
 
     std::vector<SkGlyphRun> fGlyphRunListStorage;
-    SkGlyphRunList fGlyphRunList;
+    std::optional<SkGlyphRunList> fGlyphRunList;  // Defaults to no value;
 
     // Used as a temporary for preparing using utfN text. This implies that only one run of
     // glyph ids will ever be needed because blobs are already glyph based.
     std::vector<SkGlyphID> fScratchGlyphIDs;
+
+    SkSubRunBuffers fSubRunBuffers;
 };
+
+inline SkSubRunBuffers* SkGlyphRunList::buffers() const { return fBuilder->buffers(); }
 
 #endif  // SkGlyphRun_DEFINED

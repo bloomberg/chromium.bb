@@ -1079,7 +1079,7 @@ class SystemWebAppNewWindowMenuItemTest
     base::RunLoop run_loop;
     std::unique_ptr<ui::SimpleMenuModel> menu;
     item->GetContextMenuModel(
-        /*add_sort_options=*/false,
+        ash::AppListItemContext::kNone,
         base::BindLambdaForTesting(
             [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
               menu = std::move(created_menu);
@@ -1087,14 +1087,6 @@ class SystemWebAppNewWindowMenuItemTest
             }));
     run_loop.Run();
     return menu;
-  }
-
-  size_t GetSystemWebAppBrowserCount(SystemAppType type) {
-    auto* browser_list = BrowserList::GetInstance();
-    return std::count_if(
-        browser_list->begin(), browser_list->end(), [&](Browser* browser) {
-          return web_app::IsBrowserForSystemWebApp(browser, type);
-        });
   }
 
   void ExpectMenuCommandLaunchesSystemWebApp(

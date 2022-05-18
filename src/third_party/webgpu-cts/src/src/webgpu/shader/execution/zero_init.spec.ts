@@ -79,7 +79,7 @@ g.test('compute,zero_init')
         }
       })
       .beginSubcases()
-      // Fewer subases: Only 0 and 2. If double-nested containers work, single-nested should too.
+      // Fewer subcases: Only 0 and 2. If double-nested containers work, single-nested should too.
       .combine('_containerDepth', [0, 2])
       .expandWithParams(function* (p) {
         const kElementCounts = [
@@ -440,7 +440,7 @@ g.test('compute,zero_init')
     const pass = encoder.beginComputePass();
     pass.setPipeline(pipeline);
     pass.setBindGroup(0, bindGroup);
-    pass.dispatch(1);
+    pass.dispatchWorkgroups(1);
     pass.end();
     t.queue.submit([encoder.finish()]);
     t.expectGPUBufferValuesEqual(resultBuffer, new Uint32Array([0]));

@@ -265,6 +265,15 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // text fields.
   virtual bool IsDescendantOfAtomicTextField() const = 0;
 
+  // Returns true if this object is at the root of what most accessibility APIs
+  // consider to be a document, such as the root of a webpage, an iframe, or a
+  // PDF.
+  virtual bool IsPlatformDocument() const = 0;
+
+  // Returns true if this object is a platform document as described above and
+  // also has at least some content.
+  virtual bool IsPlatformDocumentWithContent() const = 0;
+
   // Returns true if this node is ignored and should be hidden from the
   // accessibility tree. Methods that are used to navigate the accessibility
   // tree, such as "ChildAtIndex", "GetParent", and "GetChildCount", among
@@ -315,8 +324,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   class ChildIterator {
    public:
     virtual ~ChildIterator() = default;
-    virtual bool operator==(const ChildIterator& rhs) const = 0;
-    virtual bool operator!=(const ChildIterator& rhs) const = 0;
+    bool operator==(const ChildIterator& rhs) const {
+      return GetIndexInParent() == rhs.GetIndexInParent();
+    }
+    bool operator!=(const ChildIterator& rhs) const {
+      return GetIndexInParent() != rhs.GetIndexInParent();
+    }
     virtual ChildIterator& operator++() = 0;
     virtual ChildIterator& operator++(int) = 0;
     virtual ChildIterator& operator--() = 0;

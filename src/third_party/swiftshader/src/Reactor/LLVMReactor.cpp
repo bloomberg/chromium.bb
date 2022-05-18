@@ -23,14 +23,9 @@
 
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IntrinsicsX86.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/Verifier.h"
-#include "llvm/Pass.h"
 #include "llvm/Support/Alignment.h"
+#include "llvm/Support/Error.h"
 #include "llvm/Support/ManagedStatic.h"
-#include "llvm/Transforms/Coroutines.h"
-#include "llvm/Transforms/IPO.h"
-#include "llvm/Transforms/Scalar.h"
 
 #include <fstream>
 #include <iostream>
@@ -70,19 +65,6 @@ llvm::llvm_shutdown_obj llvmShutdownObj;
 // This has to be a raw pointer because glibc 2.17 doesn't support __cxa_thread_atexit_impl
 // for destructing objects at exit. See crbug.com/1074222
 thread_local rr::JITBuilder *jit = nullptr;
-
-// Default configuration settings. Must be accessed under mutex lock.
-std::mutex defaultConfigLock;
-rr::Config &defaultConfig()
-{
-	// This uses a static in a function to avoid the cost of a global static
-	// initializer. See http://neugierig.org/software/chromium/notes/2011/08/static-initializers.html
-	static rr::Config config = rr::Config::Edit()
-	                               .add(rr::Optimization::Pass::ScalarReplAggregates)
-	                               .add(rr::Optimization::Pass::InstructionCombining)
-	                               .apply({});
-	return config;
-}
 
 llvm::Value *lowerPAVG(llvm::Value *x, llvm::Value *y)
 {
@@ -522,6 +504,16 @@ static llvm::Function *createFunction(const char *name, llvm::Type *retTy, const
 	if(__has_feature(memory_sanitizer))
 	{
 		func->addFnAttr(llvm::Attribute::SanitizeMemory);
+
+		// Assume that when using recent versions of LLVM, MemorySanitizer enabled builds
+		// use -fsanitize-memory-param-retval, which makes the caller not update the shadow
+		// of function parameters. NoUndef skips generating checks for uninitialized values.
+#if LLVM_VERSION_MAJOR >= 13
+		for(unsigned int i = 0; i < params.size(); i++)
+		{
+			func->addParamAttr(i, llvm::Attribute::NoUndef);
+		}
+#endif
 	}
 
 	func->addFnAttr("warn-stack-size", "524288");  // Warn when a function uses more than 512 KiB of stack memory
@@ -539,7 +531,7 @@ Nucleus::Nucleus()
 	ASSERT(Variable::unmaterializedVariables == nullptr);
 #endif
 
-	jit = new JITBuilder(Nucleus::getDefaultConfig());
+	jit = new JITBuilder();
 	Variable::unmaterializedVariables = new Variable::UnmaterializedVariables();
 }
 
@@ -552,26 +544,7 @@ Nucleus::~Nucleus()
 	jit = nullptr;
 }
 
-void Nucleus::setDefaultConfig(const Config &cfg)
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	::defaultConfig() = cfg;
-}
-
-void Nucleus::adjustDefaultConfig(const Config::Edit &cfgEdit)
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	auto &config = ::defaultConfig();
-	config = cfgEdit.apply(config);
-}
-
-Config Nucleus::getDefaultConfig()
-{
-	std::unique_lock<std::mutex> lock(::defaultConfigLock);
-	return ::defaultConfig();
-}
-
-std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
+std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name)
 {
 	if(jit->builder->GetInsertBlock()->empty() || !jit->builder->GetInsertBlock()->back().isTerminator())
 	{
@@ -590,14 +563,8 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 	std::shared_ptr<Routine> routine;
 
 	auto acquire = [&](rr::JITBuilder *jit) {
-		// ::jit is thread-local, so when this is executed on a separate thread (see JIT_IN_SEPARATE_THREAD)
-		// it needs to only use the jit variable passed in as an argument.
-
-		Config cfg = jit->config;
-		if(cfgEdit)
-		{
-			cfg = cfgEdit->apply(jit->config);
-		}
+	// ::jit is thread-local, so when this is executed on a separate thread (see JIT_IN_SEPARATE_THREAD)
+	// it needs to only use the jit variable passed in as an argument.
 
 #ifdef ENABLE_RR_DEBUG_INFO
 		if(jit->debugInfo != nullptr)
@@ -613,15 +580,7 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 			jit->module->print(file, 0);
 		}
 
-#if defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-		{
-			llvm::legacy::PassManager pm;
-			pm.add(llvm::createVerifierPass());
-			pm.run(*jit->module);
-		}
-#endif  // defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-
-		jit->optimize(cfg);
+		jit->runPasses();
 
 		if(false)
 		{
@@ -630,7 +589,7 @@ std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config:
 			jit->module->print(file, 0);
 		}
 
-		routine = jit->acquireRoutine(name, &jit->function, 1, cfg);
+		routine = jit->acquireRoutine(name, &jit->function, 1);
 	};
 
 #ifdef JIT_IN_SEPARATE_THREAD
@@ -2712,7 +2671,7 @@ RValue<Int4> Min(RValue<Int4> x, RValue<Int4> y)
 RValue<Int4> RoundInt(RValue<Float4> cast)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	return x86::cvtps2dq(cast);
 #else
 	return As<Int4>(V(lowerRoundInt(V(cast.value()), T(Int4::type()))));
@@ -2724,7 +2683,7 @@ RValue<Int4> RoundIntClamped(RValue<Float4> cast)
 	RR_DEBUG_INFO_UPDATE_LOC();
 
 // TODO(b/165000222): Check if fptosi_sat produces optimal code for x86 and ARM.
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	// cvtps2dq produces 0x80000000, a negative value, for input larger than
 	// 2147483520.0, so clamp to 2147483520. Values less than -2147483520.0
 	// saturate to 0x80000000.
@@ -2739,7 +2698,7 @@ RValue<Int4> RoundIntClamped(RValue<Float4> cast)
 	    jit->module.get(), llvm::Intrinsic::fptosi_sat, { T(Int4::type()), T(Float4::type()) });
 	return RValue<Int4>(V(jit->builder->CreateCall(fptosi_sat, { rounded })));
 #else
-	RValue<Float4> clamped = Max(Min(cast, Float4(0x7FFFFF80)), Float4(0x80000000));
+	RValue<Float4> clamped = Max(Min(cast, Float4(0x7FFFFF80)), Float4(static_cast<int>(0x80000000)));
 	return As<Int4>(V(lowerRoundInt(V(clamped.value()), T(Int4::type()))));
 #endif
 }
@@ -2910,32 +2869,6 @@ Type *UInt4::type()
 Type *Half::type()
 {
 	return T(llvm::Type::getInt16Ty(*jit->context));
-}
-
-RValue<Float> Rcp_pp(RValue<Float> x, bool exactAtPow2)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(exactAtPow2)
-	{
-		// rcpss uses a piecewise-linear approximation which minimizes the relative error
-		// but is not exact at power-of-two values. Rectify by multiplying by the inverse.
-		return x86::rcpss(x) * Float(1.0f / _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ps1(1.0f))));
-	}
-	return x86::rcpss(x);
-#else
-	return As<Float>(V(lowerRCP(V(x.value()))));
-#endif
-}
-
-RValue<Float> RcpSqrt_pp(RValue<Float> x)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	return x86::rsqrtss(x);
-#else
-	return As<Float>(V(lowerRSQRT(V(x.value()))));
-#endif
 }
 
 bool HasRcpApprox()
@@ -3176,32 +3109,6 @@ RValue<Float4> Min(RValue<Float4> x, RValue<Float4> y)
 #endif
 }
 
-RValue<Float4> Rcp_pp(RValue<Float4> x, bool exactAtPow2)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	if(exactAtPow2)
-	{
-		// rcpps uses a piecewise-linear approximation which minimizes the relative error
-		// but is not exact at power-of-two values. Rectify by multiplying by the inverse.
-		return x86::rcpps(x) * Float4(1.0f / _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ps1(1.0f))));
-	}
-	return x86::rcpps(x);
-#else
-	return As<Float4>(V(lowerRCP(V(x.value()))));
-#endif
-}
-
-RValue<Float4> RcpSqrt_pp(RValue<Float4> x)
-{
-	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
-	return x86::rsqrtps(x);
-#else
-	return As<Float4>(V(lowerRSQRT(V(x.value()))));
-#endif
-}
-
 RValue<Float4> Sqrt(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
@@ -3303,7 +3210,7 @@ RValue<Int4> CmpUNLE(RValue<Float4> x, RValue<Float4> y)
 RValue<Float4> Round(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::roundps(x, 0);
@@ -3320,7 +3227,7 @@ RValue<Float4> Round(RValue<Float4> x)
 RValue<Float4> Trunc(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::roundps(x, 3);
@@ -3339,7 +3246,7 @@ RValue<Float4> Frac(RValue<Float4> x)
 	RR_DEBUG_INFO_UPDATE_LOC();
 	Float4 frc;
 
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		frc = x - x86::floorps(x);
@@ -3362,7 +3269,7 @@ RValue<Float4> Frac(RValue<Float4> x)
 RValue<Float4> Floor(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::floorps(x);
@@ -3379,7 +3286,7 @@ RValue<Float4> Floor(RValue<Float4> x)
 RValue<Float4> Ceil(RValue<Float4> x)
 {
 	RR_DEBUG_INFO_UPDATE_LOC();
-#if defined(__i386__) || defined(__x86_64__)
+#if(defined(__i386__) || defined(__x86_64__)) && !__has_feature(memory_sanitizer)
 	if(CPUID::supportsSSE4_1())
 	{
 		return x86::ceilps(x);
@@ -3684,6 +3591,8 @@ RValue<Int> cvtss2si(RValue<Float> val)
 
 RValue<Int4> cvtps2dq(RValue<Float4> val)
 {
+	ASSERT(!__has_feature(memory_sanitizer));  // TODO(b/172238865): Not correctly instrumented by MemorySanitizer.
+
 	return RValue<Int4>(createInstruction(llvm::Intrinsic::x86_sse2_cvtps2dq, val.value()));
 }
 
@@ -3782,6 +3691,8 @@ RValue<Float> ceilss(RValue<Float> val)
 
 RValue<Float4> roundps(RValue<Float4> val, unsigned char imm)
 {
+	ASSERT(!__has_feature(memory_sanitizer));  // TODO(b/172238865): Not correctly instrumented by MemorySanitizer.
+
 	return RValue<Float4>(createInstruction(llvm::Intrinsic::x86_sse41_round_ps, val.value(), Nucleus::createConstantInt(imm)));
 }
 
@@ -4354,10 +4265,9 @@ void Nucleus::yield(Value *val)
 	jit->builder->SetInsertPoint(resumeBlock);
 }
 
-std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit *cfgEdit /* = nullptr */)
+std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name)
 {
-	bool isCoroutine = jit->coroutine.id != nullptr;
-	if(isCoroutine)
+	if(jit->coroutine.id)
 	{
 		jit->builder->CreateBr(jit->coroutine.endBlock);
 	}
@@ -4389,34 +4299,7 @@ std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Confi
 		jit->module->print(file, 0);
 	}
 
-	if(isCoroutine)
-	{
-		// Run manadory coroutine transforms.
-		llvm::legacy::PassManager pm;
-
-		pm.add(llvm::createCoroEarlyLegacyPass());
-		pm.add(llvm::createCoroSplitLegacyPass());
-		pm.add(llvm::createCoroElideLegacyPass());
-		pm.add(llvm::createBarrierNoopPass());
-		pm.add(llvm::createCoroCleanupLegacyPass());
-
-		pm.run(*jit->module);
-	}
-
-#if defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-	{
-		llvm::legacy::PassManager pm;
-		pm.add(llvm::createVerifierPass());
-		pm.run(*jit->module);
-	}
-#endif  // defined(ENABLE_RR_LLVM_IR_VERIFICATION) || !defined(NDEBUG)
-
-	Config cfg = jit->config;
-	if(cfgEdit)
-	{
-		cfg = cfgEdit->apply(jit->config);
-	}
-	jit->optimize(cfg);
+	jit->runPasses();
 
 	if(false)
 	{
@@ -4430,7 +4313,7 @@ std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Confi
 	funcs[Nucleus::CoroutineEntryAwait] = jit->coroutine.await;
 	funcs[Nucleus::CoroutineEntryDestroy] = jit->coroutine.destroy;
 
-	auto routine = jit->acquireRoutine(name, funcs, Nucleus::CoroutineEntryCount, cfg);
+	auto routine = jit->acquireRoutine(name, funcs, Nucleus::CoroutineEntryCount);
 
 	delete jit;
 	jit = nullptr;

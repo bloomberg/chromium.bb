@@ -54,14 +54,16 @@ func main() {
 	}
 
 	targets := []string{"//example:hello_world_gl", "//example:hello_world_vulkan",
-		"//example:hello_world_dawn", "//example:vulkan_basic", "//:skia_core", "//src/svg/..."}
+		"//example:hello_world_dawn", "//example:vulkan_basic", "//:skia_core", "//src/svg/...",
+		"//src/utils/...",
+	}
 	for _, t := range targets {
 		if err := bazelCheckIncludes(ctx, skiaDir, t); err != nil {
 			td.Fatal(ctx, err)
 		}
 	}
 
-	// Here are other configurations, e.g. with the GPU backend. These extra configurations
+	// Here are other configurations, e.g. with a GPU backend. These extra configurations
 	// will make sure IWYU is happy with other #ifdef settings
 	if err := bazelCheckIncludes(ctx, skiaDir, "//src/svg/...",
 		"--gpu_backend=gl_backend", "--include_decoder=jpeg_decode_codec"); err != nil {
@@ -69,6 +71,10 @@ func main() {
 	}
 
 	if err := bazelCheckIncludes(ctx, skiaDir, "//tools/debugger", "--gpu_backend=gl_backend"); err != nil {
+		td.Fatal(ctx, err)
+	}
+
+	if err := bazelCheckIncludes(ctx, skiaDir, "//src/utils/...", "--gpu_backend=gl_backend"); err != nil {
 		td.Fatal(ctx, err)
 	}
 }
@@ -81,9 +87,11 @@ func bazelCheckIncludes(ctx context.Context, checkoutDir, label string, opts ...
 		runCmd := &sk_exec.Command{
 			Name: "bazelisk",
 			Args: append([]string{"build",
-				"--config=linux-rbe", // Compile using RBE
+				"--config=linux_rbe", // Compile using RBE
 				"--features=skia_enforce_iwyu",
 				"--jobs=" + strconv.Itoa(rbeJobs),
+				"--keep_going",              // Don't stop after first error
+				"--remote_download_minimal", // Don't bother downloading the outputs
 				label,
 			}, opts...),
 			InheritEnv: true, // Makes sure bazelisk is on PATH

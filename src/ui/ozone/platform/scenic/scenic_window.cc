@@ -123,6 +123,15 @@ void ScenicWindow::SetBounds(const gfx::Rect& bounds) {
   bounds_ = bounds;
 }
 
+gfx::Rect ScenicWindow::GetBoundsInDIP() const {
+  return delegate_->ConvertRectToDIP(bounds_);
+}
+
+void ScenicWindow::SetBoundsInDIP(const gfx::Rect& bounds) {
+  // This path should only be reached in tests.
+  bounds_ = delegate_->ConvertRectToPixels(bounds);
+}
+
 void ScenicWindow::SetTitle(const std::u16string& title) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
@@ -241,11 +250,11 @@ void ScenicWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void ScenicWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
+void ScenicWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
+gfx::Rect ScenicWindow::GetRestoredBoundsInDIP() const {
   NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Rect();
 }

@@ -9,8 +9,8 @@
 #define PathTessellateOp_DEFINED
 
 #include "src/gpu/ganesh/ops/GrDrawOp.h"
-#include "src/gpu/ganesh/ops/PathTessellator.h"
-#include "src/gpu/ganesh/tessellate/shaders/GrTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/GrTessellationShader.h"
+#include "src/gpu/ganesh/tessellate/PathTessellator.h"
 #include "src/gpu/tessellate/Tessellation.h"
 
 namespace skgpu::v1 {
@@ -21,6 +21,7 @@ class PathTessellateOp final : public GrDrawOp {
 private:
     DEFINE_OP_CLASS_ID
 
+    using PatchAttribs = PathTessellator::PatchAttribs;
     using PathDrawList = PathTessellator::PathDrawList;
 
     PathTessellateOp(SkArenaAlloc* arena,

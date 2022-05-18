@@ -14,31 +14,33 @@
 
 #include "src/tint/writer/hlsl/test_helper.h"
 
+using namespace tint::number_suffixes;  // NOLINT
+
 namespace tint::writer::hlsl {
 namespace {
 
 using HlslGeneratorImplTest_Cast = TestHelper;
 
 TEST_F(HlslGeneratorImplTest_Cast, EmitExpression_Cast_Scalar) {
-  auto* cast = Construct<f32>(1);
-  WrapInFunction(cast);
+    auto* cast = Construct<f32>(1_i);
+    WrapInFunction(cast);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  std::stringstream out;
-  ASSERT_TRUE(gen.EmitExpression(out, cast)) << gen.error();
-  EXPECT_EQ(out.str(), "float(1)");
+    std::stringstream out;
+    ASSERT_TRUE(gen.EmitExpression(out, cast)) << gen.error();
+    EXPECT_EQ(out.str(), "float(1)");
 }
 
 TEST_F(HlslGeneratorImplTest_Cast, EmitExpression_Cast_Vector) {
-  auto* cast = vec3<f32>(vec3<i32>(1, 2, 3));
-  WrapInFunction(cast);
+    auto* cast = vec3<f32>(vec3<i32>(1_i, 2_i, 3_i));
+    WrapInFunction(cast);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  std::stringstream out;
-  ASSERT_TRUE(gen.EmitExpression(out, cast)) << gen.error();
-  EXPECT_EQ(out.str(), "float3(int3(1, 2, 3))");
+    std::stringstream out;
+    ASSERT_TRUE(gen.EmitExpression(out, cast)) << gen.error();
+    EXPECT_EQ(out.str(), "float3(int3(1, 2, 3))");
 }
 
 }  // namespace

@@ -14,35 +14,37 @@
 
 #include "src/tint/writer/wgsl/test_helper.h"
 
+using namespace tint::number_suffixes;  // NOLINT
+
 namespace tint::writer::wgsl {
 namespace {
 
 using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, IndexAccessor) {
-  Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
-  auto* expr = IndexAccessor("ary", 5);
-  WrapInFunction(expr);
+    Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
+    auto* expr = IndexAccessor("ary", 5_i);
+    WrapInFunction(expr);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  std::stringstream out;
-  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
-  EXPECT_EQ(out.str(), "ary[5]");
+    std::stringstream out;
+    ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+    EXPECT_EQ(out.str(), "ary[5i]");
 }
 
 TEST_F(WgslGeneratorImplTest, IndexAccessor_OfDref) {
-  Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
+    Global("ary", ty.array<i32, 10>(), ast::StorageClass::kPrivate);
 
-  auto* p = Const("p", nullptr, AddressOf("ary"));
-  auto* expr = IndexAccessor(Deref("p"), 5);
-  WrapInFunction(p, expr);
+    auto* p = Let("p", nullptr, AddressOf("ary"));
+    auto* expr = IndexAccessor(Deref("p"), 5_i);
+    WrapInFunction(p, expr);
 
-  GeneratorImpl& gen = Build();
+    GeneratorImpl& gen = Build();
 
-  std::stringstream out;
-  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
-  EXPECT_EQ(out.str(), "(*(p))[5]");
+    std::stringstream out;
+    ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
+    EXPECT_EQ(out.str(), "(*(p))[5i]");
 }
 
 }  // namespace

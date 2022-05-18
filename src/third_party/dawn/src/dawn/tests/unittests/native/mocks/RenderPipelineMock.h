@@ -15,26 +15,22 @@
 #ifndef SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_RENDERPIPELINEMOCK_H_
 #define SRC_DAWN_TESTS_UNITTESTS_NATIVE_MOCKS_RENDERPIPELINEMOCK_H_
 
+#include "gmock/gmock.h"
+
 #include "dawn/native/Device.h"
 #include "dawn/native/RenderPipeline.h"
 
-#include <gmock/gmock.h>
-
 namespace dawn::native {
 
-    class RenderPipelineMock : public RenderPipelineBase {
-      public:
-        RenderPipelineMock(DeviceBase* device) : RenderPipelineBase(device) {
-            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
-                this->RenderPipelineBase::DestroyImpl();
-            });
-        }
-        ~RenderPipelineMock() override = default;
+class RenderPipelineMock : public RenderPipelineBase {
+  public:
+    explicit RenderPipelineMock(DeviceBase* device);
+    ~RenderPipelineMock() override;
 
-        MOCK_METHOD(MaybeError, Initialize, (), (override));
-        MOCK_METHOD(size_t, ComputeContentHash, (), (override));
-        MOCK_METHOD(void, DestroyImpl, (), (override));
-    };
+    MOCK_METHOD(MaybeError, Initialize, (), (override));
+    MOCK_METHOD(size_t, ComputeContentHash, (), (override));
+    MOCK_METHOD(void, DestroyImpl, (), (override));
+};
 
 }  // namespace dawn::native
 

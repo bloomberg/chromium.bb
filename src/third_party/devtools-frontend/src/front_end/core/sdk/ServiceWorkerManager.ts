@@ -34,6 +34,7 @@
 
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import type * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 
@@ -364,7 +365,7 @@ export class ServiceWorkerVersionState {
 
 export class ServiceWorkerVersion {
   id!: string;
-  scriptURL!: string;
+  scriptURL!: Platform.DevToolsPath.UrlString;
   parsedURL!: Common.ParsedURL.ParsedURL;
   securityOrigin!: string;
   scriptLastModified!: number|undefined;
@@ -380,7 +381,7 @@ export class ServiceWorkerVersion {
 
   update(payload: Protocol.ServiceWorker.ServiceWorkerVersion): void {
     this.id = payload.versionId;
-    this.scriptURL = payload.scriptURL;
+    this.scriptURL = payload.scriptURL as Platform.DevToolsPath.UrlString;
     const parsedURL = new Common.ParsedURL.ParsedURL(payload.scriptURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.currentState =
@@ -496,8 +497,8 @@ export namespace ServiceWorkerVersion {
 export class ServiceWorkerRegistration {
   #fingerprintInternal!: symbol;
   id!: Protocol.ServiceWorker.RegistrationID;
-  scopeURL!: string;
-  securityOrigin!: string;
+  scopeURL!: Platform.DevToolsPath.UrlString;
+  securityOrigin!: Platform.DevToolsPath.UrlString;
   isDeleted!: boolean;
   versions: Map<string, ServiceWorkerVersion>;
   deleting: boolean;
@@ -513,7 +514,7 @@ export class ServiceWorkerRegistration {
   update(payload: Protocol.ServiceWorker.ServiceWorkerRegistration): void {
     this.#fingerprintInternal = Symbol('fingerprint');
     this.id = payload.registrationId;
-    this.scopeURL = payload.scopeURL;
+    this.scopeURL = payload.scopeURL as Platform.DevToolsPath.UrlString;
     const parsedURL = new Common.ParsedURL.ParsedURL(payload.scopeURL);
     this.securityOrigin = parsedURL.securityOrigin();
     this.isDeleted = payload.isDeleted;

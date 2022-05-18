@@ -22,7 +22,7 @@
 #include "libANGLE/ResourceManager.h"
 #include "libANGLE/renderer/GLImplFactory.h"
 #include "libANGLE/renderer/ShaderImpl.h"
-#include "platform/FrontendFeatures.h"
+#include "platform/FrontendFeatures_autogen.h"
 
 namespace gl
 {
@@ -338,6 +338,7 @@ void Shader::compile(const Context *context)
     mState.mTessGenPointMode          = 0;
     mState.mAdvancedBlendEquations.reset();
     mState.mEarlyFragmentTestsOptimization = false;
+    mState.mEnablesPerSampleShading        = false;
     mState.mSpecConstUsageBits.reset();
 
     mState.mCompileStatus = CompileStatus::COMPILE_REQUESTED;
@@ -537,6 +538,7 @@ void Shader::resolveCompile()
                 GetActiveShaderVariables(sh::GetOutputVariables(compilerHandle));
             mState.mEarlyFragmentTestsOptimization =
                 sh::HasEarlyFragmentTestsOptimization(compilerHandle);
+            mState.mEnablesPerSampleShading = sh::EnablesPerSampleShading(compilerHandle);
             mState.mAdvancedBlendEquations =
                 BlendEquationBitSet(sh::GetAdvancedBlendEquations(compilerHandle));
             break;

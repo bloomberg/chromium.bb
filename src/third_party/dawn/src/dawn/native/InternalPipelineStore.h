@@ -15,45 +15,44 @@
 #ifndef SRC_DAWN_NATIVE_INTERNALPIPELINESTORE_H_
 #define SRC_DAWN_NATIVE_INTERNALPIPELINESTORE_H_
 
+#include <unordered_map>
+
 #include "dawn/native/ObjectBase.h"
 #include "dawn/native/ScratchBuffer.h"
 #include "dawn/native/dawn_platform.h"
 
-#include <unordered_map>
-
 namespace dawn::native {
 
-    class DeviceBase;
-    class RenderPipelineBase;
-    class ShaderModuleBase;
+class DeviceBase;
+class RenderPipelineBase;
+class ShaderModuleBase;
 
-    // Every DeviceBase owns an InternalPipelineStore. This is a general-purpose cache for
-    // long-lived objects scoped to a device and used to support arbitrary pipeline operations.
-    struct InternalPipelineStore {
-        explicit InternalPipelineStore(DeviceBase* device);
-        ~InternalPipelineStore();
+// Every DeviceBase owns an InternalPipelineStore. This is a general-purpose cache for
+// long-lived objects scoped to a device and used to support arbitrary pipeline operations.
+struct InternalPipelineStore {
+    explicit InternalPipelineStore(DeviceBase* device);
+    ~InternalPipelineStore();
 
-        std::unordered_map<wgpu::TextureFormat, Ref<RenderPipelineBase>>
-            copyTextureForBrowserPipelines;
+    std::unordered_map<wgpu::TextureFormat, Ref<RenderPipelineBase>> copyTextureForBrowserPipelines;
 
-        Ref<ShaderModuleBase> copyTextureForBrowser;
+    Ref<ShaderModuleBase> copyTextureForBrowser;
 
-        Ref<ComputePipelineBase> timestampComputePipeline;
-        Ref<ShaderModuleBase> timestampCS;
+    Ref<ComputePipelineBase> timestampComputePipeline;
+    Ref<ShaderModuleBase> timestampCS;
 
-        Ref<ShaderModuleBase> dummyFragmentShader;
+    Ref<ShaderModuleBase> placeholderFragmentShader;
 
-        // A scratch buffer suitable for use as a copy destination and storage binding.
-        ScratchBuffer scratchStorage;
+    // A scratch buffer suitable for use as a copy destination and storage binding.
+    ScratchBuffer scratchStorage;
 
-        // A scratch buffer suitable for use as a copy destination, storage binding, and indirect
-        // buffer for indirect dispatch or draw calls.
-        ScratchBuffer scratchIndirectStorage;
+    // A scratch buffer suitable for use as a copy destination, storage binding, and indirect
+    // buffer for indirect dispatch or draw calls.
+    ScratchBuffer scratchIndirectStorage;
 
-        Ref<ComputePipelineBase> renderValidationPipeline;
-        Ref<ShaderModuleBase> renderValidationShader;
-        Ref<ComputePipelineBase> dispatchIndirectValidationPipeline;
-    };
+    Ref<ComputePipelineBase> renderValidationPipeline;
+    Ref<ShaderModuleBase> renderValidationShader;
+    Ref<ComputePipelineBase> dispatchIndirectValidationPipeline;
+};
 
 }  // namespace dawn::native
 

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
 #include <cmath>
 
 #include "dawn/tests/DawnTest.h"
@@ -24,28 +25,28 @@
 constexpr static unsigned int kRTSize = 64;
 
 namespace {
-    struct AddressModeTestCase {
-        wgpu::AddressMode mMode;
-        uint8_t mExpected2;
-        uint8_t mExpected3;
-    };
-    AddressModeTestCase addressModes[] = {
-        {
-            wgpu::AddressMode::Repeat,
-            0,
-            255,
-        },
-        {
-            wgpu::AddressMode::MirrorRepeat,
-            255,
-            0,
-        },
-        {
-            wgpu::AddressMode::ClampToEdge,
-            255,
-            255,
-        },
-    };
+struct AddressModeTestCase {
+    wgpu::AddressMode mMode;
+    uint8_t mExpected2;
+    uint8_t mExpected3;
+};
+AddressModeTestCase addressModes[] = {
+    {
+        wgpu::AddressMode::Repeat,
+        0,
+        255,
+    },
+    {
+        wgpu::AddressMode::MirrorRepeat,
+        255,
+        0,
+    },
+    {
+        wgpu::AddressMode::ClampToEdge,
+        255,
+        255,
+    },
+};
 }  // namespace
 
 class SamplerTest : public DawnTest {
@@ -97,12 +98,12 @@ class SamplerTest : public DawnTest {
 
         // Create a 2x2 checkerboard texture, with black in the top left and bottom right corners.
         const uint32_t rowPixels = kTextureBytesPerRowAlignment / sizeof(RGBA8);
-        RGBA8 data[rowPixels * 2];
-        data[0] = data[rowPixels + 1] = RGBA8::kBlack;
-        data[1] = data[rowPixels] = RGBA8::kWhite;
+        std::array<RGBA8, rowPixels * 2> pixels;
+        pixels[0] = pixels[rowPixels + 1] = RGBA8::kBlack;
+        pixels[1] = pixels[rowPixels] = RGBA8::kWhite;
 
-        wgpu::Buffer stagingBuffer =
-            utils::CreateBufferFromData(device, data, sizeof(data), wgpu::BufferUsage::CopySrc);
+        wgpu::Buffer stagingBuffer = utils::CreateBufferFromData(
+            device, pixels.data(), pixels.size() * sizeof(RGBA8), wgpu::BufferUsage::CopySrc);
         wgpu::ImageCopyBuffer imageCopyBuffer = utils::CreateImageCopyBuffer(stagingBuffer, 0, 256);
         wgpu::ImageCopyTexture imageCopyTexture =
             utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
@@ -157,7 +158,6 @@ class SamplerTest : public DawnTest {
         EXPECT_PIXEL_RGBA8_EQ(expectedU3, mRenderPass.color, 3, 0);
         EXPECT_PIXEL_RGBA8_EQ(expectedV2, mRenderPass.color, 0, 2);
         EXPECT_PIXEL_RGBA8_EQ(expectedV3, mRenderPass.color, 0, 3);
-        // TODO: add tests for W address mode, once Dawn supports 3D textures
     }
 
     utils::BasicRenderPass mRenderPass;

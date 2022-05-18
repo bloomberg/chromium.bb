@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_CHROME_KIOSK_APP_INSTALLER_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_CHROME_KIOSK_APP_INSTALLER_H_
 
-#include "base/callback_forward.h"
+#include <string>
+
+#include "base/callback.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 
 class Profile;
 
@@ -18,30 +20,13 @@ namespace ash {
 
 class ChromeKioskAppInstaller : private extensions::InstallObserver {
  public:
-  enum class InstallResult {
-    kSuccess,
-    kUnableToInstall,
-    kNotKioskEnabled,
-    kNetworkMissing,
-  };
-
-  struct AppInstallData {
-    AppInstallData();
-    AppInstallData(const AppInstallData&);
-    AppInstallData& operator=(const AppInstallData&);
-    ~AppInstallData();
-
-    std::string id;
-    std::string crx_file_location;
-    std::string version;
-    bool is_store_app = false;
-  };
-
-  using InstallCallback = base::OnceCallback<void(InstallResult result)>;
+  using InstallResult = crosapi::mojom::ChromeKioskInstallResult;
+  using AppInstallParams = crosapi::mojom::AppInstallParams;
+  using InstallCallback =
+      crosapi::mojom::ChromeKioskLaunchController::InstallKioskAppCallback;
 
   ChromeKioskAppInstaller(Profile* profile,
-                          const AppInstallData& install_data,
-                          KioskAppLauncher::Delegate* delegate);
+                          const AppInstallParams& install_data);
   ChromeKioskAppInstaller(const ChromeKioskAppInstaller&) = delete;
   ChromeKioskAppInstaller& operator=(const ChromeKioskAppInstaller&) = delete;
   ~ChromeKioskAppInstaller() override;
@@ -82,13 +67,12 @@ class ChromeKioskAppInstaller : private extensions::InstallObserver {
                                                const std::string& id) const;
 
   Profile* const profile_;
-  const AppInstallData primary_app_install_data_;
-  KioskAppLauncher::Delegate* delegate_;
+  AppInstallParams primary_app_install_data_;
 
   InstallCallback on_ready_callback_;
 
   bool install_complete_ = false;
-  bool secondary_apps_installed_ = false;
+  bool secondary_apps_installing_ = false;
 
   // Used to run extension update checks for primary app's imports and
   // secondary extensions.

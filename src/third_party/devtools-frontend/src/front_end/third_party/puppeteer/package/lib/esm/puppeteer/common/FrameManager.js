@@ -94,6 +94,13 @@ export class FrameManager extends EventEmitter {
             const result = await Promise.all([
                 client.send('Page.enable'),
                 client.send('Page.getFrameTree'),
+                client !== this._client
+                    ? client.send('Target.setAutoAttach', {
+                        autoAttach: true,
+                        waitForDebuggerOnStart: false,
+                        flatten: true,
+                    })
+                    : Promise.resolve(),
             ]);
             const { frameTree } = result[1];
             this._handleFrameTree(client, frameTree);
@@ -606,7 +613,7 @@ export class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     async $eval(selector, pageFunction, ...args) {
         return this._mainWorld.$eval(selector, pageFunction, ...args);
@@ -628,7 +635,7 @@ export class Frame {
      *
      * @param selector - the selector to query for
      * @param pageFunction - the function to be evaluated in the frame's context
-     * @param args - additional arguments to pass to `pageFuncton`
+     * @param args - additional arguments to pass to `pageFunction`
      */
     async $$eval(selector, pageFunction, ...args) {
         return this._mainWorld.$$eval(selector, pageFunction, ...args);

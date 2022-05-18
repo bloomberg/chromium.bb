@@ -3,7 +3,7 @@
 Template file for use with tools/builtin-gen to generate parameter_usage.h
 
 See:
-* tools/cmd/builtin-gen/gen for structures used by this template
+* tools/cmd/intrinsic-gen/gen for structures used by this template
 * https://golang.org/pkg/text/template/ for documentation on the template syntax
 --------------------------------------------------------------------------------
 */ -}}
@@ -16,9 +16,9 @@ namespace tint::sem {
 /// ParameterUsage is extra metadata for identifying a parameter based on its
 /// overload position
 enum class ParameterUsage {
-  kNone = -1,
+    kNone = -1,
 {{- range .Sem.UniqueParameterNames  }}
-  k{{PascalCase .}},
+    k{{PascalCase .}},
 {{- end  }}
 };
 

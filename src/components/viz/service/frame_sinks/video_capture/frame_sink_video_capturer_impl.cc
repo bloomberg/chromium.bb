@@ -171,19 +171,25 @@ FrameSinkVideoCapturerImpl::~FrameSinkVideoCapturerImpl() {
 
 void FrameSinkVideoCapturerImpl::ResolveTarget() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   SetResolvedTarget(
       target_ ? frame_sink_manager_->FindCapturableFrameSink(target_.value())
               : nullptr);
 }
 
+bool FrameSinkVideoCapturerImpl::TryResolveTarget() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!resolved_target_) {
+    ResolveTarget();
+  }
+
+  return resolved_target_;
+}
+
 void FrameSinkVideoCapturerImpl::SetResolvedTarget(
     CapturableFrameSink* target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // We were unable to resolve a target, so schedule a check for the next
-  // refresh.
-  if (!target && target_.has_value()) {
-    RequestRefreshFrame();
-  }
 
   if (resolved_target_ == target) {
     return;
@@ -416,15 +422,12 @@ void FrameSinkVideoCapturerImpl::Stop() {
 void FrameSinkVideoCapturerImpl::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!refresh_frame_retry_timer_->IsRunning()) {
-    // NOTE: base::Unretained is used here safely because if |this| is invalid
-    // then the retry timer should have already been destructed.
-    refresh_frame_retry_timer_->Start(
-        FROM_HERE, GetDelayBeforeNextRefreshAttempt(),
-        base::BindOnce(&FrameSinkVideoCapturerImpl::RefreshInternal,
-                       base::Unretained(this),
-                       VideoCaptureOracle::kRefreshRequest));
+  if (!TryResolveTarget()) {
+    return;
   }
+
+  refresh_frame_retry_timer_->Stop();
+  RefreshNow();
 }
 
 void FrameSinkVideoCapturerImpl::CreateOverlay(
@@ -465,6 +468,20 @@ void FrameSinkVideoCapturerImpl::RefreshNow() {
   RefreshInternal(VideoCaptureOracle::kRefreshDemand);
 }
 
+void FrameSinkVideoCapturerImpl::MaybeScheduleRefreshFrame() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!refresh_frame_retry_timer_->IsRunning()) {
+    // NOTE: base::Unretained is used here safely because if |this| is invalid
+    // then the retry timer should have already been destructed.
+    refresh_frame_retry_timer_->Start(
+        FROM_HERE, GetDelayBeforeNextRefreshAttempt(),
+        base::BindOnce(&FrameSinkVideoCapturerImpl::RefreshInternal,
+                       base::Unretained(this),
+                       media::VideoCaptureOracle::Event::kRefreshRequest));
+  }
+}
+
 void FrameSinkVideoCapturerImpl::InvalidateEntireSource() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   dirty_rect_ = kMaxRect;
@@ -503,12 +520,9 @@ void FrameSinkVideoCapturerImpl::RefreshInternal(
 
   // If the capture target has not yet been resolved, first try changing the
   // target since it may be available now.
-  if (!resolved_target_) {
-    ResolveTarget();
-    if (!resolved_target_) {
-      RequestRefreshFrame();
-      return;
-    }
+  if (!TryResolveTarget()) {
+    MaybeScheduleRefreshFrame();
+    return;
   }
 
   // Detect whether the source size changed before attempting capture.
@@ -521,7 +535,7 @@ void FrameSinkVideoCapturerImpl::RefreshInternal(
     // frame has not been composited yet or the current region selected for
     // capture has a current size of zero. We schedule a frame refresh here,
     // although its not useful in all circumstances.
-    RequestRefreshFrame();
+    MaybeScheduleRefreshFrame();
     return;
   }
 
@@ -652,7 +666,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
 
     // Whether the oracle rejected a compositor update or a refresh event,
     // the consumer needs to be provided an update in the near future.
-    RequestRefreshFrame();
+    MaybeScheduleRefreshFrame();
     return;
   }
 
@@ -681,7 +695,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // TODO(https://crbug.com/1300943): we should likely just get the frame
   // region from the last aggregated surface.
   if (!compositor_frame_region.Contains(capture_region)) {
-    RequestRefreshFrame();
+    MaybeScheduleRefreshFrame();
     return;
   }
 
@@ -738,7 +752,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
       LOG(ERROR) << "Unable to allocate frame for first frame capture: OOM?";
       Stop();
     } else {
-      RequestRefreshFrame();
+      MaybeScheduleRefreshFrame();
     }
     return;
   }
@@ -777,10 +791,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   metadata.top_controls_visible_height = last_top_controls_visible_height_;
 
   oracle_->RecordCapture(utilization);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2("gpu.capture", "Capture",
-                                    oracle_frame_number, "frame_number",
-                                    capture_frame_number, "trigger",
-                                    VideoCaptureOracle::EventAsString(event));
+  // Note: The following is used by
+  // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
+  // addition to the usual runtime tracing
+  // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the macro
+  // once the bug is fixed.
+  TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", oracle_frame_number,
+                           "frame_number", capture_frame_number, "trigger",
+                           VideoCaptureOracle::EventAsString(event));
 
   const gfx::Size& source_size = oracle_->source_size();
   DCHECK(!source_size.IsEmpty());
@@ -1206,13 +1224,15 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // original source content.
   base::TimeTicks media_ticks;
   if (!oracle_->CompleteCapture(oracle_frame_number, !!frame, &media_ticks)) {
-    // The following is used by
+    // Note: The following is used by
     // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
-    // addition to the usual runtime tracing.
-    TRACE_EVENT_NESTABLE_ASYNC_END1("gpu.capture", "Capture",
-                                    oracle_frame_number, "success", false);
+    // addition to the usual runtime tracing
+    // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the
+    // macro once the bug is fixed.
+    TRACE_EVENT_ASYNC_END1("gpu.capture", "Capture", oracle_frame_number,
+                           "success", false);
 
-    RequestRefreshFrame();
+    MaybeScheduleRefreshFrame();
     return;
   }
 
@@ -1222,12 +1242,14 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   }
   frame->set_timestamp(media_ticks - *first_frame_media_ticks_);
 
-  // The following is used by
+  // Note: The following is used by
   // chrome/browser/media/cast_mirroring_performance_browsertest.cc, in
-  // addition to the usual runtime tracing.
-  TRACE_EVENT_NESTABLE_ASYNC_END2("gpu.capture", "Capture", oracle_frame_number,
-                                  "success", true, "time_delta",
-                                  frame->timestamp().InMicroseconds());
+  // addition to the usual runtime tracing
+  // TODO(https://crbug.com/1322573): change to _NESTABLE_ variant of the macro
+  // once the bug is fixed.
+  TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", oracle_frame_number,
+                         "success", true, "time_delta",
+                         frame->timestamp().InMicroseconds());
 
   // Clone a handle to the shared memory backing the populated video frame, to
   // send to the consumer.

@@ -14,23 +14,23 @@
 
 #include "src/dawn/node/binding/GPUBindGroup.h"
 
+#include <utility>
+
 #include "src/dawn/node/utils/Debug.h"
 
 namespace wgpu::binding {
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // wgpu::bindings::GPUBindGroup
-    ////////////////////////////////////////////////////////////////////////////////
-    GPUBindGroup::GPUBindGroup(wgpu::BindGroup group) : group_(std::move(group)) {
-    }
+////////////////////////////////////////////////////////////////////////////////
+// wgpu::bindings::GPUBindGroup
+////////////////////////////////////////////////////////////////////////////////
+GPUBindGroup::GPUBindGroup(wgpu::BindGroup group) : group_(std::move(group)) {}
 
-    std::variant<std::string, interop::UndefinedType> GPUBindGroup::getLabel(Napi::Env) {
-        UNIMPLEMENTED();
-    }
+std::string GPUBindGroup::getLabel(Napi::Env) {
+    UNIMPLEMENTED();
+}
 
-    void GPUBindGroup::setLabel(Napi::Env,
-                                std::variant<std::string, interop::UndefinedType> value) {
-        UNIMPLEMENTED();
-    }
+void GPUBindGroup::setLabel(Napi::Env, std::string value) {
+    UNIMPLEMENTED();
+}
 
 }  // namespace wgpu::binding

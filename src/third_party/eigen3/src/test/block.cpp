@@ -10,7 +10,7 @@
 #include "main.h"
 
 template<typename MatrixType, typename Index, typename Scalar>
-typename Eigen::internal::enable_if<!NumTraits<typename MatrixType::Scalar>::IsComplex,typename MatrixType::Scalar>::type
+std::enable_if_t<!NumTraits<typename MatrixType::Scalar>::IsComplex,typename MatrixType::Scalar>
 block_real_only(const MatrixType &m1, Index r1, Index r2, Index c1, Index c2, const Scalar& s1) {
   // check cwise-Functions:
   VERIFY_IS_APPROX(m1.row(r1).cwiseMax(s1), m1.cwiseMax(s1).row(r1));
@@ -23,28 +23,28 @@ block_real_only(const MatrixType &m1, Index r1, Index r2, Index c1, Index c2, co
 }
 
 template<typename MatrixType, typename Index, typename Scalar>
-typename Eigen::internal::enable_if<NumTraits<typename MatrixType::Scalar>::IsComplex,typename MatrixType::Scalar>::type
+std::enable_if_t<NumTraits<typename MatrixType::Scalar>::IsComplex,typename MatrixType::Scalar>
 block_real_only(const MatrixType &, Index, Index, Index, Index, const Scalar&) {
   return Scalar(0);
 }
 
 // Check at compile-time that T1==T2, and at runtime-time that a==b
 template<typename T1,typename T2>
-typename internal::enable_if<internal::is_same<T1,T2>::value,bool>::type
+std::enable_if_t<internal::is_same<T1,T2>::value,bool>
 is_same_block(const T1& a, const T2& b)
 {
   return a.isApprox(b);
 }
 
 template <typename MatrixType>
-typename internal::enable_if<((MatrixType::Flags&RowMajorBit)==0),void>::type
+std::enable_if_t<((MatrixType::Flags&RowMajorBit)==0),void>
 check_left_top(const MatrixType& m, Index r, Index c,
                Index rows, Index /*unused*/) {
   VERIFY_IS_EQUAL(m.leftCols(c).coeff(r+c*rows), m(r,c));
 }
 
 template <typename MatrixType>
-typename internal::enable_if<((MatrixType::Flags&RowMajorBit)!=0),void>::type
+std::enable_if_t<((MatrixType::Flags&RowMajorBit)!=0),void>
 check_left_top(const MatrixType& m,  Index r, Index c,
                Index /*unused*/, Index cols) {
   VERIFY_IS_EQUAL(m.topRows(r).coeff(c+r*cols), m(r,c));
@@ -243,7 +243,7 @@ template<typename MatrixType> void block(const MatrixType& m)
 
 
 template<typename MatrixType>
-typename internal::enable_if<MatrixType::IsVectorAtCompileTime,void>::type
+std::enable_if_t<MatrixType::IsVectorAtCompileTime,void>
 compare_using_data_and_stride(const MatrixType& m)
 {
   Index rows = m.rows();
@@ -264,7 +264,7 @@ compare_using_data_and_stride(const MatrixType& m)
 }
 
 template<typename MatrixType>
-typename internal::enable_if<!MatrixType::IsVectorAtCompileTime,void>::type
+std::enable_if_t<!MatrixType::IsVectorAtCompileTime,void>
 compare_using_data_and_stride(const MatrixType& m)
 {
   Index rows = m.rows();
