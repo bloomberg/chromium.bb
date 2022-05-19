@@ -93,6 +93,10 @@ class V8_EXPORT CppHeap {
   static std::unique_ptr<CppHeap> Create(v8::Platform* platform,
                                          const CppHeapCreateParams& params);
 
+  static CppHeap *Create(v8::Platform* platform,
+                         const WrapperDescriptor& wrapper_descriptor);
+  static void Destroy(CppHeap *cpp_heap);
+
   virtual ~CppHeap() = default;
 
   /**
