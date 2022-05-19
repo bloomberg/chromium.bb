@@ -59,6 +59,19 @@ std::unique_ptr<CppHeap> CppHeap::Create(v8::Platform* platform,
                                              params.wrapper_descriptor);
 }
 
+v8::CppHeap *CppHeap::Create(v8::Platform* platform,
+                             const v8::WrapperDescriptor& wrapper_descriptor) {
+  std::unique_ptr<CppHeap> cpp_heap = Create(
+      platform,
+      { {}, wrapper_descriptor });
+
+  return cpp_heap.release();
+}
+
+void CppHeap::Destroy(CppHeap* cpp_heap) {
+  delete cpp_heap;
+}
+
 cppgc::AllocationHandle& CppHeap::GetAllocationHandle() {
   return internal::CppHeap::From(this)->object_allocator();
 }
