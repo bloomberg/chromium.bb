@@ -16,6 +16,7 @@ class BLPWTK2Conan(ConanFile):
     description = "blpwtk2 libraries and headers"
     url = "bbgithub:uiinf/chromium.bb"
     settings = "os", "arch"
+    generators = ("VirtualBuildEnv",)
 
     tool_requires = ("p7zip/19.00@devkit/stable",)
 
