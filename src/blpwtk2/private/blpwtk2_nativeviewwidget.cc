@@ -33,6 +33,8 @@ namespace blpwtk2 {
 
 NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
                                    NativeViewWidgetDelegate* delegate,
+                                   int width,
+                                   int height,
                                    bool activatable,
                                    bool rerouteMouseWheelToAnyRelatedWindow)
 : d_delegate(delegate)
@@ -41,9 +43,15 @@ NativeViewWidget::NativeViewWidget(gfx::NativeView contents,
 {
     SetLayoutManager<views::FillLayout>(std::make_unique<views::FillLayout>());
     AddChildView(d_nativeViewHost);
+    if (width <= 0) {
+        width = 10;
+    }
+    if (height <= 0) {
+        height = 10;
+    }
 
     views::Widget::InitParams params;
-    params.bounds = gfx::Rect(0, 0, 10, 10);
+    params.bounds = gfx::Rect(0, 0, width, height);
     params.delegate = this;
     params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
     params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;

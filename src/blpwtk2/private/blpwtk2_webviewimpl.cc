@@ -821,6 +821,8 @@ int WebViewImpl::createWidget(blpwtk2::NativeView parent)
     d_widget = new blpwtk2::NativeViewWidget(
         d_webContents->GetNativeView(),
         this,
+        d_properties.width,
+        d_properties.height,
         d_properties.activateWindowOnMouseDown,
         d_properties.rerouteMouseWheelToAnyRelatedWindow);
 

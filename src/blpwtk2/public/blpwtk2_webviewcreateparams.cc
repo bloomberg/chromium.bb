@@ -52,6 +52,9 @@ WebViewCreateParams::WebViewCreateParams()
     d_impl->takeKeyboardFocusOnMouseDown = true;
     d_impl->takeLogicalFocusOnMouseDown = true;
     d_impl->activateWindowOnMouseDown = true;
+
+    d_impl->width = 0;
+    d_impl->height = 0;
 }
 
 WebViewCreateParams::WebViewCreateParams(const WebViewCreateParams& src)
@@ -146,6 +149,22 @@ bool WebViewCreateParams::rerouteMouseWheelToAnyRelatedWindow() const
 bool WebViewCreateParams::messageInterceptionEnabled() const
 {
     return d_impl->messageInterceptionEnabled;
+}
+
+void WebViewCreateParams::setWidth(int width) {
+    d_impl->width = width;
+}
+
+void WebViewCreateParams::setHeight(int height) {
+    d_impl->height = height;
+}
+
+int WebViewCreateParams::width() const {
+    return d_impl->width;
+}
+
+int WebViewCreateParams::height() const {
+    return d_impl->height;
 }
 
 }  // close namespace blpwtk2

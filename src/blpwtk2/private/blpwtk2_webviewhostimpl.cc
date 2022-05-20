@@ -63,6 +63,10 @@ WebViewHostImpl::WebViewHostImpl(
         params.javascriptCanAccessClipboard;
     properties.rerouteMouseWheelToAnyRelatedWindow =
         params.rerouteMouseWheelToAnyRelatedWindow;
+    properties.width =
+        params.width;
+    properties.height =
+        params.height;
     properties.messageInterceptionEnabled =
         params.messageInterceptionEnabled;
 
