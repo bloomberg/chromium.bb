@@ -31,6 +31,8 @@ struct WebViewProperties {
     bool domPasteEnabled;
     bool javascriptCanAccessClipboard;
     bool rerouteMouseWheelToAnyRelatedWindow;
+    int  width;
+    int  height;
     bool messageInterceptionEnabled;
 };
 

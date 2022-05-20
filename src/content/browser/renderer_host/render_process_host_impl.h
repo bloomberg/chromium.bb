@@ -303,8 +303,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DumpProfilingData(base::OnceClosure callback) override;
 #endif
 
-  void AdjustCommandLineForRenderer(base::CommandLine* command_line,
-                                    base::ProcessHandle child_process) override;
+  void AdjustCommandLineForRenderer(base::CommandLine* command_line) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -838,8 +837,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // copied over.
   void PropagateBrowserCommandLineToRenderer(
       const base::CommandLine& browser_cmd,
-      base::CommandLine* renderer_cmd,
-      base::ProcessHandle child_process);
+      base::CommandLine* renderer_cmd);
 
   // Recompute |visible_clients_| and |effective_importance_| from
   // |priority_clients_|.
