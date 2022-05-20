@@ -273,6 +273,11 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
             params.messageInterceptionEnabled();
 #endif
 
+        properties.width =
+            params.width();
+        properties.height =
+            params.height();
+
         // Create a new instance of RenderWebView:
         RenderWebView *renderWebView = new RenderWebView(
             delegate, this, properties);
