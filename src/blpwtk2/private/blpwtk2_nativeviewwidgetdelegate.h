@@ -63,6 +63,14 @@ class NativeViewWidgetDelegate {
     // only called if the previous OnNCDragBegin returned true.
     virtual void OnNCDragEnd() = 0;
 
+    virtual void OnNCDoubleClick() = 0;
+
+    virtual bool OnPreHandleMessage(unsigned window,
+                                    unsigned message,
+                                    unsigned w_param,
+                                    long l_param,
+                                    LONG_PTR *result) = 0;
+
     // Called to get the default activation window.  Returning NULL will use
     // the widget's root view's window.
     virtual aura::Window* GetDefaultActivationWindow() = 0;
