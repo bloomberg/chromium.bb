@@ -407,10 +407,6 @@ class ASH_EXPORT CaptureModeSession
   void UpdateRegionHorizontally(bool left, int event_flags);
   void UpdateRegionVertically(bool up, int event_flags);
 
-  // Returns true if the event is on a visible settings menu. This includes the
-  // space between the capture bar and the menu.
-  bool IsEventInSettingsMenuBounds(const gfx::Point& location_in_screen);
-
   // Called when the parent container of camera preview may need to be updated.
   void MaybeReparentCameraPreviewWidget();
 
@@ -418,9 +414,12 @@ class ASH_EXPORT CaptureModeSession
   // camera preview's bounds and visibility.
   void MaybeUpdateCameraPreviewBounds();
 
-  // Returns true if the given `event` is targeted on the capture bar or the
-  // setting menu if it exists.
-  bool IsEventTargetedOnCaptureBarOrMenu(const ui::LocatedEvent& event) const;
+  // Returns true if the given `event` is targeted on the capture bar.
+  bool IsEventTargetedOnCaptureBar(const ui::LocatedEvent& event) const;
+
+  // Returns true if the given `event` is targeted on the setting menu if it
+  // exists.
+  bool IsEventTargetedOnSettingsMenu(const ui::LocatedEvent& event) const;
 
   CaptureModeController* const controller_;
 
@@ -473,6 +472,13 @@ class ASH_EXPORT CaptureModeSession
   // region is non empty, the capture session will enter the fine tune phase,
   // where the user can reposition and resize the region with a lot of accuracy.
   bool is_selecting_region_ = false;
+
+  // True when a located pressed event is received outside the bounds of a
+  // present settings menu widget. This event will be used to dismiss the
+  // settings menu and all future located events up to and including the
+  // released event will be ignored (i.e. will not be used to update the capture
+  // region, perform capture ... etc.).
+  bool ignore_located_events_ = false;
 
   // The location of the last press and drag events.
   gfx::Point initial_location_in_root_;
@@ -537,14 +543,6 @@ class ASH_EXPORT CaptureModeSession
 
   // The object which handles tab focus while in a capture session.
   std::unique_ptr<CaptureModeSessionFocusCycler> focus_cycler_;
-
-  // This helps indicating whether located events should be handled by the
-  // capture mode settings menu view or the capture mode Pre-EventHandler. When
-  // it's true, settings menu view should handle the event. Set it to true when
-  // the event is a press event and is located on the settings menu view. Set it
-  // to false when the event is a release event and "event_on_settings_menu_" is
-  // true.
-  bool located_press_event_on_settings_menu_ = false;
 
   // True if a located event should be passed to camera preview to be handled.
   bool should_pass_located_event_to_camera_preview_ = false;

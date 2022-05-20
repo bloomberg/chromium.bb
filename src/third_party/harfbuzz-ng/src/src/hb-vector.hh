@@ -29,6 +29,7 @@
 
 #include "hb.hh"
 #include "hb-array.hh"
+#include "hb-meta.hh"
 #include "hb-null.hh"
 
 
@@ -70,9 +71,8 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   }
   ~hb_vector_t () { fini (); }
 
-  private:
-  int allocated = 0; /* == -1 means allocation failed. */
   public:
+  int allocated = 0; /* == -1 means allocation failed. */
   unsigned int length = 0;
   public:
   Type *arrayZ = nullptr;
@@ -203,14 +203,14 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   bool in_error () const { return allocated < 0; }
 
   template <typename T = Type,
-	    hb_enable_if (std::is_trivially_copy_assignable<T>::value)>
+	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
   Type *
   realloc_vector (unsigned new_allocated)
   {
     return (Type *) hb_realloc (arrayZ, new_allocated * sizeof (Type));
   }
   template <typename T = Type,
-	    hb_enable_if (!std::is_trivially_copy_assignable<T>::value)>
+	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
   Type *
   realloc_vector (unsigned new_allocated)
   {
@@ -230,7 +230,7 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   }
 
   template <typename T = Type,
-	    hb_enable_if (std::is_trivially_constructible<T>::value ||
+	    hb_enable_if (hb_is_trivially_constructible(T) ||
 			  !std::is_default_constructible<T>::value)>
   void
   grow_vector (unsigned size)
@@ -239,7 +239,7 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
     length = size;
   }
   template <typename T = Type,
-	    hb_enable_if (!std::is_trivially_constructible<T>::value &&
+	    hb_enable_if (!hb_is_trivially_constructible(T) &&
 			   std::is_default_constructible<T>::value)>
   void
   grow_vector (unsigned size)
@@ -252,14 +252,14 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   }
 
   template <typename T = Type,
-	    hb_enable_if (std::is_trivially_destructible<T>::value)>
+	    hb_enable_if (hb_is_trivially_destructible(T))>
   void
   shrink_vector (unsigned size)
   {
     length = size;
   }
   template <typename T = Type,
-	    hb_enable_if (!std::is_trivially_destructible<T>::value)>
+	    hb_enable_if (!hb_is_trivially_destructible(T))>
   void
   shrink_vector (unsigned size)
   {
@@ -271,7 +271,7 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   }
 
   template <typename T = Type,
-	    hb_enable_if (std::is_trivially_copy_assignable<T>::value)>
+	    hb_enable_if (hb_is_trivially_copy_assignable(T))>
   void
   shift_down_vector (unsigned i)
   {
@@ -280,7 +280,7 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
 	     (length - i) * sizeof (Type));
   }
   template <typename T = Type,
-	    hb_enable_if (!std::is_trivially_copy_assignable<T>::value)>
+	    hb_enable_if (!hb_is_trivially_copy_assignable(T))>
   void
   shift_down_vector (unsigned i)
   {
@@ -341,7 +341,7 @@ struct hb_vector_t : std::conditional<sorted, hb_vector_t<Type, false>, hb_empty
   Type pop ()
   {
     if (!length) return Null (Type);
-    Type v = std::move (arrayZ[length - 1]);
+    Type v = arrayZ[length - 1];
     arrayZ[length - 1].~Type ();
     length--;
     return v;
