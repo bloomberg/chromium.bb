@@ -21,7 +21,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys, os
+import hashlib
+import os
+import subprocess
+import sys
+
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+ROOT_DIR = os.path.normpath(os.path.join(SCRIPT_DIR,
+                                         os.path.pardir,
+                                         os.path.pardir))
+
 
 def getVersionParts(contentShellVersion, version):
   components = version.split('_')
@@ -38,6 +48,32 @@ def getVersionParts(contentShellVersion, version):
   return version, contentShellVersion, bbPatch
 
 
+def getHeaderHash():
+  blpwtk2_public_dir = os.path.join(ROOT_DIR, 'src/blpwtk2/public')
+  headers = ['src/v8/include']
+  for fname in os.listdir(blpwtk2_public_dir):
+    if fname.endswith('.h'):
+      headers.append(
+          os.path.relpath(os.path.join(blpwtk2_public_dir, fname),
+                          ROOT_DIR).replace('\\', '/'))
+  p = subprocess.run(
+      [
+        'git',
+        'ls-tree',
+        'HEAD',
+        '--',
+      ] + sorted(headers),
+      cwd=ROOT_DIR,
+      stdout=subprocess.PIPE)
+  if 0 != p.returncode:
+    return 'FAILED_TO_GET_HEADER_HASH'
+  lines = p.stdout.splitlines()
+  sha1 = hashlib.sha1()
+  for line in lines:
+    sha1.update(line)
+  return sha1.hexdigest()
+
+
 def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   productAppend = ""
   if version != "":
@@ -45,7 +81,7 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
 
   version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
   chromiumVersionNumbers = chromiumVersion.split('.')
-  bbPatchNumber = bbPatch[2:]
+  bbPatchNumber = int(bbPatch[2:])
 
   # Make sure they are integers, otherwise we cannot embed them inside
   # FileVersion in the DLL rc files.
@@ -53,7 +89,6 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   int(chromiumVersionNumbers[1])
   int(chromiumVersionNumbers[2])
   int(chromiumVersionNumbers[3])
-  int(bbPatchNumber)
 
   f.write('// generated file -- DO NOT EDIT\n')
   f.write('#ifndef INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
@@ -74,16 +109,16 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
                                                                  bbPatchNumber))
   f.write('#define BLPWTK2_DLL_NAME "blpwtk2.dll"\n')
   f.write('#define BLPWTK2_SUBPROCESS_EXE_NAME "blpwtk2_subprocess.exe"\n')
-  f.write('#define BLPWTK2_PAK_NAME "blpwtk2.pak"\n')
-  f.write('#define BLPWTK2_ICUDTL_DAT_NAME "icudtl.dat"\n')
-  f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot.bin"\n')
+  f.write('#define BLPWTK2_PAK_NAME "blpwtk2{}.pak"\n'.format(productAppend))
+  f.write('#define BLPWTK2_ICUDTL_DAT_NAME "icudtl{}.dat"\n'.format(productAppend))
+  f.write('#define BLPWTK2_ICUDTL_EXT_DAT_NAME "icudtl_extra{}.dat"\n'.format(productAppend))
+  f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot{}.bin"\n'.format(productAppend))
   f.write('\n')
   f.write('#endif  // INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
 
 def writeVersionFiles(fH, fCC, contentShellVersion, version):
   version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
-
-  exportedSymbol =  'version_' + version.replace('.', '_')
+  headerHash = getHeaderHash()
 
   fH.write('// generated file -- DO NOT EDIT\n')
   fH.write('#ifndef INCLUDED_GENERATED_BLPWTK2_VERSION\n')
@@ -92,19 +127,15 @@ def writeVersionFiles(fH, fCC, contentShellVersion, version):
   fH.write('#define CHROMIUM_VERSION "{}"\n'.format(chromiumVersion))
   fH.write('#define BB_PATCH_VERSION "{}"\n'.format(bbPatch))
   fH.write('\n')
+  fH.write('#define BLPWTK2_DEVKIT_HEADER_HASH "{}"\n'.format(headerHash))
+  fH.write('\n')
   fH.write('namespace blpwtk2 {\n')
   fH.write('\n')
   fH.write('struct Version {\n')
   fH.write('    static const char* d_chromiumVersion;\n')
   fH.write('    static const char* d_bbPatchVersion;\n')
-  fH.write('    BLPWTK2_EXPORT static const char* {}();\n'.format(exportedSymbol))
+  fH.write('    BLPWTK2_EXPORT static const char* getDevkitHeaderHash();\n')
   fH.write('};  // Version\n')
-  fH.write('\n')
-  fH.write('// Force linker to pull in this component\'s object file.\n')
-  fH.write('namespace {\n')
-  fH.write('    const char* (*blpwtk2_version_assertion)() = \n')
-  fH.write('        &Version::{};\n'.format(exportedSymbol))
-  fH.write('}\n')
   fH.write('\n')
   fH.write('}  // blpwtk2\n')
   fH.write('\n')
@@ -116,9 +147,9 @@ def writeVersionFiles(fH, fCC, contentShellVersion, version):
   fCC.write('namespace blpwtk2 {\n')
   fCC.write('const char* Version::d_chromiumVersion = "{}";\n'.format(chromiumVersion))
   fCC.write('const char* Version::d_bbPatchVersion = "{}";\n'.format(bbPatch))
-  fCC.write('const char* Version::{}()\n'.format(exportedSymbol))
+  fCC.write('const char* Version::getDevkitHeaderHash()\n')
   fCC.write('{\n')
-  fCC.write('    return "{}";\n'.format(version))
+  fCC.write('    return BLPWTK2_DEVKIT_HEADER_HASH;\n')
   fCC.write('}\n')
   fCC.write('}  // blpwtk2\n')
 

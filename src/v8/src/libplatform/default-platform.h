@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "include/libplatform/libplatform-export.h"
-#include "include/v8-default-platform.h"
+#include "include/libplatform/libplatform.h"
 #include "include/libplatform/v8-tracing.h"
 #include "include/v8-platform.h"
 #include "src/base/compiler-specific.h"
@@ -90,11 +90,6 @@ V8_PLATFORM_EXPORT std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
     IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
     std::unique_ptr<v8::TracingController> tracing_controller);
-
-V8_PLATFORM_EXPORT bool PumpMessageLoopImpl(v8::Platform* platform,
-                                            v8::Isolate* isolate,
-                                            MessageLoopBehavior behavior);
-
 
 }  // namespace platform
 }  // namespace v8

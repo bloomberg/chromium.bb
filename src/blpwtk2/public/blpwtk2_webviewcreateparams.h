@@ -119,6 +119,15 @@ class BLPWTK2_EXPORT WebViewCreateParams {
     bool javascriptCanAccessClipboard() const;
     int rendererAffinity() const;
     bool rerouteMouseWheelToAnyRelatedWindow() const;
+
+    // BLPWTK2_FEATURE_WEBVIEW_SIZE_CREATE_PARAMS
+    void setWidth(int width);
+    void setHeight(int height);
+    int width() const;
+    int height() const;
+        // The initial size {width, height} when creating webview.
+        // Set appropriate size that unnecessary resizing can be avoided.
+        // It can be used to improve performance and reduce flashing.
 };
 
 

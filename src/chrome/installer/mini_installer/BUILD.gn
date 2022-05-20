@@ -13,6 +13,7 @@ import("//third_party/icu/config.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 declare_args() {
   # The Chrome archive is compressed in official builds to reduce the size of
@@ -202,7 +203,11 @@ action("mini_installer_archive") {
   }
 
   if (icu_use_data_file) {
-    inputs += [ "$root_out_dir/icudtl.dat" ]
+    if (bb_version == "") {
+      inputs += [ "$root_out_dir/icudtl.dat" ]
+    } else {
+      inputs += [ "$root_out_dir/icudtl.$bb_version.dat" ]
+    }
   } else {
     inputs += [ "$root_out_dir/icudt.dll" ]
   }
