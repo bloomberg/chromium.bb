@@ -823,6 +823,16 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 // the browser side, such as the HWND:
 void RenderWebView::initializeBrowserLike()
 {
+    int width   = 1;
+    int height  = 1;
+
+    if (d_properties.width > 0) {
+        width = d_properties.width;
+    }
+    if (d_properties.height > 0) {
+        height = d_properties.height;
+    }
+
     d_hwnd.reset(CreateWindowEx(
 #if defined(BLPWTK2_FEATURE_FOCUS)
         d_properties.activateWindowOnMouseDown?
@@ -835,8 +845,8 @@ void RenderWebView::initializeBrowserLike()
         WS_OVERLAPPED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        1,
-        1,
+        width,
+        height,
         NULL,
         NULL,
         NULL,
