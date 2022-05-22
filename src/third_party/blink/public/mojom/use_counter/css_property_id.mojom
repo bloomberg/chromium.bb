@@ -768,6 +768,7 @@ enum CSSSampleId {
 
 
     // patch section: simple-overflow-clip (feature 710)
+    kBbSimpleOverflowClip = 710,
 
 
 

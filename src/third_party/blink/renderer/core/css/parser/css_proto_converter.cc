@@ -991,6 +991,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "grid-row-gap",
     "row-gap",
     "backdrop-filter",
+    "bb-simple-overflow-clip",
     "font-variant-east-asian",
     "buffered-rendering",
     "-webkit-appearance",
