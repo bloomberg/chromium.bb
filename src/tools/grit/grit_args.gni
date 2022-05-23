@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/devtools.gni")
+import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 
 shared_intermediate_dir = rebase_path(root_gen_dir, root_build_dir)
@@ -35,6 +36,8 @@ _grit_defines = [
 
   # Mac and iOS want Title Case strings.
   "use_titlecase=${is_apple}",
+
+  "enable_pseudolocales=${enable_pseudolocales}",
 ]
 
 # Must match `enable_hidpi` in ui/base/ui_features.gni.

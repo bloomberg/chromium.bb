@@ -533,7 +533,8 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                                     const gfx::Rect& bounds,
                                     MenuAnchorPosition anchor,
                                     int32_t run_types,
-                                    gfx::NativeView native_view_for_gestures) {
+                                    gfx::NativeView native_view_for_gestures,
+                                    gfx::AcceleratedWidget /*parent_widget*/) {
   DCHECK(!IsRunning());
   DCHECK(parent);
   closing_event_time_ = base::TimeTicks();

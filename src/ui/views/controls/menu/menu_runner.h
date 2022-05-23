@@ -146,7 +146,9 @@ class VIEWS_EXPORT MenuRunner {
                  const gfx::Rect& bounds,
                  MenuAnchorPosition anchor,
                  ui::MenuSourceType source_type,
-                 gfx::NativeView native_view_for_gestures = nullptr);
+                 gfx::NativeView native_view_for_gestures = nullptr,
+                 gfx::AcceleratedWidget parent_widget =
+                     gfx::kNullAcceleratedWidget);
 
   // Returns true if we're in a nested run loop running the menu.
   bool IsRunning() const;

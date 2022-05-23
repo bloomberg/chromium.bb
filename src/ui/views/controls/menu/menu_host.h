@@ -54,6 +54,8 @@ class MenuHost : public Widget, public WidgetObserver {
     // Additional information that helps to position anchored windows in such
     // backends as Wayland.
     ui::OwnedWindowAnchor owned_window_anchor;
+
+    gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
   };
 
   explicit MenuHost(SubmenuView* submenu);

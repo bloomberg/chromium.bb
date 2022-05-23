@@ -47,7 +47,8 @@ class VIEWS_EXPORT MenuRunnerImpl : public MenuRunnerImplInterface,
                  const gfx::Rect& bounds,
                  MenuAnchorPosition anchor,
                  int32_t run_types,
-                 gfx::NativeView native_view_for_gestures) override;
+                 gfx::NativeView native_view_for_gestures,
+                 gfx::AcceleratedWidget parent_widget) override;
   void Cancel() override;
   base::TimeTicks GetClosingEventTime() const override;
 

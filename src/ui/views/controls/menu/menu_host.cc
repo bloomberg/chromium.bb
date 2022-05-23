@@ -144,6 +144,8 @@ void MenuHost::InitMenuHost(const InitParams& init_params) {
                                        : gfx::kNullNativeWindow;
   params.bounds = init_params.bounds;
 
+  params.parent_widget = init_params.parent_widget;
+
 #if defined(USE_AURA)
   // TODO(msisov): remove kMenutype once positioning of anchored windows
   // finally migrates to a new path.
@@ -155,7 +157,8 @@ void MenuHost::InitMenuHost(const InitParams& init_params) {
   // If MenuHost has no parent widget, it needs to be marked
   // Activatable, so that calling Show in ShowMenuHost will
   // get keyboard focus.
-  if (init_params.parent == nullptr)
+  if (init_params.parent == nullptr &&
+      init_params.parent_widget == gfx::kNullAcceleratedWidget)
     params.activatable = Widget::InitParams::Activatable::kYes;
 
 #if BUILDFLAG(IS_WIN)

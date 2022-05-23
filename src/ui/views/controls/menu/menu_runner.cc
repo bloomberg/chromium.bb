@@ -34,7 +34,8 @@ void MenuRunner::RunMenuAt(Widget* parent,
                            const gfx::Rect& bounds,
                            MenuAnchorPosition anchor,
                            ui::MenuSourceType source_type,
-                           gfx::NativeView native_view_for_gestures) {
+                           gfx::NativeView native_view_for_gestures,
+                           gfx::AcceleratedWidget parent_widget) {
   // Do not attempt to show the menu if the application is currently shutting
   // down. MenuDelegate::OnMenuClosed would not be called.
   if (ViewsDelegate::GetInstance() &&
@@ -80,7 +81,7 @@ void MenuRunner::RunMenuAt(Widget* parent,
   }
 
   impl_->RunMenuAt(parent, button_controller, bounds, anchor, run_types_,
-                   native_view_for_gestures);
+                   native_view_for_gestures, parent_widget);
 }
 
 bool MenuRunner::IsRunning() const {

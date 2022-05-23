@@ -38,7 +38,8 @@ void ApcOnboardingCoordinatorImpl::PerformOnboarding(Callback callback) {
           base::Unretained(this)));
 }
 
-std::unique_ptr<AssistantOnboardingController> CreateOnboardingController(
+std::unique_ptr<AssistantOnboardingController>
+ApcOnboardingCoordinatorImpl::CreateOnboardingController(
     const AssistantOnboardingInformation& onboarding_information) {
   return AssistantOnboardingController::Create(onboarding_information);
 }

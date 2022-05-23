@@ -473,7 +473,8 @@ void MenuController::Run(Widget* parent,
                          MenuAnchorPosition position,
                          bool context_menu,
                          bool is_nested_drag,
-                         gfx::NativeView native_view_for_gestures) {
+                         gfx::NativeView native_view_for_gestures,
+                         gfx::AcceleratedWidget parent_widget) {
   exit_type_ = ExitType::kNone;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -520,6 +521,7 @@ void MenuController::Run(Widget* parent,
       owner_->AddObserver(this);
 
     native_view_for_gestures_ = native_view_for_gestures;
+    parent_widget_ = parent_widget;
 
     // Only create a MenuPreTargetHandler for non-nested menus. Nested menus
     // will use the existing one.
@@ -2177,6 +2179,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
     params.do_capture = do_capture;
     params.native_view_for_gestures = native_view_for_gestures_;
     params.owned_window_anchor = anchor;
+    params.parent_widget = parent_widget_;
 
     if (item->GetParentMenuItem()) {
       params.context = state_.item->GetWidget();

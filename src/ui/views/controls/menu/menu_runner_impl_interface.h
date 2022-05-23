@@ -40,7 +40,9 @@ class MenuRunnerImplInterface {
                          const gfx::Rect& bounds,
                          MenuAnchorPosition anchor,
                          int32_t run_types,
-                         gfx::NativeView native_view_for_gestures) = 0;
+                         gfx::NativeView native_view_for_gestures,
+                         gfx::AcceleratedWidget parent_widget =
+                             gfx::kNullAcceleratedWidget) = 0;
 
   // Hides and cancels the menu.
   virtual void Cancel() = 0;
