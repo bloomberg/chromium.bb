@@ -742,6 +742,7 @@
 
 
         // patch section: simple-overflow-clip
+        "bb-simple-overflow-clip",
 
 
         // patch section: suppress-needs-compositing-input-update

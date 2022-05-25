@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
 namespace blink {
 
@@ -35,6 +36,16 @@ bool ShouldPaintDragCaret(const LayoutBlock& block) {
 
 bool ShouldPaintCarets(const LayoutBlock& block) {
   return ShouldPaintCursorCaret(block) || ShouldPaintDragCaret(block);
+}
+
+// copied from box_painter.cc
+gfx::Rect VisualRect(const LayoutBlock& layout_block,
+                     const PhysicalOffset& paint_offset) {
+  DCHECK(!layout_block.VisualRectRespectsVisibility() ||
+         layout_block.StyleRef().Visibility() == EVisibility::kVisible);
+  PhysicalRect rect = layout_block.PhysicalSelfVisualOverflowRect();
+  rect.Move(paint_offset);
+  return ToEnclosingRect(rect);
 }
 
 }  // namespace
@@ -89,8 +100,19 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
              // self-painting layers, so we don't need to traverse descendants
              // here.
              original_phase != PaintPhase::kOverlayOverflowControls) {
+    bool hoist_clip = layout_block_.StyleRef().Visibility() == EVisibility::kVisible &&
+                      layout_block_.StyleRef().BbSimpleOverflowClip() == EBbSimpleOverflowClip::kAuto;
     ScopedBoxContentsPaintState contents_paint_state(paint_state,
-                                                     layout_block_);
+                                                     layout_block_,
+                                                     hoist_clip);
+    if (contents_paint_state.HoistedClip() && original_phase == PaintPhase::kForeground) {
+      paint_info.context.GetPaintController().CreateAndAppend<SwitchToClipDisplayItem>(
+          layout_block_,
+          *contents_paint_state.HoistedClip(),
+          VisualRect(layout_block_, contents_paint_state.PaintOffset()),
+          static_cast<const DisplayItemClient&>(layout_block_).VisualRectOutsetForRasterEffects(),
+          static_cast<const DisplayItemClient&>(layout_block_).GetPaintInvalidationReason());
+    }
     layout_block_.PaintObject(contents_paint_state.GetPaintInfo(),
                               contents_paint_state.PaintOffset());
   }

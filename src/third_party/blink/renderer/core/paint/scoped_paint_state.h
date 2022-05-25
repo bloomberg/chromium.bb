@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
@@ -122,8 +123,10 @@ class ScopedPaintState {
 class ScopedBoxContentsPaintState : public ScopedPaintState {
  public:
   ScopedBoxContentsPaintState(const ScopedPaintState& input,
-                              const LayoutBox& box)
-      : ScopedPaintState(input) {
+                              const LayoutBox& box,
+                              bool hoist_clip = false)
+      : ScopedPaintState(input)
+      , hoist_clip_(hoist_clip) {
     AdjustForBoxContents(box);
   }
 
@@ -134,8 +137,13 @@ class ScopedBoxContentsPaintState : public ScopedPaintState {
     AdjustForBoxContents(box);
   }
 
+  const ClipPaintPropertyNodeOrAlias* HoistedClip() const { return hoisted_clip_; }
+
  private:
   void AdjustForBoxContents(const LayoutBox&);
+
+  const ClipPaintPropertyNodeOrAlias* hoisted_clip_ = nullptr;
+  bool hoist_clip_ = false;
 };
 
 }  // namespace blink

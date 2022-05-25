@@ -982,6 +982,7 @@
 "background-repeat"
 "base-palette"
 "baseline-shift"
+"bb-simple-overflow-clip"
 "block-size"
 "block-step"
 "block-step-align"
