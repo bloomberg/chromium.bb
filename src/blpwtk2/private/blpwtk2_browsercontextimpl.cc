@@ -33,6 +33,8 @@
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
 #include <blpwtk2_gpudatalogger.h>
+#include <blpwtk2_permissionmanager.h>
+
 #include <net/url_request/url_request_context_builder.h>
 
 
@@ -548,7 +550,11 @@ content::SSLHostStateDelegate* BrowserContextImpl::GetSSLHostStateDelegate()
 
 content::PermissionControllerDelegate* BrowserContextImpl::GetPermissionControllerDelegate()
 {
-    return nullptr;
+    if (!d_permissionManager.get()) {
+        d_permissionManager = std::make_unique<PermissionManager>();
+    }
+
+    return d_permissionManager.get();
 }
 
 content::ClientHintsControllerDelegate* BrowserContextImpl::GetClientHintsControllerDelegate()

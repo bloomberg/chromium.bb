@@ -11,6 +11,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//v8/gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 declare_args() {
   # If set, both snapshots are included. At this time, this only applicable to
@@ -50,8 +51,10 @@ declare_args() {
     } else {
       v8_context_snapshot_filename = "v8_context_snapshot_64.bin"
     }
-  } else {
+  } else if (bb_version == "") {
     v8_context_snapshot_filename = "v8_context_snapshot.bin"
+  } else {
+    v8_context_snapshot_filename = "v8_context_snapshot.$bb_version.bin"
   }
 }
 

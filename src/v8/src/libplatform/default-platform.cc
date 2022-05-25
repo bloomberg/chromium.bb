@@ -55,6 +55,16 @@ std::unique_ptr<v8::Platform> NewDefaultPlatformImpl(
   return platform;
 }
 
+v8::Platform* NewDefaultPlatform(
+    int thread_pool_size, IdleTaskSupport idle_task_support,
+    InProcessStackDumping in_process_stack_dumping,
+    v8::TracingController* tracing_controller) {
+    std::unique_ptr<v8::TracingController> controller(tracing_controller);
+  return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
+                                in_process_stack_dumping,
+                                std::move(controller)).release();
+}
+
 std::unique_ptr<v8::Platform> NewSingleThreadedDefaultPlatform(
     IdleTaskSupport idle_task_support,
     InProcessStackDumping in_process_stack_dumping,
@@ -82,8 +92,8 @@ BLPV8_PLATFORM_EXPORT JobHandle* NewDefaultJobHandleRaw(
           platform, priority, std::move(job_task), num_worker_threads).release();
 }
 
-bool PumpMessageLoopImpl(v8::Platform* platform, v8::Isolate* isolate,
-                         MessageLoopBehavior behavior) {
+bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
+                     MessageLoopBehavior behavior) {
   return static_cast<DefaultPlatform*>(platform)->PumpMessageLoop(isolate,
                                                                   behavior);
 }

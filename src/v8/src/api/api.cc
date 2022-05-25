@@ -15,7 +15,6 @@
 #include "include/v8-callbacks.h"
 #include "include/v8-cppgc.h"
 #include "include/v8-date.h"
-#include "include/v8-default-platform.h"
 #include "include/v8-embedder-state-scope.h"
 #include "include/v8-extension.h"
 #include "include/v8-fast-api-calls.h"
@@ -73,7 +72,6 @@
 #include "src/init/v8.h"
 #include "src/json/json-parser.h"
 #include "src/json/json-stringifier.h"
-#include "src/libplatform/default-platform.h"
 #include "src/logging/counters-scopes.h"
 #include "src/logging/metrics.h"
 #include "src/logging/runtime-call-stats-scope.h"
@@ -392,25 +390,6 @@ void Utils::ReportOOMFailure(i::Isolate* isolate, const char* location,
   }
   isolate->SignalFatalError();
 }
-
-namespace platform {
-
-v8::Platform* NewDefaultPlatform(
-    int thread_pool_size, IdleTaskSupport idle_task_support,
-    InProcessStackDumping in_process_stack_dumping,
-    v8::TracingController* tracing_controller) {
-    std::unique_ptr<v8::TracingController> controller(tracing_controller);
-  return NewDefaultPlatformImpl(thread_pool_size, idle_task_support,
-                                in_process_stack_dumping,
-                                std::move(controller)).release();
-}
-
-bool PumpMessageLoop(v8::Platform* platform, v8::Isolate* isolate,
-                     MessageLoopBehavior behavior) {
-  return PumpMessageLoopImpl(platform, isolate, behavior);
-}
-
-}  // namespace platform
 
 void V8::SetSnapshotDataBlob(StartupData* snapshot_blob) {
   i::V8::SetSnapshotBlob(snapshot_blob);
