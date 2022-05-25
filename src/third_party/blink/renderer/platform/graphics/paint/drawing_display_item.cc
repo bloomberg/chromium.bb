@@ -330,4 +330,19 @@ bool DrawingDisplayItem::IsSolidColor() const {
   return solid_color_rect.Contains(gfx::RectF(VisualRect()));
 }
 
+SwitchToClipDisplayItem::SwitchToClipDisplayItem(
+                          DisplayItemClientId client_id,
+                          const ClipPaintPropertyNodeOrAlias& target_clip,
+                          const gfx::Rect& visual_rect,
+                          RasterEffectOutset outset,
+                          PaintInvalidationReason paint_invalidation_reason)
+  : DisplayItem(client_id,
+                DisplayItem::kSwitchToClip,
+                visual_rect,
+                outset,
+                paint_invalidation_reason,
+                /*draws_content*/ false),
+    target_clip_(&target_clip) {
+}
+
 }  // namespace blink

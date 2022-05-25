@@ -1970,7 +1970,8 @@ bool LayoutBlockFlow::ShouldTruncateOverflowingText() const {
       return false;
     object_to_check = parent;
   }
-  return object_to_check->HasNonVisibleOverflow() &&
+  return (object_to_check->HasNonVisibleOverflow() ||
+          object_to_check->StyleRef().BbSimpleOverflowClip() == EBbSimpleOverflowClip::kAuto) &&
          object_to_check->StyleRef().TextOverflow() != ETextOverflow::kClip;
 }
 

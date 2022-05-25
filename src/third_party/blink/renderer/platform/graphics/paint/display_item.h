@@ -153,6 +153,9 @@ class PLATFORM_EXPORT DisplayItem {
     // foreground is in the kLayerChunk chunk.
     kLayerChunkForeground,
 
+    // Used for SwitchToClipDisplayItem
+    kSwitchToClip,
+
     // The following 2 types are For ScrollbarDisplayItem.
     kScrollbarHorizontal,
     kScrollbarVertical,
@@ -255,6 +258,10 @@ class PLATFORM_EXPORT DisplayItem {
 
   bool IsScrollbar() const {
     return type_ == kScrollbarHorizontal || type_ == kScrollbarVertical;
+  }
+
+  bool IsSwitchToClip() const {
+    return type_ == kSwitchToClip;
   }
 
   PaintInvalidationReason GetPaintInvalidationReason() const {

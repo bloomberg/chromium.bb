@@ -28,6 +28,8 @@ void DisplayItem::Destruct() {
     drawing->~DrawingDisplayItem();
   } else if (auto* foreign_layer = DynamicTo<ForeignLayerDisplayItem>(this)) {
     foreign_layer->~ForeignLayerDisplayItem();
+  } else if (auto* switch_to_clip = DynamicTo<SwitchToClipDisplayItem>(this)) {
+    switch_to_clip->~SwitchToClipDisplayItem();
   } else {
     To<ScrollbarDisplayItem>(this)->~ScrollbarDisplayItem();
   }
@@ -196,6 +198,7 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     DEBUG_STRING_CASE(CustomScrollbarHitTest);
     DEBUG_STRING_CASE(LayerChunk);
     DEBUG_STRING_CASE(LayerChunkForeground);
+    DEBUG_STRING_CASE(SwitchToClip);
     DEBUG_STRING_CASE(ScrollbarHorizontal);
     DEBUG_STRING_CASE(ScrollbarVertical);
     DEBUG_STRING_CASE(UninitializedType);

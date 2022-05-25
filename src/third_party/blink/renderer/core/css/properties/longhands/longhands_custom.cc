@@ -707,6 +707,30 @@ const CSSValue* BaselineShift::CSSValueFromComputedStyleInternal(
   return nullptr;
 }
 
+const CSSValue* BbSimpleOverflowClip::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeIdent(range);
+}
+
+const CSSValue* BbSimpleOverflowClip::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.BbSimpleOverflowClip());
+}
+
+void BbSimpleOverflowClip::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->ResetBbSimpleOverflowClip();
+}
+
+void BbSimpleOverflowClip::ApplyValue(StyleResolverState& state,
+                                      const CSSValue& value) const {
+  state.Style()->SetBbSimpleOverflowClip(
+      To<CSSIdentifierValue>(value).ConvertTo<EBbSimpleOverflowClip>());
+}
+
 void BaselineShift::ApplyInherit(StyleResolverState& state) const {
   state.Style()->SetBaselineShiftType(state.ParentStyle()->BaselineShiftType());
   state.Style()->SetBaselineShift(state.ParentStyle()->BaselineShift());

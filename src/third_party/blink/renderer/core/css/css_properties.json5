@@ -1259,6 +1259,16 @@
       computable: false,
     },
     {
+      name: "bb-simple-overflow-clip",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_template: "keyword",
+      keywords: ["none", "auto"],
+      typedom_types: ["Keyword"],
+      default_value: "none",
+      style_builder_custom_functions: ["initial", "value"],
+    },
+    {
       name: "backdrop-filter",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,

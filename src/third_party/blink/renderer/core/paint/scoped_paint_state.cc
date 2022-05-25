@@ -51,8 +51,27 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
 
   DCHECK_EQ(paint_offset_, fragment_to_paint_->PaintOffset());
 
+  auto contents_properties = fragment_to_paint_->ContentsProperties();
+
+  // If the fragment contains a non-empty clip rect, then store the clip in
+  // `hoisted_clip_` and reset the clip in `contents_properties`.  This
+  // effectively removes the clip from the `chunk_properties_` below, which
+  // avoids creating a separate chunk for this clip.  Instead, the clip will be
+  // applied using a custom DisplayItem.
+  if (hoist_clip_) {
+    const ClipPaintPropertyNode& target_clip = contents_properties.Clip().Unalias();
+    if (!target_clip.PaintClipRect().IsEmpty()) {
+      auto current_properties = input_paint_info_.context.GetPaintController().CurrentPaintChunkProperties();
+      const ClipPaintPropertyNode& current_clip = current_properties.Clip().Unalias();
+      if (&target_clip != &current_clip) {
+        hoisted_clip_ = &contents_properties.Clip();
+        contents_properties.SetClip(current_properties.Clip());
+      }
+    }
+  }
+
   chunk_properties_.emplace(input_paint_info_.context.GetPaintController(),
-                            fragment_to_paint_->ContentsProperties(), box,
+                            contents_properties, box,
                             input_paint_info_.DisplayItemTypeForClipping());
 
   const auto* properties = fragment_to_paint_->PaintProperties();

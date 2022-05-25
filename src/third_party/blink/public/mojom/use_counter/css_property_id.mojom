@@ -772,6 +772,7 @@ enum CSSSampleId {
     kBbSuppressNeedsCompositingInputUpdate = 709,
 
     // patch section: simple-overflow-clip (feature 710)
+    kBbSimpleOverflowClip = 710,
 
 
 

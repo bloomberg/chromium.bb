@@ -1794,6 +1794,9 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
   if (!object.IsBox())
     return false;
 
+  if (object.StyleRef().BbSimpleOverflowClip() == EBbSimpleOverflowClip::kAuto)
+    return true;
+
   if (!To<LayoutBox>(object).ShouldClipOverflowAlongEitherAxis())
     return false;
 
@@ -1970,6 +1973,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         state.SetClipRect(clip_rect.Rect(), clip_rect);
       } else if (object_.IsBox()) {
         PhysicalRect clip_rect;
+        if (object_.StyleRef().BbSimpleOverflowClip() == EBbSimpleOverflowClip::kAuto) {
+          clip_rect = To<LayoutBox>(object_).PhysicalBorderBoxRect();
+          clip_rect.Contract(To<LayoutBox>(object_).BorderBoxOutsets());
+          clip_rect.Move(context_.current.paint_offset);
+        }
+        else {
         if (pre_paint_info_) {
           clip_rect = pre_paint_info_->box_fragment.OverflowClipRect(
               context_.current.paint_offset,
@@ -1977,6 +1986,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         } else {
           clip_rect = To<LayoutBox>(object_).OverflowClipRect(
               context_.current.paint_offset);
+        }
         }
         state.SetClipRect(gfx::RectF(clip_rect), ToSnappedClipRect(clip_rect));
 
