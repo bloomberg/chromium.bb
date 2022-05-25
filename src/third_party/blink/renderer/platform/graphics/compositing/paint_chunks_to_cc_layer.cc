@@ -103,7 +103,8 @@ class ConversionContext {
   // Switch the current property tree state to the chunk's state. It's only
   // called if we actually paint anything, and should execute for a chunk
   // only once.
-  void SwitchToChunkState(const PaintChunk&);
+  void SwitchToChunkState(const PaintChunk&,
+                          const ClipPaintPropertyNodeOrAlias* target_clip = nullptr);
 
   // Switch the current clip to the target state, staying in the same effect.
   // It is no-op if the context is already in the target state.
@@ -277,13 +278,14 @@ void ConversionContext::TranslateForLayerOffsetOnce() {
   translated_for_layer_offset_ = true;
 }
 
-void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
+void ConversionContext::SwitchToChunkState(const PaintChunk& chunk,
+                                           const ClipPaintPropertyNodeOrAlias* target_clip) {
   TranslateForLayerOffsetOnce();
   chunk_to_layer_mapper_.SwitchToChunk(chunk);
 
   const auto& chunk_state = chunk.properties;
   SwitchToEffect(chunk_state.Effect().Unalias());
-  SwitchToClip(chunk_state.Clip().Unalias());
+  SwitchToClip(target_clip ? target_clip->Unalias() : chunk_state.Clip().Unalias());
   SwitchToTransform(chunk_state.Transform().Unalias());
 }
 
@@ -716,6 +718,16 @@ void ConversionContext::Convert(const PaintChunkSubset& chunks) {
         record = scrollbar->Paint();
       else if (auto* drawing = DynamicTo<DrawingDisplayItem>(item))
         record = drawing->GetPaintRecord();
+      else if (auto* switch_to_clip = DynamicTo<SwitchToClipDisplayItem>(item)) {
+        if (!switched_to_chunk_state) {
+          SwitchToChunkState(chunk, &switch_to_clip->TargetClip());
+          switched_to_chunk_state = true;
+        }
+        else {
+          SwitchToClip(switch_to_clip->TargetClip().Unalias());
+        }
+        continue;
+      }
       else
         continue;
 
