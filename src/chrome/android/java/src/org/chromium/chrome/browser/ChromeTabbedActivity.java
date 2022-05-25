@@ -178,6 +178,7 @@ import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
@@ -562,20 +563,31 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mHistoricalTabModelObserver =
                     new HistoricalTabModelObserver(mTabModelSelector.getModel(false));
 
+            if (TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(this)) {
+                mTabModelSelector.addObserver(new TabModelSelectorObserver() {
+                    @Override
+                    public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                        openTabletTabSwitcherIfNoTabs();
+                    }
+                });
+            }
             mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
                 @Override
                 public void didCloseTab(Tab tab) {
                     closeIfNoTabsAndHomepageEnabled(false);
+                    openTabletTabSwitcherIfNoTabs();
                 }
 
                 @Override
                 public void tabPendingClosure(Tab tab) {
                     closeIfNoTabsAndHomepageEnabled(true);
+                    openTabletTabSwitcherIfNoTabs();
                 }
 
                 @Override
                 public void tabRemoved(Tab tab) {
                     closeIfNoTabsAndHomepageEnabled(false);
+                    openTabletTabSwitcherIfNoTabs();
                 }
 
                 private void closeIfNoTabsAndHomepageEnabled(boolean isPendingClosure) {
@@ -601,11 +613,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
                                     ChromeTabbedActivity.this)
                             && MultiWindowUtils.getVisibleTabbedTaskCount() > 1;
-                    boolean tabletGtsPolish =
-                            TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(
-                                    ChromeTabbedActivity.this);
-                    boolean useAccessibilityListSwitcher =
-                            DeviceClassManager.enableAccessibilityLayout(ChromeTabbedActivity.this);
 
                     // TODO(crbug.com/1046541) : Remove this when the associated bug is fixed. This
                     //  is a band-aid fix for TabGrid and closing tabs with TabGroupUi.
@@ -616,17 +623,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab && !isTablet()
                             && !multiWindowActive) {
                         finish();
-                    }
-
-                    // TODO(crbug.com/1272821): Investigate unexpected behavior when the last tab is
-                    //  closed through grid tab switcher without this logic.
-                    //  If one of the following is true, then hide the grid tab switcher for tablets
-                    //  when TabGroupsAndroid is enabled, and tab switcher is shown:
-                    //   1. If the very last tab is closed.
-                    //   2. If normal tab model is selected and no normal tabs.
-                    if (gridTabSwitcherEnabled && overviewVisible && !hasNextTab && isTablet()
-                            && !tabletGtsPolish && !useAccessibilityListSwitcher) {
-                        mLayoutManager.showLayout(LayoutType.BROWSING, true);
                     }
                 }
 
@@ -650,6 +646,20 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             };
         } finally {
             TraceEvent.end("ChromeTabbedActivity.initializeCompositor");
+        }
+    }
+
+    private void openTabletTabSwitcherIfNoTabs() {
+        if (!isTablet()) return;
+
+        boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isTabletGridTabSwitcherEnabled(this);
+        boolean overviewVisible = mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
+        boolean hasNextTab = !(getTabModelSelector().getTotalTabCount() == 0
+                || (!getTabModelSelector().isIncognitoSelected()
+                        && getTabModelSelector().getModel(false).getCount() == 0));
+
+        if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab) {
+            mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, false);
         }
     }
 
@@ -1043,7 +1053,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         resetSavedInstanceState();
-        StartSurfaceConfiguration.addFeedVisibilityObserver();
+        ReturnToChromeUtil.addFeedVisibilityObserver();
         BookmarkUtils.maybeExpireLastBookmarkLocationForReadLater(
                 mInactivityTracker.getTimeSinceLastBackgroundedMs());
     }
@@ -2238,6 +2248,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (type == TabLaunchType.FROM_READING_LIST) {
             assert !isTablet() : "Not expecting to see FROM_READING_LIST on tablets";
             ReadingListUtils.showReadingList(currentTab.isIncognito());
+        }
+
+        // At this point we know either the tab will close or the app will minimize.
+        NativePage nativePage = currentTab.getNativePage();
+        if (nativePage != null) {
+            nativePage.notifyHidingWithBack();
         }
 
         final boolean shouldCloseTab = backShouldCloseTab(currentTab);

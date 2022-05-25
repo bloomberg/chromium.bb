@@ -2079,6 +2079,11 @@
       "expiry_milestone": 105
   },
   {
+    "name": "enable-feed-ablation",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "enable-fenced-frames",
     "owners": [ "dom", "shivanisha", "chrome-fenced-frames@google.com" ],
     "expiry_milestone": 110
@@ -3189,6 +3194,11 @@
     "name": "fedcm",
     "owners": [ "goto", "webid-core@google.com"],
     "expiry_milestone": 110
+  },
+  {
+    "name": "feed-ablation",
+    "owners": [ "//chrome/android/feed/OWNERS", "dewittj@chromium.org" ],
+    "expiry_milestone": 105
   },
   {
     "name": "feed-back-to-top",
