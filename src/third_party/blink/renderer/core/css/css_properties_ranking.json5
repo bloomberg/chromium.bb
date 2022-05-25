@@ -745,6 +745,9 @@
         "-bb-lcd-background-color",
 
 
+        // patch section: simple-overflow-clip
+
+
         // patch section: suppress-needs-compositing-input-update
         "-bb-suppress-needs-compositing-input-update",
 
