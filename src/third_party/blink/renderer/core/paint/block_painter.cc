@@ -105,13 +105,16 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
     ScopedBoxContentsPaintState contents_paint_state(paint_state,
                                                      layout_block_,
                                                      hoist_clip);
-    if (contents_paint_state.HoistedClip() && original_phase == PaintPhase::kForeground) {
-      paint_info.context.GetPaintController().CreateAndAppend<SwitchToClipDisplayItem>(
-          layout_block_,
-          *contents_paint_state.HoistedClip(),
-          VisualRect(layout_block_, contents_paint_state.PaintOffset()),
-          static_cast<const DisplayItemClient&>(layout_block_).VisualRectOutsetForRasterEffects(),
-          static_cast<const DisplayItemClient&>(layout_block_).GetPaintInvalidationReason());
+    if (contents_paint_state.HoistedClip()) {
+      if (original_phase == PaintPhase::kFloat ||
+          original_phase == PaintPhase::kForeground) {
+        paint_info.context.GetPaintController().CreateAndAppend<SwitchToClipDisplayItem>(
+            layout_block_,
+            *contents_paint_state.HoistedClip(),
+            VisualRect(layout_block_, contents_paint_state.PaintOffset()),
+            static_cast<const DisplayItemClient&>(layout_block_).VisualRectOutsetForRasterEffects(),
+            static_cast<const DisplayItemClient&>(layout_block_).GetPaintInvalidationReason());
+      }
     }
     layout_block_.PaintObject(contents_paint_state.GetPaintInfo(),
                               contents_paint_state.PaintOffset());
