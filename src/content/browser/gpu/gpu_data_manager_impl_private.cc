@@ -1453,19 +1453,14 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
   // of 1000 messages to prevent excess memory usage.
   const int kLogMessageLimit = 1000;
 
+  if (!log_message_token_size_) {
+    log_message_token_size_ = 500;
+  }
+
   log_messages_.push_back(LogMessage(level, header, message));
   if (log_messages_.size() > kLogMessageLimit) {
     log_messages_.erase(log_messages_.begin());
 
-    // blpwtk2: Apply a rate limit to GPU logger messages. We are allowing
-    // 2 messages/second in steady stream with a burst limit of
-    // 100 messages/second.
-    if (log_message_token_size_) {
-      log_message_token_size_ = (log_message_token_size_ + 500) / 2;
-    }
-    else {
-      log_message_token_size_ = 500;
-    }
     const int burst_limit = 50;
 
     const base::TimeDelta token_size =
@@ -1480,7 +1475,13 @@ void GpuDataManagerImplPrivate::AddLogMessage(int level,
     if (now - log_message_token_marker_ >= token_size) {
       log_message_token_marker_ += token_size;
 
-      if (log_message_omitted_) {
+      if (!log_message_omitted_) {
+        // blpwtk2: Apply a rate limit to GPU logger messages. We are allowing
+        // 2 messages/second in steady stream with a burst limit of
+        // 100 messages/second.
+        log_message_token_size_ = (log_message_token_size_ + 500) / 2;
+      }
+      else {
         std::string msg = std::to_string(log_message_omitted_) +
                           " logger messages were omitted";
 
