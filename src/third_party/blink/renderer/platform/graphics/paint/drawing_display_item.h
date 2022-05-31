@@ -109,7 +109,7 @@ struct DowncastTraits<DrawingDisplayItem> {
   }
 };
 
-class SwitchToClipDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT SwitchToClipDisplayItem : public DisplayItem {
  public:
   SwitchToClipDisplayItem(DisplayItemClientId client_id,
                           const ClipPaintPropertyNodeOrAlias& target_clip,
