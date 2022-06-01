@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Sulje nykyinen välilehti</translation>
 <translation id="1246905108078336582">Poistetaanko ehdotus leikepöydältä?</translation>
 <translation id="1258753120186372309">Google-piirros: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Lukulista</translation>
 <translation id="1266864766717917324">Jakaminen epäonnistui: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Laajenna napauttamalla.</translation>
 <translation id="1285310382777185058">Vaihda kieltä</translation>
@@ -777,6 +778,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5246093389635966745">Muokkaa työkalupalkin pikakuvaketta</translation>
 <translation id="526421993248218238">Sivun lataaminen epäonnistui</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
+<translation id="5274286919938458946">Linkitetty <ph name="CARD_DETAIL" />-maksukorttiin</translation>
 <translation id="5292796745632149097">Lähetä:</translation>
 <translation id="5300426565656326054">Selainpohjainen mainosten personointi</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>

@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Isara ang kasalukuyang tab</translation>
 <translation id="1246905108078336582">Alisin ang suhestyon mula sa clipboard?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Listahan ng babasahin</translation>
 <translation id="1266864766717917324">Hindi maibahagi ang <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1285310382777185058">Palitan ang wika</translation>
@@ -777,6 +778,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5246093389635966745">I-edit ang shortcut ng toolbar</translation>
 <translation id="526421993248218238">Hindi ma-load ang page na ito</translation>
 <translation id="5271967389191913893">Hindi mabuksan ng device ang content na ida-download.</translation>
+<translation id="5274286919938458946">Naka-link sa <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Ipadala kay</translation>
 <translation id="5300426565656326054">Pag-personalize ng ad na nakabatay sa browser</translation>
 <translation id="5304593522240415983">Hindi maaaring maging blangko ang field na ito</translation>

@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Az aktuális lap bezárása</translation>
 <translation id="1246905108078336582">Eltávolítja a javaslatot a vágólapról?</translation>
 <translation id="1258753120186372309">Google ünnepi embléma: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Olvasási lista</translation>
 <translation id="1266864766717917324">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1283039547216852943">Koppintson a kibontáshoz</translation>
 <translation id="1285310382777185058">Nyelv módosítása</translation>
@@ -777,6 +778,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5246093389635966745">Eszköztár gyorsparancsainak szerkesztése</translation>
 <translation id="526421993248218238">Nem lehet betölteni az oldalt</translation>
 <translation id="5271967389191913893">Az eszköz nem tudja megnyitni a letölteni kívánt tartalmat.</translation>
+<translation id="5274286919938458946">Összekapcsolva a következővel: <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Küldés a következőre:</translation>
 <translation id="5300426565656326054">Hirdetések böngészőalapú személyre szabása</translation>
 <translation id="5304593522240415983">Ez a mező nem lehet üres</translation>

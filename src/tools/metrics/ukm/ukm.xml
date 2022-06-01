@@ -452,6 +452,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AdPageLoadCustomSampling" singular="True">
+  <owner>yaoxia@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Recorded when a page has loaded non-zero ad bytes, and the page is being
+    destroyed/navigated or when the app enters the background on mobile. This is
+    separate from the `AdPageLoad` event to allow a potentially different
+    sampling.
+  </summary>
+  <metric name="AverageViewportAdDensity">
+    <summary>
+      The estimated average density of ads within the viewport by area.
+      Calculated as the moving average of area of ads within the viewport * 100
+      / viewport area. This counts each overlapping area once.
+    </summary>
+  </metric>
+</event>
+
 <event name="AdsIntervention.LastIntervention" singular="True">
   <owner>yaoxia@google.com</owner>
   <owner>chrome-ads-core@google.com</owner>
@@ -12448,6 +12467,34 @@ be describing additional metrics about the same event.
     <summary>
       Boolean value representing whether the request is for a subresource. If
       false, then the request was a main frame page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="Network.CacheTransparency">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    Metrics for Cache Transparency which aims to allow a list of pervasive
+    payloads to be specified and cached in a single-keyed cache to improve
+    loading performance. Recorded for each navigation and subresource load.
+  </summary>
+  <metric name="FoundPervasivePayload" enum="Boolean">
+    <summary>
+      Records whether a requested resource's URL matched with any of the URLs in
+      the Cache Transparency Pervasive Payloads List.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="TotalBytesFetched">
+    <summary>
+      Records the total bytes fetched by the network.
     </summary>
   </metric>
 </event>

@@ -660,6 +660,7 @@ bool DisplayLockContext::MarkForLayoutIfNeeded() {
         layout_object->SetIntrinsicLogicalWidthsDirty();
         layout_object->SetChildNeedsLayout();
         // Make sure we don't use cached NGFragmentItem objects.
+        To<LayoutBox>(layout_object)->DisassociatePhysicalFragments();
         To<LayoutBox>(layout_object)->ClearLayoutResults();
       }
     }
@@ -922,6 +923,8 @@ void DisplayLockContext::ScheduleTopLayerCheck() {
 }
 
 bool DisplayLockContext::IsShapingDeferred() const {
+  if (!element_)
+    return false;
   if (const auto* layout_object = element_->GetLayoutObject())
     return layout_object->IsShapingDeferred();
   return false;
@@ -1216,6 +1219,17 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
         !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle) &&
         !state(RenderAffectingState::kAutoUnlockedForPrint) &&
         !state(RenderAffectingState::kSubtreeHasTopLayerElement)));
+
+  // For shaping-deferred boxes, we'd like to unlock permanently.
+  if (IsShapingDeferred() && state_ != EContentVisibility::kVisible &&
+      !should_be_locked && IsLocked()) {
+    SetRequestedState(EContentVisibility::kVisible);
+    // We need to change the document lifecycle explicitly because Unlock()
+    // inside the above SetRequestedState() didn't change the lifecycle.
+    // See CanDirtyStyle() check in Unlock().
+    document_->Lifecycle().EnsureStateAtMost(DocumentLifecycle::kStyleClean);
+    return;
+  }
 
   if (should_be_locked && !IsLocked())
     Lock();

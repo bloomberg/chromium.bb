@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Zatvaranje aktuelne kartice</translation>
 <translation id="1246905108078336582">Želite li da uklonite predlog iz privremene memorije?</translation>
 <translation id="1258753120186372309">Google dudl logotip: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Lista za čitanje</translation>
 <translation id="1266864766717917324">Nije uspelo deljenje: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Dodirnite da biste proširili</translation>
 <translation id="1285310382777185058">Promenite jezik</translation>
@@ -777,6 +778,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5246093389635966745">Izmeni prečicu za traku sa alatkama</translation>
 <translation id="526421993248218238">Učitavanje ove stranice nije uspelo</translation>
 <translation id="5271967389191913893">Uređaj ne može da otvori sadržaj za preuzimanje.</translation>
+<translation id="5274286919938458946">Povezano sa karticom <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Pošaljite na</translation>
 <translation id="5300426565656326054">Personalizacija oglasa na osnovu pregledača</translation>
 <translation id="5304593522240415983">Ovo polje ne sme da bude prazno</translation>

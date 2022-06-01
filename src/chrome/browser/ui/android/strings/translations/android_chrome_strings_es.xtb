@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Cierra la pestaña actual</translation>
 <translation id="1246905108078336582">¿Quitar la sugerencia del portapapeles?</translation>
 <translation id="1258753120186372309">Doodles de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Lista de lectura</translation>
 <translation id="1266864766717917324">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285310382777185058">Cambiar idioma</translation>
@@ -777,6 +778,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5246093389635966745">Editar combinación de teclas de la barra de herramientas</translation>
 <translation id="526421993248218238">No puede cargar esta página web</translation>
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
+<translation id="5274286919938458946">Vinculada con <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Enviar a</translation>
 <translation id="5300426565656326054">Personalización de anuncios basada en el navegador</translation>
 <translation id="5304593522240415983">Este campo no puede estar vacío</translation>

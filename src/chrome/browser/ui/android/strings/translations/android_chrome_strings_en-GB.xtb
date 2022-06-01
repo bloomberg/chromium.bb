@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1246905108078336582">Remove suggestion from clipboard?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Reading list</translation>
 <translation id="1266864766717917324">Couldn't share <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285310382777185058">Change language</translation>
@@ -777,6 +778,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5246093389635966745">Edit toolbar shortcut</translation>
 <translation id="526421993248218238">Can't load this page</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
+<translation id="5274286919938458946">Linked with <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Send to</translation>
 <translation id="5300426565656326054">Browser-based ad personalisation</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>

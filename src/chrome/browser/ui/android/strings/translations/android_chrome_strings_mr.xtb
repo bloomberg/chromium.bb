@@ -56,6 +56,7 @@
 <translation id="124678866338384709">वर्तमान टॅब बंद करा</translation>
 <translation id="1246905108078336582">क्लिपबोर्डवरून सूचना काढून टाकायची आहे का?</translation>
 <translation id="1258753120186372309">Google डूडल: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">वाचन सूची</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
 <translation id="1283039547216852943">विस्तृत करण्यासाठी टॅप करा</translation>
 <translation id="1285310382777185058">भाषा बदला</translation>
@@ -777,6 +778,7 @@
 <translation id="5246093389635966745">टूलबार शॉर्टकट संपादित करा</translation>
 <translation id="526421993248218238">हे पेज लोड करू शकत नाही</translation>
 <translation id="5271967389191913893">डाउनलोड केली जाण्यासाठी डिव्हाइस आशय उघडू शकत नाही.</translation>
+<translation id="5274286919938458946"><ph name="CARD_DETAIL" /> सह लिंक केलेले</translation>
 <translation id="5292796745632149097">यांना पाठवा</translation>
 <translation id="5300426565656326054">ब्राउझरवर आधारित जाहिरात पर्सनलायझेशन</translation>
 <translation id="5304593522240415983">हे फील्ड रिक्त ठेवता येणार नाही</translation>
@@ -1143,7 +1145,7 @@
 <translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> ने Chrome मध्ये सिंक सुरू केले असल्याची खात्री करा</translation>
 <translation id="7252076891734325316">तुमचा फोन कॉंप्युटरच्या जवळ ठेवा</translation>
 <translation id="727288900855680735"><ph name="ORIGIN" /> ला <ph name="ONE_TIME_CODE" /> सबमिट करायचा आहे का?</translation>
-<translation id="7274013316676448362">अवरोधित केलेली साइट</translation>
+<translation id="7274013316676448362">ब्लॉक केलेली साइट</translation>
 <translation id="7286572596625053347"><ph name="LANGUAGE" /> बदलायची आहे का?</translation>
 <translation id="7286703216224610554">फक्त प्रतिक्रिया शेअर करा</translation>
 <translation id="7290209999329137901">नाव बदलणे उपलब्ध नाही</translation>
@@ -1412,7 +1414,7 @@
 <translation id="8617240290563765734">डाउनलोड केलेल्या आशयमध्ये नमूद केलेली सुचविलेली URL उघडायची?</translation>
 <translation id="8621068256433641644">फोन</translation>
 <translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून तुमचे टॅब प्राप्त करण्यासाठी, सिंक सुरू करा</translation>
-<translation id="8641930654639604085">प्रौढ आशय असलेल्या साइटना अवरोधित करण्‍याचा प्रयत्न करा</translation>
+<translation id="8641930654639604085">प्रौढ आशय असलेल्या साइटना ब्लॉक करण्‍याचा प्रयत्न करा</translation>
 <translation id="864544049772947936">विंडो व्यवस्थापित करा (<ph name="INSTANCE_COUNTS" />)</translation>
 <translation id="8646467750715887511">तुम्ही पेज उघडल्यानंतरच ती लोड होतात.</translation>
 <translation id="8655129584991699539">तुम्ही Chrome सेटिंग्जमध्ये डेटा साफ करू शकता</translation>

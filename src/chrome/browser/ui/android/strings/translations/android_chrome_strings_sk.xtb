@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1246905108078336582">Chcete odstrániť návrh zo schránky?</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Čitateľský zoznam</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285310382777185058">Zmena jazyka</translation>
@@ -777,6 +778,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5246093389635966745">Skratka na úpravy panela s nástrojmi</translation>
 <translation id="526421993248218238">Táto stránka sa nedá načítať</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
+<translation id="5274286919938458946">Prepojené s kartou <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Odoslanie do zariadení</translation>
 <translation id="5300426565656326054">Prispôsobenie reklám založené na prehliadači</translation>
 <translation id="5304593522240415983">Toto pole nesmie byť prázdne</translation>

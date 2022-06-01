@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Закрыть вкладку</translation>
 <translation id="1246905108078336582">Удалить подсказку из буфера обмена?</translation>
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Список для чтения</translation>
 <translation id="1266864766717917324">Не удалось отправить: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1283039547216852943">Нажмите, чтобы развернуть</translation>
 <translation id="1285310382777185058">Изменить язык</translation>
@@ -777,6 +778,7 @@
 <translation id="5246093389635966745">Изменить кнопку на панели инструментов</translation>
 <translation id="526421993248218238">Не удалось загрузить страницу</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
+<translation id="5274286919938458946">Связана с картой <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Куда отправить</translation>
 <translation id="5300426565656326054">Персонализация рекламы на основе данных браузера</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>

@@ -29,6 +29,13 @@ chromium-metrics-reviews@google.com.
   <variant name=".WithoutCustomPassphrase" summary="regularly encrypted"/>
 </variants>
 
+<variants name="PasswordCheckupOperation">
+  <variant name="GetBreachedCredentialsCount"
+      summary="get breached credentials count"/>
+  <variant name="GetIntent" summary="get password checkup UI intent"/>
+  <variant name="RunPasswordCheckup" summary="run password checkup"/>
+</variants>
+
 <variants name="PasswordManagerSetting">
   <variant name="AutoSignIn" summary="auto sign in preference"/>
   <variant name="OfferToSavePasswords"
@@ -1890,6 +1897,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.NewlySavedPasswordHasEmptyUsername.{PasswordType}"
+    enum="Boolean" expires_after="2022-10-23">
+  <owner>khamutov@google.com</owner>
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Whether a newly saved password has an empty username. Recorded right before
+    a new credential is commited to the store.
+  </summary>
+  <token key="PasswordType" variants="PasswordType"/>
+</histogram>
+
 <histogram name="PasswordManager.NewlySavedPasswordIsGenerated"
     enum="BooleanNewlySavedPasswordIsGenerated" expires_after="2022-10-23">
   <owner>nepper@chromium.org</owner>
@@ -1945,18 +1964,6 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="PasswordManager.PasswordCheckup.GetIntent.Error"
-    enum="CredentialManagerError" expires_after="M105">
-  <owner>ioanap@chromium.org</owner>
-  <owner>vsemeniuk@google.com</owner>
-  <summary>
-    Records the error encountered while attempting to fetch the Password Checkup
-    launch intent from Google Play Services. This is recorded either before
-    making the actual request (if the preconditions are not met) or after the
-    asynchronous call comes back with an error.
-  </summary>
-</histogram>
-
 <histogram name="PasswordManager.PasswordCheckup.GetIntent.Latency" units="ms"
     expires_after="M105">
   <owner>ioanap@chromium.org</owner>
@@ -1991,6 +1998,34 @@ chromium-metrics-reviews@google.com.
     Services returns. Metric will not be reported when the Loading dialog is
     cancelled by user or timed out.
   </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordCheckup.{Operation}.APIError"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="M105">
+  <owner>ioanap@chromium.org</owner>
+  <owner>maxan@google.com</owner>
+  <summary>
+    Records the error code returned by the GMS Password Checkup 1P API while
+    attempting to {Operation}. This is recorded after the asynchronous call
+    comes back with an error. This is only recorded for GMS API errors on
+    Android.
+  </summary>
+  <token key="Operation" variants="PasswordCheckupOperation"/>
+</histogram>
+
+<histogram name="PasswordManager.PasswordCheckup.{Operation}.Error"
+    enum="CredentialManagerError" expires_after="M105">
+  <owner>ioanap@chromium.org</owner>
+  <owner>maxan@google.com</owner>
+  <owner>vsemeniuk@google.com</owner>
+  <summary>
+    Records the backend error code encountered while attempting to {Operation}.
+    If the code is equal to 2 (API_ERROR), GMS 1P API error code is additionally
+    reported. This is recorded either before making the actual request (if the
+    preconditions are not met) or after the asynchronous call comes back with an
+    error. This is currently only recorded on Android.
+  </summary>
+  <token key="Operation" variants="PasswordCheckupOperation"/>
 </histogram>
 
 <histogram name="PasswordManager.PasswordDropdownItemSelected"
@@ -2211,6 +2246,23 @@ chromium-metrics-reviews@google.com.
     changed. Changes can occur within Chrome (e.g. after saving/updating a
     password) or externally.
   </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordStoreAndroidBackend.APIError.{SyncErrorStatus}"
+    enum="PasswordStoreAndroidBackendAPIError" expires_after="2022-06-30">
+  <owner>fhorschig@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The error codes returned by the GMS Core ChromeSync 1P API when
+    {SyncErrorStatus} is returned by SyncService.GetAuthError(). Recorded when
+    the asynchronous job has returned.
+  </summary>
+  <token key="SyncErrorStatus">
+    <variant name="NoAuthError" summary="no error"/>
+    <variant name="PersistentAuthError" summary="a persistent auth error"/>
+    <variant name="TransientAuthError" summary="a transient auth error"/>
+  </token>
 </histogram>
 
 <histogram
@@ -2858,6 +2910,26 @@ chromium-metrics-reviews@google.com.
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>The number of credentials shown in the Touch To Fill sheet.</summary>
+</histogram>
+
+<histogram name="PasswordManager.TouchToFill.ObservedSuccessfulSubmission"
+    units="Boolean" expires_after="2022-10-30">
+  <owner>ioanap@chromium.org</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Measures whether a credential filling by Touch To Fill leads to a successful
+    submission or not (submission failed, or the submission could not be
+    associated with filling by Touch To Fill). A submission after filling is
+    considered successful iff the filled and submitted usernames coincide, the
+    timestamps are within one minute and a user hasn't modified any field after
+    filling. Otherwise, it is reported as 'no successful submission observed'.
+    The metric is used to compare a login success rate when automated submission
+    is enabled and disabled. Due to stale or wrong credentials, the success rate
+    will be degraded independently of automated submission. Recorded when the
+    password manager has classified a login submission (succeeded or failed) or
+    a user has modified a field after Touch-To-Fill.
+  </summary>
 </histogram>
 
 <histogram name="PasswordManager.TouchToFill.Outcome"
