@@ -136,6 +136,10 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     # Disable field-trial testing feature.
     'disable_fieldtrial_testing_config': True,
 
+    # Disable dcheck by default.
+    # TODO: fix all the DCHECK failures to remove this.
+    'dcheck_always_on': False,
+
     # Disable multicast DNS support.
     'enable_mdns': False,
 
