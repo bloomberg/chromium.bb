@@ -146,7 +146,7 @@ static const char LANGUAGE_RU[] = "ru-RU";
 
 class Shell;
 int registerShellWindowClass();
-Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView = 0, bool forDevTools = false);
+Shell* createShell(blpwtk2::Profile* profile, bool forDevTools = false);
 blpwtk2::ResourceLoader* createInProcessResourceLoader();
 void populateSubmenu(HMENU menu, int menuIdStart, const blpwtk2::ContextMenuItem& item);
 void populateContextMenu(HMENU menu, int menuIdStart, const blpwtk2::ContextMenuParams& params);
@@ -282,7 +282,6 @@ public:
 
 
           blpwtk2::Profile* profile,
-          blpwtk2::WebView* webView = 0,
           bool useExternalRenderer = false)
         : d_mainWnd(mainWnd)
         , d_urlEntryWnd(urlEntryWnd)
@@ -298,38 +297,27 @@ public:
 
 
 
-        , d_webView(webView)
+        , d_webView(nullptr)
         , d_profile(profile)
         , d_inspectorShell(0)
         , d_inspectorFor(0)
     {
         s_shells.insert(this);
 
-        if (!d_webView) {
-            blpwtk2::WebViewCreateParams params;
-            params.setJavascriptCanAccessClipboard(true);
-            params.setDOMPasteEnabled(true);
+        blpwtk2::WebViewCreateParams params;
+        params.setJavascriptCanAccessClipboard(true);
+        params.setDOMPasteEnabled(true);
 
 
 
-            // patch section: nc hittest dragging
+        // patch section: nc hittest dragging
 
 
 
-            if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
-                params.setRendererAffinity(::GetCurrentProcessId());
-            }
-            d_profile->createWebView(this, params);
+        if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
+            params.setRendererAffinity(::GetCurrentProcessId());
         }
-        else {
-            d_webView->setParent(d_mainWnd);
-
-            d_webView->show();
-            d_webView->enableNCHitTest(g_custom_hit_test);
-
-            SetWindowLongPtr(d_mainWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-            SetWindowLongPtr(d_urlEntryWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-        }
+        d_profile->createWebView(this, params);
 
         // WebView not yet available. Let's run a modal loop here
         // until it becomes available
@@ -1213,7 +1201,7 @@ LRESULT CALLBACK shellWndProc(HWND hwnd,        // handle to window
             }
             {
                 blpwtk2::Profile* profile = g_profile;
-                shell->d_inspectorShell = createShell(profile, 0, true);
+                shell->d_inspectorShell = createShell(profile, true);
             }
             shell->d_inspectorShell->d_inspectorFor = shell;
             ShowWindow(shell->d_inspectorShell->d_mainWnd, SW_SHOW);
@@ -1335,7 +1323,7 @@ int registerShellWindowClass()
     return RegisterClassEx(&wcx) == 0 ? -1 : 0;
 }
 
-Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool forDevTools)
+Shell* createShell(blpwtk2::Profile* profile, bool forDevTools)
 {
     // Create the main window.
     HWND mainWnd = CreateWindow(L"ShellWClass",      // name of window class
@@ -1475,7 +1463,6 @@ Shell* createShell(blpwtk2::Profile* profile, blpwtk2::WebView* webView, bool fo
 
 
                      profile,
-                     webView,
                      forDevTools);
 }
 
