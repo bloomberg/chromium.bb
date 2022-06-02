@@ -212,7 +212,6 @@ class ProcessHostImpl::Impl final : public base::RefCounted<Impl>
 
     // ACCESSORS
     base::ProcessId processId() const;
-    base::ProcessHandle processHandle() const;
 
     const BrowserContextImpl& context() const;
     const content::RenderProcessHost& renderProcessHost() const;

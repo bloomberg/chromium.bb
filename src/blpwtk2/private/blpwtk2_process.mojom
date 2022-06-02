@@ -40,6 +40,9 @@ struct WebViewCreateParams {
     uint32 processId;
         // Process in which the RenderView will live.  A value of 0 will
         // cause Content to create a new subprocess to host the RenderView.
+
+    int32 width;
+    int32 height;
 };
 
 interface ProcessHost {
