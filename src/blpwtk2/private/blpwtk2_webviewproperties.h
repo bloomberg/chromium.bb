@@ -33,6 +33,7 @@ struct WebViewProperties {
     bool rerouteMouseWheelToAnyRelatedWindow;
     int  width;
     int  height;
+    bool messageInterceptionEnabled;
 };
 
 }  // close namespace blpwtk2

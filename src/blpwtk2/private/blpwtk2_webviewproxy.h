@@ -141,6 +141,7 @@ class WebViewProxy final : public WebView
     void didParentStatus(int status, NativeView parent) override;
 
     // patch section: nc hittest dragging
+    void didInterceptMessage() override;
 
 
     // patch section: devtools integration

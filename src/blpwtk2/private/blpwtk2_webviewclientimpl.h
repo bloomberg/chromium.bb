@@ -169,6 +169,8 @@ class WebViewClientImpl final : public WebViewClient
     void didFailLoadForFrame(int routingId, const std::string& url) override;
 
     // patch section: nc hittest dragging
+    void didInterceptMessage(didInterceptMessageCallback callback) override;
+        // Notify the client that the host intercepted a window message.
 
 
     // patch section: devtools integration

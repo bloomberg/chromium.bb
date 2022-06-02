@@ -210,6 +210,9 @@ interface WebViewClient {
         // Notify the client that loading a URL into an IFRAME failed.
 
     // patch section: nc hittest dragging
+    didInterceptMessage() => ();
+        // Notify the client that the embedder on the host side intercepted
+        // a window message that would've been processed for this webview.
 
 
     // patch section: devtools integration

@@ -68,7 +68,8 @@ class BrowserDesktopWindowTreeHostWin
   void HandleDestroying() override;
   void HandleFrameChanged() override;
   void HandleWindowScaleFactorChanged(float window_scale_factor) override;
-  bool PreHandleMSG(UINT message,
+  bool PreHandleMSG(HWND window,
+                    UINT message,
                     WPARAM w_param,
                     LPARAM l_param,
                     LRESULT* result) override;

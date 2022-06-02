@@ -36,6 +36,7 @@ struct WebViewCreateParams {
     bool domPasteEnabled;
     bool javascriptCanAccessClipboard;
     bool rerouteMouseWheelToAnyRelatedWindow;
+    bool messageInterceptionEnabled;
 
     uint32 processId;
         // Process in which the RenderView will live.  A value of 0 will

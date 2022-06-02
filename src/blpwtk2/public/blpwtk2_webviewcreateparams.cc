@@ -47,6 +47,7 @@ WebViewCreateParams::WebViewCreateParams()
     d_impl->domPasteEnabled = false;
     d_impl->javascriptCanAccessClipboard = false;
     d_impl->rerouteMouseWheelToAnyRelatedWindow = false;
+    d_impl->messageInterceptionEnabled = false;
     d_impl->processId = 0;
 
     d_impl->width = 0;
@@ -85,6 +86,10 @@ void WebViewCreateParams::setRerouteMouseWheelToAnyRelatedWindow(bool rerouteMou
 }
 
 // patch section: nc hittest dragging
+void WebViewCreateParams::setMessageInterceptionEnabled(bool enable)
+{
+    d_impl->messageInterceptionEnabled = enable;
+}
 
 
 // patch section: focus
@@ -109,6 +114,10 @@ bool WebViewCreateParams::rerouteMouseWheelToAnyRelatedWindow() const
     return d_impl->rerouteMouseWheelToAnyRelatedWindow;
 }
 
+bool WebViewCreateParams::messageInterceptionEnabled() const
+{
+    return d_impl->messageInterceptionEnabled;
+}
 
 void WebViewCreateParams::setWidth(int width) {
     d_impl->width = width;
