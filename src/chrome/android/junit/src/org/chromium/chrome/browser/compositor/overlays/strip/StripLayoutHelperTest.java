@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -65,6 +66,7 @@ public class StripLayoutHelperTest {
     private static final String INCOGNITO_IDENTIFIER = "Incognito Tab";
     private static final String INCOGNITO_IDENTIFIER_SELECTED = "Selected Incognito Tab";
     private static final float SCREEN_WIDTH = 800.f;
+    private static final float SCREEN_WIDTH_LANDSCAPE = 1200.f;
     private static final float SCREEN_HEIGHT = 1600.f;
     private static final float TAB_WIDTH_1 = 140.f;
     private static final float TAB_WIDTH_2 = 160.f;
@@ -185,11 +187,11 @@ public class StripLayoutHelperTest {
         // Set fourth tab as selected
         TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_SMALL);
         initializeTest(false, true, 3);
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_1);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Close btn should be visible on the selected tab.
         Mockito.verify(tabs[3]).setCanShowCloseButton(true);
@@ -206,12 +208,12 @@ public class StripLayoutHelperTest {
         // Set fourth tab as selected
         TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_SMALL);
         initializeTest(false, true, 3);
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_1);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
         when(tabs[3].getDrawX()).thenReturn(600.f);
 
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Close btn should be hidden on the selected tab as its an edge tab.
         Mockito.verify(tabs[3]).setCanShowCloseButton(false);
@@ -230,14 +232,14 @@ public class StripLayoutHelperTest {
         initializeTest(false, true, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2);
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         mStripLayoutHelper.getNewTabButton().setX(600.f);
         // The leftmost tab is partially hidden
         when(tabs[0].getDrawX()).thenReturn(-80.f);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close btn should be hidden for the partially visible edge tab.
@@ -257,7 +259,7 @@ public class StripLayoutHelperTest {
         initializeTest(false, false, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2);
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         mStripLayoutHelper.getNewTabButton().setX(700);
         float drawXToHideCloseBtn = SCREEN_WIDTH - CLOSE_BTN_VISIBILITY_THRESHOLD_END_MODEL_SELECTOR
                 - TAB_WIDTH_2 + TAB_OVERLAP_WIDTH + 1; // 1 is to cross threshold
@@ -265,7 +267,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close button is visible for the rest of the tabs.
@@ -284,14 +286,14 @@ public class StripLayoutHelperTest {
         initializeTest(false, false, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2);
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         mStripLayoutHelper.getNewTabButton().setX(NEW_TAB_BTN_X);
         // newTabBtn.X(700.f) - tab.width(160.f) + mTabOverlapWidth(24.f)
         when(tabs[4].getDrawX()).thenReturn(564.f);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close button is visible for all tabs.
@@ -310,14 +312,14 @@ public class StripLayoutHelperTest {
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2);
 
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         mStripLayoutHelper.getNewTabButton().setX(NEW_TAB_BTN_X);
         // newTabBtn.X(700.f) - tab.width(160.f) + mTabOverlapWidth(24.f) + 1
         when(tabs[4].getDrawX()).thenReturn(565.f);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close btn should be visible for rest of the tabs.
@@ -339,7 +341,7 @@ public class StripLayoutHelperTest {
         initializeTest(false, false, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2);
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         mStripLayoutHelper.getNewTabButton().setX(700);
         float drawXToHideCloseBtn = SCREEN_WIDTH - CLOSE_BTN_VISIBILITY_THRESHOLD_END - TAB_WIDTH_2
                 + TAB_OVERLAP_WIDTH + 1; // 1 is to cross threshold
@@ -347,7 +349,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close button is visible for the rest of the tabs.
@@ -367,13 +369,13 @@ public class StripLayoutHelperTest {
         initializeTest(true, true, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
         // Set mWidth value to 800.f.
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         // The leftmost tab is partially hidden.
         when(tabs[0].getDrawX()).thenReturn(60.f);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close btn should be hidden for the partially visible edge tab.
@@ -393,14 +395,14 @@ public class StripLayoutHelperTest {
         initializeTest(true, true, 3);
         StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
         // Set mWidth value to 800.f
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
         // To make rightmost tab partially hidden value should be gt than (SCREEN_WIDTH - 120.f -
         // TAB_WIDTH_2).
         when(tabs[4].getDrawX()).thenReturn(710.f);
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Act
-        mStripLayoutHelper.tabSelected(1, 3, 0);
+        mStripLayoutHelper.tabSelected(1, 3, 0, false);
 
         // Assert
         // Close button is visible for the rest of the tabs.
@@ -422,7 +424,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Set screen width to 800dp.
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
 
         mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
 
@@ -442,7 +444,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
 
         // Set screen width to 800dp.
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
 
         mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
 
@@ -462,7 +464,7 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.testSetScrollOffset(1200);
 
         // Set screen width to 800dp.
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
 
         mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
 
@@ -483,13 +485,135 @@ public class StripLayoutHelperTest {
         mStripLayoutHelper.testSetScrollOffset(1200);
 
         // Set screen width to 800dp.
-        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
 
         mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
 
         int expectedFinalX = 538; // delta(optimalRight(562) - tabOverlapWidth(24)
         // - scrollOffset(1200)) + scrollOffset(1200)
         assertEquals(expectedFinalX, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollOffset_OnOrientationChange_SelectedTabVisible() {
+        // Arrange: Initialize tabs with last tab selected.
+        when(mModelSelectorBtn.isVisible()).thenReturn(false);
+        initializeTest(false, true, 9, 10);
+        TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM, 150.f, 10);
+        when(tabs[9].isVisible()).thenReturn(true);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        mStripLayoutHelper.testSetScrollOffset(1000);
+
+        // Set screen width to 1200 to start.
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH_LANDSCAPE, SCREEN_HEIGHT, false, TIMESTAMP);
+
+        // Assert: finalX value before orientation change.
+        int initialFinalX = -1494;
+        assertEquals(initialFinalX, mStripLayoutHelper.getScroller().getFinalX());
+
+        // Act: change orientation.
+        when(tabs[9].getDrawX()).thenReturn(-1.f);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, true, TIMESTAMP);
+
+        // Assert: finalX value after orientation change.
+        int expectedFinalX = -956; // delta(optimalRight(-932) - tabOverlapWidth(24)) -
+                                   // scrollOffset(1000) + scrollOffset(1000)
+        assertEquals(expectedFinalX, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollOffset_OnOrientationChange_SelectedTabNotVisible() {
+        // Arrange: Initialize tabs with last tab selected.
+        when(mModelSelectorBtn.isVisible()).thenReturn(false);
+        initializeTest(false, true, 9, 10);
+        TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM, 150.f, 10);
+        when(tabs[9].isVisible()).thenReturn(false);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        mStripLayoutHelper.testSetScrollOffset(1000);
+
+        // Set screen width to 1200 to start
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH_LANDSCAPE, SCREEN_HEIGHT, false, TIMESTAMP);
+
+        // Assert: finalX value before orientation change.
+        int initialFinalX = -1494;
+        assertEquals(initialFinalX, mStripLayoutHelper.getScroller().getFinalX());
+
+        // Act: change orientation.
+        when(tabs[9].getDrawX()).thenReturn(-1.f);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, true, TIMESTAMP);
+
+        // Assert: finalX value remains the same on orientation change.
+        assertEquals(initialFinalX, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testTabSelected_AfterTabClose_SkipsAutoScroll() {
+        initializeTest(false, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        // Set initial scroller position to 1000.
+        mStripLayoutHelper.getScroller().setFinalX(1000);
+
+        // Act: close a non selected tab.
+        mStripLayoutHelper.handleCloseButtonClick(tabs[1], TIMESTAMP);
+
+        // Assert: scroller position is not modified.
+        assertEquals(1000, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testTabSelected_AfterSelectedTabClose_DoesNotSkipAutoScroll() {
+        initializeTest(false, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        // Set initial scroller position to 1000.
+        mStripLayoutHelper.getScroller().setFinalX(1000);
+
+        // Act: close the selected tab.
+        mStripLayoutHelper.handleCloseButtonClick(tabs[3], TIMESTAMP);
+
+        // Assert: scroller position is modified.
+        assertNotEquals(1000, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testTabCreated_RestoredTab_SkipsAutoscroll() {
+        initializeTest(false, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        // Set initial scroller position to 1000.
+        mStripLayoutHelper.getScroller().setFinalX(1000);
+
+        // Act: Tab was restored after undoing a tab closure.
+        boolean restoredTab = true;
+        mStripLayoutHelper.tabCreated(TIMESTAMP, 6, 3, false, restoredTab);
+
+        // Assert: scroller position is not modified.
+        assertEquals(1000, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testTabCreated_NonRestoredTab_SkipsAutoscroll() {
+        initializeTest(false, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        // Set initial scroller position to 1000.
+        mStripLayoutHelper.getScroller().setFinalX(1000);
+
+        // Act: Tab was restored after undoing a tab closure.
+        boolean restoredTab = false;
+        mStripLayoutHelper.tabCreated(TIMESTAMP, 6, 3, false, restoredTab);
+
+        // Assert: scroller position is modified.
+        assertNotEquals(1000, mStripLayoutHelper.getScroller().getFinalX());
     }
 
     @Test
@@ -544,7 +668,7 @@ public class StripLayoutHelperTest {
         }
         mModel.setIndex(tabIndex);
         mStripLayoutHelper.setTabModel(mModel, null);
-        mStripLayoutHelper.tabSelected(0, tabIndex, 0);
+        mStripLayoutHelper.tabSelected(0, tabIndex, 0, false);
         // Flush UI updated
     }
 

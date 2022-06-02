@@ -653,6 +653,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677696497921480781">ວັນເກີດ ແລະ ວັນຕັ້ງຊື່</translation>
 <translation id="2677748264148917807">ອອກ​ໄປ</translation>
+<translation id="2679714844901977852">ບັນທຶກບັດ ແລະ ຂໍ້ມູນໃບບິນຂອງທ່ານໄປໃສ່ບັນຊີ Google <ph name="USER_EMAIL" /> ຂອງທ່ານສຳລັບການຈ່າຍເງິນທີ່ປອດໄພ ແລະ ໄວຂຶ້ນ</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ປັບໃຫ້ພໍດີ</translation>
 <translation id="2688969097326701645">ຕົກລົງ, ສືບຕໍ່</translation>
@@ -1954,6 +1955,7 @@
 <translation id="6337133576188860026">ຂະຫຍາຍພື້ນທີ່ຫວ່າງໄດ້ໜ້ອຍກວ່າ <ph name="SIZE" />. ບາງເວັບໄຊອາດຈະໂຫຼດຊ້າກວ່າໃນການເຂົ້າເບິ່ງຄັ້ງຕໍ່ໄປຂອງທ່ານ.</translation>
 <translation id="6337534724793800597">ກັ່ນຕອງນະໂຍບາຍຕາມຊື່</translation>
 <translation id="6340739886198108203">ນະໂຍບາຍຜູ້ເບິ່ງແຍງລະບົບບໍ່ແນະນຳໃຫ້ຖ່າຍຮູບ ຫຼື ບັນທຶກໜ້າຈໍໃນເວລາປາກົດມີເນື້ອຫາທີ່ເປັນຄວາມລັບ:</translation>
+<translation id="6348220984832452017">ຮູບແບບທີ່ນຳໃຊ້ຢູ່</translation>
 <translation id="6349101878882523185">ຕິດຕັ້ງ <ph name="APP_NAME" /></translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{ບໍ່ມີ}=1{1 ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}=2{2 ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}other{# ລະຫັດຜ່ານ (ສຳລັບ <ph name="DOMAIN_LIST" />, ຊິ້ງຂໍ້ມູນແລ້ວ)}}</translation>
 <translation id="6355392890578844978">ໂປຣແກຣມທ່ອງເວັບນີ້ບໍ່ໄດ້ຖືກຈັດການໂດຍບໍລິສັດ ຫຼື ອົງການອື່ນ. ການເຄື່ອນໄຫວຢູ່ອຸປະກອນນີ້ອາດຖືກຈັດການຢູ່ນອກ Chromium ໄດ້. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>

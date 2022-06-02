@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "cc711fa287922ba4bb18f34b790f13fdece13607",
-      "LASTCHANGE.committime": "9cdcdff0cfebcebacdd296332a4f2dd6d29dcb7a"
+      "LASTCHANGE": "b7d0be7524c253e3e0d82069517222c0dadbf7a5",
+      "LASTCHANGE.committime": "3489961d18be60b4fdf0ecfa03a72597ead0fa3f"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -39,10 +39,10 @@
       "cef_version.h": "0da45aa278a97543783ceb5aa8e85493e94ec490"
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "c53d0aa8b02129612a424421c93c3fbc3467f021"
+      "gpu_lists_version.h": "993125f93411c01b9696363ee016e1f12a2c1150"
     },
     "src/skia/ext": {
-      "skia_commit_hash.h": "f50674c20ee38ee0e19b8b5ada3dd1a5c0aef684"
+      "skia_commit_hash.h": "d43347562ea9b08abb640aba24cc453422c32ca0"
     },
     "src/testing": {
       "location_tags.json": "123ca32e563c1b6d2e63b39029278f27c136de7a"

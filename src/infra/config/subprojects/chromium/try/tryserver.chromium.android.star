@@ -223,6 +223,10 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
+    mirrors = [
+        "ci/android-marshmallow-arm64-rel",
+        "ci/Android Release (Nexus 5X)",
+    ],
     check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
@@ -242,6 +246,14 @@ try_.compilator_builder(
 
 try_.orchestrator_builder(
     name = "android-marshmallow-x86-rel",
+    mirrors = [
+        "ci/android-marshmallow-x86-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     check_for_flakiness = True,
     compilator = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
@@ -532,6 +544,13 @@ try_.builder(
 try_.builder(
     name = "android_compile_x86_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android x86 Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     cores = 16,
     ssd = True,
     main_list_view = "try",
@@ -576,6 +595,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_android",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Android (dbg)",
+    ],
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -597,6 +619,25 @@ try_.builder(
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+        build_gs_bucket = "chromium-gpu-fyi-archive",
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
     check_for_flakiness = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",

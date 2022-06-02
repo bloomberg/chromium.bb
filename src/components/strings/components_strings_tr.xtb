@@ -650,6 +650,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677696497921480781">Doğum günleri ve isim günleri</translation>
 <translation id="2677748264148917807">Çık</translation>
+<translation id="2679714844901977852">Daha güvenli ve hızlı ödemeler için kartınızı ve fatura bilgilerinizi Google Hesabınıza (<ph name="USER_EMAIL" />) kaydedin</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">En uygun</translation>
 <translation id="2688969097326701645">Evet, devam et</translation>
@@ -1947,6 +1948,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6337133576188860026"><ph name="SIZE" /> boyutundan daha az yer açar. Bir sonraki ziyaretinizde bazı siteler daha yavaş yüklenebilir.</translation>
 <translation id="6337534724793800597">Politikalara ada göre filtre uygula</translation>
 <translation id="6340739886198108203">Yönetici politikası, gizli içerik görünür olduğunda ekran görüntüsü veya kayıt alınmasını önermiyor:</translation>
+<translation id="6348220984832452017">Etkin Varyasyonlar</translation>
 <translation id="6349101878882523185"><ph name="APP_NAME" /> uygulamasını yükle</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Yok}=1{1 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}=2{2 şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}other{# şifre (<ph name="DOMAIN_LIST" /> için, senkronize edildi)}}</translation>
 <translation id="6355392890578844978">Bu tarayıcı bir şirket veya başka bir kuruluş tarafından yönetilmemektedir. Bu cihazdaki etkinlikler Chromium dışında yönetilebilir. <ph name="BEGIN_LINK" />Daha fazla bilgi<ph name="END_LINK" /></translation>

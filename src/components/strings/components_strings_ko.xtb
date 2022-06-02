@@ -649,6 +649,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677696497921480781">생일 및 영명 축일</translation>
 <translation id="2677748264148917807">나가기</translation>
+<translation id="2679714844901977852">카드 및 결제 정보를 Google 계정(<ph name="USER_EMAIL" />)에 저장하여 더 빠르고 안전하게 결제하세요.</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">자동 맞춤</translation>
 <translation id="2688969097326701645">예, 계속 진행합니다</translation>
@@ -1945,6 +1946,7 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> 미만의 저장용량을 확보합니다. 일부 사이트는 다음 방문 시 로드 속도가 느려질 수 있습니다.</translation>
 <translation id="6337534724793800597">이름별로 정책 필터링</translation>
 <translation id="6340739886198108203">관리자 정책에 따라 기밀 콘텐츠가 화면에 표시되어 있을 때 스크린샷을 찍거나 녹화하지 않는 것이 좋습니다.</translation>
+<translation id="6348220984832452017">활성 버전</translation>
 <translation id="6349101878882523185"><ph name="APP_NAME" /> 설치</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{없음}=1{비밀번호 1개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}=2{비밀번호 2개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}other{비밀번호 #개(도메인: <ph name="DOMAIN_LIST" />, 동기화됨)}}</translation>
 <translation id="6355392890578844978">이 브라우저는 회사 또는 다른 조직에서 관리하지 않습니다. 이 기기의 활동은 Chromium 외부에서도 관리할 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>

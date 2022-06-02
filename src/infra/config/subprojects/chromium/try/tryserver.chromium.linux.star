@@ -39,6 +39,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_linux",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Linux",
+    ],
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -47,6 +50,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_linux_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Linux Debug",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -398,6 +404,15 @@ try_.compilator_builder(
 try_.builder(
     name = "linux-wayland-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (Wayland)",
+        "ci/Linux Tests (Wayland)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -440,6 +455,18 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    mirrors = [
+        "ci/Linux ASan LSan Builder",
+        "ci/Linux ASan LSan Tests (1)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(
@@ -569,6 +596,9 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 100,
+    },
 )
 
 try_.compilator_builder(

@@ -56,6 +56,7 @@
 <translation id="124678866338384709">Zavretie aktuálnej karty</translation>
 <translation id="1246905108078336582">Chcete odstrániť návrh zo schránky?</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="1263231323834454256">Čitateľský zoznam</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> sa nepodarilo zdieľať</translation>
 <translation id="1283039547216852943">Klepnutím rozbaliť</translation>
 <translation id="1285310382777185058">Zmena jazyka</translation>
@@ -83,6 +84,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1384704387250346179">Preklad obrázka funkciou Google Lens <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
 <translation id="1386674309198842382">Aktívne pred <ph name="LAST_UPDATED" /> dňami</translation>
+<translation id="13931502444227376">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mailovú adresu a profilovú fotku. Pozrite si <ph name="BEGIN_LINK1" />zmluvné podmienky<ph name="END_LINK1" /> tohto webu.</translation>
 <translation id="1397811292916898096">Hľadať pomocou vyhľadávača <ph name="PRODUCT_NAME" /></translation>
 <translation id="139993653570221430">Svoje rozhodnutie môžete kedykoľvek zmeniť v nastaveniach Chromu. Skúšobné obdobia prebiehajú popri aktuálnemu spôsobu zobrazovania reklám, takže zmeny hneď neuvidíte.</translation>
 <translation id="1406000523432664303">Nesledovať</translation>
@@ -145,6 +147,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nejde podľa
 <translation id="173522743738009831">Informácie o technológiách Privacy Sandbox</translation>
 <translation id="1736419249208073774">Preskúmať</translation>
 <translation id="1749561566933687563">Synchronizujte svoje záložky</translation>
+<translation id="1750259112639922169">Skupina kariet – počet kariet: <ph name="TAB_COUNT" /></translation>
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1754404134430936718">Text bol skopírovaný</translation>
 <translation id="1779766957982586368">Zavrieť okno</translation>
@@ -171,6 +174,7 @@ Keď odstránite históriu prehliadania (buď celú, alebo pre konkrétny web), 
 <translation id="1928696683969751773">Aktualizácie</translation>
 <translation id="19288952978244135">Znova otvorte Chrome.</translation>
 <translation id="1933845786846280168">Vybratá karta</translation>
+<translation id="193571872656840963">Vyjadrite vďaku tomuto autorovi</translation>
 <translation id="1943432128510653496">Ukladať heslá</translation>
 <translation id="1952172573699511566">Ak to bude možné, weby budú zobrazovať text vo vašom preferovanom jazyku.</translation>
 <translation id="1959679933317802873">Čaká sa na obsah</translation>
@@ -774,6 +778,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5246093389635966745">Skratka na úpravy panela s nástrojmi</translation>
 <translation id="526421993248218238">Táto stránka sa nedá načítať</translation>
 <translation id="5271967389191913893">Zariadenie nemôže otvoriť obsah na stiahnutie</translation>
+<translation id="5274286919938458946">Prepojené s kartou <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Odoslanie do zariadení</translation>
 <translation id="5300426565656326054">Prispôsobenie reklám založené na prehliadači</translation>
 <translation id="5304593522240415983">Toto pole nesmie byť prázdne</translation>
@@ -788,6 +793,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5368227114232678694">Ak chcete v tomto zariadení prehliadať v súkromí, vyskúšajte režim inkognito</translation>
 <translation id="5375577065097716013">Hľadať obrázok pomocou funkcie Google Lens <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
 <translation id="5376898820269806588">Reakcia bola zmenená</translation>
+<translation id="5401851137404501592">Ak chcete pokračovať, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s týmto webom zdieľať vaše meno, e‑mailovú adresu a profilovú fotku.</translation>
 <translation id="5403644198645076998">Povoliť len určité weby</translation>
 <translation id="5409881200985013443">Odošlite kód <ph name="ONE_TIME_CODE" /> v zariadení <ph name="CLIENT_NAME" />.</translation>
 <translation id="5414836363063783498">Overuje sa...</translation>
@@ -1128,6 +1134,7 @@ Tokeny dôveryhodnosti zlepšujú ochranu súkromia na internete a nedá sa pod
 <translation id="7177873915659574692">QR kód sa nedá vytvoriť. Webová adresa obsahuje viac ako <ph name="CHARACTER_LIMIT" /> znakov.</translation>
 <translation id="7177959540995930968">Viac o týchto funkciách sa dozviete v nastaveniach Chromu.</translation>
 <translation id="718226107353899806">Maximálne môžete pridať <ph name="MAX_NUM_REACTIONS" /> reakcií</translation>
+<translation id="7183693674623539380">Skupina kariet – <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Chráni vás v Chrome a môže zlepšiť zabezpečenie v ďalších aplikáciách Google, keď sa prihlásite.</translation>
 <translation id="7191430249889272776">Karta je otvorená na pozadí.</translation>
 <translation id="7196215469483532480">Vysvetlenie sprievodcu ochranou súkromia je otvorené na celú výšku</translation>

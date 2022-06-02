@@ -2513,6 +2513,12 @@ void RenderFrameImpl::AddAutoplayFlags(const url::Origin& origin,
 // blink::mojom::ResourceLoadInfoNotifier implementation
 // --------------------------
 
+#if BUILDFLAG(IS_ANDROID)
+void RenderFrameImpl::NotifyUpdateUserGestureCarryoverInfo() {
+  GetFrameHost()->UpdateUserGestureCarryoverInfo();
+}
+#endif
+
 void RenderFrameImpl::NotifyResourceRedirectReceived(
     const net::RedirectInfo& redirect_info,
     network::mojom::URLResponseHeadPtr redirect_response) {}
@@ -4993,10 +4999,11 @@ void RenderFrameImpl::DidCommitNavigationInternal(
     }
   }
 
-  // Ensure we will propagate frame intersections when the main frame commits
-  // even if the intersection does not change across navigations.
+  // Ensure we will propagate the main frame and viewport rect when the main
+  // frame commits even if the rect does not change across navigations.
   if (IsMainFrame()) {
     main_frame_intersection_rect_.reset();
+    main_frame_viewport_rect_.reset();
   }
 }
 

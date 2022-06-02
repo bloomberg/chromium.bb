@@ -244,11 +244,11 @@
     // caclculate the new adjustedContentSuggestionsHeight value.
     // TODO(crbug.com/1170995): Remove once the Feed supports a custom
     // header.
-    [[self contentSuggestionsViewController].view setNeedsLayout];
-    [[self contentSuggestionsViewController].view layoutIfNeeded];
+    [[weakSelf contentSuggestionsViewController].view setNeedsLayout];
+    [[weakSelf contentSuggestionsViewController].view layoutIfNeeded];
 
     CGFloat heightAboveFeedDifference =
-        [self heightAboveFeed] - heightAboveFeedBeforeRotation;
+        [weakSelf heightAboveFeed] - heightAboveFeedBeforeRotation;
 
     // Rotating the device can change the content suggestions height. This
     // ensures that it is adjusted if necessary.
@@ -270,15 +270,15 @@
         [weakSelf scrollPosition] < pinnedOffsetY) {
       weakSelf.collectionView.contentOffset = CGPointMake(0, pinnedOffsetY);
     }
-    if (!self.isFeedVisible) {
-      [self setMinimumHeight];
+    if (!weakSelf.isFeedVisible) {
+      [weakSelf setMinimumHeight];
     }
   };
   [coordinator
       animateAlongsideTransition:alongsideBlock
                       completion:^(
                           id<UIViewControllerTransitionCoordinatorContext>) {
-                        [self updateFeedInsetsForContentAbove];
+                        [self updateNTPLayout];
                       }];
 }
 
@@ -772,15 +772,15 @@
 
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
 
-  // On iPhones, the fake omnibox is pinned to the top so we anchor the feed
-  // header to the bottom of it. The fake omnibox is not pinned for iPads, so we
-  // instead anchor the feed header to the top of the NTP.
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+  // If the fake omnibox is pinned to the top, we pin the feed header below it.
+  // Otherwise, the feed header gets pinned to the top.
+  if ([self shouldPinFakeOmnibox]) {
     self.feedHeaderConstraints = @[
       [self.feedHeaderViewController.view.topAnchor
-          constraintEqualToAnchor:self.view.topAnchor
-                         constant:-[self.feedHeaderViewController
-                                          customSearchEngineViewHeight]],
+          constraintEqualToAnchor:self.headerController.view.bottomAnchor
+                         constant:-(content_suggestions::headerBottomPadding() +
+                                    [self.feedHeaderViewController
+                                            customSearchEngineViewHeight])],
       [self.collectionView.topAnchor
           constraintEqualToAnchor:[self contentSuggestionsViewController]
                                       .view.bottomAnchor],
@@ -788,10 +788,9 @@
   } else {
     self.feedHeaderConstraints = @[
       [self.feedHeaderViewController.view.topAnchor
-          constraintEqualToAnchor:self.headerController.view.bottomAnchor
-                         constant:-(content_suggestions::headerBottomPadding() +
-                                    [self.feedHeaderViewController
-                                            customSearchEngineViewHeight])],
+          constraintEqualToAnchor:self.view.topAnchor
+                         constant:-[self.feedHeaderViewController
+                                          customSearchEngineViewHeight]],
       [self.collectionView.topAnchor
           constraintEqualToAnchor:[self contentSuggestionsViewController]
                                       .view.bottomAnchor],
@@ -873,7 +872,7 @@
 - (void)handleStickyElementsForScrollPosition:(CGFloat)scrollPosition
                                         force:(BOOL)force {
   // Handles the sticky omnibox. Does not stick for iPads.
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+  if ([self shouldPinFakeOmnibox]) {
     if (scrollPosition > [self offsetToStickOmnibox] &&
         !self.fakeOmniboxPinnedToTop) {
       [self pinFakeOmniboxToTop];
@@ -884,7 +883,8 @@
   }
 
   // Handles the sticky feed header.
-  if (IsWebChannelsEnabled() && self.feedHeaderViewController) {
+  if ([self.ntpContentDelegate isContentHeaderSticky] &&
+      self.feedHeaderViewController) {
     if ((!self.isScrolledIntoFeed || force) &&
         scrollPosition > [self offsetWhenScrolledIntoFeed]) {
       [self setIsScrolledIntoFeed:YES];
@@ -1031,7 +1031,7 @@
 // The y-position content offset for when the user has completely scrolled into
 // the Feed. Only takes sticky omnibox into consideration for non-iPad devices.
 - (CGFloat)offsetWhenScrolledIntoFeed {
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+  if (![self shouldPinFakeOmnibox]) {
     return -[self feedHeaderHeight];
   }
 
@@ -1159,6 +1159,13 @@
   [viewController.view removeFromSuperview];
   [viewController removeFromParentViewController];
   [viewController didMoveToParentViewController:nil];
+}
+
+// Whether the fake omnibox gets pinned to the top, or becomes the real primary
+// toolbar. The former is for narrower devices like portait iPhones, and the
+// latter is for wider devices like iPads and landscape iPhones.
+- (BOOL)shouldPinFakeOmnibox {
+  return !IsRegularXRegularSizeClass(self) && IsSplitToolbarMode(self);
 }
 
 #pragma mark - Getters

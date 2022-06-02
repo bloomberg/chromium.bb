@@ -2079,6 +2079,11 @@
       "expiry_milestone": 105
   },
   {
+    "name": "enable-feed-ablation",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "enable-fenced-frames",
     "owners": [ "dom", "shivanisha", "chrome-fenced-frames@google.com" ],
     "expiry_milestone": 110
@@ -3191,6 +3196,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "feed-ablation",
+    "owners": [ "//chrome/android/feed/OWNERS", "dewittj@chromium.org" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "feed-back-to-top",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
     "expiry_milestone": 101
@@ -4240,6 +4250,11 @@
   },
   {
     "name": "new-overflow-menu-settings-action",
+    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 109
+  },
+  {
+    "name": "new-overflow-menu-simple-destination-icons",
     "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 109
   },
@@ -5297,7 +5312,7 @@
   {
     "name": "secondary-google-account-usage",
     "owners": [ "rodmartin", "sinhak", "chromeos-commercial-identity@google.com" ],
-    "expiry_milestone": 103
+    "expiry_milestone": 102
   },
   {
     "name": "semantic-colors-debug-override",

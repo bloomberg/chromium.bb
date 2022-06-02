@@ -202,6 +202,10 @@ extern const char kEnableDiscoverFeedStaticResourceServingDescription[];
 extern const char kEnableFaviconForPasswordsName[];
 extern const char kEnableFaviconForPasswordsDescription[];
 
+// Title and description for the flag to remove the Feed from the NTP.
+extern const char kEnableFeedAblationName[];
+extern const char kEnableFeedAblationDescription[];
+
 // Title and description for the flag to test the FRE default browser promo
 // experiment.
 extern const char kEnableFREDefaultBrowserScreenTestingName[];
@@ -361,6 +365,11 @@ extern const char kNewOverflowMenuDescription[];
 // overflow menu.
 extern const char kNewOverflowMenuSettingsActionName[];
 extern const char kNewOverflowMenuSettingsActionDescription[];
+
+// Title and description for the flag to use simple icons for the Destinations
+// in the new overflow menu.
+extern const char kNewOverflowMenuSimpleDestinationIconsName[];
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[];
 
 // Title and description for temporary bug fix to broken NTP view hierarhy.
 // TODO(crbug.com/1262536): Remove this when fixed.

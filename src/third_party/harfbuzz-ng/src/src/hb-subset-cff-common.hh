@@ -107,7 +107,7 @@ struct str_encoder_t
       encode_byte (op);
   }
 
-  void copy_str (const byte_str_t &str)
+  void copy_str (const hb_ubytes_t &str)
   {
     unsigned int  offset = buff.length;
     if (unlikely (!buff.resize (offset + str.length)))
@@ -253,12 +253,12 @@ struct subr_flattener_t
 	if (endchar_op != OpCode_Invalid) flat_charstrings[i].push (endchar_op);
 	continue;
       }
-      const byte_str_t str = (*acc.charStrings)[glyph];
+      const hb_ubytes_t str = (*acc.charStrings)[glyph];
       unsigned int fd = acc.fdSelect->get_fd (glyph);
       if (unlikely (fd >= acc.fdCount))
 	return false;
-      cs_interpreter_t<ENV, OPSET, flatten_param_t> interp;
-      interp.env.init (str, acc, fd);
+      ENV env (str, acc, fd);
+      cs_interpreter_t<ENV, OPSET, flatten_param_t> interp (env);
       flatten_param_t  param = {
         flat_charstrings[i],
         (bool) (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
@@ -398,19 +398,19 @@ struct parsed_cs_str_vec_t : hb_vector_t<parsed_cs_str_t>
 
 struct subr_subset_param_t
 {
-  void init (parsed_cs_str_t *parsed_charstring_,
-	     parsed_cs_str_vec_t *parsed_global_subrs_, parsed_cs_str_vec_t *parsed_local_subrs_,
-	     hb_set_t *global_closure_, hb_set_t *local_closure_,
-	     bool drop_hints_)
-  {
-    parsed_charstring = parsed_charstring_;
-    current_parsed_str = parsed_charstring;
-    parsed_global_subrs = parsed_global_subrs_;
-    parsed_local_subrs = parsed_local_subrs_;
-    global_closure = global_closure_;
-    local_closure = local_closure_;
-    drop_hints = drop_hints_;
-  }
+  subr_subset_param_t (parsed_cs_str_t *parsed_charstring_,
+		       parsed_cs_str_vec_t *parsed_global_subrs_,
+		       parsed_cs_str_vec_t *parsed_local_subrs_,
+		       hb_set_t *global_closure_,
+		       hb_set_t *local_closure_,
+		       bool drop_hints_) :
+      current_parsed_str (parsed_charstring_),
+      parsed_charstring (parsed_charstring_),
+      parsed_global_subrs (parsed_global_subrs_),
+      parsed_local_subrs (parsed_local_subrs_),
+      global_closure (global_closure_),
+      local_closure (local_closure_),
+      drop_hints (drop_hints_) {}
 
   parsed_cs_str_t *get_parsed_str_for_context (call_context_t &context)
   {
@@ -561,19 +561,21 @@ struct subr_subsetter_t
       hb_codepoint_t  glyph;
       if (!plan->old_gid_for_new_gid (i, &glyph))
 	continue;
-      const byte_str_t str = (*acc.charStrings)[glyph];
+      const hb_ubytes_t str = (*acc.charStrings)[glyph];
       unsigned int fd = acc.fdSelect->get_fd (glyph);
       if (unlikely (fd >= acc.fdCount))
 	return false;
 
-      cs_interpreter_t<ENV, OPSET, subr_subset_param_t> interp;
-      interp.env.init (str, acc, fd);
+      ENV env (str, acc, fd);
+      cs_interpreter_t<ENV, OPSET, subr_subset_param_t> interp (env);
 
-      subr_subset_param_t  param;
-      param.init (&parsed_charstrings[i],
-		  &parsed_global_subrs,  &parsed_local_subrs[fd],
-		  &closures.global_closure, &closures.local_closures[fd],
-		  plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
+      parsed_charstrings[i].alloc (str.length);
+      subr_subset_param_t  param (&parsed_charstrings[i],
+				  &parsed_global_subrs,
+				  &parsed_local_subrs[fd],
+				  &closures.global_closure,
+				  &closures.local_closures[fd],
+				  plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
       if (unlikely (!interp.interpret (param)))
 	return false;
@@ -593,11 +595,12 @@ struct subr_subsetter_t
 	unsigned int fd = acc.fdSelect->get_fd (glyph);
 	if (unlikely (fd >= acc.fdCount))
 	  return false;
-	subr_subset_param_t  param;
-	param.init (&parsed_charstrings[i],
-		    &parsed_global_subrs,  &parsed_local_subrs[fd],
-		    &closures.global_closure, &closures.local_closures[fd],
-                    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
+	subr_subset_param_t  param (&parsed_charstrings[i],
+				    &parsed_global_subrs,
+				    &parsed_local_subrs[fd],
+				    &closures.global_closure,
+				    &closures.local_closures[fd],
+				    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 
 	drop_hints_param_t  drop;
 	if (drop_hints_in_str (parsed_charstrings[i], param, drop))
@@ -618,11 +621,12 @@ struct subr_subsetter_t
 	unsigned int fd = acc.fdSelect->get_fd (glyph);
 	if (unlikely (fd >= acc.fdCount))
 	  return false;
-	subr_subset_param_t  param;
-	param.init (&parsed_charstrings[i],
-		    &parsed_global_subrs,  &parsed_local_subrs[fd],
-		    &closures.global_closure, &closures.local_closures[fd],
-                    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
+	subr_subset_param_t  param (&parsed_charstrings[i],
+				    &parsed_global_subrs,
+				    &parsed_local_subrs[fd],
+				    &closures.global_closure,
+				    &closures.local_closures[fd],
+				    plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
 	collect_subr_refs_in_str (parsed_charstrings[i], param);
       }
     }

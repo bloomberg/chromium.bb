@@ -32,12 +32,15 @@
 <translation id="1270369111467284986">Могућ улазни портал</translation>
 <translation id="1290331692326790741">Слаб сигнал</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1308067967278144752">Укључите заштиту од уписивања</translation>
 <translation id="1308754910631152188">Ажурира се (завршено је <ph name="PERCENTAGE_VALUE" />%)</translation>
 <translation id="1310380015393971138">Ниједна <ph name="NETWORK_NAME" /> мрежа није доступна</translation>
 <translation id="131421566576084655">Датум последњег ресетовања је недоступан</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Матична мрежа, није у ромингу</translation>
+<translation id="132712914231403017">Слика инсталирања фирмвера</translation>
 <translation id="1327977588028644528">Мрежни пролаз</translation>
+<translation id="1328223165223065150">Боја позадине</translation>
 <translation id="1330426557709298164">JPG</translation>
 <translation id="1337912285145772892">Прилагоди области за скенирање</translation>
 <translation id="1367951781824006909">Изабери датотеку</translation>
@@ -55,6 +58,7 @@
 <translation id="1442433966118452622">Извор слике</translation>
 <translation id="1451536289672181509">Уређај је тастатура.</translation>
 <translation id="1459693405370120464">Време</translation>
+<translation id="1459784442280469416">Сачувај на USB</translation>
 <translation id="1468664791493211953">Понуде</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> управља овим уређајем и може да прати ваше активности.</translation>
 <translation id="1478594628797167447">Скенер</translation>
@@ -63,6 +67,8 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> управља овим корисником и може даљински да управља подешавањима и надгледа активности корисника.</translation>
 <translation id="150962533380566081">Неважећи PUK.</translation>
 <translation id="1510238584712386396">Покретач</translation>
+<translation id="1512982610995527443">Уређај ће се искључити за 5 секунди</translation>
+<translation id="1522984060396982789">Извршена је поправка. Можете да искључите уређај или да предузмете додатне радње.</translation>
 <translation id="152892567002884378">Појачајте звук</translation>
 <translation id="1555130319947370107">Плава</translation>
 <translation id="155865706765934889">Додирна табла</translation>
@@ -76,6 +82,7 @@
 <translation id="1641857168437328880">Увлачење документа (једнострано)</translation>
 <translation id="1643449475550628585">Мењајте слику позадине сваког дана</translation>
 <translation id="1644574205037202324">Историја</translation>
+<translation id="1645954272419197032">Потврдите информације о уређају</translation>
 <translation id="1662989795263954667">Заустављено – нема више мастила</translation>
 <translation id="1668469839109562275">Уграђени VPN</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -105,6 +112,7 @@
 <translation id="1887850431809612466">Ревизија хардвера</translation>
 <translation id="1905710495812624430">Премашен је максимални број покушаја.</translation>
 <translation id="1908234395526491708">Неуспели UDP захтеви</translation>
+<translation id="1932611479324127242">Гашење батерије</translation>
 <translation id="1947737735496445907">Одштампано</translation>
 <translation id="1951012854035635156">Помоћник</translation>
 <translation id="1977994649430373166">Слика Google профила</translation>
@@ -113,6 +121,7 @@
 <translation id="2006864819935886708">Успостављање везе</translation>
 <translation id="2008685064673031089">Примарна претрага</translation>
 <translation id="2016697457005847575">Испробајте кораке за решавање проблема</translation>
+<translation id="2016848882344942759">--нема беле ознаке--</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Више подешавања</translation>
 <translation id="2085089206770112532">Смањите осветљеност екрана</translation>
@@ -123,6 +132,7 @@
 <translation id="2138109643290557664">Наставите да плутате</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2152882202543497059">Слика: <ph name="NUMBER" /></translation>
+<translation id="2154739667870063220">Рестартуј</translation>
 <translation id="2157959690810728433">НА ЧЕКАЊУ</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Пробај поново</translation>
 <translation id="2161394479394250669">Откажи задатак штампања</translation>
@@ -140,7 +150,9 @@
 <translation id="2240366984605217732">Прекидач распореда</translation>
 <translation id="225692081236532131">Статус активације</translation>
 <translation id="2271469253353559191">Распоред тамног режима</translation>
+<translation id="2275586345903859204">Поправка је завршена</translation>
 <translation id="2287186687001756809">Слика није доступна. Да бисте додали слике, идите на <ph name="LINK" /></translation>
+<translation id="2294753434210277304">Уметните спољну меморију, попут USB диска или SD картице, уз преузету слику Сервиса за опоравак Chromebook-а</translation>
 <translation id="2307344026739914387">Користите актуелни пар кључева</translation>
 <translation id="2320295602967756579">Омогућите светлу тему</translation>
 <translation id="2323506179655536734">ПРЕСКОЧЕНО</translation>
@@ -181,8 +193,10 @@
 <translation id="2712812801627182647">Кључ за TLS потврду идентитета</translation>
 <translation id="2713444072780614174">Бела</translation>
 <translation id="2717139507051041123">Омогућите режим тамне боје</translation>
+<translation id="2727250716596204208">Нисмо успели да пронађемо слику фирмвера. Уметните спољну меморију, попут USB диска или SD картице, уз преузету слику Сервиса за опоравак Chromebook-а.</translation>
 <translation id="2740531572673183784">Потврди</translation>
 <translation id="2751739896257479635">EAP потврда идентитета 2. фазе:</translation>
+<translation id="2756652381241102009">Покрени дијагностику</translation>
 <translation id="2783010256799387990">ПРОШЛО</translation>
 <translation id="2789486458103222910">Потврди</translation>
 <translation id="2805756323405976993">Апликације</translation>
@@ -211,6 +225,7 @@
 <translation id="3122464029669770682">CPU</translation>
 <translation id="3124039320086536031">Уређај је повезан.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Желите да уклоните страницу?}=1{Желите да уклоните {PAGE_NUMBER}. страницу?}one{Желите да уклоните {PAGE_NUMBER}. страницу?}few{Желите да уклоните {PAGE_NUMBER}. страницу?}other{Желите да уклоните {PAGE_NUMBER}. страницу?}}</translation>
+<translation id="3137983112374760826">Подешавају се подаци на уређају…</translation>
 <translation id="315116470104423982">Мобилни подаци</translation>
 <translation id="3156846309055100599">Скенира се <ph name="PAGE_NUMBER" />. страница...</translation>
 <translation id="315738237743207937">Откривен је улазни портал</translation>
@@ -232,6 +247,7 @@
 <translation id="3340011300870565703">Уређај има <ph name="BATTERY_PERCENTAGE" />% батерије десне слушалице.</translation>
 <translation id="3368922792935385530">Повезан</translation>
 <translation id="3369013195428705271">Желите ли стварно да обришете сву историју штампања? Задаци штампања који су у току се не бришу.</translation>
+<translation id="3383751554789092165">Мењајте информације о уређају према потреби.</translation>
 <translation id="3404249063913988450">Омогућите чувар екрана</translation>
 <translation id="3404770484521709967">Компоненте су правилно монтиране.</translation>
 <translation id="3413935475507503304">Да бисте наставили са ажурирањем, кликните на Даље.</translation>
@@ -270,6 +286,7 @@
 <translation id="3748026146096797577">Није повезано</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
 <translation id="3771294271822695279">Видео датотеке</translation>
+<translation id="3774059845329307709">Серијски број</translation>
 <translation id="3784455785234192852">Закључај</translation>
 <translation id="38114475217616659">Обриши сву историју</translation>
 <translation id="3820172043799983114">Неважећи PIN.</translation>
@@ -332,6 +349,7 @@
 <translation id="4378551569595875038">Повезује се...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098">Рестартује се <ph name="DEVICE_NAME" /></translation>
+<translation id="4415951057168511744">Актуелни аватар</translation>
 <translation id="4425149324548788773">Мој диск</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> мрежа је искључена</translation>
 <translation id="4429881212383817840">Kerberos тикет ускоро истиче</translation>
@@ -352,6 +370,7 @@
 <translation id="455835558791489930">Батерија од <ph name="CHARGE_VALUE" /> mAh</translation>
 <translation id="4561801978359312462">SIM је откључан</translation>
 <translation id="4562494484721939086">Мобилна мрежа није доступна</translation>
+<translation id="4568938274596692027">Инсталирање је завршено. Припрема се рестартовање…</translation>
 <translation id="458794348635939462">Разрешење свих хостова није успело</translation>
 <translation id="4593212453765072419">Потребна је потврда аутентичности проксија</translation>
 <translation id="4609350030397390689">Смањите осветљеност тастатуре</translation>
@@ -368,6 +387,7 @@
 <translation id="4731797938093519117">Родитељски приступ</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4744944742468440486">Информације везане за ваш избор</translation>
+<translation id="4751272708893364980">Прикажи RMA евиденције</translation>
 <translation id="4773299976671772492">Заустављено је</translation>
 <translation id="4774530504324923332">Треба вам безбедносни кључ омогућен за RSU, скенер QR кода и још један уређај са интернет везом</translation>
 <translation id="4782311465517282004">Добијајте дефиниције, преводе или конверзије јединица када кликнете десним тастером на текст или га додирнете и задржите</translation>
@@ -393,6 +413,7 @@
 <translation id="4890353053343094602">Одмах одаберите нову</translation>
 <translation id="4891842000192098784">Стрес</translation>
 <translation id="4897058166682006107">Уређај има <ph name="BATTERY_PERCENTAGE" />% батерије леве слушалице.</translation>
+<translation id="4908030561598728899">Фирмвер се инсталира…</translation>
 <translation id="4915052247106771211">Тиме ће се уређај ресетовати на фабричка подешавања (Powerwash).</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4917889632206600977">Заустављено – нема више папира</translation>
@@ -422,6 +443,7 @@
 <translation id="5166918508782100047">Подешавања брзих одговора</translation>
 <translation id="5168185087976003268">Стање батерије</translation>
 <translation id="5170568018924773124">Прикажи у директоријуму</translation>
+<translation id="5179530508336824319">Омогућите заштиту од уписивања да бисте прешли на следећи екран. Информације потражите на страници за подршку произвођача уређаја.</translation>
 <translation id="5190187232518914472">Поново проживите омиљене успомене. Да бисте додали или изменили албуме, идите у <ph name="LINK_BEGIN" />Google слике<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
@@ -451,9 +473,11 @@
 <translation id="5372659122375744710">WiFi мрежа није безбедна</translation>
 <translation id="5376354385557966694">Аутоматски светли режим</translation>
 <translation id="537872351913703572">Уређај ће прећи на другог корисника или организацију</translation>
+<translation id="5389224261615877010">Дуга</translation>
 <translation id="5395600419410242651">Обриши све податке</translation>
 <translation id="5400907029458559844">Уређај се повезује.</translation>
 <translation id="5401938042319910061">Покрени све рутине</translation>
+<translation id="5406131354638931058">Угасите батерију за уређаје који се шаљу или складиште</translation>
 <translation id="5423849171846380976">Активирано</translation>
 <translation id="5430931332414098647">Тренутно привезивање</translation>
 <translation id="5431318178759467895">У боји</translation>
@@ -506,6 +530,7 @@
 <translation id="5931523347251946569">Фајл није пронађен</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
 <translation id="594552776027197022">Генеришите насумични пар кључева</translation>
+<translation id="5951259522948394825">Потврдите да је све у реду и прегледајте извештај о дијагностици</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Подразумевана позадина</translation>
 <translation id="6017514345406065928">Зелена</translation>
@@ -602,8 +627,10 @@
 <translation id="6768237774506518020">Велика стопа неуспеха DNS разрешавања</translation>
 <translation id="680983167891198932">Кључ</translation>
 <translation id="6816797338148849397">Доступне су информације везане за ваш избор. Користите тастер са стрелицом нагоре да бисте им приступили.</translation>
+<translation id="6822504384524564824">Шифру артикла треба да мењате само ако се нове компоненте разликују од оних које су замениле. На пример, ако додирни екран замењује екран који није додирни екран или ако се меморија надограђује са 8 GB на 16 GB.</translation>
 <translation id="6840315122969944400">Поправка уређаја <ph name="DEVICE_TYPE" /></translation>
 <translation id="6853312040151791195">Брзина пражњења</translation>
+<translation id="6876833053687020046">Број DRAM дела</translation>
 <translation id="6889786074662672253">Не искључујте спољни уређај ни рачунар током рестартовања. Можете да умањите овај прозор. Ово може да потраје неколико минута, а спољни уређај можда неће радити током тог периода.</translation>
 <translation id="6905724422583748843">Вратите се на страницу <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Поклопац скенера је отворен. Затворите га и пробајте поново.</translation>
@@ -651,6 +678,7 @@
 <translation id="7343649194310845056">Мрежни уређаји</translation>
 <translation id="7359657277149375382">Тип датотеке</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7378553660733179982">Шифра артикла</translation>
 <translation id="7378886533986123738">Промените чувар екрана</translation>
 <translation id="7397270852490618635">Искључите светлу тему</translation>
 <translation id="741244894080940828">конверзију</translation>
@@ -726,6 +754,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Изаберите <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="819552138404104974">RMA евиденције</translation>
 <translation id="8206859287963243715">Мобилни уређај</translation>
 <translation id="8208861521865154048">Погодности</translation>
 <translation id="8217675307824400706">Повежите се</translation>
@@ -749,6 +778,7 @@
 <translation id="8364946094152050673">Празни сервери за имена</translation>
 <translation id="8372477600026034341">Додатни хостови</translation>
 <translation id="8378855320830505539">Област</translation>
+<translation id="8382302752385457774">Бела ознака</translation>
 <translation id="8395584934117017006">Предузеће управља овим <ph name="DEVICE_TYPE" /> уређајем</translation>
 <translation id="8398927464629426868">Стопа по којој се уређај тренутно пуни или празни</translation>
 <translation id="8422748173858722634">IMEI</translation>
@@ -759,6 +789,7 @@
 <translation id="8456761643544401578">Аутоматски тамни режим</translation>
 <translation id="8461329675984532579">Назив добављача за Home</translation>
 <translation id="8467104829907989997">Компоненте се калибрирају…</translation>
+<translation id="8474030592808010086">Искључите уређај из утичнице да бисте угасили батерију</translation>
 <translation id="8475690821716466388">WiFi мрежа је обезбеђена слабим протоколом WEP PSK</translation>
 <translation id="8477551185774834963">Кашњење DNS-а у мањој мери премашује дозвољену граничну вредност</translation>
 <translation id="8483248364096924578">IP адреса</translation>
@@ -804,6 +835,7 @@
 <translation id="8898840733695078011">Јачина сигнала</translation>
 <translation id="8910721771319628100">Подразумевана мрежа премашује граничну вредност за кашњење</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> корисника <ph name="GIVEN_NAME" /></translation>
+<translation id="8919792139048574232">Погледајте шта је поправљено</translation>
 <translation id="8919837981463578619">Није успело – недостаје фиока</translation>
 <translation id="8923267550422472772">Дан у месецу за ресетовање</translation>
 <translation id="8928727111548978589">Није успело – нема више папира</translation>

@@ -602,6 +602,8 @@ struct cff1_top_dict_interp_env_t : num_interp_env_t
 {
   cff1_top_dict_interp_env_t ()
     : num_interp_env_t(), prev_offset(0), last_offset(0) {}
+  cff1_top_dict_interp_env_t (const hb_ubytes_t &bytes)
+    : num_interp_env_t(bytes), prev_offset(0), last_offset(0) {}
 
   unsigned int prev_offset;
   unsigned int last_offset;
@@ -1024,11 +1026,10 @@ struct cff1
       { fini (); return; }
 
       { /* parse top dict */
-	const byte_str_t topDictStr = (*topDictIndex)[0];
+	const hb_ubytes_t topDictStr = (*topDictIndex)[0];
 	if (unlikely (!topDictStr.sanitize (&sc))) { fini (); return; }
-	cff1_top_dict_interpreter_t top_interp;
-	top_interp.env.init (topDictStr);
-	topDict.init ();
+	cff1_top_dict_interp_env_t env (topDictStr);
+	cff1_top_dict_interpreter_t top_interp (env);
 	if (unlikely (!top_interp.interpret (topDict))) { fini (); return; }
       }
 
@@ -1098,20 +1099,20 @@ struct cff1
       {
 	for (unsigned int i = 0; i < fdCount; i++)
 	{
-	  byte_str_t fontDictStr = (*fdArray)[i];
+	  hb_ubytes_t fontDictStr = (*fdArray)[i];
 	  if (unlikely (!fontDictStr.sanitize (&sc))) { fini (); return; }
 	  cff1_font_dict_values_t *font;
-	  cff1_font_dict_interpreter_t font_interp;
-	  font_interp.env.init (fontDictStr);
+	  cff1_top_dict_interp_env_t env (fontDictStr);
+	  cff1_font_dict_interpreter_t font_interp (env);
 	  font = fontDicts.push ();
 	  if (unlikely (font == &Crap (cff1_font_dict_values_t))) { fini (); return; }
 	  font->init ();
 	  if (unlikely (!font_interp.interpret (*font))) { fini (); return; }
 	  PRIVDICTVAL *priv = &privateDicts[i];
-	  const byte_str_t privDictStr (StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset), font->privateDictInfo.size);
+	  const hb_ubytes_t privDictStr = StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset).as_ubytes (font->privateDictInfo.size);
 	  if (unlikely (!privDictStr.sanitize (&sc))) { fini (); return; }
-	  dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp;
-	  priv_interp.env.init (privDictStr);
+	  num_interp_env_t env2 (privDictStr);
+	  dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp (env2);
 	  priv->init ();
 	  if (unlikely (!priv_interp.interpret (*priv))) { fini (); return; }
 
@@ -1126,10 +1127,10 @@ struct cff1
 	cff1_top_dict_values_t *font = &topDict;
 	PRIVDICTVAL *priv = &privateDicts[0];
 
-	const byte_str_t privDictStr (StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset), font->privateDictInfo.size);
+	const hb_ubytes_t privDictStr = StructAtOffset<UnsizedByteStr> (cff, font->privateDictInfo.offset).as_ubytes (font->privateDictInfo.size);
 	if (unlikely (!privDictStr.sanitize (&sc))) { fini (); return; }
-	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp;
-	priv_interp.env.init (privDictStr);
+	num_interp_env_t env (privDictStr);
+	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL> priv_interp (env);
 	priv->init ();
 	if (unlikely (!priv_interp.interpret (*priv))) { fini (); return; }
 
@@ -1287,10 +1288,10 @@ struct cff1
 	  gname.name = cff1_std_strings (sid);
 	else
 	{
-	  byte_str_t	ustr = (*stringIndex)[sid - cff1_std_strings_length];
+	  hb_ubytes_t	ustr = (*stringIndex)[sid - cff1_std_strings_length];
 	  gname.name = hb_bytes_t ((const char*)ustr.arrayZ, ustr.length);
 	}
-	if (unlikely (!gname.name.arrayZ)) { fini (); return; }
+	if (unlikely (!gname.name.length)) { fini (); return; }
 	glyph_names.push (gname);
       }
       glyph_names.qsort ();
@@ -1305,7 +1306,7 @@ struct cff1
     bool get_glyph_name (hb_codepoint_t glyph,
 			 char *buf, unsigned int buf_len) const
     {
-      if (!buf) return true;
+      if (!buf_len) return true;
       if (unlikely (!is_valid ())) return false;
       if (is_CID()) return false;
       hb_codepoint_t sid = glyph_to_sid (glyph);
@@ -1319,7 +1320,7 @@ struct cff1
       }
       else
       {
-	byte_str_t ubyte_str = (*stringIndex)[sid - cff1_std_strings_length];
+	hb_ubytes_t ubyte_str = (*stringIndex)[sid - cff1_std_strings_length];
 	str = (const char *)ubyte_str.arrayZ;
 	str_len = ubyte_str.length;
       }
@@ -1359,7 +1360,7 @@ struct cff1
       {
 	const gname_t *a = (const gname_t *)a_;
 	const gname_t *b = (const gname_t *)b_;
-	int minlen = hb_min (a->name.length, b->name.length);
+	unsigned minlen = hb_min (a->name.length, b->name.length);
 	int ret = strncmp (a->name.arrayZ, b->name.arrayZ, minlen);
 	if (ret) return ret;
 	return a->name.length - b->name.length;

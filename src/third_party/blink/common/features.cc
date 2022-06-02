@@ -474,8 +474,14 @@ const base::Feature kAllowSyncXHRInPageDismissal{
     "AllowSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Font enumeration and data access. https://crbug.com/535764
-const base::Feature kFontAccess{"FontAccess",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFontAccess {
+  "FontAccess",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Kill switch for the Compute Pressure API. https://crbug.com/1067627
 const base::Feature kComputePressure{"ComputePressure",
@@ -1347,9 +1353,6 @@ const base::Feature kNoForcedFrameUpdatesForWebTests{
 // another class called ElementSuperRareData to improve memory usage.
 const base::Feature kElementSuperRareData{"ElementSuperRareData",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kClientHintsPartitionedCookies{
-    "ClientHintsPartitionedCookies", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the memory limit used for tiles is scaled by
 // `kScaleTileMemoryLimitFactor`.

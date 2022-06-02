@@ -951,7 +951,7 @@ const base::Feature kLauncherDismissButtonsOnSortNudgeAndToast{
 // and recent apps context menu that allow the user to hide the continue
 // section.
 const base::Feature kLauncherHideContinueSection{
-    "LauncherHideContinueSection", base::FEATURE_ENABLED_BY_DEFAULT};
+    "LauncherHideContinueSection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses short intervals for launcher nudge for testing if enabled.
 const base::Feature kLauncherNudgeShortInterval{
@@ -1364,7 +1364,7 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
 // Enables or disables using the system input engine for physical typing in
 // Chinese.
 const base::Feature kSystemChinesePhysicalTyping{
-    "SystemChinesePhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the System Extensions platform.
 const base::Feature kSystemExtensions{"SystemExtensions",

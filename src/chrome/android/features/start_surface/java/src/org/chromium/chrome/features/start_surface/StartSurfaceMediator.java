@@ -49,6 +49,7 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lens.LensEntryPoint;
@@ -67,6 +68,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.Controller;
@@ -250,6 +252,17 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
 
                 @Override
                 public void willAddTab(Tab tab, @TabLaunchType int type) {
+                    if (mStartSurfaceState == StartSurfaceState.SHOWN_HOMEPAGE
+                            && type != TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
+                        // Log if the creation of this tab will hide the surface and there is an
+                        // ongoing feed launch. If the tab creation is due to a feed card tap, "card
+                        // tapped" should already have been logged marking the end of the launch.
+                        FeedReliabilityLogger logger = getFeedReliabilityLogger();
+                        if (logger != null) {
+                            logger.onPageLoadStarted();
+                        }
+                    }
+
                     // When the tab model is empty and a new background tab is added, it is
                     // immediately selected, which normally causes the overview to hide. We
                     // don't want to hide the overview when creating a tab in the background, so
@@ -424,6 +437,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         if (mPropertyModel == null || state == mStartSurfaceState) return;
 
         // Cache previous state.
+        int cachedPreviousState = mPreviousStartSurfaceState;
         if (mStartSurfaceState != StartSurfaceState.NOT_SHOWN) {
             mPreviousStartSurfaceState = mStartSurfaceState;
         }
@@ -469,6 +483,9 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
             RecordUserAction.record("StartSurface.SinglePane.Home");
         } else if (mStartSurfaceState == StartSurfaceState.SHOWN_TABSWITCHER) {
             RecordUserAction.record("StartSurface.SinglePane.Tabswitcher");
+        } else if (mStartSurfaceState == StartSurfaceState.SHOWING_PREVIOUS
+                && cachedPreviousState == StartSurfaceState.SHOWN_HOMEPAGE) {
+            ReturnToChromeUtil.recordBackNavigationToStart("FromTab");
         }
     }
 
@@ -646,9 +663,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
                     && mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR) == null
                     && !mActivityStateChecker.isFinishingOrDestroyed()
                     && mExploreSurfaceCoordinatorFactory != null) {
-                mPropertyModel.set(EXPLORE_SURFACE_COORDINATOR,
-                        mExploreSurfaceCoordinatorFactory.create(ColorUtils.inNightMode(mContext),
-                                mHasFeedPlaceholderShown, mLaunchOrigin));
+                createAndSetExploreSurfaceCoordinator();
             }
             mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
@@ -688,9 +703,17 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
                 // If we reached Tab switcher from HomePage, and there isn't any dialog shown,
                 // updates the state, and ChromeTabbedActivity will handle the back button.
                 setOverviewState(StartSurfaceState.SHOWN_HOMEPAGE);
+                ReturnToChromeUtil.recordBackNavigationToStart("FromTabSwitcher");
                 return true;
             } else {
                 return mSecondaryTasksSurfaceController.onBackPressed(isOnHomepage);
+            }
+        }
+
+        if (isOnHomepage) {
+            FeedReliabilityLogger feedReliabilityLogger = getFeedReliabilityLogger();
+            if (feedReliabilityLogger != null) {
+                feedReliabilityLogger.onNavigateBack();
             }
         }
 
@@ -810,6 +833,10 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
     private void destroyExploreSurfaceCoordinator() {
         ExploreSurfaceCoordinator exploreSurfaceCoordinator =
                 mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR);
+        FeedReliabilityLogger logger = getFeedReliabilityLogger();
+        if (logger != null) {
+            mOmniboxStub.removeUrlFocusChangeListener(logger);
+        }
         if (exploreSurfaceCoordinator != null) exploreSurfaceCoordinator.destroy();
         mPropertyModel.set(EXPLORE_SURFACE_COORDINATOR, null);
     }
@@ -845,12 +872,12 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
     public boolean shouldShowFeedPlaceholder() {
         if (mFeedVisibilityInSharedPreferenceOnStartUp == null) {
             mFeedVisibilityInSharedPreferenceOnStartUp =
-                    StartSurfaceConfiguration.getFeedArticlesVisibility();
+                    ReturnToChromeUtil.getFeedArticlesVisibility();
         }
 
         return mIsStartSurfaceEnabled
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
-                && StartSurfaceConfiguration.getFeedArticlesVisibility() && !mHadWarmStart
+                && ReturnToChromeUtil.getFeedArticlesVisibility() && !mHadWarmStart
                 && !mHasFeedPlaceholderShown;
     }
 
@@ -872,9 +899,7 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
         if (isVisible && mPropertyModel.get(IS_SHOWING_OVERVIEW)
                 && mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR) == null
                 && !mActivityStateChecker.isFinishingOrDestroyed()) {
-            mPropertyModel.set(EXPLORE_SURFACE_COORDINATOR,
-                    mExploreSurfaceCoordinatorFactory.create(ColorUtils.inNightMode(mContext),
-                            mHasFeedPlaceholderShown, mLaunchOrigin));
+            createAndSetExploreSurfaceCoordinator();
         }
 
         mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, isVisible);
@@ -1138,5 +1163,23 @@ class StartSurfaceMediator implements StartSurface.Controller, TabSwitcher.Overv
 
     private int getPixelSize(int id) {
         return mContext.getResources().getDimensionPixelSize(id);
+    }
+
+    private void createAndSetExploreSurfaceCoordinator() {
+        ExploreSurfaceCoordinator exploreSurfaceCoordinator =
+                mExploreSurfaceCoordinatorFactory.create(
+                        ColorUtils.inNightMode(mContext), mHasFeedPlaceholderShown, mLaunchOrigin);
+        mPropertyModel.set(EXPLORE_SURFACE_COORDINATOR, exploreSurfaceCoordinator);
+        FeedReliabilityLogger feedReliabilityLogger =
+                exploreSurfaceCoordinator.getFeedReliabilityLogger();
+        if (feedReliabilityLogger != null) {
+            mOmniboxStub.addUrlFocusChangeListener(feedReliabilityLogger);
+        }
+    }
+
+    FeedReliabilityLogger getFeedReliabilityLogger() {
+        if (mPropertyModel == null) return null;
+        ExploreSurfaceCoordinator coordinator = mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR);
+        return coordinator != null ? coordinator.getFeedReliabilityLogger() : null;
     }
 }

@@ -653,6 +653,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677696497921480781">Hari lahir &amp; hari nama</translation>
 <translation id="2677748264148917807">Tinggalkan</translation>
+<translation id="2679714844901977852">Simpan kad dan maklumat pengebilan anda pada Google Account anda, <ph name="USER_EMAIL" />, untuk semak keluar yang selamat dan lebih pantas</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Paling sesuai</translation>
 <translation id="2688969097326701645">Ya, teruskan</translation>
@@ -1955,6 +1956,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6337133576188860026">Mengosongkan kurang daripada <ph name="SIZE" />. Sesetengah tapak mungkin dimuatkan dengan lebih perlahan pada lawatan anda yang seterusnya.</translation>
 <translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
 <translation id="6340739886198108203">Dasar pentadbir tidak mengesyorkan mengambil tangkapan skrin atau rakaman apabila kandungan sulit kelihatan:</translation>
+<translation id="6348220984832452017">Variasi Aktif</translation>
 <translation id="6349101878882523185">Pasang <ph name="APP_NAME" /></translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Tiada}=1{1 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}=2{2 kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}other{# kata laluan (untuk <ph name="DOMAIN_LIST" />, disegerakkan)}}</translation>
 <translation id="6355392890578844978">Penyemak imbas ini tidak diurus oleh syarikat atau organisasi lain. Aktiviti pada peranti ini mungkin diurus di luar Chromium. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>

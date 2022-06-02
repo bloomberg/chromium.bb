@@ -22,6 +22,7 @@
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/fake_camera_device.h"
+#include "ash/capture_mode/fake_folder_selection_dialog_factory.h"
 #include "ash/capture_mode/fake_video_source_provider.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/constants/ash_features.h"
@@ -100,6 +101,14 @@ aura::Window* GetCurrentRoot() {
   }
 
   return Shell::GetPrimaryRootWindow();
+}
+
+bool IsWindowStackedRightBelow(aura::Window* window, aura::Window* sibling) {
+  DCHECK_EQ(window->parent(), sibling->parent());
+  const auto& children = window->parent()->children();
+  const int sibling_index =
+      std::find(children.begin(), children.end(), sibling) - children.begin();
+  return sibling_index > 0 && children[sibling_index - 1] == window;
 }
 
 // Defines a waiter for the camera devices change notifications.
@@ -184,11 +193,13 @@ class CaptureModeCameraTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    FakeFolderSelectionDialogFactory::Start();
     window_ = CreateTestWindow(gfx::Rect(30, 40, 600, 500));
   }
 
   void TearDown() override {
     window_.reset();
+    FakeFolderSelectionDialogFactory::Stop();
     AshTestBase::TearDown();
   }
 
@@ -916,9 +927,9 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetStackingInFullscreen) {
   auto* parent = preview_window->parent();
   // Parent of the preview should be the MenuContainer when capture mode
   // session is active with `kFullscreen` type. And the preview window should
-  // be the top-most child of it.
+  // be the bottom-most child of it.
   EXPECT_EQ(parent, menu_container);
-  EXPECT_EQ(menu_container->children().back(), preview_window);
+  EXPECT_EQ(menu_container->children().front(), preview_window);
 
   StartRecordingFromSource(CaptureModeSource::kFullscreen);
   // Parent of the preview should be the MenuContainer when video recording
@@ -2745,6 +2756,44 @@ TEST_F(CaptureModeCameraTest, ToastVisibilityChangeOnCaptureModeTurnedOn) {
             CaptureToastType::kCameraPreview);
 }
 
+TEST_F(CaptureModeCameraTest, ToastStackingOrderChangeOnCaptureModeTurnedOn) {
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+
+  // Set capture region small enough to make capture toast shown.
+  const gfx::Rect capture_region = GetTooSmallToFitCameraRegion();
+  SelectCaptureRegion(capture_region);
+
+  // Close capture mode.
+  controller->Stop();
+
+  // Turn on capture mode again through the quick settings, verify that the
+  // stacking order for capture toast relative to other capture UIs is correct.
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  auto* capture_session = controller->capture_mode_session();
+  auto* capture_toast_controller = capture_session->capture_toast_controller();
+  auto* capture_toast_widget = capture_toast_controller->capture_toast_widget();
+  auto* capture_toast_window = capture_toast_widget->GetNativeWindow();
+  auto* capture_label_window =
+      capture_session->capture_label_widget()->GetNativeWindow();
+  auto* capture_bar_window =
+      capture_session->capture_mode_bar_widget()->GetNativeWindow();
+  auto* camera_preview_window =
+      camera_controller->camera_preview_widget()->GetNativeWindow();
+
+  EXPECT_TRUE(
+      IsWindowStackedRightBelow(capture_label_window, capture_bar_window));
+  EXPECT_TRUE(
+      IsWindowStackedRightBelow(capture_toast_window, capture_label_window));
+  EXPECT_TRUE(
+      IsWindowStackedRightBelow(camera_preview_window, capture_toast_window));
+  EXPECT_TRUE(IsLayerStackedRightBelow(capture_session->layer(),
+                                       camera_preview_window->layer()));
+}
+
 TEST_F(CaptureModeCameraTest, ToastVisibilityChangeOnPerformingCapture) {
   UpdateDisplay("800x600");
 
@@ -2989,6 +3038,45 @@ class CaptureModeCameraPreviewTest
     }
   }
 };
+
+TEST_P(CaptureModeCameraPreviewTest, PreviewVisibilityWhileFolderSelection) {
+  AddDefaultCamera();
+  StartCaptureSessionWithParam();
+  CaptureModeTestApi().SelectCameraAtIndex(0);
+
+  // The camera preview should be initially visible.
+  auto* controller = CaptureModeController::Get();
+  ASSERT_TRUE(controller->IsActive());
+  auto* preview_widget = GetCameraController()->camera_preview_widget();
+  ASSERT_TRUE(preview_widget);
+  EXPECT_TRUE(preview_widget->IsVisible());
+
+  // Click on the settings button, the settings menu should open, and the camera
+  // preview should remain visible.
+  CaptureModeSessionTestApi session_test_api(
+      controller->capture_mode_session());
+  auto* settings_button =
+      session_test_api.GetCaptureModeBarView()->settings_button();
+  auto* event_generator = GetEventGenerator();
+  ClickOnView(settings_button, event_generator);
+  ASSERT_TRUE(session_test_api.GetCaptureModeSettingsWidget());
+  EXPECT_TRUE(preview_widget->IsVisible());
+
+  // Click on the "Select folder ..." option, the folder selection dialog should
+  // open, all capture UIs should hide, including the camera preview.
+  CaptureModeSettingsTestApi settings_test_api;
+  ClickOnView(settings_test_api.GetSelectFolderMenuItem(), event_generator);
+  EXPECT_TRUE(session_test_api.IsFolderSelectionDialogShown());
+  EXPECT_FALSE(session_test_api.IsAllUisVisible());
+  EXPECT_FALSE(preview_widget->IsVisible());
+
+  // Dismiss the folder selection dialog, all capture UIs should show again,
+  // including the camera preview.
+  FakeFolderSelectionDialogFactory::Get()->CancelDialog();
+  EXPECT_FALSE(session_test_api.IsFolderSelectionDialogShown());
+  EXPECT_TRUE(session_test_api.IsAllUisVisible());
+  EXPECT_TRUE(preview_widget->IsVisible());
+}
 
 // Tests that camera preview's bounds is updated after display rotations with
 // two use cases, when capture session is active and when there's a video

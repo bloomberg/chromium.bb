@@ -230,6 +230,10 @@ const char kEnableFaviconForPasswordsDescription[] =
     "and Never Saved sections and also for the AutoFill Passwords for the "
     "Credential Provider.";
 
+const char kEnableFeedAblationName[] = "Enables Feed Ablation";
+const char kEnableFeedAblationDescription[] =
+    "If Enabled the Feed will be removed from the NTP";
+
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module";
 const char kEnableFREUIModuleIOSDescription[] =
     "Use the new FRE UI module for first run.";
@@ -392,6 +396,11 @@ const char kNewOverflowMenuSettingsActionName[] =
     "Settings action in the new overflow menu";
 const char kNewOverflowMenuSettingsActionDescription[] =
     "Adds a Settings action to the new overflow menu";
+
+extern const char kNewOverflowMenuSimpleDestinationIconsName[] =
+    "Simple Destination icons in the new overflow menu";
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
+    "Uses a simple icon style for destination icons in the new overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =

@@ -653,6 +653,7 @@
 <translation id="2676271551327853224">રૉક-8K</translation>
 <translation id="2677696497921480781">જન્મદિવસ અને સ્મૃતિ દિવસ</translation>
 <translation id="2677748264148917807">છોડો</translation>
+<translation id="2679714844901977852">વધુ સુરક્ષિત અને વધુ ઝડપી ચેકઆઉટ માટે, તમારા Google એકાઉન્ટ <ph name="USER_EMAIL" />માં તમારા કાર્ડની અને બિલિંગની માહિતી સાચવો</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">શ્રેષ્ઠ ફિટ</translation>
 <translation id="2688969097326701645">હા, ચાલુ રાખો</translation>
@@ -1954,6 +1955,7 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> કરતાં ઓછી જગ્યા ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટ વધુ ધીમે લોડ થઈ શકે છે.</translation>
 <translation id="6337534724793800597">નામ દ્વારા નીતિઓને ફિલ્ટર કરો</translation>
 <translation id="6340739886198108203">જ્યારે ગોપનીય કન્ટેન્ટ દેખાતું હોય, ત્યારે ઍડમિનિસ્ટ્રેટરની પૉલિસી સ્ક્રીનશૉટ અથવા રેકોર્ડિંગ લેવાનો સુઝાવ આપતી નથી:</translation>
+<translation id="6348220984832452017">સક્રિય વિવિધતાઓ</translation>
 <translation id="6349101878882523185"><ph name="APP_NAME" /> ઇન્સ્ટૉલ કરો</translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{એકપણ નહીં}=1{1 પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}=2{2 પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}one{# પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}other{# પાસવર્ડ (<ph name="DOMAIN_LIST" /> માટે, સિંક કરેલા)}}</translation>
 <translation id="6355392890578844978">આ બ્રાઉઝર કંપની દ્વારા અથવા અન્ય સંસ્થા દ્વારા મેનેજ કરવામાં આવતું નથી. આ ડિવાઇસ પરની પ્રવૃત્તિ Chromiumની બહારથી મેનેજ કરી શકાય છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>

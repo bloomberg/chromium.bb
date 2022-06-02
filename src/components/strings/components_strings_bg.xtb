@@ -651,6 +651,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677696497921480781">Рождени и имени дни</translation>
 <translation id="2677748264148917807">Излизане</translation>
+<translation id="2679714844901977852">Запазете картата и данните си за таксуване в профила си в Google <ph name="USER_EMAIL" />, за да плащате по-бързо и сигурно</translation>
 <translation id="2684561033061424857">11 x 12</translation>
 <translation id="2687555958734450033">Напасване</translation>
 <translation id="2688969097326701645">Да, продължаване</translation>
@@ -1952,6 +1953,7 @@
 <translation id="6337133576188860026">Ще освободите по-малко от <ph name="SIZE" />. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="6337534724793800597">Филтриране на правилата по име</translation>
 <translation id="6340739886198108203">Според администраторско правило не се препоръчва правенето на екранни снимки или записи, когато се вижда поверително съдържание:</translation>
+<translation id="6348220984832452017">Активни варианти</translation>
 <translation id="6349101878882523185">Инсталиране на <ph name="APP_NAME" /></translation>
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>
 <translation id="6355392890578844978">Този браузър не се управлява от дружество или друга организация. Възможно е активността на устройството да се управлява извън Chromium. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
