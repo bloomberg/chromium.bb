@@ -23,11 +23,12 @@
 #include <blpwtk2_profileimpl.h>
 
 #include <blpwtk2_browsercontextimpl.h>
-#include <blpwtk2_webviewproxy.h>
+#include <blpwtk2_mainmessagepump.h>
+#include <blpwtk2_renderwebview.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
 #include <blpwtk2_webviewclientimpl.h>
-#include <blpwtk2_mainmessagepump.h>
+#include <blpwtk2_webviewproxy.h>
 
 #include <base/bind.h>
 #include <base/task/single_thread_task_executor.h>
@@ -133,6 +134,21 @@ unsigned int ProfileImpl::getProcessId() const
     return d_processId;
 }
 
+void ProfileImpl::registerNativeViewForComposition(NativeView view)
+{
+    d_hostPtr->registerNativeViewForComposition(
+        static_cast<unsigned int>(reinterpret_cast<uintptr_t>(view)));
+}
+
+void ProfileImpl::unregisterNativeViewForComposition(NativeView view)
+{
+    if (!d_hostPtr.is_bound() || !d_hostPtr.is_connected()) {
+        return;
+    }
+    d_hostPtr->unregisterNativeViewForComposition(
+        static_cast<unsigned int>(reinterpret_cast<uintptr_t>(view)));
+}
+
 // blpwtk2::Profile overrides
 void ProfileImpl::destroy()
 {
@@ -231,6 +247,47 @@ void ProfileImpl::createWebView(WebViewDelegate            *delegate,
 
     // Create a new instance of WebViewProxy.
     auto proxy = std::make_unique<WebViewProxy>(delegate, this);
+
+    if (Statics::rendererUIEnabled &&
+        Statics::isInProcessRendererEnabled &&
+        params.rendererAffinity() == (int)base::GetCurrentProcId()) {
+        WebViewProperties properties;
+
+#if defined(BLPWTK2_FEATURE_FOCUS)
+        properties.takeKeyboardFocusOnMouseDown =
+            params.takeKeyboardFocusOnMouseDown();
+        properties.takeLogicalFocusOnMouseDown =
+            params.takeLogicalFocusOnMouseDown();
+        properties.activateWindowOnMouseDown =
+            params.activateWindowOnMouseDown();
+#endif
+
+        properties.domPasteEnabled =
+            params.domPasteEnabled();
+        properties.javascriptCanAccessClipboard =
+            params.javascriptCanAccessClipboard();
+        properties.rerouteMouseWheelToAnyRelatedWindow =
+            params.rerouteMouseWheelToAnyRelatedWindow();
+#if defined(BLPWTK2_FEATURE_MSGINTERCEPT)
+        properties.messageInterceptionEnabled =
+            params.messageInterceptionEnabled();
+#endif
+
+        properties.width =
+            params.width();
+        properties.height =
+            params.height();
+
+        // Create a new instance of RenderWebView:
+        RenderWebView *renderWebView = new RenderWebView(
+            delegate, this, properties);
+
+        // Override the WebViewProxy's delegate with the RenderWebView:
+        static_cast<WebView *>(proxy.get())->setDelegate(renderWebView);
+
+        // Re-assign `delegate` for passing to `createWebView()`:
+        delegate = renderWebView;
+    }
 
     // Ask the process host to create a webview host. 
     mojom::WebViewHostPtr webViewHostPtr;

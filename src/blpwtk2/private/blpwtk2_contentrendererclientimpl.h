@@ -27,6 +27,7 @@
 
 #include <content/public/renderer/content_renderer_client.h>
 #include <content/public/renderer/render_thread_observer.h>
+#include <mojo/public/cpp/bindings/pending_receiver.h>
 #include <services/service_manager/public/cpp/binder_registry.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <services/service_manager/public/cpp/service.h>
@@ -86,6 +87,8 @@ class ContentRendererClientImpl final : public content::ContentRendererClient,
         // the plugin.
 
     blink::ThreadSafeBrowserInterfaceBrokerProxy* GetInterfaceBroker() const;
+
+    bool Dispatch(IPC::Message *msg) override;
 
   private:
     // service_manager::Service:

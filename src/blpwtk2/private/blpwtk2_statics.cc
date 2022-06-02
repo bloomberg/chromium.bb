@@ -49,6 +49,7 @@ ToolkitDelegate *Statics::toolkitDelegate = nullptr;
 
 
 // patch section: renderer ui
+bool Statics::rendererUIEnabled = false;
 
 
 

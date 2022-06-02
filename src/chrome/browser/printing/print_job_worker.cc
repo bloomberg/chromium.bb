@@ -70,6 +70,11 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
   ~PrintingContextDelegate() override;
 
   gfx::NativeView GetParentView() override;
+
+  HWND GetOwnerWnd() override;
+
+  void SetOwnerWnd(HWND ownerWnd) override;
+
   std::string GetAppLocale() override;
 
   // Not exposed to PrintingContext::Delegate because of dependency issues.
@@ -81,12 +86,15 @@ class PrintingContextDelegate : public PrintingContext::Delegate {
  private:
   const int render_process_id_;
   const int render_frame_id_;
+  HWND ownerWnd_;
+
 };
 
 PrintingContextDelegate::PrintingContextDelegate(int render_process_id,
                                                  int render_frame_id)
     : render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id) {}
+      render_frame_id_(render_frame_id),
+      ownerWnd_(0) {}
 
 PrintingContextDelegate::~PrintingContextDelegate() {
 }
@@ -94,6 +102,14 @@ PrintingContextDelegate::~PrintingContextDelegate() {
 gfx::NativeView PrintingContextDelegate::GetParentView() {
   content::WebContents* wc = GetWebContents();
   return wc ? wc->GetNativeView() : nullptr;
+}
+
+HWND PrintingContextDelegate::GetOwnerWnd() {
+  return ownerWnd_;
+}
+
+void PrintingContextDelegate::SetOwnerWnd(HWND ownerWnd) {
+  ownerWnd_ = ownerWnd;
 }
 
 content::WebContents* PrintingContextDelegate::GetWebContents() {
@@ -165,6 +181,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                                  uint32_t document_page_count,
                                  bool has_selection,
                                  mojom::MarginType margin_type,
+                                 HWND hwnd,
                                  bool is_scripted,
                                  bool is_modifiable,
                                  SettingsCallback callback) {
@@ -181,7 +198,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
         FROM_HERE,
         base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
                        base::Unretained(this), document_page_count,
-                       has_selection, is_scripted, std::move(callback)));
+                       hwnd, has_selection, is_scripted, std::move(callback)));
   } else {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&PrintJobWorker::UseDefaultSettings,
@@ -274,11 +291,12 @@ void PrintJobWorker::GetSettingsDone(SettingsCallback callback,
 }
 
 void PrintJobWorker::GetSettingsWithUI(uint32_t document_page_count,
+                                       HWND hwnd,
                                        bool has_selection,
                                        bool is_scripted,
                                        SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
+  printing_context_delegate_->SetOwnerWnd(hwnd);
   if (document_page_count > kMaxPageCount) {
     GetSettingsDone(std::move(callback), mojom::ResultCode::kFailed);
     return;

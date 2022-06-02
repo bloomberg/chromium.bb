@@ -119,6 +119,11 @@ class ProfileImpl final : public Profile {
         // Returns the pid of the RenderProcess for which this profile is
         // associated with.
 
+    void registerNativeViewForComposition(NativeView view);
+    void unregisterNativeViewForComposition(NativeView view);
+        // These two functions allow a renderer-owned native view to
+        // host compositor output.
+
     // blpwtk2::Profile overrides
     void destroy() override;
 

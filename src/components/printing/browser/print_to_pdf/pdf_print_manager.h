@@ -69,7 +69,7 @@ class PdfPrintManager : public printing::PrintManager,
   // printing::mojom::PrintManagerHost:
   void DidPrintDocument(printing::mojom::DidPrintDocumentParamsPtr params,
                         DidPrintDocumentCallback callback) override;
-  void GetDefaultPrintSettings(
+  void GetDefaultPrintSettings(uint32_t owner_wnd,
       GetDefaultPrintSettingsCallback callback) override;
   void ScriptedPrint(printing::mojom::ScriptedPrintParamsPtr params,
                      ScriptedPrintCallback callback) override;

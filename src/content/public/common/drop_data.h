@@ -50,7 +50,7 @@ struct CONTENT_EXPORT DropData {
     LAST = BINARY
   };
 
-  struct Metadata {
+  struct CONTENT_EXPORT Metadata {
     Metadata();
     static Metadata CreateForMimeType(const Kind& kind,
                                       const std::u16string& mime_type);

@@ -256,4 +256,8 @@ ContentRendererClient::GetBaseRendererFactory(
   return nullptr;
 }
 
+bool ContentRendererClient::Dispatch(IPC::Message* msg) {
+  return false;
+}
+
 }  // namespace content

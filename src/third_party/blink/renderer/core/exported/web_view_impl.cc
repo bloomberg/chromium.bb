@@ -558,6 +558,7 @@ WebViewImpl::WebViewImpl(
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
+      hwnd_(0),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
       page_base_background_color_(
           page_base_background_color.value_or(SK_ColorWHITE)),
@@ -3754,6 +3755,14 @@ const SessionStorageNamespaceId& WebViewImpl::GetSessionStorageNamespaceId() {
 
 bool WebViewImpl::IsFencedFrameRoot() const {
   return GetPage()->IsMainFrameFencedFrameRoot();
+}
+
+HWND WebViewImpl::GetHwnd() {
+  return hwnd_;
+}
+
+void WebViewImpl::SetHwnd(HWND hwnd) {
+  hwnd_ = hwnd;
 }
 
 }  // namespace blink

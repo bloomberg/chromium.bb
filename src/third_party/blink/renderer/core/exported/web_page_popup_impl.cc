@@ -1010,6 +1010,16 @@ WebDocument WebPagePopupImpl::GetDocument() {
   return WebDocument(MainFrame().GetDocument());
 }
 
+void WebPagePopupImpl::ResetWidgetInterfaces(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) {
+  popup_widget_host_.Bind(std::move(popupWidgetHost), Window()->GetTaskRunner(TaskType::kInternalDefault));
+  widget_base_->ResetWidgetInterfaces(std::move(widgetHost), std::move(widget));
+}
+
 void WebPagePopupImpl::Cancel() {
   if (popup_client_)
     popup_client_->CancelPopup();

@@ -608,6 +608,14 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Return the focused WebPlugin if there is one.
   WebPlugin* GetFocusedPluginContainer();
 
+  // blpwtk2: for RenderWebView
+  void ResetWidgetInterfaces(
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+      CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+      CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) override;
+
   // Return if there is a pending scale animation.
   bool HasPendingPageScaleAnimation();
 

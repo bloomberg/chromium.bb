@@ -60,7 +60,7 @@ void AssociatedInterfacePtrStateBase::Bind(
     std::unique_ptr<MessageReceiver> validator,
     scoped_refptr<base::SequencedTaskRunner> runner,
     const char* interface_name) {
-  DCHECK(!endpoint_client_);
+  //DCHECK(!endpoint_client_);
   DCHECK_EQ(0u, version_);
   DCHECK(handle.is_valid());
 

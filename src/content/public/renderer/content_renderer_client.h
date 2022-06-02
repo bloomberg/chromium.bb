@@ -18,6 +18,8 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "content/public/common/content_client.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
@@ -57,6 +59,10 @@ struct WebPluginParams;
 struct WebURLError;
 enum class ProtocolHandlerSecurityLevel;
 }  // namespace blink
+
+namespace IPC {
+class Message;
+}  // namespace IPC
 
 namespace media {
 class DecoderFactory;
@@ -384,6 +390,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // The user agent string is given from the browser process. This is called at
   // most once.
   virtual void DidSetUserAgent(const std::string& user_agent);
+
+  // Allows the embedder to intercept IPC messages before they are sent to
+  // the browser. If the function handles the message, it should delete
+  // 'msg' and return 'true'. If the function does not handle the message,
+  // it should return 'false' without deleting 'msg'.
+  virtual bool Dispatch(IPC::Message* msg);
 
   // Optionally returns audio renderer algorithm parameters.
   virtual absl::optional<::media::AudioRendererAlgorithmParameters>

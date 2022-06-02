@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -720,6 +721,9 @@ class CORE_EXPORT LocalFrame final
   void RebindTextInputHostForTesting();
 #endif
 
+  // blpwtk2: for RenderWebView
+  void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride);
+
  private:
   friend class FrameNavigationDisabler;
   // LocalFrameMojoHandler is a part of LocalFrame.
@@ -891,6 +895,9 @@ class CORE_EXPORT LocalFrame final
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
   Member<LocalFrameMojoHandler> mojo_handler_;
+
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride>
+      local_frame_host_partial_override_remote_{nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

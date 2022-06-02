@@ -53,6 +53,7 @@ std::string g_dictDir;
 bool g_in_process_renderer = true;
 bool g_custom_hit_test = false;
 bool g_custom_tooltip = false;
+bool g_renderer_ui = false;
 HANDLE g_hJob;
 MSG g_msg;
 bool g_isInsideEventLoop;
@@ -221,6 +222,7 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
 
 
     // patch section: renderer ui
+    void onModalLoop() override {}
 
 
 
@@ -350,7 +352,7 @@ public:
 
 
 
-        if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
+        if (g_in_process_renderer && d_profile == g_profile && (g_renderer_ui || !useExternalRenderer)) {
             params.setRendererAffinity(::GetCurrentProcessId());
         }
         d_profile->createWebView(this, params);
@@ -779,6 +781,9 @@ HANDLE spawnProcess()
 
 
     // patch section: renderer ui
+    if (g_renderer_ui) {
+        cmdline.append(" --renderer-ui");
+    }
 
 
     // patch section: dpi awareness
@@ -914,6 +919,9 @@ int main(int, const char**)
                 host = blpwtk2::ThreadMode::RENDERER_MAIN;
                 isProcessHost = true;
             }
+            else if (0 == wcscmp(L"--renderer-ui", argv[i])) {
+                g_renderer_ui = true;
+            }
             else if (0 == wcsncmp(L"--file-mapping=", argv[i], 15)) {
                 char buf[1024];
                 sprintf_s(buf, sizeof(buf), "%S", argv[i]+15);
@@ -1025,6 +1033,9 @@ int main(int, const char**)
 
 
         // patch section: renderer ui
+       else {
+            toolkitParams.setRendererUIEnabled(g_renderer_ui);
+        }
 
 
         // patch section: web script context
@@ -1048,7 +1059,10 @@ int main(int, const char**)
 
 
     // patch section: renderer ui
-
+    if (g_renderer_ui) {
+        toolkitParams.appendCommandLineSwitch("disable-direct-composition");
+        toolkitParams.appendCommandLineSwitch("disable-oop-rasterization");
+    }
 
 
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());

@@ -351,9 +351,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   base::ProcessId host_process_id_;
 
+public:
   // Performance hint session factory of this viz instance.
   const raw_ptr<HintSessionFactory> hint_session_factory_;
-
+private:
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and
   // destroyed when frame sink is invalidated.

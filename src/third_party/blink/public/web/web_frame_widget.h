@@ -44,6 +44,11 @@
 #include "third_party/blink/public/web/web_widget.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 
+namespace blpwtk2 {
+class RenderCompositor;
+class RenderWebView;
+}
+
 namespace blink {
 
 class FrameWidgetTestHelper;
@@ -203,6 +208,10 @@ class WebFrameWidget : public WebWidget {
 
   // GPU benchmarking extension needs access to the LayerTreeHost
   friend class GpuBenchmarkingContext;
+
+  // blpwtk2::RenderCompositor needs access to the LayerTreeHost
+  friend class blpwtk2::RenderCompositor;
+  friend class blpwtk2::RenderWebView;
 
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetImpl is the only concrete subclass that implements

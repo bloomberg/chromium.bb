@@ -96,6 +96,7 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
       const ui::AXTreeUpdate& accessibility_tree) override;
 #endif
   void GetDefaultPrintSettings(
+      uint32_t owner_wnd,
       GetDefaultPrintSettingsCallback callback) override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void UpdatePrintSettings(int32_t cookie,
