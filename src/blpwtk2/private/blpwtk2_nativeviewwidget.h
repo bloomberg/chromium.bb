@@ -42,6 +42,8 @@ class NativeViewWidget final : private views::WidgetDelegateView {
   public:
     NativeViewWidget(gfx::NativeView contents,
                      NativeViewWidgetDelegate* delegate,
+                     int width,
+                     int height,
                      bool rerouteMouseWheelToAnyRelatedWindow);
     ~NativeViewWidget() override;
     NativeViewWidget(const NativeViewWidget&) = delete;

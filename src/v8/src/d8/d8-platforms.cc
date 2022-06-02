@@ -7,7 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "include/v8-default-platform.h"
+#include "include/libplatform/libplatform.h"
 #include "include/v8-platform.h"
 #include "src/base/logging.h"
 #include "src/base/macros.h"

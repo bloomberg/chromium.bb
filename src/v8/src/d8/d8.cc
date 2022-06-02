@@ -22,7 +22,7 @@
 #include "src/third_party/vtune/v8-vtune.h"
 #endif
 
-#include "include/v8-default-platform.h"
+#include "include/libplatform/libplatform.h"
 #include "include/libplatform/v8-tracing.h"
 #include "include/v8-function.h"
 #include "include/v8-initialization.h"

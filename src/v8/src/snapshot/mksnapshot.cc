@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-#include "include/v8-default-platform.h"
+#include "include/libplatform/libplatform.h"
 #include "include/v8-initialization.h"
 #include "src/base/platform/platform.h"
 #include "src/base/platform/wrappers.h"
