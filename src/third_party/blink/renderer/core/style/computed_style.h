@@ -68,6 +68,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+#define BB_FEATURE_COMPUTED_STYLE_HAS_SIMPLE_OVERFLOW_CLIP
+
 namespace blink {
 
 using std::max;
