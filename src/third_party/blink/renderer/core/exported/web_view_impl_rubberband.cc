@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
@@ -381,8 +382,13 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
 
         // TODO: how should we clip layers that are in columns?
         if (layer->GetLayoutObject().Style() && !layerContext.m_colBlock) {
-            bool isClippedX = isClipped(layer->GetLayoutObject().Style()->OverflowX());
-            bool isClippedY = isClipped(layer->GetLayoutObject().Style()->OverflowY());
+#ifdef BB_FEATURE_COMPUTED_STYLE_HAS_SIMPLE_OVERFLOW_CLIP
+            bool isSimpleClipped = layer->GetLayoutObject().Style()->BbSimpleOverflowClip() == EBbSimpleOverflowClip::kAuto;
+#else
+            bool isSimpleClipped = false;
+#endif
+            bool isClippedX = isSimpleClipped || isClipped(layer->GetLayoutObject().Style()->OverflowX());
+            bool isClippedY = isSimpleClipped || isClipped(layer->GetLayoutObject().Style()->OverflowY());
             if (isClippedX || isClippedY) {
                 LayoutPoint minXminY = localContext.calcAbsPoint(LayoutPoint::Zero());
                 if (isClippedX) {
