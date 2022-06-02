@@ -83,6 +83,8 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   chromiumVersionNumbers = chromiumVersion.split('.')
   bbPatchNumber = int(bbPatch[2:])
 
+  headerHash = getHeaderHash()
+
   # Make sure they are integers, otherwise we cannot embed them inside
   # FileVersion in the DLL rc files.
   int(chromiumVersionNumbers[0])
@@ -95,6 +97,9 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   f.write('#define INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
   f.write('\n')
   f.write('// Naming scheme based on http://www.chromium.org/developers/version-numbers\n')
+
+  # Note: These numbers are stored in <blpwtk2_products.h> instead of
+  #       <blpwtk2_version.h> so that they can be used inside blpwtk2.rc
   f.write('#define CHROMIUM_VERSION_MAJOR {}\n'.format(chromiumVersionNumbers[0]))
   f.write('#define CHROMIUM_VERSION_MINOR {}\n'.format(chromiumVersionNumbers[1]))
   f.write('#define CHROMIUM_VERSION_BUILD {}\n'.format(chromiumVersionNumbers[2]))
@@ -114,11 +119,13 @@ def writeBlpwtk2ProductsFile(f, contentShellVersion, version):
   f.write('#define BLPWTK2_ICUDTL_EXT_DAT_NAME "icudtl_extra{}.dat"\n'.format(productAppend))
   f.write('#define BLPWTK2_CONTEXT_SNAPSHOT_NAME "v8_context_snapshot{}.bin"\n'.format(productAppend))
   f.write('\n')
+  f.write('#define IDS_BLPWTK2_DEVKIT_HEADER_HASH 10051\n')
+  f.write('#define BLPWTK2_DEVKIT_HEADER_HASH "{}"\n'.format(headerHash))
+  f.write('\n')
   f.write('#endif  // INCLUDED_GENERATED_BLPWTK2_PRODUCTS\n')
 
 def writeVersionFiles(fH, fCC, contentShellVersion, version):
   version, chromiumVersion, bbPatch = getVersionParts(contentShellVersion, version)
-  headerHash = getHeaderHash()
 
   fH.write('// generated file -- DO NOT EDIT\n')
   fH.write('#ifndef INCLUDED_GENERATED_BLPWTK2_VERSION\n')
@@ -127,14 +134,11 @@ def writeVersionFiles(fH, fCC, contentShellVersion, version):
   fH.write('#define CHROMIUM_VERSION "{}"\n'.format(chromiumVersion))
   fH.write('#define BB_PATCH_VERSION "{}"\n'.format(bbPatch))
   fH.write('\n')
-  fH.write('#define BLPWTK2_DEVKIT_HEADER_HASH "{}"\n'.format(headerHash))
-  fH.write('\n')
   fH.write('namespace blpwtk2 {\n')
   fH.write('\n')
   fH.write('struct Version {\n')
   fH.write('    static const char* d_chromiumVersion;\n')
   fH.write('    static const char* d_bbPatchVersion;\n')
-  fH.write('    BLPWTK2_EXPORT static const char* getDevkitHeaderHash();\n')
   fH.write('};  // Version\n')
   fH.write('\n')
   fH.write('}  // blpwtk2\n')
@@ -147,10 +151,6 @@ def writeVersionFiles(fH, fCC, contentShellVersion, version):
   fCC.write('namespace blpwtk2 {\n')
   fCC.write('const char* Version::d_chromiumVersion = "{}";\n'.format(chromiumVersion))
   fCC.write('const char* Version::d_bbPatchVersion = "{}";\n'.format(bbPatch))
-  fCC.write('const char* Version::getDevkitHeaderHash()\n')
-  fCC.write('{\n')
-  fCC.write('    return BLPWTK2_DEVKIT_HEADER_HASH;\n')
-  fCC.write('}\n')
   fCC.write('}  // blpwtk2\n')
 
 
