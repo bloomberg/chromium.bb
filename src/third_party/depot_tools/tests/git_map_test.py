@@ -50,13 +50,13 @@ class GitMapTest(git_test_utils.GitRepoReadOnlyTestBase):
             J L
     """, self.getRepoContent)
     self.origin = origin_schema.reify()
-    self.origin.git('checkout', 'master')
+    self.origin.git('checkout', 'main')
     self.origin.git('branch', '-d', *['branch_'+l for l in 'KLG'])
 
     self.repo.git('remote', 'add', 'origin', self.origin.repo_path)
     self.repo.git('config', '--add', 'remote.origin.fetch',
                   '+refs/tags/*:refs/tags/*')
-    self.repo.git('update-ref', 'refs/remotes/origin/master', 'tag_E')
+    self.repo.git('update-ref', 'refs/remotes/origin/main', 'tag_E')
     self.repo.git('branch', '--set-upstream-to', 'branch_G', 'branch_K')
     self.repo.git('branch', '--set-upstream-to', 'branch_K', 'branch_L')
 
@@ -79,7 +79,7 @@ class GitMapTest(git_test_utils.GitRepoReadOnlyTestBase):
 
   def testGitMap(self):
     expected = os.linesep.join([
-        '* 6e85e877ea	(tag_O, origin/master, origin/branch_O) 1970-01-30 ~ O',
+        '* 6e85e877ea	(tag_O, origin/main, origin/branch_O) 1970-01-30 ~ O',
         '* 4705470871	(tag_N) 1970-01-28 ~ N',
         '* 8761b1a94f	(tag_M) 1970-01-26 ~ M',
         '* 5e7ce08691	(tag_G) 1970-01-24 ~ G',
@@ -110,7 +110,7 @@ class GitMapTest(git_test_utils.GitRepoReadOnlyTestBase):
         '|/  ',
         '* 315457dbe8	(tag_B) 1970-01-04 ~ B',
         '* cd589e62d8	(tag_A, origin/root_A) 1970-01-02 ~ A',
-        '* 7026d3d68e	(tag_", root_", master, branch_") 1970-01-02 ~ "',
+        '* 7026d3d68e	(tag_", root_", main, branch_") 1970-01-02 ~ "',
 		])
     outbuf = io.BytesIO()
     self.repo.run(git_map.main, [], outbuf)

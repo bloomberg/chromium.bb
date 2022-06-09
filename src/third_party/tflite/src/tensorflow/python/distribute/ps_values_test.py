@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for the distributed values library."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.python.distribute import combinations
@@ -57,7 +53,7 @@ class AggregatingVariableTest(test.TestCase, parameterized.TestCase):
 
     per_replica_results = self.evaluate(
         distribution.experimental_local_results(
-            distribution.experimental_run_v2(assign)))
+            distribution.run(assign)))
     self.assertAllEqual([3], per_replica_results)
 
 

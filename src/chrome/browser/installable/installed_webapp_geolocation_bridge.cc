@@ -22,7 +22,8 @@ const char kLocationUpdateHistogramName[] =
 // Do not modify or reuse existing entries; they are used in a UMA histogram.
 // Please edit TrustedWebActivityLocationErrorCode in the enums.xml if a value
 // is added.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices
+// GENERATED_JAVA_ENUM_PACKAGE: (
+// org.chromium.chrome.browser.browserservices.constants)
 enum class LocationUpdateError {
   // There was no error.
   kNone = 0,
@@ -61,7 +62,8 @@ void InstalledWebappGeolocationBridge::StartListeningForUpdates() {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (java_ref_.is_null()) {
     base::android::ScopedJavaLocalRef<jstring> j_origin =
-        base::android::ConvertUTF8ToJavaString(env, origin_.GetOrigin().spec());
+        base::android::ConvertUTF8ToJavaString(
+            env, origin_.DeprecatedGetOriginAsURL().spec());
     java_ref_.Reset(Java_InstalledWebappGeolocationBridge_create(
         env, reinterpret_cast<intptr_t>(this), j_origin));
   }

@@ -7,11 +7,12 @@
 #ifndef CORE_FXCODEC_JBIG2_JBIG2_GRDPROC_H_
 #define CORE_FXCODEC_JBIG2_JBIG2_GRDPROC_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "core/fxcodec/fx_codec_def.h"
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CJBig2_ArithDecoder;
@@ -94,7 +95,7 @@ class CJBig2_GRDProc {
 
   uint32_t m_loopIndex = 0;
   uint8_t* m_pLine = nullptr;
-  FXCODEC_STATUS m_ProssiveStatus;
+  FXCODEC_STATUS m_ProgressiveStatus;
   uint16_t m_DecodeType = 0;
   int m_LTP = 0;
   FX_RECT m_ReplaceRect;

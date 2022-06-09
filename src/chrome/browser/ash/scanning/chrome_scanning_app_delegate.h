@@ -9,10 +9,17 @@
 #include <string>
 #include <vector>
 
-#include "ash/content/scanning/scanning_app_delegate.h"
+#include "ash/webui/scanning/scanning_app_delegate.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
+#include "chrome/browser/ash/scanning/scanning_file_path_helper.h"
 
 class PrefService;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace content {
 class WebUI;
@@ -46,26 +53,35 @@ class ChromeScanningAppDelegate : public ScanningAppDelegate {
   void OpenFilesInMediaApp(
       const std::vector<base::FilePath>& file_paths) override;
   void SaveScanSettingsToPrefs(const std::string& scan_settings) override;
-  bool ShowFileInFilesApp(const base::FilePath& path_to_file) override;
+  void ShowFileInFilesApp(const base::FilePath& path_to_file,
+                          base::OnceCallback<void(bool)> callback) override;
 
   // Register scan settings prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Sets |google_drive_path_| for tests.
-  void SetGoogleDrivePathForTesting(const base::FilePath& google_drive_path);
+  // Initializes ScanningFilePathHelper with |google_drive_path_| and
+  // |my_files_path_|.
+  void SetValidPaths(const base::FilePath& google_drive_path,
+                     const base::FilePath& my_files_path);
 
-  // Sets |my_files_path_| for tests.
-  void SetMyFilesPathForTesting(const base::FilePath& my_files_path);
+  void SetRemoveableMediaPathForTesting(const base::FilePath& path);
 
  private:
   // Returns the PrefService for the active Profile.
   PrefService* GetPrefs() const;
 
+  // Callback for ShowFileInFilesApp().
+  void OnPathExists(const base::FilePath& path_to_file,
+                    base::OnceCallback<void(bool)>,
+                    bool file_path_exists);
+
   content::WebUI* web_ui_;  // Owns |this|.
 
-  // The paths to the user's My files and Google Drive directories.
-  base::FilePath google_drive_path_;
-  base::FilePath my_files_path_;
+  // Helper class for for file path manipulation and verification.
+  ScanningFilePathHelper file_path_helper_;
+
+  // Task runner for the I/O function base::PathExists().
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace ash

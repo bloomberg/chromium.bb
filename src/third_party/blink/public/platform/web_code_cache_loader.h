@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class CodeCacheHost;
+
 // WebCodeCacheLoader is an abstract class that provides the interface for
 // fetching the data from code cache.
 class BLINK_PLATFORM_EXPORT WebCodeCacheLoader {
@@ -24,18 +26,13 @@ class BLINK_PLATFORM_EXPORT WebCodeCacheLoader {
   virtual ~WebCodeCacheLoader() = default;
 
   static std::unique_ptr<WebCodeCacheLoader> Create(
-      base::WaitableEvent* terminate_sync_load_event = nullptr);
-
-  // Fetched code cache corresponding to |url| synchronously and returns
-  // response in |response_time_out| and |data_out|. |response_time_out| and
-  // |data_out| cannot be nullptrs.
-  virtual void FetchFromCodeCacheSynchronously(
-      const WebURL& url,
-      base::Time* response_time_out,
-      mojo_base::BigBuffer* data_out) = 0;
+      CodeCacheHost* code_cache_host);
   virtual void FetchFromCodeCache(blink::mojom::CodeCacheType cache_type,
                                   const WebURL& url,
                                   FetchCodeCacheCallback) = 0;
+
+  virtual void ClearCodeCacheEntry(mojom::CodeCacheType cache_type,
+                                   const WebURL& url) = 0;
 };
 
 }  // namespace blink

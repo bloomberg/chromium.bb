@@ -9,12 +9,15 @@ import android.os.Handler;
 import android.view.View;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightParams;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
+import org.chromium.components.feature_engagement.SnoozeAction;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerDetails;
 import org.chromium.ui.widget.RectProvider;
 import org.chromium.ui.widget.ViewRectProvider;
 
@@ -66,16 +69,17 @@ public class UserEducationHelper {
     private void showIPH(Tracker tracker, IPHCommand iphCommand) {
         // Activity was destroyed; don't show IPH.
         View anchorView = iphCommand.anchorView;
-        if (mActivity.isFinishing() || mActivity.isDestroyed() || anchorView == null) return;
-
-        if (mActivity.isFinishing() || mActivity.isDestroyed()) return;
+        if (mActivity.isFinishing() || mActivity.isDestroyed() || anchorView == null) {
+            iphCommand.onBlockedCallback.run();
+            return;
+        }
 
         String featureName = iphCommand.featureName;
-        if (featureName != null && !tracker.shouldTriggerHelpUI(featureName)) return;
         String contentString = iphCommand.contentString;
         String accessibilityString = iphCommand.accessibilityText;
         assert (!contentString.isEmpty());
         assert (!accessibilityString.isEmpty());
+        assert (featureName != null);
 
         ViewRectProvider viewRectProvider = iphCommand.viewRectProvider;
         RectProvider rectProvider =
@@ -85,12 +89,54 @@ public class UserEducationHelper {
         }
 
         HighlightParams highlightParams = iphCommand.highlightParams;
-        TextBubble textBubble = new TextBubble(mActivity, anchorView, contentString,
-                accessibilityString, iphCommand.removeArrow ? false : true,
-                viewRectProvider != null ? viewRectProvider : rectProvider,
-                ChromeAccessibilityUtil.get().isAccessibilityEnabled());
+        TextBubble textBubble = null;
+        TriggerDetails triggerDetails = ChromeFeatureList.isEnabled(ChromeFeatureList.SNOOZABLE_IPH)
+                ? tracker.shouldTriggerHelpUIWithSnooze(featureName)
+                : new TriggerDetails(
+                        tracker.shouldTriggerHelpUI(featureName), /*shouldShowSnooze=*/false);
+
+        assert (triggerDetails != null);
+        if (!triggerDetails.shouldTriggerIph) {
+            iphCommand.onBlockedCallback.run();
+            return;
+        }
+
+        // Automatic snoozes are handled separately. If automatic snoozing is enabled, we won't show
+        // snooze UI in the IPH, but we will treat the dismiss as an implicit snooze action.
+        boolean shouldShowSnoozeButton = triggerDetails.shouldShowSnooze
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.ENABLE_AUTOMATIC_SNOOZE);
+        boolean treatDismissAsImplicitSnooze =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.ENABLE_AUTOMATIC_SNOOZE)
+                && triggerDetails.shouldShowSnooze;
+        if (shouldShowSnoozeButton) {
+            // TODO(crbug.com/1243973): Implement explicit dismiss.
+            boolean showExplicitDismiss = false;
+            Runnable snoozeRunnable = showExplicitDismiss
+                    ? null
+                    : () -> tracker.dismissedWithSnooze(featureName, SnoozeAction.SNOOZED);
+            Runnable snoozeDismissRunnable = showExplicitDismiss ? ()
+                    -> tracker.dismissedWithSnooze(featureName, SnoozeAction.DISMISSED)
+                    : null;
+
+            textBubble = new TextBubble(mActivity, anchorView, contentString, accessibilityString,
+                    iphCommand.removeArrow ? false : true,
+                    viewRectProvider != null ? viewRectProvider : rectProvider, null, false, false,
+                    ChromeAccessibilityUtil.get().isAccessibilityEnabled(), snoozeRunnable,
+                    snoozeDismissRunnable);
+
+        } else {
+            textBubble = new TextBubble(mActivity, anchorView, contentString, accessibilityString,
+                    iphCommand.removeArrow ? false : true,
+                    viewRectProvider != null ? viewRectProvider : rectProvider,
+                    ChromeAccessibilityUtil.get().isAccessibilityEnabled());
+        }
+
+        textBubble.setPreferredVerticalOrientation(iphCommand.preferredVerticalOrientation);
         textBubble.setDismissOnTouchInteraction(iphCommand.dismissOnTouch);
         textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
+            if (treatDismissAsImplicitSnooze) {
+                tracker.dismissedWithSnooze(featureName, SnoozeAction.SNOOZED);
+            }
             if (featureName != null) tracker.dismissed(featureName);
             iphCommand.onDismissCallback.run();
             if (highlightParams != null) {

@@ -50,6 +50,10 @@ class SystemInfoEventRouter : public storage_monitor::RemovableStorageObserver {
   static SystemInfoEventRouter* GetInstance();
 
   SystemInfoEventRouter();
+
+  SystemInfoEventRouter(const SystemInfoEventRouter&) = delete;
+  SystemInfoEventRouter& operator=(const SystemInfoEventRouter&) = delete;
+
   ~SystemInfoEventRouter() override;
 
   // The input |context| is tracked if and only if it has at least one listener
@@ -91,8 +95,6 @@ class SystemInfoEventRouter : public storage_monitor::RemovableStorageObserver {
 
   base::flat_set<content::BrowserContext*> contexts_with_display_listeners_;
   base::flat_set<content::BrowserContext*> contexts_with_storage_listeners_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemInfoEventRouter);
 };
 
 static base::LazyInstance<SystemInfoEventRouter>::Leaky
@@ -211,7 +213,7 @@ void SystemInfoEventRouter::OnRemovableStorageDetached(
   std::string transient_id =
       StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
           info.device_id());
-  args->AppendString(transient_id);
+  args->Append(transient_id);
 
   DispatchEvent(events::SYSTEM_STORAGE_ON_DETACHED,
                 system_storage::OnDetached::kEventName, std::move(args));

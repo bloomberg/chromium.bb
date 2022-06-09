@@ -175,14 +175,16 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
 
         mItemViewModel.set(MessageCardViewProperties.IS_INCOGNITO, false);
         assertThat(description.getCurrentTextColor(),
-                equalTo(ApiCompatibilityUtils.getColor(
-                        mItemView.getResources(), R.color.default_text_color_list)));
+                equalTo(AppCompatResources
+                                .getColorStateList(
+                                        mItemView.getContext(), R.color.default_text_color_list)
+                                .getDefaultColor()));
         assertThat(actionButton.getCurrentTextColor(),
                 equalTo(ApiCompatibilityUtils.getColor(
                         mItemView.getResources(), R.color.default_text_color_link)));
         assertThat(closeButton.getImageTintList(),
                 equalTo(AppCompatResources.getColorStateList(
-                        getActivity(), R.color.default_icon_color)));
+                        getActivity(), R.color.default_icon_color_tint_list)));
 
         mItemViewModel.set(MessageCardViewProperties.IS_INCOGNITO, true);
         assertThat(description.getCurrentTextColor(),
@@ -193,12 +195,12 @@ public class MessageCardViewBinderTest extends DummyUiActivityTestCase {
                         mItemView.getResources(), R.color.default_text_color_link_light)));
         assertThat(closeButton.getImageTintList(),
                 equalTo(AppCompatResources.getColorStateList(
-                        getActivity(), R.color.default_icon_color_inverse)));
+                        getActivity(), R.color.default_icon_color_light)));
     }
 
     @Override
     public void tearDownTest() throws Exception {
-        mItemMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mItemMCP::destroy);
         super.tearDownTest();
     }
 }

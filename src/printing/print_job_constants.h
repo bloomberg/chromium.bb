@@ -95,8 +95,6 @@ COMPONENT_EXPORT(PRINTING_BASE) extern const char kSettingPolicies[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingPreviewIsFromArc[];
 COMPONENT_EXPORT(PRINTING_BASE)
-extern const char kSettingPreviewIsPdf[];
-COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingPreviewModifiable[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingPrintToGoogleDrive[];
@@ -118,6 +116,8 @@ COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingPrinterType[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingRasterizePdf[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kSettingRasterizePdfDpi[];
 COMPONENT_EXPORT(PRINTING_BASE)
 extern const char kSettingScaleFactor[];
 COMPONENT_EXPORT(PRINTING_BASE)
@@ -187,10 +187,6 @@ enum ScalingType {
   CUSTOM,
   SCALING_TYPE_LAST = CUSTOM
 };
-
-// Must match print_preview.PrinterType in
-// chrome/browser/resources/print_preview/data/destination_match.js
-enum class PrinterType { kPrivet, kExtension, kPdf, kLocal, kCloud };
 
 }  // namespace printing
 

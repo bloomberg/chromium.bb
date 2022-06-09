@@ -12,7 +12,7 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "url/origin.h"
 
@@ -38,6 +38,9 @@ class CacheStorageHelper
   // stored in |context|'s associated profile's user data directory.
   explicit CacheStorageHelper(content::StoragePartition* partition);
 
+  CacheStorageHelper(const CacheStorageHelper&) = delete;
+  CacheStorageHelper& operator=(const CacheStorageHelper&) = delete;
+
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only in the UI thread.
   virtual void StartFetching(FetchCallback callback);
@@ -48,12 +51,10 @@ class CacheStorageHelper
   virtual ~CacheStorageHelper();
 
   // Owned by the profile.
-  content::StoragePartition* partition_;
+  raw_ptr<content::StoragePartition> partition_;
 
  private:
   friend class base::RefCountedThreadSafe<CacheStorageHelper>;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageHelper);
 };
 
 // This class is an implementation of CacheStorageHelper that does
@@ -63,6 +64,9 @@ class CannedCacheStorageHelper : public CacheStorageHelper {
  public:
   explicit CannedCacheStorageHelper(
       content::StoragePartition* storage_partition);
+
+  CannedCacheStorageHelper(const CannedCacheStorageHelper&) = delete;
+  CannedCacheStorageHelper& operator=(const CannedCacheStorageHelper&) = delete;
 
   // Add a Cache Storage to the set of canned Cache Storages that is
   // returned by this helper.
@@ -88,8 +92,6 @@ class CannedCacheStorageHelper : public CacheStorageHelper {
   ~CannedCacheStorageHelper() override;
 
   std::set<url::Origin> pending_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(CannedCacheStorageHelper);
 };
 
 }  // namespace browsing_data

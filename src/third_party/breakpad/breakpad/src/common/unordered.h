@@ -46,17 +46,11 @@ struct unordered_map : public __gnu_cxx::hash_map<T, U, H> {};
 template <class T, class H = __gnu_cxx::hash<T> >
 struct unordered_set : public __gnu_cxx::hash_set<T, H> {};
 
-#elif defined(_LIBCPP_VERSION)  // c++11
+#else
 #include <unordered_map>
 #include <unordered_set>
 using std::unordered_map;
 using std::unordered_set;
-
-#else  // Fallback to tr1::unordered
-#include <tr1/unordered_map>
-#include <tr1/unordered_set>
-using std::tr1::unordered_map;
-using std::tr1::unordered_set;
 #endif
 
 #endif  // COMMON_UNORDERED_H_

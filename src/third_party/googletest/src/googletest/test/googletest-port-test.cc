@@ -36,8 +36,10 @@
 # include <time.h>
 #endif  // GTEST_OS_MAC
 
+#include <chrono>  // NOLINT
 #include <list>
 #include <memory>
+#include <thread>  // NOLINT
 #include <utility>  // For std::pair and std::make_pair.
 #include <vector>
 
@@ -280,7 +282,7 @@ TEST(FormatCompilerIndependentFileLocationTest, FormatsUknownFileAndLine) {
 
 #if GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_QNX || GTEST_OS_FUCHSIA || \
     GTEST_OS_DRAGONFLY || GTEST_OS_FREEBSD || GTEST_OS_GNU_KFREEBSD || \
-    GTEST_OS_NETBSD || GTEST_OS_OPENBSD
+    GTEST_OS_NETBSD || GTEST_OS_OPENBSD || GTEST_OS_GNU_HURD
 void* ThreadFunc(void* data) {
   internal::Mutex* mutex = static_cast<internal::Mutex*>(data);
   mutex->Lock();
@@ -289,36 +291,61 @@ void* ThreadFunc(void* data) {
 }
 
 TEST(GetThreadCountTest, ReturnsCorrectValue) {
-  const size_t starting_count = GetThreadCount();
-  pthread_t       thread_id;
+  size_t starting_count;
+  size_t thread_count_after_create;
+  size_t thread_count_after_join;
 
-  internal::Mutex mutex;
-  {
-    internal::MutexLock lock(&mutex);
-    pthread_attr_t  attr;
-    ASSERT_EQ(0, pthread_attr_init(&attr));
-    ASSERT_EQ(0, pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE));
+  // We can't guarantee that no other thread was created or destroyed between
+  // any two calls to GetThreadCount(). We make multiple attempts, hoping that
+  // background noise is not constant and we would see the "right" values at
+  // some point.
+  for (int attempt = 0; attempt < 20; ++attempt) {
+    starting_count = GetThreadCount();
+    pthread_t thread_id;
 
-    const int status = pthread_create(&thread_id, &attr, &ThreadFunc, &mutex);
-    ASSERT_EQ(0, pthread_attr_destroy(&attr));
-    ASSERT_EQ(0, status);
-    EXPECT_EQ(starting_count + 1, GetThreadCount());
+    internal::Mutex mutex;
+    {
+      internal::MutexLock lock(&mutex);
+      pthread_attr_t attr;
+      ASSERT_EQ(0, pthread_attr_init(&attr));
+      ASSERT_EQ(0, pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE));
+
+      const int status = pthread_create(&thread_id, &attr, &ThreadFunc, &mutex);
+      ASSERT_EQ(0, pthread_attr_destroy(&attr));
+      ASSERT_EQ(0, status);
+    }
+
+    thread_count_after_create = GetThreadCount();
+
+    void* dummy;
+    ASSERT_EQ(0, pthread_join(thread_id, &dummy));
+
+    // Join before we decide whether we need to retry the test. Retry if an
+    // arbitrary other thread was created or destroyed in the meantime.
+    if (thread_count_after_create != starting_count + 1) continue;
+
+    // The OS may not immediately report the updated thread count after
+    // joining a thread, causing flakiness in this test. To counter that, we
+    // wait for up to .5 seconds for the OS to report the correct value.
+    bool thread_count_matches = false;
+    for (int i = 0; i < 5; ++i) {
+      thread_count_after_join = GetThreadCount();
+      if (thread_count_after_join == starting_count) {
+        thread_count_matches = true;
+        break;
+      }
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    // Retry if an arbitrary other thread was created or destroyed.
+    if (!thread_count_matches) continue;
+
+    break;
   }
 
-  void* dummy;
-  ASSERT_EQ(0, pthread_join(thread_id, &dummy));
-
-  // The OS may not immediately report the updated thread count after
-  // joining a thread, causing flakiness in this test. To counter that, we
-  // wait for up to .5 seconds for the OS to report the correct value.
-  for (int i = 0; i < 5; ++i) {
-    if (GetThreadCount() == starting_count)
-      break;
-
-    SleepMilliseconds(100);
-  }
-
-  EXPECT_EQ(starting_count, GetThreadCount());
+  EXPECT_EQ(thread_count_after_create, starting_count + 1);
+  EXPECT_EQ(thread_count_after_join, starting_count);
 }
 #else
 TEST(GetThreadCountTest, ReturnsZeroWhenUnableToCountThreads) {
@@ -1025,7 +1052,7 @@ class AtomicCounterWithMutex {
     int temp = value_;
     {
       // We need to put up a memory barrier to prevent reads and writes to
-      // value_ rearranged with the call to SleepMilliseconds when observed
+      // value_ rearranged with the call to sleep_for when observed
       // from other threads.
 #if GTEST_HAS_PTHREAD
       // On POSIX, locking a mutex puts up a memory barrier.  We cannot use
@@ -1036,7 +1063,8 @@ class AtomicCounterWithMutex {
           pthread_mutex_init(&memory_barrier_mutex, nullptr));
       GTEST_CHECK_POSIX_SUCCESS_(pthread_mutex_lock(&memory_barrier_mutex));
 
-      SleepMilliseconds(static_cast<int>(random_.Generate(30)));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(random_.Generate(30)));
 
       GTEST_CHECK_POSIX_SUCCESS_(pthread_mutex_unlock(&memory_barrier_mutex));
       GTEST_CHECK_POSIX_SUCCESS_(pthread_mutex_destroy(&memory_barrier_mutex));
@@ -1044,7 +1072,8 @@ class AtomicCounterWithMutex {
       // On Windows, performing an interlocked access puts up a memory barrier.
       volatile LONG dummy = 0;
       ::InterlockedIncrement(&dummy);
-      SleepMilliseconds(static_cast<int>(random_.Generate(30)));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(random_.Generate(30)));
       ::InterlockedIncrement(&dummy);
 #else
 # error "Memory barrier not implemented on this platform."

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 
 namespace remoting {
 
@@ -18,15 +17,15 @@ namespace protocol {
 
 class VideoStub {
  public:
+  VideoStub(const VideoStub&) = delete;
+  VideoStub& operator=(const VideoStub&) = delete;
+
   virtual void ProcessVideoPacket(std::unique_ptr<VideoPacket> video_packet,
                                   base::OnceClosure done) = 0;
 
  protected:
   VideoStub() {}
   virtual ~VideoStub() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VideoStub);
 };
 
 }  // namespace protocol

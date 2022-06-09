@@ -21,6 +21,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 
 namespace ash {
@@ -108,8 +109,7 @@ void AutoclickMenuBubbleController::SetPosition(
       bubble_widget_->GetLayer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  settings.SetTransitionDuration(base::Milliseconds(kAnimationDurationMs));
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   bubble_widget_->SetBounds(resting_bounds);
 

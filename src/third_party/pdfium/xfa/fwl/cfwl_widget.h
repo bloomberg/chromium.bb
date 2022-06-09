@@ -7,10 +7,12 @@
 #ifndef XFA_FWL_CFWL_WIDGET_H_
 #define XFA_FWL_CFWL_WIDGET_H_
 
+#include <stdint.h>
+
 #include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxcrt/widestring.h"
+#include "core/fxge/dib/fx_dib.h"
 #include "fxjs/gc/heap.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/macros.h"
@@ -19,7 +21,6 @@
 #include "xfa/fde/cfde_data.h"
 #include "xfa/fwl/cfwl_themepart.h"
 #include "xfa/fwl/cfwl_widgetmgr.h"
-#include "xfa/fwl/fwl_widgetdef.h"
 #include "xfa/fwl/fwl_widgethit.h"
 #include "xfa/fwl/ifwl_widgetdelegate.h"
 
@@ -27,6 +28,20 @@ class CFWL_App;
 class CFWL_Event;
 class CFWL_Widget;
 class IFWL_ThemeProvider;
+
+#define FWL_STYLE_WGT_OverLapper 0
+#define FWL_STYLE_WGT_Popup (1L << 0)
+#define FWL_STYLE_WGT_Child (2L << 0)
+#define FWL_STYLE_WGT_WindowTypeMask (3L << 0)
+#define FWL_STYLE_WGT_Border (1L << 2)
+#define FWL_STYLE_WGT_VScroll (1L << 11)
+#define FWL_STYLE_WGT_Group (1L << 22)
+#define FWL_STYLE_WGT_NoBackground (1L << 28)
+
+#define FWL_STATE_WGT_Disabled (1L << 2)
+#define FWL_STATE_WGT_Focused (1L << 4)
+#define FWL_STATE_WGT_Invisible (1L << 5)
+#define FWL_STATE_WGT_MAX 6
 
 enum class FWL_Type {
   Unknown = 0,
@@ -64,9 +79,9 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
 
   class Properties {
    public:
-    uint32_t m_dwStyles = FWL_WGTSTYLE_Child;
-    uint32_t m_dwStyleExes = 0;
-    uint32_t m_dwStates = 0;
+    uint32_t m_dwStyles = FWL_STYLE_WGT_Child;  // Mask of FWL_STYLE_*_*.
+    uint32_t m_dwStyleExts = 0;                 // Mask of FWL_STYLEEXT_*_*.
+    uint32_t m_dwStates = 0;                    // Mask of FWL_STATE_*_*.
   };
 
   class ScopedUpdateLock {
@@ -91,8 +106,8 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   virtual CFX_RectF GetAutosizedWidgetRect();
   virtual CFX_RectF GetWidgetRect();
   virtual CFX_RectF GetClientRect();
-  virtual void ModifyStylesEx(uint32_t dwStylesExAdded,
-                              uint32_t dwStylesExRemoved);
+  virtual void ModifyStyleExts(uint32_t dwStyleExtsAdded,
+                               uint32_t dwStyleExtsRemoved);
   virtual void SetStates(uint32_t dwStates);
   virtual void RemoveStates(uint32_t dwStates);
   virtual void Update() = 0;
@@ -103,8 +118,6 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   // IFWL_WidgetDelegate:
   void OnProcessMessage(CFWL_Message* pMessage) override;
   void OnProcessEvent(CFWL_Event* pEvent) override;
-  void OnDrawWidget(CFGAS_GEGraphics* pGraphics,
-                    const CFX_Matrix& matrix) override;
 
   void InflateWidgetRect(CFX_RectF& rect);
   void SetWidgetRect(const CFX_RectF& rect);
@@ -119,7 +132,7 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   CFWL_Widget* GetOutmost() const;
 
   void ModifyStyles(uint32_t dwStylesAdded, uint32_t dwStylesRemoved);
-  uint32_t GetStylesEx() const { return m_Properties.m_dwStyleExes; }
+  uint32_t GetStyleExts() const { return m_Properties.m_dwStyleExts; }
   uint32_t GetStates() const { return m_Properties.m_dwStates; }
 
   CFX_PointF TransformTo(CFWL_Widget* pWidget, const CFX_PointF& point);
@@ -157,11 +170,10 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
                     FDE_TextAlignment iTTOAlign,
                     CFX_RectF* pRect);
   void SetGrab(bool bSet);
-  void RegisterEventTarget(CFWL_Widget* pEventSource);
   void UnregisterEventTarget();
   void DispatchEvent(CFWL_Event* pEvent);
   void DrawBorder(CFGAS_GEGraphics* pGraphics,
-                  CFWL_Part iPartBorder,
+                  CFWL_ThemePart::Part iPartBorder,
                   const CFX_Matrix& pMatrix);
 
   Properties m_Properties;
@@ -177,7 +189,7 @@ class CFWL_Widget : public cppgc::GarbageCollected<CFWL_Widget>,
   CFWL_Widget* GetParent() const { return m_pWidgetMgr->GetParentWidget(this); }
   CFX_SizeF GetOffsetFromParent(CFWL_Widget* pParent);
   void DrawBackground(CFGAS_GEGraphics* pGraphics,
-                      CFWL_Part iPartBk,
+                      CFWL_ThemePart::Part iPartBk,
                       const CFX_Matrix& mtMatrix);
   void NotifyDriver();
   bool IsParent(CFWL_Widget* pParent);

@@ -10,9 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -70,10 +69,6 @@ class AvatarMenu :
     // Whether or not the current profile requires sign-in before use.
     bool signin_required;
 
-    // Whether or not the profile is associated with a child account
-    // (see SupervisedUserService).
-    bool child_account;
-
     // The index in the menu of this profile, used by views to refer to
     // profiles.
     size_t menu_index;
@@ -103,6 +98,10 @@ class AvatarMenu :
   AvatarMenu(ProfileAttributesStorage* profile_storage,
              AvatarMenuObserver* observer,
              Browser* browser);
+
+  AvatarMenu(const AvatarMenu&) = delete;
+  AvatarMenu& operator=(const AvatarMenu&) = delete;
+
   ~AvatarMenu() override;
 
   // Sets |image| to the avatar corresponding to the profile at |profile_path|.
@@ -196,12 +195,10 @@ class AvatarMenu :
   base::WeakPtr<ProfileAttributesStorage> profile_storage_;
 
   // The observer of this model, which is notified of changes. Weak.
-  AvatarMenuObserver* observer_;
+  raw_ptr<AvatarMenuObserver> observer_;
 
   // Browser in which this avatar menu resides. Weak.
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(AvatarMenu);
+  raw_ptr<Browser> browser_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_AVATAR_MENU_H_

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/values.h"
 #include "services/preferences/tracked/dictionary_hash_store_contents.h"
 #include "services/preferences/tracked/hash_store_contents.h"
@@ -20,6 +19,9 @@ class PrefHashStoreImplTest : public testing::Test {
  public:
   PrefHashStoreImplTest() : contents_(&pref_store_contents_) {}
 
+  PrefHashStoreImplTest(const PrefHashStoreImplTest&) = delete;
+  PrefHashStoreImplTest& operator=(const PrefHashStoreImplTest&) = delete;
+
  protected:
   HashStoreContents* GetHashStoreContents() { return &contents_; }
 
@@ -28,8 +30,6 @@ class PrefHashStoreImplTest : public testing::Test {
   // Must be declared after |pref_store_contents_| as it needs to be outlived
   // by it.
   DictionaryHashStoreContents contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImplTest);
 };
 
 TEST_F(PrefHashStoreImplTest, ComputeMac) {

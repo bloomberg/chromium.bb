@@ -37,10 +37,6 @@ namespace dawn_native { namespace opengl {
         PipelineGL();
         ~PipelineGL();
 
-        void Initialize(const OpenGLFunctions& gl,
-                        const PipelineLayout* layout,
-                        const PerStage<ProgrammableStage>& stages);
-
         // For each unit a sampler is bound to we need to know if we should use filtering or not
         // because int and uint texture are only complete without filtering.
         struct SamplerUnit {
@@ -51,7 +47,12 @@ namespace dawn_native { namespace opengl {
         const std::vector<GLuint>& GetTextureUnitsForTextureView(GLuint index) const;
         GLuint GetProgramHandle() const;
 
+      protected:
         void ApplyNow(const OpenGLFunctions& gl);
+        MaybeError InitializeBase(const OpenGLFunctions& gl,
+                                  const PipelineLayout* layout,
+                                  const PerStage<ProgrammableStage>& stages);
+        void DeleteProgram(const OpenGLFunctions& gl);
 
       private:
         GLuint mProgram;

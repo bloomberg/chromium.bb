@@ -12,6 +12,7 @@
 #include "xfa/fde/cfde_textout.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_themepart.h"
@@ -78,7 +79,8 @@ void CFWL_WidgetTP::EnsureTTOInitialized() {
   if (m_pTextOut)
     return;
 
-  m_pFGASFont = CFWL_FontManager::GetInstance()->FindFont(L"Helvetica", 0, 0);
+  m_pFGASFont = CFWL_FontManager::GetInstance()->FindFont(
+      L"Helvetica", 0, FX_CodePage::kDefANSI);
   m_pTextOut = std::make_unique<CFDE_TextOut>();
   m_pTextOut->SetFont(m_pFGASFont);
   m_pTextOut->SetFontSize(FWLTHEME_CAPACITY_FontSize);
@@ -144,12 +146,12 @@ void CFWL_WidgetTP::DrawArrow(CFGAS_GEGraphics* pGraphics,
                               FX_ARGB argSign,
                               const CFX_Matrix& matrix) {
   bool bVert =
-      (eDict == FWLTHEME_DIRECTION_Up || eDict == FWLTHEME_DIRECTION_Down);
+      (eDict == FWLTHEME_DIRECTION::kUp || eDict == FWLTHEME_DIRECTION::kDown);
   float fLeft = ((rect.width - (bVert ? 9 : 6)) / 2 + rect.left) + 0.5f;
   float fTop = ((rect.height - (bVert ? 6 : 9)) / 2 + rect.top) + 0.5f;
   CFGAS_GEPath path;
   switch (eDict) {
-    case FWLTHEME_DIRECTION_Down: {
+    case FWLTHEME_DIRECTION::kDown:
       path.MoveTo(CFX_PointF(fLeft, fTop + 1));
       path.LineTo(CFX_PointF(fLeft + 4, fTop + 5));
       path.LineTo(CFX_PointF(fLeft + 8, fTop + 1));
@@ -157,8 +159,7 @@ void CFWL_WidgetTP::DrawArrow(CFGAS_GEGraphics* pGraphics,
       path.LineTo(CFX_PointF(fLeft + 4, fTop + 3));
       path.LineTo(CFX_PointF(fLeft + 1, fTop));
       break;
-    }
-    case FWLTHEME_DIRECTION_Up: {
+    case FWLTHEME_DIRECTION::kUp:
       path.MoveTo(CFX_PointF(fLeft, fTop + 4));
       path.LineTo(CFX_PointF(fLeft + 4, fTop));
       path.LineTo(CFX_PointF(fLeft + 8, fTop + 4));
@@ -166,8 +167,7 @@ void CFWL_WidgetTP::DrawArrow(CFGAS_GEGraphics* pGraphics,
       path.LineTo(CFX_PointF(fLeft + 4, fTop + 2));
       path.LineTo(CFX_PointF(fLeft + 1, fTop + 5));
       break;
-    }
-    case FWLTHEME_DIRECTION_Right: {
+    case FWLTHEME_DIRECTION::kRight:
       path.MoveTo(CFX_PointF(fLeft + 1, fTop));
       path.LineTo(CFX_PointF(fLeft + 5, fTop + 4));
       path.LineTo(CFX_PointF(fLeft + 1, fTop + 8));
@@ -175,8 +175,7 @@ void CFWL_WidgetTP::DrawArrow(CFGAS_GEGraphics* pGraphics,
       path.LineTo(CFX_PointF(fLeft + 3, fTop + 4));
       path.LineTo(CFX_PointF(fLeft, fTop + 1));
       break;
-    }
-    case FWLTHEME_DIRECTION_Left: {
+    case FWLTHEME_DIRECTION::kLeft:
       path.MoveTo(CFX_PointF(fLeft, fTop + 4));
       path.LineTo(CFX_PointF(fLeft + 4, fTop));
       path.LineTo(CFX_PointF(fLeft + 5, fTop + 1));
@@ -184,7 +183,6 @@ void CFWL_WidgetTP::DrawArrow(CFGAS_GEGraphics* pGraphics,
       path.LineTo(CFX_PointF(fLeft + 5, fTop + 7));
       path.LineTo(CFX_PointF(fLeft + 4, fTop + 8));
       break;
-    }
   }
   pGraphics->SetFillColor(CFGAS_GEColor(argSign));
   pGraphics->FillPath(path, CFX_FillRenderOptions::FillType::kWinding, matrix);
@@ -195,11 +193,14 @@ void CFWL_WidgetTP::DrawBtn(CFGAS_GEGraphics* pGraphics,
                             FWLTHEME_STATE eState,
                             const CFX_Matrix& matrix) {
   InitializeArrowColorData();
-  FillSolidRect(pGraphics, m_pColorData->clrEnd[eState - 1], rect, matrix);
+  FillSolidRect(pGraphics,
+                m_pColorData->clrEnd[static_cast<size_t>(eState) - 1], rect,
+                matrix);
 
   CFGAS_GEPath path;
   path.AddRectangle(rect.left, rect.top, rect.width, rect.height);
-  pGraphics->SetStrokeColor(CFGAS_GEColor(m_pColorData->clrBorder[eState - 1]));
+  pGraphics->SetStrokeColor(
+      CFGAS_GEColor(m_pColorData->clrBorder[static_cast<size_t>(eState) - 1]));
   pGraphics->StrokePath(path, matrix);
 }
 
@@ -210,5 +211,6 @@ void CFWL_WidgetTP::DrawArrowBtn(CFGAS_GEGraphics* pGraphics,
                                  const CFX_Matrix& matrix) {
   DrawBtn(pGraphics, rect, eState, matrix);
   InitializeArrowColorData();
-  DrawArrow(pGraphics, rect, eDict, m_pColorData->clrSign[eState - 1], matrix);
+  DrawArrow(pGraphics, rect, eDict,
+            m_pColorData->clrSign[static_cast<size_t>(eState) - 1], matrix);
 }

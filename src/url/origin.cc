@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <ostream>
 #include <vector>
 
 #include "base/base64.h"
@@ -423,11 +424,11 @@ Origin::Nonce& Origin::Nonce::operator=(const Origin::Nonce& other) {
 }
 
 // Moving a nonce does NOT trigger lazy-generation of the token.
-Origin::Nonce::Nonce(Origin::Nonce&& other) : token_(other.token_) {
+Origin::Nonce::Nonce(Origin::Nonce&& other) noexcept : token_(other.token_) {
   other.token_ = base::UnguessableToken();  // Reset |other|.
 }
 
-Origin::Nonce& Origin::Nonce::operator=(Origin::Nonce&& other) {
+Origin::Nonce& Origin::Nonce::operator=(Origin::Nonce&& other) noexcept {
   token_ = other.token_;
   other.token_ = base::UnguessableToken();  // Reset |other|.
   return *this;

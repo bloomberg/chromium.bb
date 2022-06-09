@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,7 +61,7 @@ class BluetoothSocketAsyncApiFunction : public ExtensionFunction {
   std::unordered_set<int>* GetSocketIds();
 
  private:
-  ApiResourceManager<BluetoothApiSocket>* manager_;
+  raw_ptr<ApiResourceManager<BluetoothApiSocket>> manager_;
 };
 
 class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
@@ -69,13 +70,14 @@ class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
 
   BluetoothSocketCreateFunction();
 
+  BluetoothSocketCreateFunction(const BluetoothSocketCreateFunction&) = delete;
+  BluetoothSocketCreateFunction& operator=(
+      const BluetoothSocketCreateFunction&) = delete;
+
  protected:
   ~BluetoothSocketCreateFunction() override;
 
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketCreateFunction);
 };
 
 class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
@@ -84,14 +86,15 @@ class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
 
   BluetoothSocketUpdateFunction();
 
+  BluetoothSocketUpdateFunction(const BluetoothSocketUpdateFunction&) = delete;
+  BluetoothSocketUpdateFunction& operator=(
+      const BluetoothSocketUpdateFunction&) = delete;
+
  protected:
   ~BluetoothSocketUpdateFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketUpdateFunction);
 };
 
 class BluetoothSocketSetPausedFunction
@@ -102,14 +105,16 @@ class BluetoothSocketSetPausedFunction
 
   BluetoothSocketSetPausedFunction();
 
+  BluetoothSocketSetPausedFunction(const BluetoothSocketSetPausedFunction&) =
+      delete;
+  BluetoothSocketSetPausedFunction& operator=(
+      const BluetoothSocketSetPausedFunction&) = delete;
+
  protected:
   ~BluetoothSocketSetPausedFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketSetPausedFunction);
 };
 
 class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
@@ -139,7 +144,7 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
   virtual void OnCreateService(scoped_refptr<device::BluetoothSocket> socket);
   virtual void OnCreateServiceError(const std::string& message);
 
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_ = nullptr;
+  raw_ptr<BluetoothSocketEventDispatcher> socket_event_dispatcher_ = nullptr;
 };
 
 class BluetoothSocketListenUsingRfcommFunction
@@ -222,7 +227,7 @@ class BluetoothSocketAbstractConnectFunction :
   virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   std::unique_ptr<bluetooth_socket::Connect::Params> params_;
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_ = nullptr;
+  raw_ptr<BluetoothSocketEventDispatcher> socket_event_dispatcher_ = nullptr;
 };
 
 class BluetoothSocketConnectFunction :
@@ -248,6 +253,11 @@ class BluetoothSocketDisconnectFunction
 
   BluetoothSocketDisconnectFunction();
 
+  BluetoothSocketDisconnectFunction(const BluetoothSocketDisconnectFunction&) =
+      delete;
+  BluetoothSocketDisconnectFunction& operator=(
+      const BluetoothSocketDisconnectFunction&) = delete;
+
  protected:
   ~BluetoothSocketDisconnectFunction() override;
 
@@ -256,8 +266,6 @@ class BluetoothSocketDisconnectFunction
 
  private:
   virtual void OnSuccess();
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketDisconnectFunction);
 };
 
 class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
@@ -266,14 +274,15 @@ class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
 
   BluetoothSocketCloseFunction();
 
+  BluetoothSocketCloseFunction(const BluetoothSocketCloseFunction&) = delete;
+  BluetoothSocketCloseFunction& operator=(const BluetoothSocketCloseFunction&) =
+      delete;
+
  protected:
   ~BluetoothSocketCloseFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketCloseFunction);
 };
 
 class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
@@ -281,6 +290,10 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.send", BLUETOOTHSOCKET_SEND)
 
   BluetoothSocketSendFunction();
+
+  BluetoothSocketSendFunction(const BluetoothSocketSendFunction&) = delete;
+  BluetoothSocketSendFunction& operator=(const BluetoothSocketSendFunction&) =
+      delete;
 
  protected:
   ~BluetoothSocketSendFunction() override;
@@ -296,8 +309,6 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
   std::unique_ptr<bluetooth_socket::Send::Params> params_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketSendFunction);
 };
 
 class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
@@ -306,14 +317,16 @@ class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
 
   BluetoothSocketGetInfoFunction();
 
+  BluetoothSocketGetInfoFunction(const BluetoothSocketGetInfoFunction&) =
+      delete;
+  BluetoothSocketGetInfoFunction& operator=(
+      const BluetoothSocketGetInfoFunction&) = delete;
+
  protected:
   ~BluetoothSocketGetInfoFunction() override;
 
   // ExtensionFunction:
   ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketGetInfoFunction);
 };
 
 class BluetoothSocketGetSocketsFunction

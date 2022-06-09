@@ -7,8 +7,6 @@ import("//build/config/android/rules.gni")
 
 source_set("gfx") {
   sources = [
-    "aw_attaching_to_window_recorder.cc",
-    "aw_attaching_to_window_recorder.h",
     "aw_draw_fn_impl.cc",
     "aw_draw_fn_impl.h",
     "aw_gl_functor.cc",
@@ -19,8 +17,6 @@ source_set("gfx") {
     "aw_gl_surface_external_stencil.h",
     "aw_picture.cc",
     "aw_picture.h",
-    "aw_render_thread_context_provider.cc",
-    "aw_render_thread_context_provider.h",
     "aw_vulkan_context_provider.cc",
     "aw_vulkan_context_provider.h",
     "begin_frame_source_webview.cc",
@@ -36,6 +32,8 @@ source_set("gfx") {
     "deferred_gpu_command_service.h",
     "display_scheduler_webview.cc",
     "display_scheduler_webview.h",
+    "display_webview.cc",
+    "display_webview.h",
     "gpu_service_webview.cc",
     "gpu_service_webview.h",
     "hardware_renderer.cc",
@@ -80,7 +78,6 @@ source_set("gfx") {
     "//android_webview/public",
     "//base",
     "//components/power_scheduler",
-    "//components/ui_devtools:buildflags",
     "//components/viz/service",
     "//components/viz/service/main",
     "//content/public/browser",

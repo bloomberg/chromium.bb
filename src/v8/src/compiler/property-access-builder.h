@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "src/base/optional.h"
 #include "src/codegen/machine-type.h"
 #include "src/compiler/js-heap-broker.h"
 #include "src/compiler/node.h"
@@ -35,25 +36,15 @@ class PropertyAccessBuilder {
 
   // Builds the appropriate string check if the maps are only string
   // maps.
-  bool TryBuildStringCheck(JSHeapBroker* broker,
-                           ZoneVector<Handle<Map>> const& maps, Node** receiver,
-                           Node** effect, Node* control);
+  bool TryBuildStringCheck(JSHeapBroker* broker, ZoneVector<MapRef> const& maps,
+                           Node** receiver, Effect* effect, Control control);
   // Builds a number check if all maps are number maps.
-  bool TryBuildNumberCheck(JSHeapBroker* broker,
-                           ZoneVector<Handle<Map>> const& maps, Node** receiver,
-                           Node** effect, Node* control);
+  bool TryBuildNumberCheck(JSHeapBroker* broker, ZoneVector<MapRef> const& maps,
+                           Node** receiver, Effect* effect, Control control);
 
-  // TODO(jgruber): Remove the untyped version once all uses are
-  // updated.
-  void BuildCheckMaps(Node* object, Node** effect, Node* control,
-                      ZoneVector<Handle<Map>> const& maps);
   void BuildCheckMaps(Node* object, Effect* effect, Control control,
-                      ZoneVector<Handle<Map>> const& maps) {
-    Node* e = *effect;
-    Node* c = control;
-    BuildCheckMaps(object, &e, c, maps);
-    *effect = e;
-  }
+                      ZoneVector<MapRef> const& maps);
+
   Node* BuildCheckValue(Node* receiver, Effect* effect, Control control,
                         Handle<HeapObject> value);
 
@@ -64,9 +55,11 @@ class PropertyAccessBuilder {
                            Node* lookup_start_object, Node** effect,
                            Node** control);
 
-  // Loads a constant value from a prototype object in dictionary mode and
-  // constant-folds it.
-  Node* FoldLoadDictPrototypeConstant(PropertyAccessInfo const& access_info);
+  // Tries to load a constant value from a prototype object in dictionary mode
+  // and constant-folds it. Returns {} if the constant couldn't be safely
+  // retrieved.
+  base::Optional<Node*> FoldLoadDictPrototypeConstant(
+      PropertyAccessInfo const& access_info);
 
   // Builds the load for data-field access for minimorphic loads that use
   // dynamic map checks. These cannot depend on any information from the maps.
@@ -103,8 +96,7 @@ class PropertyAccessBuilder {
   CompilationDependencies* dependencies_;
 };
 
-bool HasOnlyStringMaps(JSHeapBroker* broker,
-                       ZoneVector<Handle<Map>> const& maps);
+bool HasOnlyStringMaps(JSHeapBroker* broker, ZoneVector<MapRef> const& maps);
 
 }  // namespace compiler
 }  // namespace internal

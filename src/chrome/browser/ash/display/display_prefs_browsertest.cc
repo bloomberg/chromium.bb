@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +16,10 @@
 class DisplayPrefsBrowserTest : public InProcessBrowserTest {
  public:
   DisplayPrefsBrowserTest() = default;
+
+  DisplayPrefsBrowserTest(const DisplayPrefsBrowserTest&) = delete;
+  DisplayPrefsBrowserTest& operator=(const DisplayPrefsBrowserTest&) = delete;
+
   ~DisplayPrefsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -47,9 +51,6 @@ class DisplayPrefsBrowserTest : public InProcessBrowserTest {
   }
 
   PrefService* local_state_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayPrefsBrowserTest);
 };
 
 // Test that display prefs are registered in the browser local_state

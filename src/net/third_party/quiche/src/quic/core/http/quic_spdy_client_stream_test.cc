@@ -12,6 +12,7 @@
 #include "quic/core/crypto/null_encrypter.h"
 #include "quic/core/http/quic_spdy_client_session.h"
 #include "quic/core/http/spdy_utils.h"
+#include "quic/core/quic_simple_buffer_allocator.h"
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_logging.h"
 #include "quic/platform/api/quic_socket_address.h"
@@ -127,16 +128,40 @@ TEST_P(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
               IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
 }
 
+TEST_P(QuicSpdyClientStreamTest, InvalidResponseHeader) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  auto headers = AsHeaderList(std::vector<std::pair<std::string, std::string>>{
+      {":status", "200"}, {":path", "/foo"}});
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  EXPECT_THAT(stream_->stream_error(),
+              IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
+}
+
+TEST_P(QuicSpdyClientStreamTest, MissingStatusCode) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  auto headers = AsHeaderList(
+      std::vector<std::pair<std::string, std::string>>{{"key", "value"}});
+  EXPECT_CALL(*connection_,
+              OnStreamReset(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD));
+  stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
+                              headers);
+  EXPECT_THAT(stream_->stream_error(),
+              IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
+}
+
 TEST_P(QuicSpdyClientStreamTest, TestFraming) {
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
   std::string data = VersionUsesHttp3(connection_->transport_version())
-                         ? header + body_
+                         ? absl::StrCat(header.AsStringView(), body_)
                          : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
@@ -160,12 +185,11 @@ TEST_P(QuicSpdyClientStreamTest, Test100ContinueBeforeSuccessful) {
   headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data =
-      connection_->version().UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data = VersionUsesHttp3(connection_->transport_version())
+                         ? absl::StrCat(header.AsStringView(), body_)
+                         : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   // Make sure the 200 response got parsed correctly.
@@ -190,12 +214,11 @@ TEST_P(QuicSpdyClientStreamTest, TestUnknownInformationalBeforeSuccessful) {
   headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
-  std::string data =
-      connection_->version().UsesHttp3() ? header + body_ : body_;
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
+  std::string data = VersionUsesHttp3(connection_->transport_version())
+                         ? absl::StrCat(header.AsStringView(), body_)
+                         : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
   // Make sure the 200 response got parsed correctly.
@@ -222,12 +245,10 @@ TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   auto headers = AsHeaderList(headers_);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
                               headers);
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
   std::string data = VersionUsesHttp3(connection_->transport_version())
-                         ? header + body_
+                         ? absl::StrCat(header.AsStringView(), body_)
                          : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));
@@ -247,12 +268,10 @@ TEST_P(QuicSpdyClientStreamTest,
   EXPECT_THAT(stream_->stream_error(), IsQuicStreamNoError());
   EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(large_body.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      large_body.length(), SimpleBufferAllocator::Get());
   std::string data = VersionUsesHttp3(connection_->transport_version())
-                         ? header + large_body
+                         ? absl::StrCat(header.AsStringView(), large_body)
                          : large_body;
   EXPECT_CALL(session_, WriteControlFrame(_, _));
   EXPECT_CALL(*connection_,
@@ -290,12 +309,10 @@ TEST_P(QuicSpdyClientStreamTest, ReceivingTrailers) {
 
   // Now send the body, which should close the stream as the FIN has been
   // received, as well as all data.
-  std::unique_ptr<char[]> buffer;
-  QuicByteCount header_length =
-      HttpEncoder::SerializeDataFrameHeader(body_.length(), &buffer);
-  std::string header = std::string(buffer.get(), header_length);
+  QuicBuffer header = HttpEncoder::SerializeDataFrameHeader(
+      body_.length(), SimpleBufferAllocator::Get());
   std::string data = VersionUsesHttp3(connection_->transport_version())
-                         ? header + body_
+                         ? absl::StrCat(header.AsStringView(), body_)
                          : body_;
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, data));

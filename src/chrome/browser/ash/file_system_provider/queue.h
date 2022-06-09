@@ -11,13 +11,12 @@
 
 #include "base/callback.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_system_provider/abort_callback.h"
 #include "storage/browser/file_system/async_file_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 // Queues arbitrary tasks. At most |max_in_parallel_| tasks will be running at
@@ -41,6 +40,9 @@ class Queue {
 
   // Creates a queue with a maximum number of tasks running in parallel.
   explicit Queue(size_t max_in_parallel);
+
+  Queue(const Queue&) = delete;
+  Queue& operator=(const Queue&) = delete;
 
   virtual ~Queue();
 
@@ -88,10 +90,9 @@ class Queue {
   std::map<int, Task> executed_;
 
   base::WeakPtrFactory<Queue> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(Queue);
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_QUEUE_H_

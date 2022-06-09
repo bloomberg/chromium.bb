@@ -14,20 +14,25 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantDirectActionImpl_jni.h"
+#include "chrome/browser/android/autofill_assistant/annotate_dom_model_service_factory.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/flags/android/chrome_feature_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/display_strings_util.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/public/ui_state.h"
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
@@ -36,10 +41,13 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/version_info/channel.h"
+#include "components/variations/service/variations_service.h"
+#include "components/version_info/android/channel_getter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -49,32 +57,51 @@ using base::android::JavaRef;
 namespace autofill_assistant {
 namespace {
 
-// A direct action that corresponds to pressing the close or cancel button on
-// the UI.
-const char* const kCancelActionName = "cancel";
+// Strings for Synthetic Field Trials.
+const char kAutofillAssistantTtsTrialName[] = "AutofillAssistantEnableTtsParam";
+const char kEnabledGroupName[] = "Enabled";
+const char kDisabledGroupName[] = "Disabled";
 
 }  // namespace
+
+static base::android::ScopedJavaLocalRef<jobject>
+JNI_AutofillAssistantClient_CreateForWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jobject>& jdependencies) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  ClientAndroid::CreateForWebContents(web_contents, jdependencies);
+  return ClientAndroid::FromWebContents(web_contents)->GetJavaObject();
+}
 
 static base::android::ScopedJavaLocalRef<jobject>
 JNI_AutofillAssistantClient_FromWebContents(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  ClientAndroid::CreateForWebContents(web_contents);
-  return ClientAndroid::FromWebContents(web_contents)->GetJavaObject();
+  auto* client_android = ClientAndroid::FromWebContents(web_contents);
+  if (client_android == nullptr) {
+    return nullptr;
+  }
+
+  return client_android->GetJavaObject();
 }
+
 static void JNI_AutofillAssistantClient_OnOnboardingUiChange(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jweb_contents,
     jboolean shown) {
-  RuntimeManagerImpl* runtime_manager = RuntimeManagerImpl::GetForWebContents(
+  RuntimeManager* runtime_manager = RuntimeManager::GetForWebContents(
       content::WebContents::FromJavaWebContents(jweb_contents));
   if (runtime_manager)
     runtime_manager->SetUIState(shown ? UIState::kShown : UIState::kNotShown);
 }
 
-ClientAndroid::ClientAndroid(content::WebContents* web_contents)
-    : web_contents_(web_contents),
+ClientAndroid::ClientAndroid(
+    content::WebContents* web_contents,
+    const base::android::JavaRef<jobject>& jdependencies)
+    : content::WebContentsUserData<ClientAndroid>(*web_contents),
+      jdependencies_(jdependencies),
       java_object_(Java_AutofillAssistantClient_Constructor(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this))) {}
@@ -135,6 +162,13 @@ bool ClientAndroid::Start(
     AttachUI(joverlay_coordinator);
   }
 
+  // Register TTS Synthetic Field Trial.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      kAutofillAssistantTtsTrialName,
+      trigger_context->GetScriptParameters().GetEnableTts().value_or(false)
+          ? kEnabledGroupName
+          : kDisabledGroupName);
+
   DCHECK(!trigger_context->GetDirectAction());
   if (VLOG_IS_ON(2)) {
     DVLOG(2) << "Starting autofill assistant with parameters:";
@@ -171,7 +205,7 @@ void ClientAndroid::TransferUITo(
 
   auto* other_web_contents =
       content::WebContents::FromJavaWebContents(jother_web_contents);
-  DCHECK_NE(other_web_contents, web_contents_);
+  DCHECK_NE(other_web_contents, GetWebContents());
 
   ClientAndroid* other_client =
       ClientAndroid::FromWebContents(other_web_contents);
@@ -206,14 +240,19 @@ void ClientAndroid::FetchWebsiteActions(
     const base::android::JavaParamRef<jobjectArray>& jparameter_names,
     const base::android::JavaParamRef<jobjectArray>& jparameter_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
-  if (!controller_)
-    CreateController(nullptr, absl::nullopt);
+  if (!controller_) {
+    CreateController(ui_controller_android_utils::GetServiceToInject(env, this),
+                     absl::nullopt);
+  }
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
       ui_controller_android_utils::CreateTriggerContext(
-          env, web_contents_, jexperiment_ids, jparameter_names,
-          jparameter_values,
+          env, GetWebContents(), jexperiment_ids, jparameter_names,
+          jparameter_values, /* jdevice_only_parameter_names= */
+          base::android::JavaParamRef<jobjectArray>(nullptr),
+          /* jdevice_only_parameter_values= */
+          base::android::JavaParamRef<jobjectArray>(nullptr),
           /* onboarding_shown = */ false,
           /* is_direct_action = */ true,
           /* jinitial_url = */ nullptr),
@@ -237,18 +276,11 @@ ClientAndroid::GetDirectActionsAsJavaArrayOfStrings(JNIEnv* env) const {
         env, std::vector<std::string>(names.begin(), names.end()));
   }
 
-  for (const UserAction& user_action : controller_->GetUserActions()) {
-    if (!user_action.enabled())
-      continue;
-
-    for (const std::string& name : user_action.direct_action().names) {
+  for (const ScriptHandle& script : controller_->GetDirectActionScripts()) {
+    for (const std::string& name : script.direct_action.names) {
       names.insert(name);
     }
   }
-
-  // Cancel is always available when the UI is up.
-  if (ui_controller_android_)
-    names.insert(kCancelActionName);
 
   return base::android::ToJavaArrayOfStrings(
       env, std::vector<std::string>(names.begin(), names.end()));
@@ -284,13 +316,6 @@ base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   DCHECK(controller_ != nullptr);
-  size_t actions_count = 0;
-  for (const UserAction& user_action : controller_->GetUserActions()) {
-    if (!user_action.enabled())
-      continue;
-    ++actions_count;
-  }
-
   // Prepare the java array to hold the direct actions.
   base::android::ScopedJavaLocalRef<jclass> directaction_array_class =
       base::android::GetClass(env,
@@ -298,18 +323,17 @@ base::android::ScopedJavaLocalRef<jobjectArray> ClientAndroid::GetDirectActions(
                               "AutofillAssistantDirectActionImpl",
                               "autofill_assistant");
 
+  const std::vector<ScriptHandle>& direct_action_scripts =
+      controller_->GetDirectActionScripts();
+
   jobjectArray joa = env->NewObjectArray(
-      actions_count, directaction_array_class.obj(), nullptr);
+      direct_action_scripts.size(), directaction_array_class.obj(), nullptr);
   jni_generator::CheckException(env);
 
-  actions_count = 0;
-  for (const UserAction& user_action : controller_->GetUserActions()) {
-    if (!user_action.enabled())
-      continue;
-
-    auto jdirect_action =
-        ToJavaAutofillAssistantDirectAction(env, user_action.direct_action());
-    env->SetObjectArrayElement(joa, actions_count++, jdirect_action.obj());
+  for (size_t i = 0; i < direct_action_scripts.size(); i++) {
+    auto jdirect_action = ToJavaAutofillAssistantDirectAction(
+        env, direct_action_scripts.at(i).direct_action);
+    env->SetObjectArrayElement(joa, i, jdirect_action.obj());
   }
   return base::android::ScopedJavaLocalRef<jobjectArray>(env, joa);
 }
@@ -333,21 +357,16 @@ bool ClientAndroid::PerformDirectAction(
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
   auto trigger_context = ui_controller_android_utils::CreateTriggerContext(
-      env, web_contents_, jexperiment_ids, jparameter_names, jparameter_values,
+      env, GetWebContents(), jexperiment_ids, jparameter_names,
+      jparameter_values, /* jdevice_only_parameter_names= */
+      base::android::JavaParamRef<jobjectArray>(nullptr),
+      /* jdevice_only_parameter_values= */
+      base::android::JavaParamRef<jobjectArray>(nullptr),
       /* onboarding_shown = */ false,
       /* is_direct_action = */ true,
       /* jinitial_url = */ nullptr);
 
-  // Cancel through the UI if it is up. This allows the user to undo. This is
-  // always available, even if no action was found and action_index == -1.
   int action_index = FindDirectAction(action_name);
-  if (action_name == kCancelActionName && ui_controller_android_) {
-    ui_controller_android_->CloseOrCancel(action_index,
-                                          std::move(trigger_context),
-                                          Metrics::DropOutReason::SHEET_CLOSED);
-    return true;
-  }
-
   if (action_index == -1)
     return false;
 
@@ -356,8 +375,37 @@ bool ClientAndroid::PerformDirectAction(
     AttachUI(joverlay_coordinator);
   }
 
-  return controller_->PerformUserActionWithContext(action_index,
-                                                   std::move(trigger_context));
+  return controller_->PerformDirectAction(action_index,
+                                          std::move(trigger_context));
+}
+
+void ClientAndroid::ShowFatalError(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  if (!controller_) {
+    return;
+  }
+  controller_->RequireUI();
+  controller_->OnFatalError(
+      GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
+                           controller_->GetSettings()),
+      /*show_feedback_chip = */ false, Metrics::DropOutReason::NO_SCRIPTS);
+}
+
+void ClientAndroid::OnSpokenFeedbackAccessibilityServiceChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean enabled) {
+  if (!controller_) {
+    return;
+  }
+  controller_->OnSpokenFeedbackAccessibilityServiceChanged(enabled);
+}
+
+base::android::ScopedJavaGlobalRef<jobject> ClientAndroid::GetDependencies(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  return jdependencies_;
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
@@ -366,15 +414,11 @@ int ClientAndroid::FindDirectAction(const std::string& action_name) {
   if (!controller_)
     return -1;
 
-  const std::vector<UserAction>& user_actions = controller_->GetUserActions();
-  int user_action_count = user_actions.size();
-  for (int i = 0; i < user_action_count; i++) {
-    const UserAction& user_action = user_actions[i];
-    if (!user_action.enabled())
-      continue;
-
-    const std::set<std::string>& action_names =
-        user_action.direct_action().names;
+  const std::vector<ScriptHandle>& direct_action_scripts =
+      controller_->GetDirectActionScripts();
+  for (size_t i = 0; i < direct_action_scripts.size(); i++) {
+    const base::flat_set<std::string>& action_names =
+        direct_action_scripts.at(i).direct_action.names;
     if (action_names.count(action_name) != 0)
       return i;
   }
@@ -390,7 +434,7 @@ void ClientAndroid::AttachUI(
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        web_contents_, joverlay_coordinator);
+        GetWebContents(), jdependencies_, joverlay_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.
@@ -404,7 +448,7 @@ void ClientAndroid::AttachUI(
        !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
       CreateController(nullptr, absl::nullopt);
-    ui_controller_android_->Attach(web_contents_, this, controller_.get());
+    ui_controller_android_->Attach(GetWebContents(), this, controller_.get());
   }
 }
 
@@ -413,7 +457,7 @@ void ClientAndroid::DestroyUI() {
 }
 
 version_info::Channel ClientAndroid::GetChannel() const {
-  return chrome::GetChannel();
+  return version_info::android::GetChannel();
 }
 
 std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
@@ -426,7 +470,7 @@ std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
 std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
   CoreAccountInfo account_info =
       IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
+          Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()))
           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
   return account_info.email;
 }
@@ -446,6 +490,27 @@ ClientContextProto::ScreenOrientation ClientAndroid::GetScreenOrientation()
   return ClientContextProto::UNDEFINED_ORIENTATION;
 }
 
+void ClientAndroid::FetchPaymentsClientToken(
+    base::OnceCallback<void(const std::string&)> callback) {
+  DCHECK(!fetch_payments_client_token_callback_);
+  fetch_payments_client_token_callback_ = std::move(callback);
+
+  Java_AutofillAssistantClient_fetchPaymentsClientToken(AttachCurrentThread(),
+                                                        java_object_);
+}
+
+void ClientAndroid::OnPaymentsClientToken(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jclient_token) {
+  if (!fetch_payments_client_token_callback_) {
+    return;
+  }
+  std::move(fetch_payments_client_token_callback_)
+      .Run(ui_controller_android_utils::SafeConvertJavaStringToNative(
+          AttachCurrentThread(), jclient_token));
+}
+
 AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {
   return this;
 }
@@ -458,8 +523,8 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() const {
 WebsiteLoginManager* ClientAndroid::GetWebsiteLoginManager() const {
   if (!website_login_manager_) {
     website_login_manager_ = std::make_unique<WebsiteLoginManagerImpl>(
-        ChromePasswordManagerClient::FromWebContents(web_contents_),
-        web_contents_);
+        ChromePasswordManagerClient::FromWebContents(GetWebContents()),
+        GetWebContents());
   }
   return website_login_manager_.get();
 }
@@ -469,12 +534,12 @@ std::string ClientAndroid::GetLocale() const {
 }
 
 std::string ClientAndroid::GetCountryCode() const {
-  JNIEnv* env = AttachCurrentThread();
-  auto code = Java_AutofillAssistantClient_getCountryCode(env, java_object_);
-  // Use fallback "ZZ". It is an unused country code.
-  if (!code)
+  variations::VariationsService* variations_service =
+      g_browser_process->variations_service();
+  // Use fallback "ZZ" if no country is available.
+  if (!variations_service || variations_service->GetLatestCountry().empty())
     return "ZZ";
-  return base::android::ConvertJavaStringToUTF8(env, code);
+  return base::ToUpperASCII(variations_service->GetLatestCountry());
 }
 
 DeviceContext ClientAndroid::GetDeviceContext() const {
@@ -495,11 +560,20 @@ DeviceContext ClientAndroid::GetDeviceContext() const {
 
 bool ClientAndroid::IsAccessibilityEnabled() const {
   return Java_AutofillAssistantClient_isAccessibilityEnabled(
+      AttachCurrentThread(), jdependencies_);
+}
+
+bool ClientAndroid::IsSpokenFeedbackAccessibilityServiceEnabled() const {
+  return Java_AutofillAssistantClient_isSpokenFeedbackAccessibilityServiceEnabled(
       AttachCurrentThread(), java_object_);
 }
 
 content::WebContents* ClientAndroid::GetWebContents() const {
-  return web_contents_;
+  // While a const_cast is not ideal. The Autofill API uses const in various
+  // spots and the content public API doesn't have const accessors. So the const
+  // cast is the lesser of two evils.
+  return const_cast<content::WebContents*>(
+      &content::WebContentsUserData<ClientAndroid>::GetWebContents());
 }
 
 void ClientAndroid::RecordDropOut(Metrics::DropOutReason reason) {
@@ -564,7 +638,6 @@ void ClientAndroid::CreateController(
     if (trigger_script->user_interface().has_progress_bar()) {
       progress_bar_config =
           ShowProgressBarProto::StepProgressBarConfiguration();
-      progress_bar_config->set_use_step_progress_bar(true);
       for (const auto& step_icon :
            trigger_script->user_interface().progress_bar().step_icons()) {
         *progress_bar_config->add_annotated_step_icons()->mutable_icon() =
@@ -576,10 +649,20 @@ void ClientAndroid::CreateController(
   }
 
   DestroyController();
+  std::unique_ptr<AutofillAssistantTtsController> tts_controller =
+      ui_controller_android_utils::GetTtsControllerToInject(
+          AttachCurrentThread());
+  if (!tts_controller) {
+    tts_controller = std::make_unique<AutofillAssistantTtsController>(
+        content::TtsController::GetInstance());
+  }
   controller_ = std::make_unique<Controller>(
-      web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
-      RuntimeManagerImpl::GetForWebContents(web_contents_)->GetWeakPtr(),
-      std::move(service));
+      GetWebContents(), /* client= */ this,
+      base::DefaultTickClock::GetInstance(),
+      RuntimeManager::GetForWebContents(GetWebContents())->GetWeakPtr(),
+      std::move(service), std::move(tts_controller), ukm::UkmRecorder::Get(),
+      AnnotateDomModelServiceFactory::GetInstance()->GetForBrowserContext(
+          GetWebContents()->GetBrowserContext()));
   controller_->SetStatusMessage(status_message);
   if (progress_bar_config) {
     controller_->SetStepProgressBarConfiguration(*progress_bar_config);
@@ -600,6 +683,6 @@ bool ClientAndroid::NeedsUI() {
   return !ui_controller_android_ && controller_ && controller_->NeedsUI();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid);
 
 }  // namespace autofill_assistant

@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "aom_dsp/mathutils.h"
 #include "av1/encoder/ransac.h"
-#include "av1/encoder/mathutils.h"
 #include "av1/encoder/random.h"
 
 #define MAX_MINPTS 4

@@ -332,13 +332,8 @@ IDBTransaction* TransactionForDatabase(
     const String& object_store_name,
     const String& mode = indexed_db_names::kReadonly) {
   DummyExceptionStateForTesting exception_state;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8UnionStringOrStringSequence* scope =
       MakeGarbageCollected<V8UnionStringOrStringSequence>(object_store_name);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  StringOrStringSequence scope;
-  scope.SetString(object_store_name);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   IDBTransactionOptions options;
   options.setDurability("relaxed");
   IDBTransaction* idb_transaction = idb_database->transaction(
@@ -488,8 +483,8 @@ static std::unique_ptr<IDBKey> IdbKeyFromInspectorObject(
     IDBKey::KeyArray key_array;
     auto* array = key->getArray(nullptr);
     if (array) {
-      for (const std::unique_ptr<protocol::IndexedDB::Key>& key : *array)
-        key_array.emplace_back(IdbKeyFromInspectorObject(key.get()));
+      for (const std::unique_ptr<protocol::IndexedDB::Key>& elem : *array)
+        key_array.emplace_back(IdbKeyFromInspectorObject(elem.get()));
     }
     idb_key = IDBKey::CreateArray(std::move(key_array));
   } else {

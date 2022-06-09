@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/box/box.h"
 
@@ -63,7 +54,7 @@ TEST(BoxTest, BoxTest) {
 
   EXPECT_EQ(exif.size(), container2.exif_size);
   EXPECT_EQ(0, memcmp(exif.data(), container2.exif, container2.exif_size));
-  EXPECT_EQ(2, container2.xml.size());
+  EXPECT_EQ(2u, container2.xml.size());
   if (container2.xml.size() == 2) {
     EXPECT_EQ(xml0.size(), container2.xml[0].second);
     EXPECT_EQ(0, memcmp(xml0.data(), container2.xml[0].first,
@@ -72,7 +63,7 @@ TEST(BoxTest, BoxTest) {
     EXPECT_EQ(0, memcmp(xml1.data(), container2.xml[1].first,
                         container2.xml[1].second));
   }
-  EXPECT_EQ(1, container2.xmlc.size());
+  EXPECT_EQ(1u, container2.xmlc.size());
   if (container2.xmlc.size() == 1) {
     EXPECT_EQ(xml1.size(), container2.xmlc[0].second);
     EXPECT_EQ(0, memcmp(xml1.data(), container2.xmlc[0].first,

@@ -25,7 +25,6 @@ goog.require('ExtensionBridge');
 goog.require('InjectedScriptLoader');
 goog.require('NavBraille');
 goog.require('QueueMode');
-goog.require('TabsApiHandler');
 goog.require('TtsBackground');
 
 
@@ -62,8 +61,6 @@ ChromeVoxBackground = class {
      * @private
      */
     this.backgroundBraille_ = BrailleBackground.getInstance();
-
-    this.tabsApiHandler_ = new TabsApiHandler();
 
     // Export globals on ChromeVox.
     ChromeVox.tts = this.tts;
@@ -188,23 +185,18 @@ ChromeVoxBackground = class {
          * A helper function which executes code.
          * @param {string} code The code to execute.
          */
-        const executeScript = goog.bind(function(code) {
-          chrome.tabs.executeScript(
-              tab.id, {code, 'allFrames': true}, goog.bind(function() {
-                if (!chrome.extension.lastError) {
-                  return;
-                }
-                if (sawError) {
-                  return;
-                }
-                sawError = true;
-                console.error('Could not inject into tab', tab);
-                this.tts.speak(
-                    'Error starting ChromeVox for ' + tab.title + ', ' +
-                        tab.url,
-                    QueueMode.QUEUE);
-              }, this));
-        }, this);
+        const executeScript = (code) => {
+          chrome.tabs.executeScript(tab.id, {code, 'allFrames': true}, () => {
+            if (!chrome.extension.lastError) {
+              return;
+            }
+            if (sawError) {
+              return;
+            }
+            sawError = true;
+            console.error('Could not inject into tab', tab);
+          });
+        };
 
         // There is a scenario where two copies of the content script can get
         // loaded into the same tab on browser startup - one automatically and
@@ -288,7 +280,7 @@ ChromeVoxBackground = class {
    * messages to the proper destination.
    */
   addBridgeListener() {
-    ExtensionBridge.addMessageListener(goog.bind(function(msg, port) {
+    ExtensionBridge.addMessageListener((msg, port) => {
       const target = msg['target'];
       const action = msg['action'];
 
@@ -319,7 +311,7 @@ ChromeVoxBackground = class {
           }
           break;
       }
-    }, this));
+    });
   }
 
   /**
@@ -350,7 +342,7 @@ ChromeVoxBackground = class {
     const background = new ChromeVoxBackground();
 
     // TODO: this needs to be cleaned up (move to init?).
-    window['speak'] = goog.bind(background.tts.speak, background.tts);
+    window['speak'] = background.tts.speak.bind(background.tts);
     ChromeVoxState.backgroundTts = background.backgroundTts_;
     // Export the prefs object for access by the options page.
     window['prefs'] = ChromeVoxPrefs.instance;

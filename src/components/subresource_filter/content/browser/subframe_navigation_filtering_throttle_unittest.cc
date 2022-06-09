@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -50,6 +51,12 @@ class SubframeNavigationFilteringThrottleTest
       public content::WebContentsObserver {
  public:
   SubframeNavigationFilteringThrottleTest() {}
+
+  SubframeNavigationFilteringThrottleTest(
+      const SubframeNavigationFilteringThrottleTest&) = delete;
+  SubframeNavigationFilteringThrottleTest& operator=(
+      const SubframeNavigationFilteringThrottleTest&) = delete;
+
   ~SubframeNavigationFilteringThrottleTest() override {}
 
   void SetUp() override {
@@ -170,8 +177,6 @@ class SubframeNavigationFilteringThrottleTest
   std::unique_ptr<AsyncDocumentSubresourceFilter> parent_filter_;
 
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubframeNavigationFilteringThrottleTest);
 };
 
 TEST_F(SubframeNavigationFilteringThrottleTest, FilterOnStart) {

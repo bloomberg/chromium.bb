@@ -26,10 +26,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
-#include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
+#include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-blink.h"
@@ -71,10 +72,6 @@ struct CORE_EXPORT FrameLoadRequest {
   const ResourceRequest& GetResourceRequest() const {
     return resource_request_;
   }
-
-  // TODO(japhet): This is only used from frame_loader.cc, and can probably be
-  // an implementation detail there.
-  ClientRedirectPolicy ClientRedirect() const;
 
   void SetClientRedirectReason(ClientNavigationReason reason) {
     client_navigation_reason_ = reason;
@@ -180,9 +177,7 @@ struct CORE_EXPORT FrameLoadRequest {
   void SetInitiatorFrameToken(const LocalFrameToken& token) {
     initiator_frame_token_ = token;
   }
-  const LocalFrameToken* GetInitiatorFrameToken() const {
-    return base::OptionalOrNullptr(initiator_frame_token_);
-  }
+  const LocalFrameToken* GetInitiatorFrameToken() const;
 
  private:
   LocalDOMWindow* origin_window_;

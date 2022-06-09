@@ -30,14 +30,13 @@
 namespace vr {
 
 namespace {
-static constexpr base::TimeDelta kPermissionPromptTimeout =
-    base::TimeDelta::FromSeconds(5);
+static constexpr base::TimeDelta kPermissionPromptTimeout = base::Seconds(5);
 
 #if defined(OS_WIN)
 // Some runtimes on Windows have quite lengthy lengthy startup animations that
 // may cause indicators/permissions to not be visible during the normal timeout.
 static constexpr base::TimeDelta kFirstWindowsPermissionPromptTimeout =
-    base::TimeDelta::FromSeconds(10);
+    base::Seconds(10);
 #endif
 
 base::TimeDelta GetPermissionPromptTimeout(bool first_time) {
@@ -49,7 +48,7 @@ base::TimeDelta GetPermissionPromptTimeout(bool first_time) {
 }
 
 static constexpr base::TimeDelta kPollCapturingStateInterval =
-    base::TimeDelta::FromSecondsD(0.2);
+    base::Seconds(0.2);
 
 const CapturingStateModel g_default_capturing_state;
 }  // namespace
@@ -360,27 +359,27 @@ void VRUiHostImpl::InitCapturingStates() {
   permissions::PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
-  const GURL& origin = web_contents_->GetLastCommittedURL();
-  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
   potential_capturing_.audio_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_MIC,
-                                        rfh, origin)
+          ->GetPermissionStatusForCurrentDocument(
+              ContentSettingsType::MEDIASTREAM_MIC,
+              web_contents_->GetMainFrame())
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.video_capture_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(ContentSettingsType::MEDIASTREAM_CAMERA,
-                                        rfh, origin)
+          ->GetPermissionStatusForCurrentDocument(
+              ContentSettingsType::MEDIASTREAM_CAMERA,
+              web_contents_->GetMainFrame())
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.location_access_enabled =
       permission_manager
-          ->GetPermissionStatusForFrame(ContentSettingsType::GEOLOCATION, rfh,
-                                        origin)
+          ->GetPermissionStatusForCurrentDocument(
+              ContentSettingsType::GEOLOCATION, web_contents_->GetMainFrame())
           .content_setting == CONTENT_SETTING_ALLOW;
   potential_capturing_.midi_connected =
       permission_manager
-          ->GetPermissionStatusForFrame(ContentSettingsType::MIDI_SYSEX, rfh,
-                                        origin)
+          ->GetPermissionStatusForCurrentDocument(
+              ContentSettingsType::MIDI_SYSEX, web_contents_->GetMainFrame())
           .content_setting == CONTENT_SETTING_ALLOW;
 
   indicators_shown_start_time_ = base::Time::Now();

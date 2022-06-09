@@ -14,7 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
+#include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,19 +67,20 @@ enum class SaveOperation {
 class FormSaverImplTest : public testing::Test {
  public:
   FormSaverImplTest()
-      : mock_store_(new StrictMock<MockPasswordStore>()),
+      : mock_store_(new StrictMock<MockPasswordStoreInterface>()),
         form_saver_(mock_store_.get()) {}
+
+  FormSaverImplTest(const FormSaverImplTest&) = delete;
+  FormSaverImplTest& operator=(const FormSaverImplTest&) = delete;
 
   ~FormSaverImplTest() override { mock_store_->ShutdownOnUIThread(); }
 
  protected:
   // For the MockPasswordStore.
-  base::test::SingleThreadTaskEnvironment task_environment_;
-  scoped_refptr<StrictMock<MockPasswordStore>> mock_store_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  scoped_refptr<StrictMock<MockPasswordStoreInterface>> mock_store_;
   FormSaverImpl form_saver_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FormSaverImplTest);
 };
 
 class FormSaverImplSaveTest
@@ -96,16 +97,21 @@ void FormSaverImplSaveTest::SaveCredential(
     PasswordForm pending,
     const std::vector<const PasswordForm*>& matches,
     const std::u16string& old_password) {
+  PasswordForm expected = pending;
   switch (GetParam()) {
     case SaveOperation::kSave:
-      EXPECT_CALL(*mock_store_, AddLogin(pending));
+      expected.date_password_modified = base::Time::Now();
+      EXPECT_CALL(*mock_store_, AddLogin(expected));
       return form_saver_.Save(std::move(pending), matches, old_password);
     case SaveOperation::kUpdate:
-      EXPECT_CALL(*mock_store_, UpdateLogin(pending));
+      if (old_password != pending.password_value)
+        expected.date_password_modified = base::Time::Now();
+      EXPECT_CALL(*mock_store_, UpdateLogin(expected));
       return form_saver_.Update(std::move(pending), matches, old_password);
     case SaveOperation::kReplaceUpdate: {
       PasswordForm old_key = CreatePending(u"some_other_username", u"1234");
-      EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(pending, old_key));
+      expected.date_password_modified = base::Time::Now();
+      EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(expected, old_key));
       return form_saver_.UpdateReplace(std::move(pending), matches,
                                        old_password, old_key);
     }
@@ -220,6 +226,7 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnExactMatch) {
 
   PasswordForm expected_update = duplicate;
   expected_update.password_value = kNewPassword;
+  expected_update.date_password_modified = base::Time::Now();
 
   EXPECT_CALL(*mock_store_, UpdateLogin(expected_update));
   SaveCredential(CreatePending(u"nameofuser", kNewPassword), {&duplicate},
@@ -238,6 +245,7 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnPSLMatch) {
 
   PasswordForm expected_update = duplicate;
   expected_update.password_value = kNewPassword;
+  expected_update.date_password_modified = base::Time::Now();
   EXPECT_CALL(*mock_store_, UpdateLogin(expected_update));
   SaveCredential(CreatePending(u"nameofuser", kNewPassword), {&duplicate},
                  kOldPassword);
@@ -328,11 +336,10 @@ TEST_F(FormSaverImplTest, Blocklist) {
 
   PasswordForm blocklisted =
       password_manager_util::MakeNormalizedBlocklistedForm(
-          PasswordStore::FormDigest(observed));
+          PasswordFormDigest(observed));
 
   EXPECT_CALL(*mock_store_, AddLogin(FormWithSomeDate(blocklisted)));
-  PasswordForm result =
-      form_saver_.Blocklist(PasswordStore::FormDigest(observed));
+  PasswordForm result = form_saver_.Blocklist(PasswordFormDigest(observed));
   EXPECT_THAT(result, FormWithSomeDate(blocklisted));
 }
 

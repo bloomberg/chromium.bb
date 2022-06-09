@@ -19,13 +19,16 @@ namespace {
 ScopedJavaLocalRef<jobject> CreateJavaBackground(JNIEnv* env,
                                                  const Background& background) {
   if (background.is_linear_gradient()) {
-    const std::vector<int> int_colors(background.colors()->begin(),
-                                      background.colors()->end());
+    const std::vector<int> int_colors(background.colors().begin(),
+                                      background.colors().end());
     ScopedJavaLocalRef<jintArray> int_array =
         base::android::ToJavaIntArray(env, int_colors);
 
     return Java_NoteTemplateConversionBridge_createLinearGradientBackground(
         env, int_array, static_cast<uint16_t>(background.direction()));
+  } else if (background.is_image()) {
+    return Java_NoteTemplateConversionBridge_createImageBackground(
+        env, ConvertUTF8ToJavaString(env, background.image_url()));
   }
   return Java_NoteTemplateConversionBridge_createBackground(env,
                                                             background.color());
@@ -36,7 +39,11 @@ ScopedJavaLocalRef<jobject> CreateJavaTextStyle(JNIEnv* env,
   return Java_NoteTemplateConversionBridge_createTextStyle(
       env, ConvertUTF8ToJavaString(env, text_style.font_name()),
       text_style.font_color(), text_style.weight(), text_style.all_caps(),
-      static_cast<uint16_t>(text_style.alignment()));
+      static_cast<uint16_t>(text_style.alignment()),
+      static_cast<uint16_t>(text_style.min_text_size_sp()),
+      static_cast<uint16_t>(text_style.max_text_size_sp()),
+      text_style.highlight_color(),
+      static_cast<uint16_t>(text_style.highlight_style()));
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaFooterStyle(
@@ -50,14 +57,22 @@ ScopedJavaLocalRef<jobject> CreateJavaTemplateAndMaybeAddToList(
     JNIEnv* env,
     ScopedJavaLocalRef<jobject> jlist,
     const NoteTemplate& note_template) {
-  auto jbackground = CreateJavaBackground(env, note_template.main_background());
+  auto jmain_background =
+      CreateJavaBackground(env, note_template.main_background());
+
+  ScopedJavaLocalRef<jobject> jcontent_background = nullptr;
+  const Background* content_background = note_template.content_background();
+  if (content_background) {
+    jcontent_background = CreateJavaBackground(env, *content_background);
+  }
+
   auto jtext_style = CreateJavaTextStyle(env, note_template.text_style());
   auto jfooter_style = CreateJavaFooterStyle(env, note_template.footer_style());
 
   return Java_NoteTemplateConversionBridge_createTemplateAndMaybeAddToList(
       env, jlist, static_cast<uint32_t>(note_template.id()),
-      ConvertUTF8ToJavaString(env, note_template.localized_name()), jbackground,
-      jtext_style, jfooter_style);
+      ConvertUTF8ToJavaString(env, note_template.localized_name()),
+      jmain_background, jcontent_background, jtext_style, jfooter_style);
 }
 
 }  // namespace

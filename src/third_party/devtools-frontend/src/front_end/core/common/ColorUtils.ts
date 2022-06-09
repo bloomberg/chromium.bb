@@ -5,8 +5,6 @@
 /**
  * Combine the two given colors according to alpha blending.
  */
-/* eslint-disable rulesdir/no_underscored_properties */
-
 export function blendColors(fgRGBA: number[], bgRGBA: number[]): number[] {
   const alpha = fgRGBA[3];
   return [
@@ -110,7 +108,8 @@ export function luminanceAPCA([rSRGB, gSRGB, bSRGB]: number[]): number {
  * See https://github.com/Myndex/SAPC-APCA
  */
 export function contrastRatioAPCA(fgRGBA: number[], bgRGBA: number[]): number {
-  return contrastRatioByLuminanceAPCA(luminanceAPCA(fgRGBA), luminanceAPCA(bgRGBA));
+  const blendedFg = blendColors(fgRGBA, bgRGBA);
+  return contrastRatioByLuminanceAPCA(luminanceAPCA(blendedFg), luminanceAPCA(bgRGBA));
 }
 
 function clampLuminance(value: number): number {

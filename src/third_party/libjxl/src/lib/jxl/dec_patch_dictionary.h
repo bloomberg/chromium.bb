@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_DEC_PATCH_DICTIONARY_H_
 #define LIB_JXL_DEC_PATCH_DICTIONARY_H_
@@ -123,7 +114,7 @@ struct QuantizedPatch {
   }
 };
 
-// Pair (patch, vector of occurences).
+// Pair (patch, vector of occurrences).
 using PatchInfo =
     std::pair<QuantizedPatch, std::vector<std::pair<uint32_t, uint32_t>>>;
 
@@ -179,13 +170,17 @@ class PatchDictionary {
   Status AddTo(Image3F* opsin, const Rect& opsin_rect,
                float* const* extra_channels, const Rect& image_rect) const;
 
+  // Returns dependencies of this patch dictionary on reference frame ids as a
+  // bit mask: bits 0-3 indicate reference frame 0-3.
+  int GetReferences() const;
+
  private:
   friend class PatchDictionaryEncoder;
 
   const PassesSharedState* shared_;
   std::vector<PatchPosition> positions_;
 
-  // Patch occurences sorted by y.
+  // Patch occurrences sorted by y.
   std::vector<size_t> sorted_patches_;
   // Index of the first patch for each y value.
   std::vector<size_t> patch_starts_;

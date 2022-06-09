@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 from tensorflow.core.protobuf import config_pb2
@@ -217,8 +213,7 @@ class ArgumentNamingTests(test.TestCase, parameterized.TestCase):
         [inp.op.name for inp in variadic_op.inputs])
     self.assertEqual(
         [b'x', b'y', b'args_1', b'second_variadic', b'z', b'cust'],
-        [inp.op.get_attr('_user_specified_name')
-         for inp in variadic_op.inputs])
+        [inp.op.get_attr('_user_specified_name') for inp in variadic_op.inputs])
 
   def testVariadicInputSignature(self, function_decorator):
     @function_decorator(

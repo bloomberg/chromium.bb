@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -51,7 +52,8 @@ class SessionDataServiceTest : public BrowserWithTestWindowTest {
     auto cookie_settings = CookieSettingsFactory::GetForProfile(profile());
     cookie_settings->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
     profile()->SetExtensionSpecialStoragePolicy(
-        new ExtensionSpecialStoragePolicy(cookie_settings.get()));
+        base::MakeRefCounted<ExtensionSpecialStoragePolicy>(
+            cookie_settings.get()));
     RestartService(CreateDeleter());
   }
 
@@ -79,7 +81,7 @@ class SessionDataServiceTest : public BrowserWithTestWindowTest {
   SessionDataService* service() { return session_data_service_.get(); }
 
  private:
-  StrictMock<TestSessionDataDeleter>* session_data_deleter_;
+  raw_ptr<StrictMock<TestSessionDataDeleter>> session_data_deleter_;
   std::unique_ptr<SessionDataService> session_data_service_;
 };
 

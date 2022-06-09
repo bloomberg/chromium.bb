@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -32,7 +33,6 @@ class MenuModel;
 }
 
 namespace views {
-class InstallableInkDrop;
 class MenuModelAdapter;
 class MenuRunner;
 }
@@ -125,7 +125,7 @@ class ToolbarButton : public views::LabelButton,
   // ui::PropertyHandler:
   void AfterPropertyChange(const void* key, int64_t old_value) override;
 
-  ui::MenuModel* menu_model_for_test() { return model_.get(); }
+  ui::MenuModel* menu_model() { return model_.get(); }
 
   // Chooses from |desired_dark_color| and |desired_light_color| based on
   // whether the toolbar background is dark or light.
@@ -147,12 +147,13 @@ class ToolbarButton : public views::LabelButton,
       const ui::ThemeProvider* theme_provider);
   static SkColor GetDefaultBorderColor(views::View* host_view);
 
-  static void UpdateFocusRingColor(views::View* host,
-                                   views::FocusRing* focus_ring);
-
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
+
+  // Returns if the button inkdrop should persist after the user interacts with
+  // IPH for the button. Override this to change default behavior.
+  virtual bool ShouldShowInkdropAfterIphInteraction();
 
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
@@ -216,7 +217,7 @@ class ToolbarButton : public views::LabelButton,
 
     void ClearHighlightColor();
 
-    ToolbarButton* const parent_;
+    const raw_ptr<ToolbarButton> parent_;
 
     // A highlight color is used to signal special states. When set this color
     // is used as a base for background, text, border and ink drops. When not
@@ -262,7 +263,7 @@ class ToolbarButton : public views::LabelButton,
   // The model that populates the attached menu.
   std::unique_ptr<ui::MenuModel> model_;
 
-  TabStripModel* const tab_strip_model_;
+  const raw_ptr<TabStripModel> tab_strip_model_;
 
   // Indicates if menu is currently showing.
   bool menu_showing_ = false;
@@ -298,14 +299,6 @@ class ToolbarButton : public views::LabelButton,
   // AvatarToolbarButton for instance uses smaller insets to accommodate for a
   // larger-than-16dp avatar avatar icon outside of touchable mode.
   gfx::Insets layout_inset_delta_;
-
-  // Used instead of the standard InkDrop implementation when
-  // |views::kInstallableInkDropFeature| is enabled.
-  // TODO(crbug.com/931964): When InkDrops can be externally installed, connect
-  // this InkDrop when the experiment is enabled. This is currently not working
-  // as a virtual GetInkDrop() override was removed to finish
-  // InkDropHostView migration from the View hierarchy.
-  std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
 
   // Class responsible for animating highlight color (calling a callback on
   // |this| to refresh UI).

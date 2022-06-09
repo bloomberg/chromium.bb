@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -36,6 +35,10 @@ namespace {
 class StringWriterDelegate : public WriterDelegate {
  public:
   StringWriterDelegate(size_t max_read_bytes, std::string* output);
+
+  StringWriterDelegate(const StringWriterDelegate&) = delete;
+  StringWriterDelegate& operator=(const StringWriterDelegate&) = delete;
+
   ~StringWriterDelegate() override;
 
   // WriterDelegate methods:
@@ -52,8 +55,6 @@ class StringWriterDelegate : public WriterDelegate {
  private:
   size_t max_read_bytes_;
   std::string* output_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringWriterDelegate);
 };
 
 StringWriterDelegate::StringWriterDelegate(size_t max_read_bytes,
@@ -129,7 +130,7 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   exploded_time.second = raw_file_info.tmu_date.tm_sec;
   exploded_time.millisecond = 0;
 
-  if (!base::Time::FromLocalExploded(exploded_time, &last_modified_))
+  if (!base::Time::FromUTCExploded(exploded_time, &last_modified_))
     last_modified_ = base::Time::UnixEpoch();
 }
 
@@ -157,7 +158,7 @@ bool ZipReader::Open(const base::FilePath& zip_file_path) {
 bool ZipReader::OpenFromPlatformFile(base::PlatformFile zip_fd) {
   DCHECK(!zip_file_);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   zip_file_ = internal::OpenFdForUnzipping(zip_fd);
 #elif defined(OS_WIN)
   zip_file_ = internal::OpenHandleForUnzipping(zip_fd);

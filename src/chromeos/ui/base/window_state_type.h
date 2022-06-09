@@ -28,8 +28,8 @@ enum class WindowStateType {
   kFullscreen,
 
   // Additional ash states.
-  kLeftSnapped,
-  kRightSnapped,
+  kPrimarySnapped,
+  kSecondarySnapped,
 
   // A window is in this state when it is automatically placed and
   // sized by the window manager. (it's newly opened, or pushed to the side
@@ -57,9 +57,17 @@ WindowStateType ToWindowStateType(ui::WindowShowState state);
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 ui::WindowShowState ToWindowShowState(WindowStateType type);
 
+// Returns true if |type| is PINNED or TRUSTED_PINNED.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+bool IsPinnedWindowStateType(WindowStateType type);
+
 // Returns true if |type| is FULLSCREEN, PINNED, or TRUSTED_PINNED.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 bool IsFullscreenOrPinnedWindowStateType(WindowStateType type);
+
+// Returns true if |type| is kFloating.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+bool IsFloatingStateType(WindowStateType type);
 
 // Returns true if |type| is MAXIMIZED, FULLSCREEN, PINNED, or TRUSTED_PINNED.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)

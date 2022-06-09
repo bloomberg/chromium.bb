@@ -56,6 +56,10 @@ namespace re2 {
 // Controls whether the DFA should bail out early if the NFA would be faster.
 static bool dfa_should_bail_when_slow = true;
 
+void Prog::TESTING_ONLY_set_dfa_should_bail_when_slow(bool b) {
+  dfa_should_bail_when_slow = b;
+}
+
 // Changing this to true compiles in prints that trace execution of the DFA.
 // Generates a lot of output -- only useful for debugging.
 static const bool ExtraDebug = false;
@@ -1484,15 +1488,15 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params) {
 
   int lastbyte;
   if (run_forward) {
-    if (params->text.end() == params->context.end())
+    if (EndPtr(params->text) == EndPtr(params->context))
       lastbyte = kByteEndText;
     else
-      lastbyte = params->text.end()[0] & 0xFF;
+      lastbyte = EndPtr(params->text)[0] & 0xFF;
   } else {
-    if (params->text.begin() == params->context.begin())
+    if (BeginPtr(params->text) == BeginPtr(params->context))
       lastbyte = kByteEndText;
     else
-      lastbyte = params->text.begin()[-1] & 0xFF;
+      lastbyte = BeginPtr(params->text)[-1] & 0xFF;
   }
 
   State* ns = s->next_[ByteMap(lastbyte)].load(std::memory_order_acquire);
@@ -1623,7 +1627,7 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
   const StringPiece& context = params->context;
 
   // Sanity check: make sure that text lies within context.
-  if (text.begin() < context.begin() || text.end() > context.end()) {
+  if (BeginPtr(text) < BeginPtr(context) || EndPtr(text) > EndPtr(context)) {
     LOG(DFATAL) << "context does not contain text";
     params->start = DeadState;
     return true;
@@ -1633,13 +1637,13 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
   int start;
   uint32_t flags;
   if (params->run_forward) {
-    if (text.begin() == context.begin()) {
+    if (BeginPtr(text) == BeginPtr(context)) {
       start = kStartBeginText;
       flags = kEmptyBeginText|kEmptyBeginLine;
-    } else if (text.begin()[-1] == '\n') {
+    } else if (BeginPtr(text)[-1] == '\n') {
       start = kStartBeginLine;
       flags = kEmptyBeginLine;
-    } else if (Prog::IsWordChar(text.begin()[-1] & 0xFF)) {
+    } else if (Prog::IsWordChar(BeginPtr(text)[-1] & 0xFF)) {
       start = kStartAfterWordChar;
       flags = kFlagLastWord;
     } else {
@@ -1647,13 +1651,13 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
       flags = 0;
     }
   } else {
-    if (text.end() == context.end()) {
+    if (EndPtr(text) == EndPtr(context)) {
       start = kStartBeginText;
       flags = kEmptyBeginText|kEmptyBeginLine;
-    } else if (text.end()[0] == '\n') {
+    } else if (EndPtr(text)[0] == '\n') {
       start = kStartBeginLine;
       flags = kEmptyBeginLine;
-    } else if (Prog::IsWordChar(text.end()[0] & 0xFF)) {
+    } else if (Prog::IsWordChar(EndPtr(text)[0] & 0xFF)) {
       start = kStartAfterWordChar;
       flags = kFlagLastWord;
     } else {
@@ -1833,9 +1837,9 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
     using std::swap;
     swap(caret, dollar);
   }
-  if (caret && context.begin() != text.begin())
+  if (caret && BeginPtr(context) != BeginPtr(text))
     return false;
-  if (dollar && context.end() != text.end())
+  if (dollar && EndPtr(context) != EndPtr(text))
     return false;
 
   // Handle full match by running an anchored longest match
@@ -1964,10 +1968,6 @@ int DFA::BuildAllStates(const Prog::DFAStateCallback& cb) {
 // Build out all states in DFA for kind.  Returns number of states.
 int Prog::BuildEntireDFA(MatchKind kind, const DFAStateCallback& cb) {
   return GetDFA(kind)->BuildAllStates(cb);
-}
-
-void Prog::TEST_dfa_should_bail_when_slow(bool b) {
-  dfa_should_bail_when_slow = b;
 }
 
 // Computes min and max for matching string.

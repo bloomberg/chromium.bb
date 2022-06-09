@@ -8,9 +8,11 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
+#include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -37,9 +39,7 @@ void ConfigureLabel(views::Label* label, int line_height, int font_size) {
 
 QuickActionItem::QuickActionItem(Delegate* delegate,
                                  int label_id,
-                                 const gfx::VectorIcon& icon_on,
-                                 const gfx::VectorIcon& icon_off)
-    : icon_on_(icon_on), icon_off_(icon_off) {
+                                 const gfx::VectorIcon& icon) {
   SetPreferredSize(kUnifiedFeaturePodSize);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -54,6 +54,7 @@ QuickActionItem::QuickActionItem(Delegate* delegate,
           },
           delegate, this),
       true /* is_togglable */));
+  icon_button_->SetVectorIcon(icon);
 
   auto* label_view = AddChildView(std::make_unique<views::View>());
   label_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -78,11 +79,6 @@ QuickActionItem::QuickActionItem(Delegate* delegate,
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-QuickActionItem::QuickActionItem(Delegate* delegate,
-                                 int label_id,
-                                 const gfx::VectorIcon& icon)
-    : QuickActionItem(delegate, label_id, icon, icon) {}
-
 QuickActionItem::~QuickActionItem() = default;
 
 void QuickActionItem::SetSubLabel(const std::u16string& sub_label) {
@@ -96,17 +92,12 @@ void QuickActionItem::SetSubLabelColor(SkColor color) {
   sub_label_->SetEnabledColor(sub_label_color_);
 }
 
-void QuickActionItem::SetIcon(bool is_on) {
-  icon_button_->SetVectorIcon(is_on ? icon_on_ : icon_off_);
-}
-
-void QuickActionItem::SetIconTooltip(const std::u16string& text) {
+void QuickActionItem::SetTooltip(const std::u16string& text) {
   icon_button_->SetTooltipText(text);
 }
 
 void QuickActionItem::SetToggled(bool toggled) {
   icon_button_->SetToggled(toggled);
-  SetIcon(toggled /* is_on */);
 }
 
 bool QuickActionItem::IsToggled() const {
@@ -132,7 +123,6 @@ void QuickActionItem::SetEnabled(bool enabled) {
     icon_button_->SetTooltipText(l10n_util::GetStringFUTF16(
         IDS_ASH_PHONE_HUB_QUICK_ACTIONS_NOT_AVAILABLE_STATE_TOOLTIP,
         GetItemLabel()));
-    SetIcon(false /* is_on */);
   } else {
     label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorPrimary));

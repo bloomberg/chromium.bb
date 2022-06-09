@@ -123,6 +123,9 @@ FindBadConstructsConsumer::FindBadConstructsConsumer(CompilerInstance& instance,
   if (options.check_ipc) {
     ipc_visitor_.reset(new CheckIPCVisitor(instance));
   }
+  if (options.check_layout_object_methods) {
+    layout_visitor_.reset(new CheckLayoutObjectMethodsVisitor(instance));
+  }
 
   // Messages for virtual methods.
   diag_method_requires_override_ = diagnostic().getCustomDiagID(
@@ -218,6 +221,9 @@ void FindBadConstructsConsumer::Traverse(ASTContext& context) {
   if (ipc_visitor_) {
     ipc_visitor_->set_context(&context);
     ParseFunctionTemplates(context.getTranslationUnitDecl());
+  }
+  if (layout_visitor_) {
+    layout_visitor_->VisitLayoutObjectMethods(context);
   }
   RecursiveASTVisitor::TraverseDecl(context.getTranslationUnitDecl());
   if (ipc_visitor_) ipc_visitor_->set_context(nullptr);
@@ -332,7 +338,7 @@ void FindBadConstructsConsumer::CheckEnumMaxValue(EnumDecl* decl) {
   if (max_enumerators.find(max_value) == max_enumerators.end()) {
     ReportIfSpellingLocNotIgnored(max_value->getLocation(),
                                   diag_bad_enum_max_value_)
-        << max_seen.toString(10);
+        << toString(max_seen, 10);
   } else if (max_enumerators.size() < 2) {
     ReportIfSpellingLocNotIgnored(decl->getLocation(),
                                   diag_enum_max_value_unique_);
@@ -699,6 +705,11 @@ void FindBadConstructsConsumer::CountType(const Type* type,
         }
         if (options_.checked_ptr_as_trivial_member &&
             base_name == "base::CheckedPtr") {
+          (*trivial_member)++;
+          break;
+        }
+        if (options_.raw_ptr_template_as_trivial_member &&
+            base_name == "base::raw_ptr") {
           (*trivial_member)++;
           break;
         }

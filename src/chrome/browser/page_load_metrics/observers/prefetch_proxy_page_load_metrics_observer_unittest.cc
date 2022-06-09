@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -18,12 +19,6 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 
 namespace {
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL TestUrl() {
-  return GURL("https://chromium.org");
-}
 
 page_load_metrics::mojom::ResourceDataUpdatePtr CreateBaseResource(
     bool was_cached,
@@ -47,6 +42,11 @@ class PrefetchProxyPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
   PrefetchProxyPageLoadMetricsObserverTest() = default;
+
+  PrefetchProxyPageLoadMetricsObserverTest(
+      const PrefetchProxyPageLoadMetricsObserverTest&) = delete;
+  PrefetchProxyPageLoadMetricsObserverTest& operator=(
+      const PrefetchProxyPageLoadMetricsObserverTest&) = delete;
 
   TestPrefetchProxyPageLoadMetricsObserver* plm_observer() {
     return plm_observer_;
@@ -139,22 +139,19 @@ class PrefetchProxyPageLoadMetricsObserverTest
 
     page_load_metrics::InitPageLoadTimingForTest(&timing_);
     timing_.navigation_start = base::Time::FromDoubleT(2);
-    timing_.response_start = base::TimeDelta::FromSeconds(3);
-    timing_.parse_timing->parse_start = base::TimeDelta::FromSeconds(4);
-    timing_.paint_timing->first_contentful_paint =
-        base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(6);
-    timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
+    timing_.response_start = base::Seconds(3);
+    timing_.parse_timing->parse_start = base::Seconds(4);
+    timing_.paint_timing->first_contentful_paint = base::Seconds(5);
+    timing_.paint_timing->first_image_paint = base::Seconds(6);
+    timing_.document_timing->load_event_start = base::Seconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
 
-  TestPrefetchProxyPageLoadMetricsObserver* plm_observer_ = nullptr;
+  raw_ptr<TestPrefetchProxyPageLoadMetricsObserver> plm_observer_ = nullptr;
   page_load_metrics::mojom::PageLoadTiming timing_;
 
-  GURL navigation_url_ = TestUrl();
+  GURL navigation_url_{"https://chromium.org"};
   bool in_main_frame_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchProxyPageLoadMetricsObserverTest);
 };
 
 TEST_F(PrefetchProxyPageLoadMetricsObserverTest, BeforeFCP_CSS) {
@@ -517,7 +514,7 @@ TEST_F(PrefetchProxyPageLoadMetricsObserverTest, LastVisitToHost_Today) {
 TEST_F(PrefetchProxyPageLoadMetricsObserverTest, LastVisitToHost_Yesterday) {
   StartTest();
   plm_observer()->CallOnOriginLastVisitResult(
-      {true /* success */, base::Time::Now() - base::TimeDelta::FromDays(1)});
+      {true /* success */, base::Time::Now() - base::Days(1)});
 
   tester()->NavigateToUntrackedUrl();
 
@@ -533,7 +530,7 @@ TEST_F(PrefetchProxyPageLoadMetricsObserverTest, LastVisitToHost_Yesterday) {
 TEST_F(PrefetchProxyPageLoadMetricsObserverTest, LastVisitToHost_MaxUKM) {
   StartTest();
   plm_observer()->CallOnOriginLastVisitResult(
-      {true /* success */, base::Time::Now() - base::TimeDelta::FromDays(181)});
+      {true /* success */, base::Time::Now() - base::Days(181)});
 
   tester()->NavigateToUntrackedUrl();
 

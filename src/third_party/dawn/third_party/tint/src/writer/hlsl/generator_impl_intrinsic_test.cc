@@ -57,9 +57,9 @@ inline std::ostream& operator<<(std::ostream& out, IntrinsicData data) {
   return out;
 }
 
-ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
-                                  ParamType type,
-                                  ProgramBuilder* builder) {
+const ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
+                                        ParamType type,
+                                        ProgramBuilder* builder) {
   std::string name;
   std::ostringstream str(name);
   str << intrinsic;
@@ -102,7 +102,7 @@ ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
     case IntrinsicType::kSign:
       return builder->Call(str.str(), "f2");
     case IntrinsicType::kLdexp:
-      return builder->Call(str.str(), "f2", "u2");
+      return builder->Call(str.str(), "f2", "i2");
     case IntrinsicType::kAtan2:
     case IntrinsicType::kDot:
     case IntrinsicType::kDistance:
@@ -146,6 +146,8 @@ ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
       return builder->Call(str.str(), "f2", "f2", "b2");
     case IntrinsicType::kDeterminant:
       return builder->Call(str.str(), "m2x2");
+    case IntrinsicType::kTranspose:
+      return builder->Call(str.str(), "m3x2");
     default:
       break;
   }
@@ -155,15 +157,18 @@ using HlslIntrinsicTest = TestParamHelper<IntrinsicData>;
 TEST_P(HlslIntrinsicTest, Emit) {
   auto param = GetParam();
 
-  Global("f2", ty.vec2<float>(), ast::StorageClass::kPrivate);
-  Global("f3", ty.vec3<float>(), ast::StorageClass::kPrivate);
-  Global("u2", ty.vec2<unsigned int>(), ast::StorageClass::kPrivate);
+  Global("f2", ty.vec2<f32>(), ast::StorageClass::kPrivate);
+  Global("f3", ty.vec3<f32>(), ast::StorageClass::kPrivate);
+  Global("u2", ty.vec2<u32>(), ast::StorageClass::kPrivate);
+  Global("i2", ty.vec2<i32>(), ast::StorageClass::kPrivate);
   Global("b2", ty.vec2<bool>(), ast::StorageClass::kPrivate);
-  Global("m2x2", ty.mat2x2<float>(), ast::StorageClass::kPrivate);
+  Global("m2x2", ty.mat2x2<f32>(), ast::StorageClass::kPrivate);
+  Global("m3x2", ty.mat3x2<f32>(), ast::StorageClass::kPrivate);
 
   auto* call = GenerateCall(param.intrinsic, param.type, this);
   ASSERT_NE(nullptr, call) << "Unhandled intrinsic";
-  WrapInFunction(call);
+  Func("func", {}, ty.void_(), {CallStmt(call)},
+       {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
@@ -213,7 +218,7 @@ INSTANTIATE_TEST_SUITE_P(
         IntrinsicData{IntrinsicType::kFaceForward, ParamType::kF32,
                       "faceforward"},
         IntrinsicData{IntrinsicType::kFloor, ParamType::kF32, "floor"},
-        IntrinsicData{IntrinsicType::kFma, ParamType::kF32, "fma"},
+        IntrinsicData{IntrinsicType::kFma, ParamType::kF32, "mad"},
         IntrinsicData{IntrinsicType::kFract, ParamType::kF32, "frac"},
         IntrinsicData{IntrinsicType::kFwidth, ParamType::kF32, "fwidth"},
         IntrinsicData{IntrinsicType::kFwidthCoarse, ParamType::kF32, "fwidth"},
@@ -246,13 +251,10 @@ INSTANTIATE_TEST_SUITE_P(
         IntrinsicData{IntrinsicType::kStep, ParamType::kF32, "step"},
         IntrinsicData{IntrinsicType::kTan, ParamType::kF32, "tan"},
         IntrinsicData{IntrinsicType::kTanh, ParamType::kF32, "tanh"},
+        IntrinsicData{IntrinsicType::kTranspose, ParamType::kF32, "transpose"},
         IntrinsicData{IntrinsicType::kTrunc, ParamType::kF32, "trunc"}));
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, DISABLED_Intrinsic_IsNormal) {
-  FAIL();
-}
-
-TEST_F(HlslGeneratorImplTest_Intrinsic, DISABLED_Intrinsic_Select) {
   FAIL();
 }
 
@@ -262,194 +264,472 @@ TEST_F(HlslGeneratorImplTest_Intrinsic, Intrinsic_Call) {
   Global("param1", ty.vec3<f32>(), ast::StorageClass::kPrivate);
   Global("param2", ty.vec3<f32>(), ast::StorageClass::kPrivate);
 
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
 
   GeneratorImpl& gen = Build();
 
   gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_EQ(result(), "  dot(param1, param2)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "dot(param1, param2)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Select_Scalar) {
+  auto* call = Call("select", 1.0f, 2.0f, true);
+  WrapInFunction(CallStmt(call));
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "(true ? 2.0f : 1.0f)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Select_Vector) {
+  auto* call =
+      Call("select", vec2<i32>(1, 2), vec2<i32>(3, 4), vec2<bool>(true, false));
+  WrapInFunction(CallStmt(call));
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "(bool2(true, false) ? int2(3, 4) : int2(1, 2))");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Modf_Scalar) {
+  auto* call = Call("modf", 1.0f);
+  WrapInFunction(CallStmt(call));
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(struct modf_result {
+  float fract;
+  float whole;
+};
+modf_result tint_modf(float param_0) {
+  float whole;
+  float fract = modf(param_0, whole);
+  modf_result result = {fract, whole};
+  return result;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_modf(1.0f);
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Modf_Vector) {
+  auto* call = Call("modf", vec3<f32>());
+  WrapInFunction(CallStmt(call));
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(struct modf_result_vec3 {
+  float3 fract;
+  float3 whole;
+};
+modf_result_vec3 tint_modf(float3 param_0) {
+  float3 whole;
+  float3 fract = modf(param_0, whole);
+  modf_result_vec3 result = {fract, whole};
+  return result;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_modf(float3(0.0f, 0.0f, 0.0f));
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Frexp_Scalar_i32) {
+  auto* call = Call("frexp", 1.0f);
+  WrapInFunction(CallStmt(call));
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(struct frexp_result {
+  float sig;
+  int exp;
+};
+frexp_result tint_frexp(float param_0) {
+  float exp;
+  float sig = frexp(param_0, exp);
+  frexp_result result = {sig, int(exp)};
+  return result;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_frexp(1.0f);
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, Frexp_Vector_i32) {
+  auto* call = Call("frexp", vec3<f32>());
+  WrapInFunction(CallStmt(call));
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(struct frexp_result_vec3 {
+  float3 sig;
+  int3 exp;
+};
+frexp_result_vec3 tint_frexp(float3 param_0) {
+  float3 exp;
+  float3 sig = frexp(param_0, exp);
+  frexp_result_vec3 result = {sig, int3(exp)};
+  return result;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_frexp(float3(0.0f, 0.0f, 0.0f));
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, IsNormal_Scalar) {
+  auto* val = Var("val", ty.f32());
+  auto* call = Call("isNormal", val);
+  WrapInFunction(val, call);
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(bool tint_isNormal(float param_0) {
+  uint exponent = asuint(param_0) & 0x7f80000;
+  uint clamped = clamp(exponent, 0x0080000, 0x7f00000);
+  return clamped == exponent;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  float val = 0.0f;
+  const bool tint_symbol = tint_isNormal(val);
+  return;
+}
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Intrinsic, IsNormal_Vector) {
+  auto* val = Var("val", ty.vec3<f32>());
+  auto* call = Call("isNormal", val);
+  WrapInFunction(val, call);
+
+  GeneratorImpl& gen = SanitizeAndBuild();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(bool3 tint_isNormal(float3 param_0) {
+  uint3 exponent = asuint(param_0) & 0x7f80000;
+  uint3 clamped = clamp(exponent, 0x0080000, 0x7f00000);
+  return clamped == exponent;
+}
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  float3 val = float3(0.0f, 0.0f, 0.0f);
+  const bool3 tint_symbol = tint_isNormal(val);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Pack4x8Snorm) {
   auto* call = Call("pack4x8snorm", "p1");
   Global("p1", ty.vec4<f32>(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("int4 tint_tmp = int4(round(clamp(p1, "
-                                      "-1.0, 1.0) * 127.0)) & 0xff;"));
-  EXPECT_THAT(result(), HasSubstr("asuint(tint_tmp.x | tint_tmp.y << 8 | "
-                                  "tint_tmp.z << 16 | tint_tmp.w << 24)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(uint tint_pack4x8snorm(float4 param_0) {
+  int4 i = int4(round(clamp(param_0, -1.0, 1.0) * 127.0)) & 0xff;
+  return asuint(i.x | i.y << 8 | i.z << 16 | i.w << 24);
+}
+
+static float4 p1 = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_pack4x8snorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Pack4x8Unorm) {
   auto* call = Call("pack4x8unorm", "p1");
   Global("p1", ty.vec4<f32>(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint4 tint_tmp = uint4(round(clamp(p1, "
-                                      "0.0, 1.0) * 255.0));"));
-  EXPECT_THAT(result(), HasSubstr("(tint_tmp.x | tint_tmp.y << 8 | "
-                                  "tint_tmp.z << 16 | tint_tmp.w << 24)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(uint tint_pack4x8unorm(float4 param_0) {
+  uint4 i = uint4(round(clamp(param_0, 0.0, 1.0) * 255.0));
+  return (i.x | i.y << 8 | i.z << 16 | i.w << 24);
+}
+
+static float4 p1 = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_pack4x8unorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Snorm) {
   auto* call = Call("pack2x16snorm", "p1");
   Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("int2 tint_tmp = int2(round(clamp(p1, "
-                                      "-1.0, 1.0) * 32767.0)) & 0xffff;"));
-  EXPECT_THAT(result(), HasSubstr("asuint(tint_tmp.x | tint_tmp.y << 16)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(uint tint_pack2x16snorm(float2 param_0) {
+  int2 i = int2(round(clamp(param_0, -1.0, 1.0) * 32767.0)) & 0xffff;
+  return asuint(i.x | i.y << 16);
+}
+
+static float2 p1 = float2(0.0f, 0.0f);
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_pack2x16snorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Unorm) {
   auto* call = Call("pack2x16unorm", "p1");
   Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint2 tint_tmp = uint2(round(clamp(p1, "
-                                      "0.0, 1.0) * 65535.0));"));
-  EXPECT_THAT(result(), HasSubstr("(tint_tmp.x | tint_tmp.y << 16)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(uint tint_pack2x16unorm(float2 param_0) {
+  uint2 i = uint2(round(clamp(param_0, 0.0, 1.0) * 65535.0));
+  return (i.x | i.y << 16);
+}
+
+static float2 p1 = float2(0.0f, 0.0f);
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_pack2x16unorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Pack2x16Float) {
   auto* call = Call("pack2x16float", "p1");
   Global("p1", ty.vec2<f32>(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint2 tint_tmp = f32tof16(p1);"));
-  EXPECT_THAT(result(), HasSubstr("(tint_tmp.x | tint_tmp.y << 16)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(uint tint_pack2x16float(float2 param_0) {
+  uint2 i = f32tof16(param_0);
+  return i.x | (i.y << 16);
+}
+
+static float2 p1 = float2(0.0f, 0.0f);
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_pack2x16float(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack4x8Snorm) {
   auto* call = Call("unpack4x8snorm", "p1");
   Global("p1", ty.u32(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("int tint_tmp_1 = int(p1);"));
-  EXPECT_THAT(pre_result(),
-              HasSubstr("int4 tint_tmp = int4(tint_tmp_1 << 24, tint_tmp_1 "
-                        "<< 16, tint_tmp_1 << 8, tint_tmp_1) >> 24;"));
-  EXPECT_THAT(result(),
-              HasSubstr("clamp(float4(tint_tmp) / 127.0, -1.0, 1.0)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float4 tint_unpack4x8snorm(uint param_0) {
+  int j = int(param_0);
+  int4 i = int4(j << 24, j << 16, j << 8, j) >> 24;
+  return clamp(float4(i) / 127.0, -1.0, 1.0);
+}
+
+static uint p1 = 0u;
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_unpack4x8snorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack4x8Unorm) {
   auto* call = Call("unpack4x8unorm", "p1");
   Global("p1", ty.u32(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint tint_tmp_1 = p1;"));
-  EXPECT_THAT(
-      pre_result(),
-      HasSubstr("uint4 tint_tmp = uint4(tint_tmp_1 & 0xff, (tint_tmp_1 >> "
-                "8) & 0xff, (tint_tmp_1 >> 16) & 0xff, tint_tmp_1 >> 24);"));
-  EXPECT_THAT(result(), HasSubstr("float4(tint_tmp) / 255.0"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float4 tint_unpack4x8unorm(uint param_0) {
+  uint j = param_0;
+  uint4 i = uint4(j & 0xff, (j >> 8) & 0xff, (j >> 16) & 0xff, j >> 24);
+  return float4(i) / 255.0;
+}
+
+static uint p1 = 0u;
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_unpack4x8unorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Snorm) {
   auto* call = Call("unpack2x16snorm", "p1");
   Global("p1", ty.u32(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("int tint_tmp_1 = int(p1);"));
-  EXPECT_THAT(
-      pre_result(),
-      HasSubstr("int2 tint_tmp = int2(tint_tmp_1 << 16, tint_tmp_1) >> 16;"));
-  EXPECT_THAT(result(),
-              HasSubstr("clamp(float2(tint_tmp) / 32767.0, -1.0, 1.0)"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float2 tint_unpack2x16snorm(uint param_0) {
+  int j = int(param_0);
+  int2 i = int2(j << 16, j) >> 16;
+  return clamp(float2(i) / 32767.0, -1.0, 1.0);
+}
+
+static uint p1 = 0u;
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_unpack2x16snorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Unorm) {
   auto* call = Call("unpack2x16unorm", "p1");
   Global("p1", ty.u32(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint tint_tmp_1 = p1;"));
-  EXPECT_THAT(
-      pre_result(),
-      HasSubstr(
-          "uint2 tint_tmp = uint2(tint_tmp_1 & 0xffff, tint_tmp_1 >> 16);"));
-  EXPECT_THAT(result(), HasSubstr("float2(tint_tmp) / 65535.0"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float2 tint_unpack2x16unorm(uint param_0) {
+  uint j = param_0;
+  uint2 i = uint2(j & 0xffff, j >> 16);
+  return float2(i) / 65535.0;
+}
+
+static uint p1 = 0u;
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_unpack2x16unorm(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, Unpack2x16Float) {
   auto* call = Call("unpack2x16float", "p1");
   Global("p1", ty.u32(), ast::StorageClass::kPrivate);
-  WrapInFunction(call);
+  WrapInFunction(CallStmt(call));
   GeneratorImpl& gen = Build();
 
-  gen.increment_indent();
-  ASSERT_TRUE(gen.EmitExpression(pre, out, call)) << gen.error();
-  EXPECT_THAT(pre_result(), HasSubstr("uint tint_tmp = p1;"));
-  EXPECT_THAT(result(),
-              HasSubstr("f16tof32(uint2(tint_tmp & 0xffff, tint_tmp >> 16))"));
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(float2 tint_unpack2x16float(uint param_0) {
+  uint i = param_0;
+  return f16tof32(uint2(i & 0xffff, i >> 16));
+}
+
+static uint p1 = 0u;
+
+[numthreads(1, 1, 1)]
+void test_function() {
+  tint_unpack2x16float(p1);
+  return;
+}
+)");
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, StorageBarrier) {
-  Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("storageBarrier"))},
-       {Stage(ast::PipelineStage::kCompute)});
+  Func("main", {}, ty.void_(), {CallStmt(Call("storageBarrier"))},
+       {
+           Stage(ast::PipelineStage::kCompute),
+           WorkgroupSize(1),
+       });
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"([numthreads(1, 1, 1)]
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
 void main() {
   DeviceMemoryBarrierWithGroupSync();
   return;
 }
-
 )");
-
-  Validate();
 }
 
 TEST_F(HlslGeneratorImplTest_Intrinsic, WorkgroupBarrier) {
-  Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("workgroupBarrier"))},
-       {Stage(ast::PipelineStage::kCompute)});
+  Func("main", {}, ty.void_(), {CallStmt(Call("workgroupBarrier"))},
+       {
+           Stage(ast::PipelineStage::kCompute),
+           WorkgroupSize(1),
+       });
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.Generate(out)) << gen.error();
-  EXPECT_EQ(result(), R"([numthreads(1, 1, 1)]
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
 void main() {
   GroupMemoryBarrierWithGroupSync();
   return;
 }
-
 )");
+}
 
-  Validate();
+TEST_F(HlslGeneratorImplTest_Intrinsic, Ignore) {
+  Func("f", {Param("a", ty.i32()), Param("b", ty.i32()), Param("c", ty.i32())},
+       ty.i32(), {Return(Mul(Add("a", "b"), "c"))});
+
+  Func("main", {}, ty.void_(), {CallStmt(Call("ignore", Call("f", 1, 2, 3)))},
+       {
+           Stage(ast::PipelineStage::kCompute),
+           WorkgroupSize(1),
+       });
+
+  GeneratorImpl& gen = Build();
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(int f(int a, int b, int c) {
+  return ((a + b) * c);
+}
+
+[numthreads(1, 1, 1)]
+void main() {
+  f(1, 2, 3);
+  return;
+}
+)");
 }
 
 }  // namespace

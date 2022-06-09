@@ -4,6 +4,7 @@
 
 #include "chrome/updater/policy/dm_policy_manager.h"
 
+#include "base/enterprise_util.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/unittest_util.h"
@@ -107,7 +108,9 @@ TEST(DMPolicyManager, PolicyManagerFromEmptyProto) {
 
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
-  EXPECT_TRUE(policy_manager->IsManaged());
+#if !defined(OS_LINUX)
+  EXPECT_EQ(policy_manager->IsManaged(), base::IsMachineExternallyManaged());
+#endif  // OS_LINUX
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
   int last_check_period_minutes = 0;
@@ -181,7 +184,9 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
 
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
-  EXPECT_TRUE(policy_manager->IsManaged());
+#if !defined(OS_LINUX)
+  EXPECT_EQ(policy_manager->IsManaged(), base::IsMachineExternallyManaged());
+#endif  // OS_LINUX
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
   int last_check_period_minutes = 0;
@@ -191,9 +196,9 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
 
   UpdatesSuppressedTimes suppressed_times;
   EXPECT_TRUE(policy_manager->GetUpdatesSuppressedTimes(&suppressed_times));
-  EXPECT_EQ(suppressed_times.start_hour, 9);
-  EXPECT_EQ(suppressed_times.start_minute, 30);
-  EXPECT_EQ(suppressed_times.duration_minute, 120);
+  EXPECT_EQ(suppressed_times.start_hour_, 9);
+  EXPECT_EQ(suppressed_times.start_minute_, 30);
+  EXPECT_EQ(suppressed_times.duration_minute_, 120);
 
   std::string download_preference;
   EXPECT_TRUE(
@@ -271,7 +276,7 @@ TEST(DMPolicyManager, PolicyManagerFromDMResponse) {
 
   auto policy_manager(std::make_unique<DMPolicyManager>(omaha_settings));
 
-  EXPECT_TRUE(policy_manager->IsManaged());
+  EXPECT_EQ(policy_manager->IsManaged(), base::IsMachineExternallyManaged());
   EXPECT_EQ(policy_manager->source(), "DeviceManagement");
 
   int last_check_period_minutes = 0;

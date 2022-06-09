@@ -9,23 +9,23 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
+#include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager_observer.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/model/string_ordinal.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -57,13 +57,17 @@ class AppLauncherHandler
     : public content::WebUIMessageHandler,
       public extensions::ExtensionUninstallDialog::Delegate,
       public ExtensionEnableFlowDelegate,
-      public content::NotificationObserver,
+      public extensions::InstallObserver,
       public web_app::AppRegistrarObserver,
       public web_app::WebAppPolicyManagerObserver,
       public extensions::ExtensionRegistryObserver {
  public:
   AppLauncherHandler(extensions::ExtensionService* extension_service,
                      web_app::WebAppProvider* web_app_provider);
+
+  AppLauncherHandler(const AppLauncherHandler&) = delete;
+  AppLauncherHandler& operator=(const AppLauncherHandler&) = delete;
+
   ~AppLauncherHandler() override;
 
   void CreateWebAppInfo(const web_app::AppId& app_id,
@@ -82,10 +86,9 @@ class AppLauncherHandler
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // extensions::InstallObserver
+  void OnAppsReordered(
+      const absl::optional<std::string>& extension_id) override;
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -99,6 +102,8 @@ class AppLauncherHandler
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
+  void OnWebAppInstallTimeChanged(const web_app::AppId& app_id,
+                                  const base::Time& time) override;
   void OnWebAppWillBeUninstalled(const web_app::AppId& app_id) override;
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
@@ -188,7 +193,7 @@ class AppLauncherHandler
 
   // Records result to UMA after OS Hooks are installed.
   void OnOsHooksInstalled(const web_app::AppId& app_id,
-                          const web_app::OsHooksResults os_hooks_results);
+                          const web_app::OsHooksErrors os_hooks_errors);
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
@@ -222,22 +227,23 @@ class AppLauncherHandler
 
   // The apps are represented in the extensions model, which
   // outlives us since it's owned by our containing profile.
-  extensions::ExtensionService* const extension_service_;
+  const raw_ptr<extensions::ExtensionService> extension_service_;
 
   // The apps are represented in the web apps model, which outlives us since
   // it's owned by our containing profile.
-  web_app::WebAppProvider* const web_app_provider_;
+  const raw_ptr<web_app::WebAppProvider> web_app_provider_;
 
-  base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppRegistrar,
+                          web_app::AppRegistrarObserver>
       web_apps_observation_{this};
 
   base::ScopedObservation<web_app::WebAppPolicyManager,
                           web_app::WebAppPolicyManagerObserver>
       web_apps_policy_manager_observation_{this};
 
-  // We monitor changes to the extension system so that we can reload the apps
-  // when necessary.
-  content::NotificationRegistrar registrar_;
+  base::ScopedObservation<extensions::InstallTracker,
+                          extensions::InstallObserver>
+      install_tracker_observation_{this};
 
   // Monitor extension preference changes so that the Web UI can be notified.
   PrefChangeRegistrar extension_pref_change_registrar_;
@@ -279,8 +285,6 @@ class AppLauncherHandler
 
   // Used for passing callbacks.
   base::WeakPtrFactory<AppLauncherHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NTP_APP_LAUNCHER_HANDLER_H_

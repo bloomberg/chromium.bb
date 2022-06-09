@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -43,6 +44,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // outlive this object.
   SyncServiceCrypto(Delegate* delegate,
                     TrustedVaultClient* trusted_vault_client);
+
+  SyncServiceCrypto(const SyncServiceCrypto&) = delete;
+  SyncServiceCrypto& operator=(const SyncServiceCrypto&) = delete;
+
   ~SyncServiceCrypto() override;
 
   void Reset();
@@ -78,8 +83,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   void OnPassphraseAccepted() override;
   void OnTrustedVaultKeyRequired() override;
   void OnTrustedVaultKeyAccepted() override;
-  void OnBootstrapTokenUpdated(const std::string& bootstrap_token,
-                               BootstrapTokenType type) override;
+  void OnBootstrapTokenUpdated(const std::string& bootstrap_token) override;
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnCryptographerStateChanged(Cryptographer* cryptographer,
@@ -94,8 +98,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // TrustedVaultClient::Observer implementation.
   void OnTrustedVaultKeysChanged() override;
   void OnTrustedVaultRecoverabilityChanged() override;
-
-  bool encryption_pending() const { return state_.encryption_pending; }
 
  private:
   enum class RequiredUserAction {
@@ -143,10 +145,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // TrustedVaultClient::GetIsRecoverabilityDegraded().
   void GetIsRecoverabilityDegradedCompleted(bool is_recoverability_degraded);
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // Never null and guaranteed to outlive us.
-  TrustedVaultClient* const trusted_vault_client_;
+  const raw_ptr<TrustedVaultClient> trusted_vault_client_;
 
   // All the mutable state is wrapped in a struct so that it can be easily
   // reset to its default values.
@@ -157,7 +159,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     State& operator=(State&& other) = default;
 
     // Not-null when the engine is initialized.
-    SyncEngine* engine = nullptr;
+    raw_ptr<SyncEngine> engine = nullptr;
 
     // Populated when the engine is initialized.
     CoreAccountInfo account_info;
@@ -173,11 +175,6 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
     // Whether we want to encrypt everything.
     bool encrypt_everything = false;
-
-    // Whether we're waiting for an attempt to encryption all sync data to
-    // complete. We track this at this layer in order to allow the user to
-    // cancel if they e.g. don't remember their explicit passphrase.
-    bool encryption_pending = false;
 
     // We cache the cryptographer's pending keys whenever
     // NotifyPassphraseRequired is called. This way, before the UI calls
@@ -214,9 +211,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncServiceCrypto> weak_factory_{this};
+  bool initial_trusted_vault_recoverability_logged_to_uma_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SyncServiceCrypto);
+  base::WeakPtrFactory<SyncServiceCrypto> weak_factory_{this};
 };
 
 }  // namespace syncer

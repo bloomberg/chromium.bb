@@ -7,9 +7,8 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "build/build_config.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 
 class GURL;
 class PrefService;
@@ -36,10 +35,11 @@ void ShowManageSSLCertificates(content::WebContents* web_contents);
 bool FixupAndValidateStartupPage(const std::string& url_string,
                                  GURL* fixed_url);
 
-base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor);
+base::RefCountedMemory* GetFaviconResourceBytes(
+    ui::ResourceScaleFactor scale_factor);
 
 base::RefCountedMemory* GetPrivacySandboxFaviconResourceBytes(
-    ui::ScaleFactor scale_factor);
+    ui::ResourceScaleFactor scale_factor);
 
 #if defined(OS_MAC)
 void ValidateSavedFonts(PrefService* prefs);

@@ -18,7 +18,6 @@ describeWithEnvironment('Imports entrypoints that are yet to be tested', () => {
     await import('../../../../../front_end/panels/developer_resources/developer_resources.js');
     await import('../../../../../front_end/models/heap_snapshot_model/heap_snapshot_model.js');
     await import('../../../../../front_end/entrypoints/heap_snapshot_worker/heap_snapshot_worker.js');
-    await import('../../../../../front_end/panels/help/help.js');
     await import('../../../../../front_end/panels/input/input.js');
     await import('../../../../../front_end/entrypoints/inspector_main/inspector_main.js');
     await import('../../../../../front_end/models/javascript_metadata/javascript_metadata.js');
@@ -26,7 +25,6 @@ describeWithEnvironment('Imports entrypoints that are yet to be tested', () => {
     await import('../../../../../front_end/panels/layers/layers.js');
     await import('../../../../../front_end/panels/lighthouse/lighthouse.js');
     await import('../../../../../front_end/entrypoints/main/main.js');
-    await import('../../../../../front_end/entrypoints/node_main/node_main.js');
     await import('../../../../../front_end/panels/performance_monitor/performance_monitor.js');
     await import('../../../../../front_end/panels/profiler/profiler.js');
     await import('../../../../../front_end/panels/protocol_monitor/protocol_monitor.js');
@@ -34,7 +32,6 @@ describeWithEnvironment('Imports entrypoints that are yet to be tested', () => {
     await import('../../../../../front_end/panels/screencast/screencast.js');
     await import('../../../../../front_end/panels/security/security.js');
     await import('../../../../../front_end/panels/settings/settings.js');
-    await import('../../../../../front_end/entrypoints/startup/startup.js');
     await import('../../../../../front_end/entrypoints/wasmparser_worker/wasmparser_worker.js');
     await import('../../../../../front_end/panels/web_audio/web_audio.js');
     await import('../../../../../front_end/panels/webauthn/webauthn.js');

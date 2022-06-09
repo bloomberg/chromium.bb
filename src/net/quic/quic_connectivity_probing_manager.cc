@@ -63,7 +63,7 @@ QuicConnectivityProbingManager::QuicConnectivityProbingManager(
       task_runner_(task_runner),
       last_self_address_(IPEndPoint()),
       stateless_reset_received_(false) {
-  retransmit_timer_.SetTaskRunner(task_runner_);
+  retransmit_timer_.SetTaskRunner(task_runner_.get());
 }
 
 QuicConnectivityProbingManager::~QuicConnectivityProbingManager() {
@@ -275,7 +275,7 @@ void QuicConnectivityProbingManager::MaybeResendConnectivityProbingPacket() {
     NotifyDelegateProbeFailed();
     return;
   }
-  SendConnectivityProbingPacket(base::TimeDelta::FromMilliseconds(timeout_ms));
+  SendConnectivityProbingPacket(base::Milliseconds(timeout_ms));
 }
 
 }  // namespace net

@@ -6,6 +6,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
+import linearMemoryNavigatorStyles from './linearMemoryNavigator.css.js';
 
 const UIStrings = {
   /**
@@ -37,42 +38,45 @@ const str_ = i18n.i18n.registerUIStrings('ui/components/linear_memory_inspector/
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const {render, html} = LitHtml;
 
-
 export const enum Navigation {
   Backward = 'Backward',
   Forward = 'Forward',
 }
 
 export class AddressInputChangedEvent extends Event {
+  static readonly eventName = 'addressinputchanged';
   data: {address: string, mode: Mode};
 
   constructor(address: string, mode: Mode) {
-    super('addressinputchanged');
+    super(AddressInputChangedEvent.eventName);
     this.data = {address, mode};
   }
 }
 
 export class PageNavigationEvent extends Event {
+  static readonly eventName = 'pagenavigation';
   data: Navigation;
 
   constructor(navigation: Navigation) {
-    super('pagenavigation', {});
+    super(PageNavigationEvent.eventName, {});
     this.data = navigation;
   }
 }
 
 export class HistoryNavigationEvent extends Event {
+  static readonly eventName = 'historynavigation';
   data: Navigation;
 
   constructor(navigation: Navigation) {
-    super('historynavigation', {});
+    super(HistoryNavigationEvent.eventName, {});
     this.data = navigation;
   }
 }
 
 export class RefreshRequestedEvent extends Event {
+  static readonly eventName = 'refreshrequested';
   constructor() {
-    super('refreshrequested', {});
+    super(RefreshRequestedEvent.eventName, {});
   }
 }
 
@@ -92,24 +96,28 @@ export const enum Mode {
 }
 
 export class LinearMemoryNavigator extends HTMLElement {
-  static litTagName = LitHtml.literal`devtools-linear-memory-inspector-navigator`;
+  static readonly litTagName = LitHtml.literal`devtools-linear-memory-inspector-navigator`;
 
-  private readonly shadow = this.attachShadow({mode: 'open'});
-  private address = '0';
-  private error: string|undefined = undefined;
-  private valid = true;
-  private canGoBackInHistory = false;
-  private canGoForwardInHistory = false;
+  readonly #shadow = this.attachShadow({mode: 'open'});
+  #address = '0';
+  #error: string|undefined = undefined;
+  #valid = true;
+  #canGoBackInHistory = false;
+  #canGoForwardInHistory = false;
+
+  connectedCallback(): void {
+    this.#shadow.adoptedStyleSheets = [linearMemoryNavigatorStyles];
+  }
 
   set data(data: LinearMemoryNavigatorData) {
-    this.address = data.address;
-    this.error = data.error;
-    this.valid = data.valid;
-    this.canGoBackInHistory = data.canGoBackInHistory;
-    this.canGoForwardInHistory = data.canGoForwardInHistory;
+    this.#address = data.address;
+    this.#error = data.error;
+    this.#valid = data.valid;
+    this.#canGoBackInHistory = data.canGoBackInHistory;
+    this.#canGoForwardInHistory = data.canGoForwardInHistory;
     this.render();
 
-    const addressInput = this.shadow.querySelector<HTMLInputElement>('.address-input');
+    const addressInput = this.#shadow.querySelector<HTMLInputElement>('.address-input');
     if (addressInput) {
       if (data.mode === Mode.Submitted) {
         addressInput.blur();
@@ -123,71 +131,12 @@ export class LinearMemoryNavigator extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     const result = html`
-      <style>
-        .navigator {
-          min-height: 24px;
-          display: flex;
-          flex-wrap: nowrap;
-          justify-content: space-between;
-          overflow: hidden;
-          align-items: center;
-          background-color: var(--color-background);
-          color: var(--color-text-primary);
-        }
-
-        .navigator-item {
-          display: flex;
-          white-space: nowrap;
-          overflow: hidden;
-        }
-
-        .address-input {
-          text-align: center;
-          outline: none;
-          color: var(--color-text-primary);
-          border: 1px solid var(--color-background-elevation-2);
-          background: transparent;
-        }
-
-        .address-input.invalid {
-          color: var(--color-accent-red);
-        }
-
-        .navigator-button {
-          display: flex;
-          width: 20px;
-          height: 20px;
-          background: transparent;
-          overflow: hidden;
-          border: none;
-          padding: 0;
-          outline: none;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-        }
-
-        .navigator-button devtools-icon {
-          height: 14px;
-          width: 14px;
-          min-height: 14px;
-          min-width: 14px;
-        }
-
-        .navigator-button:enabled:hover devtools-icon {
-          --icon-color: var(--color-text-primary);
-        }
-
-        .navigator-button:enabled:focus devtools-icon {
-          --icon-color: var(--color-text-secondary);
-        }
-        </style>
       <div class="navigator">
         <div class="navigator-item">
           ${this.createButton({icon: 'ic_undo_16x16_icon', title: i18nString(UIStrings.goBackInAddressHistory),
-              event: new HistoryNavigationEvent(Navigation.Backward), enabled: this.canGoBackInHistory})}
+              event: new HistoryNavigationEvent(Navigation.Backward), enabled: this.#canGoBackInHistory})}
           ${this.createButton({icon: 'ic_redo_16x16_icon', title: i18nString(UIStrings.goForwardInAddressHistory),
-              event: new HistoryNavigationEvent(Navigation.Forward), enabled: this.canGoForwardInHistory})}
+              event: new HistoryNavigationEvent(Navigation.Forward), enabled: this.#canGoForwardInHistory})}
         </div>
         <div class="navigator-item">
           ${this.createButton({icon: 'ic_page_prev_16x16_icon', title: i18nString(UIStrings.previousPage),
@@ -200,18 +149,18 @@ export class LinearMemoryNavigator extends HTMLElement {
             event: new RefreshRequestedEvent(), enabled: true})}
       </div>
       `;
-      render(result, this.shadow, {host: this});
+      render(result, this.#shadow, {host: this});
     // clang-format on
   }
 
   private createAddressInput(): LitHtml.TemplateResult {
     const classMap = {
       'address-input': true,
-      invalid: !this.valid,
+      invalid: !this.#valid,
     };
     return html`
-      <input class=${LitHtml.Directives.classMap(classMap)} data-input="true" .value=${this.address}
-        title=${this.valid ? i18nString(UIStrings.enterAddress) : this.error} @change=${
+      <input class=${LitHtml.Directives.classMap(classMap)} data-input="true" .value=${this.#address}
+        title=${this.#valid ? i18nString(UIStrings.enterAddress) : this.#error} @change=${
         this.onAddressChange.bind(this, Mode.Submitted)} @input=${this.onAddressChange.bind(this, Mode.Edit)}/>`;
   }
 

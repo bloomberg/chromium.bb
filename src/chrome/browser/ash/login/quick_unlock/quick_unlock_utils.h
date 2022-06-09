@@ -17,7 +17,7 @@ class PrefRegistrySimple;
 class PrefService;
 class Profile;
 
-namespace chromeos {
+namespace ash {
 namespace quick_unlock {
 
 // Enumeration specifying the possible intervals before a strong auth
@@ -52,7 +52,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry);
 bool IsPinDisabledByPolicy(PrefService* pref_service);
 
 // Returns true if the quick unlock feature flag is present.
-bool IsPinEnabled(PrefService* pref_service);
+// TODO(crbug/1111541): Remove this function because it always returns true.
+bool IsPinEnabled();
 
 // Returns true if the fingerprint is supported by the device.
 bool IsFingerprintSupported();
@@ -81,16 +82,21 @@ void DisablePinByPolicyForTesting(bool disable);
 void AddFingerprintResources(content::WebUIDataSource* html_source);
 
 }  // namespace quick_unlock
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
+namespace chromeos {
 namespace quick_unlock {
-using ::chromeos::quick_unlock::EnabledForTesting;
-using ::chromeos::quick_unlock::IsPinDisabledByPolicy;
-using ::chromeos::quick_unlock::IsPinEnabled;
+using ::ash::quick_unlock::AddFingerprintResources;
+using ::ash::quick_unlock::DisablePinByPolicyForTesting;
+using ::ash::quick_unlock::EnabledForTesting;
+using ::ash::quick_unlock::FingerprintLocation;
+using ::ash::quick_unlock::GetFingerprintLocation;
+using ::ash::quick_unlock::IsFingerprintEnabled;
+using ::ash::quick_unlock::IsPinDisabledByPolicy;
+using ::ash::quick_unlock::IsPinEnabled;
 }  // namespace quick_unlock
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_UTILS_H_

@@ -10,10 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/onboarding_result.h"
@@ -124,8 +125,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   friend class TriggerScriptCoordinatorTest;
 
   // From content::WebContentsObserver.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
@@ -134,11 +134,14 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   void ShowTriggerScript(int index);
   void HideTriggerScript();
   void CheckDynamicTriggerConditions();
-  void OnDynamicTriggerConditionsEvaluated(bool is_out_of_schedule);
+  void OnDynamicTriggerConditionsEvaluated(
+      bool is_out_of_schedule,
+      absl::optional<base::TimeTicks> start_time);
   void OnGetTriggerScripts(int http_status, const std::string& response);
   GURL GetCurrentURL() const;
   void OnEffectiveVisibilityChanged();
   void OnOnboardingFinished(bool onboardingShown, OnboardingResult result);
+  void OnUiTimeoutReached();
 
   // Can be invoked to trigger an immediate check of the trigger condition,
   // reusing the dynamic results of the last time. Does nothing if there are no
@@ -156,7 +159,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   TriggerScriptProto::TriggerUIType GetTriggerUiTypeForVisibleScript() const;
 
   // Delegate used to access settings and show the onboarding.
-  StarterPlatformDelegate* starter_delegate_ = nullptr;
+  raw_ptr<StarterPlatformDelegate> starter_delegate_ = nullptr;
 
   // Delegate used to show and hide the UI.
   std::unique_ptr<UiDelegate> ui_delegate_;
@@ -213,8 +216,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   std::unique_ptr<DynamicTriggerConditions> dynamic_trigger_conditions_;
 
   // The time between consecutive evaluations of dynamic trigger conditions.
-  base::TimeDelta trigger_condition_check_interval_ =
-      base::TimeDelta::FromMilliseconds(1000);
+  base::TimeDelta trigger_condition_check_interval_ = base::Milliseconds(1000);
 
   // The number of times the trigger condition may be evaluated. If this reaches
   // 0, the trigger script stops with |TRIGGER_CONDITION_TIMEOUT|.
@@ -230,7 +232,7 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
   int64_t initial_trigger_condition_evaluations_ = -1;
 
   // The UKM recorder to use for metrics.
-  ukm::UkmRecorder* const ukm_recorder_;
+  const raw_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   // The UKM source id to record. This can change over time as the user
   // navigates around, but will always point to a source-id on a supported
@@ -243,6 +245,12 @@ class TriggerScriptCoordinator : public content::WebContentsObserver {
 
   // True while the onboarding is being displayed.
   bool waiting_for_onboarding_ = false;
+
+  // Used to automatically hide the UI after a set amount of time, if started.
+  // This behaves the same as NOT_NOW; thus, the UI may be reshown the next
+  // time the trigger condition matches. The timeout applies each time the UI
+  // is shown, but will be disabled if the user starts interacting with the UI.
+  base::OneShotTimer ui_timeout_timer_;
 
   base::WeakPtrFactory<TriggerScriptCoordinator> weak_ptr_factory_{this};
 };

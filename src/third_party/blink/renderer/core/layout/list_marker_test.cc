@@ -11,11 +11,7 @@ namespace blink {
 
 // We don't test legacy layout because it's deprecated, and we don't want to
 // complicate the test with the legacy LayoutListMarker here.
-class ListMarkerTest : private ScopedCSSAtRuleCounterStyleForTest,
-                       public NGLayoutTest {
- public:
-  ListMarkerTest() : ScopedCSSAtRuleCounterStyleForTest(true) {}
-
+class ListMarkerTest : public NGLayoutTest {
  protected:
   LayoutObject* GetMarker(const char* list_item_id) {
     LayoutNGListItem* list_item =
@@ -313,6 +309,16 @@ TEST_F(ListMarkerTest, ModifyShadowDOMWithOwnCounterStyles) {
   EXPECT_EQ("1. ", GetMarkerText("decimal"));
   EXPECT_EQ("X. ", GetMarkerText("foo"));
   EXPECT_EQ("D. ", GetMarkerText(shadow2, "shadow-foo"));
+}
+
+TEST_F(ListMarkerTest, WidthOfSymbolForFontSizeZero) {
+  InsertStyleElement("li { font-size: 0px; }");
+  SetBodyInnerHTML("<li id=target>a</li>");
+  const auto& target = *GetElementById("target");
+  const auto& target_layout_object = *target.GetLayoutObject();
+
+  EXPECT_EQ(LayoutUnit(),
+            ListMarker::WidthOfSymbol(target_layout_object.StyleRef()));
 }
 
 }  // namespace blink

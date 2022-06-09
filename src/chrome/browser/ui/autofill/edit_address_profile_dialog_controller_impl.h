@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_EDIT_ADDRESS_PROFILE_DIALOG_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_EDIT_ADDRESS_PROFILE_DIALOG_CONTROLLER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -12,6 +13,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
+
+class AutofillBubbleBase;
 
 // The controller functionality for EditAddressProfileView.
 class EditAddressProfileDialogControllerImpl
@@ -45,11 +48,20 @@ class EditAddressProfileDialogControllerImpl
       const AutofillProfile& profile_with_edits) override;
   void OnDialogClosed() override;
 
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
+
  private:
   explicit EditAddressProfileDialogControllerImpl(
       content::WebContents* web_contents);
   friend class content::WebContentsUserData<
       EditAddressProfileDialogControllerImpl>;
+
+  // Remove the |dialog_view_| and hide the dialog.
+  void HideDialog();
+
+  // nullptr if no dialog is currently shown.
+  raw_ptr<AutofillBubbleBase> dialog_view_ = nullptr;
 
   // Callback to run once the user makes a decision with respect to saving the
   // address profile currently being edited.

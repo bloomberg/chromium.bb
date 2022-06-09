@@ -21,6 +21,7 @@
 
 #if defined(DAWN_PLATFORM_WINDOWS)
 #    include <windows.ui.core.h>
+#    include <windows.ui.xaml.controls.h>
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
 
 #if defined(DAWN_USE_X11)
@@ -29,31 +30,55 @@
 
 namespace dawn_native {
 
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        Surface::Type value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s) {
+        switch (value) {
+            case Surface::Type::MetalLayer:
+                s->Append("MetalLayer");
+                break;
+            case Surface::Type::WindowsHWND:
+                s->Append("WindowsHWND");
+                break;
+            case Surface::Type::WindowsCoreWindow:
+                s->Append("WindowsCoreWindow");
+                break;
+            case Surface::Type::WindowsSwapChainPanel:
+                s->Append("WindowsSwapChainPanel");
+                break;
+            case Surface::Type::Xlib:
+                s->Append("Xlib");
+                break;
+        }
+        return {true};
+    }
+
 #if defined(DAWN_ENABLE_BACKEND_METAL)
     bool InheritsFromCAMetalLayer(void* obj);
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 
     MaybeError ValidateSurfaceDescriptor(const InstanceBase* instance,
                                          const SurfaceDescriptor* descriptor) {
-        if (descriptor->nextInChain == nullptr) {
-            return DAWN_VALIDATION_ERROR("Surface cannot be created with just the base descriptor");
-        }
+        DAWN_INVALID_IF(descriptor->nextInChain == nullptr,
+                        "Surface cannot be created with %s. nextInChain is not specified.",
+                        descriptor);
 
         DAWN_TRY(ValidateSingleSType(descriptor->nextInChain,
                                      wgpu::SType::SurfaceDescriptorFromMetalLayer,
                                      wgpu::SType::SurfaceDescriptorFromWindowsHWND,
                                      wgpu::SType::SurfaceDescriptorFromWindowsCoreWindow,
+                                     wgpu::SType::SurfaceDescriptorFromWindowsSwapChainPanel,
                                      wgpu::SType::SurfaceDescriptorFromXlib));
 
 #if defined(DAWN_ENABLE_BACKEND_METAL)
         const SurfaceDescriptorFromMetalLayer* metalDesc = nullptr;
         FindInChain(descriptor->nextInChain, &metalDesc);
-        if (!metalDesc) {
-            return DAWN_VALIDATION_ERROR("Unsupported sType");
-        }
-        // Check that the layer is a CAMetalLayer (or a derived class).
-        if (!InheritsFromCAMetalLayer(metalDesc->layer)) {
-            return DAWN_VALIDATION_ERROR("layer must be a CAMetalLayer");
+        if (metalDesc) {
+            // Check that the layer is a CAMetalLayer (or a derived class).
+            DAWN_INVALID_IF(!InheritsFromCAMetalLayer(metalDesc->layer),
+                            "Layer must be a CAMetalLayer");
+            return {};
         }
 #endif  // defined(DAWN_ENABLE_BACKEND_METAL)
 
@@ -62,9 +87,7 @@ namespace dawn_native {
         const SurfaceDescriptorFromWindowsHWND* hwndDesc = nullptr;
         FindInChain(descriptor->nextInChain, &hwndDesc);
         if (hwndDesc) {
-            if (IsWindow(static_cast<HWND>(hwndDesc->hwnd)) == 0) {
-                return DAWN_VALIDATION_ERROR("Invalid HWND");
-            }
+            DAWN_INVALID_IF(IsWindow(static_cast<HWND>(hwndDesc->hwnd)) == 0, "Invalid HWND");
             return {};
         }
 #    endif  // defined(DAWN_PLATFORM_WIN32)
@@ -73,39 +96,47 @@ namespace dawn_native {
         if (coreWindowDesc) {
             // Validate the coreWindow by query for ICoreWindow interface
             ComPtr<ABI::Windows::UI::Core::ICoreWindow> coreWindow;
-            if (coreWindowDesc->coreWindow == nullptr ||
-                FAILED(static_cast<IUnknown*>(coreWindowDesc->coreWindow)
-                           ->QueryInterface(IID_PPV_ARGS(&coreWindow)))) {
-                return DAWN_VALIDATION_ERROR("Invalid CoreWindow");
-            }
+            DAWN_INVALID_IF(coreWindowDesc->coreWindow == nullptr ||
+                                FAILED(static_cast<IUnknown*>(coreWindowDesc->coreWindow)
+                                           ->QueryInterface(IID_PPV_ARGS(&coreWindow))),
+                            "Invalid CoreWindow");
             return {};
         }
-        return DAWN_VALIDATION_ERROR("Unsupported sType");
+        const SurfaceDescriptorFromWindowsSwapChainPanel* swapChainPanelDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &swapChainPanelDesc);
+        if (swapChainPanelDesc) {
+            // Validate the swapChainPanel by querying for ISwapChainPanel interface
+            ComPtr<ABI::Windows::UI::Xaml::Controls::ISwapChainPanel> swapChainPanel;
+            DAWN_INVALID_IF(swapChainPanelDesc->swapChainPanel == nullptr ||
+                                FAILED(static_cast<IUnknown*>(swapChainPanelDesc->swapChainPanel)
+                                           ->QueryInterface(IID_PPV_ARGS(&swapChainPanel))),
+                            "Invalid SwapChainPanel");
+            return {};
+        }
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
 
 #if defined(DAWN_USE_X11)
         const SurfaceDescriptorFromXlib* xDesc = nullptr;
         FindInChain(descriptor->nextInChain, &xDesc);
-        if (!xDesc) {
-            return DAWN_VALIDATION_ERROR("Unsupported sType");
-        }
-        // Check the validity of the window by calling a getter function on the window that
-        // returns a status code. If the window is bad the call return a status of zero. We
-        // need to set a temporary X11 error handler while doing this because the default
-        // X11 error handler exits the program on any error.
-        XErrorHandler oldErrorHandler =
-            XSetErrorHandler([](Display*, XErrorEvent*) { return 0; });
-        XWindowAttributes attributes;
-        int status = XGetWindowAttributes(reinterpret_cast<Display*>(xDesc->display),
-                                          xDesc->window, &attributes);
-        XSetErrorHandler(oldErrorHandler);
+        if (xDesc) {
+            // Check the validity of the window by calling a getter function on the window that
+            // returns a status code. If the window is bad the call return a status of zero. We
+            // need to set a temporary X11 error handler while doing this because the default
+            // X11 error handler exits the program on any error.
+            XErrorHandler oldErrorHandler =
+                XSetErrorHandler([](Display*, XErrorEvent*) { return 0; });
+            XWindowAttributes attributes;
+            int status = XGetWindowAttributes(reinterpret_cast<Display*>(xDesc->display),
+                                              xDesc->window, &attributes);
+            XSetErrorHandler(oldErrorHandler);
 
-        if (status == 0) {
-            return DAWN_VALIDATION_ERROR("Invalid X Window");
+            DAWN_INVALID_IF(status == 0, "Invalid X Window");
+            return {};
         }
 #endif  // defined(DAWN_USE_X11)
 
-        return {};
+        return DAWN_FORMAT_VALIDATION_ERROR("Unsupported sType (%s)",
+                                            descriptor->nextInChain->sType);
     }
 
     Surface::Surface(InstanceBase* instance, const SurfaceDescriptor* descriptor)
@@ -114,10 +145,12 @@ namespace dawn_native {
         const SurfaceDescriptorFromMetalLayer* metalDesc = nullptr;
         const SurfaceDescriptorFromWindowsHWND* hwndDesc = nullptr;
         const SurfaceDescriptorFromWindowsCoreWindow* coreWindowDesc = nullptr;
+        const SurfaceDescriptorFromWindowsSwapChainPanel* swapChainPanelDesc = nullptr;
         const SurfaceDescriptorFromXlib* xDesc = nullptr;
         FindInChain(descriptor->nextInChain, &metalDesc);
         FindInChain(descriptor->nextInChain, &hwndDesc);
         FindInChain(descriptor->nextInChain, &coreWindowDesc);
+        FindInChain(descriptor->nextInChain, &swapChainPanelDesc);
         FindInChain(descriptor->nextInChain, &xDesc);
         ASSERT(metalDesc || hwndDesc || xDesc);
         if (metalDesc) {
@@ -131,6 +164,11 @@ namespace dawn_native {
 #if defined(DAWN_PLATFORM_WINDOWS)
             mType = Type::WindowsCoreWindow;
             mCoreWindow = static_cast<IUnknown*>(coreWindowDesc->coreWindow);
+#endif  // defined(DAWN_PLATFORM_WINDOWS)
+        } else if (swapChainPanelDesc) {
+#if defined(DAWN_PLATFORM_WINDOWS)
+            mType = Type::WindowsSwapChainPanel;
+            mSwapChainPanel = static_cast<IUnknown*>(swapChainPanelDesc->swapChainPanel);
 #endif  // defined(DAWN_PLATFORM_WINDOWS)
         } else if (xDesc) {
             mType = Type::Xlib;
@@ -182,6 +220,15 @@ namespace dawn_native {
         ASSERT(mType == Type::WindowsCoreWindow);
 #if defined(DAWN_PLATFORM_WINDOWS)
         return mCoreWindow.Get();
+#else
+        return nullptr;
+#endif
+    }
+
+    IUnknown* Surface::GetSwapChainPanel() const {
+        ASSERT(mType == Type::WindowsSwapChainPanel);
+#if defined(DAWN_PLATFORM_WINDOWS)
+        return mSwapChainPanel.Get();
 #else
         return nullptr;
 #endif

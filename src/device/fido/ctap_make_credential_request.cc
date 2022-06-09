@@ -159,6 +159,11 @@ absl::optional<CtapMakeCredentialRequest> CtapMakeCredentialRequest::Parse(
           return absl::nullopt;
         }
         request.cred_blob = extension.second.GetBytestring();
+      } else if (extension_name == kExtensionMinPINLength) {
+        if (!extension.second.is_bool()) {
+          return absl::nullopt;
+        }
+        request.min_pin_length_requested = extension.second.GetBool();
       }
     }
   }
@@ -293,6 +298,10 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
     extensions.emplace(kExtensionCredBlob, *request.cred_blob);
   }
 
+  if (request.min_pin_length_requested) {
+    extensions.emplace(kExtensionMinPINLength, true);
+  }
+
   if (!extensions.empty()) {
     cbor_map[cbor::Value(6)] = cbor::Value(std::move(extensions));
   }
@@ -337,5 +346,22 @@ AsCTAPRequestValuePair(const CtapMakeCredentialRequest& request) {
   return std::make_pair(CtapRequestCommand::kAuthenticatorMakeCredential,
                         cbor::Value(std::move(cbor_map)));
 }
+
+MakeCredentialOptions::MakeCredentialOptions() = default;
+MakeCredentialOptions::~MakeCredentialOptions() = default;
+MakeCredentialOptions::MakeCredentialOptions(const MakeCredentialOptions&) =
+    default;
+MakeCredentialOptions::MakeCredentialOptions(
+    const AuthenticatorSelectionCriteria& authenticator_selection_criteria)
+    : authenticator_attachment(
+          authenticator_selection_criteria.authenticator_attachment),
+      resident_key(authenticator_selection_criteria.resident_key),
+      user_verification(
+          authenticator_selection_criteria.user_verification_requirement) {}
+MakeCredentialOptions::MakeCredentialOptions(MakeCredentialOptions&&) = default;
+MakeCredentialOptions& MakeCredentialOptions::operator=(
+    const MakeCredentialOptions&) = default;
+MakeCredentialOptions& MakeCredentialOptions::operator=(
+    MakeCredentialOptions&&) = default;
 
 }  // namespace device

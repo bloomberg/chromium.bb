@@ -58,7 +58,7 @@ std::u16string WebClient::GetLocalizedString(int message_id) const {
 
 base::StringPiece WebClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ResourceScaleFactor scale_factor) const {
   return base::StringPiece();
 }
 
@@ -79,11 +79,6 @@ NSString* WebClient::GetDocumentStartScriptForAllFrames(
 NSString* WebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return @"";
-}
-
-bool WebClient::IsLegacyTLSAllowedForHost(WebState* web_state,
-                                          const std::string& hostname) {
-  return false;
 }
 
 void WebClient::PrepareErrorPage(WebState* web_state,
@@ -110,13 +105,11 @@ bool WebClient::EnableLongPressUIContextMenu() const {
   return false;
 }
 
-bool WebClient::ForceMobileVersionByDefault(const GURL&) {
-  return false;
-}
-
 bool WebClient::RestoreSessionFromCache(web::WebState* web_state) const {
   return false;
 }
+
+void WebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {}
 
 UserAgentType WebClient::GetDefaultUserAgent(id<UITraitEnvironment> web_view,
                                              const GURL& url) {

@@ -186,6 +186,7 @@ class Error {
     // Cast streaming errors
     kTypeError,
     kUnknownCodec,
+    kInvalidCodecParameter,
     kSocketFailure,
     kUnencryptedOffer,
     kRemotingNotSupported,

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_low_energy_defs_win.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -47,6 +46,11 @@ class DEVICE_BLUETOOTH_EXPORT DeviceRegistryPropertyValue {
       DWORD property_type,
       std::unique_ptr<uint8_t[]> value,
       size_t value_size);
+
+  DeviceRegistryPropertyValue(const DeviceRegistryPropertyValue&) = delete;
+  DeviceRegistryPropertyValue& operator=(const DeviceRegistryPropertyValue&) =
+      delete;
+
   ~DeviceRegistryPropertyValue();
 
   // Returns the vaue type a REG_xxx value (e.g. REG_SZ, REG_DWORD, ...)
@@ -61,8 +65,6 @@ class DEVICE_BLUETOOTH_EXPORT DeviceRegistryPropertyValue {
 
   DWORD property_type_;
   std::unique_ptr<uint8_t[]> value_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
 };
 
 // Represents the value associated to a DEVPROPKEY.
@@ -75,6 +77,10 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
   DevicePropertyValue(DEVPROPTYPE property_type,
                       std::unique_ptr<uint8_t[]> value,
                       size_t value_size);
+
+  DevicePropertyValue(const DevicePropertyValue&) = delete;
+  DevicePropertyValue& operator=(const DevicePropertyValue&) = delete;
+
   ~DevicePropertyValue();
 
   DEVPROPTYPE property_type() const { return property_type_; }
@@ -85,8 +91,6 @@ class DEVICE_BLUETOOTH_EXPORT DevicePropertyValue {
   DEVPROPTYPE property_type_;
   std::unique_ptr<uint8_t[]> value_;
   size_t value_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevicePropertyValue);
 };
 
 struct DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyServiceInfo {

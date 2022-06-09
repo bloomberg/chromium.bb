@@ -38,15 +38,16 @@ WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::Run() {
   using Params =
       extensions::api::webrtc_desktop_capture_private::ChooseDesktopMedia
           ::Params;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetSize() > 0);
-
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &request_id_));
+  EXTENSION_FUNCTION_VALIDATE(args().size() > 0);
+  const auto& request_id_value = args()[0];
+  EXTENSION_FUNCTION_VALIDATE(request_id_value.is_int());
+  request_id_ = request_id_value.GetInt();
   DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(source_process_id(),
                                                             request_id_, this);
 
-  args_->Remove(0, NULL);
+  mutable_args().erase(args().begin());
 
-  std::unique_ptr<Params> params = Params::Create(*args_);
+  std::unique_ptr<Params> params = Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
@@ -57,7 +58,7 @@ WebrtcDesktopCapturePrivateChooseDesktopMediaFunction::Run() {
     return RespondNow(Error(kTargetNotFoundError));
   }
 
-  GURL origin = rfh->GetLastCommittedURL().GetOrigin();
+  GURL origin = rfh->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kAllowHttpScreenCapture) &&
       !network::IsUrlPotentiallyTrustworthy(origin)) {

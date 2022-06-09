@@ -11,12 +11,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_utils_mac.h"
 #import "media/capture/video/mac/video_capture_device_decklink_mac.h"
@@ -112,7 +112,7 @@ int VideoCaptureDeviceFactoryMac::GetGetDevicesInfoRetryCount() {
   return get_device_descriptors_retry_count;
 }
 
-std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::CreateDevice(
+VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryMac::CreateDevice(
     const VideoCaptureDeviceDescriptor& descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(descriptor.capture_api, VideoCaptureApi::UNKNOWN);
@@ -130,7 +130,9 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryMac::CreateDevice(
       capture_device.reset();
     }
   }
-  return std::unique_ptr<VideoCaptureDevice>(std::move(capture_device));
+  return capture_device ? VideoCaptureErrorOrDevice(std::move(capture_device))
+                        : VideoCaptureErrorOrDevice(
+                              VideoCaptureError::kMacSetCaptureDeviceFailed);
 }
 
 void VideoCaptureDeviceFactoryMac::GetDevicesInfo(

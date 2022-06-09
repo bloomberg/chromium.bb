@@ -5,6 +5,7 @@
 #include "components/exo/wayland/wayland_display_observer.h"
 
 #include <wayland-server-core.h>
+#include <xdg-output-unstable-v1-server-protocol.h>
 
 #include <string>
 
@@ -19,16 +20,16 @@ namespace wayland {
 WaylandDisplayHandler::WaylandDisplayHandler(WaylandDisplayOutput* output,
                                              wl_resource* output_resource)
     : output_(output), output_resource_(output_resource) {
-  output_->RegisterOutput(output_resource_);
-  display::Screen::GetScreen()->AddObserver(this);
-
-  // Adding itself as an observer will send the initial display metrics.
-  AddObserver(this);
 }
 
 WaylandDisplayHandler::~WaylandDisplayHandler() {
   output_->UnregisterOutput(output_resource_);
-  display::Screen::GetScreen()->RemoveObserver(this);
+}
+
+void WaylandDisplayHandler::Initialize() {
+  // Adding itself as an observer will send the initial display metrics.
+  AddObserver(this);
+  output_->RegisterOutput(output_resource_);
 }
 
 void WaylandDisplayHandler::AddObserver(WaylandDisplayObserver* observer) {
@@ -80,6 +81,25 @@ void WaylandDisplayHandler::OnDisplayMetricsChanged(
     wl_client_flush(wl_resource_get_client(output_resource_));
   }
 }
+
+void WaylandDisplayHandler::OnXdgOutputCreated(
+    wl_resource* xdg_output_resource) {
+  DCHECK(!xdg_output_resource_);
+  xdg_output_resource_ = xdg_output_resource;
+
+  display::Display display;
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(output_->id(),
+                                                             &display)) {
+    return;
+  }
+  OnDisplayMetricsChanged(display, 0xFFFFFFFF);
+}
+
+void WaylandDisplayHandler::UnsetXdgOutputResource() {
+  DCHECK(xdg_output_resource_);
+  xdg_output_resource_ = nullptr;
+}
+
 bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
                                                uint32_t changed_metrics) {
   if (!output_resource_)
@@ -108,37 +128,57 @@ bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
   const std::string& make = info.manufacturer_id();
   const std::string& model = info.product_id();
 
-  gfx::Rect bounds = info.bounds_in_native();
+  // TODO(oshima): The current Wayland protocol currently has no way of
+  // informing a client about any overscan the display has, and what the safe
+  // area of the display might be. We may want to make a change to the
+  // aura-shell (zaura_output) protocol, or to upstream a change to the
+  // xdg-output (currently unstable) protocol to add that information.
 
   // |origin| is used in wayland service to identify the workspace
   // the pixel size will be applied.
-  gfx::Point origin = display.bounds().origin();
-  // Don't use ManagedDisplayInfo.bound_in_native() because it
-  // has raw information before overscan, rotation applied.
-  gfx::Size size_in_pixel = display.GetSizeInPixel();
+  const gfx::Point origin = display.bounds().origin();
+
+  // |physical_size_px| is the physical resolution of the display in pixels.
+  // The value should not include any overscan insets or display rotation,
+  // except for any panel orientation adjustment.
+  const gfx::Size physical_size_px = info.bounds_in_native().size();
+
+  // |physical_size_mm| is our best-effort approximation for the physical size
+  // of the display in millimeters, given the display resolution and DPI. The
+  // value should not include any overscan insets or display rotation, except
+  // for any panel orientation adjustment.
+  const gfx::Size physical_size_mm =
+      ScaleToRoundedSize(physical_size_px, kInchInMm / info.device_dpi());
 
   // Use panel_rotation otherwise some X apps will refuse to take events from
   // outside the "visible" region.
-  wl_output_send_geometry(
-      output_resource_, origin.x(), origin.y(),
-      static_cast<int>(kInchInMm * size_in_pixel.width() / info.device_dpi()),
-      static_cast<int>(kInchInMm * size_in_pixel.height() / info.device_dpi()),
-      WL_OUTPUT_SUBPIXEL_UNKNOWN, make.empty() ? kUnknown : make.c_str(),
-      model.empty() ? kUnknown : model.c_str(),
-      OutputTransform(display.panel_rotation()));
-
-  if (wl_resource_get_version(output_resource_) >=
-      WL_OUTPUT_SCALE_SINCE_VERSION) {
-    // wl_output only supports integer scaling, so if device scale factor is
-    // fractional we need to round it up to the closest integer.
-    wl_output_send_scale(output_resource_,
-                         std::ceil(display.device_scale_factor()));
-  }
+  wl_output_send_geometry(output_resource_, origin.x(), origin.y(),
+                          physical_size_mm.width(), physical_size_mm.height(),
+                          WL_OUTPUT_SUBPIXEL_UNKNOWN,
+                          make.empty() ? kUnknown : make.c_str(),
+                          model.empty() ? kUnknown : model.c_str(),
+                          OutputTransform(display.panel_rotation()));
 
   // TODO(reveman): Send real list of modes.
   wl_output_send_mode(output_resource_,
                       WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
-                      bounds.width(), bounds.height(), static_cast<int>(60000));
+                      physical_size_px.width(), physical_size_px.height(),
+                      static_cast<int>(60000));
+
+  if (xdg_output_resource_) {
+    const gfx::Size logical_size = ScaleToRoundedSize(
+        physical_size_px, 1.0f / display.device_scale_factor());
+    zxdg_output_v1_send_logical_size(xdg_output_resource_, logical_size.width(),
+                                     logical_size.height());
+  } else {
+    if (wl_resource_get_version(output_resource_) >=
+        WL_OUTPUT_SCALE_SINCE_VERSION) {
+      // wl_output only supports integer scaling, so if device scale factor is
+      // fractional we need to round it up to the closest integer.
+      wl_output_send_scale(output_resource_,
+                           std::ceil(display.device_scale_factor()));
+    }
+  }
 
   return true;
 }

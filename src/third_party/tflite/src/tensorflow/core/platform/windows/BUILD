@@ -1,3 +1,5 @@
+load("//tensorflow:tensorflow.bzl", "filegroup")
+
 # Tensorflow windows-specific implementations of tensorflow/core/platform libraries.
 load(
     "//tensorflow:tensorflow.bzl",
@@ -12,13 +14,12 @@ package(
     default_visibility = [
         "//tensorflow/core/platform:__pkg__",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 cc_library(
     name = "env",
     srcs = [
-        "env.cc",
         "windows_file_system.cc",
         "windows_file_system.h",
         "//tensorflow/core/platform:env.cc",
@@ -49,7 +50,6 @@ cc_library(
         "//tensorflow/core/platform:cord",
         "//tensorflow/core/platform:denormal",
         "//tensorflow/core/platform:env_time",
-        "//tensorflow/core/platform:error",
         "//tensorflow/core/platform:errors",
         "//tensorflow/core/platform:file_statistics",
         "//tensorflow/core/platform:load_library",
@@ -72,6 +72,21 @@ cc_library(
         "//third_party/eigen3",
         "@com_google_absl//absl/time",
         "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "env_impl",
+    srcs = [
+        "env.cc",
+    ],
+    tags = [
+        "manual",
+        "no_oss",
+        "nobuilder",
+    ],
+    deps = [
+        ":env",
     ],
 )
 
@@ -141,7 +156,7 @@ cc_library(
     ],
     deps = [
         ":error_windows",
-        "//tensorflow/core/platform:error",
+        "//tensorflow/core/platform:errors",
         "//tensorflow/core/platform:logging",
     ],
 )

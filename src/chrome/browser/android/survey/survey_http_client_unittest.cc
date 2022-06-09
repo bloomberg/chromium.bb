@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,6 +140,10 @@ class MockResponseDoneCallback {
 };
 
 class SurveyHttpClientTest : public testing::Test {
+ public:
+  SurveyHttpClientTest(const SurveyHttpClientTest&) = delete;
+  SurveyHttpClientTest& operator=(const SurveyHttpClientTest&) = delete;
+
  protected:
   SurveyHttpClientTest() {}
 
@@ -247,8 +252,6 @@ class SurveyHttpClientTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   base::HistogramTester histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(SurveyHttpClientTest);
 };
 
 TEST_F(SurveyHttpClientTest, TestSendEmptyRequest) {

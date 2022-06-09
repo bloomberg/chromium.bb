@@ -17,9 +17,10 @@
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/host_resolver_source.h"
+#include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/dns/public/secure_dns_policy.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
@@ -107,12 +108,11 @@ struct EnumTraits<network::mojom::ResolveHostParameters_Source,
 
 template <>
 struct EnumTraits<network::mojom::MdnsListenClient_UpdateType,
-                  net::HostResolver::MdnsListener::Delegate::UpdateType> {
+                  net::MdnsListenerUpdateType> {
   static network::mojom::MdnsListenClient_UpdateType ToMojom(
-      net::HostResolver::MdnsListener::Delegate::UpdateType input);
-  static bool FromMojom(
-      network::mojom::MdnsListenClient_UpdateType input,
-      net::HostResolver::MdnsListener::Delegate::UpdateType* output);
+      net::MdnsListenerUpdateType input);
+  static bool FromMojom(network::mojom::MdnsListenClient_UpdateType input,
+                        net::MdnsListenerUpdateType* output);
 };
 
 template <>
@@ -129,23 +129,6 @@ struct EnumTraits<network::mojom::SecureDnsPolicy, net::SecureDnsPolicy> {
       net::SecureDnsPolicy secure_dns_mode);
   static bool FromMojom(network::mojom::SecureDnsPolicy in,
                         net::SecureDnsPolicy* out);
-};
-
-template <>
-class StructTraits<network::mojom::ResolveErrorInfoDataView,
-                   net::ResolveErrorInfo> {
- public:
-  static int error(net::ResolveErrorInfo resolve_error_info) {
-    return resolve_error_info.error;
-  }
-
-  static bool is_secure_network_error(
-      net::ResolveErrorInfo resolve_error_info) {
-    return resolve_error_info.is_secure_network_error;
-  }
-
-  static bool Read(network::mojom::ResolveErrorInfoDataView data,
-                   net::ResolveErrorInfo* out);
 };
 
 }  // namespace mojo

@@ -137,7 +137,7 @@ ol.expanded {
 
 .tree-outline li.editing-sub-part {
   padding: 3px 6px 8px 18px;
-  margin: -1px -6px -8px -6px;
+  margin: -1px -6px -8px;
   text-overflow: clip;
 }
 
@@ -227,6 +227,7 @@ ol.expanded {
   vertical-align: bottom;
 }
 
-devtools-css-angle {
+devtools-css-angle,
+devtools-css-length {
   display: inline-block;
 }

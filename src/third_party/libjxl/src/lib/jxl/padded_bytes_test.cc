@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/base/padded_bytes.h"
 
@@ -42,31 +33,31 @@ TEST(PaddedBytesTest, TestEmptyFirstByteZero) {
 
 TEST(PaddedBytesTest, TestFillWithoutReserve) {
   PaddedBytes pb;
-  for (size_t i = 0; i < 170; ++i) {
+  for (size_t i = 0; i < 170u; ++i) {
     pb.push_back(i);
   }
-  EXPECT_EQ(170, pb.size());
-  EXPECT_GE(pb.capacity(), 170);
+  EXPECT_EQ(170u, pb.size());
+  EXPECT_GE(pb.capacity(), 170u);
 }
 
 TEST(PaddedBytesTest, TestFillWithExactReserve) {
   PaddedBytes pb;
   pb.reserve(170);
-  for (size_t i = 0; i < 170; ++i) {
+  for (size_t i = 0; i < 170u; ++i) {
     pb.push_back(i);
   }
-  EXPECT_EQ(170, pb.size());
-  EXPECT_EQ(pb.capacity(), 170);
+  EXPECT_EQ(170u, pb.size());
+  EXPECT_EQ(pb.capacity(), 170u);
 }
 
 TEST(PaddedBytesTest, TestFillWithMoreReserve) {
   PaddedBytes pb;
   pb.reserve(171);
-  for (size_t i = 0; i < 170; ++i) {
+  for (size_t i = 0; i < 170u; ++i) {
     pb.push_back(i);
   }
-  EXPECT_EQ(170, pb.size());
-  EXPECT_GT(pb.capacity(), 170);
+  EXPECT_EQ(170u, pb.size());
+  EXPECT_GT(pb.capacity(), 170u);
 }
 
 // Can assign() a subset of the valid data.
@@ -77,7 +68,7 @@ TEST(PaddedBytesTest, TestAssignFromWithin) {
     pb.push_back(i);
   }
   pb.assign(pb.data() + 64, pb.data() + 192);
-  EXPECT_EQ(128, pb.size());
+  EXPECT_EQ(128u, pb.size());
   for (size_t i = 0; i < 128; ++i) {
     EXPECT_EQ(i + 64, pb[i]);
   }
@@ -95,11 +86,11 @@ TEST(PaddedBytesTest, TestAssignReclaim) {
   pb.resize(200);
   // Just shrank without reallocating
   EXPECT_EQ(mem, pb.data());
-  EXPECT_EQ(256, pb.capacity());
+  EXPECT_EQ(256u, pb.capacity());
 
   // Reclaim part of initial allocation
   pb.assign(pb.data() + 100, pb.data() + 240);
-  EXPECT_EQ(140, pb.size());
+  EXPECT_EQ(140u, pb.size());
 
   for (size_t i = 0; i < 140; ++i) {
     EXPECT_EQ(i + 100, pb[i]);
@@ -116,7 +107,7 @@ TEST(PaddedBytesTest, TestAssignOutside) {
   std::iota(small.begin(), small.end(), 500);
 
   pb.assign(small.data(), small.data() + small.size());
-  EXPECT_EQ(64, pb.size());
+  EXPECT_EQ(64u, pb.size());
   for (size_t i = 0; i < 64; ++i) {
     EXPECT_EQ((i + 500) & 0xFF, pb[i]);
   }
@@ -125,7 +116,7 @@ TEST(PaddedBytesTest, TestAssignOutside) {
   std::iota(large.begin(), large.end(), 600);
 
   pb.assign(large.data(), large.data() + large.size());
-  EXPECT_EQ(1000, pb.size());
+  EXPECT_EQ(1000u, pb.size());
   for (size_t i = 0; i < 1000; ++i) {
     EXPECT_EQ((i + 600) & 0xFF, pb[i]);
   }

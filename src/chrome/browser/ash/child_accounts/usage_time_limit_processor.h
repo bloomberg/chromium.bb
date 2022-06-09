@@ -13,10 +13,8 @@
 #include <set>
 #include <unordered_map>
 
-#include "base/macros.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/child_accounts/family_user_parental_control_metrics.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -69,6 +67,10 @@ struct TimeWindowLimitEntry {
 class TimeWindowLimit {
  public:
   explicit TimeWindowLimit(const base::Value& window_limit_dict);
+
+  TimeWindowLimit(const TimeWindowLimit&) = delete;
+  TimeWindowLimit& operator=(const TimeWindowLimit&) = delete;
+
   ~TimeWindowLimit();
   TimeWindowLimit(TimeWindowLimit&&);
   TimeWindowLimit& operator=(TimeWindowLimit&&);
@@ -76,9 +78,6 @@ class TimeWindowLimit {
   bool operator!=(const TimeWindowLimit& rhs) const { return !(*this == rhs); }
 
   std::unordered_map<Weekday, absl::optional<TimeWindowLimitEntry>> entries;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeWindowLimit);
 };
 
 struct TimeUsageLimitEntry {
@@ -95,6 +94,10 @@ struct TimeUsageLimitEntry {
 class TimeUsageLimit {
  public:
   explicit TimeUsageLimit(const base::Value& usage_limit_dict);
+
+  TimeUsageLimit(const TimeUsageLimit&) = delete;
+  TimeUsageLimit& operator=(const TimeUsageLimit&) = delete;
+
   ~TimeUsageLimit();
   TimeUsageLimit(TimeUsageLimit&&);
   TimeUsageLimit& operator=(TimeUsageLimit&&);
@@ -103,9 +106,6 @@ class TimeUsageLimit {
 
   std::unordered_map<Weekday, absl::optional<TimeUsageLimitEntry>> entries;
   base::TimeDelta resets_at;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeUsageLimit);
 };
 }  // namespace internal
 
@@ -203,12 +203,10 @@ base::TimeDelta GetTimeUsageLimitResetTime(const base::Value& time_limit);
 std::set<PolicyType> UpdatedPolicyTypes(const base::Value& old_policy,
                                         const base::Value& new_policy);
 
-// Retrieves the the time limit polices in time_limit_prefs and inserts them to
-// `enabled_policies`. `time_limit_prefs` is the value of prefs::kUsageTimeLimit
-// which stores the usage time limit preference of a user.
-void GetEnabledTimeLimitPolicies(
-    std::set<FamilyUserParentalControlMetrics::TimeLimitPolicyType>*
-        enabled_policies,
+// Returns the active time limit polices in `time_limit_prefs`.
+// `time_limit_prefs` is the value of prefs::kUsageTimeLimit which stores the
+// usage time limit preference of a user.
+std::set<PolicyType> GetEnabledTimeLimitPolicies(
     const base::Value& time_limit_prefs);
 
 }  // namespace usage_time_limit

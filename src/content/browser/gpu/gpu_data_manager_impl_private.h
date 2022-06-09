@@ -16,14 +16,15 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display_observer.h"
 #include "ui/gl/gpu_preference.h"
 
@@ -31,21 +32,33 @@ namespace base {
 class CommandLine;
 }
 
+namespace media {
+struct SupportedVideoDecoderConfig;
+using SupportedVideoDecoderConfigs = std::vector<SupportedVideoDecoderConfig>;
+}  // namespace media
+
 namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImplPrivate {
  public:
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
+
+  GpuDataManagerImplPrivate(const GpuDataManagerImplPrivate&) = delete;
+  GpuDataManagerImplPrivate& operator=(const GpuDataManagerImplPrivate&) =
+      delete;
+
   virtual ~GpuDataManagerImplPrivate();
 
   void StartUmaTimer();
   void BlocklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
+  std::vector<std::string> GetDawnInfoList() const;
   bool GpuAccessAllowed(std::string* reason) const;
   bool GpuAccessAllowedForHardwareGpu(std::string* reason) const;
-  void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
-                                              bool delayed);
+  void RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(
+      GpuDataManagerImpl::GpuInfoRequest request,
+      bool delayed);
   bool IsEssentialGpuInfoAvailable() const;
   bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
@@ -77,10 +90,14 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void PostCreateThreads();
   void TerminateInfoCollectionGpuProcess();
 #endif
+  void UpdateDawnInfo(const std::vector<std::string>& dawn_info_list);
+
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const absl::optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
   void UpdateGpuExtraInfo(const gfx::GpuExtraInfo& process_info);
+  void UpdateMojoMediaVideoCapabilities(
+      const media::SupportedVideoDecoderConfigs& configs);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
@@ -201,10 +218,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestDxDiagNodeData();
   void RequestGpuSupportedDx12Version(bool delayed);
   void RequestGpuSupportedVulkanVersion(bool delayed);
+  void RequestDawnInfo();
+  void RequestMojoMediaVideoCapabilities();
 
   void RecordCompositingMode();
 
-  GpuDataManagerImpl* const owner_;
+  const raw_ptr<GpuDataManagerImpl> owner_;
 
   gpu::GpuFeatureInfo gpu_feature_info_;
   gpu::GPUInfo gpu_info_;
@@ -219,6 +238,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool gpu_info_vulkan_requested_ = false;
   bool gpu_info_vulkan_request_failed_ = false;
 #endif
+  bool gpu_info_dawn_toggles_requested_ = false;
+  // The Dawn info queried from the GPU process.
+  std::vector<std::string> dawn_info_list_;
 
   // What we would have gotten if we haven't fallen back to SwiftShader or
   // pure software (in the viz case).
@@ -244,6 +266,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Order of gpu process fallback states, used as a stack.
   std::vector<gpu::GpuMode> fallback_modes_;
 
+  absl::optional<display::ScopedOptionalDisplayObserver> display_observer_;
+
   // Used to tell if the gpu was disabled by an explicit call to
   // DisableHardwareAcceleration(), rather than by fallback.
   bool hardware_disabled_explicitly_ = false;
@@ -259,8 +283,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool application_is_visible_ = true;
 
   bool disable_gpu_compositing_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };
 
 }  // namespace content

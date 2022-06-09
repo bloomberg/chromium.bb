@@ -36,15 +36,10 @@ class InternalDecoration : public Castable<InternalDecoration, Decoration> {
 
   /// @return a short description of the internal decoration which will be
   /// displayed in WGSL as `[[internal(<name>)]]` (but is not parsable).
-  virtual std::string Name() const = 0;
+  virtual std::string InternalName() const = 0;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// @returns the WGSL name for the decoration
+  std::string Name() const override;
 };
 
 }  // namespace ast

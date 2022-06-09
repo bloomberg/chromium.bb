@@ -44,8 +44,9 @@ class CSPContextTest : public CSPContext {
       network::mojom::SourceLocation* source_location) const override {
     if (!sanitize_data_for_use_in_csp_violation_)
       return;
-    *blocked_url = blocked_url->GetOrigin();
-    source_location->url = GURL(source_location->url).GetOrigin().spec();
+    *blocked_url = blocked_url->DeprecatedGetOriginAsURL();
+    source_location->url =
+        GURL(source_location->url).DeprecatedGetOriginAsURL().spec();
     source_location->line = 0u;
     source_location->column = 0u;
   }
@@ -227,7 +228,8 @@ TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
         policies, CSPDirectiveName::FrameSrc, blocked_url, original_url, false,
         false, source_location, CSPContext::CHECK_ALL_CSP, false));
     ASSERT_EQ(3u, context.violations().size());
-    EXPECT_EQ(context.violations()[2]->blocked_url, blocked_url.GetOrigin());
+    EXPECT_EQ(context.violations()[2]->blocked_url,
+              blocked_url.DeprecatedGetOriginAsURL());
     EXPECT_EQ(context.violations()[2]->source_location->url, "http://a.com/");
     EXPECT_EQ(context.violations()[2]->source_location->line, 0u);
     EXPECT_EQ(context.violations()[2]->source_location->column, 0u);
@@ -331,6 +333,26 @@ TEST(CSPContextTest, CheckCSPDisposition) {
       CSPContext::CHECK_ENFORCED_CSP, false));
   ASSERT_EQ(1u, context.violations().size());
   EXPECT_EQ(console_message_a, context.violations()[0]->console_message);
+}
+
+TEST(CSPContextTest, BlockedDespiteWildcard) {
+  CSPContextTest context;
+  auto policies = ParseContentSecurityPolicies(
+      "frame-src *", mojom::ContentSecurityPolicyType::kEnforce,
+      mojom::ContentSecurityPolicySource::kMeta,
+      GURL("https://www.example.org"));
+
+  EXPECT_FALSE(context.IsAllowedByCsp(policies, CSPDirectiveName::FrameSrc,
+                                      GURL("data:text/html,<html></html>"),
+                                      GURL(), false, false, SourceLocation(),
+                                      CSPContext::CHECK_ALL_CSP, false));
+  EXPECT_EQ(context.violations().size(), 1u);
+  EXPECT_EQ(context.violations()[0]->console_message,
+            "Refused to frame 'data:text/html,<html></html>' because it "
+            "violates the following Content Security Policy directive: "
+            "\"frame-src *\". Note that '*' matches only URLs with network "
+            "schemes ('http', 'https', 'ws', 'wss'), or URLs whose scheme "
+            "matches `self`'s scheme. data:' must be added explicitely.\n");
 }
 
 }  // namespace network

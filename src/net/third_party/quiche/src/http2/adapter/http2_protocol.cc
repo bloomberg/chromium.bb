@@ -12,6 +12,10 @@ const char kHttp2AuthorityPseudoHeader[] = ":authority";
 const char kHttp2PathPseudoHeader[] = ":path";
 const char kHttp2StatusPseudoHeader[] = ":status";
 
+const uint8_t kMetadataFrameType = 0x4d;
+const uint8_t kMetadataEndFlag = 0x04;
+const uint16_t kMetadataExtensionId = 0x4d44;
+
 std::pair<absl::string_view, bool> GetStringView(const HeaderRep& rep) {
   if (absl::holds_alternative<absl::string_view>(rep)) {
     return std::make_pair(absl::get<absl::string_view>(rep), true);
@@ -19,6 +23,10 @@ std::pair<absl::string_view, bool> GetStringView(const HeaderRep& rep) {
     absl::string_view view = absl::get<std::string>(rep);
     return std::make_pair(view, false);
   }
+}
+
+bool operator==(const Http2Setting& a, const Http2Setting& b) {
+  return a.id == b.id && a.value == b.value;
 }
 
 absl::string_view Http2SettingsIdToString(uint16_t id) {
@@ -41,8 +49,8 @@ absl::string_view Http2SettingsIdToString(uint16_t id) {
 
 absl::string_view Http2ErrorCodeToString(Http2ErrorCode error_code) {
   switch (error_code) {
-    case Http2ErrorCode::NO_ERROR:
-      return "NO_ERROR";
+    case Http2ErrorCode::HTTP2_NO_ERROR:
+      return "HTTP2_NO_ERROR";
     case Http2ErrorCode::PROTOCOL_ERROR:
       return "PROTOCOL_ERROR";
     case Http2ErrorCode::INTERNAL_ERROR:

@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_web_contents_helper.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "url/gurl.h"
 #include "weblayer/browser/browser_process.h"
@@ -15,8 +15,11 @@
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
-#include "weblayer/test/stub_autofill_provider.h"
 #include "weblayer/test/test_navigation_observer.h"
+
+#if defined(OS_ANDROID)
+#include "weblayer/test/stub_autofill_provider.h"
+#endif  // defined(OS_ANDROID)
 
 namespace weblayer {
 
@@ -89,6 +92,7 @@ const std::u16string& GetTitle(Shell* shell) {
   return tab_impl->web_contents()->GetTitle();
 }
 
+#if defined(OS_ANDROID)
 void InitializeAutofillWithEventForwarding(
     Shell* shell,
     const base::RepeatingCallback<void(const autofill::FormData&)>&
@@ -97,6 +101,7 @@ void InitializeAutofillWithEventForwarding(
   new StubAutofillProvider(tab_impl->web_contents(), on_received_form_data);
   tab_impl->InitializeAutofillForTests();
 }
+#endif  // defined(OS_ANDROID)
 
 void ActivateSubresourceFilterInWebContentsForURL(
     content::WebContents* web_contents,
@@ -106,10 +111,9 @@ void ActivateSubresourceFilterInWebContentsForURL(
   database_manager->AddBlocklistedUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
 
-  auto* throttle_manager = subresource_filter::
-      ContentSubresourceFilterThrottleManager::FromWebContents(web_contents);
-  throttle_manager->set_database_manager_for_testing(
-      std::move(database_manager));
+  subresource_filter::ContentSubresourceFilterWebContentsHelper::
+      FromWebContents(web_contents)
+          ->SetDatabaseManagerForTesting(std::move(database_manager));
 }
 
 OneShotNavigationObserver::OneShotNavigationObserver(Shell* shell)

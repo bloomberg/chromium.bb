@@ -8,8 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
-
 class GURL;
 
 // Implements the OAuth request signing process as described here:
@@ -30,6 +28,10 @@ class OAuthRequestSigner {
   };
 
   typedef std::map<std::string,std::string> Parameters;
+
+  OAuthRequestSigner() = delete;
+  OAuthRequestSigner(const OAuthRequestSigner&) = delete;
+  OAuthRequestSigner& operator=(const OAuthRequestSigner&) = delete;
 
   // Percent encoding and decoding for OAuth.
   //
@@ -92,9 +94,6 @@ class OAuthRequestSigner {
                              const std::string& token_key,
                              const std::string& token_secret,
                              std::string* signed_result);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(OAuthRequestSigner);
 };
 
 #endif  // GOOGLE_APIS_GAIA_OAUTH_REQUEST_SIGNER_H_

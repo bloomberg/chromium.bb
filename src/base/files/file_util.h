@@ -15,12 +15,6 @@
 #include <limits>
 #include <set>
 #include <string>
-#include <vector>
-
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-#include <sys/stat.h>
-#include <unistd.h>
-#endif
 
 #include "base/base_export.h"
 #include "base/callback_forward.h"
@@ -33,6 +27,8 @@
 #if defined(OS_WIN)
 #include "base/win/windows_types.h"
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#include <sys/stat.h>
+#include <unistd.h>
 #include "base/file_descriptor_posix.h"
 #include "base/posix/eintr_wrapper.h"
 #endif
@@ -209,7 +205,9 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
                                              size_t max_size);
 
 // As ReadFileToString, but reading from an open stream after seeking to its
-// start (if supported by the stream).
+// start (if supported by the stream). This can also be used to read the whole
+// file from a file descriptor by converting the file descriptor into a stream
+// by using base::FileToFILE() before calling this function.
 BASE_EXPORT bool ReadStreamToString(FILE* stream, std::string* contents);
 
 // As ReadFileToStringWithMaxSize, but reading from an open stream after seeking

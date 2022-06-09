@@ -9,7 +9,7 @@
 #include "base/guid.h"
 
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
@@ -140,13 +140,14 @@ void InterfaceFactoryImpl::CreateFlingingRenderer(
 
 #if defined(OS_WIN)
 void InterfaceFactoryImpl::CreateMediaFoundationRenderer(
+    mojo::PendingRemote<mojom::MediaLog> media_log_remote,
     mojo::PendingReceiver<media::mojom::Renderer> receiver,
     mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
         renderer_extension_receiver) {
   DVLOG(2) << __func__;
   auto renderer = mojo_media_client_->CreateMediaFoundationRenderer(
-      base::ThreadTaskRunnerHandle::Get(),
-      std::move(renderer_extension_receiver));
+      base::ThreadTaskRunnerHandle::Get(), frame_interfaces_.get(),
+      std::move(media_log_remote), std::move(renderer_extension_receiver));
   if (!renderer) {
     DLOG(ERROR) << "MediaFoundationRenderer creation failed.";
     return;
@@ -156,8 +157,7 @@ void InterfaceFactoryImpl::CreateMediaFoundationRenderer(
 }
 #endif  // defined (OS_WIN)
 
-void InterfaceFactoryImpl::CreateCdm(const std::string& key_system,
-                                     const CdmConfig& cdm_config,
+void InterfaceFactoryImpl::CreateCdm(const CdmConfig& cdm_config,
                                      CreateCdmCallback callback) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_CDM)
@@ -175,7 +175,7 @@ void InterfaceFactoryImpl::CreateCdm(const std::string& key_system,
   pending_mojo_cdm_services_[raw_mojo_cdm_service] =
       std::move(mojo_cdm_service);
   raw_mojo_cdm_service->Initialize(
-      cdm_factory, key_system, cdm_config,
+      cdm_factory, cdm_config,
       base::BindOnce(&InterfaceFactoryImpl::OnCdmServiceInitialized,
                      weak_ptr_factory_.GetWeakPtr(), raw_mojo_cdm_service,
                      std::move(callback)));

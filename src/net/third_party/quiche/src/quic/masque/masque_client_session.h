@@ -5,6 +5,8 @@
 #ifndef QUICHE_QUIC_MASQUE_MASQUE_CLIENT_SESSION_H_
 #define QUICHE_QUIC_MASQUE_MASQUE_CLIENT_SESSION_H_
 
+#include <string>
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/http/quic_spdy_client_session.h"
@@ -31,6 +33,9 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
     // Notifies the owner that the client connection ID is no longer in use.
     virtual void UnregisterClientConnectionId(
         QuicConnectionId client_connection_id) = 0;
+
+    // Notifies the owner that a settings frame has been received.
+    virtual void OnSettingsReceived() = 0;
   };
   // Interface meant to be implemented by encapsulated client sessions, i.e.
   // the end-to-end QUIC client sessions that run inside MASQUE encapsulation.
@@ -53,11 +58,10 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
   // |push_promise_index| or |owner|. All pointers must be non-null. Caller
   // must ensure that |push_promise_index| and |owner| stay valid for the
   // lifetime of the newly created MasqueClientSession.
-  MasqueClientSession(MasqueMode masque_mode,
+  MasqueClientSession(MasqueMode masque_mode, const std::string& uri_template,
                       const QuicConfig& config,
                       const ParsedQuicVersionVector& supported_versions,
-                      QuicConnection* connection,
-                      const QuicServerId& server_id,
+                      QuicConnection* connection, const QuicServerId& server_id,
                       QuicCryptoClientConfig* crypto_config,
                       QuicClientPushPromiseIndex* push_promise_index,
                       Owner* owner);
@@ -74,6 +78,9 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
   void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                           ConnectionCloseSource source) override;
   void OnStreamClosed(QuicStreamId stream_id) override;
+
+  // From QuicSpdySession.
+  bool OnSettingsFrame(const SettingsFrame& frame) override;
 
   // Send encapsulated packet.
   void SendPacket(QuicConnectionId client_connection_id,
@@ -101,7 +108,8 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
  private:
   // State that the MasqueClientSession keeps for each CONNECT-UDP request.
   class QUIC_NO_EXPORT ConnectUdpClientState
-      : public QuicSpdySession::Http3DatagramVisitor {
+      : public QuicSpdyStream::Http3DatagramRegistrationVisitor,
+        public QuicSpdyStream::Http3DatagramVisitor {
    public:
     // |stream| and |encapsulated_client_session| must be valid for the lifetime
     // of the ConnectUdpClientState.
@@ -109,7 +117,7 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
         QuicSpdyClientStream* stream,
         EncapsulatedClientSession* encapsulated_client_session,
         MasqueClientSession* masque_session,
-        QuicDatagramFlowId flow_id,
+        absl::optional<QuicDatagramContextId> context_id,
         const QuicSocketAddress& target_server_address);
 
     ~ConnectUdpClientState();
@@ -124,31 +132,46 @@ class QUIC_NO_EXPORT MasqueClientSession : public QuicSpdyClientSession {
     EncapsulatedClientSession* encapsulated_client_session() const {
       return encapsulated_client_session_;
     }
-    QuicDatagramFlowId flow_id() const {
-      QUICHE_DCHECK(flow_id_.has_value());
-      return *flow_id_;
+    absl::optional<QuicDatagramContextId> context_id() const {
+      return context_id_;
     }
     const QuicSocketAddress& target_server_address() const {
       return target_server_address_;
     }
 
-    // From QuicSpdySession::Http3DatagramVisitor.
-    void OnHttp3Datagram(QuicDatagramFlowId flow_id,
+    // From QuicSpdyStream::Http3DatagramVisitor.
+    void OnHttp3Datagram(QuicStreamId stream_id,
+                         absl::optional<QuicDatagramContextId> context_id,
                          absl::string_view payload) override;
+
+    // From QuicSpdyStream::Http3DatagramRegistrationVisitor.
+    void OnContextReceived(QuicStreamId stream_id,
+                           absl::optional<QuicDatagramContextId> context_id,
+                           DatagramFormatType format_type,
+                           absl::string_view format_additional_data) override;
+    void OnContextClosed(QuicStreamId stream_id,
+                         absl::optional<QuicDatagramContextId> context_id,
+                         ContextCloseCode close_code,
+                         absl::string_view close_details) override;
 
    private:
     QuicSpdyClientStream* stream_;                            // Unowned.
     EncapsulatedClientSession* encapsulated_client_session_;  // Unowned.
     MasqueClientSession* masque_session_;                     // Unowned.
-    absl::optional<QuicDatagramFlowId> flow_id_;
+    absl::optional<QuicDatagramContextId> context_id_;
     QuicSocketAddress target_server_address_;
   };
+
+  HttpDatagramSupport LocalHttpDatagramSupport() override {
+    return HttpDatagramSupport::kDraft00And04;
+  }
 
   const ConnectUdpClientState* GetOrCreateConnectUdpClientState(
       const QuicSocketAddress& target_server_address,
       EncapsulatedClientSession* encapsulated_client_session);
 
   MasqueMode masque_mode_;
+  std::string uri_template_;
   std::list<ConnectUdpClientState> connect_udp_client_states_;
   absl::flat_hash_map<QuicConnectionId,
                       EncapsulatedClientSession*,

@@ -51,14 +51,14 @@
 <h2> Interactive drawPatch</h2>
 <canvas id=interdrawpatch width=512 height=512></canvas>
 
-<script type="text/javascript" src="/node_modules/canvaskit/bin/canvaskit.js"></script>
+<script type="text/javascript" src="/build/canvaskit.js"></script>
 
 <script type="text/javascript" charset="utf-8">
 
   var CanvasKit = null;
   var cdn = 'https://storage.googleapis.com/skia-cdn/misc/';
 
-  const ckLoaded = CanvasKitInit({locateFile: (file) => '/node_modules/canvaskit/bin/'+file});
+  const ckLoaded = CanvasKitInit({locateFile: (file) => '/build/'+file});
 
   const loadRoboto = fetch(cdn + 'Roboto-Regular.ttf').then((response) => response.arrayBuffer());
   const loadNotoSerif = fetch(cdn + 'NotoSerif-Regular.ttf').then((response) => response.arrayBuffer());
@@ -75,14 +75,18 @@
     TextOnPathAPI1(CanvasKit);
     DrawGlyphsAPI1(CanvasKit);
     SurfaceAPI1(CanvasKit);
-    CanvasAPI1(CanvasKit);
-    CanvasAPI2(CanvasKit);
-    CanvasAPI3(CanvasKit);
-    CanvasAPI4(CanvasKit);
-    CanvasAPI5(CanvasKit);
-    CanvasAPI6(CanvasKit);
-    CanvasAPI7(CanvasKit);
-    CanvasAPI8(CanvasKit);
+    if (CanvasKit.MakeCanvas){
+      CanvasAPI1(CanvasKit);
+      CanvasAPI2(CanvasKit);
+      CanvasAPI3(CanvasKit);
+      CanvasAPI4(CanvasKit);
+      CanvasAPI5(CanvasKit);
+      CanvasAPI6(CanvasKit);
+      CanvasAPI7(CanvasKit);
+      CanvasAPI8(CanvasKit);
+    } else {
+      console.log("Skipping CanvasAPI1 because it's not compiled in");
+    }
     InteractivePatch(CanvasKit);
   });
 
@@ -102,9 +106,7 @@
     }
 
     const paint = new CanvasKit.Paint();
-
-    const fontMgr = CanvasKit.FontMgr.RefDefault();
-    const roboto = fontMgr.MakeTypefaceFromData(robotoData);
+    const roboto = CanvasKit.Typeface.MakeFreeTypeFaceFromData(robotoData);
 
     const textPaint = new CanvasKit.Paint();
     textPaint.setColor(CanvasKit.RED);
@@ -214,7 +216,7 @@
          const cubics = patch_to_cubics(patch);
 
          canvas.drawColor(CanvasKit.WHITE);
-         canvas.drawPatch(cubics, colors, null, null, paint);
+         canvas.drawPatch(cubics, colors, null, CanvasKit.BlendMode.Dst, paint);
          if (live_corner) {
              canvas.drawPoints(CanvasKit.PointMode.Polygon, live_corner, line_paint);
          }
@@ -489,8 +491,9 @@
         ctx.fillStyle = 'black';
         ctx.font = '26px Bungee';
         ctx.rotate(.1);
+        let text = ctx.measureText('Awesome');
         ctx.fillText('Awesome ', 25, 100);
-        ctx.strokeText('Groovy!', 200, 100);
+        ctx.strokeText('Groovy!', 35 + text.width, 100);
 
         // Draw line under Awesome
         ctx.strokeStyle = 'rgba(125,0,0,0.5)';
@@ -989,7 +992,7 @@
                                             points, null, colors,
                                             false /*isVolatile*/);
 
-    canvas.drawVertices(vertices, CanvasKit.BlendMode.Src, paint);
+    canvas.drawVertices(vertices, CanvasKit.BlendMode.Dst, paint);
 
     vertices.delete();
 
@@ -1110,7 +1113,6 @@
       console.error('Could not make surface');
       return;
     }
-    const grContext = surface.grContext;
 
     // create a subsurface as a temporary workspace.
     const subSurface = surface.makeSurface({
@@ -1166,9 +1168,6 @@
 
       canvas.drawOval(CanvasKit.LTRBRect(i % 60, i % 60, 300 - (i% 60), 300 - (i % 60)), patternPaint);
       surface.requestAnimationFrame(drawFrame);
-      // if (grContext) {
-      //   console.log(grContext.getResourceCacheUsageBytes() + ' bytes used in the GPU');
-      // }
     }
     surface.requestAnimationFrame(drawFrame);
   }
@@ -1187,17 +1186,26 @@
     const paint = new CanvasKit.Paint();
     paint.setColor(CanvasKit.Color(0, 0, 0, 0.8));
 
-    const srcs = new CanvasKit.RectBuilder();
-    srcs.push(0, 0, 250, 250 ); // LTRB
-    srcs.push(250, 0, 500, 250 );
+    // Allocate space for 2 rectangles.
+    const srcs = CanvasKit.Malloc(Float32Array, 8);
+    srcs.toTypedArray().set([
+      0, 0, 250, 250, // LTRB
+      250, 0, 500, 250
+    ]);
 
-    const dsts = new CanvasKit.RSXFormBuilder();
-    dsts.push(.5, 0, 0, 0); // scos, ssin, tx, ty
-    dsts.push(0, .8, 200, 100);
+    // Allocate space for 2 RSXForms
+    const dsts = CanvasKit.Malloc(Float32Array, 8);
+    dsts.toTypedArray().set([
+      .5, 0, 0, 0,  // scos, ssin, tx, ty
+      0, .8, 200, 100
+    ]);
 
-    const colors = new CanvasKit.ColorBuilder();
-    colors.push(CanvasKit.ColorAsInt(85, 170, 10, 128)); // light green
-    colors.push(CanvasKit.ColorAsInt(51, 51, 191, 128)); // light blue
+   // Allocate space for 4 colors.
+    const colors = new CanvasKit.Malloc(Uint32Array, 2);
+    colors.toTypedArray().set([
+      CanvasKit.ColorAsInt( 85, 170,  10, 128), // light green
+      CanvasKit.ColorAsInt( 51,  51, 191, 128), // light blue
+    ]);
 
     let i = 0;
 
@@ -1209,8 +1217,8 @@
       // update the coordinates of existing sprites - note that this
       // does not require a full re-copy of the full array; they are
       // updated in-place.
-      dsts.set(0, 0.5, 0, (2*i)%200, (5*Math.round(i/200)) % 200);
-      dsts.set(1, scale*Math.sin(i/20), scale*Math.cos(i/20), 200, 100);
+      dsts.toTypedArray().set([0.5, 0, (2*i)%200, (5*Math.round(i/200)) % 200], 0);
+      dsts.toTypedArray().set([scale*Math.sin(i/20), scale*Math.cos(i/20), 200, 100], 4);
 
       canvas.drawAtlas(img, srcs, dsts, paint, CanvasKit.BlendMode.Plus, colors,
                        {filter: CanvasKit.FilterMode.Nearest});

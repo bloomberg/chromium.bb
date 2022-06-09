@@ -17,10 +17,12 @@
 
 namespace {
 
-const struct {
+struct Substs {
   const char* m_pName;
   const char* m_pSubstName;
-} g_Base14Substs[] = {
+};
+
+constexpr Substs kBase14Substs[] = {
     {"Courier", "Courier New"},
     {"Courier-Bold", "Courier New Bold"},
     {"Courier-BoldOblique", "Courier New Bold Italic"},
@@ -43,36 +45,34 @@ class CFX_MacFontInfo final : public CFX_FolderFontInfo {
   // CFX_FolderFontInfo
   void* MapFont(int weight,
                 bool bItalic,
-                int charset,
+                FX_Charset charset,
                 int pitch_family,
-                const char* family) override;
+                const ByteString& face) override;
 
   bool ParseFontCfg(const char** pUserPaths);
 };
 
-const char JAPAN_GOTHIC[] = "Hiragino Kaku Gothic Pro W6";
-const char JAPAN_MINCHO[] = "Hiragino Mincho Pro W6";
+constexpr char kJapanGothic[] = "Hiragino Kaku Gothic Pro W6";
+constexpr char kJapanMincho[] = "Hiragino Mincho Pro W6";
 
-void GetJapanesePreference(ByteString* face, int weight, int pitch_family) {
-  if (face->Contains("Gothic")) {
-    *face = JAPAN_GOTHIC;
-    return;
-  }
-  *face = (FontFamilyIsRoman(pitch_family) || weight <= 400) ? JAPAN_MINCHO
-                                                             : JAPAN_GOTHIC;
+ByteString GetJapanesePreference(const ByteString& face,
+                                 int weight,
+                                 int pitch_family) {
+  if (face.Contains("Gothic"))
+    return kJapanGothic;
+  if (FontFamilyIsRoman(pitch_family) || weight <= 400)
+    return kJapanMincho;
+  return kJapanGothic;
 }
 
 void* CFX_MacFontInfo::MapFont(int weight,
                                bool bItalic,
-                               int charset,
+                               FX_Charset charset,
                                int pitch_family,
-                               const char* cstr_face) {
-  ByteString face = cstr_face;
-  for (const auto& sub : g_Base14Substs) {
-    if (face == ByteStringView(sub.m_pName)) {
-      face = sub.m_pSubstName;
-      return GetFont(face.c_str());
-    }
+                               const ByteString& face) {
+  for (const auto& sub : kBase14Substs) {
+    if (face == ByteStringView(sub.m_pName))
+      return GetFont(sub.m_pSubstName);
   }
 
   // The request may not ask for the bold and/or italic version of a font by
@@ -97,26 +97,31 @@ void* CFX_MacFontInfo::MapFont(int weight,
   if (it != m_FontList.end())
     return it->second.get();
 
-  if (charset == FX_CHARSET_ANSI && FontFamilyIsFixedPitch(pitch_family))
+  if (charset == FX_Charset::kANSI && FontFamilyIsFixedPitch(pitch_family))
     return GetFont("Courier New");
 
-  if (charset == FX_CHARSET_ANSI || charset == FX_CHARSET_Symbol)
+  if (charset == FX_Charset::kANSI || charset == FX_Charset::kSymbol)
     return nullptr;
 
+  ByteString other_face;
   switch (charset) {
-    case FX_CHARSET_ShiftJIS:
-      GetJapanesePreference(&face, weight, pitch_family);
+    case FX_Charset::kShiftJIS:
+      other_face = GetJapanesePreference(face, weight, pitch_family);
       break;
-    case FX_CHARSET_ChineseSimplified:
-      face = "STSong";
+    case FX_Charset::kChineseSimplified:
+      other_face = "STSong";
       break;
-    case FX_CHARSET_Hangul:
-      face = "AppleMyungjo";
+    case FX_Charset::kHangul:
+      other_face = "AppleMyungjo";
       break;
-    case FX_CHARSET_ChineseTraditional:
-      face = "LiSong Pro Light";
+    case FX_Charset::kChineseTraditional:
+      other_face = "LiSong Pro Light";
+      break;
+    default:
+      other_face = face;
+      break;
   }
-  it = m_FontList.find(face);
+  it = m_FontList.find(other_face);
   return it != m_FontList.end() ? it->second.get() : nullptr;
 }
 

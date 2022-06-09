@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAY_AUTO_LOCK_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -23,6 +22,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MayAutoLock {
       lock_->Acquire();
   }
 
+  MayAutoLock(const MayAutoLock&) = delete;
+  MayAutoLock& operator=(const MayAutoLock&) = delete;
+
   ~MayAutoLock() {
     if (lock_) {
       lock_->AssertAcquired();
@@ -31,8 +33,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MayAutoLock {
   }
 
  private:
+  // `lock_` is not a raw_ptr<...> for performance reasons: on-stack pointer +
+  // based on analysis of sampling profiler data.
   base::Lock* lock_;
-  DISALLOW_COPY_AND_ASSIGN(MayAutoLock);
 };
 
 // Similar to base::AutoUnlock, except that it does nothing if |lock| passed
@@ -47,14 +50,18 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) MayAutoUnlock {
     }
   }
 
+  MayAutoUnlock(const MayAutoUnlock&) = delete;
+  MayAutoUnlock& operator=(const MayAutoUnlock&) = delete;
+
   ~MayAutoUnlock() {
     if (lock_)
       lock_->Acquire();
   }
 
  private:
+  // `lock_` is not a raw_ptr<...> for performance reasons: on-stack pointer +
+  // based on analysis of sampling profiler data.
   base::Lock* lock_;
-  DISALLOW_COPY_AND_ASSIGN(MayAutoUnlock);
 };
 
 }  // namespace internal

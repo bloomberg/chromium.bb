@@ -17,7 +17,7 @@ const int kReportIntervalSeconds = 10;
 
 const base::Feature kWebRtcThermalResource {
   "WebRtcThermalResource",
-#if defined(OS_MAC)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -87,7 +87,7 @@ void ThermalResource::ReportMeasurementWhileHoldingLock(size_t measurement_id) {
       FROM_HERE,
       base::BindOnce(&ThermalResource::ReportMeasurement,
                      scoped_refptr<ThermalResource>(this), measurement_id),
-      base::TimeDelta::FromSeconds(kReportIntervalSeconds));
+      base::Seconds(kReportIntervalSeconds));
 }
 
 }  // namespace blink

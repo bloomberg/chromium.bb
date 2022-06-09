@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base64.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -17,10 +17,10 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
@@ -38,8 +38,11 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/time.h"
+#include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_entity.pb.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "components/sync_sessions/session_store.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -107,7 +110,7 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
  public:
   IsHistoryURLSyncedChecker(const std::string& url,
                             fake_server::FakeServer* fake_server,
-                            syncer::ProfileSyncService* service)
+                            syncer::SyncServiceImpl* service)
       : SingleClientStatusChangeChecker(service),
         url_(url),
         fake_server_(fake_server) {}
@@ -120,7 +123,7 @@ class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
 
  private:
   const std::string url_;
-  fake_server::FakeServer* fake_server_;
+  raw_ptr<fake_server::FakeServer> fake_server_;
 };
 
 class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
@@ -128,7 +131,7 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
   IsIconURLSyncedChecker(const std::string& page_url,
                          const std::string& icon_url,
                          fake_server::FakeServer* fake_server,
-                         syncer::ProfileSyncService* service)
+                         syncer::SyncServiceImpl* service)
       : SingleClientStatusChangeChecker(service),
         page_url_(page_url),
         icon_url_(icon_url),
@@ -160,7 +163,7 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
  private:
   const std::string page_url_;
   const std::string icon_url_;
-  fake_server::FakeServer* fake_server_;
+  raw_ptr<fake_server::FakeServer> fake_server_;
 };
 
 // Checker to block until the history DB for |profile| does / does not have a
@@ -219,7 +222,7 @@ class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
     CheckExitCondition();
   }
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
   const GURL page_url_;
   const bool should_be_available_;
   base::CallbackListSubscription callback_subscription_;
@@ -230,6 +233,11 @@ class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
 class SingleClientSessionsSyncTest : public SyncTest {
  public:
   SingleClientSessionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+
+  SingleClientSessionsSyncTest(const SingleClientSessionsSyncTest&) = delete;
+  SingleClientSessionsSyncTest& operator=(const SingleClientSessionsSyncTest&) =
+      delete;
+
   ~SingleClientSessionsSyncTest() override {}
 
   void ExpectNavigationChain(const std::vector<GURL>& urls) {
@@ -265,7 +273,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
 
   // Simulates receiving list of accounts in the cookie jar from ListAccounts
   // endpoint. Adds |account_ids| into signed in accounts, notifies
-  // ProfileSyncService and waits for change to propagate to sync engine.
+  // SyncServiceImpl and waits for change to propagate to sync engine.
   void UpdateCookieJarAccountsAndWait(std::vector<CoreAccountId> account_ids,
                                       bool expected_cookie_jar_mismatch) {
     std::vector<gaia::ListedAccount> accounts;
@@ -281,9 +289,6 @@ class SingleClientSessionsSyncTest : public SyncTest {
         accounts, run_loop.QuitClosure());
     run_loop.Run();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -646,8 +651,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
   const SessionID kTabId1 = SessionID::FromSerializedValue(1);
   const SessionID kTabId2 = SessionID::FromSerializedValue(2);
-  const base::Time kLastModifiedTime =
-      base::Time::Now() - base::TimeDelta::FromDays(100);
+  const base::Time kLastModifiedTime = base::Time::Now() - base::Days(100);
 
   SessionSyncTestHelper helper;
 
@@ -700,8 +704,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
   const SessionID kTabId1 = SessionID::FromSerializedValue(1);
   const SessionID kTabId2 = SessionID::FromSerializedValue(2);
-  const base::Time kLastModifiedTime =
-      base::Time::Now() - base::TimeDelta::FromDays(100);
+  const base::Time kLastModifiedTime = base::Time::Now() - base::Days(100);
 
   SessionSyncTestHelper helper;
 
@@ -835,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
   // Avoid interferences from actual IdentityManager trying to fetch gaia
   // account information, which would exercise
-  // ProfileSyncService::OnAccountsInCookieUpdated().
+  // SyncServiceImpl::OnAccountsInCookieUpdated().
   signin::CancelAllOngoingGaiaCookieOperations(
       IdentityManagerFactory::GetForProfile(GetProfile(0)));
 
@@ -844,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   // something is already running or scheduled to run on the sync thread. We
   // want to block here until we know the cookie jar stats have been updated.
   UpdateCookieJarAccountsAndWait(
-      {GetClient(0)->service()->GetAuthenticatedAccountInfo().account_id},
+      {GetClient(0)->service()->GetAccountInfo().account_id},
       /*expected_cookie_jar_mismatch=*/false);
 
   // Trigger a sync and wait for it.
@@ -884,6 +887,12 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
  public:
   SingleClientSessionsSyncTestWithFaviconTestServer()
       : SingleClientSessionsSyncTest() {}
+
+  SingleClientSessionsSyncTestWithFaviconTestServer(
+      const SingleClientSessionsSyncTestWithFaviconTestServer&) = delete;
+  SingleClientSessionsSyncTestWithFaviconTestServer& operator=(
+      const SingleClientSessionsSyncTestWithFaviconTestServer&) = delete;
+
   ~SingleClientSessionsSyncTestWithFaviconTestServer() override = default;
 
  protected:
@@ -894,9 +903,6 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
     ASSERT_TRUE(embedded_test_server()->Start());
     SingleClientSessionsSyncTest::SetUpOnMainThread();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTestWithFaviconTestServer);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,

@@ -29,8 +29,8 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 
 #if defined(USE_OZONE)
 #include "ui/base/ui_base_features.h"                               // nogncheck
@@ -341,11 +341,9 @@ Event::Event(const PlatformEvent& native_event, EventType type, int flags)
   ComputeEventLatencyOS(native_event);
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
     source_device_id_ = native_event->source_device_id();
     if (auto* properties = native_event->properties())
       properties_ = std::make_unique<Properties>(*properties);
-  }
 #endif
 }
 
@@ -373,7 +371,6 @@ Event& Event::operator=(const Event& rhs) {
     native_event_ = CopyNativeEvent(rhs.native_event_);
     delete_native_event_ = true;
     cancelable_ = rhs.cancelable_;
-    target_ = rhs.target_;
     phase_ = rhs.phase_;
     result_ = rhs.result_;
     source_device_id_ = rhs.source_device_id_;
@@ -826,7 +823,7 @@ float TouchEvent::ComputeRotationAngle() const {
 
 // static
 KeyEvent* KeyEvent::last_key_event_ = nullptr;
-#if defined(USE_X11) || defined(USE_OZONE)
+#if defined(USE_OZONE)
 KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
 #endif
 
@@ -841,6 +838,10 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 #endif  // defined(USE_OZONE)
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
+#if defined(USE_OZONE)
+  DCHECK(native_event->IsKeyEvent());
+  key_ = native_event->AsKeyEvent()->key_;
+#endif
   InitializeNative();
 }
 
@@ -909,6 +910,20 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
 
 KeyEvent::~KeyEvent() = default;
 
+// static
+// For compatibility, this is enabled by default.
+bool KeyEvent::synthesize_key_repeat_enabled_ = true;
+
+// static
+bool KeyEvent::IsSynthesizeKeyRepeatEnabled() {
+  return synthesize_key_repeat_enabled_;
+}
+
+// static
+void KeyEvent::SetSynthesizeKeyRepeatEnabled(bool enabled) {
+  synthesize_key_repeat_enabled_ = enabled;
+}
+
 void KeyEvent::InitializeNative() {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
@@ -916,10 +931,10 @@ void KeyEvent::InitializeNative() {
 
   // Check if this is a key repeat. This must be called before initial flags
   // processing, e.g: NormalizeFlags(), to avoid issues like crbug.com/1069690.
-  if (IsRepeated(GetLastKeyEvent()))
+  if (synthesize_key_repeat_enabled_ && IsRepeated(GetLastKeyEvent()))
     set_flags(flags() | EF_IS_REPEAT);
 
-#if defined(USE_X11)
+#if defined(OS_LINUX)
   NormalizeFlags();
 #elif defined(OS_WIN)
   // Only Windows has native character events.
@@ -947,11 +962,13 @@ void KeyEvent::ApplyLayout() const {
       return;
     }
   }
-  KeyboardCode dummy_key_code;
 
+  if (key_ != DomKey::NONE)
+    return;
+
+  KeyboardCode dummy_key_code;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform() &&
-      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+  if (KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
           code, flags(), &key_, &dummy_key_code)) {
     return;
   }
@@ -1030,7 +1047,7 @@ bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
 }
 
 KeyEvent** KeyEvent::GetLastKeyEvent() {
-#if defined(USE_X11) || defined(USE_OZONE)
+#if defined(USE_OZONE)
   // Use a different static variable for key events that have non standard
   // state masks as it may be reposted by an IME. IBUS-GTK and fcitx-GTK uses
   // this field to detect the re-posted event for example. crbug.com/385873.
@@ -1057,7 +1074,7 @@ char16_t KeyEvent::GetCharacter() const {
     // Historically ui::KeyEvent has held only BMP characters.
     // Until this explicitly changes, require |key_| to hold a BMP character.
     DomKey::Base utf32_character = key_.ToCharacter();
-    char16_t ucs2_character{utf32_character};
+    char16_t ucs2_character = static_cast<char16_t>(utf32_character);
     DCHECK_EQ(static_cast<DomKey::Base>(ucs2_character), utf32_character);
     // Check if the control character is down. Note that ALTGR is represented
     // on Windows as CTRL|ALT, so we need to make sure that is not set.

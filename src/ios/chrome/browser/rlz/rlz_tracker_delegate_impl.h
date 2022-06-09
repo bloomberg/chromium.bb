@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 
 class ChromeBrowserState;
@@ -20,6 +19,10 @@ struct OmniboxLog;
 class RLZTrackerDelegateImpl : public rlz::RLZTrackerDelegate {
  public:
   RLZTrackerDelegateImpl();
+
+  RLZTrackerDelegateImpl(const RLZTrackerDelegateImpl&) = delete;
+  RLZTrackerDelegateImpl& operator=(const RLZTrackerDelegateImpl&) = delete;
+
   ~RLZTrackerDelegateImpl() override;
 
   static bool IsGoogleDefaultSearch(ChromeBrowserState* browser_state);
@@ -47,8 +50,6 @@ class RLZTrackerDelegateImpl : public rlz::RLZTrackerDelegate {
 
   base::OnceClosure on_omnibox_search_callback_;
   base::CallbackListSubscription on_omnibox_url_opened_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(RLZTrackerDelegateImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_RLZ_RLZ_TRACKER_DELEGATE_IMPL_H_

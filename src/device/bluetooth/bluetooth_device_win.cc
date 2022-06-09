@@ -11,7 +11,7 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
@@ -161,8 +161,7 @@ void BluetoothDeviceWin::SetConnectionLatency(
 }
 
 void BluetoothDeviceWin::Connect(PairingDelegate* pairing_delegate,
-                                 base::OnceClosure callback,
-                                 ConnectErrorCallback error_callback) {
+                                 ConnectCallback callback) {
   NOTIMPLEMENTED();
 }
 

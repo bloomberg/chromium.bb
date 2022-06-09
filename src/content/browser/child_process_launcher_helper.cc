@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -118,6 +120,13 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
   begin_launch_time_ = base::TimeTicks::Now();
+  if (GetProcessType() == switches::kRendererProcess &&
+      base::TimeTicks::IsConsistentAcrossProcesses()) {
+    const base::TimeDelta ticks_as_delta = begin_launch_time_.since_origin();
+    command_line_->AppendSwitchASCII(
+        switches::kRendererProcessLaunchTimeTicks,
+        base::NumberToString(ticks_as_delta.InMicroseconds()));
+  }
 
   std::unique_ptr<FileMappedForLaunch> files_to_register = GetFilesToMap();
 
@@ -127,6 +136,8 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
 
   Process process;
   if (BeforeLaunchOnLauncherThread(*files_to_register, &options)) {
+    base::FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
+        command_line(), &options);
     process =
         LaunchProcessOnLauncherThread(options, std::move(files_to_register),
 #if defined(OS_ANDROID)
@@ -161,7 +172,7 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     if (mojo_named_channel_) {
       DCHECK(!mojo_channel_);
       mojo::OutgoingInvitation::Send(
-          std::move(invitation), process.process.Handle(),
+          std::move(invitation), base::kNullProcessHandle,
           mojo_named_channel_->TakeServerEndpoint(), process_error_callback_);
     } else
 #endif

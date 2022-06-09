@@ -19,13 +19,13 @@ EXTRA_DIST = \
 	replace-enum-strings.cmake \
 	meson.build \
 	meson_options.txt \
-	subprojects/expat.wrap \
+	subprojects/cairo.wrap \
 	subprojects/freetype2.wrap \
 	subprojects/glib.wrap \
-	subprojects/libffi.wrap \
-	subprojects/proxy-libintl.wrap \
-	subprojects/zlib.wrap \
 	subprojects/google-benchmark.wrap \
+	subprojects/ragel.wrap \
+	subprojects/packagefiles/ragel/meson.build \
+	subprojects/ttf-parser.wrap \
 	perf/meson.build \
 	perf/perf-draw.hh \
 	perf/perf-extents.hh \

@@ -8,10 +8,8 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -71,6 +69,10 @@ class AnnouncementNotificationService : public KeyedService {
   class Delegate {
    public:
     Delegate() = default;
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     virtual ~Delegate() = default;
 
     // Show notification.
@@ -78,9 +80,6 @@ class AnnouncementNotificationService : public KeyedService {
 
     // Is Chrome first time to run.
     virtual bool IsFirstRun() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -95,14 +94,17 @@ class AnnouncementNotificationService : public KeyedService {
   static bool CanOpenAnnouncement(Profile* profile);
 
   AnnouncementNotificationService();
+
+  AnnouncementNotificationService(const AnnouncementNotificationService&) =
+      delete;
+  AnnouncementNotificationService& operator=(
+      const AnnouncementNotificationService&) = delete;
+
   ~AnnouncementNotificationService() override;
 
   // Show notification if needed based on a version number in Finch parameters
   // and the version cached in PrefService.
   virtual void MaybeShowNotification() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AnnouncementNotificationService);
 };
 
 #endif  // CHROME_BROWSER_UPDATES_ANNOUNCEMENT_NOTIFICATION_ANNOUNCEMENT_NOTIFICATION_SERVICE_H_

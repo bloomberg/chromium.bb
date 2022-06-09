@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for distributions KL mechanism."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops.distributions import kullback_leibler
@@ -82,14 +78,14 @@ class KLTest(test.TestCase):
     class MyDist(normal.Normal):
       pass
 
-    with self.assertRaisesRegexp(TypeError, "must be callable"):
+    with self.assertRaisesRegex(TypeError, "must be callable"):
       kullback_leibler.RegisterKL(MyDist, MyDist)("blah")
 
     # First registration is OK
     kullback_leibler.RegisterKL(MyDist, MyDist)(lambda a, b: None)
 
     # Second registration fails
-    with self.assertRaisesRegexp(ValueError, "has already been registered"):
+    with self.assertRaisesRegex(ValueError, "has already been registered"):
       kullback_leibler.RegisterKL(MyDist, MyDist)(lambda a, b: None)
 
   def testExactRegistrationsAllMatch(self):

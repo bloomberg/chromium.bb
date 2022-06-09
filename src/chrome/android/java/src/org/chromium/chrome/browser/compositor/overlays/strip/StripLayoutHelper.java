@@ -27,6 +27,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -149,6 +150,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private boolean mShouldCascadeTabs;
     private boolean mIsFirstLayoutPass;
     private boolean mAnimationsDisabledForTesting;
+    // Whether tab strip scrolling is in progress
+    private boolean mIsStripScrollInProgress;
 
     // Tab menu item IDs
     public static final int ID_CLOSE_ALL_TABS = 0;
@@ -382,6 +385,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      * @param shouldCascadeTabs Whether the {@link CascadingStripStacker} should be used.
      */
     void setShouldCascadeTabs(boolean shouldCascadeTabs) {
+        if (mModel == null) return;
+
         if (shouldCascadeTabs != mShouldCascadeTabs) {
             mShouldCascadeTabs = shouldCascadeTabs;
             setTabStacker(shouldCascadeTabs ? mCascadingStripStacker : mScrollingStripStacker);
@@ -429,6 +434,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (mModel == model) return;
         mModel = model;
         mTabCreator = tabCreator;
+        setShouldCascadeTabs(mShouldCascadeTabs);
         computeAndUpdateTabOrders(false);
     }
 
@@ -704,6 +710,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                             mScrollOffset, 0, (int) fastExpandDelta, 0, time, EXPAND_DURATION_MS);
                 }
             } else {
+                if (!mIsStripScrollInProgress) {
+                    mIsStripScrollInProgress = true;
+                    RecordUserAction.record("MobileToolbarSlideTabs");
+                }
                 updateScrollOffsetPosition((int) (mScrollOffset + deltaX));
             }
         }
@@ -868,7 +878,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (tab == null || tab.isDying()) return;
 
         int newIndex = TabModelUtils.getTabIndexById(mModel, tab.getId());
-        TabModelUtils.setIndex(mModel, newIndex);
+        TabModelUtils.setIndex(mModel, newIndex, false);
     }
 
     /**
@@ -883,6 +893,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         resetResizeTimeout(false);
 
         if (mNewTabButton.click(x, y)) {
+            RecordUserAction.record("MobileToolbarNewTab");
             mNewTabButton.handleClick(time);
             return;
         }
@@ -891,6 +902,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (clickedTab == null || clickedTab.isDying()) return;
         if (clickedTab.checkCloseHitTest(x, y)
                 || (fromMouse && (buttons & MotionEvent.BUTTON_TERTIARY) != 0)) {
+            RecordUserAction.record("MobileToolbarCloseTab");
             clickedTab.getCloseButton().handleClick(time);
         } else {
             clickedTab.handleClick(time);
@@ -916,6 +928,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             if (!mModel.isIncognito()) mModel.commitAllTabClosures();
             mTabCreator.launchNTP();
         }
+        mIsStripScrollInProgress = false;
     }
 
     /**
@@ -1315,7 +1328,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     private void startReorderMode(long time, float currentX, float startX) {
         if (mInReorderMode) return;
-
+        RecordUserAction.record("MobileToolbarStartReorderTab");
         // 1. Reset the last pressed close button state.
         if (mLastPressedCloseButton != null && mLastPressedCloseButton.isPressed()) {
             mLastPressedCloseButton.setPressed(false);
@@ -1334,7 +1347,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 4. Select this tab so that it is always in the foreground.
         TabModelUtils.setIndex(
-                mModel, TabModelUtils.getTabIndexById(mModel, mInteractingTab.getId()));
+                mModel, TabModelUtils.getTabIndexById(mModel, mInteractingTab.getId()), false);
 
         // 5. Fast expand to make sure this tab is visible. If tabs are not cascaded, the selected
         //    tab will already be visible, so there's no need to fast expand to make it visible.
@@ -1601,7 +1614,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private void showTabMenu(StripLayoutTab anchorTab) {
         // 1. Bring the anchor tab to the foreground.
         int tabIndex = TabModelUtils.getTabIndexById(mModel, anchorTab.getId());
-        TabModelUtils.setIndex(mModel, tabIndex);
+        TabModelUtils.setIndex(mModel, tabIndex, false);
 
         // 2. Anchor the popupMenu to the view associated with the tab
         View tabView = TabModelUtils.getCurrentTab(mModel).getView();

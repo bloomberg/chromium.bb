@@ -7,12 +7,14 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/metrics/demo_session_metrics_recorder.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
+#include "ash/metrics/stylus_metrics_recorder.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -60,8 +62,8 @@ ActiveWindowStateType GetActiveWindowState() {
       case WindowStateType::kFullscreen:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN;
         break;
-      case WindowStateType::kLeftSnapped:
-      case WindowStateType::kRightSnapped:
+      case WindowStateType::kPrimarySnapped:
+      case WindowStateType::kSecondarySnapped:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
         break;
       case WindowStateType::kPinned:
@@ -456,16 +458,18 @@ void UserMetricsRecorder::OnShellInitialized() {
         std::make_unique<DesktopTaskSwitchMetricRecorder>();
   }
   pointer_metrics_recorder_ = std::make_unique<PointerMetricsRecorder>();
+  stylus_metrics_recorder_ = std::make_unique<StylusMetricsRecorder>();
 }
 
 void UserMetricsRecorder::OnShellShuttingDown() {
   demo_session_metrics_recorder_.reset();
   desktop_task_switch_metric_recorder_.reset();
 
-  // To clean up pointer_metrics_recorder_ properly, a valid shell instance is
-  // required, so explicitly delete it before the shell instance becomes
-  // invalid.
+  // To clean up pointer_metrics_recorder_ and stylus_metrics_recorder_
+  // properly, a valid shell instance is required, so explicitly delete them
+  // before the shell instance becomes invalid.
   pointer_metrics_recorder_.reset();
+  stylus_metrics_recorder_.reset();
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
@@ -485,6 +489,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
 
   if (IsUserInActiveDesktopEnvironment()) {
     RecordShelfItemCounts();
+    RecordPeriodicAppListMetrics();
     UMA_HISTOGRAM_COUNTS_100("Ash.NumberOfVisibleWindowsInPrimaryDisplay",
                              GetNumVisibleWindowsInPrimaryDisplay());
 
@@ -508,9 +513,8 @@ bool UserMetricsRecorder::IsUserInActiveDesktopEnvironment() const {
 }
 
 void UserMetricsRecorder::StartTimer() {
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kAshPeriodicMetricsTimeInSeconds),
-               this, &UserMetricsRecorder::RecordPeriodicMetrics);
+  timer_.Start(FROM_HERE, base::Seconds(kAshPeriodicMetricsTimeInSeconds), this,
+               &UserMetricsRecorder::RecordPeriodicMetrics);
 }
 
 }  // namespace ash

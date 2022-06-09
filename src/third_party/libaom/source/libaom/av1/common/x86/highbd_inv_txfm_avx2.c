@@ -4146,8 +4146,8 @@ static void highbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
       transpose_8x8_avx2(&buf0_cur[0], &buf0_cur[0]);
     }
     if (rect_type == 1 || rect_type == -1) {
-      av1_round_shift_rect_array_32_avx2(
-          buf0, buf0, buf_size_nonzero_w_div8 << 3, 0, NewInvSqrt2);
+      round_shift_rect_array_32_avx2(buf0, buf0, buf_size_nonzero_w_div8 << 3,
+                                     0, NewInvSqrt2);
     }
     row_txfm(buf0, buf0, av1_inv_cos_bit_row[txw_idx][txh_idx], 0, bd,
              -shift[0]);
@@ -4169,9 +4169,9 @@ static void highbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
     col_txfm(buf1 + i * txfm_size_row, buf1 + i * txfm_size_row,
              av1_inv_cos_bit_col[txw_idx][txh_idx], 1, bd, 0);
 
-    av1_round_shift_array_32_avx2(buf1 + i * txfm_size_row,
-                                  buf1 + i * txfm_size_row, txfm_size_row,
-                                  -shift[1]);
+    round_shift_array_32_avx2(buf1 + i * txfm_size_row,
+                              buf1 + i * txfm_size_row, txfm_size_row,
+                              -shift[1]);
   }
 
   // write to buffer

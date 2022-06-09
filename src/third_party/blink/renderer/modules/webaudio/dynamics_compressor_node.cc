@@ -26,12 +26,14 @@
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dynamics_compressor_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/dynamics_compressor.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;
@@ -78,6 +80,8 @@ DynamicsCompressorHandler::~DynamicsCompressorHandler() {
 }
 
 void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "DynamicsCompressorHandler::Process");
   AudioBus* output_bus = Output(0).Bus();
   DCHECK(output_bus);
 

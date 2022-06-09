@@ -35,6 +35,7 @@ def _CommitPositionNumber(commit_pos):
   This is used to extract the number from got_revision_cp; This will be used
   as the value of "rev" in the data passed to results_dashboard.SendResults.
   """
+
   return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
 
@@ -71,16 +72,19 @@ def _GetDashboardJson(options):
 
 
 def _GetDashboardHistogramData(options):
-  revisions = {
-      '--chromium_commit_positions': _CommitPositionNumber(
-          options.got_revision_cp),
-      '--chromium_revisions': options.git_revision
-  }
+  revisions = {}
 
+  if options.got_revision_cp:
+    revisions['--chromium_commit_positions'] = \
+        _CommitPositionNumber(options.got_revision_cp)
+  if options.git_revision:
+    revisions['--chromium_revisions'] = options.git_revision
   if options.got_webrtc_revision:
     revisions['--webrtc_revisions'] = options.got_webrtc_revision
   if options.got_v8_revision:
     revisions['--v8_revisions'] = options.got_v8_revision
+  if options.got_angle_revision:
+    revisions['--angle_revisions'] = options.got_angle_revision
 
   is_reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
@@ -130,6 +134,7 @@ def _CreateParser():
   parser.add_option('--buildnumber')
   parser.add_option('--got-webrtc-revision')
   parser.add_option('--got-v8-revision')
+  parser.add_option('--got-angle-revision')
   parser.add_option('--git-revision')
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')

@@ -6,10 +6,10 @@
 
 #include "core/fxcrt/bytestring.h"
 
+#include <ctype.h>
 #include <stddef.h>
 
 #include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -18,12 +18,13 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/string_pool_template.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/numerics/safe_math.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 template class fxcrt::StringDataTemplate<char>;
 template class fxcrt::StringViewTemplate<char>;
@@ -35,23 +36,22 @@ namespace {
 constexpr char kTrimChars[] = "\x09\x0a\x0b\x0c\x0d\x20";
 
 const char* FX_strstr(const char* haystack,
-                      int haystack_len,
+                      size_t haystack_len,
                       const char* needle,
-                      int needle_len) {
-  if (needle_len > haystack_len || needle_len == 0) {
+                      size_t needle_len) {
+  if (needle_len > haystack_len || needle_len == 0)
     return nullptr;
-  }
+
   const char* end_ptr = haystack + haystack_len - needle_len;
   while (haystack <= end_ptr) {
-    int i = 0;
+    size_t i = 0;
     while (1) {
-      if (haystack[i] != needle[i]) {
+      if (haystack[i] != needle[i])
         break;
-      }
+
       i++;
-      if (i == needle_len) {
+      if (i == needle_len)
         return haystack;
-      }
     }
     haystack++;
   }
@@ -64,10 +64,6 @@ namespace fxcrt {
 
 static_assert(sizeof(ByteString) <= sizeof(char*),
               "Strings must not require more space than pointers");
-
-#define FORCE_ANSI 0x10000
-#define FORCE_UNICODE 0x20000
-#define FORCE_INT64 0x40000
 
 // static
 ByteString ByteString::FormatInteger(int i) {
@@ -472,6 +468,11 @@ intptr_t ByteString::ReferenceCountForTesting() const {
   return m_pData ? m_pData->m_nRefs : 0;
 }
 
+ByteString ByteString::Substr(size_t offset) const {
+  // Unsigned underflow is well-defined and out-of-range is handled by Substr().
+  return Substr(offset, GetLength() - offset);
+}
+
 ByteString ByteString::Substr(size_t first, size_t count) const {
   if (!m_pData)
     return ByteString();
@@ -494,14 +495,11 @@ ByteString ByteString::Substr(size_t first, size_t count) const {
 }
 
 ByteString ByteString::First(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return ByteString();
   return Substr(0, count);
 }
 
 ByteString ByteString::Last(size_t count) const {
-  if (count == 0 || !IsValidLength(count))
-    return ByteString();
+  // Unsigned underflow is well-defined and out-of-range is handled by Substr().
   return Substr(GetLength() - count, count);
 }
 
@@ -536,43 +534,46 @@ size_t ByteString::Insert(size_t index, char ch) {
   return new_length;
 }
 
-Optional<size_t> ByteString::Find(char ch, size_t start) const {
+absl::optional<size_t> ByteString::Find(char ch, size_t start) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   if (!IsValidIndex(start))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const char* pStr = static_cast<const char*>(
       memchr(m_pData->m_String + start, ch, m_pData->m_nDataLength - start));
-  return pStr ? Optional<size_t>(static_cast<size_t>(pStr - m_pData->m_String))
-              : pdfium::nullopt;
+  return pStr ? absl::optional<size_t>(
+                    static_cast<size_t>(pStr - m_pData->m_String))
+              : absl::nullopt;
 }
 
-Optional<size_t> ByteString::Find(ByteStringView subStr, size_t start) const {
+absl::optional<size_t> ByteString::Find(ByteStringView subStr,
+                                        size_t start) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   if (!IsValidIndex(start))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const char* pStr =
       FX_strstr(m_pData->m_String + start, m_pData->m_nDataLength - start,
                 subStr.unterminated_c_str(), subStr.GetLength());
-  return pStr ? Optional<size_t>(static_cast<size_t>(pStr - m_pData->m_String))
-              : pdfium::nullopt;
+  return pStr ? absl::optional<size_t>(
+                    static_cast<size_t>(pStr - m_pData->m_String))
+              : absl::nullopt;
 }
 
-Optional<size_t> ByteString::ReverseFind(char ch) const {
+absl::optional<size_t> ByteString::ReverseFind(char ch) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   size_t nLength = m_pData->m_nDataLength;
   while (nLength--) {
     if (m_pData->m_String[nLength] == ch)
       return nLength;
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 void ByteString::MakeLower() {
@@ -777,26 +778,30 @@ std::ostream& operator<<(std::ostream& os, ByteStringView str) {
 
 }  // namespace fxcrt
 
-uint32_t FX_HashCode_GetA(ByteStringView str, bool bIgnoreCase) {
+uint32_t FX_HashCode_GetA(ByteStringView str) {
   uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 31 * dwHashCode + tolower(c);
-  } else {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 31 * dwHashCode + c;
-  }
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 31 * dwHashCode + c;
   return dwHashCode;
 }
 
-uint32_t FX_HashCode_GetAsIfW(ByteStringView str, bool bIgnoreCase) {
+uint32_t FX_HashCode_GetLoweredA(ByteStringView str) {
   uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
-  } else {
-    for (ByteStringView::UnsignedType c : str)
-      dwHashCode = 1313 * dwHashCode + c;
-  }
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 31 * dwHashCode + tolower(c);
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetAsIfW(ByteStringView str) {
+  uint32_t dwHashCode = 0;
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 1313 * dwHashCode + c;
+  return dwHashCode;
+}
+
+uint32_t FX_HashCode_GetLoweredAsIfW(ByteStringView str) {
+  uint32_t dwHashCode = 0;
+  for (ByteStringView::UnsignedType c : str)
+    dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
   return dwHashCode;
 }

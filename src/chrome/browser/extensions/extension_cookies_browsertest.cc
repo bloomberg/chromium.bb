@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,7 +23,9 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -32,6 +35,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
@@ -39,6 +43,8 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
@@ -321,7 +327,7 @@ class ExtensionCookiesTest : public ExtensionBrowserTest {
   net::EmbeddedTestServer test_server_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestExtensionDir> extension_dir_;
-  const Extension* extension_ = nullptr;
+  raw_ptr<const Extension> extension_ = nullptr;
 };
 
 // Tests for special handling of SameSite cookies for extensions:
@@ -333,26 +339,40 @@ class ExtensionCookiesTest : public ExtensionBrowserTest {
 //     URL and also the extension has access to it.
 // See URLLoader::ShouldForceIgnoreSiteForCookies().
 //
-// The test fixture param is whether or not the new SameSite features are
-// enabled.
+// The test fixture param is whether or not legacy SameSite semantics are
+// enabled (i.e, whether SameSite-by-default cookies and SameSite=None
+// requires Secure are disabled).
 class ExtensionSameSiteCookiesTest
     : public ExtensionCookiesTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  ExtensionSameSiteCookiesTest() {
-    std::vector<base::Feature> samesite_features = {
-        net::features::kSameSiteByDefaultCookies,
-        net::features::kCookiesWithoutSameSiteMustBeSecure};
-    if (AreSameSiteFeaturesEnabled()) {
-      feature_list_.InitWithFeatures(samesite_features /* enabled */, {});
-    } else {
-      feature_list_.InitWithFeatures({}, samesite_features /* disabled */);
-    }
-  }
+  ExtensionSameSiteCookiesTest() = default;
   ~ExtensionSameSiteCookiesTest() override = default;
   ExtensionSameSiteCookiesTest(const ExtensionSameSiteCookiesTest&) = delete;
   ExtensionSameSiteCookiesTest& operator=(const ExtensionSameSiteCookiesTest&) =
       delete;
+
+  void SetUpOnMainThread() override {
+    ExtensionCookiesTest::SetUpOnMainThread();
+
+    // If SameSite access semantics is "legacy", add content settings to allow
+    // legacy access for all sites.
+    if (HasLegacySameSiteAccessSemantics()) {
+      browser()
+          ->profile()
+          ->GetDefaultStoragePartition()
+          ->GetNetworkContext()
+          ->GetCookieManager(
+              cookie_manager_remote_.BindNewPipeAndPassReceiver());
+      cookie_manager_remote_->SetContentSettingsForLegacyCookieAccess(
+          {ContentSettingPatternSource(
+              ContentSettingsPattern::Wildcard(),
+              ContentSettingsPattern::Wildcard(),
+              base::Value(ContentSetting::CONTENT_SETTING_ALLOW),
+              /*source=*/std::string(), /*incognito=*/false)});
+      cookie_manager_remote_.FlushForTesting();
+    }
+  }
 
  protected:
   // Sets an array of cookies with various SameSite values.
@@ -377,7 +397,7 @@ class ExtensionSameSiteCookiesTest
   // Expect that only cookies without SameSite are present.
   void ExpectNoSameSiteCookies(const std::string& cookie_header) {
     std::vector<std::string> expected = {kNoneCookie};
-    if (!AreSameSiteFeaturesEnabled()) {
+    if (HasLegacySameSiteAccessSemantics()) {
       expected.push_back(kUnspecifiedCookie);
     }
     EXPECT_THAT(AsCookies(cookie_header),
@@ -389,7 +409,10 @@ class ExtensionSameSiteCookiesTest
         {kPermissionPattern1, kPermissionPattern1Sub, kPermissionPattern2});
   }
 
-  bool AreSameSiteFeaturesEnabled() { return GetParam(); }
+  bool HasLegacySameSiteAccessSemantics() { return GetParam(); }
+
+ private:
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote_;
 };
 
 // Tests where the extension page initiates the request.
@@ -637,7 +660,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   constexpr char kActiveTabHost[] = "active-tab.example";
   GURL original_document_url =
       test_server()->GetURL(kActiveTabHost, "/title1.html");
-  ui_test_utils::NavigateToURL(browser(), original_document_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), original_document_url));
   SetCookies(kActiveTabHost);
 
   // Based on activeTab, the extension shouldn't be initially granted access to
@@ -682,7 +705,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   EXPECT_NE(another_document_url, original_document_url);
   EXPECT_EQ(url::Origin::Create(another_document_url),
             url::Origin::Create(original_document_url));
-  ui_test_utils::NavigateToURL(browser(), another_document_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), another_document_url));
   {
     SCOPED_TRACE(
         "TEST STEP 4: After navigating the tab cross-document, "
@@ -696,7 +719,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   GURL cross_origin_url = test_server()->GetURL("other.com", "/title1.html");
   EXPECT_NE(url::Origin::Create(cross_origin_url),
             url::Origin::Create(original_document_url));
-  ui_test_utils::NavigateToURL(browser(), cross_origin_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), cross_origin_url));
   {
     SCOPED_TRACE("TEST STEP 5: After navigating the tab cross-origin.");
     std::string cookies = FetchCookies(background_page, kActiveTabHost);
@@ -728,8 +751,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   // - top-level frame: kActiveTabHost
   // - subframe: extension
   constexpr char kActiveTabHost[] = "active-tab.example";
-  ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL(kActiveTabHost, "/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL(kActiveTabHost, "/title1.html")));
   SetCookies(kActiveTabHost);
   content::RenderFrameHost* extension_subframe = nullptr;
   {
@@ -744,8 +767,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
         content::JsReplace(kSubframeInjectionScriptTemplate,
                            extension->GetResourceURL("subframe.html"))));
     subframe_nav_observer.Wait();
-    ASSERT_EQ(2u, web_contents()->GetAllFrames().size());
-    extension_subframe = web_contents()->GetAllFrames()[1];
+    extension_subframe = ChildFrameAt(web_contents(), 0);
+    ASSERT_TRUE(extension_subframe);
     ASSERT_EQ(extension->origin(),
               extension_subframe->GetLastCommittedOrigin());
   }
@@ -823,9 +846,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
     EXPECT_TRUE(queue.WaitForMessage(&json));
     absl::optional<base::Value> value =
         base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
-    std::string result;
-    EXPECT_TRUE(value->GetAsString(&result));
-    return result;
+    EXPECT_TRUE(value->is_string());
+    return value->GetString();
   };
 
   TestExtensionDir extension_dir;
@@ -856,7 +878,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   constexpr char kActiveTabHost[] = "active-tab.example";
   GURL original_document_url =
       test_server()->GetURL(kActiveTabHost, "/title1.html");
-  ui_test_utils::NavigateToURL(browser(), original_document_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), original_document_url));
   EXPECT_EQ(kActiveTabHost,
             web_contents()->GetMainFrame()->GetLastCommittedURL().host());
   SetCookies(kActiveTabHost);
@@ -914,7 +936,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   EXPECT_NE(another_document_url, original_document_url);
   EXPECT_EQ(url::Origin::Create(another_document_url),
             url::Origin::Create(original_document_url));
-  ui_test_utils::NavigateToURL(browser(), another_document_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), another_document_url));
   {
     SCOPED_TRACE(
         "TEST STEP 4: After navigating the tab cross-document, "
@@ -929,7 +951,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionSameSiteCookiesTest,
   GURL cross_origin_url = test_server()->GetURL("other.com", "/title1.html");
   EXPECT_NE(url::Origin::Create(cross_origin_url),
             url::Origin::Create(original_document_url));
-  ui_test_utils::NavigateToURL(browser(), cross_origin_url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), cross_origin_url));
   {
     SCOPED_TRACE("TEST STEP 5: After navigating the tab cross-origin.");
     std::string cookies =

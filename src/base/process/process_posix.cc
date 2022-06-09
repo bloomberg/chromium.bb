@@ -33,8 +33,6 @@
 
 namespace {
 
-#if !defined(OS_NACL_NONSFI)
-
 bool WaitpidWithTimeout(base::ProcessHandle handle,
                         int* status,
                         base::TimeDelta wait) {
@@ -157,7 +155,7 @@ bool WaitForSingleNonChildProcess(base::ProcessHandle handle,
     } else {
       break;
     }
-  } while (wait_forever || remaining_delta > base::TimeDelta());
+  } while (wait_forever || remaining_delta.is_positive());
 
   if (result < 0) {
     DPLOG(ERROR) << "kevent (wait " << handle << ")";
@@ -226,7 +224,6 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
   }
   return exited;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace
 
@@ -310,7 +307,6 @@ void Process::Close() {
   // end up w/ a zombie when it does finally exit.
 }
 
-#if !defined(OS_NACL_NONSFI)
 bool Process::Terminate(int exit_code, bool wait) const {
   // exit_code isn't supportable.
   DCHECK(IsValid());
@@ -319,7 +315,7 @@ bool Process::Terminate(int exit_code, bool wait) const {
   bool did_terminate = kill(process_, SIGTERM) == 0;
 
   if (wait && did_terminate) {
-    if (WaitForExitWithTimeout(TimeDelta::FromSeconds(60), nullptr))
+    if (WaitForExitWithTimeout(Seconds(60), nullptr))
       return true;
     did_terminate = kill(process_, SIGKILL) == 0;
     if (did_terminate)
@@ -331,7 +327,6 @@ bool Process::Terminate(int exit_code, bool wait) const {
 
   return did_terminate;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool Process::WaitForExit(int* exit_code) const {
   return WaitForExitWithTimeout(TimeDelta::Max(), exit_code);

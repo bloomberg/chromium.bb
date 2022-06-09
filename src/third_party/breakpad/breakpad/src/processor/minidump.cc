@@ -470,7 +470,16 @@ bool MinidumpContext::Read(uint32_t expected_size) {
   // First, figure out what type of CPU this context structure is for.
   // For some reason, the AMD64 Context doesn't have context_flags
   // at the beginning of the structure, so special case it here.
-  if (expected_size == sizeof(MDRawContextAMD64)) {
+
+  uint32_t sysinfo_cpu_type = 0;
+  if (!minidump_->GetContextCPUFlagsFromSystemInfo(&sysinfo_cpu_type)) {
+    BPLOG(ERROR) << "Failed to preserve the current stream position";
+    return false;
+  }
+
+  if (expected_size == sizeof(MDRawContextAMD64) ||
+      (sysinfo_cpu_type == MD_CONTEXT_AMD64 &&
+       expected_size >= sizeof(MDRawContextAMD64))) {
     BPLOG(INFO) << "MinidumpContext: looks like AMD64 context";
 
     scoped_ptr<MDRawContextAMD64> context_amd64(new MDRawContextAMD64());
@@ -480,17 +489,24 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       return false;
     }
 
+    // Context may include xsave registers and so be larger than
+    // sizeof(MDRawContextAMD64). For now we skip this extended data.
+    if (expected_size > sizeof(MDRawContextAMD64)) {
+      size_t bytes_left = expected_size - sizeof(MDRawContextAMD64);
+      std::vector<uint8_t> xstate(bytes_left);
+      if (!minidump_->ReadBytes(xstate.data(),
+                                bytes_left)) {
+        BPLOG(ERROR) << "MinidumpContext could not skip amd64 xstate";
+        return false;
+      }
+    }
+
     if (minidump_->swap())
       Swap(&context_amd64->context_flags);
 
     uint32_t cpu_type = context_amd64->context_flags & MD_CONTEXT_CPU_MASK;
     if (cpu_type == 0) {
-      if (minidump_->GetContextCPUFlagsFromSystemInfo(&cpu_type)) {
-        context_amd64->context_flags |= cpu_type;
-      } else {
-        BPLOG(ERROR) << "Failed to preserve the current stream position";
-        return false;
-      }
+      context_amd64->context_flags |= sysinfo_cpu_type;
     }
 
     if (cpu_type != MD_CONTEXT_AMD64) {
@@ -765,13 +781,10 @@ bool MinidumpContext::Read(uint32_t expected_size) {
       }
     }
 
+    // Fixup if we were not provided a cpu type.
     if (cpu_type == 0) {
-      if (minidump_->GetContextCPUFlagsFromSystemInfo(&cpu_type)) {
-        context_flags |= cpu_type;
-      } else {
-        BPLOG(ERROR) << "Failed to preserve the current stream position";
-        return false;
-      }
+      cpu_type = sysinfo_cpu_type;
+      context_flags |= cpu_type;
     }
 
     // Allocate the context structure for the correct CPU and fill it.  The
@@ -1163,7 +1176,6 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         BPLOG(INFO) << "MinidumpContext unknown context type " <<
           HexString(cpu_type);
         return false;
-        break;
       }
     }
     SetContextFlags(context_flags);
@@ -4983,12 +4995,9 @@ void MinidumpCrashpadInfo::Print() {
          MDGUIDToString(crashpad_info_.report_id).c_str());
   printf("  client_id = %s\n",
          MDGUIDToString(crashpad_info_.client_id).c_str());
-  for (std::map<std::string, std::string>::const_iterator iterator =
-           simple_annotations_.begin();
-       iterator != simple_annotations_.end();
-       ++iterator) {
-    printf("  simple_annotations[\"%s\"] = %s\n",
-           iterator->first.c_str(), iterator->second.c_str());
+  for (const auto& annot : simple_annotations_) {
+    printf("  simple_annotations[\"%s\"] = %s\n", annot.first.c_str(),
+           annot.second.c_str());
   }
   for (uint32_t module_index = 0;
        module_index < module_crashpad_info_links_.size();
@@ -4997,23 +5006,18 @@ void MinidumpCrashpadInfo::Print() {
            module_index, module_crashpad_info_links_[module_index]);
     printf("  module_list[%d].version = %d\n",
            module_index, module_crashpad_info_[module_index].version);
-    for (uint32_t annotation_index = 0;
-         annotation_index <
-             module_crashpad_info_list_annotations_[module_index].size();
+    const auto& list_annots =
+        module_crashpad_info_list_annotations_[module_index];
+    for (uint32_t annotation_index = 0; annotation_index < list_annots.size();
          ++annotation_index) {
-      printf("  module_list[%d].list_annotations[%d] = %s\n",
-             module_index,
-             annotation_index,
-             module_crashpad_info_list_annotations_
-                 [module_index][annotation_index].c_str());
+      printf("  module_list[%d].list_annotations[%d] = %s\n", module_index,
+             annotation_index, list_annots[annotation_index].c_str());
     }
-    for (std::map<std::string, std::string>::const_iterator iterator =
-             module_crashpad_info_simple_annotations_[module_index].begin();
-         iterator !=
-             module_crashpad_info_simple_annotations_[module_index].end();
-         ++iterator) {
+    const auto& simple_annots =
+        module_crashpad_info_simple_annotations_[module_index];
+    for (const auto& annot : simple_annots) {
       printf("  module_list[%d].simple_annotations[\"%s\"] = %s\n",
-             module_index, iterator->first.c_str(), iterator->second.c_str());
+             module_index, annot.first.c_str(), annot.second.c_str());
     }
   }
 

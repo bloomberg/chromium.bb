@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/power_utils.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -115,23 +115,24 @@ PowerHandler::TestAPI::TestAPI(PowerHandler* handler) : handler_(handler) {}
 PowerHandler::TestAPI::~TestAPI() = default;
 
 void PowerHandler::TestAPI::RequestPowerManagementSettings() {
-  base::ListValue args;
-  handler_->HandleRequestPowerManagementSettings(&args);
+  base::Value args(base::Value::Type::LIST);
+  handler_->HandleRequestPowerManagementSettings(
+      &base::Value::AsListValue(args));
 }
 
 void PowerHandler::TestAPI::SetIdleBehavior(IdleBehavior behavior,
                                             bool when_on_ac) {
-  base::ListValue args;
-  args.AppendInteger(static_cast<int>(behavior));
-  args.AppendBoolean(when_on_ac);
-  handler_->HandleSetIdleBehavior(&args);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(static_cast<int>(behavior));
+  args.Append(when_on_ac);
+  handler_->HandleSetIdleBehavior(&base::Value::AsListValue(args));
 }
 
 void PowerHandler::TestAPI::SetLidClosedBehavior(
     PowerPolicyController::Action behavior) {
-  base::ListValue args;
-  args.AppendInteger(behavior);
-  handler_->HandleSetLidClosedBehavior(&args);
+  base::Value args(base::Value::Type::LIST);
+  args.Append(behavior);
+  handler_->HandleSetLidClosedBehavior(&base::Value::AsListValue(args));
 }
 
 PowerHandler::PowerHandler(PrefService* prefs) : prefs_(prefs) {}
@@ -139,22 +140,22 @@ PowerHandler::PowerHandler(PrefService* prefs) : prefs_(prefs) {}
 PowerHandler::~PowerHandler() {}
 
 void PowerHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "updatePowerStatus",
       base::BindRepeating(&PowerHandler::HandleUpdatePowerStatus,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setPowerSource", base::BindRepeating(&PowerHandler::HandleSetPowerSource,
                                             base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "requestPowerManagementSettings",
       base::BindRepeating(&PowerHandler::HandleRequestPowerManagementSettings,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setLidClosedBehavior",
       base::BindRepeating(&PowerHandler::HandleSetLidClosedBehavior,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setIdleBehavior",
       base::BindRepeating(&PowerHandler::HandleSetIdleBehavior,
                           base::Unretained(this)));
@@ -216,8 +217,7 @@ void PowerHandler::HandleUpdatePowerStatus(const base::ListValue* args) {
 void PowerHandler::HandleSetPowerSource(const base::ListValue* args) {
   AllowJavascript();
 
-  std::string id;
-  CHECK(args->GetString(0, &id));
+  const std::string& id = args->GetList()[0].GetString();
   chromeos::PowerManagerClient::Get()->SetPowerSource(id);
 }
 
@@ -230,10 +230,10 @@ void PowerHandler::HandleRequestPowerManagementSettings(
 void PowerHandler::HandleSetIdleBehavior(const base::ListValue* args) {
   AllowJavascript();
 
-  int value = 0;
-  bool when_on_ac = true;
-  CHECK(args->GetInteger(0, &value));
-  CHECK(args->GetBoolean(1, &when_on_ac));
+  const auto& list = args->GetList();
+  CHECK_GE(list.size(), 2u);
+  int value = list[0].GetInt();
+  bool when_on_ac = list[1].GetBool();
 
   const char* idle_pref = when_on_ac ? ash::prefs::kPowerAcIdleAction
                                      : ash::prefs::kPowerBatteryIdleAction;
@@ -280,8 +280,9 @@ void PowerHandler::HandleSetIdleBehavior(const base::ListValue* args) {
 void PowerHandler::HandleSetLidClosedBehavior(const base::ListValue* args) {
   AllowJavascript();
 
-  int value = 0;
-  CHECK(args->GetInteger(0, &value));
+  const auto& list = args->GetList();
+  CHECK_GE(list.size(), 1u);
+  int value = list[0].GetInt();
   switch (static_cast<PowerPolicyController::Action>(value)) {
     case PowerPolicyController::ACTION_SUSPEND:
       prefs_->ClearPref(ash::prefs::kPowerLidClosedAction);
@@ -308,9 +309,8 @@ void PowerHandler::SendBatteryStatus() {
   bool show_time = false;
 
   if (!calculating) {
-    time_left = base::TimeDelta::FromSeconds(
-        charging ? proto->battery_time_to_full_sec()
-                 : proto->battery_time_to_empty_sec());
+    time_left = base::Seconds(charging ? proto->battery_time_to_full_sec()
+                                       : proto->battery_time_to_empty_sec());
     show_time = ash::power_utils::ShouldDisplayBatteryTime(time_left);
   }
 

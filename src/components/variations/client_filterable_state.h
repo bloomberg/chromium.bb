@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/component_export.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
@@ -31,13 +31,17 @@ enum class RestrictionPolicy {
 using IsEnterpriseFunction = base::OnceCallback<bool()>;
 
 // A container for all of the client state which is used for filtering studies.
-struct ClientFilterableState {
+struct COMPONENT_EXPORT(VARIATIONS) ClientFilterableState {
   static Study::Platform GetCurrentPlatform();
 
   // base::Version used in {min,max}_os_version filtering.
   static base::Version GetOSVersion();
 
   explicit ClientFilterableState(IsEnterpriseFunction is_enterprise_function);
+
+  ClientFilterableState(const ClientFilterableState&) = delete;
+  ClientFilterableState& operator=(const ClientFilterableState&) = delete;
+
   ~ClientFilterableState();
 
   // Whether this is an enterprise client. Always false on android, iOS, and
@@ -93,8 +97,6 @@ struct ClientFilterableState {
   // most once.
   mutable IsEnterpriseFunction is_enterprise_function_;
   mutable absl::optional<bool> is_enterprise_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientFilterableState);
 };
 
 }  // namespace variations

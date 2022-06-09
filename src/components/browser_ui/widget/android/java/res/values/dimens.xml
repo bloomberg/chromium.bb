@@ -9,6 +9,7 @@
     <dimen name="card_padding">16dp</dimen>
     <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="default_rounded_corner_radius">8dp</dimen>
+    <dimen name="card_rounded_corner_radius">16dp</dimen>
 
     <!-- DualControlLayout -->
     <dimen name="dual_control_margin_between_items">8dp</dimen>
@@ -51,6 +52,11 @@
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_end_icon_width">56dp</dimen>
 
+    <!-- Modern List Item V2 dimensions -->
+    <dimen name="list_item_v2_margin">8dp</dimen>
+    <dimen name="list_item_v2_start_icon_width">96dp</dimen>
+    <dimen name="list_item_v2_start_icon_corner_radius">16dp</dimen>
+
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
     <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
@@ -65,6 +71,7 @@
     <!-- Sometimes the modern toolbar is shown at 48dp so a corner radius of
          24dp is needed to completely round the corners. -->
     <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
+    <dimen name="toolbar_text_box_elevation">@dimen/default_elevation_2</dimen>
 
     <!-- Promo cards dimensions -->
     <dimen name="promo_image_size">24dp</dimen>
@@ -89,6 +96,8 @@
     <dimen name="text_bubble_arrow_width">20dp</dimen>
     <dimen name="text_bubble_arrow_height">10dp</dimen>
     <dimen name="iph_pulse_baseline_radius">16dp</dimen>
+    <dimen name="text_bubble_with_snooze_padding_horizontal">24dp</dimen>
+    <dimen name="text_bubble_with_snooze_padding_end">4dp</dimen>
 
     <!-- Default list dimensions -->
     <dimen name="default_list_row_padding">16dp</dimen>
@@ -130,16 +139,11 @@
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
 
     <!-- Chips layout dimensions -->
-    <dimen name="chip_list_inter_chip_padding">2.5dp</dimen>
-    <dimen name="chip_list_side_padding">-16dp</dimen>
+    <dimen name="chip_list_chip_spacing">2.5dp</dimen>
+    <dimen name="chip_list_side_padding">16dp</dimen>
 
     <!-- Misc. app menu dimens -->
-    <!-- ?attr/menuCornerSize doesn't work on Lollipop. So, we use a default dimen here and
-         reference the ?attr/ one in v23/dimens.xml. See https://crbug.com/1187338. -->
-    <dimen name="app_menu_corner_size">@dimen/popup_bg_corner_radius</dimen>
+    <dimen name="app_menu_corner_size">8dp</dimen>
     <dimen name="app_menu_shadow_length">@dimen/default_shadow_length_elev_2</dimen>
     <dimen name="app_menu_elevation">@dimen/default_elevation_2</dimen>
-
-    <!-- Misc refactor dimensions -->
-    <dimen name="refactor_menu_rounded_corner_radius">28dp</dimen>
 </resources>

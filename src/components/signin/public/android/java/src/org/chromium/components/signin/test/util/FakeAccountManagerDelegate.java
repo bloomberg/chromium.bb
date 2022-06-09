@@ -19,7 +19,6 @@ import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
-import org.chromium.components.signin.ProfileDataSource;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -36,8 +35,6 @@ import java.util.UUID;
  * (including confirming them), and handling of dummy auth tokens.
  */
 public class FakeAccountManagerDelegate implements AccountManagerDelegate {
-    private static final String TAG = "FakeAccountManager";
-
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
@@ -50,19 +47,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     @Nullable
     @Override
-    public ProfileDataSource getProfileDataSource() {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public String getAccountGaiaId(String accountEmail) {
         return "gaia-id-" + accountEmail.replace("@", "_at_");
-    }
-
-    @Override
-    public boolean isGooglePlayServicesAvailable() {
-        return true;
     }
 
     @Override
@@ -145,6 +131,11 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         AccountHolder accountHolder = tryGetAccountHolder(account);
         // Features status is queried asynchronously, so the account could have been removed.
         return accountHolder != null && accountHolder.hasFeature(feature);
+    }
+
+    @Override
+    public @CapabilityResponse int hasCapability(Account account, String capability) {
+        return hasFeature(account, capability) ? CapabilityResponse.YES : CapabilityResponse.NO;
     }
 
     @Override

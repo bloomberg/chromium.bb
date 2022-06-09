@@ -11,10 +11,7 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/win/scoped_gdi_object.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/corewm/tooltip.h"
 
@@ -26,6 +23,10 @@ namespace corewm {
 class VIEWS_EXPORT TooltipWin : public Tooltip {
  public:
   explicit TooltipWin(HWND parent);
+
+  TooltipWin(const TooltipWin&) = delete;
+  TooltipWin& operator=(const TooltipWin&) = delete;
+
   ~TooltipWin() override;
 
   // HandleNotify() is forwarded from DesktopWindowTreeHostWin to keep the
@@ -75,8 +76,6 @@ class VIEWS_EXPORT TooltipWin : public Tooltip {
   // What the scale was the last time we overrode the font, to see if we can
   // re-use our previous override.
   float override_scale_ = 0.0f;
-
-  DISALLOW_COPY_AND_ASSIGN(TooltipWin);
 };
 
 }  // namespace corewm

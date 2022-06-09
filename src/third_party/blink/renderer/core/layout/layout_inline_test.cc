@@ -9,6 +9,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -29,6 +31,19 @@ class ParameterizedLayoutInlineTest : public testing::WithParamInterface<bool>,
  protected:
   bool LayoutNGEnabled() const {
     return RuntimeEnabledFeatures::LayoutNGEnabled();
+  }
+
+  bool HitTestAllPhases(LayoutObject& object,
+                        HitTestResult& result,
+                        const HitTestLocation& location,
+                        const PhysicalOffset& offset) {
+    if (!LayoutNGEnabled() || !object.IsBox())
+      return object.HitTestAllPhases(result, location, offset);
+    const LayoutBox& box = To<LayoutBox>(object);
+    DCHECK_EQ(box.PhysicalFragmentCount(), 1u);
+    const NGPhysicalBoxFragment& fragment = *box.GetPhysicalFragment(0);
+    return NGBoxFragmentPainter(fragment).HitTestAllPhases(result, location,
+                                                           offset);
   }
 };
 
@@ -91,6 +106,54 @@ TEST_F(LayoutInlineTest, SimpleContinuation) {
             GetLayoutObjectByElementId("after"));
   EXPECT_FALSE(split_inline_part2->FirstChild()->NextSibling());
   EXPECT_FALSE(split_inline_part2->Continuation());
+}
+
+TEST_F(LayoutInlineTest, BlockInInlineRemove) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+  ScopedLayoutNGBlockInInlineForTest ng_block_in_inline(true);
+  SetBodyInnerHTML(R"HTML(
+    <div>
+      <span id="span">before
+        <div id="block"></div>
+      after</span>
+    </div>
+  )HTML");
+
+  // Check `#block` is in an anonymous block.
+  const auto* span = GetLayoutObjectByElementId("span");
+  Element* block_element = GetElementById("block");
+  const auto* block = block_element->GetLayoutObject();
+  EXPECT_FALSE(block->IsInline());
+  EXPECT_TRUE(block->Parent()->IsBlockInInline());
+  EXPECT_EQ(block->Parent()->Parent(), span);
+
+  // Remove `#block`. All children are now inline.
+  // Check if the |IsBlockInInline| anonymous block was removed.
+  Node* after_block = block_element->nextSibling();
+  block_element->remove();
+  UpdateAllLifecyclePhasesForTest();
+  for (const auto* child = span->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    EXPECT_TRUE(child->IsInline());
+    EXPECT_FALSE(child->IsBlockInInline());
+  }
+
+  // Re-insert `#block`.
+  after_block->parentNode()->insertBefore(block_element, after_block);
+  UpdateAllLifecyclePhasesForTest();
+  block = block_element->GetLayoutObject();
+  EXPECT_FALSE(block->IsInline());
+  EXPECT_TRUE(block->Parent()->IsBlockInInline());
+  EXPECT_EQ(block->Parent()->Parent(), span);
+
+  // Insert another block before the "after" text node.
+  // This should be in the existing anonymous block, next to the `#block`.
+  Document& document = GetDocument();
+  Element* block2_element = document.CreateElementForBinding("div");
+  after_block->parentNode()->insertBefore(block2_element, after_block);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(block2_element->GetLayoutObject(), block->NextSibling());
 }
 
 TEST_F(LayoutInlineTest, RegionHitTest) {
@@ -177,7 +240,7 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
     LayoutObject* layout_div = div->GetLayoutObject();
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
-        layout_div->HitTestAllPhases(hit_result, location, container_offset);
+        HitTestAllPhases(*layout_div, hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(div, hit_result.InnerNode());
   }
@@ -188,7 +251,7 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
     LayoutObject* layout_span = span->GetLayoutObject();
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
-        layout_span->HitTestAllPhases(hit_result, location, container_offset);
+        HitTestAllPhases(*layout_span, hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(text, hit_result.InnerNode());
   }
@@ -227,7 +290,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
 
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
-        layout_span->HitTestAllPhases(hit_result, location, container_offset);
+        HitTestAllPhases(*layout_span, hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
@@ -247,7 +310,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
 
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
-        layout_span->HitTestAllPhases(hit_result, location, container_offset);
+        HitTestAllPhases(*layout_span, hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
@@ -267,7 +330,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
 
     HitTestResult hit_result(hit_request, location);
     bool hit_outcome =
-        layout_span->HitTestAllPhases(hit_result, location, container_offset);
+        HitTestAllPhases(*layout_span, hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
@@ -301,7 +364,7 @@ TEST_P(ParameterizedLayoutInlineTest, HitTestCulledInlinePreWrap) {
   HitTestLocation location(hit_location);
   HitTestResult hit_result(hit_request, location);
   LayoutObject* container = GetLayoutObjectByElementId("container");
-  container->HitTestAllPhases(hit_result, location, PhysicalOffset());
+  HitTestAllPhases(*container, hit_result, location, PhysicalOffset());
 
   Element* span = GetElementById("span");
   Node* text_node = span->firstChild();

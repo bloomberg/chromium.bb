@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/shelf/arc_app_window.h"
 
+#include "ash/components/arc/arc_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_window_delegate.h"
-#include "components/arc/arc_util.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "extensions/common/constants.h"
@@ -23,19 +23,16 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-constexpr base::TimeDelta kSetDefaultIconDelayMs =
-    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kSetDefaultIconDelayMs = base::Milliseconds(1000);
 
 constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
 }  // namespace
 
-ArcAppWindow::ArcAppWindow(int task_id,
-                           const arc::ArcAppShelfId& app_shelf_id,
+ArcAppWindow::ArcAppWindow(const arc::ArcAppShelfId& app_shelf_id,
                            views::Widget* widget,
                            ArcAppWindowDelegate* owner,
                            Profile* profile)
     : AppWindowBase(ash::ShelfID(app_shelf_id.app_id()), widget),
-      task_id_(task_id),
       app_shelf_id_(app_shelf_id),
       owner_(owner),
       profile_(profile) {
@@ -76,11 +73,17 @@ void ArcAppWindow::SetDescription(const std::string& title,
 }
 
 bool ArcAppWindow::IsActive() const {
-  return widget()->IsActive() && owner_->GetActiveTaskId() == task_id_;
+  return widget()->IsActive() &&
+         (owner_->GetActiveTaskId() ==
+              arc::GetWindowTaskId(GetNativeWindow()) ||
+          owner_->GetActiveSessionId() ==
+              arc::GetWindowSessionId(GetNativeWindow()));
 }
 
 void ArcAppWindow::Close() {
-  arc::CloseTask(task_id_);
+  auto task_id = arc::GetWindowTaskId(GetNativeWindow());
+  if (task_id.has_value())
+    arc::CloseTask(*task_id);
 }
 
 void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,

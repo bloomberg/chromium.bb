@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
-
 namespace device {
 
 class FakeBluetoothLEAdvertisementDataSectionWinrt
@@ -25,6 +23,12 @@ class FakeBluetoothLEAdvertisementDataSectionWinrt
  public:
   explicit FakeBluetoothLEAdvertisementDataSectionWinrt(
       std::vector<uint8_t> data);
+
+  FakeBluetoothLEAdvertisementDataSectionWinrt(
+      const FakeBluetoothLEAdvertisementDataSectionWinrt&) = delete;
+  FakeBluetoothLEAdvertisementDataSectionWinrt& operator=(
+      const FakeBluetoothLEAdvertisementDataSectionWinrt&) = delete;
+
   ~FakeBluetoothLEAdvertisementDataSectionWinrt() override;
 
   // IBluetoothLEAdvertisementDataSection:
@@ -37,8 +41,6 @@ class FakeBluetoothLEAdvertisementDataSectionWinrt
 
  private:
   std::vector<uint8_t> data_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementDataSectionWinrt);
 };
 
 }  // namespace device

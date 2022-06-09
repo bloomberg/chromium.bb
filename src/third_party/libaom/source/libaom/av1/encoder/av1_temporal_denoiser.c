@@ -718,11 +718,7 @@ void av1_denoiser_update_ref_frame(AV1_COMP *const cpi) {
                                 ? KEY_FRAME
                                 : cm->current_frame.frame_type;
     cpi->denoiser.current_denoiser_frame++;
-    const int resize_pending =
-        (cpi->resize_pending_params.width &&
-         cpi->resize_pending_params.height &&
-         (cpi->common.width != cpi->resize_pending_params.width ||
-          cpi->common.height != cpi->resize_pending_params.height));
+    const int resize_pending = is_frame_resize_pending(cpi);
 
     if (cpi->ppi->use_svc) {
 // TODO(kyslov) Enable when SVC temporal denosing is implemented

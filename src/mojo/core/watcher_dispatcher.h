@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/core/dispatcher.h"
@@ -29,6 +29,9 @@ class WatcherDispatcher : public Dispatcher {
   // Constructs a new WatcherDispatcher which invokes |handler| when a
   // registered watch observes some relevant state change.
   explicit WatcherDispatcher(MojoTrapEventHandler handler);
+
+  WatcherDispatcher(const WatcherDispatcher&) = delete;
+  WatcherDispatcher& operator=(const WatcherDispatcher&) = delete;
 
   // Methods used by watched dispatchers to notify watchers of events.
   void NotifyHandleState(Dispatcher* dispatcher,
@@ -91,9 +94,7 @@ class WatcherDispatcher : public Dispatcher {
   //
   // NOTE: This pointer is only used to index |ready_watches_| and may point to
   // an invalid object. It must therefore never be dereferenced.
-  const Watch* last_watch_to_block_arming_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WatcherDispatcher);
+  raw_ptr<const Watch> last_watch_to_block_arming_ = nullptr;
 };
 
 }  // namespace core

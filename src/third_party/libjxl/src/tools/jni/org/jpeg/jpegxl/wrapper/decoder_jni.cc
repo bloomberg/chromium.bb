@@ -1,20 +1,13 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/jni/org/jpeg/jpegxl/wrapper/decoder_jni.h"
 
 #include <jni.h>
+
+#include <cstdlib>
 
 #include "jxl/decode.h"
 #include "jxl/thread_parallel_runner.h"
@@ -41,9 +34,40 @@ bool BufferToSpan(JNIEnv* env, jobject buffer, uint8_t** data, size_t* size) {
   return StaticCast(env->GetDirectBufferCapacity(buffer), size);
 }
 
+int ToStatusCode(const jxl::Status& status) {
+  if (status) return 0;
+  if (status.IsFatalError()) return -1;
+  return 1;  // Non-fatal -> not enough input.
+}
+
+constexpr const size_t kLastPixelFormat = 3;
+constexpr const size_t kNoPixelFormat = static_cast<size_t>(-1);
+
+JxlPixelFormat ToPixelFormat(size_t pixel_format) {
+  if (pixel_format == 0) {
+    // RGBA, 4 x byte per pixel, no scanline padding.
+    return {/*num_channels=*/4, JXL_TYPE_UINT8, JXL_LITTLE_ENDIAN, /*align=*/0};
+  } else if (pixel_format == 1) {
+    // RGBA, 4 x float16 per pixel, no scanline padding.
+    return {/*num_channels=*/4, JXL_TYPE_FLOAT16, JXL_LITTLE_ENDIAN,
+            /*align=*/0};
+  } else if (pixel_format == 2) {
+    // RGB, 4 x byte per pixel, no scanline padding.
+    return {/*num_channels=*/3, JXL_TYPE_UINT8, JXL_LITTLE_ENDIAN, /*align=*/0};
+  } else if (pixel_format == 3) {
+    // RGB, 4 x float16 per pixel, no scanline padding.
+    return {/*num_channels=*/3, JXL_TYPE_FLOAT16, JXL_LITTLE_ENDIAN,
+            /*align=*/0};
+  } else {
+    abort();
+    return {0, JXL_TYPE_UINT8, JXL_LITTLE_ENDIAN, 0};
+  }
+}
+
 jxl::Status DoDecode(JNIEnv* env, jobject data_buffer, size_t* info_pixels_size,
                      size_t* info_icc_size, JxlBasicInfo* info,
-                     jobject pixels_buffer, jobject icc_buffer) {
+                     size_t pixel_format, jobject pixels_buffer,
+                     jobject icc_buffer) {
   if (data_buffer == nullptr) return JXL_FAILURE("No data buffer");
 
   uint8_t* data = nullptr;
@@ -66,7 +90,7 @@ jxl::Status DoDecode(JNIEnv* env, jobject data_buffer, size_t* info_pixels_size,
 
   JxlDecoder* dec = JxlDecoderCreate(NULL);
 
-  constexpr size_t kNumThreads = 0;  // Do everyting in this thread.
+  constexpr size_t kNumThreads = 0;  // Do everything in this thread.
   void* runner = JxlThreadParallelRunnerCreate(NULL, kNumThreads);
 
   struct Defer {
@@ -93,12 +117,14 @@ jxl::Status DoDecode(JNIEnv* env, jobject data_buffer, size_t* info_pixels_size,
     return JXL_FAILURE("Failed to set input");
   }
   status = JxlDecoderProcessInput(dec);
+  if (status == JXL_DEC_NEED_MORE_INPUT) {
+    return JXL_STATUS(jxl::StatusCode::kNotEnoughBytes, "Not enough input");
+  }
   if (status != JXL_DEC_BASIC_INFO) {
     return JXL_FAILURE("Unexpected notification (want: basic info)");
   }
-  // RGBA (4-bytes per pixel), no scanline padding.
-  JxlPixelFormat format = {4, JXL_TYPE_UINT8, JXL_LITTLE_ENDIAN, 0};
   if (info_pixels_size) {
+    JxlPixelFormat format = ToPixelFormat(pixel_format);
     status = JxlDecoderImageOutBufferSize(dec, &format, info_pixels_size);
     if (status != JXL_DEC_SUCCESS) {
       return JXL_FAILURE("Failed to get pixels size");
@@ -115,11 +141,13 @@ jxl::Status DoDecode(JNIEnv* env, jobject data_buffer, size_t* info_pixels_size,
     return JXL_FAILURE("Unexpected notification (want: color encoding)");
   }
   if (info_icc_size) {
+    JxlPixelFormat format = ToPixelFormat(pixel_format);
     status = JxlDecoderGetICCProfileSize(
         dec, &format, JXL_COLOR_PROFILE_TARGET_DATA, info_icc_size);
     if (status != JXL_DEC_SUCCESS) *info_icc_size = 0;
   }
   if (icc && icc_size > 0) {
+    JxlPixelFormat format = ToPixelFormat(pixel_format);
     status = JxlDecoderGetColorAsICCProfile(
         dec, &format, JXL_COLOR_PROFILE_TARGET_DATA, icc, icc_size);
     if (status != JXL_DEC_SUCCESS) {
@@ -127,6 +155,7 @@ jxl::Status DoDecode(JNIEnv* env, jobject data_buffer, size_t* info_pixels_size,
     }
   }
   if (pixels) {
+    JxlPixelFormat format = ToPixelFormat(pixel_format);
     status = JxlDecoderProcessInput(dec);
     if (status != JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
       return JXL_FAILURE("Unexpected notification (want: need out buffer)");
@@ -159,29 +188,52 @@ extern "C" {
 JNIEXPORT void JNICALL
 Java_org_jpeg_jpegxl_wrapper_DecoderJni_nativeGetBasicInfo(
     JNIEnv* env, jobject /*jobj*/, jintArray ctx, jobject data_buffer) {
-  jint context[5] = {0};
+  jint context[6] = {0};
+  env->GetIntArrayRegion(ctx, 0, 1, context);
 
   JxlBasicInfo info;
   size_t pixels_size = 0;
   size_t icc_size = 0;
+  size_t pixel_format = 0;
 
-  bool ok = true;
+  jxl::Status status = true;
 
-  if (ok) {
-    ok = DoDecode(env, data_buffer, &pixels_size, &icc_size, &info,
-                  /* pixels_buffer= */ nullptr, /* icc_buffer= */ nullptr);
+  if (status) {
+    pixel_format = context[0];
+    if (pixel_format == kNoPixelFormat) {
+      // OK
+    } else if (pixel_format > kLastPixelFormat) {
+      status = JXL_FAILURE("Unrecognized pixel format");
+    }
   }
 
-  if (ok) {
+  if (status) {
+    bool want_output_size = (pixel_format != kNoPixelFormat);
+    if (want_output_size) {
+      status = DoDecode(
+          env, data_buffer, &pixels_size, &icc_size, &info, pixel_format,
+          /* pixels_buffer= */ nullptr, /* icc_buffer= */ nullptr);
+    } else {
+      status =
+          DoDecode(env, data_buffer, /* info_pixels_size= */ nullptr,
+                   /* info_icc_size= */ nullptr, &info, pixel_format,
+                   /* pixels_buffer= */ nullptr, /* icc_buffer= */ nullptr);
+    }
+  }
+
+  if (status) {
+    bool ok = true;
     ok &= StaticCast(info.xsize, context + 1);
     ok &= StaticCast(info.ysize, context + 2);
     ok &= StaticCast(pixels_size, context + 3);
     ok &= StaticCast(icc_size, context + 4);
+    ok &= StaticCast(info.alpha_bits, context + 5);
+    if (!ok) status = JXL_FAILURE("Invalid value");
   }
 
-  if (!ok) context[0] = -1;
+  context[0] = ToStatusCode(status);
 
-  env->SetIntArrayRegion(ctx, 0, 5, context);
+  env->SetIntArrayRegion(ctx, 0, 6, context);
 }
 
 /**
@@ -192,20 +244,30 @@ Java_org_jpeg_jpegxl_wrapper_DecoderJni_nativeGetBasicInfo(
  * @param pixels [out] Buffer to place pixels to
  */
 JNIEXPORT void JNICALL Java_org_jpeg_jpegxl_wrapper_DecoderJni_nativeGetPixels(
-    JNIEnv* env, jobject /*jobj*/, jintArray ctx, jobject data_buffer,
+    JNIEnv* env, jobject /* jobj */, jintArray ctx, jobject data_buffer,
     jobject pixels_buffer, jobject icc_buffer) {
   jint context[1] = {0};
+  env->GetIntArrayRegion(ctx, 0, 1, context);
 
-  bool ok = true;
+  size_t pixel_format = 0;
 
-  if (ok) {
-    ok = DoDecode(env, data_buffer, /* info_pixels_size= */ nullptr,
-                  /* info_icc_size= */ nullptr, /* info= */ nullptr,
-                  pixels_buffer, icc_buffer);
+  jxl::Status status = true;
+
+  if (status) {
+    // Unlike getBasicInfo, "no-pixel-format" is not supported.
+    pixel_format = context[0];
+    if (pixel_format > kLastPixelFormat) {
+      status = JXL_FAILURE("Unrecognized pixel format");
+    }
   }
 
-  if (!ok) context[0] = -1;
+  if (status) {
+    status = DoDecode(env, data_buffer, /* info_pixels_size= */ nullptr,
+                      /* info_icc_size= */ nullptr, /* info= */ nullptr,
+                      pixel_format, pixels_buffer, icc_buffer);
+  }
 
+  context[0] = ToStatusCode(status);
   env->SetIntArrayRegion(ctx, 0, 1, context);
 }
 

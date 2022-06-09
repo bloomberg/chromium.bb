@@ -7,22 +7,18 @@
 #include <limits>
 #include <memory>
 
-#include "ash/accessibility/magnifier/magnification_controller.h"
-#include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/docked_magnifier_controller.h"
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
+#include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/focused_node_details.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -105,11 +101,24 @@ void MagnificationManager::HandleMoveMagnifierToRectIfEnabled(
     const gfx::Rect& rect) {
   // Fullscreen magnifier and docked magnifier are mutually exclusive.
   if (fullscreen_magnifier_enabled_) {
-    Shell::Get()->magnification_controller()->HandleMoveMagnifierToRect(rect);
+    Shell::Get()->fullscreen_magnifier_controller()->HandleMoveMagnifierToRect(
+        rect);
+    return;
+  }
+  if (IsDockedMagnifierEnabled())
+    Shell::Get()->docked_magnifier_controller()->MoveMagnifierToRect(rect);
+}
+
+void MagnificationManager::HandleMagnifierCenterOnPointIfEnabled(
+    const gfx::Point& point_in_screen) {
+  // Fullscreen magnifier and docked magnifier are mutually exclusive.
+  if (fullscreen_magnifier_enabled_) {
+    Shell::Get()->fullscreen_magnifier_controller()->CenterOnPoint(
+        point_in_screen);
     return;
   }
   if (IsDockedMagnifierEnabled()) {
-    DockedMagnifierController::Get()->MoveMagnifierToRect(rect);
+    Shell::Get()->docked_magnifier_controller()->CenterOnPoint(point_in_screen);
   }
 }
 
@@ -136,8 +145,7 @@ void MagnificationManager::SetProfileForTest(Profile* profile) {
 }
 
 MagnificationManager::MagnificationManager() {
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
+  session_observation_.Observe(session_manager::SessionManager::Get());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
   views::AXEventManager::Get()->AddObserver(this);
 }
@@ -148,19 +156,11 @@ MagnificationManager::~MagnificationManager() {
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
-void MagnificationManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
-      // Update |profile_| when entering the login screen.
-      Profile* profile = ProfileManager::GetActiveUserProfile();
-      if (ProfileHelper::IsSigninProfile(profile))
-        SetProfile(profile);
-      break;
-    }
-  }
+void MagnificationManager::OnLoginOrLockScreenVisible() {
+  // Update `profile_` when entering the login screen.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (ProfileHelper::IsSigninProfile(profile))
+    SetProfile(profile);
 }
 
 void MagnificationManager::ActiveUserChanged(user_manager::User* active_user) {
@@ -230,7 +230,7 @@ void MagnificationManager::SetMagnifierEnabledInternal(bool enabled) {
 
   fullscreen_magnifier_enabled_ = enabled;
 
-  Shell::Get()->magnification_controller()->SetEnabled(enabled);
+  Shell::Get()->fullscreen_magnifier_controller()->SetEnabled(enabled);
 }
 
 void MagnificationManager::SetMagnifierKeepFocusCenteredInternal(
@@ -240,7 +240,7 @@ void MagnificationManager::SetMagnifierKeepFocusCenteredInternal(
 
   keep_focus_centered_ = keep_focus_centered;
 
-  Shell::Get()->magnification_controller()->SetKeepFocusCentered(
+  Shell::Get()->fullscreen_magnifier_controller()->SetKeepFocusCentered(
       keep_focus_centered_);
 }
 
@@ -250,13 +250,13 @@ void MagnificationManager::SetMagnifierScaleInternal(double scale) {
 
   scale_ = scale;
 
-  Shell::Get()->magnification_controller()->SetScale(scale_,
-                                                     false /* animate */);
+  Shell::Get()->fullscreen_magnifier_controller()->SetScale(
+      scale_, false /* animate */);
 }
 
 void MagnificationManager::SetMagnifierMouseFollowingModeInternal(
     MagnifierMouseFollowingMode mouse_following_mode) {
-  Shell::Get()->magnification_controller()->set_mouse_following_mode(
+  Shell::Get()->fullscreen_magnifier_controller()->set_mouse_following_mode(
       mouse_following_mode);
 }
 

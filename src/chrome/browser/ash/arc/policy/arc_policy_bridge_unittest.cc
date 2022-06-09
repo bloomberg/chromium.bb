@@ -8,10 +8,17 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_arc_session.h"
+#include "ash/components/arc/test/fake_policy_instance.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -30,14 +37,6 @@
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_arc_session.h"
-#include "components/arc/test/fake_policy_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -152,13 +151,15 @@ MATCHER_P(ValueEquals, expected, "value matches") {
 class MockArcPolicyBridgeObserver : public ArcPolicyBridge::Observer {
  public:
   MockArcPolicyBridgeObserver() = default;
+
+  MockArcPolicyBridgeObserver(const MockArcPolicyBridgeObserver&) = delete;
+  MockArcPolicyBridgeObserver& operator=(const MockArcPolicyBridgeObserver&) =
+      delete;
+
   ~MockArcPolicyBridgeObserver() override = default;
 
   MOCK_METHOD1(OnPolicySent, void(const std::string&));
   MOCK_METHOD1(OnComplianceReportReceived, void(const base::Value*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockArcPolicyBridgeObserver);
 };
 
 // Helper class to define callbacks that verify that they were run.
@@ -167,14 +168,16 @@ class MockArcPolicyBridgeObserver : public ArcPolicyBridge::Observer {
 class CheckedBoolean {
  public:
   CheckedBoolean() {}
+
+  CheckedBoolean(const CheckedBoolean&) = delete;
+  CheckedBoolean& operator=(const CheckedBoolean&) = delete;
+
   ~CheckedBoolean() { EXPECT_TRUE(value_); }
 
   void set_value(bool value) { value_ = value; }
 
  private:
   bool value_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckedBoolean);
 };
 
 void ExpectString(std::unique_ptr<CheckedBoolean> was_run,
@@ -212,6 +215,9 @@ arc::ArcPolicyBridge::ReportComplianceCallback PolicyComplianceCallback(
 class ArcPolicyBridgeTestBase {
  public:
   ArcPolicyBridgeTestBase() = default;
+
+  ArcPolicyBridgeTestBase(const ArcPolicyBridgeTestBase&) = delete;
+  ArcPolicyBridgeTestBase& operator=(const ArcPolicyBridgeTestBase&) = delete;
 
   void DoSetUp(bool is_affiliated) {
     bridge_service_ = std::make_unique<ArcBridgeService>();
@@ -339,8 +345,6 @@ class ArcPolicyBridgeTestBase {
   std::unique_ptr<FakePolicyInstance> policy_instance_;
   policy::PolicyMap policy_map_;
   policy::MockPolicyService policy_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcPolicyBridgeTestBase);
 };
 
 class ArcPolicyBridgeTest : public ArcPolicyBridgeTestBase,

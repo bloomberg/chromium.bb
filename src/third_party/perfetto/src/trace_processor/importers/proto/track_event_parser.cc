@@ -110,9 +110,16 @@ class TrackEventArgsParser : public util::ProtoToArgsParser::Delegate {
   }
   bool AddJson(const Key& key, const protozero::ConstChars& value) final {
     auto json_value = json::ParseJsonString(value);
+    if (!json_value)
+      return false;
     return json::AddJsonValueToArgs(*json_value, base::StringView(key.flat_key),
                                     base::StringView(key.key), &storage_,
                                     &inserter_);
+  }
+  void AddNull(const Key& key) final {
+    inserter_.AddArg(storage_.InternString(base::StringView(key.flat_key)),
+                     storage_.InternString(base::StringView(key.key)),
+                     Variadic::Null());
   }
 
   size_t GetArrayEntryIndex(const std::string& array_key) final {
@@ -1113,9 +1120,14 @@ class TrackEventParser::EventImporter {
     }
 
     TrackEventArgsParser args_writer(*inserter, *storage_, *sequence_state_);
+    int unknown_extensions = 0;
     log_errors(parser_->args_parser_.ParseMessage(
         blob_, ".perfetto.protos.TrackEvent", &parser_->reflect_fields_,
-        args_writer));
+        args_writer, &unknown_extensions));
+    if (unknown_extensions > 0) {
+      context_->storage->IncrementStats(stats::unknown_extension_fields,
+                                        unknown_extensions);
+    }
 
     {
       auto key = parser_->args_parser_.EnterDictionary("debug");
@@ -1355,26 +1367,28 @@ TrackEventParser::TrackEventParser(TraceProcessorContext* context,
           context->storage->InternString("chrome.host_app_package_name")),
       chrome_crash_trace_id_name_id_(
           context->storage->InternString("chrome.crash_trace_id")),
+      chrome_process_label_flat_key_id_(
+          context->storage->InternString("chrome.process_label")),
       chrome_string_lookup_(context->storage.get()),
       counter_unit_ids_{{kNullStringId, context_->storage->InternString("ns"),
                          context_->storage->InternString("count"),
                          context_->storage->InternString("bytes")}} {
   // Switch |source_location_iid| into its interned data variant.
-  args_parser_.AddParsingOverride(
+  args_parser_.AddParsingOverrideForField(
       "begin_impl_frame_args.current_args.source_location_iid",
       [](const protozero::Field& field,
          util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("begin_impl_frame_args.current_args",
                                         field, delegate);
       });
-  args_parser_.AddParsingOverride(
+  args_parser_.AddParsingOverrideForField(
       "begin_impl_frame_args.last_args.source_location_iid",
       [](const protozero::Field& field,
          util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("begin_impl_frame_args.last_args",
                                         field, delegate);
       });
-  args_parser_.AddParsingOverride(
+  args_parser_.AddParsingOverrideForField(
       "begin_frame_observer_state.last_begin_frame_args.source_location_iid",
       [](const protozero::Field& field,
          util::ProtoToArgsParser::Delegate& delegate) {
@@ -1382,12 +1396,24 @@ TrackEventParser::TrackEventParser(TraceProcessorContext* context,
             "begin_frame_observer_state.last_begin_frame_args", field,
             delegate);
       });
-  args_parser_.AddParsingOverride(
+  args_parser_.AddParsingOverrideForField(
       "chrome_memory_pressure_notification.creation_location_iid",
       [](const protozero::Field& field,
          util::ProtoToArgsParser::Delegate& delegate) {
         return MaybeParseSourceLocation("chrome_memory_pressure_notification",
                                         field, delegate);
+      });
+
+  // Parse DebugAnnotations.
+  args_parser_.AddParsingOverrideForType(
+      ".perfetto.protos.DebugAnnotation",
+      [&](util::ProtoToArgsParser::ScopedNestedKeyContext& key,
+          const protozero::ConstBytes& data,
+          util::ProtoToArgsParser::Delegate& delegate) {
+        // Do not add "debug_annotations" to the final key.
+        key.RemoveFieldSuffix();
+        util::DebugAnnotationParser annotation_parser(args_parser_);
+        return annotation_parser.Parse(data, delegate);
       });
 
   for (uint16_t index : kReflectFields) {
@@ -1443,6 +1469,17 @@ UniquePid TrackEventParser::ParseProcessDescriptor(
         chrome_string_lookup_.GetProcessName(decoder.chrome_process_type());
     // Don't override system-provided names.
     context_->process_tracker->SetProcessNameIfUnset(upid, name_id);
+  }
+  int label_index = 0;
+  for (auto it = decoder.process_labels(); it; it++) {
+    StringId label_id = context_->storage->InternString(*it);
+    std::string key = "chrome.process_label[";
+    key.append(std::to_string(label_index++));
+    key.append("]");
+    context_->process_tracker->AddArgsTo(upid).AddArg(
+        chrome_process_label_flat_key_id_,
+        context_->storage->InternString(base::StringView(key)),
+        Variadic::String(label_id));
   }
   return upid;
 }

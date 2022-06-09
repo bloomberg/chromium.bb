@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/browser/color_chooser.h"
+
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/render_frame_host.h"
@@ -22,13 +25,14 @@ namespace {
 class MockColorChooser : public content::ColorChooser {
  public:
   MockColorChooser() = default;
+
+  MockColorChooser(const MockColorChooser&) = delete;
+  MockColorChooser& operator=(const MockColorChooser&) = delete;
+
   ~MockColorChooser() override = default;
 
   MOCK_METHOD0(End, void());
   MOCK_METHOD1(SetSelectedColor, void(SkColor color));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
 
 // Delegate to override OpenColorChooser.
@@ -38,29 +42,32 @@ class OpenColorChooserDelegate : public WebContentsDelegate {
       std::unique_ptr<MockColorChooser> mock_color_chooser)
       : mock_color_chooser_(std::move(mock_color_chooser)) {}
 
+  OpenColorChooserDelegate(const OpenColorChooserDelegate&) = delete;
+  OpenColorChooserDelegate& operator=(const OpenColorChooserDelegate&) = delete;
+
   ~OpenColorChooserDelegate() override = default;
 
   // WebContentsDelegate:
-  ColorChooser* OpenColorChooser(
+  std::unique_ptr<ColorChooser> OpenColorChooser(
       WebContents* web_contents,
       SkColor color,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
       override {
-    return std::move(mock_color_chooser_).release();
+    return std::move(mock_color_chooser_);
   }
 
   bool IsBackForwardCacheSupported() override { return true; }
 
  private:
   std::unique_ptr<MockColorChooser> mock_color_chooser_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenColorChooserDelegate);
 };
 
 }  // namespace
 
 class ColorChooserUnitTest : public RenderViewHostImplTestHarness {};
 
+#if defined(OS_ANDROID)
+// The ColorChooser is only available/called on Android.
 TEST_F(ColorChooserUnitTest, ColorChooserCallsEndOnNavigatingAway) {
   GURL kUrl1("https://foo.com");
   GURL kUrl2("https://bar.com");
@@ -93,6 +100,7 @@ TEST_F(ColorChooserUnitTest, ColorChooserCallsEndOnNavigatingAway) {
 
   contents()->SetDelegate(nullptr);
 }
+#endif
 
 // Run tests with BackForwardCache.
 class ColorChooserTestWithBackForwardCache : public ColorChooserUnitTest {
@@ -106,14 +114,15 @@ class ColorChooserTestWithBackForwardCache : public ColorChooserUnitTest {
 
  protected:
   base::FieldTrialParams GetFeatureParams() {
-    return {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-            {"service_worker_supported", "true"}};
+    return {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}};
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+#if defined(OS_ANDROID)
+// The ColorChooser is only available/called on Android.
 TEST_F(ColorChooserTestWithBackForwardCache,
        ColorChooserCallsEndOnEnteringBackForwardCache) {
   ASSERT_TRUE(IsBackForwardCacheEnabled());
@@ -150,5 +159,6 @@ TEST_F(ColorChooserTestWithBackForwardCache,
 
   contents()->SetDelegate(nullptr);
 }
+#endif
 
 }  // namespace content

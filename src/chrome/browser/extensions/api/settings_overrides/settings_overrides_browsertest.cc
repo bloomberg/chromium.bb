@@ -4,8 +4,8 @@
 
 #include <memory>
 
+#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -236,6 +236,12 @@ class ExtensionsDisabledWithSettingsOverrideAPI : public ExtensionBrowserTest {
       : prompt_for_external_extensions_(
             FeatureSwitch::prompt_for_external_extensions(),
             false) {}
+
+  ExtensionsDisabledWithSettingsOverrideAPI(
+      const ExtensionsDisabledWithSettingsOverrideAPI&) = delete;
+  ExtensionsDisabledWithSettingsOverrideAPI& operator=(
+      const ExtensionsDisabledWithSettingsOverrideAPI&) = delete;
+
   ~ExtensionsDisabledWithSettingsOverrideAPI() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -252,8 +258,6 @@ class ExtensionsDisabledWithSettingsOverrideAPI : public ExtensionBrowserTest {
 
  private:
   FeatureSwitch::ScopedOverride prompt_for_external_extensions_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsDisabledWithSettingsOverrideAPI);
 };
 
 // The following test combo is a regression test for https://crbug.com/828295.

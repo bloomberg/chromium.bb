@@ -10,8 +10,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
@@ -45,6 +44,10 @@ class SpeechRecognizerImpl::OnDataConverter
  public:
   OnDataConverter(const AudioParameters& input_params,
                   const AudioParameters& output_params);
+
+  OnDataConverter(const OnDataConverter&) = delete;
+  OnDataConverter& operator=(const OnDataConverter&) = delete;
+
   ~OnDataConverter() override;
 
   // Converts input audio |data| bus into an AudioChunk where the input format
@@ -67,8 +70,6 @@ class SpeechRecognizerImpl::OnDataConverter
   const AudioParameters input_parameters_;
   const AudioParameters output_parameters_;
   bool data_was_converted_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnDataConverter);
 };
 
 namespace {
@@ -851,15 +852,14 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
   // Perhaps it might be quite expensive on mobile.
   float level = (rms - kAudioMeterMinDb) /
       (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
-  level = base::ClampToRange(level, 0.0f, kAudioMeterRangeMaxUnclipped);
+  level = base::clamp(level, 0.0f, kAudioMeterRangeMaxUnclipped);
   const float smoothing_factor = (level > audio_level_) ? kUpSmoothingFactor :
                                                           kDownSmoothingFactor;
   audio_level_ += (level - audio_level_) * smoothing_factor;
 
   float noise_level = (endpointer_.NoiseLevelDb() - kAudioMeterMinDb) /
       (kAudioMeterDbRange / kAudioMeterRangeMaxUnclipped);
-  noise_level =
-      base::ClampToRange(noise_level, 0.0f, kAudioMeterRangeMaxUnclipped);
+  noise_level = base::clamp(noise_level, 0.0f, kAudioMeterRangeMaxUnclipped);
 
   listener()->OnAudioLevelsChange(
       session_id(), clip_detected ? 1.0f : audio_level_, noise_level);
@@ -873,7 +873,8 @@ void SpeechRecognizerImpl::SetAudioEnvironmentForTesting(
 }
 
 media::AudioSystem* SpeechRecognizerImpl::GetAudioSystem() {
-  return audio_system_for_tests_ ? audio_system_for_tests_ : audio_system_;
+  return audio_system_for_tests_ ? audio_system_for_tests_
+                                 : audio_system_.get();
 }
 
 void SpeechRecognizerImpl::CreateAudioCapturerSource() {

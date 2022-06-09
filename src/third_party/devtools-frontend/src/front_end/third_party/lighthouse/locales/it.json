@@ -1,4 +1,136 @@
 {
+  "flow-report/src/i18n/ui-strings.js | allReports": {
+    "message": "Tutti i report"
+  },
+  "flow-report/src/i18n/ui-strings.js | categories": {
+    "message": "Categorie"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryAccessibility": {
+    "message": "Accessibilità"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryBestPractices": {
+    "message": "Best practice"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryPerformance": {
+    "message": "Prestazioni"
+  },
+  "flow-report/src/i18n/ui-strings.js | categoryProgressiveWebApp": {
+    "message": "App web progressiva"
+  },
+  "flow-report/src/i18n/ui-strings.js | categorySeo": {
+    "message": "SEO"
+  },
+  "flow-report/src/i18n/ui-strings.js | desktop": {
+    "message": "Desktop"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpDialogTitle": {
+    "message": "Informazioni sul report flusso di Lighthouse"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpLabel": {
+    "message": "Informazioni sui flussi"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionNavigation": {
+    "message": "Usa i report relativi alla navigazione per…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionSnapshot": {
+    "message": "Usa i report relativi a un momento specifico per…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseInstructionTimespan": {
+    "message": "Usa i report relativi al periodo di tempo per…"
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation1": {
+    "message": "Ottenere un punteggio Lighthouse relativo alle prestazioni."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation2": {
+    "message": "Misurare le metriche relative alle prestazioni di caricamento pagina quali Largest Contentful Paint e Speed Index."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseNavigation3": {
+    "message": "Valutare le funzionalità delle app web progressive."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot1": {
+    "message": "Trovare problemi di accessibilità nelle applicazioni a pagina singola o in moduli complessi."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseSnapshot2": {
+    "message": "Valutare best practice di menu ed elementi UI nascosti dietro l'interazione."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan1": {
+    "message": "Misurare le variazioni di layout e il tempo di esecuzione di JavaScript per una serie di interazioni."
+  },
+  "flow-report/src/i18n/ui-strings.js | helpUseCaseTimespan2": {
+    "message": "Scoprire opportunità legate alle prestazioni per migliorare l'esperienza relativa alle pagine di lunga durata e alle applicazioni a pagina singola."
+  },
+  "flow-report/src/i18n/ui-strings.js | highestImpact": {
+    "message": "Massimo impatto"
+  },
+  "flow-report/src/i18n/ui-strings.js | informativeAuditCount": {
+    "message": "{numInformative,plural, =1{{numInformative} controllo informativo}one{{numInformative} controllo informativo}other{{numInformative} controlli informativi}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | mobile": {
+    "message": "Dispositivi mobili"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationDescription": {
+    "message": "Caricamento della pagina"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationLongDescription": {
+    "message": "I report relativi alla navigazione consentono di analizzare il caricamento di una singola pagina, esattamente come i report Lighthouse originali."
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReport": {
+    "message": "Report relativo alla navigazione"
+  },
+  "flow-report/src/i18n/ui-strings.js | navigationReportCount": {
+    "message": "{numNavigation,plural, =1{{numNavigation} report relativo alla navigazione}one{{numNavigation} report relativo alla navigazione}other{{numNavigation} report relativi alla navigazione}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passableAuditCount": {
+    "message": "{numPassableAudits,plural, =1{{numPassableAudits} controllo superabile}one{{numPassableAudits} controllo superabile}other{{numPassableAudits} controlli superabili}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | passedAuditCount": {
+    "message": "{numPassed,plural, =1{{numPassed} controllo superato}one{{numPassed} controllo superato}other{{numPassed} controlli superati}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingAverage": {
+    "message": "Nella media"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingError": {
+    "message": "Errore"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingFail": {
+    "message": "Scadente"
+  },
+  "flow-report/src/i18n/ui-strings.js | ratingPass": {
+    "message": "Buona"
+  },
+  "flow-report/src/i18n/ui-strings.js | save": {
+    "message": "Salva"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotDescription": {
+    "message": "Stato acquisito della pagina"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotLongDescription": {
+    "message": "I report relativi a un momento specifico consentono di analizzare la pagina in uno stato specifico, generalmente dopo le interazioni degli utenti."
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReport": {
+    "message": "Report relativo a un momento specifico"
+  },
+  "flow-report/src/i18n/ui-strings.js | snapshotReportCount": {
+    "message": "{numSnapshot,plural, =1{{numSnapshot} report relativo a un momento specifico}one{{numSnapshot} report relativo a un momento specifico}other{{numSnapshot} report relativi a un momento specifico}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | summary": {
+    "message": "Riepilogo"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanDescription": {
+    "message": "Interazioni dell'utente"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanLongDescription": {
+    "message": "I report relativi al periodo di tempo consentono di analizzare un periodo di tempo arbitrario, generalmente durante il quale ci sono state interazioni degli utenti."
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReport": {
+    "message": "Report relativo al periodo di tempo"
+  },
+  "flow-report/src/i18n/ui-strings.js | timespanReportCount": {
+    "message": "{numTimespan,plural, =1{{numTimespan} report relativo al periodo di tempo}one{{numTimespan} report relativo al periodo di tempo}other{{numTimespan} report relativi al periodo di tempo}}"
+  },
+  "flow-report/src/i18n/ui-strings.js | title": {
+    "message": "Report Lighthouse sulla procedura"
+  },
   "lighthouse-core/audits/accessibility/accesskeys.js | description": {
     "message": "Le chiavi di accesso consentono agli utenti di impostare rapidamente lo stato attivo su una parte della pagina. Per assicurare una navigazione corretta, ogni chiave di accesso deve essere univoca. [Ulteriori informazioni](https://web.dev/accesskeys/)."
   },
@@ -63,7 +195,7 @@
     "message": "Gli elementi ARIA `meter` hanno nomi accessibili"
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | description": {
-    "message": "Quando un elemento non ha un nome accessibile, gli screen reader lo descrivono con un nome generico, rendendolo inutilizzabile per gli utenti che si affidano agli screen reader. [Scopri di più](https://web.dev/aria-name/)"
+    "message": "Quando un elemento `progressbar` non ha un nome accessibile, gli screen reader lo descrivono con un nome generico, rendendolo inutilizzabile per gli utenti che si affidano agli screen reader. [Scopri di più](https://web.dev/aria-name/)."
   },
   "lighthouse-core/audits/accessibility/aria-progressbar-name.js | failureTitle": {
     "message": "Gli elementi ARIA `progressbar` non hanno nomi accessibili"
@@ -476,6 +608,12 @@
   "lighthouse-core/audits/byte-efficiency/legacy-javascript.js | title": {
     "message": "Evita di pubblicare codice JavaScript precedente in browser moderni"
   },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | description": {
+    "message": "I formati delle immagini come WebP e AVIF spesso consentono una compressione migliore rispetto a quella dei formati PNG o JPEG, che comporta download più veloci e un minor consumo di dati. [Scopri di più](https://web.dev/uses-webp-images/)"
+  },
+  "lighthouse-core/audits/byte-efficiency/modern-image-formats.js | title": {
+    "message": "Pubblica immagini in formati più recenti"
+  },
   "lighthouse-core/audits/byte-efficiency/offscreen-images.js | description": {
     "message": "Potresti usare il caricamento lento per le immagini fuori schermo e nascoste al termine del caricamento di tutte le risorse fondamentali per ridurre il tempo necessario per la completa interattività. [Ulteriori informazioni](https://web.dev/offscreen-images/)."
   },
@@ -528,7 +666,7 @@
     "message": "La memorizzazione nella cache per un lungo periodo di tempo può velocizzare le visite abituali alla tua pagina. [Ulteriori informazioni](https://web.dev/uses-long-cache-ttl/)."
   },
   "lighthouse-core/audits/byte-efficiency/uses-long-cache-ttl.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 risorsa trovata}other{# risorse trovate}}"
+    "message": "{itemCount,plural, =1{1 risorsa trovata}one{# resources found}other{# risorse trovate}}"
   },
   "lighthouse-core/audits/byte-efficiency/uses-long-cache-ttl.js | failureTitle": {
     "message": "Pubblica le risorse statiche con criteri della cache efficaci"
@@ -542,6 +680,18 @@
   "lighthouse-core/audits/byte-efficiency/uses-optimized-images.js | title": {
     "message": "Codifica in modo efficace le immagini"
   },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnActualDimensions": {
+    "message": "Dimensioni effettive"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | columnDisplayedDimensions": {
+    "message": "Dimensioni visualizzate"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | failureTitle": {
+    "message": "Le immagini erano più grandi rispetto alle dimensioni visualizzate"
+  },
+  "lighthouse-core/audits/byte-efficiency/uses-responsive-images-snapshot.js | title": {
+    "message": "Le immagini erano appropriate per le dimensioni visualizzate"
+  },
   "lighthouse-core/audits/byte-efficiency/uses-responsive-images.js | description": {
     "message": "Pubblica immagini di dimensioni adeguate per consumare meno traffico della rete dati e ridurre i tempi di caricamento. [Ulteriori informazioni](https://web.dev/uses-responsive-images/)."
   },
@@ -553,12 +703,6 @@
   },
   "lighthouse-core/audits/byte-efficiency/uses-text-compression.js | title": {
     "message": "Attiva la compressione del testo"
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | description": {
-    "message": "I formati delle immagini come JPEG 2000, JPEG XR e WebP spesso consentono una compressione migliore rispetto a quella dei formati PNG o JPEG, che comporta download più veloci e un minor consumo di dati. [Ulteriori informazioni](https://web.dev/uses-webp-images/)."
-  },
-  "lighthouse-core/audits/byte-efficiency/uses-webp-images.js | title": {
-    "message": "Pubblica immagini in formati più recenti"
   },
   "lighthouse-core/audits/content-width.js | description": {
     "message": "Se la larghezza dei contenuti dell'app non corrisponde alla larghezza dell'area visibile, l'app potrebbe non essere ottimizzata per gli schermi dei dispositivi mobili. [Ulteriori informazioni](https://web.dev/content-width/)."
@@ -576,7 +720,7 @@
     "message": "Nella sezione Catene di richieste fondamentali indicata di seguito vengono mostrate le risorse caricate con priorità elevata. Potresti ridurre la lunghezza delle catene e le dimensioni del download delle risorse oppure rimandare il download delle risorse non necessarie per velocizzare il caricamento della pagina. [Ulteriori informazioni](https://web.dev/critical-request-chains/)."
   },
   "lighthouse-core/audits/critical-request-chains.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 catena trovata}other{# catene trovate}}"
+    "message": "{itemCount,plural, =1{1 catena trovata}one{# chains found}other{# catene trovate}}"
   },
   "lighthouse-core/audits/critical-request-chains.js | title": {
     "message": "Evita di concatenare le richieste fondamentali"
@@ -584,8 +728,14 @@
   "lighthouse-core/audits/csp-xss.js | columnDirective": {
     "message": "Istruzione"
   },
+  "lighthouse-core/audits/csp-xss.js | columnSeverity": {
+    "message": "Gravità"
+  },
   "lighthouse-core/audits/csp-xss.js | description": {
-    "message": "Un Criterio di sicurezza del contenuto (CSP) efficace riduce notevolmente il rischio di attacchi XSS (cross-site scripting). [Scopri di più](https://csp.withgoogle.com/docs/index.html)"
+    "message": "Un Criterio di sicurezza del contenuto (CSP) efficace riduce notevolmente il rischio di attacchi cross-site scripting (XSS). [Scopri di più](https://web.dev/csp-xss/)"
+  },
+  "lighthouse-core/audits/csp-xss.js | itemSeveritySyntax": {
+    "message": "Sintassi"
   },
   "lighthouse-core/audits/csp-xss.js | metaTagMessage": {
     "message": "La pagina contiene un criterio CSP definito in un tag <meta>. Se possibile, definisci il criterio CSP in un'intestazione HTTP."
@@ -606,25 +756,13 @@
     "message": "Le API obsolete verranno rimosse dal browser prima o poi. [Ulteriori informazioni](https://web.dev/deprecations/)."
   },
   "lighthouse-core/audits/deprecations.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 avviso trovato}other{# avvisi trovati}}"
+    "message": "{itemCount,plural, =1{1 avviso trovato}one{# avvisi trovati}other{# avvisi trovati}}"
   },
   "lighthouse-core/audits/deprecations.js | failureTitle": {
     "message": "Usa API obsolete"
   },
   "lighthouse-core/audits/deprecations.js | title": {
     "message": "Evita le API obsolete"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | description": {
-    "message": "L'API Cache applicazione è obsoleta. [Ulteriori informazioni](https://web.dev/appcache-manifest/)."
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | displayValue": {
-    "message": "\"{AppCacheManifest}\" trovato"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | failureTitle": {
-    "message": "Usa l'API Cache applicazione"
-  },
-  "lighthouse-core/audits/dobetterweb/appcache-manifest.js | title": {
-    "message": "Evita l'API Cache applicazione"
   },
   "lighthouse-core/audits/dobetterweb/charset.js | description": {
     "message": "Dichiarazione della codifica dei caratteri obbligatoria. Può essere inserita con un tag `<meta>` nei primi 1024 byte del codice HTML oppure nell'intestazione della risposta HTTP Content-Type. [Ulteriori informazioni](https://web.dev/charset/)"
@@ -666,7 +804,7 @@
     "message": "Un DOM di grandi dimensioni aumenta l'utilizzo di memoria, causa [calcoli di stile](https://developers.google.com/web/fundamentals/performance/rendering/reduce-the-scope-and-complexity-of-style-calculations) più lunghi e genera costosi [adattamenti dinamici del layout](https://developers.google.com/speed/articles/reflow). [Ulteriori informazioni](https://web.dev/dom-size/)."
   },
   "lighthouse-core/audits/dobetterweb/dom-size.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 elemento}other{# elementi}}"
+    "message": "{itemCount,plural, =1{1 elemento}one{# elementi}other{# elementi}}"
   },
   "lighthouse-core/audits/dobetterweb/dom-size.js | failureTitle": {
     "message": "Evita di usare un DOM di dimensioni eccessive"
@@ -682,21 +820,6 @@
   },
   "lighthouse-core/audits/dobetterweb/dom-size.js | title": {
     "message": "Viene evitato un DOM di dimensioni eccessive"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | columnFailingAnchors": {
-    "message": "Anchor respinti"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | description": {
-    "message": "Aggiungi `rel=\"noopener\"` o `rel=\"noreferrer\"` a eventuali link esterni per migliorare le prestazioni ed evitare vulnerabilità di sicurezza. [Ulteriori informazioni](https://web.dev/external-anchors-use-rel-noopener/)."
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | failureTitle": {
-    "message": "I link che rimandano a destinazioni multiorigine non sono sicuri"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | title": {
-    "message": "I link che rimandano a destinazioni multiorigine sono sicuri"
-  },
-  "lighthouse-core/audits/dobetterweb/external-anchors-use-rel-noopener.js | warning": {
-    "message": "Impossibile stabilire la destinazione dell'ancoraggio ({anchorHTML}). Se non viene usato come link ipertestuale, potresti rimuovere target=_blank."
   },
   "lighthouse-core/audits/dobetterweb/geolocation-on-start.js | description": {
     "message": "Gli utenti sono sospettosi nei confronti dei siti che chiedono la loro posizione senza contesto o sono confusi da tali siti. Potresti associare la richiesta a un'azione dell'utente. [Ulteriori informazioni](https://web.dev/geolocation-on-start/)."
@@ -756,19 +879,10 @@
     "message": "Alcuni script di terze parti potrebbero contenere vulnerabilità di sicurezza note facilmente identificate e sfruttate dai malintenzionati. [Ulteriori informazioni](https://web.dev/no-vulnerable-libraries/)."
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 vulnerabilità rilevata}other{# vulnerabilità rilevate}}"
+    "message": "{itemCount,plural, =1{1 vulnerabilità rilevata}one{# vulnerabilità rilevate}other{# vulnerabilità rilevate}}"
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | failureTitle": {
     "message": "Include librerie JavaScript front-end con vulnerabilità di sicurezza note"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityHigh": {
-    "message": "Alta"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityLow": {
-    "message": "Bassa"
-  },
-  "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | rowSeverityMedium": {
-    "message": "Media"
   },
   "lighthouse-core/audits/dobetterweb/no-vulnerable-libraries.js | title": {
     "message": "Evita librerie JavaScript front-end con vulnerabilità di sicurezza note"
@@ -798,7 +912,7 @@
     "message": "HTTP/2 offre tanti vantaggi rispetto a HTTP/1.1, tra cui intestazioni binarie e multiplexing. [Scopri di più](https://web.dev/uses-http2/)"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 richiesta non pubblicata tramite HTTP/2}other{# richieste non pubblicate tramite HTTP/2}}"
+    "message": "{itemCount,plural, =1{1 richiesta non pubblicata tramite HTTP/2}one{# richieste non pubblicate tramite HTTP/2}other{# richieste non pubblicate tramite HTTP/2}}"
   },
   "lighthouse-core/audits/dobetterweb/uses-http2.js | title": {
     "message": "Usa HTTP/2"
@@ -831,7 +945,7 @@
     "message": "Tutto il testo rimane visibile durante il caricamento dei caratteri web"
   },
   "lighthouse-core/audits/font-display.js | undeclaredFontOriginWarning": {
-    "message": "{fontCountForOrigin,plural, =1{Impossibile controllare automaticamente in Lighthouse il valore `font-display` per l'origine {fontOrigin}.}other{Impossibile controllare automaticamente in Lighthouse i valori `font-display` per l'origine {fontOrigin}.}}"
+    "message": "{fontCountForOrigin,plural, =1{Impossibile controllare automaticamente in Lighthouse il valore `font-display` per l'origine {fontOrigin}.}one{Impossibile controllare automaticamente in Lighthouse i valori `font-display` per l'origine {fontOrigin}.}other{Impossibile controllare automaticamente in Lighthouse i valori `font-display` per l'origine {fontOrigin}.}}"
   },
   "lighthouse-core/audits/image-aspect-ratio.js | columnActual": {
     "message": "Proporzioni (effettive)"
@@ -879,7 +993,7 @@
     "message": "Il service worker è la tecnologia che consente alla tua app di usare tante funzionalità delle app web progressive, ad esempio il funzionamento offline, l'aggiunta alla schermata Home e le notifiche push. Grazie a implementazioni adeguate del service worker e del file manifest, i browser possono chiedere proattivamente agli utenti di aggiungere la tua app alla schermata Home. Ciò potrebbe comportare un maggiore coinvolgimento. [Scopri di più](https://web.dev/installable-manifest/)"
   },
   "lighthouse-core/audits/installable-manifest.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 motivo}other{# motivi}}"
+    "message": "{itemCount,plural, =1{1 motivo}one{# motivi}other{# motivi}}"
   },
   "lighthouse-core/audits/installable-manifest.js | failureTitle": {
     "message": "Il file manifest o il service worker dell'app web non soddisfano i requisiti di installabilità"
@@ -906,10 +1020,10 @@
     "message": "Il file manifest non contiene un campo \"name\" o \"short_name\""
   },
   "lighthouse-core/audits/installable-manifest.js | manifest-missing-suitable-icon": {
-    "message": "Il file manifest non contiene un'icona adatta, deve essere in formato PNG, SVG o WebP e avere una dimensione di almeno {value0} px. L'attributo sizes deve essere impostato e l'attributo purpose, se impostato, deve includere \"any\" o \"maskable\"."
+    "message": "Il file manifest non contiene un'icona adatta, deve essere in formato PNG, SVG o WebP e avere una dimensione di almeno {value0} px. L'attributo sizes deve essere impostato e l'attributo purpose, se configurato, deve includere \"any\"."
   },
   "lighthouse-core/audits/installable-manifest.js | no-acceptable-icon": {
-    "message": "Nessuna delle icone fornite ha una dimensione minima di {value0} px quadrati in formato PNG, SVG o WebP"
+    "message": "Nessuna delle icone fornite ha una dimensione minima di {value0} px quadrati in formato PNG, SVG o WebP, con l'attributo purpose non impostato o impostato su \"any\"."
   },
   "lighthouse-core/audits/installable-manifest.js | no-icon-available": {
     "message": "L'icona scaricata era vuota o danneggiata"
@@ -975,7 +1089,7 @@
     "message": "Tutti i siti dovrebbero essere protetti con HTTPS, anche quelli che non trattano dati sensibili. Si dovrebbero quindi evitare i [contenuti misti](https://developers.google.com/web/fundamentals/security/prevent-mixed-content/what-is-mixed-content) perché alcune risorse vengono caricate tramite HTTP nonostante la richiesta iniziale venga pubblicata tramite HTTPS. HTTPS impedisce agli intrusi di manomettere o ascoltare passivamente le comunicazioni tra la tua app e i tuoi utenti ed è un prerequisito per HTTP/2 e tante nuove API delle piattaforme web. [Ulteriori informazioni](https://web.dev/is-on-https/)"
   },
   "lighthouse-core/audits/is-on-https.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 richiesta non sicura trovata}other{# richieste non sicure trovate}}"
+    "message": "{itemCount,plural, =1{1 richiesta non sicura trovata}one{# richieste non sicure trovate}other{# richieste non sicure trovate}}"
   },
   "lighthouse-core/audits/is-on-https.js | failureTitle": {
     "message": "Non usa HTTPS"
@@ -988,21 +1102,6 @@
   },
   "lighthouse-core/audits/is-on-https.js | warning": {
     "message": "Consentito con avviso"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | columnLibraryName": {
-    "message": "Libreria"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | description": {
-    "message": "Le librerie JavaScript di grandi dimensioni possono causare scarse prestazioni. Usa preferibilmente librerie di dimensioni ridotte con funzionalità equivalenti per ridurre le dimensioni dei bundle. [Ulteriori informazioni](https://developers.google.com/web/fundamentals/performance/webpack/decrease-frontend-size#optimize_dependencies)"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | displayValue": {
-    "message": "{libraryCount,plural, =1{1 libreria di grandi dimensioni trovata}other{# librerie di grandi dimensioni trovate}}"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | failureTitle": {
-    "message": "Sostituisci le librerie JavaScript di dimensioni inutilmente grandi"
-  },
-  "lighthouse-core/audits/large-javascript-libraries.js | title": {
-    "message": "Evita librerie JavaScript di grandi dimensioni per cui esistono alternative di dimensioni inferiori"
   },
   "lighthouse-core/audits/largest-contentful-paint-element.js | description": {
     "message": "Si tratta dell'elemento identificato come Largest Contentful Paint all'interno dell'area visibile. [Ulteriori informazioni](https://web.dev/lighthouse-largest-contentful-paint/)"
@@ -1019,11 +1118,20 @@
   "lighthouse-core/audits/layout-shift-elements.js | title": {
     "message": "Evita significative variazioni di layout"
   },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | description": {
+    "message": "Le immagini above the fold che vengono caricate tramite caricamento lento vengono visualizzate più tardi nel ciclo di vita della pagina e questo può ritardare la visualizzazione dell'elemento più grande. [Scopri di più](https://web.dev/lcp-lazy-loading/)."
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | failureTitle": {
+    "message": "L'immagine Largest Contentful Paint è stata caricata tramite caricamento lento"
+  },
+  "lighthouse-core/audits/lcp-lazy-loaded.js | title": {
+    "message": "L'immagine Largest Contentful Paint non è stata caricata tramite caricamento lento"
+  },
   "lighthouse-core/audits/long-tasks.js | description": {
     "message": "Vengono elencate le attività più lunghe nel thread principale; è utile per identificare gli elementi che contribuiscono maggiormente al ritardo dell'interazione. [Ulteriori informazioni](https://web.dev/long-tasks-devtools/)"
   },
   "lighthouse-core/audits/long-tasks.js | displayValue": {
-    "message": "{itemCount,plural, =1{# attività lunga trovata}other{# attività lunghe trovate}}"
+    "message": "{itemCount,plural, =1{# attività lunga trovata}one{# attività lunghe trovate}other{# attività lunghe trovate}}"
   },
   "lighthouse-core/audits/long-tasks.js | title": {
     "message": "Evita attività lunghe nel thread principale"
@@ -1070,14 +1178,8 @@
   "lighthouse-core/audits/metrics/cumulative-layout-shift.js | description": {
     "message": "La metrica Cumulative Layout Shift misura lo spostamento degli elementi visibili all'interno dell'area visibile. [Ulteriori informazioni](https://web.dev/cls/)."
   },
-  "lighthouse-core/audits/metrics/estimated-input-latency.js | description": {
-    "message": "La metrica Latenza input stimata fornisce una stima del tempo impiegato dall'app, espresso in millisecondi, per rispondere all'input dell'utente durante il periodo di 5 s più impegnativo del caricamento della pagina. Se la latenza è superiore a 50 ms, gli utenti potrebbero considerare lenta la tua app. [Ulteriori informazioni](https://web.dev/estimated-input-latency/)."
-  },
   "lighthouse-core/audits/metrics/first-contentful-paint.js | description": {
     "message": "La metrica First Contentful Paint (prima visualizzazione con contenuti) indica il momento in cui vengono visualizzati il primo testo o la prima immagine. [Ulteriori informazioni](https://web.dev/first-contentful-paint/)."
-  },
-  "lighthouse-core/audits/metrics/first-cpu-idle.js | description": {
-    "message": "La metrica Prima inattività CPU indica la prima volta in cui il thread principale della pagina è abbastanza tranquillo da poter gestire l'input.  [Ulteriori informazioni](https://web.dev/first-cpu-idle/)."
   },
   "lighthouse-core/audits/metrics/first-meaningful-paint.js | description": {
     "message": "La metrica First Meaningful Paint (visualizzazione primo elemento utile) indica quando diventano visibili i contenuti principali di una pagina. [Ulteriori informazioni](https://web.dev/first-meaningful-paint/)."
@@ -1122,7 +1224,7 @@
     "message": "Le animazioni non composite possono essere scadenti e aumentare il valore CLS. [Ulteriori informazioni](https://web.dev/non-composited-animations)"
   },
   "lighthouse-core/audits/non-composited-animations.js | displayValue": {
-    "message": "{itemCount,plural, =1{# elemento animato trovato}other{# elementi animati trovati}}"
+    "message": "{itemCount,plural, =1{# elemento animato trovato}one{# elementi animati trovati}other{# elementi animati trovati}}"
   },
   "lighthouse-core/audits/non-composited-animations.js | filterMayMovePixels": {
     "message": "La proprietà relativa al filtro potrebbe spostare i pixel"
@@ -1140,7 +1242,7 @@
     "message": "La proprietà relativa alla trasformazione dipende dalle dimensioni della casella"
   },
   "lighthouse-core/audits/non-composited-animations.js | unsupportedCSSProperty": {
-    "message": "{propertyCount,plural, =1{Proprietà CSS non supportata: {properties}}other{Proprietà CSS non supportate: {properties}}}"
+    "message": "{propertyCount,plural, =1{Proprietà CSS non supportata: {properties}}one{Proprietà CSS non supportate: {properties}}other{Proprietà CSS non supportate: {properties}}}"
   },
   "lighthouse-core/audits/non-composited-animations.js | unsupportedTimingParameters": {
     "message": "L'effetto ha parametri di timing non supportati"
@@ -1149,7 +1251,7 @@
     "message": "Mantieni la quantità e le dimensioni delle richieste di rete al di sotto dei target impostati tramite il budget per le prestazioni fornito. [Ulteriori informazioni](https://developers.google.com/web/tools/lighthouse/audits/budgets)."
   },
   "lighthouse-core/audits/performance-budget.js | requestCountOverBudget": {
-    "message": "{count,plural, =1{1 richiesta}other{# richieste}}"
+    "message": "{count,plural, =1{1 richiesta}one{# richieste}other{# richieste}}"
   },
   "lighthouse-core/audits/performance-budget.js | title": {
     "message": "Budget per le prestazioni"
@@ -1169,15 +1271,6 @@
   "lighthouse-core/audits/preload-lcp-image.js | title": {
     "message": "Precarica l'immagine Largest Contentful Paint"
   },
-  "lighthouse-core/audits/redirects-http.js | description": {
-    "message": "Se hai già configurato HTTPS, assicurati di reindirizzare tutto il traffico HTTP a HTTPS per attivare funzionalità web sicure per tutti i tuoi utenti. [Ulteriori informazioni](https://web.dev/redirects-http/)."
-  },
-  "lighthouse-core/audits/redirects-http.js | failureTitle": {
-    "message": "Non reindirizza il traffico HTTP a HTTPS"
-  },
-  "lighthouse-core/audits/redirects-http.js | title": {
-    "message": "Reindirizza il traffico HTTP a HTTPS"
-  },
   "lighthouse-core/audits/redirects.js | description": {
     "message": "I reindirizzamenti comportano ulteriori ritardi prima del caricamento della pagina. [Ulteriori informazioni](https://web.dev/redirects/)."
   },
@@ -1188,7 +1281,7 @@
     "message": "Per impostare budget relativi alla quantità e alle dimensioni delle risorse della pagina, aggiungi un file budget.json. [Ulteriori informazioni](https://web.dev/use-lighthouse-for-performance-budgets/)."
   },
   "lighthouse-core/audits/resource-summary.js | displayValue": {
-    "message": "{requestCount,plural, =1{1 richiesta • {byteCount, number, bytes} KiB}other{# richieste • {byteCount, number, bytes} KiB}}"
+    "message": "{requestCount,plural, =1{1 richiesta • {byteCount, number, bytes} KiB}one{# richieste • {byteCount, number, bytes} KiB}other{# richieste • {byteCount, number, bytes} KiB}}"
   },
   "lighthouse-core/audits/resource-summary.js | title": {
     "message": "Mantieni un numero ridotto di richieste e dimensioni di trasferimento limitate"
@@ -1199,9 +1292,6 @@
   "lighthouse-core/audits/seo/canonical.js | explanationConflict": {
     "message": "Diversi URL in conflitto ({urlList})"
   },
-  "lighthouse-core/audits/seo/canonical.js | explanationDifferentDomain": {
-    "message": "Rimanda a un altro dominio ({url})"
-  },
   "lighthouse-core/audits/seo/canonical.js | explanationInvalid": {
     "message": "URL non valido ({url})"
   },
@@ -1209,7 +1299,7 @@
     "message": "Rimanda a un'altra posizione `hreflang` ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRelative": {
-    "message": "URL relativo ({url})"
+    "message": "Non è un URL assoluto ({url})"
   },
   "lighthouse-core/audits/seo/canonical.js | explanationRoot": {
     "message": "Indirizza all'URL principale del dominio (la home page), anziché a una pagina di contenuto equivalente"
@@ -1299,7 +1389,7 @@
     "message": "Il testo descrittivo dei link aiuta i motori di ricerca a comprendere i tuoi contenuti. [Ulteriori informazioni](https://web.dev/link-text/)."
   },
   "lighthouse-core/audits/seo/link-text.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 link trovato}other{# link trovati}}"
+    "message": "{itemCount,plural, =1{1 link trovato}one{# link trovati}other{# link trovati}}"
   },
   "lighthouse-core/audits/seo/link-text.js | failureTitle": {
     "message": "I link non contengono testo descrittivo"
@@ -1341,7 +1431,7 @@
     "message": "La richiesta per robots.txt ha restituito uno stato HTTP: {statusCode}"
   },
   "lighthouse-core/audits/seo/robots-txt.js | displayValueValidationError": {
-    "message": "{itemCount,plural, =1{1 errore trovato}other{# errori trovati}}"
+    "message": "{itemCount,plural, =1{1 errore trovato}one{# errori trovati}other{# errori trovati}}"
   },
   "lighthouse-core/audits/seo/robots-txt.js | explanation": {
     "message": "Lighthouse non può completare il download del file robots.txt"
@@ -1443,7 +1533,7 @@
     "message": "Alcuni incorporamenti di terze parti possono essere caricati tramite caricamento lento. Puoi sostituirli con un facade finché non sono richiesti. [Scopri di più](https://web.dev/third-party-facades/)"
   },
   "lighthouse-core/audits/third-party-facades.js | displayValue": {
-    "message": "{itemCount,plural, =1{# alternativa facade disponibile}other{# alternative facade disponibili}}"
+    "message": "{itemCount,plural, =1{# alternativa facade disponibile}one{# alternative facade disponibili}other{# alternative facade disponibili}}"
   },
   "lighthouse-core/audits/third-party-facades.js | failureTitle": {
     "message": "Alcune risorse di terze parti possono essere caricate tramite caricamento lento con un facade"
@@ -1494,7 +1584,7 @@
     "message": "Potresti dotare la tua app dell'API User Timing per misurare le prestazioni reali dell'app durante le esperienze utente chiave. [Ulteriori informazioni](https://web.dev/user-timings/)."
   },
   "lighthouse-core/audits/user-timings.js | displayValue": {
-    "message": "{itemCount,plural, =1{1 tempo utente}other{# tempi utente}}"
+    "message": "{itemCount,plural, =1{1 tempo utente}one{# user timings}other{# tempi utente}}"
   },
   "lighthouse-core/audits/user-timings.js | title": {
     "message": "Indicatori e misure User Timing"
@@ -1536,13 +1626,13 @@
     "message": "Nel file JavaScript di grandi dimensioni manca una mappa di origine"
   },
   "lighthouse-core/audits/valid-source-maps.js | missingSourceMapItemsWarningMesssage": {
-    "message": "{missingItems,plural, =1{Avviso: manca 1 elemento in `.sourcesContent`}other{Avviso: mancano # elementi in `.sourcesContent`}}"
+    "message": "{missingItems,plural, =1{Avviso: manca 1 elemento in `.sourcesContent`}one{Avviso: mancano # elementi in `.sourcesContent`}other{Avviso: mancano # elementi in `.sourcesContent`}}"
   },
   "lighthouse-core/audits/valid-source-maps.js | title": {
     "message": "La pagina ha mappe di origine valide"
   },
   "lighthouse-core/audits/viewport.js | description": {
-    "message": "Aggiungi un tag `<meta name=\"viewport\">` per ottimizzare la tua app per gli schermi dei dispositivi mobili. [Ulteriori informazioni](https://web.dev/viewport/)."
+    "message": "Un tag `<meta name=\"viewport\">` non soltanto ottimizza la tua app per gli schermi di dispositivi mobili di varie dimensioni, ma evita anche [un ritardo di 300 millisecondi per l'input utente](https://developers.google.com/web/updates/2013/12/300ms-tap-delay-gone-away). [Scopri di più](https://web.dev/viewport/)."
   },
   "lighthouse-core/audits/viewport.js | explanationNoTag": {
     "message": "Nessun tag `<meta name=\"viewport\">` trovato"
@@ -1668,7 +1758,7 @@
     "message": "Questi controlli sono richiesti in base all'[Elenco di controllo PWA](https://developers.google.com/web/progressive-web-apps/checklist) di riferimento, ma non vengono eseguiti automaticamente da Lighthouse. Non incidono sul tuo punteggio, ma è importante verificarli manualmente."
   },
   "lighthouse-core/config/default-config.js | pwaCategoryTitle": {
-    "message": "App web progressiva"
+    "message": "PWA"
   },
   "lighthouse-core/config/default-config.js | pwaInstallableGroupTitle": {
     "message": "Installabile"
@@ -1677,7 +1767,7 @@
     "message": "Ottimizzato per PWA"
   },
   "lighthouse-core/config/default-config.js | seoCategoryDescription": {
-    "message": "Questi controlli assicurano che la pagina sia ottimizzata per il ranking dei risultati del motore di ricerca. Ci sono altri fattori che Lighthouse non controlla che potrebbero incidere sul ranking nella ricerca. [Ulteriori informazioni](https://support.google.com/webmasters/answer/35769)."
+    "message": "Questi controlli assicurano che la pagina stia applicando il seguente consiglio relativo all'ottimizzazione per i motori di ricerca di base. Esistono molti altri fattori che Lighthouse non tratta qui che potrebbero influire sul tuo ranking di ricerca, incluse le prestazioni su [Segnali web essenziali](https://web.dev/learn-web-vitals/). [Scopri di più](https://support.google.com/webmasters/answer/35769)"
   },
   "lighthouse-core/config/default-config.js | seoCategoryManualDescription": {
     "message": "Esegui questi altri strumenti di convalida sul tuo sito per controllare ulteriori best practice per SEO."
@@ -1703,8 +1793,17 @@
   "lighthouse-core/config/default-config.js | seoMobileGroupTitle": {
     "message": "Ottimizzata per i dispositivi mobili"
   },
+  "lighthouse-core/gather/driver/environment.js | warningSlowHostCpu": {
+    "message": "Il dispositivo testato sembra disporre di una CPU più lenta rispetto a quella prevista da Lighthouse. Ciò può influire negativamente sul tuo punteggio relativo alle prestazioni. Scopri di più sulla [calibrazione di un moltiplicatore di rallentamento CPU adeguato](https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#cpu-throttling)."
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningRedirected": {
+    "message": "La pagina potrebbe non essere caricata come previsto perché l'URL di prova ({requested}) è stato reindirizzato a {final}. Prova a testare direttamente il secondo URL."
+  },
+  "lighthouse-core/gather/driver/navigation.js | warningTimeout": {
+    "message": "Il caricamento della pagina è stato troppo lento e non è stato completato entro il limite di tempo. I risultati potrebbero essere incompleti."
+  },
   "lighthouse-core/gather/driver/storage.js | warningData": {
-    "message": "{locationCount,plural, =1{Potrebbero esserci dei dati memorizzati che incidono sulle prestazioni di caricamento in questa posizione: {locations}. Controlla questa pagina in una finestra di navigazione in incognito per evitare che queste risorse incidano sui tuoi punteggi.}other{Potrebbero esserci dei dati memorizzati che incidono sulle prestazioni di caricamento in queste posizioni: {locations}. Controlla questa pagina in una finestra di navigazione in incognito per evitare che queste risorse incidano sui tuoi punteggi.}}"
+    "message": "{locationCount,plural, =1{Potrebbero esserci dei dati memorizzati che incidono sulle prestazioni di caricamento in questa posizione: {locations}. Controlla questa pagina in una finestra di navigazione in incognito per evitare che queste risorse incidano sui tuoi punteggi.}one{Potrebbero esserci dei dati memorizzati che incidono sulle prestazioni di caricamento in queste posizioni: {locations}. Controlla questa pagina in una finestra di navigazione in incognito per evitare che queste risorse incidano sui tuoi punteggi.}other{Potrebbero esserci dei dati memorizzati che incidono sulle prestazioni di caricamento in queste posizioni: {locations}. Controlla questa pagina in una finestra di navigazione in incognito per evitare che queste risorse incidano sui tuoi punteggi.}}"
   },
   "lighthouse-core/lib/csp-evaluator.js | allowlistFallback": {
     "message": "Potresti aggiungere schemi URL https: e http: (ignorati dai browser che supportano \"strict-dynamic\") per la compatibilità con le versioni precedenti dei browser."
@@ -1722,7 +1821,7 @@
     "message": "A causa della mancanza di un'istruzione base-uri, i tag <base> inseriti possono impostare l'URL di base di tutti gli URL relativi (ad esempio gli script) per un dominio controllato da un utente malintenzionato. Potresti impostare base-uri su \"none\" o \"self\"."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingObjectSrc": {
-    "message": "Gli elementi controllati tramite object-src sono considerati funzionalità precedenti. Potresti impostare object-src su \"none\" per impedire l'inserimento di plug-in che eseguono script non sicuri."
+    "message": "L'assenza di un'istruzione object-src consente l'inserimento di plug-in che eseguono script non sicuri. Se puoi, imposta object-src su \"none\"."
   },
   "lighthouse-core/lib/csp-evaluator.js | missingScriptSrc": {
     "message": "Manca l'istruzione script-src. Potrebbe essere consentita l'esecuzione di script non sicuri."
@@ -1736,6 +1835,12 @@
   "lighthouse-core/lib/csp-evaluator.js | nonceLength": {
     "message": "I valori nonce devono essere di almeno 8 caratteri."
   },
+  "lighthouse-core/lib/csp-evaluator.js | plainUrlScheme": {
+    "message": "Evita di usare schemi URL standard ({keyword}) in questa istruzione. Questi schemi consentono di recuperare script da un dominio non sicuro."
+  },
+  "lighthouse-core/lib/csp-evaluator.js | plainWildcards": {
+    "message": "Evita di usare caratteri jolly standard ({keyword}) in questa istruzione. Questi caratteri consentono di recuperare script da un dominio non sicuro."
+  },
   "lighthouse-core/lib/csp-evaluator.js | reportToOnly": {
     "message": "La destinazione di reporting è configurata soltanto tramite l'istruzione report-to. Questa istruzione è supportata soltanto nei browser basati su Chromium, pertanto è consigliato usare anche un'istruzione report-uri."
   },
@@ -1743,7 +1848,7 @@
     "message": "Nessun criterio CSP configura una destinazione di reporting. In questo modo è difficile mantenere il criterio CSP nel tempo e monitorare eventuali interruzioni."
   },
   "lighthouse-core/lib/csp-evaluator.js | strictDynamic": {
-    "message": "Spesso le liste consentite di host possono essere aggirate. Potresti usare \"strict-dynamic\" insieme ad hash o nonce CSP."
+    "message": "Spesso le liste consentite di host possono essere aggirate. Potresti usare hash o nonce CSP, insieme a \"strict-dynamic\" se necessario."
   },
   "lighthouse-core/lib/csp-evaluator.js | unknownDirective": {
     "message": "Istruzione CSP sconosciuta."
@@ -1824,19 +1929,13 @@
     "message": "Potenziali riduzioni di {wastedBytes, number, bytes} KiB"
   },
   "lighthouse-core/lib/i18n/i18n.js | displayValueElementsFound": {
-    "message": "{nodeCount,plural, =1{1 elemento trovato}other{# elementi trovati}}"
+    "message": "{nodeCount,plural, =1{1 elemento trovato}one{# elementi trovati}other{# elementi trovati}}"
   },
   "lighthouse-core/lib/i18n/i18n.js | displayValueMsSavings": {
     "message": "Potenziali riduzioni di {wastedMs, number, milliseconds} ms"
   },
   "lighthouse-core/lib/i18n/i18n.js | documentResourceType": {
     "message": "Documento"
-  },
-  "lighthouse-core/lib/i18n/i18n.js | estimatedInputLatencyMetric": {
-    "message": "Latenza input stimata"
-  },
-  "lighthouse-core/lib/i18n/i18n.js | firstCPUIdleMetric": {
-    "message": "Prima inattività CPU"
   },
   "lighthouse-core/lib/i18n/i18n.js | firstContentfulPaintMetric": {
     "message": "First Contentful Paint"
@@ -1852,6 +1951,15 @@
   },
   "lighthouse-core/lib/i18n/i18n.js | interactiveMetric": {
     "message": "Time to Interactive"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityHigh": {
+    "message": "Alta"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityLow": {
+    "message": "Bassa"
+  },
+  "lighthouse-core/lib/i18n/i18n.js | itemSeverityMedium": {
+    "message": "Media"
   },
   "lighthouse-core/lib/i18n/i18n.js | largestContentfulPaintMetric": {
     "message": "Largest Contentful Paint"
@@ -1952,143 +2060,11 @@
   "lighthouse-core/lib/lh-error.js | urlInvalid": {
     "message": "L'URL fornito non è valido."
   },
-  "lighthouse-core/report/html/renderer/util.js | calculatorLink": {
-    "message": "Vai al calcolatore."
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcInitialNavigation": {
-    "message": "Navigazione iniziale"
-  },
-  "lighthouse-core/report/html/renderer/util.js | crcLongestDurationLabel": {
-    "message": "Latenza massima del percorso critico:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownCopyJSON": {
-    "message": "Copia JSON"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownDarkTheme": {
-    "message": "Attiva/disattiva Tema scuro"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintExpanded": {
-    "message": "Stampa espansa"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownPrintSummary": {
-    "message": "Stampa riepilogo"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveGist": {
-    "message": "Salva come Gist"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveHTML": {
-    "message": "Salva come HTML"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownSaveJSON": {
-    "message": "Salva come JSON"
-  },
-  "lighthouse-core/report/html/renderer/util.js | dropdownViewer": {
-    "message": "Apri nell'app Viewer"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorLabel": {
-    "message": "Errore"
-  },
-  "lighthouse-core/report/html/renderer/util.js | errorMissingAuditInfo": {
-    "message": "Errore segnalato: nessuna informazione sul controllo"
-  },
-  "lighthouse-core/report/html/renderer/util.js | footerIssue": {
-    "message": "Segnala un problema"
-  },
-  "lighthouse-core/report/html/renderer/util.js | labDataTitle": {
-    "message": "Dati di prova controllati"
-  },
-  "lighthouse-core/report/html/renderer/util.js | lsPerformanceCategoryDescription": {
-    "message": "Analisi [Lighthouse](https://developers.google.com/web/tools/lighthouse/) della pagina corrente su una rete mobile emulata. I valori sono delle stime e potrebbero variare."
-  },
-  "lighthouse-core/report/html/renderer/util.js | manualAuditsGroupTitle": {
-    "message": "Ulteriori elementi da controllare manualmente"
-  },
-  "lighthouse-core/report/html/renderer/util.js | notApplicableAuditsGroupTitle": {
-    "message": "Non applicabile"
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunityResourceColumnLabel": {
-    "message": "Opportunità"
-  },
-  "lighthouse-core/report/html/renderer/util.js | opportunitySavingsColumnLabel": {
-    "message": "Risparmi stimati"
-  },
-  "lighthouse-core/report/html/renderer/util.js | passedAuditsGroupTitle": {
-    "message": "Controlli superati"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeDesktopEmulation": {
-    "message": "Desktop emulato"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeMobileEmulation": {
-    "message": "Moto G4 emulato"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeNoEmulation": {
-    "message": "Nessuna emulazione"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsAxeVersion": {
-    "message": "Versione Axe"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsBenchmark": {
-    "message": "Potenza CPU/memoria"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsCPUThrottling": {
-    "message": "Limitazione CPU"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsChannel": {
-    "message": "Canale"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsDevice": {
-    "message": "Dispositivo"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsFetchTime": {
-    "message": "Data/ora recupero"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsNetworkThrottling": {
-    "message": "Limitazione della larghezza di banda della rete"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsTitle": {
-    "message": "Impostazioni runtime"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUA": {
-    "message": "User-agent (host)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUANetwork": {
-    "message": "User-agent (rete)"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeSettingsUrl": {
-    "message": "URL"
-  },
-  "lighthouse-core/report/html/renderer/util.js | runtimeUnknown": {
-    "message": "Valore sconosciuto"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetCollapseButtonLabel": {
-    "message": "Comprimi snippet"
-  },
-  "lighthouse-core/report/html/renderer/util.js | snippetExpandButtonLabel": {
-    "message": "Espandi snippet"
-  },
-  "lighthouse-core/report/html/renderer/util.js | thirdPartyResourcesLabel": {
-    "message": "Mostra risorse di terze parti"
-  },
-  "lighthouse-core/report/html/renderer/util.js | throttlingProvided": {
-    "message": "Fornita dall'ambiente"
-  },
-  "lighthouse-core/report/html/renderer/util.js | toplevelWarningsMessage": {
-    "message": "Si sono verificati dei problemi che incidono su questa esecuzione di Lighthouse:"
-  },
-  "lighthouse-core/report/html/renderer/util.js | varianceDisclaimer": {
-    "message": "I valori sono delle stime e potrebbero variare. Il [punteggio relativo alle prestazioni viene calcolato](https://web.dev/performance-scoring/) direttamente in base a queste metriche."
-  },
-  "lighthouse-core/report/html/renderer/util.js | viewTreemapLabel": {
-    "message": "Visualizza Treemap"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningAuditsGroupTitle": {
-    "message": "Controlli superati ma con avvisi"
-  },
-  "lighthouse-core/report/html/renderer/util.js | warningHeader": {
-    "message": "Avvisi: "
-  },
   "node_modules/lighthouse-stack-packs/packs/amp.js | efficient-animated-content": {
     "message": "Per i contenuti animati, usa [`amp-anim`](https://amp.dev/documentation/components/amp-anim/) per ridurre al minimo l'utilizzo di CPU mentre i contenuti sono fuori dallo schermo."
+  },
+  "node_modules/lighthouse-stack-packs/packs/amp.js | modern-image-formats": {
+    "message": "Potresti visualizzare tutti i componenti [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) nei formati WebP e specificare un'immagine di riserva appropriata per altri browser. [Ulteriori informazioni](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)"
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | offscreen-images": {
     "message": "Assicurati di usare un attributo [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) per attivare il caricamento lento automatico delle immagini. [Ulteriori informazioni](https://amp.dev/documentation/guides-and-tutorials/develop/media_iframes_3p/?format=websites#images)"
@@ -2101,9 +2077,6 @@
   },
   "node_modules/lighthouse-stack-packs/packs/amp.js | uses-responsive-images": {
     "message": "Il componente [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) supporta l'attributo [`srcset`](https://web.dev/use-srcset-to-automatically-choose-the-right-image/), che consente di specificare quali asset immagine usare in base alle dimensioni dello schermo. [Ulteriori informazioni](https://amp.dev/documentation/guides-and-tutorials/develop/style_and_layout/art_direction/)"
-  },
-  "node_modules/lighthouse-stack-packs/packs/amp.js | uses-webp-images": {
-    "message": "Potresti visualizzare tutti i componenti [`amp-img`](https://amp.dev/documentation/components/amp-img/?format=websites) nei formati WebP e specificare un'immagine di riserva appropriata per altri browser. [Ulteriori informazioni](https://amp.dev/documentation/components/amp-img/#example:-specifying-a-fallback-image)"
   },
   "node_modules/lighthouse-stack-packs/packs/angular.js | dom-size": {
     "message": "Potresti usare lo scorrimento virtuale con Component Dev Kit (CDK) se viene eseguito il rendering di elenchi di dimensioni molto grandi. [Ulteriori informazioni](https://web.dev/virtualize-lists-with-angular-cdk/)."
@@ -2129,13 +2102,16 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | font-display": {
     "message": "Specifica `@font-display` durante la definizione dei caratteri personalizzati per il tuo tema."
   },
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | modern-image-formats": {
+    "message": "Potresti installare e configurare [un modulo per usare i formati dell'immagine WebP](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) sul tuo sito. Questi moduli generano automaticamente una versione WebP delle tue immagini caricate per ottimizzare i tempi di caricamento."
+  },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | offscreen-images": {
     "message": "Installa [un modulo Drupal](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=im_vid_3%3A67&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=%22lazy+load%22&solrsort=iss_project_release_usage+desc&op=Search) che consenta il caricamento lento delle immagini. Questi moduli offrono la possibilità di rimandare qualsiasi immagine fuori schermo per migliorare le prestazioni."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | render-blocking-resources": {
     "message": "Potresti usare un modulo per incorporare codice JavaScript e CSS fondamentale o potenzialmente caricare asset in modo asincrono tramite JavaScript, come il modulo [CSS avanzato/Aggregazione JS](https://www.drupal.org/project/advagg). Fai attenzione perché le ottimizzazioni offerte da questo modulo potrebbero interrompere la funzionalità del tuo sito, pertanto potresti dover apportare modifiche al codice."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/drupal.js | server-response-time": {
     "message": "Le specifiche del server, i moduli e i temi contribuiscono al tempo di risposta del server. Potresti usare un tema più ottimizzato, selezionando con cura un modulo per l'ottimizzazione e/o eseguendo l'upgrade del server. I server hosting dovrebbero usare la memorizzazione nella cache opcode PHP, la memorizzazione nella cache per ridurre i tempi di query del database come Redis o memcache e una logica dell'applicazione ottimizzata per preparare più rapidamente le pagine."
   },
   "node_modules/lighthouse-stack-packs/packs/drupal.js | total-byte-weight": {
@@ -2165,11 +2141,11 @@
   "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-responsive-images": {
     "message": "Assicurati di stare utilizzando gli [stili di immagini adattabili](https://www.drupal.org/docs/8/mobile-guide/responsive-images-in-drupal-8) nativi forniti da Drupal (disponibili in Drupal 8 e versioni successive). Usa gli stili di immagini adattabili per il rendering dei campi immagine con modalità di visualizzazione, visualizzazioni o immagini caricate tramite l'editor WYSIWYG."
   },
-  "node_modules/lighthouse-stack-packs/packs/drupal.js | uses-webp-images": {
-    "message": "Potresti installare e configurare [un modulo per usare i formati dell'immagine WebP](https://www.drupal.org/project/project_module?f%5B0%5D=&f%5B1%5D=&f%5B2%5D=&f%5B3%5D=&f%5B4%5D=sm_field_project_type%3Afull&f%5B5%5D=&f%5B6%5D=&text=webp&solrsort=iss_project_release_usage+desc&op=Search) sul tuo sito. Questi moduli generano automaticamente una versione WebP delle tue immagini caricate per ottimizzare i tempi di caricamento."
-  },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | efficient-animated-content": {
     "message": "Potresti caricare la tua GIF su un servizio che la renda disponibile per l'incorporamento come video HTML5."
+  },
+  "node_modules/lighthouse-stack-packs/packs/joomla.js | modern-image-formats": {
+    "message": "Potresti usare un [plug-in](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) o un servizio che converta automaticamente le immagini caricate nei formati ottimali."
   },
   "node_modules/lighthouse-stack-packs/packs/joomla.js | offscreen-images": {
     "message": "Installa un [plug-in Joomla per il caricamento lento](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=lazy%20loading) che consenta di rimandare qualsiasi immagine fuori schermo oppure passa a un modello che offra questa funzionalità. A partire da Joomla 4.0, tutte le nuove immagini riceveranno [automaticamente](https://github.com/joomla/joomla-cms/pull/30748) l'attributo `loading` dal core."
@@ -2207,9 +2183,6 @@
   "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-text-compression": {
     "message": "Puoi attivare la compressione del testo abilitando la compressione Gzip della pagina in Joomla: System (Sistema) > Global configuration (Configurazione globale) > Server."
   },
-  "node_modules/lighthouse-stack-packs/packs/joomla.js | uses-webp-images": {
-    "message": "Potresti usare un [plug-in](https://extensions.joomla.org/instant-search/?jed_live%5Bquery%5D=webp) o un servizio che converta automaticamente le immagini caricate nei formati ottimali."
-  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | critical-request-chains": {
     "message": "Se non crei bundle per gli asset JavaScript, potresti usare [baler](https://github.com/magento/baler)."
   },
@@ -2219,10 +2192,13 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | font-display": {
     "message": "Specifica `@font-display` quando [definisci caratteri personalizzati](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/css-topics/using-fonts.html)."
   },
+  "node_modules/lighthouse-stack-packs/packs/magento.js | modern-image-formats": {
+    "message": "Potresti cercare sul [Marketplace Magento](https://marketplace.magento.com/catalogsearch/result/?q=webp) una serie di estensioni di terze parti per utilizzare i formati di immagine più recenti."
+  },
   "node_modules/lighthouse-stack-packs/packs/magento.js | offscreen-images": {
     "message": "Potresti modificare i modelli del prodotto e del catalogo in modo da usare la funzionalità di [caricamento lento](https://web.dev/native-lazy-loading) della piattaforma web."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/magento.js | server-response-time": {
     "message": "Usa l'[integrazione Varnish](https://devdocs.magento.com/guides/v2.3/config-guide/varnish/config-varnish.html) di Magento."
   },
   "node_modules/lighthouse-stack-packs/packs/magento.js | unminified-css": {
@@ -2243,11 +2219,11 @@
   "node_modules/lighthouse-stack-packs/packs/magento.js | uses-rel-preload": {
     "message": "Puoi aggiungere i tag `<link rel=preload>` [modificando il layout di un tema](https://devdocs.magento.com/guides/v2.3/frontend-dev-guide/layouts/xml-manage.html)."
   },
-  "node_modules/lighthouse-stack-packs/packs/magento.js | uses-webp-images": {
-    "message": "Potresti cercare sul [Marketplace Magento](https://marketplace.magento.com/catalogsearch/result/?q=webp) una serie di estensioni di terze parti per utilizzare i formati di immagine più recenti."
-  },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | efficient-animated-content": {
     "message": "[Sostituisci le GIF animate con i video](https://web.dev/replace-gifs-with-videos/) per caricamenti della pagina web più rapidi e valuta l'utilizzo di formati file moderni come [WebM](https://web.dev/replace-gifs-with-videos/#create-webm-videos) o [AV1](https://developers.google.com/web/updates/2018/09/chrome-70-media-updates#av1-decoder) per migliorare l'efficienza della compressione di oltre il 30% rispetto al codec video attualmente più avanzato, VP9."
+  },
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | modern-image-formats": {
+    "message": "Valuta l'utilizzo di un [plug-in](https://octobercms.com/plugins?search=image) o di un servizio che converta automaticamente le immagini caricate nei formati ottimali. Le [immagini WebP senza perdita](https://developers.google.com/speed/webp) sono il 26% più piccole rispetto a quelle in formato PNG e il 25-34% più piccole rispetto alle immagini JPEG in base all'indice di qualità SSIM equivalente. Un altro formato dell'immagine innovativo da valutare è [AVIF](https://jakearchibald.com/2020/avif-has-landed/)."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | offscreen-images": {
     "message": "Valuta l'installazione di un [plugin per il caricamento lento delle immagini](https://octobercms.com/plugins?search=lazy) che consenta di rimandare qualsiasi immagine fuori schermo oppure passa a un tema che offra questa funzionalità. Potresti anche valutare l'utilizzo del [plug-in AMP](https://octobercms.com/plugins?search=Accelerated+Mobile+Pages)."
@@ -2255,7 +2231,7 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | render-blocking-resources": {
     "message": "Esistono diversi plug-in che possono essere utili per [incorporare le risorse di importanza critica](https://octobercms.com/plugins?search=css). Questi plug-in potrebbero interrompere altri plug-in, pertanto dovresti effettuare un test accurato."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/octobercms.js | server-response-time": {
     "message": "Le specifiche del server, i plug-in e i temi contribuiscono al tempo di risposta del server. Valuta l'utilizzo di un tema più ottimizzato, selezionando con cura un plug-in di ottimizzazione e/o eseguendo l'upgrade del server. Il CMS October consente inoltre agli sviluppatori di utilizzare [`Queues`](https://octobercms.com/docs/services/queues) per rimandare l'elaborazione di un'attività lunga, ad esempio l'invio di un'email. In questo modo le richieste web si velocizzano drasticamente."
   },
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | total-byte-weight": {
@@ -2285,16 +2261,13 @@
   "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-text-compression": {
     "message": "Attiva la compressione del testo nella configurazione del server web."
   },
-  "node_modules/lighthouse-stack-packs/packs/octobercms.js | uses-webp-images": {
-    "message": "Valuta l'utilizzo di un [plug-in](https://octobercms.com/plugins?search=image) o di un servizio che converta automaticamente le immagini caricate nei formati ottimali. Le [immagini WebP senza perdita](https://developers.google.com/speed/webp) sono il 26% più piccole rispetto a quelle in formato PNG e il 25-34% più piccole rispetto alle immagini JPEG in base all'indice di qualità SSIM equivalente. Un altro formato dell'immagine innovativo da valutare è [AVIF](https://jakearchibald.com/2020/avif-has-landed/)."
-  },
   "node_modules/lighthouse-stack-packs/packs/react.js | dom-size": {
     "message": "Valuta l'utilizzo di una libreria di \"windowing\" come `react-window` per ridurre al minimo il numero di nodi DOM creati se esegui il rendering di tanti elementi ripetuti nella pagina. [Scopri di più](https://web.dev/virtualize-long-lists-react-window/) Riduci al minimo anche le ripetizioni del rendering superflue usando [`shouldComponentUpdate`](https://reactjs.org/docs/optimizing-performance.html#shouldcomponentupdate-in-action), [`PureComponent`](https://reactjs.org/docs/react-api.html#reactpurecomponent) o [`React.memo`](https://reactjs.org/docs/react-api.html#reactmemo) e [salta gli effetti](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) soltanto fino alla modifica di determinate dipendenze se usi l'hook `Effect` per migliorare le prestazioni di runtime."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | redirects": {
     "message": "Se usi React Router, riduci al minimo l'utilizzo del componente `<Redirect>` per la [navigazione tra route](https://reacttraining.com/react-router/web/api/Redirect)."
   },
-  "node_modules/lighthouse-stack-packs/packs/react.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/react.js | server-response-time": {
     "message": "Se usi il rendering lato server per i componenti React, potresti usare `renderToNodeStream()` o `renderToStaticNodeStream()` per consentire al client di ricevere e compilare parti diverse del markup anziché tutto il markup contemporaneamente. [Ulteriori informazioni](https://reactjs.org/docs/react-dom-server.html#rendertonodestream)."
   },
   "node_modules/lighthouse-stack-packs/packs/react.js | unminified-css": {
@@ -2312,13 +2285,16 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | efficient-animated-content": {
     "message": "Potresti caricare la tua GIF su un servizio che la renda disponibile per l'incorporamento come video HTML5."
   },
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | modern-image-formats": {
+    "message": "Potresti usare un [plug-in](https://wordpress.org/plugins/search/convert+webp/) o un servizio che converta automaticamente le immagini caricate nei formati ottimali."
+  },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | offscreen-images": {
     "message": "Installa un [plug-in di WordPress per il caricamento lento](https://wordpress.org/plugins/search/lazy+load/) che consenta di rimandare qualsiasi immagine fuori schermo oppure passa a un tema che offra questa funzionalità. Potresti anche usare [il plug-in AMP](https://wordpress.org/plugins/amp/)."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | render-blocking-resources": {
     "message": "Esistono diversi plug-in di WordPress che possono esserti utili per [incorporare le risorse di importanza critica](https://wordpress.org/plugins/search/critical+css/) o [rimandare le risorse meno importanti](https://wordpress.org/plugins/search/defer+css+javascript/). Fai attenzione perché le ottimizzazioni offerte da questi plug-in potrebbero interrompere le funzionalità del tuo tema o dei tuoi plug-in, pertanto potresti dover modificare il codice."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | time-to-first-byte": {
+  "node_modules/lighthouse-stack-packs/packs/wordpress.js | server-response-time": {
     "message": "Le specifiche del server, i plug-in e i temi contribuiscono al tempo di risposta del server. Prendi in considerazione l'idea di utilizzare un tema più ottimizzato, selezionando con cura un plug-in per l'ottimizzazione e/o eseguendo l'upgrade del server."
   },
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | total-byte-weight": {
@@ -2348,7 +2324,178 @@
   "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-text-compression": {
     "message": "Puoi attivare la compressione del testo nella configurazione del server web."
   },
-  "node_modules/lighthouse-stack-packs/packs/wordpress.js | uses-webp-images": {
-    "message": "Potresti usare un [plug-in](https://wordpress.org/plugins/search/convert+webp/) o un servizio che converta automaticamente le immagini caricate nei formati ottimali."
+  "report/renderer/util.js | calculatorLink": {
+    "message": "Vai al calcolatore."
+  },
+  "report/renderer/util.js | collapseView": {
+    "message": "Comprimi visualizzazione"
+  },
+  "report/renderer/util.js | crcInitialNavigation": {
+    "message": "Navigazione iniziale"
+  },
+  "report/renderer/util.js | crcLongestDurationLabel": {
+    "message": "Latenza massima del percorso critico:"
+  },
+  "report/renderer/util.js | dropdownCopyJSON": {
+    "message": "Copia JSON"
+  },
+  "report/renderer/util.js | dropdownDarkTheme": {
+    "message": "Attiva/disattiva Tema scuro"
+  },
+  "report/renderer/util.js | dropdownPrintExpanded": {
+    "message": "Stampa espansa"
+  },
+  "report/renderer/util.js | dropdownPrintSummary": {
+    "message": "Stampa riepilogo"
+  },
+  "report/renderer/util.js | dropdownSaveGist": {
+    "message": "Salva come Gist"
+  },
+  "report/renderer/util.js | dropdownSaveHTML": {
+    "message": "Salva come HTML"
+  },
+  "report/renderer/util.js | dropdownSaveJSON": {
+    "message": "Salva come JSON"
+  },
+  "report/renderer/util.js | dropdownViewer": {
+    "message": "Apri nell'app Viewer"
+  },
+  "report/renderer/util.js | errorLabel": {
+    "message": "Errore"
+  },
+  "report/renderer/util.js | errorMissingAuditInfo": {
+    "message": "Errore segnalato: nessuna informazione sul controllo"
+  },
+  "report/renderer/util.js | expandView": {
+    "message": "Espandi visualizzazione"
+  },
+  "report/renderer/util.js | footerIssue": {
+    "message": "Segnala un problema"
+  },
+  "report/renderer/util.js | hide": {
+    "message": "Nascondi"
+  },
+  "report/renderer/util.js | labDataTitle": {
+    "message": "Dati di prova controllati"
+  },
+  "report/renderer/util.js | lsPerformanceCategoryDescription": {
+    "message": "Analisi [Lighthouse](https://developers.google.com/web/tools/lighthouse/) della pagina corrente su una rete mobile emulata. I valori sono delle stime e potrebbero variare."
+  },
+  "report/renderer/util.js | manualAuditsGroupTitle": {
+    "message": "Ulteriori elementi da controllare manualmente"
+  },
+  "report/renderer/util.js | notApplicableAuditsGroupTitle": {
+    "message": "Non applicabile"
+  },
+  "report/renderer/util.js | opportunityResourceColumnLabel": {
+    "message": "Opportunità"
+  },
+  "report/renderer/util.js | opportunitySavingsColumnLabel": {
+    "message": "Risparmi stimati"
+  },
+  "report/renderer/util.js | passedAuditsGroupTitle": {
+    "message": "Controlli superati"
+  },
+  "report/renderer/util.js | runtimeAnalysisWindow": {
+    "message": "Caricamento pagina iniziale"
+  },
+  "report/renderer/util.js | runtimeCustom": {
+    "message": "Limitazione personalizzata"
+  },
+  "report/renderer/util.js | runtimeDesktopEmulation": {
+    "message": "Desktop emulato"
+  },
+  "report/renderer/util.js | runtimeMobileEmulation": {
+    "message": "Moto G4 emulato"
+  },
+  "report/renderer/util.js | runtimeNoEmulation": {
+    "message": "Nessuna emulazione"
+  },
+  "report/renderer/util.js | runtimeSettingsAxeVersion": {
+    "message": "Versione Axe"
+  },
+  "report/renderer/util.js | runtimeSettingsBenchmark": {
+    "message": "Potenza CPU/memoria"
+  },
+  "report/renderer/util.js | runtimeSettingsCPUThrottling": {
+    "message": "Limitazione CPU"
+  },
+  "report/renderer/util.js | runtimeSettingsDevice": {
+    "message": "Dispositivo"
+  },
+  "report/renderer/util.js | runtimeSettingsNetworkThrottling": {
+    "message": "Limitazione della larghezza di banda della rete"
+  },
+  "report/renderer/util.js | runtimeSettingsUANetwork": {
+    "message": "User-agent (rete)"
+  },
+  "report/renderer/util.js | runtimeSingleLoad": {
+    "message": "Caricamento singola pagina"
+  },
+  "report/renderer/util.js | runtimeSingleLoadTooltip": {
+    "message": "Questi dati riguardano il caricamento di una singola pagina, al contrario dei dati del campo che riepilogano tante sessioni."
+  },
+  "report/renderer/util.js | runtimeSlow4g": {
+    "message": "Limitazione a 4G lenta"
+  },
+  "report/renderer/util.js | runtimeUnknown": {
+    "message": "Valore sconosciuto"
+  },
+  "report/renderer/util.js | show": {
+    "message": "Mostra"
+  },
+  "report/renderer/util.js | showRelevantAudits": {
+    "message": "Mostra controlli relativi a:"
+  },
+  "report/renderer/util.js | snippetCollapseButtonLabel": {
+    "message": "Comprimi snippet"
+  },
+  "report/renderer/util.js | snippetExpandButtonLabel": {
+    "message": "Espandi snippet"
+  },
+  "report/renderer/util.js | thirdPartyResourcesLabel": {
+    "message": "Mostra risorse di terze parti"
+  },
+  "report/renderer/util.js | throttlingProvided": {
+    "message": "Fornita dall'ambiente"
+  },
+  "report/renderer/util.js | toplevelWarningsMessage": {
+    "message": "Si sono verificati dei problemi che incidono su questa esecuzione di Lighthouse:"
+  },
+  "report/renderer/util.js | varianceDisclaimer": {
+    "message": "I valori sono delle stime e potrebbero variare. Il [punteggio relativo alle prestazioni viene calcolato](https://web.dev/performance-scoring/) direttamente in base a queste metriche."
+  },
+  "report/renderer/util.js | viewTreemapLabel": {
+    "message": "Visualizza Treemap"
+  },
+  "report/renderer/util.js | warningAuditsGroupTitle": {
+    "message": "Controlli superati ma con avvisi"
+  },
+  "report/renderer/util.js | warningHeader": {
+    "message": "Avvisi: "
+  },
+  "treemap/app/src/util.js | allLabel": {
+    "message": "Tutto"
+  },
+  "treemap/app/src/util.js | allScriptsDropdownLabel": {
+    "message": "Tutti gli script"
+  },
+  "treemap/app/src/util.js | coverageColumnName": {
+    "message": "Copertura"
+  },
+  "treemap/app/src/util.js | duplicateModulesLabel": {
+    "message": "Moduli duplicati"
+  },
+  "treemap/app/src/util.js | resourceBytesLabel": {
+    "message": "Byte risorsa"
+  },
+  "treemap/app/src/util.js | tableColumnName": {
+    "message": "Nome"
+  },
+  "treemap/app/src/util.js | toggleTableButtonLabel": {
+    "message": "Mostra/nascondi tabella"
+  },
+  "treemap/app/src/util.js | unusedBytesLabel": {
+    "message": "Byte non utilizzati"
   }
 }

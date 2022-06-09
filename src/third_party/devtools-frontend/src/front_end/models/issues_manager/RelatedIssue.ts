@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type {Issue, IssueCategory} from './Issue.js';
 import {IssuesManager} from './IssuesManager.js';
 
-export type IssuesAssociatable = SDK.NetworkRequest.NetworkRequest|SDK.Cookie.Cookie;
+export type IssuesAssociatable = SDK.NetworkRequest.NetworkRequest|SDK.Cookie.Cookie|string;
 
 function issuesAssociatedWithNetworkRequest(issues: Issue[], request: SDK.NetworkRequest.NetworkRequest): Issue[] {
   return issues.filter(issue => {
@@ -57,6 +55,12 @@ export function hasIssueOfCategory(obj: IssuesAssociatable, category: IssueCateg
 }
 
 export async function reveal(obj: IssuesAssociatable, category?: IssueCategory): Promise<void|undefined> {
+  if (typeof obj === 'string') {
+    const issue = IssuesManager.instance().getIssueById(obj);
+    if (issue) {
+      return Common.Revealer.reveal(issue);
+    }
+  }
   const issues = Array.from(IssuesManager.instance().issues());
   const candidates = issuesAssociatedWith(issues, obj).filter(issue => !category || issue.getCategory() === category);
   if (candidates.length > 0) {

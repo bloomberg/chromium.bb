@@ -29,12 +29,17 @@
 #pragma GCC system_header
 #endif
 
-// TODO(primiano): move this to base/build_config.h, turn into
-// PERFETTO_BUILDFLAG(DCHECK_IS_ON) and update call sites to use that instead.
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define PERFETTO_DCHECK_IS_ON() 0
-#else
+#if PERFETTO_BUILDFLAG(PERFETTO_FORCE_DCHECK_ON)
 #define PERFETTO_DCHECK_IS_ON() 1
+#elif PERFETTO_BUILDFLAG(PERFETTO_FORCE_DCHECK_OFF)
+#define PERFETTO_DCHECK_IS_ON() 0
+#elif defined(DCHECK_ALWAYS_ON) ||                                         \
+    (!defined(NDEBUG) && (PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD) || \
+                          PERFETTO_BUILDFLAG(PERFETTO_CHROMIUM_BUILD) ||   \
+                          PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)))
+#define PERFETTO_DCHECK_IS_ON() 1
+#else
+#define PERFETTO_DCHECK_IS_ON() 0
 #endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_FORCE_DLOG_ON)
@@ -56,6 +61,24 @@
 #elif PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
 // Normal android logging.
 #include <android/log.h>
+#endif
+
+// Enable the "Print the most recent PERFETTO_LOG(s) before crashing" feature
+// on Android in-tree builds and on standalone builds (mainly for testing).
+// This is deliberately no PERFETTO_OS_ANDROID because we don't want this
+// feature when perfetto is embedded in other Android projects (e.g. SDK).
+// TODO(b/203795298): TFLite is using the client library in blaze builds and is
+// targeting API 19. For now disable the feature based on API level.
+#if defined(PERFETTO_ANDROID_ASYNC_SAFE_LOG)
+#define PERFETTO_ENABLE_LOG_RING_BUFFER() 0
+#elif PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
+#define PERFETTO_ENABLE_LOG_RING_BUFFER() 1
+#elif PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD) && \
+    (!PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) ||       \
+     (defined(__ANDROID_API__) && __ANDROID_API__ >= 21))
+#define PERFETTO_ENABLE_LOG_RING_BUFFER() 1
+#else
+#define PERFETTO_ENABLE_LOG_RING_BUFFER() 0
 #endif
 
 namespace perfetto {
@@ -99,6 +122,23 @@ PERFETTO_EXPORT void LogMessage(LogLev,
                                 const char* fmt,
                                 ...) PERFETTO_PRINTF_FORMAT(4, 5);
 
+// This is defined in debug_crash_stack_trace.cc, but that is only linked in
+// standalone && debug builds, see enable_perfetto_stderr_crash_dump in
+// perfetto.gni.
+PERFETTO_EXPORT void EnableStacktraceOnCrashForDebug();
+
+#if PERFETTO_ENABLE_LOG_RING_BUFFER()
+// Gets a snapshot of the logs from the internal log ring buffer and:
+// - On Android in-tree builds: Passes that to android_set_abort_message().
+//   That will attach the logs to the crash report.
+// - On standalone builds (all otther OSes) prints that on stderr.
+// This function must called only once, right before inducing a crash (This is
+// because android_set_abort_message() can only be called once).
+PERFETTO_EXPORT void MaybeSerializeLastLogsForCrashReporting();
+#else
+inline void MaybeSerializeLastLogsForCrashReporting() {}
+#endif
+
 #if defined(PERFETTO_ANDROID_ASYNC_SAFE_LOG)
 #define PERFETTO_XLOG(level, fmt, ...)                                        \
   do {                                                                        \
@@ -115,16 +155,18 @@ PERFETTO_EXPORT void LogMessage(LogLev,
 #endif
 
 #if defined(_MSC_VER)
-#define PERFETTO_IMMEDIATE_CRASH() \
-  do {                             \
-    __debugbreak();                \
-    __assume(0);                   \
+#define PERFETTO_IMMEDIATE_CRASH()                               \
+  do {                                                           \
+    ::perfetto::base::MaybeSerializeLastLogsForCrashReporting(); \
+    __debugbreak();                                              \
+    __assume(0);                                                 \
   } while (0)
 #else
-#define PERFETTO_IMMEDIATE_CRASH() \
-  do {                             \
-    __builtin_trap();              \
-    __builtin_unreachable();       \
+#define PERFETTO_IMMEDIATE_CRASH()                               \
+  do {                                                           \
+    ::perfetto::base::MaybeSerializeLastLogsForCrashReporting(); \
+    __builtin_trap();                                            \
+    __builtin_unreachable();                                     \
   } while (0)
 #endif
 

@@ -11,7 +11,12 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/containers/contains.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/jni_headers/AutocompleteResult_jni.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/query_tiles/android/tile_conversion_bridge.h"
@@ -24,14 +29,60 @@ using base::android::ToJavaBooleanArray;
 using base::android::ToJavaIntArray;
 
 namespace {
+// Special value passed to VerifyCoherency() suggesting that the action
+// requesting verification has no specific index associated with it.
+constexpr const int kNoMatchIndex = -1;
+
 // Used for histograms, append only.
 enum class MatchVerificationResult {
   VALID_MATCH = 0,
   WRONG_MATCH = 1,
   BAD_RESULT_SIZE = 2,
+  OBSOLETE_NATIVE_MATCH_DEAD = 3,
+  INVALID_MATCH_POSITION = 4,
   // Keep as the last entry:
   COUNT
 };
+
+enum class MatchVerificationPoint {
+  INVALID = 0,
+  SELECT_MATCH = 1,
+  UPDATE_MATCH = 2,
+  DELETE_MATCH = 3,
+  GROUP_BY_SEARCH_VS_URL_BEFORE = 4,
+  GROUP_BY_SEARCH_VS_URL_AFTER = 5,
+};
+
+const char* MatchVerificationPointToString(int verification_point) {
+  switch (static_cast<MatchVerificationPoint>(verification_point)) {
+    case MatchVerificationPoint::SELECT_MATCH:
+      return "Select";
+    case MatchVerificationPoint::UPDATE_MATCH:
+      return "Update";
+    case MatchVerificationPoint::DELETE_MATCH:
+      return "Delete";
+    case MatchVerificationPoint::GROUP_BY_SEARCH_VS_URL_BEFORE:
+      return "Group/Before";
+    case MatchVerificationPoint::GROUP_BY_SEARCH_VS_URL_AFTER:
+      return "Group/After";
+    default:
+      return "Invalid";
+  }
+}
+
+bool sInvalidMatchMetricsUploaded = false;
+
+void ReportInvalidMatchData(std::string debug_info, int verification_point) {
+  if (sInvalidMatchMetricsUploaded)
+    return;
+
+  sInvalidMatchMetricsUploaded = true;
+
+  SCOPED_CRASH_KEY_STRING32("ACMatch", "wrong-match-info", debug_info);
+  SCOPED_CRASH_KEY_STRING32("ACMatch", "verification-point",
+                            MatchVerificationPointToString(verification_point));
+  base::debug::DumpWithoutCrashing();
+}
 }  // namespace
 
 ScopedJavaLocalRef<jobject> AutocompleteResult::GetOrCreateJavaObject(
@@ -61,7 +112,7 @@ ScopedJavaLocalRef<jobject> AutocompleteResult::GetOrCreateJavaObject(
   ScopedJavaLocalRef<jobjectArray> j_group_names =
       ToJavaArrayOfStrings(env, group_names);
 
-  java_result_ = Java_AutocompleteResult_build(
+  java_result_ = Java_AutocompleteResult_fromNative(
       env, reinterpret_cast<intptr_t>(this), BuildJavaMatches(env), j_group_ids,
       j_group_names, j_group_collapsed_states);
 
@@ -73,7 +124,7 @@ void AutocompleteResult::DestroyJavaObject() const {
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AutocompleteResult_destroy(env, java_result_);
+  Java_AutocompleteResult_notifyNativeDestroyed(env, java_result_);
   java_result_.Reset();
 }
 
@@ -96,6 +147,8 @@ ScopedJavaLocalRef<jobjectArray> AutocompleteResult::BuildJavaMatches(
 void AutocompleteResult::GroupSuggestionsBySearchVsURL(JNIEnv* env,
                                                        int first_index,
                                                        int last_index) {
+  if (first_index == last_index)
+    return;
   const int num_elements = matches_.size();
   if (first_index < 0 || last_index <= first_index ||
       last_index > num_elements) {
@@ -114,7 +167,9 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(JNIEnv* env,
 
 bool AutocompleteResult::VerifyCoherency(
     JNIEnv* env,
-    const JavaParamRef<jlongArray>& j_matches_array) {
+    const JavaParamRef<jlongArray>& j_matches_array,
+    jint match_index,
+    jint verification_point) {
   DCHECK(j_matches_array);
 
   std::vector<jlong> j_matches;
@@ -126,6 +181,21 @@ bool AutocompleteResult::VerifyCoherency(
                               MatchVerificationResult::COUNT);
     NOTREACHED() << "AutocompletResult objects are of different size: "
                  << j_matches.size() << " (Java) vs " << size() << " (Native)";
+    ReportInvalidMatchData(base::NumberToString(j_matches.size()) +
+                               "!=" + base::NumberToString(size()),
+                           verification_point);
+    return false;
+  }
+
+  if (match_index != kNoMatchIndex && match_index >= static_cast<int>(size())) {
+    UMA_HISTOGRAM_ENUMERATION("Android.Omnibox.InvalidMatch",
+                              MatchVerificationResult::INVALID_MATCH_POSITION,
+                              MatchVerificationResult::COUNT);
+    NOTREACHED() << "Requested action index is not valid: " << match_index
+                 << " outside of " << size() << " limit";
+    ReportInvalidMatchData(
+        base::NumberToString(match_index) + ">=" + base::NumberToString(size()),
+        verification_point);
     return false;
   }
 
@@ -151,6 +221,10 @@ bool AutocompleteResult::VerifyCoherency(
       NOTREACHED()
           << "AutocompleteMatch mismatch with native-sourced suggestions at "
           << index;
+
+      ReportInvalidMatchData(
+          base::NumberToString(index) + "/" + base::NumberToString(size()),
+          verification_point);
       return false;
     }
   }

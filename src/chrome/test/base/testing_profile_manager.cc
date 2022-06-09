@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,6 +27,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
 #endif
 
 const char kGuestProfileName[] = "Guest";
@@ -144,17 +147,16 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   builder.SetGuestSession();
   builder.SetPath(ProfileManager::GetGuestProfilePath());
 
-  // Add the guest profile to the profile manager, but not to the info cache.
+  // Add the guest profile to the profile manager, but not to the attributes
+  // storage.
   std::unique_ptr<TestingProfile> profile = builder.Build();
   TestingProfile* profile_ptr = profile.get();
   profile_ptr->set_profile_name(kGuestProfileName);
 
   // Set up a profile with an off the record profile.
-  if (!TestingProfile::IsEphemeralGuestProfileEnabled()) {
-    TestingProfile::Builder off_the_record_builder;
-    off_the_record_builder.SetGuestSession();
-    off_the_record_builder.BuildIncognito(profile_ptr);
-  }
+  TestingProfile::Builder off_the_record_builder;
+  off_the_record_builder.SetGuestSession();
+  off_the_record_builder.BuildIncognito(profile_ptr);
 
   profile_manager_->AddProfile(std::move(profile));
   profile_manager_->SetNonPersonalProfilePrefs(profile_ptr);
@@ -172,7 +174,8 @@ TestingProfile* TestingProfileManager::CreateSystemProfile() {
   TestingProfile::Builder builder;
   builder.SetPath(ProfileManager::GetSystemProfilePath());
 
-  // Add the system profile to the profile manager, but not to the info cache.
+  // Add the system profile to the profile manager, but not to the attributes
+  // storage.
   std::unique_ptr<TestingProfile> profile = builder.Build();
   TestingProfile* profile_ptr = profile.get();
   profile_ptr->set_profile_name(kSystemProfileName);
@@ -204,20 +207,19 @@ void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
 }
 
 void TestingProfileManager::DeleteAllTestingProfiles() {
+  DCHECK(called_set_up_);
+
   ProfileAttributesStorage& storage =
       profile_manager_->GetProfileAttributesStorage();
-  for (auto it = testing_profiles_.begin(); it != testing_profiles_.end();
-       ++it) {
-    TestingProfile* profile = it->second;
-    if (profile->IsGuestSession() || profile->IsSystemProfile() ||
-        profile->IsEphemeralGuestProfile()) {
-      // This Profile was skipped in ProfileManager::AddProfileToStorage().
+  for (auto& name_profile_pair : testing_profiles_) {
+    TestingProfile* profile = name_profile_pair.second;
+    if (profile->IsGuestSession() || profile->IsSystemProfile()) {
+      // Guest and System profiles aren't added to Storage.
       continue;
     }
     storage.RemoveProfile(profile->GetPath());
   }
-  testing_profiles_.clear();
-  profile_observations_.RemoveAllObservations();
+  profile_manager_->profiles_info_.clear();
 }
 
 
@@ -240,8 +242,8 @@ void TestingProfileManager::DeleteSystemProfile() {
       ProfileManager::GetSystemProfilePath());
 }
 
-void TestingProfileManager::DeleteProfileInfoCache() {
-  profile_manager_->profile_info_cache_.reset(NULL);
+void TestingProfileManager::DeleteProfileAttributesStorage() {
+  profile_manager_->profile_attributes_storage_.reset(nullptr);
 }
 
 void TestingProfileManager::UpdateLastUser(Profile* last_active) {
@@ -249,6 +251,15 @@ void TestingProfileManager::UpdateLastUser(Profile* last_active) {
   profile_manager_->UpdateLastUser(last_active);
 #endif
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void TestingProfileManager::SetAccountProfileMapper(
+    std::unique_ptr<AccountProfileMapper> mapper) {
+  DCHECK(!profile_manager_->account_profile_mapper_)
+      << "AccountProfileMapper must be set before the first usage";
+  profile_manager_->account_profile_mapper_ = std::move(mapper);
+}
+#endif
 
 const base::FilePath& TestingProfileManager::profiles_dir() {
   DCHECK(called_set_up_);
@@ -260,13 +271,9 @@ ProfileManager* TestingProfileManager::profile_manager() {
   return profile_manager_;
 }
 
-ProfileInfoCache* TestingProfileManager::profile_info_cache() {
-  DCHECK(called_set_up_);
-  return &profile_manager_->GetProfileInfoCache();
-}
-
 ProfileAttributesStorage* TestingProfileManager::profile_attributes_storage() {
-  return profile_info_cache();
+  DCHECK(called_set_up_);
+  return &profile_manager_->GetProfileAttributesStorage();
 }
 
 void TestingProfileManager::OnProfileWillBeDestroyed(Profile* profile) {
@@ -292,7 +299,7 @@ void TestingProfileManager::SetUpInternal(const base::FilePath& profiles_path) {
   profile_manager_ = profile_manager_unique.get();
   browser_process_->SetProfileManager(std::move(profile_manager_unique));
 
-  profile_manager_->GetProfileInfoCache().
-      set_disable_avatar_download_for_testing(true);
+  profile_manager_->GetProfileAttributesStorage()
+      .set_disable_avatar_download_for_testing(true);
   called_set_up_ = true;
 }

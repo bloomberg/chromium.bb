@@ -4,7 +4,6 @@
 
 #include "chrome/browser/metrics/perf/process_type_collector.h"
 
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,8 +12,9 @@ namespace metrics {
 namespace {
 
 void GetExampleProcessTypeDataset(std::string* ps_output,
-                                  std::map<uint32_t, Process>* process_types) {
-  *ps_output = R"text(PID   CMD
+                                  std::map<uint32_t, Process>* process_types,
+                                  std::vector<uint32_t>* lacros_pids) {
+  *ps_output = R"(PID   CMD
     1000 /opt/google/chrome/chrome --type=
     1500 /opt/google/chrome/chrome --type= --some-flag
     2000 /opt/google/chrome/chrome --type=renderer --enable-logging
@@ -24,8 +24,22 @@ void GetExampleProcessTypeDataset(std::string* ps_output,
     6000 /opt/google/chrome/chrome --type=ppapi
     7100 /opt/google/chrome/chrome --type=random-type
     7200 /opt/google/chrome/chrome --no_type
-  129000 /opt/google/chrome/chrome --ppapi-flash-path=..../libpepflashplayer.so
-  180000 [kswapd0])text";
+   11000 /run/lacros/chrome --ozone-platform=wayland
+   12000 /run/lacros/chrome --type=renderer --enable-logging
+   13000 /run/lacros/chrome --type=gpu-process
+   14000 /run/lacros/chrome --log-level=1 --type=utility
+   15000 /run/lacros/chrome --type=zygote
+   21000 /run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome
+   22000 /run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome )"
+               R"(--type=renderer --enable-logging
+   23000 /run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome )"
+               R"(--type=gpu-process
+   24000 /run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome )"
+               R"(--log-level=1 --type=utility
+   25000 /run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=zygote
+  129000 /opt/google/chrome/chrome --ppapi-flash-path=..../libpepflashplayer.so"
+  131000 /run/imageloader/lacros-beta/non-numeric/chrome
+  180000 [kswapd0])";
   process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
       1000, Process::BROWSER_PROCESS));
   process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
@@ -46,11 +60,43 @@ void GetExampleProcessTypeDataset(std::string* ps_output,
       7200, Process::BROWSER_PROCESS));
   process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
       129000, Process::BROWSER_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      11000, Process::BROWSER_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      12000, Process::RENDERER_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      13000, Process::GPU_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      14000, Process::UTILITY_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      15000, Process::ZYGOTE_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      21000, Process::BROWSER_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      22000, Process::RENDERER_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      23000, Process::GPU_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      24000, Process::UTILITY_PROCESS));
+  process_types->insert(google::protobuf::MapPair<uint32_t, Process>(
+      25000, Process::ZYGOTE_PROCESS));
+
+  lacros_pids->emplace_back(11000);
+  lacros_pids->emplace_back(12000);
+  lacros_pids->emplace_back(13000);
+  lacros_pids->emplace_back(14000);
+  lacros_pids->emplace_back(15000);
+  lacros_pids->emplace_back(21000);
+  lacros_pids->emplace_back(22000);
+  lacros_pids->emplace_back(23000);
+  lacros_pids->emplace_back(24000);
+  lacros_pids->emplace_back(25000);
 }
 
 void GetExampleThreadTypeDataset(std::string* ps_output,
                                  std::map<uint32_t, Thread>* thread_types) {
-  *ps_output = R"text(  PID   LWP   COMMAND     CMD
+  *ps_output =
+      R"(  PID   LWP   COMMAND     CMD
       1     1 init              /sbin/init
   12000 12000 chrome            /opt/google/chrome/chrome --ppapi-flash-path=...
    3000  1107 irq/5-E:<L0000>   [irq/5-E:<L0000>]
@@ -65,10 +111,33 @@ void GetExampleThreadTypeDataset(std::string* ps_output,
   17001 17021 MemoryInfra       /opt/google/chrome/chrome --type=renderer
   18020 18211 Media             /opt/google/chrome/chrome --type=renderer
   19001 19008 DedicatedWorker   /opt/google/chrome/chrome --type=renderer
-  19123 19234 ServiceWorker     /opt/google/chrome/chrome --type=renderer
+  19123 19234 ServiceWorker t   /opt/google/chrome/chrome --type=renderer
   19321 19335 WebRTC_Signalin   /opt/google/chrome/chrome --type=renderer
   12345 12456 OtherThread       /opt/google/chrome/chrome --ppapi-flash-path=...
-  13456 13566 Compositor/6      non_chrome_exec --some-flag=foo)text";
+  21609 21609 chrome            /run/lacros/chrome --ozone-platform=wayland
+  21643 21667 ThreadPoolServi   /run/lacros/chrome --type=gpu-process
+  21643 21669 Chrome_ChildIOT   /run/lacros/chrome --type=gpu-process
+  21643 21671 VizCompositorTh   /run/lacros/chrome --type=gpu-process
+  21707 21713 GpuMemoryThread   /run/lacros/chrome --type=renderer
+  21707 21718 CompositorTileW   /run/lacros/chrome --type=renderer
+  21707 23600 MemoryInfra       /run/lacros/chrome --type=renderer
+  21737 21784 WebRTC_Network    /run/lacros/chrome --type=renderer
+  31609 31609 chrome            )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome
+  31643 31668 ThreadPoolForeg   )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome )"
+      R"(--type=gpu-process
+  31725 31732 Compositor        )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=renderer
+  31737 31783 WebRTC_Signalin   )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=renderer
+  31737 31785 Media             )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=renderer
+  31737 31790 DedicatedWorker   )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=renderer
+  31814 34416 ServiceWorker t   )"
+      R"(/run/imageloader/lacros-dogfood-dev/95.0.4623.2/chrome --type=renderer
+  13456 13566 Compositor/6      non_chrome_exec --some-flag=foo)";
   thread_types->insert(
       google::protobuf::MapPair<uint32_t, Thread>(12000, Thread::MAIN_THREAD));
   thread_types->insert(
@@ -99,6 +168,36 @@ void GetExampleThreadTypeDataset(std::string* ps_output,
       19335, Thread::WEBRTC_THREAD));
   thread_types->insert(
       google::protobuf::MapPair<uint32_t, Thread>(12456, Thread::OTHER_THREAD));
+  thread_types->insert(
+      google::protobuf::MapPair<uint32_t, Thread>(21609, Thread::MAIN_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      21667, Thread::THREAD_POOL_THREAD));
+  thread_types->insert(
+      google::protobuf::MapPair<uint32_t, Thread>(21669, Thread::IO_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      21671, Thread::COMPOSITOR_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      21713, Thread::GPU_MEMORY_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      21718, Thread::COMPOSITOR_TILE_WORKER_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      23600, Thread::MEMORY_INFRA_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      21784, Thread::WEBRTC_THREAD));
+  thread_types->insert(
+      google::protobuf::MapPair<uint32_t, Thread>(31609, Thread::MAIN_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      31668, Thread::THREAD_POOL_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      31732, Thread::COMPOSITOR_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      31783, Thread::WEBRTC_THREAD));
+  thread_types->insert(
+      google::protobuf::MapPair<uint32_t, Thread>(31785, Thread::MEDIA_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      31790, Thread::DEDICATED_WORKER_THREAD));
+  thread_types->insert(google::protobuf::MapPair<uint32_t, Thread>(
+      34416, Thread::SERVICE_WORKER_THREAD));
 }
 
 class TestProcessTypeCollector : public ProcessTypeCollector {
@@ -107,8 +206,8 @@ class TestProcessTypeCollector : public ProcessTypeCollector {
   using ProcessTypeCollector::ParseProcessTypes;
   using ProcessTypeCollector::ParseThreadTypes;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestProcessTypeCollector);
+  TestProcessTypeCollector(const TestProcessTypeCollector&) = delete;
+  TestProcessTypeCollector& operator=(const TestProcessTypeCollector&) = delete;
 };
 
 }  // namespace
@@ -116,52 +215,68 @@ class TestProcessTypeCollector : public ProcessTypeCollector {
 TEST(ProcessTypeCollectorTest, ValidProcessTypeInput) {
   std::map<uint32_t, Process> want_process_types;
   std::string input;
-  GetExampleProcessTypeDataset(&input, &want_process_types);
+  std::vector<uint32_t> want_lacros_pids;
+  GetExampleProcessTypeDataset(&input, &want_process_types, &want_lacros_pids);
   EXPECT_FALSE(input.empty());
   EXPECT_FALSE(want_process_types.empty());
+  EXPECT_FALSE(want_lacros_pids.empty());
 
   base::HistogramTester histogram_tester;
+  std::vector<uint32_t> got_lacros_pids;
   std::map<uint32_t, Process> got_process_types =
-      TestProcessTypeCollector::ParseProcessTypes(input);
+      TestProcessTypeCollector::ParseProcessTypes(input, got_lacros_pids);
   histogram_tester.ExpectBucketCount(
       "ChromeOS.CWP.CollectProcessTypes",
       TestProcessTypeCollector::CollectionAttemptStatus::kProcessTypeSuccess,
       1);
   EXPECT_EQ(got_process_types, want_process_types);
+  EXPECT_EQ(got_lacros_pids, want_lacros_pids);
 }
 
 TEST(ProcessTypeCollectorTest, ProcessTypeInputWithCorruptedLine) {
   std::string input = R"text(PPID   CMD   COMMAND
   PID /opt/google/chrome/chrome --type=
-  1000 /opt/google/chrome/chrome --type=)text";
+  1000 /opt/google/chrome/chrome --type=
+  PID /run/lacros/chrome --type=
+  2000 /run/lacros/chrome --type=)text";
   std::map<uint32_t, Process> want_process_types;
   want_process_types.emplace(1000, Process::BROWSER_PROCESS);
+  want_process_types.emplace(2000, Process::BROWSER_PROCESS);
+  std::vector<uint32_t> want_lacros_pids(1, 2000);
 
   base::HistogramTester histogram_tester;
+  std::vector<uint32_t> got_lacros_pids;
   std::map<uint32_t, Process> got_process_types =
-      TestProcessTypeCollector::ParseProcessTypes(input);
+      TestProcessTypeCollector::ParseProcessTypes(input, got_lacros_pids);
   histogram_tester.ExpectBucketCount(
       "ChromeOS.CWP.CollectProcessTypes",
       TestProcessTypeCollector::CollectionAttemptStatus::kProcessTypeTruncated,
       1);
   EXPECT_EQ(got_process_types, want_process_types);
+  EXPECT_EQ(got_lacros_pids, want_lacros_pids);
 }
 
 TEST(ProcessTypeCollectorTest, ProcessTypeInputWithDuplicatePIDs) {
   std::string input = R"text(PID   CMD
   1000 /opt/google/chrome/chrome --type=
-  1000 /opt/google/chrome/chrome --type=)text";
+  1000 /opt/google/chrome/chrome --type=
+  2000 /run/lacros/chrome --type=
+  2000 /run/lacros/chrome --type=)text";
   std::map<uint32_t, Process> want_process_types;
   want_process_types.emplace(1000, Process::BROWSER_PROCESS);
+  want_process_types.emplace(2000, Process::BROWSER_PROCESS);
+  std::vector<uint32_t> want_lacros_pids(1, 2000);
 
   base::HistogramTester histogram_tester;
+  std::vector<uint32_t> got_lacros_pids;
   std::map<uint32_t, Process> got_process_types =
-      TestProcessTypeCollector::ParseProcessTypes(input);
+      TestProcessTypeCollector::ParseProcessTypes(input, got_lacros_pids);
   histogram_tester.ExpectBucketCount(
       "ChromeOS.CWP.CollectProcessTypes",
       TestProcessTypeCollector::CollectionAttemptStatus::kProcessTypeTruncated,
       1);
   EXPECT_EQ(got_process_types, want_process_types);
+  EXPECT_EQ(got_lacros_pids, want_lacros_pids);
 }
 
 TEST(ProcessTypeCollectorTest, ProcessTypeInputWithEmptyLine) {
@@ -169,16 +284,19 @@ TEST(ProcessTypeCollectorTest, ProcessTypeInputWithEmptyLine) {
   1000 /opt/google/chrome/chrome --type=
   )text";
   std::map<uint32_t, Process> want_process_types;
+  std::vector<uint32_t> want_lacros_pids;
   want_process_types.emplace(1000, Process::BROWSER_PROCESS);
 
   base::HistogramTester histogram_tester;
+  std::vector<uint32_t> got_lacros_pids;
   std::map<uint32_t, Process> got_process_types =
-      TestProcessTypeCollector::ParseProcessTypes(input);
+      TestProcessTypeCollector::ParseProcessTypes(input, got_lacros_pids);
   histogram_tester.ExpectBucketCount(
       "ChromeOS.CWP.CollectProcessTypes",
       TestProcessTypeCollector::CollectionAttemptStatus::kProcessTypeTruncated,
       1);
   EXPECT_EQ(got_process_types, want_process_types);
+  EXPECT_EQ(got_lacros_pids, want_lacros_pids);
 }
 
 TEST(ProcessTypeCollectorTest, ValidThreadTypeInput) {

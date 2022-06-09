@@ -64,7 +64,7 @@ constexpr size_t kMaxPCRelativeCodeRangeInMB = 0;
 
 // Used to encode a boolean value when emitting 32 bit
 // opcodes which will indicate the presence of function descriptors
-constexpr int kHasFunctionDescriptorBitShift = 9;
+constexpr int kHasFunctionDescriptorBitShift = 4;
 constexpr int kHasFunctionDescriptorBitMask = 1
                                               << kHasFunctionDescriptorBitShift;
 
@@ -85,6 +85,9 @@ const int kLoadDoubleMaxReachBits = 15;
 // to take advantage of negative displacement values.
 // TODO(sigurds): Choose best value.
 constexpr int kRootRegisterBias = 128;
+
+// sign-extend the least significant 5-bits of value <imm>
+#define SIGN_EXT_IMM5(imm) ((static_cast<int>(imm) << 27) >> 27)
 
 // sign-extend the least significant 16-bits of value <imm>
 #define SIGN_EXT_IMM16(imm) ((static_cast<int>(imm) << 16) >> 16)
@@ -137,69 +140,71 @@ inline Condition NegateCondition(Condition cond) {
 // access the various ISA fields.
 using Instr = uint32_t;
 
-#define PPC_XX3_OPCODE_LIST(V)                                                \
-  /* VSX Scalar Add Double-Precision */                                       \
-  V(xsadddp, XSADDDP, 0xF0000100)                                             \
-  /* VSX Scalar Add Single-Precision */                                       \
-  V(xsaddsp, XSADDSP, 0xF0000000)                                             \
-  /* VSX Scalar Compare Ordered Double-Precision */                           \
-  V(xscmpodp, XSCMPODP, 0xF0000158)                                           \
-  /* VSX Scalar Compare Unordered Double-Precision */                         \
-  V(xscmpudp, XSCMPUDP, 0xF0000118)                                           \
-  /* VSX Scalar Copy Sign Double-Precision */                                 \
-  V(xscpsgndp, XSCPSGNDP, 0xF0000580)                                         \
-  /* VSX Scalar Divide Double-Precision */                                    \
-  V(xsdivdp, XSDIVDP, 0xF00001C0)                                             \
-  /* VSX Scalar Divide Single-Precision */                                    \
-  V(xsdivsp, XSDIVSP, 0xF00000C0)                                             \
-  /* VSX Scalar Multiply-Add Type-A Double-Precision */                       \
-  V(xsmaddadp, XSMADDADP, 0xF0000108)                                         \
-  /* VSX Scalar Multiply-Add Type-A Single-Precision */                       \
-  V(xsmaddasp, XSMADDASP, 0xF0000008)                                         \
-  /* VSX Scalar Multiply-Add Type-M Double-Precision */                       \
-  V(xsmaddmdp, XSMADDMDP, 0xF0000148)                                         \
-  /* VSX Scalar Multiply-Add Type-M Single-Precision */                       \
-  V(xsmaddmsp, XSMADDMSP, 0xF0000048)                                         \
-  /* VSX Scalar Maximum Double-Precision */                                   \
-  V(xsmaxdp, XSMAXDP, 0xF0000500)                                             \
-  /* VSX Scalar Minimum Double-Precision */                                   \
-  V(xsmindp, XSMINDP, 0xF0000540)                                             \
-  /* VSX Scalar Multiply-Subtract Type-A Double-Precision */                  \
-  V(xsmsubadp, XSMSUBADP, 0xF0000188)                                         \
-  /* VSX Scalar Multiply-Subtract Type-A Single-Precision */                  \
-  V(xsmsubasp, XSMSUBASP, 0xF0000088)                                         \
-  /* VSX Scalar Multiply-Subtract Type-M Double-Precision */                  \
-  V(xsmsubmdp, XSMSUBMDP, 0xF00001C8)                                         \
-  /* VSX Scalar Multiply-Subtract Type-M Single-Precision */                  \
-  V(xsmsubmsp, XSMSUBMSP, 0xF00000C8)                                         \
-  /* VSX Scalar Multiply Double-Precision */                                  \
-  V(xsmuldp, XSMULDP, 0xF0000180)                                             \
-  /* VSX Scalar Multiply Single-Precision */                                  \
-  V(xsmulsp, XSMULSP, 0xF0000080)                                             \
-  /* VSX Scalar Negative Multiply-Add Type-A Double-Precision */              \
-  V(xsnmaddadp, XSNMADDADP, 0xF0000508)                                       \
-  /* VSX Scalar Negative Multiply-Add Type-A Single-Precision */              \
-  V(xsnmaddasp, XSNMADDASP, 0xF0000408)                                       \
-  /* VSX Scalar Negative Multiply-Add Type-M Double-Precision */              \
-  V(xsnmaddmdp, XSNMADDMDP, 0xF0000548)                                       \
-  /* VSX Scalar Negative Multiply-Add Type-M Single-Precision */              \
-  V(xsnmaddmsp, XSNMADDMSP, 0xF0000448)                                       \
-  /* VSX Scalar Negative Multiply-Subtract Type-A Double-Precision */         \
-  V(xsnmsubadp, XSNMSUBADP, 0xF0000588)                                       \
-  /* VSX Scalar Negative Multiply-Subtract Type-A Single-Precision */         \
-  V(xsnmsubasp, XSNMSUBASP, 0xF0000488)                                       \
-  /* VSX Scalar Negative Multiply-Subtract Type-M Double-Precision */         \
-  V(xsnmsubmdp, XSNMSUBMDP, 0xF00005C8)                                       \
-  /* VSX Scalar Negative Multiply-Subtract Type-M Single-Precision */         \
-  V(xsnmsubmsp, XSNMSUBMSP, 0xF00004C8)                                       \
-  /* VSX Scalar Reciprocal Estimate Double-Precision */                       \
-  V(xsredp, XSREDP, 0xF0000168)                                               \
-  /* VSX Scalar Subtract Double-Precision */                                  \
-  V(xssubdp, XSSUBDP, 0xF0000140)                                             \
-  /* VSX Scalar Subtract Single-Precision */                                  \
-  V(xssubsp, XSSUBSP, 0xF0000040)                                             \
-  /* VSX Scalar Test for software Divide Double-Precision */                  \
-  V(xstdivdp, XSTDIVDP, 0xF00001E8)                                           \
+#define PPC_XX3_OPCODE_SCALAR_LIST(V)                                 \
+  /* VSX Scalar Add Double-Precision */                               \
+  V(xsadddp, XSADDDP, 0xF0000100)                                     \
+  /* VSX Scalar Add Single-Precision */                               \
+  V(xsaddsp, XSADDSP, 0xF0000000)                                     \
+  /* VSX Scalar Compare Ordered Double-Precision */                   \
+  V(xscmpodp, XSCMPODP, 0xF0000158)                                   \
+  /* VSX Scalar Compare Unordered Double-Precision */                 \
+  V(xscmpudp, XSCMPUDP, 0xF0000118)                                   \
+  /* VSX Scalar Copy Sign Double-Precision */                         \
+  V(xscpsgndp, XSCPSGNDP, 0xF0000580)                                 \
+  /* VSX Scalar Divide Double-Precision */                            \
+  V(xsdivdp, XSDIVDP, 0xF00001C0)                                     \
+  /* VSX Scalar Divide Single-Precision */                            \
+  V(xsdivsp, XSDIVSP, 0xF00000C0)                                     \
+  /* VSX Scalar Multiply-Add Type-A Double-Precision */               \
+  V(xsmaddadp, XSMADDADP, 0xF0000108)                                 \
+  /* VSX Scalar Multiply-Add Type-A Single-Precision */               \
+  V(xsmaddasp, XSMADDASP, 0xF0000008)                                 \
+  /* VSX Scalar Multiply-Add Type-M Double-Precision */               \
+  V(xsmaddmdp, XSMADDMDP, 0xF0000148)                                 \
+  /* VSX Scalar Multiply-Add Type-M Single-Precision */               \
+  V(xsmaddmsp, XSMADDMSP, 0xF0000048)                                 \
+  /* VSX Scalar Maximum Double-Precision */                           \
+  V(xsmaxdp, XSMAXDP, 0xF0000500)                                     \
+  /* VSX Scalar Minimum Double-Precision */                           \
+  V(xsmindp, XSMINDP, 0xF0000540)                                     \
+  /* VSX Scalar Multiply-Subtract Type-A Double-Precision */          \
+  V(xsmsubadp, XSMSUBADP, 0xF0000188)                                 \
+  /* VSX Scalar Multiply-Subtract Type-A Single-Precision */          \
+  V(xsmsubasp, XSMSUBASP, 0xF0000088)                                 \
+  /* VSX Scalar Multiply-Subtract Type-M Double-Precision */          \
+  V(xsmsubmdp, XSMSUBMDP, 0xF00001C8)                                 \
+  /* VSX Scalar Multiply-Subtract Type-M Single-Precision */          \
+  V(xsmsubmsp, XSMSUBMSP, 0xF00000C8)                                 \
+  /* VSX Scalar Multiply Double-Precision */                          \
+  V(xsmuldp, XSMULDP, 0xF0000180)                                     \
+  /* VSX Scalar Multiply Single-Precision */                          \
+  V(xsmulsp, XSMULSP, 0xF0000080)                                     \
+  /* VSX Scalar Negative Multiply-Add Type-A Double-Precision */      \
+  V(xsnmaddadp, XSNMADDADP, 0xF0000508)                               \
+  /* VSX Scalar Negative Multiply-Add Type-A Single-Precision */      \
+  V(xsnmaddasp, XSNMADDASP, 0xF0000408)                               \
+  /* VSX Scalar Negative Multiply-Add Type-M Double-Precision */      \
+  V(xsnmaddmdp, XSNMADDMDP, 0xF0000548)                               \
+  /* VSX Scalar Negative Multiply-Add Type-M Single-Precision */      \
+  V(xsnmaddmsp, XSNMADDMSP, 0xF0000448)                               \
+  /* VSX Scalar Negative Multiply-Subtract Type-A Double-Precision */ \
+  V(xsnmsubadp, XSNMSUBADP, 0xF0000588)                               \
+  /* VSX Scalar Negative Multiply-Subtract Type-A Single-Precision */ \
+  V(xsnmsubasp, XSNMSUBASP, 0xF0000488)                               \
+  /* VSX Scalar Negative Multiply-Subtract Type-M Double-Precision */ \
+  V(xsnmsubmdp, XSNMSUBMDP, 0xF00005C8)                               \
+  /* VSX Scalar Negative Multiply-Subtract Type-M Single-Precision */ \
+  V(xsnmsubmsp, XSNMSUBMSP, 0xF00004C8)                               \
+  /* VSX Scalar Reciprocal Estimate Double-Precision */               \
+  V(xsredp, XSREDP, 0xF0000168)                                       \
+  /* VSX Scalar Subtract Double-Precision */                          \
+  V(xssubdp, XSSUBDP, 0xF0000140)                                     \
+  /* VSX Scalar Subtract Single-Precision */                          \
+  V(xssubsp, XSSUBSP, 0xF0000040)                                     \
+  /* VSX Scalar Test for software Divide Double-Precision */          \
+  V(xstdivdp, XSTDIVDP, 0xF00001E8)
+
+#define PPC_XX3_OPCODE_VECTOR_LIST(V)                                         \
   /* VSX Vector Add Double-Precision */                                       \
   V(xvadddp, XVADDDP, 0xF0000300)                                             \
   /* VSX Vector Add Single-Precision */                                       \
@@ -359,7 +364,7 @@ using Instr = uint32_t;
   /* Decimal Floating Test Data Group Quad */                   \
   V(dtstdgq, DTSTDGQ, 0xFC0001C4)
 
-#define PPC_XX2_OPCODE_A_FORM_LIST(V)                                        \
+#define PPC_XX2_OPCODE_VECTOR_A_FORM_LIST(V)                                 \
   /* VSX Vector Absolute Value Double-Precision */                           \
   V(xvabsdp, XVABSDP, 0xF0000764)                                            \
   /* VSX Vector Negate Double-Precision */                                   \
@@ -418,6 +423,14 @@ using Instr = uint32_t;
   /* Saturate */                                                             \
   V(xvcvdpuxws, XVCVDPUXWS, 0xF0000320)
 
+#define PPC_XX2_OPCODE_SCALAR_A_FORM_LIST(V)                                \
+  /* VSX Scalar Convert Double-Precision to Single-Precision format Non- */ \
+  /* signalling */                                                          \
+  V(xscvdpspn, XSCVDPSPN, 0xF000042C)                                       \
+  /* VSX Scalar Convert Single-Precision to Double-Precision format Non- */ \
+  /* signalling */                                                          \
+  V(xscvspdpn, XSCVSPDPN, 0xF000052C)
+
 #define PPC_XX2_OPCODE_B_FORM_LIST(V) \
   /* Vector Byte-Reverse Quadword */  \
   V(xxbrq, XXBRQ, 0xF01F076C)
@@ -435,9 +448,6 @@ using Instr = uint32_t;
   V(xsabsdp, XSABSDP, 0xF0000564)                                            \
   /* VSX Scalar Convert Double-Precision to Single-Precision */              \
   V(xscvdpsp, XSCVDPSP, 0xF0000424)                                          \
-  /* VSX Scalar Convert Double-Precision to Single-Precision format Non- */  \
-  /* signalling */                                                           \
-  V(xscvdpspn, XSCVDPSPN, 0xF000042C)                                        \
   /* VSX Scalar Convert Double-Precision to Signed Fixed-Point Doubleword */ \
   /* Saturate */                                                             \
   V(xscvdpsxds, XSCVDPSXDS, 0xF0000560)                                      \
@@ -452,9 +462,6 @@ using Instr = uint32_t;
   V(xscvdpuxws, XSCVDPUXWS, 0xF0000120)                                      \
   /* VSX Scalar Convert Single-Precision to Double-Precision (p=1) */        \
   V(xscvspdp, XSCVSPDP, 0xF0000524)                                          \
-  /* Scalar Convert Single-Precision to Double-Precision format Non- */      \
-  /* signalling */                                                           \
-  V(xscvspdpn, XSCVSPDPN, 0xF000052C)                                        \
   /* VSX Scalar Convert Signed Fixed-Point Doubleword to Double-Precision */ \
   V(xscvsxddp, XSCVSXDDP, 0xF00005E0)                                        \
   /* VSX Scalar Convert Signed Fixed-Point Doubleword to Single-Precision */ \
@@ -526,9 +533,10 @@ using Instr = uint32_t;
   /* Vector Splat Immediate Byte */                                          \
   V(xxspltib, XXSPLTIB, 0xF00002D0)
 
-#define PPC_XX2_OPCODE_LIST(V)  \
-  PPC_XX2_OPCODE_A_FORM_LIST(V) \
-  PPC_XX2_OPCODE_B_FORM_LIST(V) \
+#define PPC_XX2_OPCODE_LIST(V)         \
+  PPC_XX2_OPCODE_VECTOR_A_FORM_LIST(V) \
+  PPC_XX2_OPCODE_SCALAR_A_FORM_LIST(V) \
+  PPC_XX2_OPCODE_B_FORM_LIST(V)        \
   PPC_XX2_OPCODE_UNUSED_LIST(V)
 
 #define PPC_EVX_OPCODE_LIST(V)                                                \
@@ -1169,6 +1177,10 @@ using Instr = uint32_t;
   V(cntlzw, CNTLZWX, 0x7C000034)       \
   /* Count Leading Zeros Doubleword */ \
   V(cntlzd, CNTLZDX, 0x7C000074)       \
+  /* Count Tailing Zeros Word */       \
+  V(cnttzw, CNTTZWX, 0x7C000434)       \
+  /* Count Tailing Zeros Doubleword */ \
+  V(cnttzd, CNTTZDX, 0x7C000474)       \
   /* Population Count Byte-wise */     \
   V(popcntb, POPCNTB, 0x7C0000F4)      \
   /* Population Count Words */         \
@@ -1237,6 +1249,12 @@ using Instr = uint32_t;
   V(stfsux, STFSUX, 0x7C00056E)                         \
   /* Store Floating-Point Single Indexed */             \
   V(stfsx, STFSX, 0x7C00052E)                           \
+  /* Store Doubleword Byte-Reverse Indexed */           \
+  V(stdbrx, STDBRX, 0x7C000528)                         \
+  /* Store Word Byte-Reverse Indexed */                 \
+  V(stwbrx, STWBRX, 0x7C00052C)                         \
+  /* Store Halfword Byte-Reverse Indexed */             \
+  V(sthbrx, STHBRX, 0x7C00072C)                         \
   /* Load Vector Indexed */                             \
   V(lvx, LVX, 0x7C0000CE)                               \
   /* Store Vector Indexed */                            \
@@ -1251,6 +1269,14 @@ using Instr = uint32_t;
   V(cmp, CMP, 0x7C000000)           \
   /* Compare Logical */             \
   V(cmpl, CMPL, 0x7C000040)
+
+#define PPC_X_OPCODE_G_FORM_LIST(V) \
+  /* Byte-Reverse Halfword */       \
+  V(brh, BRH, 0x7C0001B6)           \
+  /* Byte-Reverse Word */           \
+  V(brw, BRW, 0x7C000136)           \
+  /* Byte-Reverse Doubleword */     \
+  V(brd, BRD, 0x7C000176)
 
 #define PPC_X_OPCODE_EH_S_FORM_LIST(V)                    \
   /* Store Byte Conditional Indexed */                    \
@@ -1283,8 +1309,6 @@ using Instr = uint32_t;
   V(lwax, LWAX, 0x7C0002AA)                                                   \
   /* Parity Doubleword */                                                     \
   V(prtyd, PRTYD, 0x7C000174)                                                 \
-  /* Store Doubleword Byte-Reverse Indexed */                                 \
-  V(stdbrx, STDBRX, 0x7C000528)                                               \
   /* Trap Doubleword */                                                       \
   V(td, TD, 0x7C000088)                                                       \
   /* Branch Conditional to Branch Target Address Register */                  \
@@ -1309,10 +1333,6 @@ using Instr = uint32_t;
   V(nand, NAND, 0x7C0003B8)                                                   \
   /* Parity Word */                                                           \
   V(prtyw, PRTYW, 0x7C000134)                                                 \
-  /* Store Halfword Byte-Reverse Indexed */                                   \
-  V(sthbrx, STHBRX, 0x7C00072C)                                               \
-  /* Store Word Byte-Reverse Indexed */                                       \
-  V(stwbrx, STWBRX, 0x7C00052C)                                               \
   /* Synchronize */                                                           \
   V(sync, SYNC, 0x7C0004AC)                                                   \
   /* Trap Word */                                                             \
@@ -1728,6 +1748,7 @@ using Instr = uint32_t;
   PPC_X_OPCODE_D_FORM_LIST(V)    \
   PPC_X_OPCODE_E_FORM_LIST(V)    \
   PPC_X_OPCODE_F_FORM_LIST(V)    \
+  PPC_X_OPCODE_G_FORM_LIST(V)    \
   PPC_X_OPCODE_EH_L_FORM_LIST(V) \
   PPC_X_OPCODE_UNUSED_LIST(V)
 
@@ -2306,6 +2327,8 @@ using Instr = uint32_t;
   V(vmulosw, VMULOSW, 0x10000188)                          \
   /* Vector Multiply Odd Unsigned Word */                  \
   V(vmulouw, VMULOUW, 0x10000088)                          \
+  /* Vector Multiply Low Doubleword */                     \
+  V(vmulld, VMULLD, 0x100001C9)                            \
   /* Vector Sum across Quarter Signed Halfword Saturate */ \
   V(vsum4shs, VSUM4SHS, 0x10000648)                        \
   /* Vector Pack Unsigned Word Unsigned Saturate */        \
@@ -2443,6 +2466,32 @@ using Instr = uint32_t;
   /* Vector Negate Doubleword */     \
   V(vnegd, VNEGD, 0x10070602)
 
+#define PPC_VX_OPCODE_E_FORM_LIST(V)           \
+  /* Vector Splat Immediate Signed Byte */     \
+  V(vspltisb, VSPLTISB, 0x1000030C)            \
+  /* Vector Splat Immediate Signed Halfword */ \
+  V(vspltish, VSPLTISH, 0x1000034C)            \
+  /* Vector Splat Immediate Signed Word */     \
+  V(vspltisw, VSPLTISW, 0x1000038C)
+
+#define PPC_VX_OPCODE_F_FORM_LIST(V)    \
+  /* Vector Extract Byte Mask */        \
+  V(vextractbm, VEXTRACTBM, 0x10080642) \
+  /* Vector Extract Halfword Mask */    \
+  V(vextracthm, VEXTRACTHM, 0x10090642) \
+  /* Vector Extract Word Mask */        \
+  V(vextractwm, VEXTRACTWM, 0x100A0642) \
+  /* Vector Extract Doubleword Mask */  \
+  V(vextractdm, VEXTRACTDM, 0x100B0642)
+
+#define PPC_VX_OPCODE_G_FORM_LIST(V)         \
+  /* Vector Insert Word from GPR using       \
+immediate-specified index */                 \
+  V(vinsw, VINSW, 0x100000CF)                \
+  /* Vector Insert Doubleword from GPR using \
+immediate-specified index */                 \
+  V(vinsd, VINSD, 0x100001CF)
+
 #define PPC_VX_OPCODE_UNUSED_LIST(V)                                      \
   /* Decimal Add Modulo */                                                \
   V(bcdadd, BCDADD, 0xF0000400)                                           \
@@ -2548,12 +2597,6 @@ using Instr = uint32_t;
   V(vrsqrtefp, VRSQRTEFP, 0x1000014A)                                     \
   /* Vector Shift Left */                                                 \
   V(vsl, VSL, 0x100001C4)                                                 \
-  /* Vector Splat Immediate Signed Byte */                                \
-  V(vspltisb, VSPLTISB, 0x1000030C)                                       \
-  /* Vector Splat Immediate Signed Halfword */                            \
-  V(vspltish, VSPLTISH, 0x1000034C)                                       \
-  /* Vector Splat Immediate Signed Word */                                \
-  V(vspltisw, VSPLTISW, 0x1000038C)                                       \
   /* Vector Shift Right */                                                \
   V(vsr, VSR, 0x100002C4)                                                 \
   /* Vector Subtract & write Carry Unsigned Quadword */                   \
@@ -2600,6 +2643,9 @@ using Instr = uint32_t;
   PPC_VX_OPCODE_B_FORM_LIST(V) \
   PPC_VX_OPCODE_C_FORM_LIST(V) \
   PPC_VX_OPCODE_D_FORM_LIST(V) \
+  PPC_VX_OPCODE_E_FORM_LIST(V) \
+  PPC_VX_OPCODE_F_FORM_LIST(V) \
+  PPC_VX_OPCODE_G_FORM_LIST(V) \
   PPC_VX_OPCODE_UNUSED_LIST(V)
 
 #define PPC_XS_OPCODE_LIST(V)                      \
@@ -2647,7 +2693,8 @@ using Instr = uint32_t;
   PPC_VC_OPCODE_LIST(V)          \
   PPC_XX1_OPCODE_LIST(V)         \
   PPC_XX2_OPCODE_LIST(V)         \
-  PPC_XX3_OPCODE_LIST(V)         \
+  PPC_XX3_OPCODE_VECTOR_LIST(V)  \
+  PPC_XX3_OPCODE_SCALAR_LIST(V)  \
   PPC_XX4_OPCODE_LIST(V)
 
 enum Opcode : uint32_t {
@@ -2938,6 +2985,7 @@ class Instruction {
     opcode = extcode | BitField(20, 16) | BitField(10, 0);
     switch (opcode) {
       PPC_VX_OPCODE_D_FORM_LIST(OPCODE_CASES)
+      PPC_VX_OPCODE_F_FORM_LIST(OPCODE_CASES)
       return static_cast<Opcode>(opcode);
     }
     opcode = extcode | BitField(10, 0);
@@ -2945,6 +2993,8 @@ class Instruction {
       PPC_VX_OPCODE_A_FORM_LIST(OPCODE_CASES)
       PPC_VX_OPCODE_B_FORM_LIST(OPCODE_CASES)
       PPC_VX_OPCODE_C_FORM_LIST(OPCODE_CASES)
+      PPC_VX_OPCODE_E_FORM_LIST(OPCODE_CASES)
+      PPC_VX_OPCODE_G_FORM_LIST(OPCODE_CASES)
       PPC_VX_OPCODE_UNUSED_LIST(OPCODE_CASES)
       PPC_X_OPCODE_EH_S_FORM_LIST(OPCODE_CASES)
       return static_cast<Opcode>(opcode);
@@ -2968,7 +3018,8 @@ class Instruction {
     }
     opcode = extcode | BitField(10, 2);
     switch (opcode) {
-      PPC_XX2_OPCODE_A_FORM_LIST(OPCODE_CASES)
+      PPC_XX2_OPCODE_VECTOR_A_FORM_LIST(OPCODE_CASES)
+      PPC_XX2_OPCODE_SCALAR_A_FORM_LIST(OPCODE_CASES)
       PPC_XX2_OPCODE_UNUSED_LIST(OPCODE_CASES)
       return static_cast<Opcode>(opcode);
     }
@@ -2995,7 +3046,8 @@ class Instruction {
     opcode = extcode | BitField(10, 3);
     switch (opcode) {
       PPC_EVS_OPCODE_LIST(OPCODE_CASES)
-      PPC_XX3_OPCODE_LIST(OPCODE_CASES)
+      PPC_XX3_OPCODE_VECTOR_LIST(OPCODE_CASES)
+      PPC_XX3_OPCODE_SCALAR_LIST(OPCODE_CASES)
       return static_cast<Opcode>(opcode);
     }
     opcode = extcode | BitField(8, 1);

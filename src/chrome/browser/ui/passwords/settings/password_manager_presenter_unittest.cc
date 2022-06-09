@@ -11,36 +11,32 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/password_manager/core/browser/mock_password_feature_manager.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/sync/driver/test_sync_service.h"
-#if !defined(OS_ANDROID)
-#include "base/test/metrics/histogram_tester.h"
-#endif
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
+#include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view_mock.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +74,7 @@ MATCHER_P(HasUrl, url, "") {
 // Ensures that all previously-started operations in the store have completed.
 class PasswordStoreWaiter : public password_manager::PasswordStoreConsumer {
  public:
-  explicit PasswordStoreWaiter(password_manager::PasswordStore* store);
+  explicit PasswordStoreWaiter(password_manager::PasswordStoreInterface* store);
   ~PasswordStoreWaiter() override = default;
 
   PasswordStoreWaiter(const PasswordStoreWaiter&) = delete;
@@ -89,11 +85,13 @@ class PasswordStoreWaiter : public password_manager::PasswordStoreConsumer {
       std::vector<std::unique_ptr<password_manager::PasswordForm>>) override;
 
   base::RunLoop run_loop_;
+  base::WeakPtrFactory<PasswordStoreWaiter> weak_ptr_factory_{this};
 };
 
 PasswordStoreWaiter::PasswordStoreWaiter(
-    password_manager::PasswordStore* store) {
-  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+    password_manager::PasswordStoreInterface* store) {
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(
+      weak_ptr_factory_.GetWeakPtr());
   run_loop_.Run();
 }
 
@@ -108,11 +106,11 @@ class MockPasswordManagerClient
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_METHOD(password_manager::PasswordStore*,
+  MOCK_METHOD(password_manager::PasswordStoreInterface*,
               GetProfilePasswordStore,
               (),
               (const override));
-  MOCK_METHOD(password_manager::PasswordStore*,
+  MOCK_METHOD(password_manager::PasswordStoreInterface*,
               GetAccountPasswordStore,
               (),
               (const override));
@@ -131,13 +129,13 @@ std::vector<std::pair<std::string, std::string>> GetUsernamesAndPasswords(
 }
 
 password_manager::PasswordForm AddPasswordToStore(
-    password_manager::PasswordStore* store,
+    password_manager::PasswordStoreInterface* store,
     const GURL& url,
     base::StringPiece username,
     base::StringPiece password) {
   password_manager::PasswordForm form;
   form.url = url;
-  form.signon_realm = url.GetOrigin().spec();
+  form.signon_realm = url.DeprecatedGetOriginAsURL().spec();
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
   store->AddLogin(form);
@@ -156,7 +154,7 @@ std::vector<password_manager::PasswordForm> GetPasswordsInStoreForRealm(
 
 void SetUpSyncInTransportMode(Profile* profile) {
   auto* sync_service = static_cast<syncer::TestSyncService*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      SyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile,
           base::BindRepeating(
               [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
@@ -166,10 +164,10 @@ void SetUpSyncInTransportMode(Profile* profile) {
   account.email = "foo@gmail.com";
   account.gaia = "foo";
   account.account_id = CoreAccountId::FromGaiaId(account.gaia);
-  sync_service->SetAuthenticatedAccountInfo(account);
+  sync_service->SetAccountInfo(account);
   sync_service->SetDisableReasons({});
   sync_service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
-  sync_service->SetIsAuthenticatedAccountPrimary(false);
+  sync_service->SetHasSyncConsent(false);
   ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
 }
 
@@ -178,15 +176,7 @@ void SetUpSyncInTransportMode(Profile* profile) {
 class PasswordManagerPresenterTest : public testing::Test {
  protected:
   explicit PasswordManagerPresenterTest(bool with_account_store = false) {
-    store_ =
-        base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
-            PasswordStoreFactory::GetInstance()
-                ->SetTestingFactoryAndUse(
-                    &profile_,
-                    base::BindRepeating(&password_manager::BuildPasswordStore<
-                                        content::BrowserContext,
-                                        password_manager::TestPasswordStore>))
-                .get()));
+    store_ = CreateAndUseTestPasswordStore(&profile_);
 
     // The account store setup is done here and not in
     // PasswordManagerPresenterTestWithAccountStore to initialize the feature
@@ -194,22 +184,15 @@ class PasswordManagerPresenterTest : public testing::Test {
     if (with_account_store) {
       feature_list_.InitAndEnableFeature(
           password_manager::features::kEnablePasswordsAccountStorage);
-      account_store_ = base::WrapRefCounted(
-          static_cast<password_manager::TestPasswordStore*>(
-              AccountPasswordStoreFactory::GetInstance()
-                  ->SetTestingFactoryAndUse(
-                      &profile_,
-                      base::BindRepeating(
-                          &password_manager::BuildPasswordStoreWithArgs<
-                              content::BrowserContext,
-                              password_manager::TestPasswordStore,
-                              password_manager::IsAccountStore>,
-                          password_manager::IsAccountStore(true)))
-                  .get()));
+      account_store_ = CreateAndUseTestAccountPasswordStore(&profile_);
 
       SetUpSyncInTransportMode(&profile_);
     }
   }
+
+  PasswordManagerPresenterTest(const PasswordManagerPresenterTest&) = delete;
+  PasswordManagerPresenterTest& operator=(const PasswordManagerPresenterTest&) =
+      delete;
 
   ~PasswordManagerPresenterTest() override {
     store_->ShutdownOnUIThread();
@@ -240,7 +223,7 @@ class PasswordManagerPresenterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  MockPasswordUIView& GetUIController() { return mock_controller_; }
+  NiceMock<MockPasswordUIView>& GetUIController() { return mock_controller_; }
 
   // TODO(victorvianna): Inline this.
   std::vector<password_manager::PasswordForm> GetStoredPasswordsForRealm(
@@ -256,13 +239,11 @@ class PasswordManagerPresenterTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  MockPasswordUIView mock_controller_{&profile_};
+  NiceMock<MockPasswordUIView> mock_controller_{&profile_};
   // TODO(victorvianna): Rename to profile_store_.
   scoped_refptr<password_manager::TestPasswordStore> store_;
   base::test::ScopedFeatureList feature_list_;
   scoped_refptr<password_manager::TestPasswordStore> account_store_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenterTest);
 };
 
 namespace {

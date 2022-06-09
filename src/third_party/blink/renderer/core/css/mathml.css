@@ -35,6 +35,16 @@
 
 /* By default, we only display the MathML formulas without any formatting other than the one specified by the display attribute. */
 math {
+    direction: ltr;
+    writing-mode:  horizontal-tb;
+    text-indent: 0;
+    letter-spacing: normal;
+    line-height: normal;
+    word-spacing: normal;
+    font-family: math;
+    font-size: inherited;
+    font-style: normal;
+    font-weight: normal;
     display: inline math;
     math-shift: normal;
     math-style: compact;
@@ -66,7 +76,7 @@ semantics > :not(:first-child) {
 }
 
 merror {
-    color: red;
+    border: 1px solid red;
     background-color: lightYellow;
 }
 
@@ -82,6 +92,18 @@ mi {
 /* Tables */
 mtable {
   math-style: compact;
+  display: inline-table;
+}
+
+mtr {
+  display: table-row;
+}
+
+mtd {
+  display: table-cell;
+  padding: 0.5ex 0.4em;
+  /* TODO(crbug.com/1125111): Properly center complex <mtd> children like mrow. */
+  text-align: -webkit-center;
 }
 
 /* Fractions */
@@ -124,10 +146,14 @@ munderover[accentunder="true" i] > :nth-child(2),
 munderover[accent="true" i] > :nth-child(3) {
   font-size: inherit;
 }
-
-munder > :nth-child(2),
-munderover > :nth-child(2),
+msub > :nth-child(2),
+msubsup > :nth-child(2),
+mmultiscripts > :nth-child(even),
+mmultiscripts > mprescripts ~ :nth-child(odd),
 mover[accent="true" i] > :first-child,
 munderover[accent="true" i] > :first-child {
   math-shift: compact;
+}
+mmultiscripts > mprescripts ~ :nth-child(even) {
+  math-shift: inherit;
 }

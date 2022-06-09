@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,8 +41,8 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
-#include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -118,13 +118,17 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
  public:
   explicit MessageHandler(NetInternalsTest* net_internals_test);
 
+  MessageHandler(const MessageHandler&) = delete;
+  MessageHandler& operator=(const MessageHandler&) = delete;
+
  private:
   void RegisterMessages() override;
 
-  void RegisterMessage(const std::string& message,
-                       const content::WebUI::MessageCallback& handler);
+  void RegisterMessage(
+      const std::string& message,
+      const content::WebUI::DeprecatedMessageCallback& handler);
 
-  void HandleMessage(const content::WebUI::MessageCallback& handler,
+  void HandleMessage(const content::WebUI::DeprecatedMessageCallback& handler,
                      const base::ListValue* data);
 
   // Runs NetInternalsTest.callback with the given value.
@@ -144,7 +148,7 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
 
   Browser* browser() { return net_internals_test_->browser(); }
 
-  NetInternalsTest* net_internals_test_;
+  raw_ptr<NetInternalsTest> net_internals_test_;
 
   // Single NetworkIsolationKey used for all DNS lookups, so repeated lookups
   // use the same cache key.
@@ -152,8 +156,6 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
       net::NetworkIsolationKey::CreateTransient()};
 
   base::WeakPtrFactory<MessageHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MessageHandler);
 };
 
 NetInternalsTest::MessageHandler::MessageHandler(
@@ -176,15 +178,15 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
 
 void NetInternalsTest::MessageHandler::RegisterMessage(
     const std::string& message,
-    const content::WebUI::MessageCallback& handler) {
-  web_ui()->RegisterMessageCallback(
+    const content::WebUI::DeprecatedMessageCallback& handler) {
+  web_ui()->RegisterDeprecatedMessageCallback(
       message,
       base::BindRepeating(&NetInternalsTest::MessageHandler::HandleMessage,
                           weak_factory_.GetWeakPtr(), handler));
 }
 
 void NetInternalsTest::MessageHandler::HandleMessage(
-    const content::WebUI::MessageCallback& handler,
+    const content::WebUI::DeprecatedMessageCallback& handler,
     const base::ListValue* data) {
   // The handler might run a nested loop to wait for something.
   base::CurrentThread::ScopedNestableTaskAllower nestable_task_allower;
@@ -199,8 +201,7 @@ void NetInternalsTest::MessageHandler::RunJavascriptCallback(
 void NetInternalsTest::MessageHandler::GetTestServerURL(
     const base::ListValue* list_value) {
   ASSERT_TRUE(net_internals_test_->StartTestServer());
-  std::string path;
-  ASSERT_TRUE(list_value->GetString(0, &path));
+  const std::string& path = list_value->GetList()[0].GetString();
   GURL url = net_internals_test_->embedded_test_server()->GetURL(path);
   std::unique_ptr<base::Value> url_value(new base::Value(url.spec()));
   RunJavascriptCallback(url_value.get());
@@ -218,10 +219,12 @@ void NetInternalsTest::MessageHandler::SetUpTestReportURI(
 
 void NetInternalsTest::MessageHandler::DnsLookup(
     const base::ListValue* list_value) {
-  std::string hostname;
-  bool local;
-  ASSERT_TRUE(list_value->GetString(0, &hostname));
-  ASSERT_TRUE(list_value->GetBoolean(1, &local));
+  const auto& list = list_value->GetList();
+  ASSERT_GE(2u, list.size());
+  ASSERT_TRUE(list[0].is_string());
+  ASSERT_TRUE(list[1].is_bool());
+  const std::string hostname = list[0].GetString();
+  const bool local = list[1].GetBool();
   ASSERT_TRUE(browser());
 
   auto resolve_host_parameters = network::mojom::ResolveHostParameters::New();

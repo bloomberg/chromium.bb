@@ -19,7 +19,9 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -42,20 +44,15 @@ constexpr double kDefaultMaxBackgroundBudgetLevelInSeconds = 3;
 constexpr double kDefaultInitialBackgroundBudgetInSeconds = 1;
 constexpr double kDefaultMaxBackgroundThrottlingDelayInSeconds = 0;
 
-// Given that we already align timers to 1Hz, do not report throttling if
-// it is under 3s.
-constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
-    base::TimeDelta::FromSeconds(3);
-
 // Delay for fully throttling the page after backgrounding.
 constexpr base::TimeDelta kThrottlingDelayAfterBackgrounding =
-    base::TimeDelta::FromSeconds(10);
+    base::Seconds(10);
 
 // The amount of time to wait before suspending shared timers, and loading
 // etc. after the renderer has been backgrounded. This is used only if
 // background suspension is enabled.
 constexpr base::TimeDelta kDefaultDelayForBackgroundTabFreezing =
-    base::TimeDelta::FromMinutes(5);
+    base::Minutes(5);
 
 // The amount of time to wait before checking network idleness
 // after the page has been backgrounded. If network is idle,
@@ -63,14 +60,18 @@ constexpr base::TimeDelta kDefaultDelayForBackgroundTabFreezing =
 // freeze-background-tab-on-network-idle feature is enabled.
 // This value should be smaller than kDefaultDelayForBackgroundTabFreezing.
 constexpr base::TimeDelta kDefaultDelayForBackgroundAndNetworkIdleTabFreezing =
-    base::TimeDelta::FromMinutes(1);
+    base::Minutes(1);
 
 // Duration of a throttled wake up.
-constexpr base::TimeDelta kThrottledWakeUpDuration =
-    base::TimeDelta::FromMilliseconds(3);
+constexpr base::TimeDelta kThrottledWakeUpDuration = base::Milliseconds(3);
+
+// The duration for which intensive throttling should be inhibited for
+// same-origin frames when the page title or favicon is updated.
+constexpr base::TimeDelta
+    kTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate = base::Seconds(3);
 
 constexpr base::TimeDelta kDefaultDelayForTrackingIPCsPostedToCachedFrames =
-    base::TimeDelta::FromSeconds(15);
+    base::Seconds(15);
 
 // Values coming from the field trial config are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
@@ -101,7 +102,7 @@ double GetDoubleParameterFromMap(const base::FieldTrialParams& settings,
 absl::optional<base::TimeDelta> DoubleToOptionalTime(double value) {
   if (value == 0)
     return absl::nullopt;
-  return base::TimeDelta::FromSecondsD(value);
+  return base::Seconds(value);
 }
 
 BackgroundThrottlingSettings GetBackgroundThrottlingSettings() {
@@ -134,8 +135,7 @@ base::TimeDelta GetDelayForBackgroundTabFreezing() {
   static const base::FeatureParam<int> kDelayForBackgroundTabFreezingMillis{
       &features::kStopInBackground, "DelayForBackgroundTabFreezingMills",
       static_cast<int>(kDefaultDelayForBackgroundTabFreezing.InMilliseconds())};
-  return base::TimeDelta::FromMilliseconds(
-      kDelayForBackgroundTabFreezingMillis.Get());
+  return base::Milliseconds(kDelayForBackgroundTabFreezingMillis.Get());
 }
 
 base::TimeDelta GetDelayForBackgroundAndNetworkIdleTabFreezing() {
@@ -145,7 +145,7 @@ base::TimeDelta GetDelayForBackgroundAndNetworkIdleTabFreezing() {
           "DelayForBackgroundAndNetworkIdleTabFreezingMills",
           static_cast<int>(kDefaultDelayForBackgroundAndNetworkIdleTabFreezing
                                .InMilliseconds())};
-  return base::TimeDelta::FromMilliseconds(
+  return base::Milliseconds(
       kDelayForBackgroundAndNetworkIdleTabFreezingMillis.Get());
 }
 
@@ -158,7 +158,7 @@ base::TimeDelta GetTimeToDelayIPCTrackingWhileStoredInBackForwardCache() {
             "delay_before_tracking_ms",
             static_cast<int>(kDefaultDelayForTrackingIPCsPostedToCachedFrames
                                  .InMilliseconds())};
-    return base::TimeDelta::FromMilliseconds(
+    return base::Milliseconds(
         kDelayForLoggingUnexpectedIPCPostedToBckForwardCacheMillis.Get());
   }
   return kDefaultDelayForTrackingIPCsPostedToCachedFrames;
@@ -167,6 +167,7 @@ base::TimeDelta GetTimeToDelayIPCTrackingWhileStoredInBackForwardCache() {
 }  // namespace
 
 constexpr base::TimeDelta PageSchedulerImpl::kDefaultThrottledWakeUpInterval;
+constexpr base::TimeDelta PageSchedulerImpl::kIntensiveThrottledWakeUpInterval;
 
 PageSchedulerImpl::PageSchedulerImpl(
     PageScheduler::Delegate* delegate,
@@ -175,25 +176,25 @@ PageSchedulerImpl::PageSchedulerImpl(
           &agent_group_scheduler.GetMainThreadScheduler())),
       agent_group_scheduler_(agent_group_scheduler),
       page_visibility_(kDefaultPageVisibility),
-      page_visibility_changed_time_(
-          main_thread_scheduler_->GetTickClock()->NowTicks()),
+      page_visibility_changed_time_(main_thread_scheduler_->NowTicks()),
       audio_state_(AudioState::kSilent),
       is_frozen_(false),
-      reported_background_throttling_since_navigation_(false),
       opted_out_from_aggressive_throttling_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
       is_cpu_time_throttled_(false),
       are_wake_ups_intensively_throttled_(false),
-      keep_active_(main_thread_scheduler_->SchedulerKeepActive()),
       had_recent_title_or_favicon_update_(false),
-      focused_(delegate ? delegate->IsFocused() : true),
       delegate_(delegate),
       delay_for_background_tab_freezing_(GetDelayForBackgroundTabFreezing()),
       freeze_on_network_idle_enabled_(base::FeatureList::IsEnabled(
           blink::features::kFreezeBackgroundTabOnNetworkIdle)),
       delay_for_background_and_network_idle_tab_freezing_(
-          GetDelayForBackgroundAndNetworkIdleTabFreezing()) {
+          GetDelayForBackgroundAndNetworkIdleTabFreezing()),
+      throttle_foreground_timers_(
+          base::FeatureList::IsEnabled(kThrottleForegroundTimers)),
+      foreground_timers_throttled_wake_up_interval_(
+          GetForegroundTimersThrottledWakeUpInterval()) {
   page_lifecycle_state_tracker_ = std::make_unique<PageLifecycleStateTracker>(
       this, kDefaultPageVisibility == PageVisibilityState::kVisible
                 ? PageLifecycleState::kActive
@@ -219,15 +220,6 @@ PageSchedulerImpl::~PageSchedulerImpl() {
     frame_scheduler->DetachFromPageScheduler();
   }
   main_thread_scheduler_->RemovePageScheduler(this);
-
-  if (cpu_time_budget_pool_)
-    cpu_time_budget_pool_->Close();
-  if (HasWakeUpBudgetPools()) {
-    for (WakeUpBudgetPool* pool : AllWakeUpBudgetPools()) {
-      DCHECK(pool);
-      pool->Close();
-    }
-  }
 }
 
 // static
@@ -243,13 +235,10 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
   if (page_visibility_ == page_visibility)
     return;
   page_visibility_ = page_visibility;
-  page_visibility_changed_time_ =
-      main_thread_scheduler_->GetTickClock()->NowTicks();
+  page_visibility_changed_time_ = main_thread_scheduler_->NowTicks();
 
   switch (page_visibility_) {
     case PageVisibilityState::kVisible:
-      // Visible pages should not be frozen.
-      SetPageFrozenImpl(false, NotificationPolicy::kDoNotNotifyFrames);
       page_lifecycle_state_tracker_->SetPageLifecycleState(
           PageLifecycleState::kActive);
       break;
@@ -260,17 +249,10 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
       break;
   }
 
-  if (ShouldFreezePage()) {
-    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, do_freeze_page_callback_.GetCallback(),
-        freeze_on_network_idle_enabled_
-            ? delay_for_background_and_network_idle_tab_freezing_
-            : delay_for_background_tab_freezing_);
-  }
-
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageVisibilityForTracing(page_visibility_);
 
+  MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate();
   UpdatePolicyOnVisibilityChange(NotificationPolicy::kDoNotNotifyFrames);
 
   NotifyFrames();
@@ -319,7 +301,7 @@ void PageSchedulerImpl::SetPageFrozenImpl(
   } else {
     // The new state may have already been set if unfreezing through the
     // renderer, but that's okay - duplicate state changes won't be recorded.
-    if (page_visibility_ == PageVisibilityState::kVisible) {
+    if (IsPageVisible()) {
       page_lifecycle_state_tracker_->SetPageLifecycleState(
           PageLifecycleState::kActive);
     } else if (IsBackgrounded()) {
@@ -354,7 +336,7 @@ void PageSchedulerImpl::SetPageBackForwardCached(
     TRACE_EVENT_INSTANT("navigation",
                         "PageSchedulerImpl::SetPageBackForwardCached_Store");
     stored_in_back_forward_cache_timestamp_ =
-        main_thread_scheduler_->tick_clock()->NowTicks();
+        main_thread_scheduler_->NowTicks();
 
     // Incorporate a delay of 15 seconds to allow for caching operations to
     // complete before tasks are logged.
@@ -366,13 +348,6 @@ void PageSchedulerImpl::SetPageBackForwardCached(
   }
 }
 
-void PageSchedulerImpl::OnFocusChanged(bool focused) {
-  DCHECK_NE(focused_, focused);
-
-  focused_ = focused;
-  NotifyFrames();
-}
-
 void PageSchedulerImpl::SetUpIPCTaskDetection() {
   DCHECK(is_stored_in_back_forward_cache_);
   has_ipc_detection_enabled_ = true;
@@ -380,28 +355,6 @@ void PageSchedulerImpl::SetUpIPCTaskDetection() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->SetOnIPCTaskPostedWhileInBackForwardCacheHandler();
   }
-}
-
-void PageSchedulerImpl::SetKeepActive(bool keep_active) {
-  if (keep_active) {
-    TRACE_EVENT_INSTANT("renderer.scheduler",
-                        "PageSchedulerImpl::SetKeepActive_True");
-  } else {
-    TRACE_EVENT_INSTANT("renderer.scheduler",
-                        "PageSchedulerImpl::SetKeepActive_False");
-  }
-  if (keep_active_ == keep_active)
-    return;
-  keep_active_ = keep_active;
-
-  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetPageKeepActiveForTracing(keep_active);
-
-  NotifyFrames();
-}
-
-bool PageSchedulerImpl::KeepActive() const {
-  return keep_active_;
 }
 
 bool PageSchedulerImpl::IsMainFrameLocal() const {
@@ -426,13 +379,12 @@ void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
 void PageSchedulerImpl::RegisterFrameSchedulerImpl(
     FrameSchedulerImpl* frame_scheduler) {
   base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
+      main_thread_scheduler_->GetTickClock());
 
   MaybeInitializeWakeUpBudgetPools(&lazy_now);
   MaybeInitializeBackgroundCPUTimeBudgetPool(&lazy_now);
 
   frame_schedulers_.insert(frame_scheduler);
-  main_thread_scheduler_->OnFrameAdded(*frame_scheduler);
   frame_scheduler->UpdatePolicy();
 }
 
@@ -449,11 +401,6 @@ std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
 void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
-  main_thread_scheduler_->OnFrameRemoved(*frame_scheduler);
-}
-
-void PageSchedulerImpl::OnNavigation() {
-  reported_background_throttling_since_navigation_ = false;
 }
 
 void PageSchedulerImpl::ReportIntervention(const String& message) {
@@ -476,10 +423,6 @@ void PageSchedulerImpl::SetInitialVirtualTime(base::Time time) {
   main_thread_scheduler_->SetInitialVirtualTime(time);
 }
 
-void PageSchedulerImpl::SetInitialVirtualTimeOffset(base::TimeDelta offset) {
-  main_thread_scheduler_->SetInitialVirtualTimeOffset(offset);
-}
-
 bool PageSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return main_thread_scheduler_->VirtualTimeAllowedToAdvance();
 }
@@ -492,14 +435,14 @@ void PageSchedulerImpl::GrantVirtualTimeBudget(
   // This can shift time forwards if there's a pending MaybeAdvanceVirtualTime,
   // so it's important this is called second.
   main_thread_scheduler_->GetVirtualTimeDomain()->SetVirtualTimeFence(
-      main_thread_scheduler_->GetVirtualTimeDomain()->Now() + budget);
+      main_thread_scheduler_->NowTicks() + budget);
 }
 
 void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
   if (is_audio_playing) {
     audio_state_ = AudioState::kAudible;
     on_audio_silent_closure_.Cancel();
-    if (page_visibility_ == PageVisibilityState::kHidden) {
+    if (!IsPageVisible()) {
       page_lifecycle_state_tracker_->SetPageLifecycleState(
           PageLifecycleState::kHiddenForegrounded);
     }
@@ -507,6 +450,7 @@ void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
     SetPageFrozenImpl(false, NotificationPolicy::kDoNotNotifyFrames);
     NotifyFrames();
     main_thread_scheduler_->OnAudioStateChanged();
+    MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate();
   } else {
     if (audio_state_ != AudioState::kAudible)
       return;
@@ -529,6 +473,7 @@ void PageSchedulerImpl::OnAudioSilent() {
   if (IsBackgrounded()) {
     page_lifecycle_state_tracker_->SetPageLifecycleState(
         PageLifecycleState::kHiddenBackgrounded);
+    MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate();
   }
   if (ShouldFreezePage()) {
     main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
@@ -586,10 +531,18 @@ void PageSchedulerImpl::OnThrottlingStatusUpdated() {
     opted_out_from_aggressive_throttling_ =
         opted_out_from_aggressive_throttling;
     base::sequence_manager::LazyNow lazy_now(
-        main_thread_scheduler_->tick_clock());
+        main_thread_scheduler_->GetTickClock());
     UpdateCPUTimeBudgetPool(&lazy_now);
     UpdateWakeUpBudgetPools(&lazy_now);
   }
+}
+
+void PageSchedulerImpl::OnVirtualTimeEnabled() {
+  if (page_visibility_ == PageVisibilityState::kHidden) {
+    page_lifecycle_state_tracker_->SetPageLifecycleState(
+        PageLifecycleState::kHiddenForegrounded);
+  }
+  UpdatePolicyOnVisibilityChange(NotificationPolicy::kNotifyFrames);
 }
 
 void PageSchedulerImpl::OnTraceLogEnabled() {
@@ -599,8 +552,14 @@ void PageSchedulerImpl::OnTraceLogEnabled() {
   }
 }
 
-bool PageSchedulerImpl::IsPageFocused() const {
-  return focused_;
+void PageSchedulerImpl::OnFirstContentfulPaintInMainFrame() {
+  // Now we get the FCP notification here only for the main frame, notify all
+  // frames within the page to recompute priority for JS timer tasks.
+  if (base::FeatureList::IsEnabled(kDeprioritizeDOMTimersDuringPageLoading) &&
+      kDeprioritizeDOMTimersPhase.Get() ==
+          DeprioritizeDOMTimersPhase::kFirstContentfulPaint) {
+    NotifyFrames();
+  }
 }
 
 bool PageSchedulerImpl::IsWaitingForMainFrameContentfulPaint() const {
@@ -621,14 +580,30 @@ bool PageSchedulerImpl::IsWaitingForMainFrameMeaningfulPaint() const {
                      });
 }
 
-void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context) const {
+void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context,
+                                       base::TimeTicks now) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("page_visible", page_visibility_ == PageVisibilityState::kVisible);
   dict.Add("is_audio_playing", IsAudioPlaying());
   dict.Add("is_frozen", is_frozen_);
-  dict.Add("reported_background_throttling_since_navigation",
-           reported_background_throttling_since_navigation_);
   dict.Add("is_page_freezable", IsBackgrounded());
+
+  dict.Add("cpu_time_budget_pool", [&](perfetto::TracedValue context) {
+    cpu_time_budget_pool_->WriteIntoTrace(std::move(context), now);
+  });
+  dict.Add("normal_wake_up_budget_pool", [&](perfetto::TracedValue context) {
+    normal_wake_up_budget_pool_->WriteIntoTrace(std::move(context), now);
+  });
+  dict.Add("same_origin_intensive_wake_up_budget_pool",
+           [&](perfetto::TracedValue context) {
+             same_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                 std::move(context), now);
+           });
+  dict.Add("cross_origin_intensive_wake_up_budget_pool",
+           [&](perfetto::TracedValue context) {
+             cross_origin_intensive_wake_up_budget_pool_->WriteIntoTrace(
+                 std::move(context), now);
+           });
 
   dict.Add("frame_schedulers", frame_schedulers_);
 }
@@ -636,39 +611,53 @@ void PageSchedulerImpl::WriteIntoTrace(perfetto::TracedValue context) const {
 void PageSchedulerImpl::AddQueueToWakeUpBudgetPool(
     MainThreadTaskQueue* task_queue,
     FrameOriginType frame_origin_type,
+    bool frame_visible,
     base::sequence_manager::LazyNow* lazy_now) {
-  task_queue->AddToBudgetPool(
-      lazy_now->Now(), GetWakeUpBudgetPool(task_queue, frame_origin_type));
+  DCHECK(!task_queue->GetWakeUpBudgetPool());
+  WakeUpBudgetPool* wake_up_budget_pool =
+      GetWakeUpBudgetPool(task_queue, frame_origin_type, frame_visible);
+  task_queue->AddToBudgetPool(lazy_now->Now(), wake_up_budget_pool);
+  task_queue->SetWakeUpBudgetPool(wake_up_budget_pool);
 }
 
 void PageSchedulerImpl::RemoveQueueFromWakeUpBudgetPool(
     MainThreadTaskQueue* task_queue,
-    FrameOriginType frame_origin_type,
     base::sequence_manager::LazyNow* lazy_now) {
-  task_queue->RemoveFromBudgetPool(
-      lazy_now->Now(), GetWakeUpBudgetPool(task_queue, frame_origin_type));
+  if (!task_queue->GetWakeUpBudgetPool())
+    return;
+  task_queue->RemoveFromBudgetPool(lazy_now->Now(),
+                                   task_queue->GetWakeUpBudgetPool());
+  task_queue->SetWakeUpBudgetPool(nullptr);
 }
 
 WakeUpBudgetPool* PageSchedulerImpl::GetWakeUpBudgetPool(
     MainThreadTaskQueue* task_queue,
-    FrameOriginType frame_origin_type) {
-  if (!task_queue->CanBeIntensivelyThrottled())
-    return normal_wake_up_budget_pool_;
+    FrameOriginType frame_origin_type,
+    bool frame_visible) {
+  const bool can_be_intensively_throttled =
+      task_queue->CanBeIntensivelyThrottled();
+  const bool is_same_origin =
+      frame_origin_type == FrameOriginType::kMainFrame ||
+      frame_origin_type == FrameOriginType::kSameOriginToMainFrame;
 
-  switch (frame_origin_type) {
-    case FrameOriginType::kMainFrame:
-    case FrameOriginType::kSameOriginToMainFrame:
-      return same_origin_intensive_wake_up_budget_pool_;
-    case FrameOriginType::kCrossOriginToMainFrame:
-      return cross_origin_intensive_wake_up_budget_pool_;
-    case FrameOriginType::kCount:
-      NOTREACHED();
-      return nullptr;
+  if (IsBackgrounded()) {
+    if (can_be_intensively_throttled) {
+      if (is_same_origin)
+        return same_origin_intensive_wake_up_budget_pool_.get();
+      else
+        return cross_origin_intensive_wake_up_budget_pool_.get();
+    }
+    return normal_wake_up_budget_pool_.get();
   }
+
+  if (!is_same_origin && !frame_visible)
+    return cross_origin_hidden_normal_wake_up_budget_pool_.get();
+
+  return normal_wake_up_budget_pool_.get();
 }
 
 CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
-  return cpu_time_budget_pool_;
+  return cpu_time_budget_pool_.get();
 }
 
 void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
@@ -676,12 +665,8 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
   if (cpu_time_budget_pool_)
     return;
 
-  if (!RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled())
-    return;
-
-  cpu_time_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
-          "background");
+  cpu_time_budget_pool_ = std::make_unique<CPUTimeBudgetPool>(
+      "background", &tracing_controller_, lazy_now->Now());
 
   BackgroundThrottlingSettings settings = GetBackgroundThrottlingSettings();
 
@@ -707,13 +692,16 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
     return;
 
   normal_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
-          "Page - Normal Wake Up Throttling");
+      std::make_unique<WakeUpBudgetPool>("Page - Normal Wake Up Throttling");
+  cross_origin_hidden_normal_wake_up_budget_pool_ =
+      std::make_unique<WakeUpBudgetPool>(
+          "Page - Normal Wake Up Throttling - Hidden & Crosss-Origin to Main "
+          "Frame");
   same_origin_intensive_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+      std::make_unique<WakeUpBudgetPool>(
           "Page - Intensive Wake Up Throttling - Same-Origin as Main Frame");
   cross_origin_intensive_wake_up_budget_pool_ =
-      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+      std::make_unique<WakeUpBudgetPool>(
           "Page - Intensive Wake Up Throttling - Cross-Origin to Main Frame");
 
   // The Wake Up Duration and Unaligned Wake Ups Allowance are constant and set
@@ -722,59 +710,45 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
   for (WakeUpBudgetPool* pool : AllWakeUpBudgetPools())
     pool->SetWakeUpDuration(kThrottledWakeUpDuration);
 
-  if (IsIntensiveWakeUpThrottlingEnabled()) {
-    same_origin_intensive_wake_up_budget_pool_
-        ->AllowUnalignedWakeUpIfNoRecentWakeUp();
-  }
+  same_origin_intensive_wake_up_budget_pool_
+      ->AllowLowerAlignmentIfNoRecentWakeUp(kDefaultThrottledWakeUpInterval);
 
   UpdateWakeUpBudgetPools(lazy_now);
-}
-
-void PageSchedulerImpl::OnThrottlingReported(
-    base::TimeDelta throttling_duration) {
-  if (throttling_duration < kMinimalBackgroundThrottlingDurationToReport)
-    return;
-
-  if (reported_background_throttling_since_navigation_)
-    return;
-  reported_background_throttling_since_navigation_ = true;
-
-  String message = String::Format(
-      "Timer tasks have taken too much time while the page was in the "
-      "background. "
-      "As a result, they have been deferred for %.3f seconds. "
-      "See https://www.chromestatus.com/feature/6172836527865856 "
-      "for more details",
-      throttling_duration.InSecondsF());
-
-  delegate_->ReportIntervention(message);
 }
 
 void PageSchedulerImpl::UpdatePolicyOnVisibilityChange(
     NotificationPolicy notification_policy) {
   base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
+      main_thread_scheduler_->GetTickClock());
 
-  if (page_visibility_ == PageVisibilityState::kVisible) {
+  if (IsPageVisible()) {
     is_cpu_time_throttled_ = false;
     do_throttle_cpu_time_callback_.Cancel();
     UpdateCPUTimeBudgetPool(&lazy_now);
 
     are_wake_ups_intensively_throttled_ = false;
     do_intensively_throttle_wake_ups_callback_.Cancel();
-    UpdateWakeUpBudgetPools(&lazy_now);
   } else {
     if (cpu_time_budget_pool_) {
       main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
           FROM_HERE, do_throttle_cpu_time_callback_.GetCallback(),
           kThrottlingDelayAfterBackgrounding);
     }
-    if (IsIntensiveWakeUpThrottlingEnabled()) {
-      main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
-          FROM_HERE, do_intensively_throttle_wake_ups_callback_.GetCallback(),
-          GetIntensiveWakeUpThrottlingGracePeriod());
-    }
+    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
+        FROM_HERE, do_intensively_throttle_wake_ups_callback_.GetCallback(),
+        GetIntensiveWakeUpThrottlingGracePeriod());
   }
+
+  if (ShouldFreezePage()) {
+    main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
+        FROM_HERE, do_freeze_page_callback_.GetCallback(),
+        freeze_on_network_idle_enabled_
+            ? delay_for_background_and_network_idle_tab_freezing_
+            : delay_for_background_tab_freezing_);
+  } else {
+    SetPageFrozenImpl(false, NotificationPolicy::kDoNotNotifyFrames);
+  }
+
   if (notification_policy == NotificationPolicy::kNotifyFrames)
     NotifyFrames();
 }
@@ -784,19 +758,17 @@ void PageSchedulerImpl::DoThrottleCPUTime() {
   is_cpu_time_throttled_ = true;
 
   base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
+      main_thread_scheduler_->GetTickClock());
   UpdateCPUTimeBudgetPool(&lazy_now);
   NotifyFrames();
 }
 
 void PageSchedulerImpl::DoIntensivelyThrottleWakeUps() {
-  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
-
   do_intensively_throttle_wake_ups_callback_.Cancel();
   are_wake_ups_intensively_throttled_ = true;
 
   base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
+      main_thread_scheduler_->GetTickClock());
   UpdateWakeUpBudgetPools(&lazy_now);
   NotifyFrames();
 }
@@ -816,31 +788,21 @@ void PageSchedulerImpl::UpdateCPUTimeBudgetPool(
 void PageSchedulerImpl::OnTitleOrFaviconUpdated() {
   if (!HasWakeUpBudgetPools())
     return;
-
   if (are_wake_ups_intensively_throttled_ &&
       !opted_out_from_aggressive_throttling_) {
     // When the title of favicon is updated, intensive throttling is inhibited
     // for same-origin frames. This enables alternating effects meant to grab
     // the user's attention. Cross-origin frames are not affected, since they
     // shouldn't be able to observe that the page title or favicon was updated.
-    base::TimeDelta time_to_inhibit_intensive_throttling =
-        GetTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate();
-
-    if (time_to_inhibit_intensive_throttling.is_zero()) {
-      // No inhibiting to be done.
-      return;
-    }
-
     had_recent_title_or_favicon_update_ = true;
     base::sequence_manager::LazyNow lazy_now(
-        main_thread_scheduler_->tick_clock());
+        main_thread_scheduler_->GetTickClock());
     UpdateWakeUpBudgetPools(&lazy_now);
-
     // Re-enable intensive throttling from a delayed task.
     reset_had_recent_title_or_favicon_update_.Cancel();
     main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
         FROM_HERE, reset_had_recent_title_or_favicon_update_.GetCallback(),
-        time_to_inhibit_intensive_throttling);
+        kTimeToInhibitIntensiveThrottlingOnTitleOrFaviconUpdate);
   }
 }
 
@@ -848,21 +810,21 @@ void PageSchedulerImpl::ResetHadRecentTitleOrFaviconUpdate() {
   had_recent_title_or_favicon_update_ = false;
 
   base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
+      main_thread_scheduler_->GetTickClock());
   UpdateWakeUpBudgetPools(&lazy_now);
 
   NotifyFrames();
 }
 
-base::TimeDelta PageSchedulerImpl::GetIntensiveWakeUpThrottlingDuration(
-    bool is_same_origin) {
+base::TimeDelta PageSchedulerImpl::GetIntensiveWakeUpThrottlingInterval(
+    bool is_same_origin) const {
   // Title and favicon changes only affect the same_origin wake up budget pool.
   if (is_same_origin && had_recent_title_or_favicon_update_)
     return kDefaultThrottledWakeUpInterval;
 
   if (are_wake_ups_intensively_throttled_ &&
       !opted_out_from_aggressive_throttling_)
-    return GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
+    return kIntensiveThrottledWakeUpInterval;
   else
     return kDefaultThrottledWakeUpInterval;
 }
@@ -872,10 +834,16 @@ void PageSchedulerImpl::UpdateWakeUpBudgetPools(
   if (!same_origin_intensive_wake_up_budget_pool_)
     return;
 
+  normal_wake_up_budget_pool_->SetWakeUpInterval(
+      lazy_now->Now(), IsBackgrounded()
+                           ? kDefaultThrottledWakeUpInterval
+                           : foreground_timers_throttled_wake_up_interval_);
+  cross_origin_hidden_normal_wake_up_budget_pool_->SetWakeUpInterval(
+      lazy_now->Now(), kDefaultThrottledWakeUpInterval);
   same_origin_intensive_wake_up_budget_pool_->SetWakeUpInterval(
-      lazy_now->Now(), GetIntensiveWakeUpThrottlingDuration(true));
+      lazy_now->Now(), GetIntensiveWakeUpThrottlingInterval(true));
   cross_origin_intensive_wake_up_budget_pool_->SetWakeUpInterval(
-      lazy_now->Now(), GetIntensiveWakeUpThrottlingDuration(false));
+      lazy_now->Now(), GetIntensiveWakeUpThrottlingInterval(false));
 }
 
 void PageSchedulerImpl::NotifyFrames() {
@@ -903,7 +871,12 @@ AgentGroupSchedulerImpl& PageSchedulerImpl::GetAgentGroupScheduler() {
 }
 
 bool PageSchedulerImpl::IsBackgrounded() const {
-  return page_visibility_ == PageVisibilityState::kHidden && !IsAudioPlaying();
+  // When virtual time is enabled, a freezing request would have its timeout
+  // expire immediately when a page is backgrounded, which is undesirable in
+  // headless mode. To prevent that, a page is never considerer backgrounded
+  // when virtual time is enabled.
+  return !IsPageVisible() && !IsAudioPlaying() &&
+         !main_thread_scheduler_->IsVirtualTimeEnabled();
 }
 
 bool PageSchedulerImpl::ShouldFreezePage() const {
@@ -924,8 +897,8 @@ void PageSchedulerImpl::OnLocalMainFrameNetworkAlmostIdle() {
 
   // If delay_for_background_and_network_idle_tab_freezing_ passes after
   // the page is not visible, we should freeze the page.
-  base::TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
-                           page_visibility_changed_time_;
+  base::TimeDelta passed =
+      main_thread_scheduler_->NowTicks() - page_visibility_changed_time_;
   if (passed < delay_for_background_and_network_idle_tab_freezing_)
     return;
 
@@ -938,8 +911,7 @@ void PageSchedulerImpl::DoFreezePage() {
   if (freeze_on_network_idle_enabled_) {
     DCHECK(delegate_);
     base::TimeDelta passed =
-        main_thread_scheduler_->GetTickClock()->NowTicks() -
-        page_visibility_changed_time_;
+        main_thread_scheduler_->NowTicks() - page_visibility_changed_time_;
     // The page will be frozen if:
     // (1) the main frame is remote, or,
     // (2) the local main frame's network is almost idle, or,
@@ -1064,6 +1036,8 @@ WebScopedVirtualTimePauser PageSchedulerImpl::CreateWebScopedVirtualTimePauser(
 bool PageSchedulerImpl::HasWakeUpBudgetPools() const {
   // All WakeUpBudgetPools should be initialized together.
   DCHECK_EQ(!!normal_wake_up_budget_pool_,
+            !!cross_origin_hidden_normal_wake_up_budget_pool_);
+  DCHECK_EQ(!!normal_wake_up_budget_pool_,
             !!same_origin_intensive_wake_up_budget_pool_);
   DCHECK_EQ(!!normal_wake_up_budget_pool_,
             !!cross_origin_intensive_wake_up_budget_pool_);
@@ -1071,11 +1045,23 @@ bool PageSchedulerImpl::HasWakeUpBudgetPools() const {
   return !!normal_wake_up_budget_pool_;
 }
 
+void PageSchedulerImpl::MoveTaskQueuesToCorrectWakeUpBudgetPoolAndUpdate() {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->MoveTaskQueuesToCorrectWakeUpBudgetPool();
+
+  // Update the WakeUpBudgetPools' interval everytime task queues change their
+  // attached WakeUpBudgetPools
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->GetTickClock());
+  UpdateWakeUpBudgetPools(&lazy_now);
+}
+
 std::array<WakeUpBudgetPool*, PageSchedulerImpl::kNumWakeUpBudgetPools>
 PageSchedulerImpl::AllWakeUpBudgetPools() {
-  return {normal_wake_up_budget_pool_,
-          same_origin_intensive_wake_up_budget_pool_,
-          cross_origin_intensive_wake_up_budget_pool_};
+  return {normal_wake_up_budget_pool_.get(),
+          cross_origin_hidden_normal_wake_up_budget_pool_.get(),
+          same_origin_intensive_wake_up_budget_pool_.get(),
+          cross_origin_intensive_wake_up_budget_pool_.get()};
 }
 
 // static

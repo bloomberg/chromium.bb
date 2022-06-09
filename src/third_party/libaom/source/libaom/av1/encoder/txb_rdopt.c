@@ -155,6 +155,7 @@ static AOM_FORCE_INLINE void update_coeff_eob(
     tran_low_t abs_qc_low;
     int64_t dist_low, rd_low;
     int rate_low;
+
     if (abs_qc == 1) {
       abs_qc_low = 0;
       dqc_low = qc_low = 0;
@@ -199,11 +200,13 @@ static AOM_FORCE_INLINE void update_coeff_eob(
       }
     }
 
-    if (rd_low < rd) {
-      lower_level = 1;
-      rd = rd_low;
-      rate = rate_low;
-      dist = dist_low;
+    if (sharpness == 0 || abs_qc > 1) {
+      if (rd_low < rd) {
+        lower_level = 1;
+        rd = rd_low;
+        rate = rate_low;
+        dist = dist_low;
+      }
     }
 
     if (sharpness == 0 && rd_new_eob < rd) {
@@ -238,11 +241,10 @@ static AOM_FORCE_INLINE void update_coeff_eob(
 static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
                                int nz_num, int *nz_ci, int64_t rdmult,
                                int skip_cost, int non_skip_cost,
-                               tran_low_t *qcoeff, tran_low_t *dqcoeff,
-                               int sharpness) {
+                               tran_low_t *qcoeff, tran_low_t *dqcoeff) {
   const int64_t rd = RDCOST(rdmult, *accu_rate + non_skip_cost, accu_dist);
   const int64_t rd_new_eob = RDCOST(rdmult, skip_cost, 0);
-  if (sharpness == 0 && rd_new_eob < rd) {
+  if (rd_new_eob < rd) {
     for (int i = 0; i < nz_num; ++i) {
       const int ci = nz_ci[i];
       qcoeff[ci] = 0;
@@ -327,7 +329,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
   const LV_MAP_EOB_COST *txb_eob_costs =
       &coeff_costs->eob_costs[eob_multi_size][plane_type];
 
-  const int rshift = sharpness + 2;
+  const int rshift = 2;
 
   const int64_t rdmult =
       (((int64_t)x->rdmult *
@@ -393,9 +395,9 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     default: assert(false);
   }
 
-  if (si == -1 && nz_num <= max_nz_num) {
+  if (si == -1 && nz_num <= max_nz_num && sharpness == 0) {
     update_skip(&accu_rate, accu_dist, &eob, nz_num, nz_ci, rdmult, skip_cost,
-                non_skip_cost, qcoeff, dqcoeff, sharpness);
+                non_skip_cost, qcoeff, dqcoeff);
   }
 
 #define UPDATE_COEFF_SIMPLE_CASE(tx_class_literal)                             \

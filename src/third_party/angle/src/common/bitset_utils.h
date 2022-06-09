@@ -21,13 +21,25 @@
 
 namespace angle
 {
+// Given x, create 1 << x.
 template <typename BitsT, typename ParamT>
-constexpr static BitsT Bit(ParamT x)
+constexpr BitsT Bit(ParamT x)
 {
     // It's undefined behavior if the shift size is equal to or larger than the width of the type.
     ASSERT(static_cast<size_t>(x) < sizeof(BitsT) * 8);
 
     return (static_cast<BitsT>(1) << static_cast<size_t>(x));
+}
+
+// Given x, create (1 << x) - 1, i.e. a mask with x bits set.
+template <typename BitsT, typename ParamT>
+constexpr BitsT BitMask(ParamT x)
+{
+    if (static_cast<size_t>(x) == 0)
+    {
+        return 0;
+    }
+    return ((Bit<BitsT>(static_cast<ParamT>(static_cast<size_t>(x) - 1)) - 1) << 1) | 1;
 }
 
 template <size_t N, typename BitsT, typename ParamT = std::size_t>
@@ -151,10 +163,7 @@ class BitSetT final
     constexpr ParamT last() const;
 
     // Produces a mask of ones up to the "x"th bit.
-    constexpr static BitsT Mask(std::size_t x)
-    {
-        return ((Bit<BitsT>(static_cast<ParamT>(x - 1)) - 1) << 1) + 1;
-    }
+    constexpr static BitsT Mask(std::size_t x) { return BitMask<BitsT>(static_cast<ParamT>(x)); }
 
   private:
     BitsT mBits;
@@ -728,13 +737,14 @@ template <std::size_t N>
 typename BitSetArray<N>::Iterator &BitSetArray<N>::Iterator::operator++()
 {
     ++mCurrentIterator;
-    if (mCurrentIterator == mCurrentParent->mBaseBitSetArray[mIndex].end())
+    while (mCurrentIterator == mCurrentParent->mBaseBitSetArray[mIndex].end())
     {
         mIndex++;
-        if (mIndex < mCurrentParent->kArraySize)
+        if (mIndex >= mCurrentParent->kArraySize)
         {
-            mCurrentIterator = mCurrentParent->mBaseBitSetArray[mIndex].begin();
+            break;
         }
+        mCurrentIterator = mCurrentParent->mBaseBitSetArray[mIndex].begin();
     }
     return *this;
 }

@@ -8,9 +8,10 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/ozone/public/input_controller.h"
@@ -27,6 +28,10 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   InputControllerEvdev(KeyboardEvdev* keyboard,
                        MouseButtonMapEvdev* mouse_button_map,
                        MouseButtonMapEvdev* pointing_stick_button_map);
+
+  InputControllerEvdev(const InputControllerEvdev&) = delete;
+  InputControllerEvdev& operator=(const InputControllerEvdev&) = delete;
+
   ~InputControllerEvdev() override;
 
   // Initialize device factory. This would be in the constructor if it was
@@ -37,6 +42,7 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void set_has_mouse(bool has_mouse);
   void set_has_pointing_stick(bool has_pointing_stick);
   void set_has_touchpad(bool has_touchpad);
+  void set_has_haptic_touchpad(bool has_haptic_touchpad);
 
   void SetInputDevicesEnabled(bool enabled);
 
@@ -44,6 +50,7 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   bool HasMouse() override;
   bool HasPointingStick() override;
   bool HasTouchpad() override;
+  bool HasHapticTouchpad() override;
   bool IsCapsLockEnabled() override;
   void SetCapsLockEnabled(bool enabled) override;
   void SetNumLockEnabled(bool enabled) override;
@@ -57,6 +64,8 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   void SetTouchEventLoggingEnabled(bool enabled) override;
   void SetTouchpadSensitivity(int value) override;
   void SetTouchpadScrollSensitivity(int value) override;
+  void SetTouchpadHapticFeedback(bool enabled) override;
+  void SetTouchpadHapticClickSensitivity(int value) override;
   void SetTapToClick(bool enabled) override;
   void SetThreeFingerClick(bool enabled) override;
   void SetTapDragging(bool enabled) override;
@@ -91,6 +100,11 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
                            uint8_t amplitude,
                            uint16_t duration_millis) override;
   void StopVibration(int id) override;
+  void PlayHapticTouchpadEffect(HapticTouchpadEffect effect,
+                                HapticTouchpadEffectStrength strength) override;
+  void SetHapticTouchpadEffectForNextButtonRelease(
+      HapticTouchpadEffect effect,
+      HapticTouchpadEffectStrength strength) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InputControllerEvdevTest, AccelerationSuspension);
@@ -142,13 +156,13 @@ class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
   bool has_mouse_ = false;
   bool has_pointing_stick_ = false;
   bool has_touchpad_ = false;
+  // if has_haptic_touchpad_ is true, then has_touchpad_ is also true.
+  bool has_haptic_touchpad_ = false;
 
   // LED state.
   bool caps_lock_led_state_ = false;
 
   base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };
 
 }  // namespace ui

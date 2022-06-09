@@ -6,8 +6,6 @@
     "noEmitOnError": true,
     "pretty": true,
 
-    "incremental": true,
-
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
@@ -15,6 +13,7 @@
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strict": true
+    "strict": true,
+    "typeRoots": []
   }
 }

@@ -8,14 +8,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
-#include "base/observer_list.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace chromeos {
+namespace ash {
 class VmStartingObserver;
-}  // namespace chromeos
+}
 
 namespace plugin_vm {
 
@@ -39,10 +37,8 @@ class PluginVmManager : public KeyedService {
       base::OnceCallback<void(bool success)> callback) const = 0;
 
   // Add/remove vm starting observers.
-  virtual void AddVmStartingObserver(
-      chromeos::VmStartingObserver* observer) = 0;
-  virtual void RemoveVmStartingObserver(
-      chromeos::VmStartingObserver* observer) = 0;
+  virtual void AddVmStartingObserver(ash::VmStartingObserver* observer) = 0;
+  virtual void RemoveVmStartingObserver(ash::VmStartingObserver* observer) = 0;
 
   virtual vm_tools::plugin_dispatcher::VmState vm_state() const = 0;
 

@@ -36,7 +36,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/symantec_certs.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
 #include "net/extras/preload_data/decoder.h"
@@ -393,7 +392,12 @@ void SetTransportSecurityStateSourceForTesting(
 }
 
 TransportSecurityState::TransportSecurityState()
-    : TransportSecurityState(std::vector<std::string>()) {}
+    : TransportSecurityState(std::vector<std::string>()) {
+  // By default the CT log list is treated as last updated at build time (since
+  // a compiled-in list is used), this is overridden if the list is dynamically
+  // updated.
+  ct_log_list_last_update_time_ = base::GetBuildTime();
+}
 
 TransportSecurityState::TransportSecurityState(
     std::vector<std::string> hsts_host_bypass_list)
@@ -482,6 +486,10 @@ TransportSecurityState::CheckCTRequirements(
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
+  // If CT emergency disable flag is set, we don't require CT for any host.
+  if (ct_emergency_disable_)
+    return CT_NOT_REQUIRED;
+
   // CT is not required if the certificate does not chain to a publicly
   // trusted root certificate. Testing can override this, as certain tests
   // rely on using a non-publicly-trusted root.
@@ -503,9 +511,6 @@ TransportSecurityState::CheckCTRequirements(
   ExpectCTState state;
   if (IsDynamicExpectCTEnabled() &&
       GetDynamicExpectCTState(hostname, network_isolation_key, &state)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup",
-        policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
     if (!complies && expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
       MaybeNotifyExpectCTFailed(
@@ -601,6 +606,10 @@ void TransportSecurityState::SetExpectCTReporter(
 void TransportSecurityState::SetRequireCTDelegate(RequireCTDelegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   require_ct_delegate_ = delegate;
+}
+
+void TransportSecurityState::SetCTLogListUpdateTime(base::Time update_time) {
+  ct_log_list_last_update_time_ = update_time;
 }
 
 void TransportSecurityState::AddHSTSInternal(
@@ -754,8 +763,7 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
     return PKPStatus::VIOLATED;
   sent_hpkp_reports_cache_.Put(
       report_cache_key, true, base::TimeTicks::Now(),
-      base::TimeTicks::Now() +
-          base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
+      base::TimeTicks::Now() + base::Minutes(kTimeToRememberReportsMins));
 
   report_sender_->Send(pkp_state.report_uri, "application/json; charset=utf-8",
                        serialized_report, network_isolation_key,
@@ -769,7 +777,7 @@ bool TransportSecurityState::GetStaticExpectCTState(
     ExpectCTState* expect_ct_state) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!IsBuildTimely())
+  if (!IsCTLogListTimely())
     return false;
 
   PreloadResult result;
@@ -805,8 +813,7 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
   }
   sent_expect_ct_reports_cache_.Put(
       report_cache_key, true, base::TimeTicks::Now(),
-      base::TimeTicks::Now() +
-          base::TimeDelta::FromMinutes(kTimeToRememberReportsMins));
+      base::TimeTicks::Now() + base::Minutes(kTimeToRememberReportsMins));
 
   expect_ct_reporter_->OnExpectCTFailed(
       host_port_pair, report_uri, expiration, validated_certificate_chain,
@@ -1015,16 +1022,12 @@ void TransportSecurityState::ProcessExpectCTHeader(
   bool enforce;
   GURL report_uri;
   bool parsed = ParseExpectCTHeader(value, &max_age, &enforce, &report_uri);
-  UMA_HISTOGRAM_BOOLEAN("Net.ExpectCTHeader.ParseSuccess", parsed);
   if (!parsed)
     return;
   // Do not persist Expect-CT headers if the connection was not chained to a
   // public root or did not comply with CT policy.
   if (!ssl_info.is_issued_by_known_root)
     return;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.ExpectCTHeader.PolicyComplianceOnHeaderProcessing",
-      ssl_info.ct_policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
   if (ssl_info.ct_policy_compliance !=
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
     // If an Expect-CT header is observed over a non-compliant connection, the
@@ -1068,7 +1071,7 @@ void TransportSecurityState::ClearReportCachesForTesting() {
   sent_expect_ct_reports_cache_.Clear();
 }
 
-size_t TransportSecurityState::num_expect_ct_entries() const {
+size_t TransportSecurityState::num_expect_ct_entries_for_testing() const {
   return enabled_expect_ct_hosts_.size();
 }
 
@@ -1411,12 +1414,10 @@ void TransportSecurityState::MaybePruneExpectCTState() {
     return;
 
   earliest_next_prune_expect_ct_time_ =
-      now +
-      base::TimeDelta::FromSeconds(features::kExpectCTPruneDelaySecs.Get());
+      now + base::Seconds(features::kExpectCTPruneDelaySecs.Get());
 
   base::Time last_prunable_observation_time =
-      now -
-      base::TimeDelta::FromDays(features::kExpectCTSafeFromPruneDays.Get());
+      now - base::Days(features::kExpectCTSafeFromPruneDays.Get());
 
   // Cache this locally, so don't have to repeatedly query the value.
   size_t expect_ct_prune_min = features::kExpectCTPruneMin.Get();
@@ -1525,6 +1526,18 @@ bool TransportSecurityState::ExpectCTPruningSorter(
                   it1->second.last_observed) <
          std::tie(is_not_transient2, it2->second.enforce,
                   it2->second.last_observed);
+}
+
+bool TransportSecurityState::IsCTLogListTimely() const {
+  // Preloaded Expect-CT is enforced if the CT log list is timely. Note that
+  // unlike HSTS and HPKP, the date of the preloaded list itself (i.e.
+  // base::GetBuildTime()) is not directly consulted. Consulting the
+  // build time would allow sites that have subsequently disabled Expect-CT
+  // to opt-out. However, because as of June 2021, all unexpired certificates
+  // are already expected to comply with the policies expressed by Expect-CT,
+  // there's no need to offer an opt-out.
+  return (base::Time::Now() - ct_log_list_last_update_time_).InDays() <
+         70 /* 10 weeks */;
 }
 
 }  // namespace net

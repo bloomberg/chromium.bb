@@ -12,10 +12,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/chromeos_buildflags.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -50,11 +49,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   using GetServiceRecordsErrorCallback =
       base::OnceCallback<void(BluetoothServiceRecordBlueZ::ErrorCode)>;
 
+  BluetoothDeviceBlueZ(const BluetoothDeviceBlueZ&) = delete;
+  BluetoothDeviceBlueZ& operator=(const BluetoothDeviceBlueZ&) = delete;
+
   ~BluetoothDeviceBlueZ() override;
 
   // BluetoothDevice override
   uint32_t GetBluetoothClass() const override;
   device::BluetoothTransport GetType() const override;
+  std::string GetIdentifier() const override;
   std::string GetAddress() const override;
   AddressType GetAddressType() const override;
   VendorIDSource GetVendorIDSource() const override;
@@ -68,9 +71,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
-#if defined(OS_CHROMEOS)
-  bool IsBlockedByPolicy() const override;
-#endif
   UUIDSet GetUUIDs() const override;
   absl::optional<int8_t> GetInquiryRSSI() const override;
   absl::optional<int8_t> GetInquiryTxPower() const override;
@@ -82,8 +82,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
                             base::OnceClosure callback,
                             ErrorCallback error_callback) override;
   void Connect(device::BluetoothDevice::PairingDelegate* pairing_delegate,
-               base::OnceClosure callback,
-               ConnectErrorCallback error_callback) override;
+               ConnectCallback callback) override;
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
@@ -105,14 +104,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void SetGattServicesDiscoveryComplete(bool complete) override;
   bool IsGattServicesDiscoveryComplete() const override;
   void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
-            base::OnceClosure callback,
-            ConnectErrorCallback error_callback) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+            ConnectCallback callback) override;
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void ExecuteWrite(base::OnceClosure callback,
                     ExecuteWriteErrorCallback error_callback) override;
   void AbortWrite(base::OnceClosure callback,
                   AbortWriteErrorCallback error_callback) override;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Returns the complete list of service records discovered for on this
   // device via SDP. If called before discovery is complete, it may return
@@ -227,7 +225,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
                                 const std::string& error_name,
                                 const std::string& error_message);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnExecuteWriteError(ExecuteWriteErrorCallback error_callback,
                            const std::string& error_name,
                            const std::string& error_message);
@@ -235,36 +233,34 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnAbortWriteError(AbortWriteErrorCallback error_callback,
                          const std::string& error_name,
                          const std::string& error_message);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Internal method to initiate a connection to this device, and methods called
   // by dbus:: on completion of the D-Bus method call.
-  void ConnectInternal(base::OnceClosure callback,
-                       ConnectErrorCallback error_callback);
-  void OnConnect(base::OnceClosure callback);
-  void OnConnectError(ConnectErrorCallback error_callback,
+  void ConnectInternal(ConnectCallback callback);
+  void OnConnect(ConnectCallback callback);
+  void OnConnectError(ConnectCallback callback,
                       const std::string& error_name,
                       const std::string& error_message);
 
 // Once DisconnectLE is supported on Linux, this buildflag will not be necessary
 // (this bluez code is only run on Chrome OS and Linux).
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnDisconnectLEError(const std::string& error_name,
                            const std::string& error_message);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Called by dbus:: on completion of the D-Bus method call to pair the device,
   // made inside |Connect()|.
-  void OnPairDuringConnect(base::OnceClosure callback,
-                           ConnectErrorCallback error_callback);
-  void OnPairDuringConnectError(ConnectErrorCallback error_callback,
+  void OnPairDuringConnect(ConnectCallback callback);
+  void OnPairDuringConnectError(ConnectCallback callback,
                                 const std::string& error_name,
                                 const std::string& error_message);
 
   // Called by dbus: on completion of the D-Bus method call to pair the device,
   // made inside |Pair()|.
-  void OnPair(base::OnceClosure callback);
-  void OnPairError(ConnectErrorCallback error_callback,
+  void OnPair(ConnectCallback callback);
+  void OnPairError(ConnectCallback callback,
                    const std::string& error_name,
                    const std::string& error_message);
 
@@ -288,12 +284,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
                          const std::string& error_name,
                          const std::string& error_message);
 
-  // Called by dbus:: on failure of the D-Bus method call to unpair the device;
-  // there is no matching completion call since this object is deleted in the
-  // process of unpairing.
-  void OnForgetError(ErrorCallback error_callback,
-                     const std::string& error_name,
-                     const std::string& error_message);
+  // Called by dbus:: on successful completion of the D-Bus method to remove the
+  // device.
+  void OnForgetSuccess(base::OnceClosure callback);
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;
@@ -319,8 +312,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothDeviceBlueZ> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceBlueZ);
 };
 
 }  // namespace bluez

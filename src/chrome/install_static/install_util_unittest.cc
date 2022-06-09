@@ -8,7 +8,7 @@
 
 #include <tuple>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/win_util.h"
@@ -25,22 +25,6 @@ using ::testing::ElementsAre;
 using ::testing::StrCaseEq;
 
 namespace install_static {
-
-// Tests the MatchPattern function in the install_static library.
-TEST(InstallStaticTest, MatchPattern) {
-  EXPECT_TRUE(MatchPattern(L"", L""));
-  EXPECT_TRUE(MatchPattern(L"", L"*"));
-  EXPECT_FALSE(MatchPattern(L"", L"*a"));
-  EXPECT_FALSE(MatchPattern(L"", L"abc"));
-  EXPECT_TRUE(MatchPattern(L"Hello1234", L"He??o*1*"));
-  EXPECT_TRUE(MatchPattern(L"Foo", L"F*?"));
-  EXPECT_TRUE(MatchPattern(L"Foo", L"F*"));
-  EXPECT_FALSE(MatchPattern(L"Foo", L"F*b"));
-  EXPECT_TRUE(MatchPattern(L"abcd", L"*c*d"));
-  EXPECT_TRUE(MatchPattern(L"abcd", L"*?c*d"));
-  EXPECT_FALSE(MatchPattern(L"abcd", L"abcd*efgh"));
-  EXPECT_TRUE(MatchPattern(L"foobarabc", L"*bar*"));
-}
 
 // Tests the install_static::GetSwitchValueFromCommandLine function.
 TEST(InstallStaticTest, GetSwitchValueFromCommandLineTest) {
@@ -285,6 +269,10 @@ TEST(InstallStaticTest, BrowserProcessTest) {
 class InstallStaticUtilTest
     : public ::testing::TestWithParam<
           std::tuple<InstallConstantIndex, const char*>> {
+ public:
+  InstallStaticUtilTest(const InstallStaticUtilTest&) = delete;
+  InstallStaticUtilTest& operator=(const InstallStaticUtilTest&) = delete;
+
  protected:
   InstallStaticUtilTest()
       : system_level_(std::string(std::get<1>(GetParam())) != "user"),
@@ -355,8 +343,6 @@ class InstallStaticUtilTest
   const HKEY root_key_;
   const nt::ROOT_KEY nt_root_key_;
   registry_util::RegistryOverrideManager override_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstallStaticUtilTest);
 };
 
 TEST_P(InstallStaticUtilTest, GetChromeInstallSubDirectory) {

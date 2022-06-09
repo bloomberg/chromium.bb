@@ -10,12 +10,12 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
-#include "chromeos/components/drivefs/mojom/drivefs.mojom-forward.h"
 #include "components/drive/file_errors.h"
 #include "storage/browser/file_system/file_system_url.h"
 
@@ -98,7 +98,7 @@ class SingleEntryPropertiesGetterForDriveFs {
 
 // Fills out IDL IconSet struct with the provided icon set.
 void FillIconSet(extensions::api::file_manager_private::IconSet* output,
-                 const chromeos::file_system_provider::IconSet& input);
+                 const ash::file_system_provider::IconSet& input);
 
 // Converts the |volume| to VolumeMetadata to communicate with JavaScript via
 // private API.

@@ -10,9 +10,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "base/version.h"
 
@@ -47,6 +45,9 @@ class OmahaService {
   static void Start(std::unique_ptr<network::PendingSharedURLLoaderFactory>
                         pending_url_loader_factory,
                     const UpgradeRecommendedCallback& callback);
+
+  OmahaService(const OmahaService&) = delete;
+  OmahaService& operator=(const OmahaService&) = delete;
 
   // Performs an immediate check to see if the device is up to date. Start must
   // have been previously called.
@@ -233,8 +234,6 @@ class OmahaService {
 
   // Stores the callback for one off Omaha checks.
   OneOffCallback one_off_check_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmahaService);
 };
 
 #endif  // IOS_CHROME_BROWSER_OMAHA_OMAHA_SERVICE_H_

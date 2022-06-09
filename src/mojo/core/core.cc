@@ -14,7 +14,6 @@
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/rand_util.h"
@@ -42,6 +41,7 @@
 #include "mojo/core/shared_buffer_dispatcher.h"
 #include "mojo/core/user_message_impl.h"
 #include "mojo/core/watcher_dispatcher.h"
+#include "mojo/public/cpp/platform/platform_handle_internal.h"
 
 namespace mojo {
 namespace core {
@@ -87,6 +87,9 @@ class ProcessDisconnectHandler {
   ProcessDisconnectHandler(MojoProcessErrorHandler handler, uintptr_t context)
       : handler_(handler), context_(context) {}
 
+  ProcessDisconnectHandler(const ProcessDisconnectHandler&) = delete;
+  ProcessDisconnectHandler& operator=(const ProcessDisconnectHandler&) = delete;
+
   ~ProcessDisconnectHandler() {
     InvokeProcessErrorCallback(handler_, context_, std::string(),
                                MOJO_PROCESS_ERROR_FLAG_DISCONNECTED);
@@ -95,8 +98,6 @@ class ProcessDisconnectHandler {
  private:
   const MojoProcessErrorHandler handler_;
   const uintptr_t context_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProcessDisconnectHandler);
 };
 
 void RunMojoProcessErrorHandler(
@@ -449,8 +450,11 @@ MojoResult Core::GetMessageData(MojoMessageHandle message_handle,
   }
 
   RequestContext request_context;
-  return message->ExtractSerializedHandles(
+  Dispatcher::SetExtractingHandlesFromMessage(true);
+  MojoResult result = message->ExtractSerializedHandles(
       UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
+  Dispatcher::SetExtractingHandlesFromMessage(false);
+  return result;
 }
 
 MojoResult Core::SetMessageContext(
@@ -1032,7 +1036,7 @@ MojoResult Core::WrapPlatformSharedMemoryRegion(
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::UnguessableToken token =
-      base::UnguessableToken::Deserialize(guid->high, guid->low);
+      mojo::internal::PlatformHandleInternal::UnmarshalUnguessableToken(guid);
 
   base::subtle::PlatformSharedMemoryRegion::Mode mode;
   switch (access_mode) {
@@ -1104,9 +1108,8 @@ MojoResult Core::UnwrapPlatformSharedMemoryRegion(
   DCHECK(size);
   *size = region.GetSize();
 
-  base::UnguessableToken token = region.GetGUID();
-  guid->high = token.GetHighForSerialization();
-  guid->low = token.GetLowForSerialization();
+  *guid = mojo::internal::PlatformHandleInternal::MarshalUnguessableToken(
+      region.GetGUID());
 
   DCHECK(access_mode);
   switch (region.GetMode()) {

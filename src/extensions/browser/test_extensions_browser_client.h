@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -96,9 +97,8 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       const base::FilePath& resource_relative_path,
       int resource_id,
-      const std::string& content_security_policy,
-      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-      bool send_cors_header) override;
+      scoped_refptr<net::HttpResponseHeaders> headers,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) override;
 
   bool AllowCrossRendererResourceLoad(
       const network::ResourceRequest& request,
@@ -154,17 +154,17 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
 
  private:
   // Not owned.
-  content::BrowserContext* main_context_ = nullptr;
+  raw_ptr<content::BrowserContext> main_context_ = nullptr;
   // Not owned.
-  content::BrowserContext* incognito_context_ = nullptr;
+  raw_ptr<content::BrowserContext> incognito_context_ = nullptr;
   // Not owned.
-  content::BrowserContext* lock_screen_context_ = nullptr;
+  raw_ptr<content::BrowserContext> lock_screen_context_ = nullptr;
 
   // Not owned.
-  ProcessManagerDelegate* process_manager_delegate_ = nullptr;
+  raw_ptr<ProcessManagerDelegate> process_manager_delegate_ = nullptr;
 
   // Not owned.
-  ExtensionSystemProvider* extension_system_factory_ = nullptr;
+  raw_ptr<ExtensionSystemProvider> extension_system_factory_ = nullptr;
 
   std::unique_ptr<ExtensionCache> extension_cache_;
 

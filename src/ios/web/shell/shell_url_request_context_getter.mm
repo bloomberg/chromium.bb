@@ -93,11 +93,14 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     storage_->set_ct_policy_enforcer(
         base::WrapUnique(new net::DefaultCTPolicyEnforcer));
     storage_->set_quic_context(std::make_unique<net::QuicContext>());
+    base::FilePath transport_security_state_file_path =
+        base_path_.Append(FILE_PATH_LITERAL("TransportSecurity"));
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
-            url_request_context_->transport_security_state(), base_path_,
+            url_request_context_->transport_security_state(),
             base::ThreadPool::CreateSequencedTaskRunner(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+            transport_security_state_file_path);
     storage_->set_http_server_properties(
         std::make_unique<net::HttpServerProperties>());
 
@@ -108,7 +111,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::HttpAuthHandlerFactory::CreateDefault());
     storage_->set_host_resolver(std::move(host_resolver));
 
-    net::HttpNetworkSession::Context network_session_context;
+    net::HttpNetworkSessionContext network_session_context;
     network_session_context.cert_verifier =
         url_request_context_->cert_verifier();
     network_session_context.transport_security_state =
@@ -136,7 +139,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     storage_->set_http_network_session(
         std::make_unique<net::HttpNetworkSession>(
-            net::HttpNetworkSession::Params(), network_session_context));
+            net::HttpNetworkSessionParams(), network_session_context));
     storage_->set_http_transaction_factory(std::make_unique<net::HttpCache>(
         storage_->http_network_session(), std::move(main_backend),
         true /* set_up_quic_server_info */));

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_link_element.h"
@@ -56,7 +55,9 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
@@ -187,7 +188,7 @@ static inline T ToSmallerInt(v8::Isolate* isolate,
       return 0;
     }
     if (configuration == kClamp)
-      return clampTo<T>(result);
+      return ClampTo<T>(result);
     result %= LimitsTrait::kNumberOfValues;
     return static_cast<T>(result > LimitsTrait::kMaxValue
                               ? result - LimitsTrait::kNumberOfValues
@@ -218,7 +219,7 @@ static inline T ToSmallerInt(v8::Isolate* isolate,
     return 0;
 
   if (configuration == kClamp)
-    return clampTo<T>(number_value);
+    return ClampTo<T>(number_value);
 
   if (std::isinf(number_value))
     return 0;
@@ -251,7 +252,7 @@ static inline T ToSmallerUInt(v8::Isolate* isolate,
       return 0;
     }
     if (configuration == kClamp)
-      return clampTo<T>(result);
+      return ClampTo<T>(result);
     return static_cast<T>(result);
   }
 
@@ -280,7 +281,7 @@ static inline T ToSmallerUInt(v8::Isolate* isolate,
     return 0;
 
   if (configuration == kClamp)
-    return clampTo<T>(number_value);
+    return ClampTo<T>(number_value);
 
   if (std::isinf(number_value))
     return 0;
@@ -352,7 +353,7 @@ int32_t ToInt32Slow(v8::Isolate* isolate,
     return 0;
 
   if (configuration == kClamp)
-    return clampTo<int32_t>(number_value);
+    return ClampTo<int32_t>(number_value);
 
   if (std::isinf(number_value))
     return 0;
@@ -381,7 +382,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
       return 0;
     }
     DCHECK_EQ(configuration, kClamp);
-    return clampTo<uint32_t>(result);
+    return ClampTo<uint32_t>(result);
   }
 
   // Can the value be converted to a number?
@@ -404,7 +405,7 @@ uint32_t ToUInt32Slow(v8::Isolate* isolate,
     return 0;
 
   if (configuration == kClamp)
-    return clampTo<uint32_t>(number_value);
+    return ClampTo<uint32_t>(number_value);
 
   if (std::isinf(number_value))
     return 0;
@@ -458,7 +459,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
       return 0;
     }
     DCHECK_EQ(configuration, kClamp);
-    return clampTo<uint64_t>(result);
+    return ClampTo<uint64_t>(result);
   }
 
   v8::Local<v8::Number> number_object;
@@ -481,7 +482,7 @@ uint64_t ToUInt64Slow(v8::Isolate* isolate,
     return 0;
 
   if (configuration == kClamp)
-    return clampTo<uint64_t>(number_value);
+    return ClampTo<uint64_t>(number_value);
 
   return DoubleToInteger(number_value);
 }
@@ -553,7 +554,7 @@ static bool HasUnmatchedSurrogates(const String& string) {
 
 // Replace unmatched surrogates with REPLACEMENT CHARACTER U+FFFD.
 String ReplaceUnmatchedSurrogates(String string) {
-  // This roughly implements http://heycam.github.io/webidl/#dfn-obtain-unicode
+  // This roughly implements https://webidl.spec.whatwg.org/#dfn-obtain-unicode
   // but since Blink strings are 16-bits internally, the output is simply
   // re-encoded to UTF-16.
 
@@ -780,8 +781,7 @@ v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame* frame,
 ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
   DCHECK(context);
   if (LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(context)) {
-    if (LocalFrame* frame = window->GetFrame())
-      return ToScriptState(frame, world);
+    return ToScriptState(window->GetFrame(), world);
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
     if (WorkerOrWorkletScriptController* script = scope->ScriptController())
       return script->GetScriptState();
@@ -790,6 +790,8 @@ ScriptState* ToScriptState(ExecutionContext* context, DOMWrapperWorld& world) {
 }
 
 ScriptState* ToScriptState(LocalFrame* frame, DOMWrapperWorld& world) {
+  if (!frame)
+    return nullptr;
   v8::HandleScope handle_scope(ToIsolate(frame));
   return ToScriptStateImpl(frame, world);
 }

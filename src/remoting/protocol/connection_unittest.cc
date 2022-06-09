@@ -6,8 +6,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -127,7 +127,7 @@ static constexpr int kSamplesPerAudioPacket =
     kAudioSampleRate * kAudioPacketDurationMs /
     base::Time::kMillisecondsPerSecond;
 static constexpr base::TimeDelta kAudioPacketDuration =
-    base::TimeDelta::FromMilliseconds(kAudioPacketDurationMs);
+    base::Milliseconds(kAudioPacketDurationMs);
 
 static const int kAudioChannels = 2;
 
@@ -251,7 +251,7 @@ class FakeAudioPlayer : public AudioStub {
  private:
   base::ThreadChecker thread_checker_;
   std::vector<char> data_;
-  base::RunLoop* run_loop_ = nullptr;
+  raw_ptr<base::RunLoop> run_loop_ = nullptr;
   size_t samples_expected_ = 0;
 
   base::WeakPtrFactory<FakeAudioPlayer> weak_factory_{this};
@@ -271,6 +271,9 @@ class ConnectionTest : public testing::Test,
     audio_encode_thread_.Start();
     audio_decode_thread_.Start();
   }
+
+  ConnectionTest(const ConnectionTest&) = delete;
+  ConnectionTest& operator=(const ConnectionTest&) = delete;
 
   void DestroyHost() {
     host_connection_.reset();
@@ -292,15 +295,13 @@ class ConnectionTest : public testing::Test,
       WebrtcTransport::SetDataChannelPollingIntervalForTests(base::TimeDelta());
 
       host_connection_ = std::make_unique<WebrtcConnectionToClient>(
-          base::WrapUnique(host_session_),
+          base::WrapUnique(host_session_.get()),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
-          task_environment_.GetMainThreadTaskRunner(),
           task_environment_.GetMainThreadTaskRunner());
       client_connection_ = std::make_unique<WebrtcConnectionToHost>();
-
     } else {
       host_connection_ = std::make_unique<IceConnectionToClient>(
-          base::WrapUnique(host_session_),
+          base::WrapUnique(host_session_.get()),
           TransportContext::ForTests(protocol::TransportRole::SERVER),
           task_environment_.GetMainThreadTaskRunner(),
           task_environment_.GetMainThreadTaskRunner());
@@ -446,7 +447,7 @@ class ConnectionTest : public testing::Test,
   MockHostStub host_stub_;
   MockInputStub host_input_stub_;
   std::unique_ptr<ConnectionToClient> host_connection_;
-  FakeSession* host_session_;  // Owned by |host_connection_|.
+  raw_ptr<FakeSession> host_session_;  // Owned by |host_connection_|.
   bool host_connected_ = false;
 
   MockConnectionToHostEventCallback client_event_handler_;
@@ -455,16 +456,13 @@ class ConnectionTest : public testing::Test,
   FakeVideoRenderer client_video_renderer_;
   FakeAudioPlayer client_audio_player_;
   std::unique_ptr<ConnectionToHost> client_connection_;
-  FakeSession* client_session_;  // Owned by |client_connection_|.
+  raw_ptr<FakeSession> client_session_;  // Owned by |client_connection_|.
   std::unique_ptr<FakeSession> owned_client_session_;
   bool client_connected_ = false;
 
   base::Thread video_encode_thread_;
   base::Thread audio_encode_thread_;
   base::Thread audio_decode_thread_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ConnectionTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(Ice, ConnectionTest, ::testing::Values(false));
@@ -483,7 +481,13 @@ TEST_P(ConnectionTest, RejectConnection) {
   client_session_->event_handler()->OnSessionStateChange(Session::CLOSED);
 }
 
-TEST_P(ConnectionTest, Disconnect) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Disconnect DISABLED_Disconnect
+#else
+#define MAYBE_Disconnect Disconnect
+#endif
+TEST_P(ConnectionTest, MAYBE_Disconnect) {
   Connect();
 
   EXPECT_CALL(client_event_handler_,
@@ -494,7 +498,13 @@ TEST_P(ConnectionTest, Disconnect) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(ConnectionTest, Control) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Control DISABLED_Control
+#else
+#define MAYBE_Control Control
+#endif
+TEST_P(ConnectionTest, MAYBE_Control) {
   Connect();
 
   Capabilities capabilities_msg;
@@ -512,7 +522,13 @@ TEST_P(ConnectionTest, Control) {
   run_loop.Run();
 }
 
-TEST_P(ConnectionTest, Events) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Events DISABLED_Events
+#else
+#define MAYBE_Events Events
+#endif
+TEST_P(ConnectionTest, MAYBE_Events) {
   Connect();
 
   KeyEvent event;
@@ -530,7 +546,13 @@ TEST_P(ConnectionTest, Events) {
   run_loop.Run();
 }
 
-TEST_P(ConnectionTest, Video) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_Video DISABLED_Video
+#else
+#define MAYBE_Video Video
+#endif
+TEST_P(ConnectionTest, MAYBE_Video) {
   Connect();
 
   std::unique_ptr<VideoStream> video_stream =
@@ -543,12 +565,18 @@ TEST_P(ConnectionTest, Video) {
   }
 }
 
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_VideoWithSlowSignaling DISABLED_VideoWithSlowSignaling
+#else
+#define MAYBE_VideoWithSlowSignaling VideoWithSlowSignaling
+#endif
 // Verifies that the VideoStream doesn't loose any video frames while the
 // connection is being established.
-TEST_P(ConnectionTest, VideoWithSlowSignaling) {
+TEST_P(ConnectionTest, MAYBE_VideoWithSlowSignaling) {
   // Add signaling delay to slow down connection handshake.
-  host_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
-  client_session_->set_signaling_delay(base::TimeDelta::FromMilliseconds(100));
+  host_session_->set_signaling_delay(base::Milliseconds(100));
+  client_session_->set_signaling_delay(base::Milliseconds(100));
 
   Connect();
 
@@ -559,7 +587,13 @@ TEST_P(ConnectionTest, VideoWithSlowSignaling) {
   WaitNextVideoFrame();
 }
 
-TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
+// crbug.com/1224862: Tests are flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_DestroyOnIncomingMessage DISABLED_DestroyOnIncomingMessage
+#else
+#define MAYBE_DestroyOnIncomingMessage DestroyOnIncomingMessage
+#endif
+TEST_P(ConnectionTest, MAYBE_DestroyOnIncomingMessage) {
   Connect();
 
   KeyEvent event;
@@ -633,9 +667,11 @@ TEST_P(ConnectionTest, DISABLED_VideoStats) {
   EXPECT_LE(stats.client_stats.time_rendered, finish_time);
 }
 
-// Slow/fails on Linux ASan/TSan (http://crbug.com/1045344).
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
-    (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
+// Slow/fails on Linux ASan/TSan (crbug.com/1045344) and flaky on Mac
+// (crbug.com/1237376).
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&                   \
+        (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)) || \
+    defined(OS_MAC)
 #define MAYBE_Audio DISABLED_Audio
 #else
 #define MAYBE_Audio Audio

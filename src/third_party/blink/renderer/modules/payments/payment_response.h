@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_RESPONSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_RESPONSE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -39,13 +38,16 @@ class MODULES_EXPORT PaymentResponse final
                   PaymentAddress* shipping_address,
                   PaymentStateResolver* payment_state_resolver,
                   const String& request_id);
+
+  PaymentResponse(const PaymentResponse&) = delete;
+  PaymentResponse& operator=(const PaymentResponse&) = delete;
+
   ~PaymentResponse() override;
 
   void Update(ScriptState* script_state,
               payments::mojom::blink::PaymentResponsePtr response,
               PaymentAddress* shipping_address);
   void UpdatePayerDetail(payments::mojom::blink::PayerDetailPtr);
-  void UpdateDetailsFromJSON(ScriptState* script_state, const String& json);
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
@@ -82,8 +84,6 @@ class MODULES_EXPORT PaymentResponse final
   String payer_email_;
   String payer_phone_;
   Member<PaymentStateResolver> payment_state_resolver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaymentResponse);
 };
 
 }  // namespace blink

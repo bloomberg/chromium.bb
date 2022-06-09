@@ -16,8 +16,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -67,7 +65,8 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 struct PP_Point;
 
@@ -137,6 +136,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // return the instance even if it is in the process of being deleted.
   // Currently only used in tests.
   static PepperPluginInstanceImpl* GetForTesting(PP_Instance instance_id);
+
+  PepperPluginInstanceImpl(const PepperPluginInstanceImpl&) = delete;
+  PepperPluginInstanceImpl& operator=(const PepperPluginInstanceImpl&) = delete;
 
   // Returns the associated RenderFrameImpl. Can be null (in tests) or if the
   // frame has been destroyed.
@@ -286,7 +288,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void PrintEnd();
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options);
-  bool IsPdfPlugin();
 
   bool CanRotateView();
   void RotateView(blink::WebPlugin::RotationType type);
@@ -504,6 +505,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   class ExternalDocumentLoader : public blink::WebAssociatedURLLoaderClient {
    public:
     ExternalDocumentLoader();
+
+    ExternalDocumentLoader(const ExternalDocumentLoader&) = delete;
+    ExternalDocumentLoader& operator=(const ExternalDocumentLoader&) = delete;
+
     ~ExternalDocumentLoader() override;
 
     void ReplayReceivedData(WebAssociatedURLLoaderClient* document_loader);
@@ -517,8 +522,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     std::list<std::string> data_;
     bool finished_loading_;
     std::unique_ptr<blink::WebURLError> error_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExternalDocumentLoader);
   };
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
@@ -869,8 +872,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_{
       this};
   base::WeakPtrFactory<PepperPluginInstanceImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);
 };
 
 }  // namespace content

@@ -64,4 +64,43 @@ describe('DevToolsLocale', () => {
 
     assert.strictEqual(devToolsLocale.locale, 'zh');
   });
+
+  describe('forceFallbackLocale', () => {
+    it('sets locale to English', () => {
+      const data: i18n.DevToolsLocale.DevToolsLocaleData = {
+        settingLanguage: 'browserLanguage',
+        navigatorLanguage: 'en-GB',
+        lookupClosestDevToolsLocale: identity,
+      };
+      const devToolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance({create: true, data});
+      assert.strictEqual(devToolsLocale.locale, 'en-GB');
+
+      devToolsLocale.forceFallbackLocale();
+      assert.strictEqual(devToolsLocale.locale, 'en-US');
+    });
+  });
+
+  describe('languageIsSupportedByDevTools', () => {
+    it('returns true if the locale is supported, false otherwise', () => {
+      const data: i18n.DevToolsLocale.DevToolsLocaleData = {
+        settingLanguage: 'zh-HK',
+        navigatorLanguage: '',
+        lookupClosestDevToolsLocale: () => 'zh',
+      };
+      const devToolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance({create: true, data});
+
+      assert.isTrue(devToolsLocale.languageIsSupportedByDevTools('zh-HK'));
+      assert.isFalse(devToolsLocale.languageIsSupportedByDevTools('de-DE'));
+    });
+  });
+});
+
+describe('localeLanguagesMatch', () => {
+  it('returns true if the language part of a locale matches, false otherwise', () => {
+    assert.isTrue(i18n.DevToolsLocale.localeLanguagesMatch('de-DE', 'de-AT'));
+    assert.isTrue(i18n.DevToolsLocale.localeLanguagesMatch('de-DE', 'de'));
+
+    assert.isFalse(i18n.DevToolsLocale.localeLanguagesMatch('de', 'en'));
+    assert.isFalse(i18n.DevToolsLocale.localeLanguagesMatch('de-AT', 'en-US'));
+  });
 });

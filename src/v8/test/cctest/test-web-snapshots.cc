@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "include/v8-function.h"
 #include "src/api/api-inl.h"
 #include "src/web-snapshot/web-snapshot.h"
 #include "test/cctest/cctest-utils.h"
@@ -27,8 +28,10 @@ void TestWebSnapshotExtensive(
     v8::Context::Scope context_scope(new_context);
 
     CompileRun(snapshot_source);
-    std::vector<std::string> exports;
-    exports.push_back("foo");
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
     WebSnapshotSerializer serializer(isolate);
     CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
     CHECK(!serializer.has_error());
@@ -84,6 +87,27 @@ TEST(Minimal) {
   uint32_t kObjectCount = 1;
   TestWebSnapshot(snapshot_source, test_source, expected_result, kStringCount,
                   kMapCount, kContextCount, kFunctionCount, kObjectCount);
+}
+
+TEST(EmptyObject) {
+  const char* snapshot_source = "var foo = {}";
+  const char* test_source = "foo";
+  uint32_t kStringCount = 1;  // 'foo'
+  uint32_t kMapCount = 1;
+  uint32_t kContextCount = 0;
+  uint32_t kFunctionCount = 0;
+  uint32_t kObjectCount = 1;
+  std::function<void(v8::Isolate*, v8::Local<v8::Context>)> tester =
+      [test_source](v8::Isolate* isolate, v8::Local<v8::Context> new_context) {
+        v8::Local<v8::Object> result = CompileRun(test_source).As<v8::Object>();
+        Handle<JSReceiver> foo(v8::Utils::OpenHandle(*result));
+        Isolate* i_isolate = reinterpret_cast<Isolate*>(isolate);
+        CHECK_EQ(foo->map(),
+                 i_isolate->native_context()->object_function().initial_map());
+      };
+  TestWebSnapshotExtensive(snapshot_source, test_source, tester, kStringCount,
+                           kMapCount, kContextCount, kFunctionCount,
+                           kObjectCount);
 }
 
 TEST(Numbers) {
@@ -306,8 +330,10 @@ TEST(SFIDeduplication) {
         "foo.inner = foo.outer('hi');";
 
     CompileRun(snapshot_source);
-    std::vector<std::string> exports;
-    exports.push_back("foo");
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
     WebSnapshotSerializer serializer(isolate);
     CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
     CHECK(!serializer.has_error());
@@ -341,8 +367,65 @@ TEST(SFIDeduplication) {
   }
 }
 
+TEST(SFIDeduplicationClasses) {
+  CcTest::InitializeVM();
+  v8::Isolate* isolate = CcTest::isolate();
+  v8::HandleScope scope(isolate);
+
+  WebSnapshotData snapshot_data;
+  {
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+    const char* snapshot_source =
+        "let foo = {};\n"
+        "foo.create = function(a) {\n"
+        "  return class {\n"
+        "   constructor(x) {this.x = x;};\n"
+        "  }\n"
+        "}\n"
+        "foo.class = foo.create('hi');";
+
+    CompileRun(snapshot_source);
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
+    WebSnapshotSerializer serializer(isolate);
+    CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
+    CHECK(!serializer.has_error());
+    CHECK_NOT_NULL(snapshot_data.buffer);
+  }
+
+  {
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+    WebSnapshotDeserializer deserializer(isolate);
+    CHECK(deserializer.UseWebSnapshot(snapshot_data.buffer,
+                                      snapshot_data.buffer_size));
+    CHECK(!deserializer.has_error());
+
+    const char* get_class = "foo.class";
+    const char* create_new_class = "foo.create()";
+
+    // Verify that foo.inner and the JSFunction which is the result of calling
+    // foo.outer() after deserialization share the SFI.
+    v8::Local<v8::Function> v8_class1 =
+        CompileRun(get_class).As<v8::Function>();
+    v8::Local<v8::Function> v8_class2 =
+        CompileRun(create_new_class).As<v8::Function>();
+
+    Handle<JSFunction> class1 =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_class1));
+    Handle<JSFunction> class2 =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_class2));
+
+    CHECK_EQ(class1->shared(), class2->shared());
+  }
+}
+
 TEST(SFIDeduplicationAfterBytecodeFlushing) {
-  FLAG_stress_flush_bytecode = true;
+  FLAG_stress_flush_code = true;
+  FLAG_flush_bytecode = true;
   CcTest::InitializeVM();
   v8::Isolate* isolate = CcTest::isolate();
 
@@ -364,8 +447,10 @@ TEST(SFIDeduplicationAfterBytecodeFlushing) {
 
     CompileRun(snapshot_source);
 
-    std::vector<std::string> exports;
-    exports.push_back("foo");
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
     WebSnapshotSerializer serializer(isolate);
     CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
     CHECK(!serializer.has_error());
@@ -424,6 +509,92 @@ TEST(SFIDeduplicationAfterBytecodeFlushing) {
   }
 }
 
+TEST(SFIDeduplicationAfterBytecodeFlushingClasses) {
+  FLAG_stress_flush_code = true;
+  FLAG_flush_bytecode = true;
+  CcTest::InitializeVM();
+  v8::Isolate* isolate = CcTest::isolate();
+
+  WebSnapshotData snapshot_data;
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+
+    const char* snapshot_source =
+        "let foo = {};\n"
+        "foo.create = function(a) {\n"
+        "  return class {\n"
+        "   constructor(x) {this.x = x;};\n"
+        "  }\n"
+        "}\n"
+        "foo.class = foo.create('hi');";
+
+    CompileRun(snapshot_source);
+
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
+    WebSnapshotSerializer serializer(isolate);
+    CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
+    CHECK(!serializer.has_error());
+    CHECK_NOT_NULL(snapshot_data.buffer);
+  }
+
+  CcTest::CollectAllGarbage();
+  CcTest::CollectAllGarbage();
+
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+    WebSnapshotDeserializer deserializer(isolate);
+    CHECK(deserializer.UseWebSnapshot(snapshot_data.buffer,
+                                      snapshot_data.buffer_size));
+    CHECK(!deserializer.has_error());
+
+    const char* get_create = "foo.create";
+    const char* get_class = "foo.class";
+    const char* create_new_class = "foo.create()";
+
+    v8::Local<v8::Function> v8_create =
+        CompileRun(get_create).As<v8::Function>();
+    Handle<JSFunction> create =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_create));
+    CHECK(!create->shared().is_compiled());
+
+    v8::Local<v8::Function> v8_class1 =
+        CompileRun(get_class).As<v8::Function>();
+    v8::Local<v8::Function> v8_class2 =
+        CompileRun(create_new_class).As<v8::Function>();
+
+    Handle<JSFunction> class1 =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_class1));
+    Handle<JSFunction> class2 =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_class2));
+
+    CHECK(create->shared().is_compiled());
+    CHECK_EQ(class1->shared(), class2->shared());
+
+    // Force bytecode flushing of "foo.outer".
+    CcTest::CollectAllGarbage();
+    CcTest::CollectAllGarbage();
+
+    CHECK(!create->shared().is_compiled());
+
+    // Create another inner function.
+    v8::Local<v8::Function> v8_class3 =
+        CompileRun(create_new_class).As<v8::Function>();
+    Handle<JSFunction> class3 =
+        Handle<JSFunction>::cast(Utils::OpenHandle(*v8_class3));
+
+    // Check that it shares the SFI with the original inner function which is in
+    // the snapshot.
+    CHECK_EQ(class1->shared(), class3->shared());
+  }
+}
+
 TEST(SFIDeduplicationOfFunctionsNotInSnapshot) {
   CcTest::InitializeVM();
   v8::Isolate* isolate = CcTest::isolate();
@@ -442,8 +613,10 @@ TEST(SFIDeduplicationOfFunctionsNotInSnapshot) {
         "}\n";
 
     CompileRun(snapshot_source);
-    std::vector<std::string> exports;
-    exports.push_back("foo");
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
     WebSnapshotSerializer serializer(isolate);
     CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
     CHECK(!serializer.has_error());
@@ -473,6 +646,147 @@ TEST(SFIDeduplicationOfFunctionsNotInSnapshot) {
         Handle<JSFunction>::cast(Utils::OpenHandle(*v8_inner2));
 
     CHECK_EQ(inner1->shared(), inner2->shared());
+  }
+}
+
+namespace {
+void VerifyFunctionKind(const v8::Local<v8::Object>& result,
+                        const v8::Local<v8::Context>& context,
+                        const char* property_name, FunctionKind expected_kind) {
+  v8::Local<v8::Function> v8_function =
+      result->Get(context, v8_str(property_name))
+          .ToLocalChecked()
+          .As<v8::Function>();
+  Handle<JSFunction> function =
+      Handle<JSFunction>::cast(Utils::OpenHandle(*v8_function));
+  CHECK_EQ(function->shared().kind(), expected_kind);
+}
+}  // namespace
+
+TEST(FunctionKinds) {
+  const char* snapshot_source =
+      "var foo = {a: function() {},\n"
+      "           b: () => {},\n"
+      "           c: async function() {},\n"
+      "           d: async () => {},\n"
+      "           e: function*() {},\n"
+      "           f: async function*() {}\n"
+      "}";
+  const char* test_source = "foo";
+  uint32_t kStringCount = 8;  // 'foo', 'a', ..., 'f', source code
+  uint32_t kMapCount = 1;
+  uint32_t kContextCount = 0;
+  uint32_t kFunctionCount = 6;
+  uint32_t kObjectCount = 1;
+  std::function<void(v8::Isolate*, v8::Local<v8::Context>)> tester =
+      [test_source](v8::Isolate* isolate, v8::Local<v8::Context> new_context) {
+        v8::Local<v8::Object> result = CompileRun(test_source).As<v8::Object>();
+        // Verify all FunctionKinds.
+        VerifyFunctionKind(result, new_context, "a",
+                           FunctionKind::kNormalFunction);
+        VerifyFunctionKind(result, new_context, "b",
+                           FunctionKind::kArrowFunction);
+        VerifyFunctionKind(result, new_context, "c",
+                           FunctionKind::kAsyncFunction);
+        VerifyFunctionKind(result, new_context, "d",
+                           FunctionKind::kAsyncArrowFunction);
+        VerifyFunctionKind(result, new_context, "e",
+                           FunctionKind::kGeneratorFunction);
+        VerifyFunctionKind(result, new_context, "f",
+                           FunctionKind::kAsyncGeneratorFunction);
+      };
+  TestWebSnapshotExtensive(snapshot_source, test_source, tester, kStringCount,
+                           kMapCount, kContextCount, kFunctionCount,
+                           kObjectCount);
+}
+
+// Test that concatenating JS code to the snapshot works.
+TEST(Concatenation) {
+  CcTest::InitializeVM();
+  v8::Isolate* isolate = CcTest::isolate();
+
+  const char* snapshot_source = "var foo = {a: 1};\n";
+  const char* source_to_append = "var bar = {a: 10};";
+  const char* test_source = "foo.a + bar.a";
+  uint32_t kObjectCount = 1;
+
+  WebSnapshotData snapshot_data;
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+
+    CompileRun(snapshot_source);
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
+    WebSnapshotSerializer serializer(isolate);
+    CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
+    CHECK(!serializer.has_error());
+    CHECK_NOT_NULL(snapshot_data.buffer);
+    CHECK_EQ(kObjectCount, serializer.object_count());
+  }
+
+  auto buffer_size = snapshot_data.buffer_size + strlen(source_to_append);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  memcpy(buffer.get(), snapshot_data.buffer, snapshot_data.buffer_size);
+  memcpy(buffer.get() + snapshot_data.buffer_size, source_to_append,
+         strlen(source_to_append));
+
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+    WebSnapshotDeserializer deserializer(isolate);
+    CHECK(deserializer.UseWebSnapshot(buffer.get(), buffer_size));
+    CHECK(!deserializer.has_error());
+    CHECK_EQ(kObjectCount, deserializer.object_count());
+
+    v8::Local<v8::Number> result = CompileRun(test_source).As<v8::Number>();
+    CHECK_EQ(11, result->Value());
+  }
+}
+
+// Test that errors from invalid concatenated code are handled correctly.
+TEST(ConcatenationErrors) {
+  CcTest::InitializeVM();
+  v8::Isolate* isolate = CcTest::isolate();
+
+  const char* snapshot_source = "var foo = {a: 1};\n";
+  const char* source_to_append = "wontparse+[)";
+  uint32_t kObjectCount = 1;
+
+  WebSnapshotData snapshot_data;
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+
+    CompileRun(snapshot_source);
+    v8::Local<v8::PrimitiveArray> exports = v8::PrimitiveArray::New(isolate, 1);
+    v8::Local<v8::String> str =
+        v8::String::NewFromUtf8(isolate, "foo").ToLocalChecked();
+    exports->Set(isolate, 0, str);
+    WebSnapshotSerializer serializer(isolate);
+    CHECK(serializer.TakeSnapshot(new_context, exports, snapshot_data));
+    CHECK(!serializer.has_error());
+    CHECK_NOT_NULL(snapshot_data.buffer);
+    CHECK_EQ(kObjectCount, serializer.object_count());
+  }
+
+  auto buffer_size = snapshot_data.buffer_size + strlen(source_to_append);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
+  memcpy(buffer.get(), snapshot_data.buffer, snapshot_data.buffer_size);
+  memcpy(buffer.get() + snapshot_data.buffer_size, source_to_append,
+         strlen(source_to_append));
+
+  {
+    v8::HandleScope scope(isolate);
+    v8::Local<v8::Context> new_context = CcTest::NewContext();
+    v8::Context::Scope context_scope(new_context);
+    WebSnapshotDeserializer deserializer(isolate);
+    CHECK(!deserializer.UseWebSnapshot(buffer.get(), buffer_size));
   }
 }
 

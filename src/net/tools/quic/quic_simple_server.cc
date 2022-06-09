@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -192,7 +192,10 @@ void QuicSimpleServer::OnReadComplete(int result) {
     // packet whose payload is larger than our receive buffer. Do not act on 0
     // as that indicates that we received a UDP packet with an empty payload.
     // In both cases, the socket should still be usable.
-    if (result != ERR_MSG_TOO_BIG && result != 0) {
+    // Also do not act on ERR_CONNECTION_RESET as this is happening when the
+    // network service restarts on Windows.
+    if (result != ERR_MSG_TOO_BIG && result != ERR_CONNECTION_RESET &&
+        result != 0) {
       Shutdown();
       return;
     }

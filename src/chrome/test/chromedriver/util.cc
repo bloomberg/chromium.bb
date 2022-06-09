@@ -17,6 +17,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
@@ -43,18 +44,21 @@ const double kCentimetersPerInch = 2.54;
 
 Status FlattenStringArray(const base::ListValue* src, std::u16string* dest) {
   std::u16string keys;
-  for (size_t i = 0; i < src->GetSize(); ++i) {
-    std::u16string keys_list_part;
-    if (!src->GetString(i, &keys_list_part))
+  for (const base::Value& i : src->GetList()) {
+    if (!i.is_string())
       return Status(kUnknownError, "keys should be a string");
-    for (size_t j = 0; j < keys_list_part.size(); ++j) {
-      if (CBU16_IS_SURROGATE(keys_list_part[j])) {
+
+    std::u16string keys_list_part = base::UTF8ToUTF16(i.GetString());
+
+    for (char16_t ch : keys_list_part) {
+      if (CBU16_IS_SURROGATE(ch)) {
         return Status(
             kUnknownError,
             base::StringPrintf("%s only supports characters in the BMP",
-                               kChromeDriverProductShortName));
+                              kChromeDriverProductShortName));
       }
     }
+
     keys.append(keys_list_part);
   }
   *dest = keys;
@@ -444,18 +448,45 @@ double ConvertCentimeterToInch(double centimeter) {
 
 namespace {
 
+// Deprecated. Please use GetOptionalValue.
+// See crbug.com/1187001 for the migration details.
 template <typename T>
-bool GetOptionalValue(const base::DictionaryValue* dict,
+bool GetOptionalValueDeprecated(const base::DictionaryValue* dict,
+                                base::StringPiece path,
+                                T* out_value,
+                                bool* has_value,
+                                bool (base::Value::*getter)(T*) const) {
+  if (has_value != nullptr)
+    *has_value = false;
+  const base::Value* value = dict->FindPath(path);
+  if (value == nullptr)
+    return true;
+  if ((value->*getter)(out_value)) {
+    if (has_value != nullptr)
+      *has_value = true;
+    return true;
+  }
+  return false;
+}
+
+template <typename T>
+bool GetOptionalValue(const base::Value* dict,
                       base::StringPiece path,
                       T* out_value,
                       bool* has_value,
-                      bool (base::Value::*getter)(T*) const) {
+                      absl::optional<T> (base::Value::*getter)() const) {
   if (has_value != nullptr)
     *has_value = false;
-  const base::Value* value;
-  if (!dict->Get(path, &value))
+
+  if (!dict->is_dict())
+    return false;
+
+  const base::Value* value = dict->FindPath(path);
+  if (!value)
     return true;
-  if ((value->*getter)(out_value)) {
+  absl::optional<T> maybe_value = (value->*getter)();
+  if (maybe_value.has_value()) {
+    *out_value = maybe_value.value();
     if (has_value != nullptr)
       *has_value = true;
     return true;
@@ -470,7 +501,7 @@ bool GetOptionalBool(const base::DictionaryValue* dict,
                      bool* out_value,
                      bool* has_value) {
   return GetOptionalValue(dict, path, out_value, has_value,
-                          &base::Value::GetAsBoolean);
+                          &base::Value::GetIfBool);
 }
 
 bool GetOptionalInt(const base::DictionaryValue* dict,
@@ -478,15 +509,16 @@ bool GetOptionalInt(const base::DictionaryValue* dict,
                     int* out_value,
                     bool* has_value) {
   if (GetOptionalValue(dict, path, out_value, has_value,
-                       &base::Value::GetAsInteger)) {
+                       &base::Value::GetIfInt)) {
     return true;
   }
   // See if we have a double that contains an int value.
-  double d;
-  if (!dict->GetDouble(path, &d))
+  absl::optional<double> maybe_decimal = dict->FindDoublePath(path);
+  if (!maybe_decimal.has_value())
     return false;
-  int i = static_cast<int>(d);
-  if (i == d) {
+
+  int i = static_cast<int>(maybe_decimal.value());
+  if (i == maybe_decimal.value()) {
     *out_value = i;
     if (has_value != nullptr)
       *has_value = true;
@@ -499,33 +531,32 @@ bool GetOptionalDouble(const base::DictionaryValue* dict,
                        base::StringPiece path,
                        double* out_value,
                        bool* has_value) {
-  // base::Value::GetAsDouble already converts int to double if needed.
   return GetOptionalValue(dict, path, out_value, has_value,
-                          &base::Value::GetAsDouble);
+                          &base::Value::GetIfDouble);
 }
 
 bool GetOptionalString(const base::DictionaryValue* dict,
                        base::StringPiece path,
                        std::string* out_value,
                        bool* has_value) {
-  return GetOptionalValue(dict, path, out_value, has_value,
-                          &base::Value::GetAsString);
+  return GetOptionalValueDeprecated(dict, path, out_value, has_value,
+                                    &base::Value::GetAsString);
 }
 
 bool GetOptionalDictionary(const base::DictionaryValue* dict,
                            base::StringPiece path,
                            const base::DictionaryValue** out_value,
                            bool* has_value) {
-  return GetOptionalValue(dict, path, out_value, has_value,
-                          &base::Value::GetAsDictionary);
+  return GetOptionalValueDeprecated(dict, path, out_value, has_value,
+                                    &base::Value::GetAsDictionary);
 }
 
 bool GetOptionalList(const base::DictionaryValue* dict,
                      base::StringPiece path,
                      const base::ListValue** out_value,
                      bool* has_value) {
-  return GetOptionalValue(dict, path, out_value, has_value,
-                          &base::Value::GetAsList);
+  return GetOptionalValueDeprecated(dict, path, out_value, has_value,
+                                    &base::Value::GetAsList);
 }
 
 bool GetOptionalSafeInt(const base::DictionaryValue* dict,
@@ -536,7 +567,7 @@ bool GetOptionalSafeInt(const base::DictionaryValue* dict,
   int temp_int;
   bool temp_has_value;
   if (GetOptionalValue(dict, path, &temp_int, &temp_has_value,
-                       &base::Value::GetAsInteger)) {
+                       &base::Value::GetIfInt)) {
     if (has_value != nullptr)
       *has_value = temp_has_value;
     if (temp_has_value)
@@ -545,13 +576,13 @@ bool GetOptionalSafeInt(const base::DictionaryValue* dict,
   }
 
   // Check if we have a double, which may or may not contain a safe int value.
-  double temp_double;
-  if (!dict->GetDouble(path, &temp_double))
+  absl::optional<double> maybe_decimal = dict->FindDoublePath(path);
+  if (!maybe_decimal.has_value())
     return false;
 
   // Verify that the value is an integer.
-  int64_t temp_int64 = static_cast<int64_t>(temp_double);
-  if (temp_int64 != temp_double)
+  int64_t temp_int64 = static_cast<int64_t>(maybe_decimal.value());
+  if (temp_int64 != maybe_decimal.value())
     return false;
 
   // Verify that the value is in the range for safe integer.
@@ -572,7 +603,7 @@ bool SetSafeInt(base::DictionaryValue* dict,
   if (in_value_64 == int_value)
     return dict->SetInteger(path, in_value_64);
   else
-    return dict->SetDouble(path, in_value_64);
+    return dict->SetDoublePath(path, in_value_64);
 }
 
 std::string WebViewIdToWindowHandle(const std::string& web_view_id) {

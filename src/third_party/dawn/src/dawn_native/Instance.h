@@ -16,9 +16,10 @@
 #define DAWNNATIVE_INSTANCE_H_
 
 #include "common/RefCounted.h"
+#include "common/ityp_bitset.h"
 #include "dawn_native/Adapter.h"
 #include "dawn_native/BackendConnection.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
 #include "dawn_native/Toggles.h"
 #include "dawn_native/dawn_platform.h"
 
@@ -27,10 +28,16 @@
 #include <unordered_map>
 #include <vector>
 
+namespace dawn_platform {
+    class Platform;
+}  // namespace dawn_platform
+
 namespace dawn_native {
 
     class Surface;
     class XlibXcbFunctions;
+
+    using BackendsBitset = ityp::bitset<wgpu::BackendType, kEnumCount<wgpu::BackendType>>;
 
     // This is called InstanceBase for consistency across the frontend, even if the backends don't
     // specialize this class.
@@ -51,12 +58,11 @@ namespace dawn_native {
         const ToggleInfo* GetToggleInfo(const char* toggleName);
         Toggle ToggleNameToEnum(const char* toggleName);
 
-        // Used to query the details of an extension. Return nullptr if extensionName is not a valid
-        // name of an extension supported in Dawn.
-        const ExtensionInfo* GetExtensionInfo(const char* extensionName);
-        Extension ExtensionNameToEnum(const char* extensionName);
-        ExtensionsSet ExtensionNamesToExtensionsSet(
-            const std::vector<const char*>& requiredExtensions);
+        // Used to query the details of an feature. Return nullptr if featureName is not a valid
+        // name of an feature supported in Dawn.
+        const FeatureInfo* GetFeatureInfo(const char* featureName);
+        Feature FeatureNameToEnum(const char* featureName);
+        FeaturesSet FeatureNamesToFeaturesSet(const std::vector<const char*>& requiredFeatures);
 
         bool IsBackendValidationEnabled() const;
         void SetBackendValidationLevel(BackendValidationLevel level);
@@ -66,7 +72,7 @@ namespace dawn_native {
         bool IsBeginCaptureOnStartupEnabled() const;
 
         void SetPlatform(dawn_platform::Platform* platform);
-        dawn_platform::Platform* GetPlatform() const;
+        dawn_platform::Platform* GetPlatform();
 
         // Get backend-independent libraries that need to be loaded dynamically.
         const XlibXcbFunctions* GetOrCreateXlibXcbFunctions();
@@ -84,22 +90,24 @@ namespace dawn_native {
         bool Initialize(const InstanceDescriptor* descriptor);
 
         // Lazily creates connections to all backends that have been compiled.
-        void EnsureBackendConnections();
+        void EnsureBackendConnection(wgpu::BackendType backendType);
 
         MaybeError DiscoverAdaptersInternal(const AdapterDiscoveryOptionsBase* options);
 
-        bool mBackendsConnected = false;
+        BackendsBitset mBackendsConnected;
+
         bool mDiscoveredDefaultAdapters = false;
 
         bool mBeginCaptureOnStartup = false;
         BackendValidationLevel mBackendValidationLevel = BackendValidationLevel::Disabled;
 
         dawn_platform::Platform* mPlatform = nullptr;
+        std::unique_ptr<dawn_platform::Platform> mDefaultPlatform;
 
         std::vector<std::unique_ptr<BackendConnection>> mBackends;
         std::vector<std::unique_ptr<AdapterBase>> mAdapters;
 
-        ExtensionsInfo mExtensionsInfo;
+        FeaturesInfo mFeaturesInfo;
         TogglesInfo mTogglesInfo;
 
 #if defined(DAWN_USE_X11)

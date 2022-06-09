@@ -32,6 +32,10 @@ bool g_response_validation_enabled =
 class ContextInvalidationData : public base::SupportsUserData::Data {
  public:
   ContextInvalidationData();
+
+  ContextInvalidationData(const ContextInvalidationData&) = delete;
+  ContextInvalidationData& operator=(const ContextInvalidationData&) = delete;
+
   ~ContextInvalidationData() override;
 
   static constexpr char kPerContextDataKey[] = "extension_context_invalidation";
@@ -47,8 +51,6 @@ class ContextInvalidationData : public base::SupportsUserData::Data {
   bool is_context_valid_ = true;
   base::ObserverList<ContextInvalidationListener>::Unchecked
       invalidation_listeners_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextInvalidationData);
 };
 
 constexpr char ContextInvalidationData::kPerContextDataKey[];
@@ -123,14 +125,21 @@ void InvalidateContext(v8::Local<v8::Context> context) {
 }
 
 std::string GetPlatformString() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(https://crbug.com/1052397): For readability, this should become
+// defined(OS_CHROMEOS) && BUILDFLAG(IS_CHROMEOS_LACROS). The second conditional
+// should be defined(OS_CHROMEOS) && BUILDFLAG(IS_CHROMEOS_ASH).
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return "lacros";
+#elif BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   return "chromeos";
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_LINUX)
   return "linux";
 #elif defined(OS_MAC)
   return "mac";
 #elif defined(OS_WIN)
   return "win";
+#elif defined(OS_FUCHSIA)
+  return "fuchsia";
 #else
   NOTREACHED();
   return std::string();

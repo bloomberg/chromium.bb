@@ -14,11 +14,11 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_switches.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -36,8 +36,11 @@
 #include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -63,11 +66,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -75,6 +78,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_MAC)
@@ -94,6 +98,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
@@ -102,8 +107,8 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/full_restore/full_restore_service.h"
-#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
+#include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
@@ -111,10 +116,6 @@
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_X11)
-#include "ui/views/test/test_desktop_screen_x11.h"
-#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -126,6 +127,10 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
+#include "components/account_manager_core/chromeos/fake_account_manager_ui.h"  // nogncheck
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls.h"
 #endif
@@ -199,6 +204,48 @@ class ChromeBrowserMainExtraPartsBrowserProcessInjection
 };
 #endif  // defined(OS_MAC)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// For browser tests that depend on AccountManager on Lacros - e.g. tests that
+// manage accounts by calling methods like `signin::MakePrimaryAccountAvailable`
+// from identity_test_utils.
+// TODO(https://crbug.com/982233): consider using this class on Ash, and remove
+// the initialization from profile_impl.
+class IdentityExtraSetUp : public ChromeBrowserMainExtraParts {
+ public:
+  void PreProfileInit() override {
+    // Create and initialize Ash AccountManager.
+    scoped_ash_account_manager_ =
+        std::make_unique<ScopedAshAccountManagerForTests>(
+            std::make_unique<FakeAccountManagerUI>());
+    auto* account_manager = MaybeGetAshAccountManagerForTests();
+    CHECK(account_manager);
+    account_manager->InitializeInEphemeralMode(
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory());
+
+    // Make sure the primary accounts for all profiles are present in the
+    // account manager, to prevent profiles from being deleted. This is useful
+    // in particular for tests that create profiles in a PRE_ step and expect
+    // the profiles to still exist when Chrome is restarted.
+    ProfileAttributesStorage* storage =
+        &g_browser_process->profile_manager()->GetProfileAttributesStorage();
+    for (const ProfileAttributesEntry* entry :
+         storage->GetAllProfilesAttributes()) {
+      const std::string& gaia_id = entry->GetGAIAId();
+      if (!gaia_id.empty()) {
+        account_manager->UpsertAccount(
+            {gaia_id, account_manager::AccountType::kGaia},
+            base::UTF16ToUTF8(entry->GetUserName()),
+            "identity_extra_setup_test_token");
+      }
+    }
+  }
+
+ private:
+  std::unique_ptr<ScopedAshAccountManagerForTests> scoped_ash_account_manager_;
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 }  // namespace
 
 // static
@@ -238,7 +285,12 @@ void InProcessBrowserTest::RunScheduledLayouts() {
 #endif  // defined(TOOLKIT_VIEWS)
 }
 
-// defined(TOOLKIT_VIEWS)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+FakeAccountManagerUI* InProcessBrowserTest::GetFakeAccountManagerUI() const {
+  return static_cast<FakeAccountManagerUI*>(
+      MaybeGetAshAccountManagerUIForTests());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void InProcessBrowserTest::Initialize() {
   CreateTestServer(GetChromeTestDataDir());
@@ -255,9 +307,24 @@ void InProcessBrowserTest::Initialize() {
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 
+  std::vector<base::Feature> disabled_features;
+
   // Preconnecting can cause non-deterministic test behavior especially with
   // various test fixtures that mock servers.
-  scoped_feature_list_.InitAndDisableFeature(features::kPreconnectToSearch);
+  disabled_features.push_back(features::kPreconnectToSearch);
+
+  // In-product help can conflict with tests' expected window activation and
+  // focus. Individual tests can re-enable IPH.
+  for (const base::Feature* feature : feature_engagement::GetAllFeatures()) {
+    disabled_features.push_back(*feature);
+  }
+
+  scoped_feature_list_.InitWithFeatures({}, disabled_features);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  launch_browser_for_testing_ =
+      std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
+#endif
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() = default;
@@ -298,7 +365,7 @@ void InProcessBrowserTest::SetUp() {
   command_line->AppendSwitch(switches::kDisableLoggingRedirect);
 
   // Disable IME extension loading to avoid many browser tests failures.
-  chromeos::input_method::DisableExtensionLoading();
+  ash::input_method::DisableExtensionLoading();
 
   if (!command_line->HasSwitch(switches::kHostWindowBounds) &&
       !base::SysInfo::IsRunningOnChromeOS()) {
@@ -312,7 +379,7 @@ void InProcessBrowserTest::SetUp() {
   // Default to run in a signed in session of stub user if tests do not run
   // in the login screen (--login-manager), or logged in user session
   // (--login-user), or the guest session (--bwsi). This is essentially
-  // the same as in ChromeBrowserMainPartsChromeos::PreEarlyInitialization
+  // the same as in `ChromeBrowserMainPartsAsh::PreEarlyInitialization`
   // but it will be done on device and only for tests.
   if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
       !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
@@ -353,6 +420,11 @@ void InProcessBrowserTest::SetUp() {
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  CertDbInitializerFactory::GetInstance()
+      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Device sync (for multidevice "Better Together") is ash specific.
   chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
@@ -383,6 +455,10 @@ void InProcessBrowserTest::SetUp() {
   Tab::SetShowHoverCardOnMouseHoverForTesting(false);
 #endif  // defined(TOOLKIT_VIEWS)
 
+  // Auto-redirect to the NTP, which can happen if remote content is enabled on
+  // What's New for tests that simulate first run, is unexpected by most tests.
+  whats_new::DisableRemoteContentForTests();
+
   BrowserTestBase::SetUp();
 }
 
@@ -409,6 +485,7 @@ void InProcessBrowserTest::TearDown() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
+  launch_browser_for_testing_ = nullptr;
 #endif
 }
 
@@ -425,13 +502,18 @@ size_t InProcessBrowserTest::GetTestPreCount() {
   return count;
 }
 
-#if defined(OS_MAC)
 void InProcessBrowserTest::CreatedBrowserMainParts(
     content::BrowserMainParts* parts) {
+  BrowserTestBase::CreatedBrowserMainParts(parts);
+#if defined(OS_MAC)
   static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
       std::make_unique<ChromeBrowserMainExtraPartsBrowserProcessInjection>());
-}
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
+      std::make_unique<IdentityExtraSetUp>());
+#endif
+}
 
 void InProcessBrowserTest::SelectFirstBrowser() {
   const BrowserList* browser_list = BrowserList::GetInstance();
@@ -496,16 +578,6 @@ void InProcessBrowserTest::AddTabAtIndex(int index,
 
 bool InProcessBrowserTest::SetUpUserDataDirectory() {
   return true;
-}
-
-void InProcessBrowserTest::SetScreenInstance() {
-#if defined(USE_X11) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!features::IsUsingOzonePlatform()) {
-    DCHECK(!display::Screen::GetScreen());
-    display::Screen::SetScreenInstance(
-        views::test::TestDesktopScreenX11::GetInstance());
-  }
-#endif
 }
 
 #if !defined(OS_MAC)
@@ -573,13 +645,8 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
       guest_path, base::BindRepeating(&UnblockOnProfileCreation, &run_loop));
   run_loop.Run();
 
-  Profile* profile = profile_manager->GetProfileByPath(guest_path);
-  if (!profile->IsEphemeralGuestProfile())
-    profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-
-  const bool is_ephemeral = Profile::IsEphemeralGuestProfileEnabled();
-  EXPECT_EQ(is_ephemeral, profile->IsEphemeralGuestProfile());
-  EXPECT_NE(is_ephemeral, profile->IsGuestSession());
+  Profile* profile = profile_manager->GetProfileByPath(guest_path)
+                         ->GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   // Create browser and add tab.
   Browser* browser = Browser::Create(Browser::CreateParams(profile, true));
@@ -589,11 +656,9 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  chrome::AddSelectedTabWithURL(browser, GURL(url::kAboutBlankURL),
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  content::WebContents* blank_tab = chrome::AddSelectedTabWithURL(
+      browser, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  content::TestNavigationObserver observer(blank_tab);
   observer.Wait();
 
   browser->window()->Show();
@@ -629,17 +694,6 @@ base::FilePath InProcessBrowserTest::GetChromeTestDataDir() const {
 void InProcessBrowserTest::PreRunTestOnMainThread() {
   AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // ChromeOS does not create a browser by default when the full restore feature
-  // is enabled. Nearly all existing tests assume a browser is created. This
-  // call triggers creating a browser.
-  auto* full_restore_service =
-      chromeos::full_restore::FullRestoreService::GetForProfile(
-          ProfileManager::GetPrimaryUserProfile());
-  if (!skip_initial_restore_ && full_restore_service)
-    full_restore_service->RestoreForTesting();
-#endif
-
   // Take the ChromeBrowserMainParts' RunLoop to run ourself, when we
   // want to wait for the browser to exit.
   run_loop_ = ChromeBrowserMainParts::TakeRunLoopForTest();
@@ -649,7 +703,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
 
   SelectFirstBrowser();
   if (browser_) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();
@@ -657,19 +711,6 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     auto* tab = browser_->tab_strip_model()->GetActiveWebContents();
     content::WaitForLoadStop(tab);
     SetInitialWebContents(tab);
-
-    // For other platforms, they install ui controls in
-    // interactive_ui_tests_main.cc. We can't add it there because we have no
-    // WindowTreeHost initialized at the test runner level.
-    // The ozone implementation of CreateUIControlsAura differs from other
-    // implementation in that it requires a WindowTreeHost. Thus, it must be
-    // initialized here rather than earlier.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    BrowserWindow* window = browser_->window();
-    CHECK(window);
-    ui_controls::InstallUIControlsAura(
-        aura::test::CreateUIControlsAura(window->GetNativeWindow()->GetHost()));
-#endif
   }
 
 #if !defined(OS_ANDROID)

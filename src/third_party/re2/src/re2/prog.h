@@ -207,6 +207,7 @@ class Prog {
   int list_count() { return list_count_; }
   int inst_count(InstOp op) { return inst_count_[op]; }
   uint16_t* list_heads() { return list_heads_.data(); }
+  size_t bit_state_text_max_size() { return bit_state_text_max_size_; }
   int64_t dfa_mem() { return dfa_mem_; }
   void set_dfa_mem(int64_t dfa_mem) { dfa_mem_ = dfa_mem; }
   bool anchor_start() { return anchor_start_; }
@@ -220,10 +221,22 @@ class Prog {
   // Accelerates to the first likely occurrence of the prefix.
   // Returns a pointer to the first byte or NULL if not found.
   const void* PrefixAccel(const void* data, size_t size) {
-    DCHECK_GE(prefix_size_, 1);
-    return prefix_size_ == 1 ? memchr(data, prefix_front_, size)
-                             : PrefixAccel_FrontAndBack(data, size);
+    DCHECK(can_prefix_accel());
+    if (prefix_foldcase_) {
+      return PrefixAccel_ShiftDFA(data, size);
+    } else if (prefix_size_ != 1) {
+      return PrefixAccel_FrontAndBack(data, size);
+    } else {
+      return memchr(data, prefix_front_, size);
+    }
   }
+
+  // Configures prefix accel using the analysis performed during compilation.
+  void ConfigurePrefixAccel(const std::string& prefix, bool prefix_foldcase);
+
+  // An implementation of prefix accel that uses prefix_dfa_ to perform
+  // case-insensitive search.
+  const void* PrefixAccel_ShiftDFA(const void* data, size_t size);
 
   // An implementation of prefix accel that looks for prefix_front_ and
   // prefix_back_ to return fewer false positives than memchr(3) alone.
@@ -297,10 +310,6 @@ class Prog {
   // Returns the number of states built.
   // FOR TESTING OR EXPERIMENTAL PURPOSES ONLY.
   int BuildEntireDFA(MatchKind kind, const DFAStateCallback& cb);
-
-  // Controls whether the DFA should bail out early if the NFA would be faster.
-  // FOR TESTING ONLY.
-  static void TEST_dfa_should_bail_when_slow(bool b);
 
   // Compute bytemap.
   void ComputeByteMap();
@@ -390,6 +399,10 @@ class Prog {
   // Computes hints for ByteRange instructions in [begin, end).
   void ComputeHints(std::vector<Inst>* flat, int begin, int end);
 
+  // Controls whether the DFA should bail out early if the NFA would be faster.
+  // FOR TESTING ONLY.
+  static void TESTING_ONLY_set_dfa_should_bail_when_slow(bool b);
+
  private:
   friend class Compiler;
 
@@ -406,14 +419,22 @@ class Prog {
   int start_unanchored_;    // unanchored entry point for program
   int size_;                // number of instructions
   int bytemap_range_;       // bytemap_[x] < bytemap_range_
-  size_t prefix_size_;      // size of prefix (0 if no prefix)
-  int prefix_front_;        // first byte of prefix (-1 if no prefix)
-  int prefix_back_;         // last byte of prefix (-1 if no prefix)
 
-  int list_count_;                 // count of lists (see above)
-  int inst_count_[kNumInst];       // count of instructions by opcode
-  PODArray<uint16_t> list_heads_;  // sparse array enumerating list heads
-                                   // not populated if size_ is overly large
+  bool prefix_foldcase_;    // whether prefix is case-insensitive
+  size_t prefix_size_;      // size of prefix (0 if no prefix)
+  union {
+    uint64_t* prefix_dfa_;  // "Shift DFA" for prefix
+    struct {
+      int prefix_front_;    // first byte of prefix
+      int prefix_back_;     // last byte of prefix
+    };
+  };
+
+  int list_count_;                  // count of lists (see above)
+  int inst_count_[kNumInst];        // count of instructions by opcode
+  PODArray<uint16_t> list_heads_;   // sparse array enumerating list heads
+                                    // not populated if size_ is overly large
+  size_t bit_state_text_max_size_;  // upper bound (inclusive) on text.size()
 
   PODArray<Inst> inst_;              // pointer to instruction array
   PODArray<uint8_t> onepass_nodes_;  // data for OnePass nodes
@@ -430,6 +451,17 @@ class Prog {
   Prog(const Prog&) = delete;
   Prog& operator=(const Prog&) = delete;
 };
+
+// std::string_view in MSVC has iterators that aren't just pointers and
+// that don't allow comparisons between different objects - not even if
+// those objects are views into the same string! Thus, we provide these
+// conversion functions for convenience.
+static inline const char* BeginPtr(const StringPiece& s) {
+  return s.data();
+}
+static inline const char* EndPtr(const StringPiece& s) {
+  return s.data() + s.size();
+}
 
 }  // namespace re2
 

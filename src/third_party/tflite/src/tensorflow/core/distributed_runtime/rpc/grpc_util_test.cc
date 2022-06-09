@@ -14,6 +14,10 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/core/distributed_runtime/rpc/grpc_util.h"
+
+#include "grpcpp/grpcpp.h"
+#include "tensorflow/core/distributed_runtime/error_payloads.h"
+#include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/test.h"
 #include "tensorflow/core/platform/test_benchmark.h"
 #include "tensorflow/core/protobuf/worker.pb.h"
@@ -61,6 +65,24 @@ CleanupAllRequest MakeProto(int size) {
   return proto;
 }
 }  // namespace
+
+TEST(PayloadSerialization, PayloadsAreTransmitted) {
+  ::tensorflow::Status status = errors::InvalidArgument("invalid arg message");
+  status.SetPayload("a", "\\xFF\\x02\\x03");
+  ::tensorflow::Status status_recovered = FromGrpcStatus(ToGrpcStatus(status));
+
+  ASSERT_TRUE(status_recovered.GetPayload("a").has_value());
+  EXPECT_EQ(status_recovered.GetPayload("a").value(), "\\xFF\\x02\\x03");
+}
+
+TEST(PayloadSerialization, PayloadsCorrupted) {
+  ::grpc::Status status(
+      ::grpc::StatusCode::INVALID_ARGUMENT, "invalid arg message",
+      "string that can not be serialized to the GrpcPayloadContainer proto");
+
+  ::tensorflow::Status converted = FromGrpcStatus(status);
+  EXPECT_TRUE(converted.GetPayload(kGrpcPayloadsLost).has_value());
+}
 
 TEST(GrpcProto, Unparse) {
   CleanupAllRequest proto;
@@ -134,43 +156,39 @@ TEST(GrpcProto, ParseFromString) {
   }
 }
 
-static void BM_UnparseGrpc(int iters, int size) {
-  testing::StopTiming();
+static void BM_UnparseGrpc(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+
   auto proto = MakeProto(size);
-  testing::StartTiming();
-  for (int i = 0; i < iters; i++) {
+  for (auto s : state) {
     grpc::ByteBuffer buf;
     CHECK(GrpcMaybeUnparseProto(proto, &buf).ok());
   }
-  testing::StopTiming();
 }
 BENCHMARK(BM_UnparseGrpc)->Arg(1)->Arg(1 << 10)->Arg(1 << 20);
 
-static void BM_UnparseString(int iters, int size) {
-  testing::StopTiming();
-  auto proto = MakeProto(size);
-  testing::StartTiming();
+static void BM_UnparseString(::testing::benchmark::State& state) {
+  const int size = state.range(0);
 
-  for (int i = 0; i < iters; i++) {
+  auto proto = MakeProto(size);
+
+  for (auto s : state) {
     string buf;
     proto.SerializeToString(&buf);
   }
-
-  testing::StopTiming();
 }
 BENCHMARK(BM_UnparseString)->Arg(1)->Arg(1 << 10)->Arg(1 << 20);
 
-static void BM_ParseGrpc(int iters, int size, int num_slices) {
-  testing::StopTiming();
+static void BM_ParseGrpc(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+  const int num_slices = state.range(1);
+
   CleanupAllRequest proto = MakeProto(size);
   auto buf = MakeBuffer(proto.SerializeAsString(), num_slices);
-  testing::StartTiming();
 
-  for (int i = 0; i < iters; i++) {
+  for (auto s : state) {
     CHECK(GrpcMaybeParseProto(&buf, &proto));
   }
-
-  testing::StopTiming();
 }
 BENCHMARK(BM_ParseGrpc)
     ->ArgPair(1, 1)
@@ -179,17 +197,15 @@ BENCHMARK(BM_ParseGrpc)
     ->ArgPair(1 << 20, 1)
     ->ArgPair(1 << 20, 4);
 
-static void BM_ParseString(int iters, int size) {
-  testing::StopTiming();
+static void BM_ParseString(::testing::benchmark::State& state) {
+  const int size = state.range(0);
+
   CleanupAllRequest proto = MakeProto(size);
   string serial = proto.SerializeAsString();
-  testing::StartTiming();
 
-  for (int i = 0; i < iters; i++) {
+  for (auto s : state) {
     CHECK(proto.ParseFromString(serial));
   }
-
-  testing::StopTiming();
 }
 BENCHMARK(BM_ParseString)->Arg(1)->Arg(1 << 10)->Arg(1 << 20);
 

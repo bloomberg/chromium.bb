@@ -8,11 +8,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChromeImageView;
@@ -151,7 +153,16 @@ class MessageCardView extends LinearLayout {
      * @param isIncognito Whether the resource is used for incognito mode.
      */
     private void setBackground(boolean isIncognito) {
-        setBackgroundResource(TabUiColorProvider.getMessageCardBackgroundResourceId(isIncognito));
+        setBackgroundResource(TabUiThemeProvider.getMessageCardBackgroundResourceId(isIncognito));
+        // Incognito colors should follow baseline.
+        // Use the color defined in drawable.
+        if (isIncognito) {
+            return;
+        }
+        // Set dynamic color.
+        GradientDrawable gradientDrawable = (GradientDrawable) getBackground();
+        gradientDrawable.setColor(
+                ChromeColors.getSurfaceColor(getContext(), R.dimen.card_elevation));
     }
 
     /**
@@ -160,7 +171,7 @@ class MessageCardView extends LinearLayout {
      */
     private void setDescriptionTextAppearance(boolean isIncognito) {
         ApiCompatibilityUtils.setTextAppearance(mDescription,
-                TabUiColorProvider.getMessageCardDescriptionTextAppearance(isIncognito));
+                TabUiThemeProvider.getMessageCardDescriptionTextAppearance(isIncognito));
     }
 
     /**
@@ -169,7 +180,7 @@ class MessageCardView extends LinearLayout {
      */
     private void setActionButtonTextAppearance(boolean isIncognito) {
         ApiCompatibilityUtils.setTextAppearance(mActionButton,
-                TabUiColorProvider.getMessageCardActionButtonTextAppearance(isIncognito));
+                TabUiThemeProvider.getMessageCardActionButtonTextAppearance(isIncognito));
     }
 
     /**
@@ -178,7 +189,7 @@ class MessageCardView extends LinearLayout {
      */
     private void setCloseButtonTint(boolean isIncognito) {
         ApiCompatibilityUtils.setImageTintList(mCloseButton,
-                TabUiColorProvider.getMessageCardCloseButtonTintList(
+                TabUiThemeProvider.getMessageCardCloseButtonTintList(
                         mCloseButton.getContext(), isIncognito));
     }
 

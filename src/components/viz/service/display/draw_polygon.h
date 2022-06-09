@@ -8,12 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/transform.h"
 
 namespace viz {
 class DrawQuad;
@@ -70,7 +71,7 @@ class VIZ_SERVICE_EXPORT DrawPolygon {
   // we need.
   // This DrawQuad is owned by the caller and its lifetime must be preserved
   // as long as this DrawPolygon is alive.
-  const DrawQuad* original_ref_;
+  raw_ptr<const DrawQuad> original_ref_;
   bool is_split_;
 };
 

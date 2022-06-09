@@ -19,7 +19,6 @@
 #include <windows.h>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_native_library.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -53,6 +52,10 @@ class XInputDataFetcherWin : public GamepadDataFetcher {
       Factory;
 
   XInputDataFetcherWin();
+
+  XInputDataFetcherWin(const XInputDataFetcherWin&) = delete;
+  XInputDataFetcherWin& operator=(const XInputDataFetcherWin&) = delete;
+
   ~XInputDataFetcherWin() override;
 
   GamepadSource source() override;
@@ -105,8 +108,6 @@ class XInputDataFetcherWin : public GamepadDataFetcher {
 
   bool xinput_connected_[XUSER_MAX_COUNT];
   std::unique_ptr<XInputHapticGamepadWin> haptics_[XUSER_MAX_COUNT];
-
-  DISALLOW_COPY_AND_ASSIGN(XInputDataFetcherWin);
 };
 
 }  // namespace device

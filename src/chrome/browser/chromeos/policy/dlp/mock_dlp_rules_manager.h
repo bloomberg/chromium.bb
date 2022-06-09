@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_MOCK_DLP_RULES_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_MOCK_DLP_RULES_MANAGER_H_
 
+#include <utility>
+
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace policy {
 class MockDlpRulesManager : public DlpRulesManager {
@@ -16,6 +19,9 @@ class MockDlpRulesManager : public DlpRulesManager {
   ~MockDlpRulesManager() override;
 
   MOCK_CONST_METHOD2(IsRestricted,
+                     Level(const GURL& source, Restriction restriction));
+
+  MOCK_CONST_METHOD2(IsRestrictedByAnyRule,
                      Level(const GURL& source, Restriction restriction));
 
   MOCK_CONST_METHOD5(IsRestrictedDestination,
@@ -39,6 +45,13 @@ class MockDlpRulesManager : public DlpRulesManager {
                      std::string(const GURL& source_url,
                                  Restriction restriction,
                                  Level level));
+
+  MOCK_CONST_METHOD0(GetClipboardCheckSizeLimitInBytes, size_t());
+
+  MOCK_CONST_METHOD2(
+      GetDisallowedFileTransfers,
+      std::vector<uint64_t>(const std::vector<FileMetadata>& files_entries,
+                            const GURL& destination));
 };
 
 }  // namespace policy

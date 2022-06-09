@@ -9,9 +9,9 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
 
 class GURL;
@@ -41,6 +41,10 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
       int64_t size_to_report,
       const std::string& digest_to_report,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
+  OfflinePageTestArchiver(const OfflinePageTestArchiver&) = delete;
+  OfflinePageTestArchiver& operator=(const OfflinePageTestArchiver&) = delete;
+
   ~OfflinePageTestArchiver() override;
 
   // OfflinePageArchiver implementation:
@@ -75,7 +79,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
  private:
   // Not owned. Outlives OfflinePageTestArchiver.
-  Observer* observer_;
+  raw_ptr<Observer> observer_;
   GURL url_;
   base::FilePath archives_dir_;
   CreateArchiveParams create_archive_params_;
@@ -89,8 +93,6 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
   std::string digest_to_report_;
   CreateArchiveCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(OfflinePageTestArchiver);
 };
 
 }  // namespace offline_pages

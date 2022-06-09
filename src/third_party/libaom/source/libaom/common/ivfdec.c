@@ -39,7 +39,7 @@ int file_is_ivf(struct AvxInputContext *input_ctx) {
       if (mem_get_le16(raw_hdr + 4) != 0) {
         fprintf(stderr,
                 "Error: Unrecognized IVF version! This file may not"
-                " decode properly.");
+                " decode properly.\n");
       }
 
       input_ctx->fourcc = mem_get_le32(raw_hdr + 8);
@@ -67,12 +67,13 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   size_t frame_size = 0;
 
   if (fread(raw_header, IVF_FRAME_HDR_SZ, 1, infile) != 1) {
-    if (!feof(infile)) warn("Failed to read frame size");
+    if (!feof(infile)) fprintf(stderr, "Warning: Failed to read frame size\n");
   } else {
     frame_size = mem_get_le32(raw_header);
 
     if (frame_size > 256 * 1024 * 1024) {
-      warn("Read invalid frame size (%u)", (unsigned int)frame_size);
+      fprintf(stderr, "Warning: Read invalid frame size (%u)\n",
+              (unsigned int)frame_size);
       frame_size = 0;
     }
 
@@ -83,7 +84,7 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
         *buffer = new_buffer;
         *buffer_size = 2 * frame_size;
       } else {
-        warn("Failed to allocate compressed data buffer");
+        fprintf(stderr, "Warning: Failed to allocate compressed data buffer\n");
         frame_size = 0;
       }
     }
@@ -97,7 +98,7 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   if (!feof(infile)) {
     ASAN_UNPOISON_MEMORY_REGION(*buffer, *buffer_size);
     if (fread(*buffer, 1, frame_size, infile) != frame_size) {
-      warn("Failed to read full frame");
+      fprintf(stderr, "Warning: Failed to read full frame\n");
       return 1;
     }
 

@@ -1,10 +1,31 @@
-void main() {
-    float x = 0.0;
-    switch (int(sqrt(3))) {
-        case 0:
-            x = 0.0;
+/*#pragma settings RewriteSwitchStatements*/
+
+uniform half4 colorGreen, colorRed;
+
+bool switch_fallthrough(int value) {
+    bool ok = false;
+    switch (value) {
+        case 2:  break;
         case 1:
-            x = 1.0;
+        case 0:  ok = true; break;
+        default: break;
     }
-    sk_FragColor = half4(half(x));
+    return ok;
+}
+
+bool switch_fallthrough_twice(int value) {
+    bool ok = false;
+    switch (value) {
+        case 0:  break;
+        case 1:
+        case 2:
+        case 3:  ok = true; break;
+        default: break;
+    }
+    return ok;
+}
+
+half4 main(float2 coords) {
+    int x = int(colorGreen.g);
+    return (switch_fallthrough(x) && switch_fallthrough_twice(x)) ? colorGreen : colorRed;
 }

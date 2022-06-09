@@ -46,7 +46,6 @@
 #include "src/core/SkMask.h"
 #include "src/core/SkScalerContext.h"
 #include "src/core/SkTypefaceCache.h"
-#include "src/core/SkUtils.h"
 #include "src/ports/SkScalerContext_mac_ct.h"
 #include "src/ports/SkTypeface_mac_ct.h"
 #include "src/sfnt/SkOTTableTypes.h"
@@ -177,15 +176,15 @@ static void add_notrak_attr(CFMutableDictionaryRef attr) {
 }
 
 SkUniqueCFRef<CTFontRef> SkCTFontCreateExactCopy(CTFontRef baseFont, CGFloat textSize,
-                                                 OpszVariation opsz)
+                                                 OpszVariation opszVariation)
 {
     SkUniqueCFRef<CFMutableDictionaryRef> attr(
     CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                               &kCFTypeDictionaryKeyCallBacks,
                               &kCFTypeDictionaryValueCallBacks));
 
-    if (opsz.isSet) {
-        add_opsz_attr(attr.get(), opsz.value);
+    if (opszVariation.isSet) {
+        add_opsz_attr(attr.get(), opszVariation.value);
     } else {
         // On (at least) 10.10 though 10.14 the default system font was SFNSText/SFNSDisplay.
         // The CTFont is backed by both; optical size < 20 means SFNSText else SFNSDisplay.
@@ -1094,7 +1093,7 @@ void SkTypeface_Mac::onCharsToGlyphs(const SkUnichar uni[], int count, SkGlyphID
         int extra = 0;
         for (int i = 0; i < count; ++i) {
             glyphs[i] = macGlyphs[i + extra];
-            if (SkUTF16_IsLeadingSurrogate(src[i + extra])) {
+            if (SkUTF::IsLeadingSurrogateUTF16(src[i + extra])) {
                 ++extra;
             }
         }

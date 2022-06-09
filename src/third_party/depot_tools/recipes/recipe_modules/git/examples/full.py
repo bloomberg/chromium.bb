@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
   'recipe_engine/buildbucket',
   'recipe_engine/context',
@@ -51,7 +53,7 @@ def RunSteps(api):
   # count_objects shows number and size of objects in .git dir.
   api.git.count_objects(
       name='count-objects',
-      can_fail_build=api.properties.get('count_objects_can_fail_build'),
+      raise_on_failure=api.properties.get('count_objects_can_fail_build', False),
       git_config_options={'foo': 'bar'})
 
   # Get the remote URL.
@@ -68,19 +70,21 @@ def RunSteps(api):
   with api.context(cwd=api.path['checkout']):
     api.git('status')
 
-  api.git('status', name='git status can_fail_build',
-          can_fail_build=True)
+  api.git('status', name='git status can_fail_build', raise_on_failure=True)
 
-  api.git('status', name='git status cannot_fail_build',
-          can_fail_build=False)
+  api.git('status', name='git status cannot_fail_build', raise_on_failure=False)
 
   # You should run git new-branch before you upload something with git cl.
-  api.git.new_branch('refactor')  # Upstream is origin/master by default.
+  api.git.new_branch('refactor')  # Upstream is origin/main by default.
+
+  if api.properties.get('set_both_upstream_and_upstream_current'):
+    api.git.new_branch('failed_new_branch', upstream='will_fail', upstream_current=True) #pylint: disable = line-too-long
   # And use upstream kwarg to set up different upstream for tracking.
   api.git.new_branch('feature', upstream='refactor')
-
+  # A new branching tracking the current branch, which is 'feature'.
+  api.git.new_branch('track_current', upstream_current=True)
   # You can use api.git.rebase to rebase the current branch onto another one
-  api.git.rebase(name_prefix='my repo', branch='origin/master',
+  api.git.rebase(name_prefix='my repo', branch='origin/main',
                  dir_path=api.path['checkout'],
                  remote_name=api.properties.get('remote_name'))
 
@@ -88,7 +92,7 @@ def RunSteps(api):
     step_result = api.git.cat_file_at_commit(api.properties['cat_file'],
                                              revision,
                                              stdout=api.raw_io.output())
-    if 'TestOutput' in step_result.stdout:
+    if 'TestOutput' in step_result.stdout.decode('utf-8'):
       pass  # Success!
 
   # Bundle the repository.
@@ -168,3 +172,7 @@ def GenTests(api):
   yield (
       api.test('git-cache-checkout') +
       api.properties(use_git_cache=True))
+
+  yield (api.test('new_branch_failed') +
+         api.properties(set_both_upstream_and_upstream_current=True) +
+         api.expect_exception('ValueError'))

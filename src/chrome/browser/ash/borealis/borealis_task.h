@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_BOREALIS_BOREALIS_TASK_H_
 #define CHROME_BROWSER_ASH_BOREALIS_BOREALIS_TASK_H_
 
+#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_launch_watcher.h"
@@ -25,7 +26,7 @@ class BorealisTask {
   // different result should be used, and an error string provided.
   using CompletionResultCallback =
       base::OnceCallback<void(BorealisStartupResult, std::string)>;
-  BorealisTask();
+  explicit BorealisTask(std::string name);
   BorealisTask(const BorealisTask&) = delete;
   BorealisTask& operator=(const BorealisTask&) = delete;
   virtual ~BorealisTask();
@@ -38,6 +39,8 @@ class BorealisTask {
   void Complete(BorealisStartupResult result, std::string message);
 
  private:
+  std::string name_;
+  base::Time start_time_;
   CompletionResultCallback callback_;
 };
 
@@ -77,6 +80,8 @@ class StartBorealisVm : public BorealisTask {
   void RunInternal(BorealisContext* context) override;
 
  private:
+  void StartBorealisWithExternalDisk(BorealisContext* context,
+                                     absl::optional<base::File> external_disk);
   void OnStartBorealisVm(
       BorealisContext* context,
       absl::optional<vm_tools::concierge::StartVmResponse> response);
@@ -96,6 +101,35 @@ class AwaitBorealisStartup : public BorealisTask {
                               absl::optional<std::string> container);
   BorealisLaunchWatcher watcher_;
   base::WeakPtrFactory<AwaitBorealisStartup> weak_factory_{this};
+};
+
+// Updates the value of some chrome://flags in the VM.
+class UpdateChromeFlags : public BorealisTask {
+ public:
+  explicit UpdateChromeFlags(Profile* profile);
+  ~UpdateChromeFlags() override;
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void OnFlagsUpdated(BorealisContext* context, std::string error);
+
+  Profile* const profile_;
+  base::WeakPtrFactory<UpdateChromeFlags> weak_factory_{this};
+};
+
+// Checks the size of the disk and adjusts it if necessary.
+class SyncBorealisDisk : public BorealisTask {
+ public:
+  SyncBorealisDisk();
+  ~SyncBorealisDisk() override;
+  void RunInternal(BorealisContext* context) override;
+
+ private:
+  void OnSyncBorealisDisk(
+      BorealisContext* context,
+      Expected<BorealisSyncDiskSizeResult,
+               Described<BorealisSyncDiskSizeResult>> result);
+  base::WeakPtrFactory<SyncBorealisDisk> weak_factory_{this};
 };
 
 }  // namespace borealis

@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/fe_displacement_map.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
@@ -39,14 +40,14 @@ FEDisplacementMap::FEDisplacementMap(Filter* filter,
       y_channel_selector_(y_channel_selector),
       scale_(scale) {}
 
-FloatRect FEDisplacementMap::MapEffect(const FloatRect& rect) const {
-  FloatRect result = rect;
-  result.InflateX(GetFilter()->ApplyHorizontalScale(std::abs(scale_) / 2));
-  result.InflateY(GetFilter()->ApplyVerticalScale(std::abs(scale_) / 2));
+gfx::RectF FEDisplacementMap::MapEffect(const gfx::RectF& rect) const {
+  gfx::RectF result = rect;
+  result.Outset(GetFilter()->ApplyHorizontalScale(std::abs(scale_) / 2),
+                GetFilter()->ApplyVerticalScale(std::abs(scale_) / 2));
   return result;
 }
 
-FloatRect FEDisplacementMap::MapInputs(const FloatRect& rect) const {
+gfx::RectF FEDisplacementMap::MapInputs(const gfx::RectF& rect) const {
   return InputEffect(0)->MapRect(rect);
 }
 

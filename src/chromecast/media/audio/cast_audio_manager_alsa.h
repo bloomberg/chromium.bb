@@ -8,9 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
-#include "chromecast/common/mojom/service_connector.mojom.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_manager_helper.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -37,8 +36,12 @@ class CastAudioManagerAlsa : public CastAudioManager {
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
-      mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector,
+      external_service_support::ExternalConnector* connector,
       bool use_mixer);
+
+  CastAudioManagerAlsa(const CastAudioManagerAlsa&) = delete;
+  CastAudioManagerAlsa& operator=(const CastAudioManagerAlsa&) = delete;
+
   ~CastAudioManagerAlsa() override;
 
   // CastAudioManager implementation.
@@ -74,8 +77,6 @@ class CastAudioManagerAlsa : public CastAudioManager {
                           ::media::AudioDeviceNames* device_names);
 
   std::unique_ptr<::media::AlsaWrapper> wrapper_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastAudioManagerAlsa);
 };
 
 }  // namespace media

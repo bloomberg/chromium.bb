@@ -33,6 +33,9 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       EXPECT_CALL(*this, SetNeedsBeginFrame(false)).Times(testing::AtLeast(0));
   }
 
+  MockCompositorFrameSink(const MockCompositorFrameSink&) = delete;
+  MockCompositorFrameSink& operator=(const MockCompositorFrameSink&) = delete;
+
   // viz::mojom::blink::CompositorFrameSink implementation
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
   MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void(void));
@@ -61,11 +64,10 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   MOCK_METHOD1(SetPreferredFrameInterval, void(base::TimeDelta));
   MOCK_METHOD1(InitializeCompositorFrameSinkType,
                void(viz::mojom::CompositorFrameSinkType));
+  MOCK_METHOD1(SetThreadIds, void(const WTF::Vector<int32_t>&));
 
  private:
   mojo::Receiver<viz::mojom::blink::CompositorFrameSink> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockCompositorFrameSink);
 };
 
 }  // namespace blink

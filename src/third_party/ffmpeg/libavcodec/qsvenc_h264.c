@@ -169,18 +169,12 @@ static const AVCodecDefault qsv_enc_defaults[] = {
     { "bf",        "3"     },
     { "qmin",      "-1"    },
     { "qmax",      "-1"    },
-#if FF_API_CODER_TYPE
-    { "coder",     "-1"    },
-#endif
     { "trellis",   "-1"    },
     { "flags",     "+cgop" },
-#if FF_API_PRIVATE_OPT
-    { "b_strategy", "-1"   },
-#endif
     { NULL },
 };
 
-AVCodec ff_h264_qsv_encoder = {
+const AVCodec ff_h264_qsv_encoder = {
     .name           = "h264_qsv",
     .long_name      = NULL_IF_CONFIG_SMALL("H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 (Intel Quick Sync Video acceleration)"),
     .priv_data_size = sizeof(QSVH264EncContext),

@@ -102,6 +102,7 @@ class RecordingProofVerifier : public ProofVerifier {
       return QUIC_FAILURE;
     }
 
+    // Parse the cert into an X509 structure.
     const uint8_t* data;
     data = reinterpret_cast<const uint8_t*>(certs[0].data());
     bssl::UniquePtr<X509> cert(d2i_X509(nullptr, &data, certs[0].size()));
@@ -109,15 +110,28 @@ class RecordingProofVerifier : public ProofVerifier {
       return QUIC_FAILURE;
     }
 
-    static const unsigned kMaxCommonNameLength = 256;
-    char buf[kMaxCommonNameLength];
-    X509_NAME* subject_name = X509_get_subject_name(cert.get());
-    if (X509_NAME_get_text_by_NID(subject_name, NID_commonName, buf,
-                                  sizeof(buf)) <= 0) {
+    // Extract the CN field
+    X509_NAME* subject = X509_get_subject_name(cert.get());
+    const int index = X509_NAME_get_index_by_NID(subject, NID_commonName, -1);
+    if (index < 0) {
+      return QUIC_FAILURE;
+    }
+    ASN1_STRING* name_data =
+        X509_NAME_ENTRY_get_data(X509_NAME_get_entry(subject, index));
+    if (name_data == nullptr) {
       return QUIC_FAILURE;
     }
 
-    common_name_ = buf;
+    // Convert the CN to UTF8, in case the cert represents it in a different
+    // format.
+    unsigned char* buf = nullptr;
+    const int len = ASN1_STRING_to_UTF8(&buf, name_data);
+    if (len <= 0) {
+      return QUIC_FAILURE;
+    }
+    bssl::UniquePtr<unsigned char> deleter(buf);
+
+    common_name_.assign(reinterpret_cast<const char*>(buf), len);
     cert_sct_ = cert_sct;
     return QUIC_SUCCESS;
   }
@@ -604,7 +618,7 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
   return latest_created_stream_;
 }
 
-QuicErrorCode QuicTestClient::connection_error() {
+QuicErrorCode QuicTestClient::connection_error() const {
   return client()->connection_error();
 }
 
@@ -618,16 +632,12 @@ const std::string& QuicTestClient::cert_sct() const {
       ->cert_sct();
 }
 
-QuicTagValueMap QuicTestClient::GetServerConfig() const {
+const QuicTagValueMap& QuicTestClient::GetServerConfig() const {
   QuicCryptoClientConfig* config = client_->crypto_config();
-  QuicCryptoClientConfig::CachedState* state =
+  const QuicCryptoClientConfig::CachedState* state =
       config->LookupOrCreate(client_->server_id());
   const CryptoHandshakeMessage* handshake_msg = state->GetServerConfig();
-  if (handshake_msg != nullptr) {
-    return handshake_msg->tag_value_map();
-  } else {
-    return QuicTagValueMap();
-  }
+  return handshake_msg->tag_value_map();
 }
 
 bool QuicTestClient::connected() const {
@@ -786,7 +796,7 @@ void QuicTestClient::OnClose(QuicSpdyStream* stream) {
   // written.
   client()->OnClose(stream);
   ++num_responses_;
-  if (!QuicContainsKey(open_streams_, stream->id())) {
+  if (open_streams_.find(stream->id()) == open_streams_.end()) {
     return;
   }
   if (latest_created_stream_ == stream) {

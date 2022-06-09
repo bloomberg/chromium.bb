@@ -10,13 +10,14 @@ import "mojo/public/mojom/base/string16.mojom";
 // There is one instance of this interface per render frame in the render
 // process. All methods are called by browser on renderer.
 interface AutofillAgent {
-  // Instructs the renderer to fill the active form with the given form data.
-  // Please refer AutofillDriver.QueryFormFieldAutofill comments about the |id|.
-  FillForm(int32 id, FormData form);
+  // Triggers a reparse of the new forms. This is done when a form is seen in
+  // a subframe and it is not known which form is its parent.
+  TriggerReparse();
 
-  // Instructs the renderer to preview the active form with the given form data.
-  // Please refer AutofillDriver.QueryFormFieldAutofill comments about the |id|.
-  PreviewForm(int32 id, FormData form);
+  // Instructs the renderer to fill or preview the active form with the given
+  // form data. Refer to AutofillDriver.AskForValuesToFill for comments
+  // about the |id|.
+  FillOrPreviewForm(int32 id, FormData form, RendererFormDataAction action);
 
   // Sends the heuristic and server field type predictions to the renderer.
   FieldTypePredictionsAvailable(array<FormDataPredictions> forms);
@@ -75,13 +76,15 @@ interface AutofillAgent {
   SetQueryPasswordSuggestion(bool query);
 
   // Get form element's form and field data. The form field is given by a
-  // selector returning an arbitrary number of results and an index for
-  // selecting the specified result.
-  GetElementFormAndFieldDataAtIndex(string selector, int32 index) => (
+  // stable devtools node identifier in the backend node id.
+  // https://chromedevtools.github.io/devtools-protocol/tot/DOM/#type-BackendNodeId
+  // The corresponding entity in the renderer is the DOMNodeIds.
+  GetElementFormAndFieldDataForDevToolsNodeId(int32 backend_node_id) => (
       autofill.mojom.FormData form, autofill.mojom.FormFieldData field);
 
-  // Set whether or not an assistant action is currently running an action.
-  SetAssistantActionState(bool running);
+  // Set whether or not the Autofill Assistant currently wants to suppress the
+  // keyboard from showing.
+  SetAssistantKeyboardSuppressState(bool suppress);
 
   // Allows heavy scraping of form data (e.g., button titles for
   // unowned forms).

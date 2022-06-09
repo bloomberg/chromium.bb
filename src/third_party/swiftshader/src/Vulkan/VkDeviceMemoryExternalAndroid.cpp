@@ -164,77 +164,59 @@ VkFormatFeatureFlags GetVkFormatFeaturesFromAHBFormat(uint32_t ahbFormat)
 
 }  // namespace
 
-AHardwareBufferExternalMemory::AllocateInfo::AllocateInfo(const VkMemoryAllocateInfo *pAllocateInfo)
+AHardwareBufferExternalMemory::AllocateInfo::AllocateInfo(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo)
 {
-	const auto *createInfo = reinterpret_cast<const VkBaseInStructure *>(pAllocateInfo->pNext);
-	while(createInfo)
+	if(extendedAllocationInfo.importAndroidHardwareBufferInfo)
 	{
-		switch(createInfo->sType)
-		{
-		case VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID:
-			{
-				const auto *importInfo = reinterpret_cast<const VkImportAndroidHardwareBufferInfoANDROID *>(createInfo);
-				importAhb = true;
-				ahb = importInfo->buffer;
-			}
-			break;
-		case VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO:
-			{
-				const auto *exportInfo = reinterpret_cast<const VkExportMemoryAllocateInfo *>(createInfo);
+		importAhb = true;
+		ahb = extendedAllocationInfo.importAndroidHardwareBufferInfo->buffer;
+	}
 
-				if(exportInfo->handleTypes == VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
-				{
-					exportAhb = true;
-				}
-				else
-				{
-					UNSUPPORTED("VkExportMemoryAllocateInfo::handleTypes %d", int(exportInfo->handleTypes));
-				}
-			}
-			break;
-		case VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO:
-			{
-				const auto *dedicatedAllocateInfo = reinterpret_cast<const VkMemoryDedicatedAllocateInfo *>(createInfo);
-				dedicatedImageHandle = vk::Cast(dedicatedAllocateInfo->image);
-				dedicatedBufferHandle = vk::Cast(dedicatedAllocateInfo->buffer);
-			}
-			break;
-		default:
-			{
-				LOG_TRAP("VkMemoryAllocateInfo->pNext sType = %s", vk::Stringify(createInfo->sType).c_str());
-			}
-			break;
+	if(extendedAllocationInfo.exportMemoryAllocateInfo)
+	{
+		if(extendedAllocationInfo.exportMemoryAllocateInfo->handleTypes == VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+		{
+			exportAhb = true;
 		}
-		createInfo = createInfo->pNext;
+		else
+		{
+			UNSUPPORTED("VkExportMemoryAllocateInfo::handleTypes %d", int(extendedAllocationInfo.exportMemoryAllocateInfo->handleTypes));
+		}
+	}
+
+	if(extendedAllocationInfo.dedicatedAllocateInfo)
+	{
+		dedicatedImageHandle = vk::Cast(extendedAllocationInfo.dedicatedAllocateInfo->image);
+		dedicatedBufferHandle = vk::Cast(extendedAllocationInfo.dedicatedAllocateInfo->buffer);
 	}
 }
 
-AHardwareBufferExternalMemory::AHardwareBufferExternalMemory(const VkMemoryAllocateInfo *pAllocateInfo)
-    : allocateInfo(pAllocateInfo)
+AHardwareBufferExternalMemory::AHardwareBufferExternalMemory(const VkMemoryAllocateInfo *pCreateInfo, void *mem, const DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo, vk::Device *pDevice)
+    : vk::DeviceMemory(pCreateInfo, pDevice)
+    , allocateInfo(extendedAllocationInfo)
 {
 }
 
 AHardwareBufferExternalMemory::~AHardwareBufferExternalMemory()
 {
-	// correct deallocation of AHB does not require a pointer or size
-	deallocate(nullptr, 0);
+	freeBuffer();
 }
 
-// VkAllocateMemory
-VkResult AHardwareBufferExternalMemory::allocate(size_t size, void **pBuffer)
+// vkAllocateMemory
+VkResult AHardwareBufferExternalMemory::allocateBuffer()
 {
 	if(allocateInfo.importAhb)
 	{
-		return importAndroidHardwareBuffer(allocateInfo.ahb, pBuffer);
+		return importAndroidHardwareBuffer(allocateInfo.ahb, &buffer);
 	}
 	else
 	{
 		ASSERT(allocateInfo.exportAhb);
-		return allocateAndroidHardwareBuffer(size, pBuffer);
+		return allocateAndroidHardwareBuffer(allocationSize, &buffer);
 	}
 }
 
-void AHardwareBufferExternalMemory::deallocate(void *buffer, size_t size)
+void AHardwareBufferExternalMemory::freeBuffer()
 {
 	if(ahb != nullptr)
 	{
@@ -350,6 +332,11 @@ VkResult AHardwareBufferExternalMemory::unlockAndroidHardwareBuffer()
 
 VkResult AHardwareBufferExternalMemory::exportAndroidHardwareBuffer(AHardwareBuffer **pAhb) const
 {
+	if(getFlagBit() != VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+	{
+		return VK_ERROR_OUT_OF_HOST_MEMORY;
+	}
+
 	// Each call to vkGetMemoryAndroidHardwareBufferANDROID *must* return an Android hardware buffer with a new reference
 	// acquired in addition to the reference held by the VkDeviceMemory. To avoid leaking resources, the application *must*
 	// release the reference by calling AHardwareBuffer_release when it is no longer needed.
@@ -464,14 +451,14 @@ VkResult AHardwareBufferExternalMemory::GetAndroidHardwareBufferProperties(VkDev
 
 		VkImage Image;
 
-		result = vk::Image::Create(vk::DEVICE_MEMORY, &info, &Image, vk::Cast(device));
+		result = vk::Image::Create(vk::NULL_ALLOCATION_CALLBACKS, &info, &Image, vk::Cast(device));
 		if(result != VK_SUCCESS)
 		{
 			return result;
 		}
 
 		pProperties->allocationSize = vk::Cast(Image)->getMemoryRequirements().size;
-		vk::destroy(Image, vk::DEVICE_MEMORY);
+		vk::destroy(Image, vk::NULL_ALLOCATION_CALLBACKS);
 	}
 
 	return result;

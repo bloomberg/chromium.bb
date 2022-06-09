@@ -43,8 +43,10 @@ limitations under the License.
 #include "tensorflow/compiler/xla/service/hlo_instructions.h"
 #include "tensorflow/compiler/xla/service/hlo_module_config.h"
 #include "tensorflow/compiler/xla/service/llvm_ir/alias_analysis.h"
+#include "tensorflow/compiler/xla/service/llvm_ir/fused_ir_emitter.h"
 #include "tensorflow/compiler/xla/service/llvm_ir/ir_array.h"
 #include "tensorflow/compiler/xla/service/llvm_ir/ir_builder_mixin.h"
+#include "tensorflow/compiler/xla/service/llvm_ir/llvm_util.h"
 #include "tensorflow/compiler/xla/service/llvm_ir/loop_emitter.h"
 #include "tensorflow/compiler/xla/service/name_uniquer.h"
 #include "tensorflow/compiler/xla/statusor.h"
@@ -78,13 +80,19 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   //              index in the profiling array.
   // computation_to_profile_idx: the mapping from HLO computations to their
   //              index in the profiling array.
+  // computation_transitively_contains_custom_call: the mapping from HLO
+  //   computations to whether or not they transitively contain a custom-call
+  //   instruction. All computations in the module must have a key in this
+  //   map.
   // emit_code_for_msan: whether emitted code should be compatible with msan.
   IrEmitter(mlir::MLIRContext* mlir_context, const HloModule& hlo_module,
             const BufferAssignment& assignment, llvm::Module* llvm_module,
-            std::unordered_map<const HloInstruction*, int64>
+            std::unordered_map<const HloInstruction*, int64_t>
                 instruction_to_profile_idx,
-            std::unordered_map<const HloComputation*, int64>
+            std::unordered_map<const HloComputation*, int64_t>
                 computation_to_profile_idx,
+            absl::flat_hash_map<const HloComputation*, bool>
+                computation_transitively_contains_custom_call,
             const TargetMachineFeatures* target_machine,
             bool emit_code_for_msan);
   ~IrEmitter() override;
@@ -118,13 +126,6 @@ class IrEmitter : public DfsHloVisitorWithDefault,
 
   // Emit an LLVM global variable for every constant buffer allocation.
   Status EmitConstantGlobals();
-
-  // Emit code to emit the element at `index` for a convolution instruction.
-  StatusOr<llvm::Value*> EmitElementalConvolution(
-      const HloConvolutionInstruction* convolution,
-      const llvm_ir::ElementGenerator& input_generator,
-      const llvm_ir::ElementGenerator& kernel_generator,
-      const llvm_ir::IrArray::Index& index);
 
  protected:
   //
@@ -189,6 +190,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
  private:
   Status HandleSliceToDynamic(HloInstruction* hlo);
   Status HandlePadToStatic(HloInstruction* hlo);
+  Status HandleTopK(HloInstruction* hlo);
   Status HandleAllReduceSingleReplica(HloInstruction* crs);
   Status HandleAllReduceMultipleReplica(HloInstruction* crs);
 
@@ -213,7 +215,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   template <typename T>
   llvm::Value* GetProfileCounterCommon(
       const T& hlo,
-      const std::unordered_map<const T*, int64>& profile_index_map);
+      const std::unordered_map<const T*, int64_t>& profile_index_map);
 
   // Gets the IR Value emitted previously for the given hlo.
   //
@@ -232,10 +234,9 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   std::vector<llvm_ir::IrArray> GetIrArraysForOperandsOf(
       const HloInstruction* hlo);
 
-  GeneratorForOperandIrArrays GetGeneratorForOperandIrArrays(
-      HloInstruction* unnested_hlo) {
-    return [=]() { return GetIrArraysForOperandsOf(unnested_hlo); };
-  }
+  // Bind all argument IrArrays of `fusion` to `fused_emitter`.
+  void BindFusionArguments(const HloInstruction* fusion,
+                           FusedIrEmitter* fused_emitter);
 
   // Augments IrArray with aliasing information.
   void AddAliasingInformationToIrArray(const HloInstruction& hlo,
@@ -250,6 +251,10 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // computation function being emitted by this emitter.
   llvm::Value* GetProfileCountersArgument();
 
+  // Get the llvm::Value* that represents the "status" argument of the
+  // computation function being emitted by this emitter.
+  llvm::Value* GetStatusArgument();
+
   // Get the xla::ExecutableRunOptions that represents the "run_options"
   // argument of the computation function being emitted by this emitter.
   llvm::Value* GetExecutableRunOptionsArgument();
@@ -257,6 +262,13 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Get the llvm::Value* that represents the "buffer_table" argument of the
   // computation function being emitted by this emitter.
   llvm::Value* GetBufferTableArgument();
+
+  // Get the llvm::BasicBlock that contains the return instruction.
+  llvm::BasicBlock* GetReturnBlock();
+
+  // Emits code to check the state of the status object being threaded through
+  // each computation and return early if it's in an error state.
+  void EmitEarlyReturnIfErrorStatus();
 
   // Helper for EmitBufferPointer.
   llvm::Value* EmitGlobalBufferPointer(const BufferAllocation::Slice& slice,
@@ -337,7 +349,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // most-minor dimension).
   llvm::Constant* CreateInitializerForConstantArray(
       const std::vector<llvm::Constant*>& array_elements, const Shape& shape,
-      int64 dimension_index);
+      int64_t dimension_index);
 
   // Tries to codegen a reduction operation using vectorized instructions.
   // Returns true if successful, and false on failure.  On failure, sets
@@ -351,7 +363,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   StatusOr<bool> EmitVectorizedReduce(HloInstruction* reduce,
                                       HloInstruction* arg,
                                       HloInstruction* init_value,
-                                      absl::Span<const int64> dimensions,
+                                      absl::Span<const int64_t> dimensions,
                                       HloComputation* function,
                                       string* failure_reason);
 
@@ -384,7 +396,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // "store_address".
   void EmitShardedVectorStore(llvm::Value* store_address,
                               const ShardedVector& value_to_store,
-                              const int alignment,
+                              llvm::Align alignment,
                               const llvm_ir::IrArray& containing_array);
 
   using ReductionGenerator = std ::function<llvm::Value*(
@@ -403,8 +415,8 @@ class IrEmitter : public DfsHloVisitorWithDefault,
       const ReductionGenerator& reduction_generator,
       const llvm_ir::IrArray::Index& output_index,
       const ShardedVectorType& accumulator_type, HloInstruction* init_value,
-      HloInstruction* arg, absl::Span<const int64> dimensions,
-      unsigned element_alignment);
+      HloInstruction* arg, absl::Span<const int64_t> dimensions,
+      llvm::Align element_alignment);
 
   // Tries to emit a fast concatenate operation using memcpy.  Returns true if
   // successful, and false on failure.  On failure, sets "failure_reason" to a
@@ -416,9 +428,23 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Emits LLVM IR to transfer "element_count" elements of type "primitive_type"
   // from the address "source" to the address "target".
   void EmitTransferElements(llvm::Value* target, llvm::Value* source,
-                            int64 element_count, PrimitiveType primitive_type,
+                            int64_t element_count, PrimitiveType primitive_type,
                             const llvm_ir::IrArray& target_array,
                             const llvm_ir::IrArray& source_array);
+
+  // Emits printing during the execution.
+  llvm::Value* EmitPrintf(absl::string_view fmt,
+                          absl::Span<llvm::Value* const> arguments);
+  llvm::Value* EmitPrintfToStderr(absl::string_view fmt,
+                                  absl::Span<llvm::Value* const> arguments);
+
+  // Emits a call to a non-variadic function `func_name` with arguments
+  // `arguments` assuming C calling convention.
+  llvm::Value* EmitCallToFunc(
+      std::string func_name, const std::vector<llvm::Value*>& arguments,
+      llvm::Type* return_type, bool does_not_throw = true,
+      bool only_accesses_arg_memory = false,
+      bool only_accesses_inaccessible_mem_or_arg_mem = false);
 
   // Assignment of the buffers needed by the computation and their shape
   // information.
@@ -455,25 +481,43 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Maps the buffer allocation slices for the parameters to the computation
   // being compiled to their parameter numbers.  Only relevant for thread local
   // computations.
-  absl::flat_hash_map<BufferAllocation::Index, int64>
+  absl::flat_hash_map<BufferAllocation::Index, int64_t>
       computation_parameter_allocations_;
 
   // Maps HLO instructions to their index into the profile counter array.
-  const std::unordered_map<const HloInstruction*, int64>
+  const std::unordered_map<const HloInstruction*, int64_t>
       instruction_to_profile_idx_;
 
   // Maps HLO computations to their index into the profile counter array.
-  const std::unordered_map<const HloComputation*, int64>
+  const std::unordered_map<const HloComputation*, int64_t>
       computation_to_profile_idx_;
+
+  // Maps HLO computations to whether they contain a custom-call instruction
+  // (either directly, or transitively by e.g. calling another computation that
+  // does).
+  const absl::flat_hash_map<const HloComputation*, bool>
+      computation_transitively_contains_custom_call_;
+
+  // Accessor for the custom-call mapping that enforces the precondition that
+  // all computations must have a key in the map.
+  bool ComputationTransitivelyContainsCustomCall(
+      const HloComputation* computation) const {
+    auto it = computation_transitively_contains_custom_call_.find(computation);
+    CHECK(it != computation_transitively_contains_custom_call_.cend())
+        << "Must provide 'contains CustomCall' annotation for all computations "
+           "in the module";
+    return it->second;
+  }
 
   // Maps HLOs to Values emitted for them.
   absl::flat_hash_map<const HloInstruction*, llvm::Value*> emitted_value_;
 
   llvm_ir::AliasAnalysis alias_analysis_;
 
-  // The number of root instruction outer dimensions used in parallel loop
-  // emission (ParallelLoopEmitter).
-  int64 num_dynamic_loop_bounds_ = 0;
+  // The number of outer dimensions of the root instruction's shape that
+  // will be partitioned when emitting parallel loops. (See
+  // ParallelLoopEmitter).
+  int64_t num_dynamic_loop_bounds_ = 0;
 
   // Returns whether the given instruction should be emitted as a parallel loop.
   bool ShouldEmitParallelLoopFor(const HloInstruction& op) const {
@@ -545,14 +589,15 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Given a load instruction and a shape or buffer size, annotate the load's
   // result with the alignment required by the shape or size.
   void AttachAlignmentMetadataForLoad(llvm::LoadInst* load, const Shape& shape);
-  void AttachAlignmentMetadataForLoad(llvm::LoadInst* load, int64 buffer_size);
+  void AttachAlignmentMetadataForLoad(llvm::LoadInst* load,
+                                      int64_t buffer_size);
 
   // Given a load instruction and a shape or buffer size, annotate the load's
   // result with the dereferenceable bytes required by the shape / buffer size.
   void AttachDereferenceableMetadataForLoad(llvm::LoadInst* load,
                                             const Shape& shape);
   void AttachDereferenceableMetadataForLoad(llvm::LoadInst* load,
-                                            int64 buffer_size);
+                                            int64_t buffer_size);
 
   // Calculate the alignment of a buffer allocated for a given shape.
   int MinimumAlignmentForShape(const Shape& shape);
@@ -561,7 +606,7 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   int MinimumAlignmentForPrimitiveType(PrimitiveType primitive_type);
 
   // Returns the number of bytes within the shape.
-  int64 ByteSizeOf(const Shape& shape) const;
+  int64_t ByteSizeOf(const Shape& shape) const;
 
   enum class XfeedKind {
     kInfeed,

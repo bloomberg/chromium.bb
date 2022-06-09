@@ -6,10 +6,13 @@
 
 #include <sstream>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -27,10 +30,29 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kESimPolicyDisconnectByPolicyHistogram[] =
+    "Network.Cellular.ESim.DisconnectByPolicy.Result";
+
+constexpr char kPSimPolicyDisconnectByPolicyHistogram[] =
+    "Network.Cellular.PSim.DisconnectByPolicy.Result";
+
+void RecordDisconnectByPolicyResult(const NetworkState* network, bool success) {
+  if (network->type() == shill::kTypeCellular) {
+    if (network->eid().empty()) {
+      base::UmaHistogramBoolean(kPSimPolicyDisconnectByPolicyHistogram,
+                                success);
+      return;
+    }
+    base::UmaHistogramBoolean(kESimPolicyDisconnectByPolicyHistogram, success);
+  }
+}
+
 void DisconnectErrorCallback(
-    const std::string& network_path,
+    const NetworkState* network,
     const std::string& error_name,
     std::unique_ptr<base::DictionaryValue> error_data) {
+  RecordDisconnectByPolicyResult(network, /*success=*/false);
+
   std::stringstream error_data_ss;
   if (error_data)
     error_data_ss << *error_data;
@@ -38,7 +60,8 @@ void DisconnectErrorCallback(
     error_data_ss << "<none>";
 
   NET_LOG(ERROR) << "AutoConnectHandler.Disconnect failed for: "
-                 << NetworkPathId(network_path) << " Error name: " << error_name
+                 << NetworkPathId(network->path())
+                 << " Error name: " << error_name
                  << ", Data: " << error_data_ss.str();
 }
 
@@ -114,7 +137,8 @@ AutoConnectHandler::AutoConnectHandler()
       device_policy_applied_(false),
       user_policy_applied_(false),
       client_certs_resolved_(false),
-      applied_autoconnect_policy_(false),
+      applied_autoconnect_policy_on_wifi(false),
+      applied_autoconnect_policy_on_cellular(false),
       connect_to_best_services_after_scan_(false),
       auto_connect_reasons_(0) {}
 
@@ -165,7 +189,8 @@ void AutoConnectHandler::LoggedInStateChanged() {
 
   // Disconnect before connecting, to ensure that we do not disconnect a network
   // that we just connected.
-  DisconnectIfPolicyRequires();
+  DisconnectWiFiIfPolicyRequires();
+  DisconnectCellularIfPolicyRequires();
   RequestBestConnection(AutoConnectReason::AUTO_CONNECT_REASON_LOGGED_IN);
 }
 
@@ -181,7 +206,8 @@ void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
   else
     user_policy_applied_ = true;
 
-  DisconnectIfPolicyRequires();
+  DisconnectWiFiIfPolicyRequires();
+  DisconnectCellularIfPolicyRequires();
 
   // Request to connect to the best network only if there is at least one
   // managed network. Otherwise only process existing requests.
@@ -208,12 +234,12 @@ void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
   std::set<std::string> hidden_hex_ssids_at_scan_start;
   std::swap(hidden_hex_ssids_at_scan_start_, hidden_hex_ssids_at_scan_start);
 
-  // Enforce AllowOnlyPolicyNetworksToConnectIfAvailable policy if enabled.
+  // Enforce AllowOnlyPolicyWiFiToConnectIfAvailable policy if enabled.
   const NetworkState* managed_network =
       network_state_handler_->GetAvailableManagedWifiNetwork();
   if (device_policy_applied_ && user_policy_applied_ && managed_network &&
       managed_configuration_handler_
-          ->AllowOnlyPolicyNetworksToConnectIfAvailable()) {
+          ->AllowOnlyPolicyWiFiToConnectIfAvailable()) {
     const NetworkState* connected_network =
         network_state_handler_->ConnectedNetworkByType(
             NetworkTypePattern::WiFi());
@@ -337,7 +363,7 @@ void AutoConnectHandler::CheckBestConnection() {
   }
 }
 
-void AutoConnectHandler::DisconnectIfPolicyRequires() {
+void AutoConnectHandler::DisconnectWiFiIfPolicyRequires() {
   // Wait for both (user & device) policies to be applied. The device policy
   // holds all the policies, which might require disconnects, while the user
   // policy might allow some networks again. This also ensures that we only
@@ -347,56 +373,111 @@ void AutoConnectHandler::DisconnectIfPolicyRequires() {
 
   std::vector<std::string> blocked_hex_ssids =
       managed_configuration_handler_->GetBlockedHexSSIDs();
-  bool only_managed =
-      managed_configuration_handler_->AllowOnlyPolicyNetworksToConnect();
+  bool only_managed_wifi =
+      managed_configuration_handler_->AllowOnlyPolicyWiFiToConnect();
   bool only_managed_autoconnect =
       managed_configuration_handler_->AllowOnlyPolicyNetworksToAutoconnect();
   bool available_only =
       managed_configuration_handler_
-          ->AllowOnlyPolicyNetworksToConnectIfAvailable() &&
+          ->AllowOnlyPolicyWiFiToConnectIfAvailable() &&
       network_state_handler_->GetAvailableManagedWifiNetwork();
 
-  // Enforce the autoconnect-policy only once.
-  if (applied_autoconnect_policy_)
+  // Enforce the autoconnect-policy on WiFi networks only once.
+  if (applied_autoconnect_policy_on_wifi)
     only_managed_autoconnect = false;
   else
-    applied_autoconnect_policy_ = only_managed_autoconnect;
+    applied_autoconnect_policy_on_wifi = only_managed_autoconnect;
 
   // Early exit if no policy is set that requires any disconnects.
-  if (!only_managed && !only_managed_autoconnect && blocked_hex_ssids.empty() &&
-      !available_only) {
+  if (!only_managed_wifi && !only_managed_autoconnect &&
+      blocked_hex_ssids.empty() && !available_only) {
     return;
   }
 
   NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetNetworkListByType(NetworkTypePattern::WiFi(),
-                                               false, false, 0, &networks);
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::WiFi(),
+      /*configure_only=*/false, /*visible=*/false, /*limit=*/0, &networks);
+
+  DisconnectAndRemoveConfigOrDisableAutoConnect(
+      networks, only_managed_autoconnect, available_only);
+}
+
+void AutoConnectHandler::DisconnectCellularIfPolicyRequires() {
+  if (!features::IsESimPolicyEnabled())
+    return;
+  bool only_managed_cellular =
+      managed_configuration_handler_->AllowOnlyPolicyCellularNetworks();
+  bool only_managed_autoconnect =
+      managed_configuration_handler_->AllowOnlyPolicyNetworksToAutoconnect();
+
+  // Enforce the autoconnect-policy on cellular networks only once.
+  if (applied_autoconnect_policy_on_cellular)
+    only_managed_autoconnect = false;
+  else
+    applied_autoconnect_policy_on_cellular = only_managed_autoconnect;
+
+  // Early exit if no policy is set that requires any disconnects.
+  if (!only_managed_cellular && !only_managed_autoconnect) {
+    return;
+  }
+
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(),
+      /*configure_only=*/false, /*visible=*/false, /*limit=*/0, &networks);
+  DisconnectAndRemoveConfigOrDisableAutoConnect(
+      networks, only_managed_autoconnect, /*available_only=*/false);
+}
+
+void AutoConnectHandler::DisconnectAndRemoveConfigOrDisableAutoConnect(
+    const NetworkStateHandler::NetworkStateList& networks,
+    bool only_managed_autoconnect,
+    bool available_only) {
   for (const NetworkState* network : networks) {
     if (network->IsManagedByPolicy())
       continue;
 
+    bool is_cellular_type = network->type() == shill::kTypeCellular;
     if (network->blocked_by_policy()) {
-      // Disconnect & remove configuration.
+      // Disconnect blocked network.
       if (network->IsConnectingOrConnected())
-        DisconnectNetwork(network->path());
-      if (network->IsInProfile() && !available_only)
+        DisconnectNetwork(network);
+      if (!network->IsInProfile())
+        continue;
+
+      // Remove configuration if it's in profile and it's either an eSIM
+      // Cellular network or WiFi network with
+      // AllowOnlyPolicyWiFiToConnectIfAvailable
+      const bool isESim = is_cellular_type && !network->eid().empty();
+      const bool isPSim = is_cellular_type && network->eid().empty();
+      if (isESim || (!is_cellular_type && !available_only)) {
         RemoveNetworkConfigurationForNetwork(network->path());
+      } else if (isPSim) {
+        // Only disable auto-connect for pSIM cellular networks.
+        DisableAutoconnectForNetwork(network->path(),
+                                     ::onc::network_config::kCellular);
+      }
     } else if (only_managed_autoconnect) {
       // Disconnect & disable auto-connect.
       if (network->IsConnectingOrConnected())
-        DisconnectNetwork(network->path());
+        DisconnectNetwork(network);
       if (network->IsInProfile())
-        DisableAutoconnectForWiFiNetwork(network->path());
+        DisableAutoconnectForNetwork(
+            network->path(), is_cellular_type ? ::onc::network_config::kCellular
+                                              : ::onc::network_config::kWiFi);
     }
   }
 }
 
-void AutoConnectHandler::DisconnectNetwork(const std::string& service_path) {
+void AutoConnectHandler::DisconnectNetwork(const NetworkState* network) {
   NET_LOG(EVENT) << "Disconnect forced by policy for: "
-                 << NetworkPathId(service_path);
+                 << NetworkPathId(network->path());
   network_connection_handler_->DisconnectNetwork(
-      service_path, base::DoNothing(),
-      base::BindOnce(&DisconnectErrorCallback, service_path));
+      network->path(),
+      base::BindOnce(&RecordDisconnectByPolicyResult, network,
+                     /*success=*/true),
+      base::BindOnce(&DisconnectErrorCallback, network));
 }
 
 void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
@@ -408,13 +489,24 @@ void AutoConnectHandler::RemoveNetworkConfigurationForNetwork(
       base::BindOnce(&RemoveNetworkConfigurationErrorCallback));
 }
 
-void AutoConnectHandler::DisableAutoconnectForWiFiNetwork(
-    const std::string& service_path) {
+void AutoConnectHandler::DisableAutoconnectForNetwork(
+    const std::string& service_path,
+    const std::string& network_type) {
   NET_LOG(EVENT) << "Disable auto-connect forced by policy: "
                  << NetworkPathId(service_path);
   base::DictionaryValue properties;
-  properties.SetPath({::onc::network_config::kWiFi, ::onc::wifi::kAutoConnect},
-                     base::Value(false));
+
+  std::string autoconenct_path;
+  if (network_type == ::onc::network_config::kWiFi) {
+    autoconenct_path = base::StrCat(
+        {::onc::network_config::kWiFi, ".", ::onc::wifi::kAutoConnect});
+  } else if (network_type == ::onc::network_config::kCellular) {
+    autoconenct_path = base::StrCat(
+        {::onc::network_config::kCellular, ".", ::onc::cellular::kAutoConnect});
+  } else {
+    NOTREACHED();
+  }
+  properties.SetBoolPath(autoconenct_path, false);
   managed_configuration_handler_->SetProperties(
       service_path, properties, base::DoNothing(),
       base::BindOnce(&SetPropertiesErrorCallback));

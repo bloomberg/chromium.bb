@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_MAIN_BROWSER_OBSERVER_H_
 #define IOS_CHROME_BROWSER_MAIN_BROWSER_OBSERVER_H_
 
-#include "base/macros.h"
 #include "base/observer_list_types.h"
 
 class Browser;
@@ -13,15 +12,15 @@ class Browser;
 // Observer interface for objects interested in Browser events.
 class BrowserObserver : public base::CheckedObserver {
  public:
+  BrowserObserver(const BrowserObserver&) = delete;
+  BrowserObserver& operator=(const BrowserObserver&) = delete;
+
   // Invoked when the Browser is being destroyed. Gives subclasses a chance
   // to cleanup.
   virtual void BrowserDestroyed(Browser* browser) {}
 
  protected:
   BrowserObserver() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserObserver);
 };
 
 #endif  // IOS_CHROME_BROWSER_MAIN_BROWSER_OBSERVER_H_

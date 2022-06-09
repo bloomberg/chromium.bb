@@ -315,7 +315,8 @@ class GceAuthenticator(Authenticator):
             "Don't know how to work with protocol '%s'" % protocol)
       try:
         resp, contents = httplib2.Http().request(url, 'GET', **kwargs)
-      except (socket.error, httplib2.HttpLib2Error) as e:
+      except (socket.error, httplib2.HttpLib2Error,
+              httplib2.socks.ProxyError) as e:
         LOGGER.debug('GET [%s] raised %s', url, e)
         return None, None
       LOGGER.debug('GET [%s] #%d/%d (%d)', url, i+1, TRY_LIMIT, resp.status)
@@ -499,6 +500,17 @@ def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
   if not s:
     return None
   return json.loads(s)
+
+
+def CallGerritApi(host, path, **kwargs):
+  """Helper for calling a Gerrit API that returns a JSON response."""
+  conn_kwargs = {}
+  conn_kwargs.update(
+      (k, kwargs[k]) for k in ['reqtype', 'headers', 'body'] if k in kwargs)
+  conn = CreateHttpConn(host, path, **conn_kwargs)
+  read_kwargs = {}
+  read_kwargs.update((k, kwargs[k]) for k in ['accept_statuses'] if k in kwargs)
+  return ReadHttpJsonResponse(conn, **read_kwargs)
 
 
 def QueryChanges(host, params, first_param=None, limit=None, o_params=None,
@@ -703,6 +715,12 @@ def GetChangeRobotComments(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
+def GetRelatedChanges(host, change, revision='current'):
+  """Gets the related changes for a given change and revision."""
+  path = 'changes/%s/revisions/%s/related' % (change, revision)
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
 def AbandonChange(host, change, msg=''):
   """Abandons a Gerrit change."""
   path = 'changes/%s/abandon' % change
@@ -729,11 +747,17 @@ def RestoreChange(host, change, msg=''):
   return ReadHttpJsonResponse(conn)
 
 
-def SubmitChange(host, change, wait_for_merge=True):
+def SubmitChange(host, change):
   """Submits a Gerrit change via Gerrit."""
   path = 'changes/%s/submit' % change
-  body = {'wait_for_merge': wait_for_merge}
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  conn = CreateHttpConn(host, path, reqtype='POST')
+  return ReadHttpJsonResponse(conn)
+
+
+def GetChangesSubmittedTogether(host, change):
+  """Get all changes submitted with the given one."""
+  path = 'changes/%s/submitted_together?o=NON_VISIBLE_CHANGES' % change
+  conn = CreateHttpConn(host, path, reqtype='GET')
   return ReadHttpJsonResponse(conn)
 
 
@@ -788,6 +812,19 @@ def SetCommitMessage(host, change, description, notify='ALL'):
         e.http_status,
         'Received unexpected http status while editing message '
         'in change %s' % change)
+
+
+def GetCommitIncludedIn(host, project, commit):
+  """Retrieves the branches and tags for a given commit.
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-included-in
+
+  Returns:
+    A JSON object with keys of 'branches' and 'tags'.
+  """
+  path = 'projects/%s/commits/%s/in' % (urllib.parse.quote(project, ''), commit)
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  return ReadHttpJsonResponse(conn, accept_statuses=[200])
 
 
 def IsCodeOwnersEnabledOnHost(host):
@@ -901,7 +938,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
           int(response['labels'][key] != int(val))):
         raise GerritError(200, 'Unable to set "%s" label on change %s.' % (
             key, change))
-
+  return response
 
 def ResetReviewLabels(host, change, label, value='0', message=None,
                       notify=None):
@@ -989,6 +1026,23 @@ def CreateGerritBranch(host, project, branch, commit):
   raise GerritError(200, 'Unable to create gerrit branch')
 
 
+def CreateGerritTag(host, project, tag, commit):
+  """Creates a new tag at the given commit.
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#create-tag
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/tags/%s' % (project, tag)
+  body = {'revision': commit}
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  response = ReadHttpJsonResponse(conn, accept_statuses=[201])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to create gerrit tag')
+
+
 def GetHead(host, project):
   """Retrieves current HEAD of Gerrit project
 
@@ -1023,20 +1077,17 @@ def UpdateHead(host, project, branch):
 
 
 def GetGerritBranch(host, project, branch):
-  """Gets a branch from given project and commit.
+  """Gets a branch info from given project and branch name.
 
   See:
   https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-branch
 
   Returns:
-    A JSON object with 'revision' key.
+    A JSON object with 'revision' key if the branch exists, otherwise None.
   """
   path = 'projects/%s/branches/%s' % (project, branch)
   conn = CreateHttpConn(host, path, reqtype='GET')
-  response = ReadHttpJsonResponse(conn)
-  if response:
-    return response
-  raise GerritError(200, 'Unable to get gerrit branch')
+  return ReadHttpJsonResponse(conn, accept_statuses=[200, 404])
 
 
 def GetProjectHead(host, project):

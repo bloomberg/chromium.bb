@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_DEFERRED_GPU_COMMAND_SERVICE_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_DEFERRED_GPU_COMMAND_SERVICE_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 
 namespace gl {
@@ -21,6 +21,10 @@ class TaskQueueWebView;
 class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
  public:
   static DeferredGpuCommandService* GetInstance();
+
+  DeferredGpuCommandService(const DeferredGpuCommandService&) = delete;
+  DeferredGpuCommandService& operator=(const DeferredGpuCommandService&) =
+      delete;
 
   // gpu::CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
@@ -43,11 +47,9 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
 
   static DeferredGpuCommandService* CreateDeferredGpuCommandService();
 
-  TaskQueueWebView* task_queue_;
-  GpuServiceWebView* gpu_service_;
+  raw_ptr<TaskQueueWebView> task_queue_;
+  raw_ptr<GpuServiceWebView> gpu_service_;
   scoped_refptr<gl::GLShareGroup> share_group_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeferredGpuCommandService);
 };
 
 }  // namespace android_webview

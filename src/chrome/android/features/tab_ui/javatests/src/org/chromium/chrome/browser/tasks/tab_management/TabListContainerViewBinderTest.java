@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 
@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -111,10 +112,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         mStartedHidingCallback = new CallbackHelper();
         mFinishedHidingCallback = new CallbackHelper();
 
-        mContainerModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mContainerModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
-        mMCP = PropertyModelChangeProcessor.create(
-                mContainerModel, mRecyclerView, TabListContainerViewBinder::bind);
+            mMCP = PropertyModelChangeProcessor.create(
+                    mContainerModel, mRecyclerView, TabListContainerViewBinder::bind);
+        });
     }
 
     @Test
@@ -231,8 +234,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
         mContainerModel.set(TabListContainerProperties.IS_INCOGNITO, false);
         assertThat(mRecyclerView.getBackground(), instanceOf(ColorDrawable.class));
         assertThat(((ColorDrawable) mRecyclerView.getBackground()).getColor(),
-                equalTo(ApiCompatibilityUtils.getColor(
-                        mRecyclerView.getResources(), R.color.default_bg_color)));
+                equalTo(SemanticColorUtils.getDefaultBgColor(mRecyclerView.getContext())));
     }
 
     @Test
@@ -293,7 +295,7 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Override
     public void tearDownTest() throws Exception {
-        mMCP.destroy();
+        TestThreadUtils.runOnUiThreadBlocking(mMCP::destroy);
         super.tearDownTest();
     }
 }

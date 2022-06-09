@@ -13,16 +13,17 @@
 #include <memory>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/memory/raw_ptr.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/incident_reporting/module_integrity_unittest_util_win.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -47,10 +48,13 @@ class ScopedModuleModifier {
     EXPECT_EQ(ModificationLength, bytes_written);
   }
 
+  ScopedModuleModifier(const ScopedModuleModifier&) = delete;
+  ScopedModuleModifier& operator=(const ScopedModuleModifier&) = delete;
+
   ~ScopedModuleModifier() {
     uint8_t modification[ModificationLength];
-    std::transform(address_, address_ + ModificationLength, &modification[0],
-                   [](uint8_t byte) { return byte - 1U; });
+    std::transform(address_.get(), address_ + ModificationLength,
+                   &modification[0], [](uint8_t byte) { return byte - 1U; });
     SIZE_T bytes_written = 0;
     EXPECT_NE(0, WriteProcessMemory(GetCurrentProcess(),
                                     address_,
@@ -61,9 +65,7 @@ class ScopedModuleModifier {
   }
 
  private:
-  uint8_t* address_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedModuleModifier);
+  raw_ptr<uint8_t> address_;
 };
 
 }  // namespace

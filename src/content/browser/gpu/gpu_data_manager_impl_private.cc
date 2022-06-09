@@ -38,6 +38,7 @@
 #include "components/viz/common/features.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/media/frameless_media_interface_proxy.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -64,6 +65,7 @@
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/vulkan/buildflags.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/clients/mojo_video_decoder.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/switches.h"
@@ -72,10 +74,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/gpu_switching_manager.h"
-
-#if defined(USE_OZONE) || defined(USE_X11)
-#include "ui/base/ui_base_features.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
@@ -98,21 +96,16 @@ namespace content {
 
 namespace {
 
-// On X11 (Ozone and non-Ozone), we do not know GpuMemoryBuffer configuration
-// support until receiving the initial GPUInfo.
+// On X11, we do not know GpuMemoryBuffer configuration support until receiving
+// the initial GPUInfo.
 bool CanUpdateGmbGpuPreferences() {
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    return !ui::OzonePlatform::GetInstance()
-                ->GetPlatformProperties()
-                .fetch_buffer_formats_for_gmb_on_gpu;
-  }
-#endif
-#if defined(USE_X11)
-  DCHECK(!features::IsUsingOzonePlatform());
-  return false;
-#endif
+  return !ui::OzonePlatform::GetInstance()
+              ->GetPlatformProperties()
+              .fetch_buffer_formats_for_gmb_on_gpu;
+#else
   return true;
+#endif
 }
 
 #if defined(OS_ANDROID)
@@ -230,6 +223,47 @@ void EnableIntelShaderCache() {
   }
 }
 #endif  // OS_WIN
+
+// These values are persistent to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// This should match enum CanvasOopRasterAndGpuAcceleration in
+//  \tools\metrics\histograms\enums.xml
+enum class CanvasOopRasterAndGpuAcceleration {
+  kAccelOop = 0,
+  kAccelNoOop = 1,
+  kNoAccelOop = 2,
+  kNoAccelNoOop = 3,
+  kMaxValue = kNoAccelNoOop,
+};
+
+void RecordCanvasAcceleratedOopRasterHistogram(
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    bool gpu_compositing_disabled) {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  bool accelerated_canvas =
+      gpu_feature_info
+              .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS] ==
+          gpu::kGpuFeatureStatusEnabled &&
+      !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
+  bool oopr_canvas =
+      gpu_feature_info
+          .status_values[gpu::GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+
+  CanvasOopRasterAndGpuAcceleration oop_acceleration_state =
+      CanvasOopRasterAndGpuAcceleration::kNoAccelNoOop;
+  if (!gpu_compositing_disabled) {
+    if (accelerated_canvas && oopr_canvas)
+      oop_acceleration_state = CanvasOopRasterAndGpuAcceleration::kAccelOop;
+    else if (accelerated_canvas && !oopr_canvas)
+      oop_acceleration_state = CanvasOopRasterAndGpuAcceleration::kAccelNoOop;
+    else if (!accelerated_canvas && oopr_canvas)
+      oop_acceleration_state = CanvasOopRasterAndGpuAcceleration::kNoAccelOop;
+  }
+  UMA_HISTOGRAM_ENUMERATION("GPU.CanvasOopRaster.OopRasterAndGpuAcceleration",
+                            oop_acceleration_state);
+}
 
 // Send UMA histograms about the enabled features and GPU properties.
 void UpdateFeatureStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
@@ -414,6 +448,74 @@ NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
   LOG(FATAL) << "GPU process isn't usable. Goodbye.";
 }
 
+gpu::VideoCodecProfile ToGpuVideoCodecProfile(
+    media::VideoCodecProfile profile) {
+  switch (profile) {
+    case media::VIDEO_CODEC_PROFILE_UNKNOWN:
+      return gpu::VIDEO_CODEC_PROFILE_UNKNOWN;
+    case media::H264PROFILE_BASELINE:
+      return gpu::H264PROFILE_BASELINE;
+    case media::H264PROFILE_MAIN:
+      return gpu::H264PROFILE_MAIN;
+    case media::H264PROFILE_EXTENDED:
+      return gpu::H264PROFILE_EXTENDED;
+    case media::H264PROFILE_HIGH:
+      return gpu::H264PROFILE_HIGH;
+    case media::H264PROFILE_HIGH10PROFILE:
+      return gpu::H264PROFILE_HIGH10PROFILE;
+    case media::H264PROFILE_HIGH422PROFILE:
+      return gpu::H264PROFILE_HIGH422PROFILE;
+    case media::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return gpu::H264PROFILE_HIGH444PREDICTIVEPROFILE;
+    case media::H264PROFILE_SCALABLEBASELINE:
+      return gpu::H264PROFILE_SCALABLEBASELINE;
+    case media::H264PROFILE_SCALABLEHIGH:
+      return gpu::H264PROFILE_SCALABLEHIGH;
+    case media::H264PROFILE_STEREOHIGH:
+      return gpu::H264PROFILE_STEREOHIGH;
+    case media::H264PROFILE_MULTIVIEWHIGH:
+      return gpu::H264PROFILE_MULTIVIEWHIGH;
+    case media::VP8PROFILE_ANY:
+      return gpu::VP8PROFILE_ANY;
+    case media::VP9PROFILE_PROFILE0:
+      return gpu::VP9PROFILE_PROFILE0;
+    case media::VP9PROFILE_PROFILE1:
+      return gpu::VP9PROFILE_PROFILE1;
+    case media::VP9PROFILE_PROFILE2:
+      return gpu::VP9PROFILE_PROFILE2;
+    case media::VP9PROFILE_PROFILE3:
+      return gpu::VP9PROFILE_PROFILE3;
+    case media::HEVCPROFILE_MAIN:
+      return gpu::HEVCPROFILE_MAIN;
+    case media::HEVCPROFILE_MAIN10:
+      return gpu::HEVCPROFILE_MAIN10;
+    case media::HEVCPROFILE_MAIN_STILL_PICTURE:
+      return gpu::HEVCPROFILE_MAIN_STILL_PICTURE;
+    case media::DOLBYVISION_PROFILE0:
+      return gpu::DOLBYVISION_PROFILE0;
+    case media::DOLBYVISION_PROFILE4:
+      return gpu::DOLBYVISION_PROFILE4;
+    case media::DOLBYVISION_PROFILE5:
+      return gpu::DOLBYVISION_PROFILE5;
+    case media::DOLBYVISION_PROFILE7:
+      return gpu::DOLBYVISION_PROFILE7;
+    case media::THEORAPROFILE_ANY:
+      return gpu::THEORAPROFILE_ANY;
+    case media::AV1PROFILE_PROFILE_MAIN:
+      return gpu::AV1PROFILE_PROFILE_MAIN;
+    case media::AV1PROFILE_PROFILE_HIGH:
+      return gpu::AV1PROFILE_PROFILE_HIGH;
+    case media::AV1PROFILE_PROFILE_PRO:
+      return gpu::AV1PROFILE_PROFILE_PRO;
+    case media::DOLBYVISION_PROFILE8:
+      return gpu::DOLBYVISION_PROFILE8;
+    case media::DOLBYVISION_PROFILE9:
+      return gpu::DOLBYVISION_PROFILE9;
+  }
+  NOTREACHED();
+  return gpu::VIDEO_CODEC_PROFILE_UNKNOWN;
+}
+
 #if defined(OS_WIN)
 void CollectExtraDevicePerfInfo(const gpu::GPUInfo& gpu_info,
                                 gpu::DevicePerfInfo* device_perf_info) {
@@ -437,36 +539,17 @@ class HDRProxy {
   }
 
   static void RequestHDRStatus() {
-    // The request must be sent to the GPU process from the IO thread.
-    auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                           ? GetUIThreadTaskRunner({})
-                           : GetIOThreadTaskRunner({});
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(&HDRProxy::RequestOnProcessThread));
-  }
-
-  static void GotResultOnProcessThread(bool hdr_enabled) {
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      GotResult(hdr_enabled);
-    } else {
-      GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
-    }
-  }
-
- private:
-  static void RequestOnProcessThread() {
     auto* gpu_process_host =
         GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
     if (gpu_process_host) {
       auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
-      gpu_service->RequestHDRStatus(
-          base::BindOnce(&HDRProxy::GotResultOnProcessThread));
+      gpu_service->RequestHDRStatus(base::BindOnce(&HDRProxy::GotResult));
     } else {
       bool hdr_enabled = false;
-      GotResultOnProcessThread(hdr_enabled);
+      GotResult(hdr_enabled);
     }
   }
+
   static void GotResult(bool hdr_enabled) {
     display::win::ScreenWin::SetHDREnabled(hdr_enabled);
   }
@@ -506,17 +589,12 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #if defined(OS_MAC)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
-
-#if defined(OS_WIN)
-  if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->RemoveObserver(owner_);
-#endif
 }
 
 void GpuDataManagerImplPrivate::StartUmaTimer() {
   // Do not change kTimerInterval without also changing the UMA histogram name,
   // as histogram data from before/after the change will not be comparable.
-  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
+  constexpr base::TimeDelta kTimerInterval = base::Minutes(5);
   compositing_mode_timer_.Start(
       FROM_HERE, kTimerInterval, this,
       &GpuDataManagerImplPrivate::RecordCompositingMode);
@@ -587,6 +665,10 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
   return gpu_info_for_hardware_gpu_;
 }
 
+std::vector<std::string> GpuDataManagerImplPrivate::GetDawnInfoList() const {
+  return dawn_info_list_;
+}
+
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
@@ -623,20 +705,28 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowedForHardwareGpu(
   return gpu_access_allowed_for_hardware_gpu_;
 }
 
-void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
-    GpuInfoRequest request,
+void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(
+    GpuDataManagerImpl::GpuInfoRequest request,
     bool delayed) {
-  if (request & kGpuInfoRequestDxDiag) {
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDxDiag) {
     // Delay is not supported in DxDiag request
     DCHECK(!delayed);
     RequestDxDiagNodeData();
   }
 
-  if (request & kGpuInfoRequestDx12)
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDx12)
     RequestGpuSupportedDx12Version(delayed);
 
-  if (request & kGpuInfoRequestVulkan)
+  if (request & GpuDataManagerImpl::kGpuInfoRequestVulkan)
     RequestGpuSupportedVulkanVersion(delayed);
+
+  if (request & GpuDataManagerImpl::kGpuInfoRequestDawnInfo)
+    RequestDawnInfo();
+
+  if (request & GpuDataManagerImpl::kGpuInfoRequestVideo) {
+    DCHECK(!delayed) << "|delayed| is not supported for Mojo Media requests";
+    RequestMojoMediaVideoCapabilities();
+  }
 }
 
 void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
@@ -675,10 +765,7 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
         }));
   });
 
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  task_runner->PostTask(FROM_HERE, std::move(task));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
 #endif
 }
 
@@ -688,7 +775,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
   base::TimeDelta delta;
   if (delayed &&
       !command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
-    delta = base::TimeDelta::FromSeconds(120);
+    delta = base::Seconds(120);
   }
 
   base::OnceClosure task = base::BindOnce(
@@ -729,6 +816,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
         host->info_collection_gpu_service()
             ->GetGpuSupportedDx12VersionAndDevicePerfInfo(
                 base::BindOnce([](uint32_t d3d12_feature_level,
+                                  uint32_t highest_shader_model_version,
                                   const gpu::DevicePerfInfo& device_perf_info) {
                   GpuDataManagerImpl* manager =
                       GpuDataManagerImpl::GetInstance();
@@ -739,15 +827,12 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
                   manager->UpdateDevicePerfInfo(device_perf_info);
                   manager->TerminateInfoCollectionGpuProcess();
                   gpu::RecordGpuSupportedDx12VersionHistograms(
-                      d3d12_feature_level);
+                      d3d12_feature_level, highest_shader_model_version);
                 }));
       },
       delta);
 
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  task_runner->PostDelayedTask(FROM_HERE, std::move(task), delta);
+  GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, std::move(task), delta);
 #endif
 }
 
@@ -757,7 +842,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedVulkanVersion(bool delayed) {
   base::TimeDelta delta;
   if (delayed &&
       !command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
-    delta = base::TimeDelta::FromSeconds(120);
+    delta = base::Seconds(120);
   }
 
   base::OnceClosure task = base::BindOnce(
@@ -796,11 +881,59 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedVulkanVersion(bool delayed) {
       },
       delta);
 
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
-  task_runner->PostDelayedTask(FROM_HERE, std::move(task), delta);
+  GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, std::move(task), delta);
 #endif
+}
+
+void GpuDataManagerImplPrivate::RequestDawnInfo() {
+  if (gpu_info_dawn_toggles_requested_)
+    return;
+  gpu_info_dawn_toggles_requested_ = true;
+
+  base::OnceClosure task = base::BindOnce([]() {
+    GpuProcessHost* host = GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
+                                               false /* force_create */);
+    if (!host)
+      return;
+
+    host->gpu_service()->GetDawnInfo(
+        base::BindOnce([](const std::vector<std::string>& dawn_info_list) {
+          GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+          manager->UpdateDawnInfo(dawn_info_list);
+        }));
+  });
+
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
+}
+
+void GpuDataManagerImplPrivate::RequestMojoMediaVideoCapabilities() {
+  base::OnceClosure task = base::BindOnce([]() {
+    auto media_interface_proxy =
+        std::make_unique<FramelessMediaInterfaceProxy>();
+
+    mojo::PendingRemote<media::mojom::VideoDecoder> pending_remote_decoder;
+    media_interface_proxy->CreateVideoDecoder(
+        pending_remote_decoder.InitWithNewPipeAndPassReceiver());
+    DCHECK(pending_remote_decoder.is_valid());
+
+    mojo::Remote<media::mojom::VideoDecoder> remote_decoder(
+        std::move(pending_remote_decoder));
+    DCHECK(remote_decoder.is_connected());
+
+    auto* remote_decoder_ptr = remote_decoder.get();
+    DCHECK(remote_decoder_ptr);
+    remote_decoder_ptr->GetSupportedConfigs(base::BindOnce(
+        [](mojo::Remote<media::mojom::VideoDecoder> /* remote_decoder */,
+           const media::SupportedVideoDecoderConfigs& configs,
+           media::VideoDecoderType /* decoder_type */) {
+          GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+          DCHECK(manager);
+          manager->UpdateMojoMediaVideoCapabilities(configs);
+        },
+        std::move(remote_decoder)));
+  });
+
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
 }
 
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
@@ -891,8 +1024,7 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   gpu_info_ = gpu_info;
   base::UmaHistogramCustomMicrosecondsTimes(
       "GPU.GPUInitializationTime.V3", gpu_info_.initialization_time,
-      base::TimeDelta::FromMilliseconds(5), base::TimeDelta::FromSeconds(5),
-      50);
+      base::Milliseconds(5), base::Seconds(5), 50);
   UMA_HISTOGRAM_EXACT_LINEAR("GPU.GpuCount", gpu_info_.GpuCount(), 10);
   RecordDiscreteGpuHistograms(gpu_info_);
 #if defined(OS_WIN)
@@ -992,11 +1124,9 @@ void GpuDataManagerImplPrivate::UpdateOverlayInfo(
 }
 
 void GpuDataManagerImplPrivate::UpdateHDRStatus(bool hdr_enabled) {
-  // This is running on the process thread;
-  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                          ? BrowserThread::UI
-                          : BrowserThread::IO);
-  HDRProxy::GotResultOnProcessThread(hdr_enabled);
+  // This is running on the main thread;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  HDRProxy::GotResult(hdr_enabled);
 }
 
 void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
@@ -1037,19 +1167,20 @@ void GpuDataManagerImplPrivate::PostCreateThreads() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
     // This is for the info collection test of the gpu integration tests.
-    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12Vulkan,
-                                           /*delayed=*/false);
+    RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(
+        GpuDataManagerImpl::kGpuInfoRequestDx12Vulkan,
+        /*delayed=*/false);
   } else {
     // Launch the info collection GPU process to collect DX12 support
     // information for UMA at the start of the browser.
     // Not to affect Chrome startup, this is done in a delayed mode,  i.e., 120
     // seconds after Chrome startup.
-    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12,
-                                           /*delayed=*/true);
+    RequestDxdiagDx12VulkanVideoGpuInfoIfNeeded(
+        GpuDataManagerImpl::kGpuInfoRequestDx12,
+        /*delayed=*/true);
   }
   // Observer for display change.
-  if (display::Screen::GetScreen())
-    display::Screen::GetScreen()->AddObserver(owner_);
+  display_observer_.emplace(owner_);
 
   // Initialization for HDR status update.
   HDRProxy::Initialize();
@@ -1081,8 +1212,14 @@ void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {
   if (host)
     host->ForceShutdown();
 }
-
 #endif
+
+void GpuDataManagerImplPrivate::UpdateDawnInfo(
+    const std::vector<std::string>& dawn_info_list) {
+  dawn_info_list_ = dawn_info_list;
+
+  NotifyGpuInfoUpdate();
+}
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
@@ -1127,6 +1264,8 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
   if (update_histograms_) {
     UpdateFeatureStats(gpu_feature_info_);
     UpdateDriverBugListStats(gpu_feature_info_);
+    RecordCanvasAcceleratedOopRasterHistogram(gpu_feature_info_,
+                                              IsGpuCompositingDisabled());
   }
 }
 
@@ -1135,6 +1274,20 @@ void GpuDataManagerImplPrivate::UpdateGpuExtraInfo(
   gpu_extra_info_ = gpu_extra_info;
   observer_list_->Notify(FROM_HERE,
                          &GpuDataManagerObserver::OnGpuExtraInfoUpdate);
+}
+
+void GpuDataManagerImplPrivate::UpdateMojoMediaVideoCapabilities(
+    const media::SupportedVideoDecoderConfigs& configs) {
+  gpu_info_.video_decoder_capabilities.clear();
+  for (const auto& config : configs) {
+    gpu::VideoDecodeAcceleratorSupportedProfile profile;
+    profile.profile = ToGpuVideoCodecProfile(config.profile_min);
+    profile.min_resolution = config.coded_size_min;
+    profile.max_resolution = config.coded_size_max;
+    profile.encrypted_only = config.require_encrypted;
+    gpu_info_.video_decoder_capabilities.push_back(profile);
+  }
+  NotifyGpuInfoUpdate();
 }
 
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
@@ -1187,9 +1340,11 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
       use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
       break;
     case gpu::GpuMode::SWIFTSHADER: {
-      // This setting makes WebGL run on legacy SwiftShader GL when true and
-      // SwANGLE when false.
       bool legacy_software_gl = true;
+#if defined(OS_LINUX) || defined(OS_WIN)
+      // This setting makes WebGL run on SwANGLE instead of SwiftShader GL.
+      legacy_software_gl = false;
+#endif
       gl::SetSoftwareWebGLCommandLineSwitches(command_line, legacy_software_gl);
     } break;
     default:
@@ -1198,19 +1353,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
-
-#if !defined(OS_MAC)
-  // MacOSX bots use real GPU in tests.
-  if (browser_command_line->HasSwitch(switches::kHeadless)) {
-    if (command_line->HasSwitch(switches::kUseGL)) {
-      use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
-      // Don't append kOverrideUseSoftwareGLForTests when we need to enable GPU
-      // hardware for headless chromium.
-      if (use_gl != gl::kGLImplementationEGLName)
-        command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
-    }
-  }
-#endif  // !OS_MAC
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(
@@ -1255,11 +1397,9 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 #endif
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    gpu_preferences->message_pump_type = ui::OzonePlatform::GetInstance()
-                                             ->GetPlatformProperties()
-                                             .message_pump_type_for_gpu;
-  }
+  gpu_preferences->message_pump_type = ui::OzonePlatform::GetInstance()
+                                           ->GetPlatformProperties()
+                                           .message_pump_type_for_gpu;
 #endif
 
 #if defined(OS_MAC)

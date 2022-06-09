@@ -14,10 +14,12 @@
 #include "media/base/buffering_state.h"
 #include "media/base/decoder.h"
 #include "media/base/media_serializers_base.h"
+#include "media/base/renderer_factory_selector.h"
 #include "media/base/status.h"
 #include "media/base/status_codes.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/hdr_metadata.h"
 
@@ -59,6 +61,16 @@ struct MediaSerializer<std::vector<VecType>> {
   }
 };
 
+// Serialize unique pointers
+template <typename T>
+struct MediaSerializer<std::unique_ptr<T>> {
+  static base::Value Serialize(const std::unique_ptr<T>& ptr) {
+    if (!ptr)
+      return base::Value("nullptr");
+    return MediaSerializer<T>::Serialize(*ptr);
+  }
+};
+
 // serialize optional types
 template <typename OptType>
 struct MediaSerializer<absl::optional<OptType>> {
@@ -87,7 +99,18 @@ struct MediaSerializer<double> {
 template <>
 struct MediaSerializer<int64_t> {
   static inline base::Value Serialize(int64_t value) {
-    return MediaSerializer<double>::Serialize(static_cast<double>(value));
+    std::stringstream stream;
+    stream << "0x" << std::hex << value;
+    return MediaSerializer<std::string>::Serialize(stream.str());
+  }
+};
+
+template <>
+struct MediaSerializer<uint32_t> {
+  static inline base::Value Serialize(uint32_t value) {
+    std::stringstream stream;
+    stream << "0x" << std::hex << value;
+    return MediaSerializer<std::string>::Serialize(stream.str());
   }
 };
 
@@ -131,6 +154,14 @@ template <>
 struct MediaSerializer<base::TimeDelta> {
   static inline base::Value Serialize(const base::TimeDelta value) {
     return MediaSerializer<double>::Serialize(value.InSecondsF());
+  }
+};
+
+// Enum (simple)
+template <>
+struct MediaSerializer<RendererType> {
+  static inline base::Value Serialize(RendererType value) {
+    return base::Value(GetRendererName(value));
   }
 };
 
@@ -233,21 +264,22 @@ struct MediaSerializer<gfx::HDRMetadata> {
   static base::Value Serialize(const gfx::HDRMetadata& value) {
     // TODO(tmathmeyer) serialize more fields here potentially.
     base::Value result(base::Value::Type::DICTIONARY);
-    FIELD_SERIALIZE("luminance range",
-                    base::StringPrintf("%.2f => %.2f",
-                                       value.mastering_metadata.luminance_min,
-                                       value.mastering_metadata.luminance_max));
+    FIELD_SERIALIZE(
+        "luminance range",
+        base::StringPrintf("%.2f => %.2f",
+                           value.color_volume_metadata.luminance_min,
+                           value.color_volume_metadata.luminance_max));
     FIELD_SERIALIZE("primaries",
                     base::StringPrintf(
                         "[r:%.4f,%.4f, g:%.4f,%.4f, b:%.4f,%.4f, wp:%.4f,%.4f]",
-                        value.mastering_metadata.primary_r.x(),
-                        value.mastering_metadata.primary_r.y(),
-                        value.mastering_metadata.primary_g.x(),
-                        value.mastering_metadata.primary_g.y(),
-                        value.mastering_metadata.primary_b.x(),
-                        value.mastering_metadata.primary_b.y(),
-                        value.mastering_metadata.white_point.x(),
-                        value.mastering_metadata.white_point.y()));
+                        value.color_volume_metadata.primary_r.x(),
+                        value.color_volume_metadata.primary_r.y(),
+                        value.color_volume_metadata.primary_g.x(),
+                        value.color_volume_metadata.primary_g.y(),
+                        value.color_volume_metadata.primary_b.x(),
+                        value.color_volume_metadata.primary_b.y(),
+                        value.color_volume_metadata.white_point.x(),
+                        value.color_volume_metadata.white_point.y()));
     return result;
   }
 };
@@ -408,18 +440,30 @@ struct MediaSerializer<StatusCode> {
 };
 
 // Class (complex)
-template <>
-struct MediaSerializer<Status> {
-  static base::Value Serialize(const Status& status) {
+template <typename T>
+struct MediaSerializer<TypedStatus<T>> {
+  static base::Value Serialize(const TypedStatus<T>& status) {
+    // TODO: replace this with some kind of static "description"
+    // of the default type, instead of "Ok".
     if (status.is_ok())
       return base::Value("Ok");
+    return MediaSerialize(status.data_);
+  }
+};
 
+// Class (complex)
+template <>
+struct MediaSerializer<StatusData> {
+  static base::Value Serialize(const StatusData& status) {
     base::Value result(base::Value::Type::DICTIONARY);
-    FIELD_SERIALIZE("status_code", status.code());
-    FIELD_SERIALIZE("status_message", status.message());
-    FIELD_SERIALIZE("stack", status.data_->frames);
-    FIELD_SERIALIZE("data", status.data_->data);
-    FIELD_SERIALIZE("causes", status.data_->causes);
+    // TODO: replace code with a stringified version, since
+    // this representation will only go to medialog anyway.
+    FIELD_SERIALIZE("code", status.code);
+    FIELD_SERIALIZE("group", status.group);
+    FIELD_SERIALIZE("message", status.message);
+    FIELD_SERIALIZE("stack", status.frames);
+    FIELD_SERIALIZE("data", status.data);
+    FIELD_SERIALIZE("causes", status.causes);
     return result;
   }
 };

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 
 namespace remoting {
 namespace protocol {
@@ -22,6 +21,9 @@ class DatagramChannelFactory {
       ChannelCreatedCallback;
 
   DatagramChannelFactory() {}
+
+  DatagramChannelFactory(const DatagramChannelFactory&) = delete;
+  DatagramChannelFactory& operator=(const DatagramChannelFactory&) = delete;
 
   // Creates new channels and calls the |callback| when then new channel is
   // created and connected. The |callback| is called with nullptr if channel
@@ -39,9 +41,6 @@ class DatagramChannelFactory {
 
  protected:
   virtual ~DatagramChannelFactory() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DatagramChannelFactory);
 };
 
 }  // namespace protocol

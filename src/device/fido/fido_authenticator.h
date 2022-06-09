@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -24,6 +23,7 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/large_blob.h"
+#include "device/fido/make_credential_request_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
@@ -31,6 +31,7 @@ namespace device {
 struct CtapGetAssertionRequest;
 struct CtapGetAssertionOptions;
 struct CtapMakeCredentialRequest;
+struct MakeCredentialOptions;
 
 namespace pin {
 struct RetriesResponse;
@@ -70,6 +71,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using DeleteCredentialCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               absl::optional<DeleteCredentialResponse>)>;
+  using UpdateUserInformationCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              absl::optional<UpdateUserInformationResponse>)>;
   using BioEnrollmentCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               absl::optional<BioEnrollmentResponse>)>;
@@ -79,13 +83,33 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
           callback)>;
 
   FidoAuthenticator() = default;
+
+  FidoAuthenticator(const FidoAuthenticator&) = delete;
+  FidoAuthenticator& operator=(const FidoAuthenticator&) = delete;
+
   virtual ~FidoAuthenticator() = default;
 
   // Sends GetInfo request to connected authenticator. Once response to GetInfo
   // call is received, |callback| is invoked. Below MakeCredential() and
   // GetAssertion() must only called after |callback| is invoked.
   virtual void InitializeAuthenticator(base::OnceClosure callback) = 0;
+
+  // ExcludeAppIdCredentialsBeforeMakeCredential allows a device to probe for
+  // credential IDs from a request that used the appidExclude extension. This
+  // assumes that |MakeCredential| will be called afterwards with the same
+  // request. I.e. this function may do nothing if it believes that it can
+  // better handle the exclusion during |MakeCredential|.
+  //
+  // The optional bool is an unused response value as all the information is
+  // contained in the response code, which will be |kCtap2ErrCredentialExcluded|
+  // if an excluded credential is found. (An optional<void> is an error.)
+  virtual void ExcludeAppIdCredentialsBeforeMakeCredential(
+      CtapMakeCredentialRequest request,
+      MakeCredentialOptions options,
+      base::OnceCallback<void(CtapDeviceResponseCode, absl::optional<bool>)>);
+
   virtual void MakeCredential(CtapMakeCredentialRequest request,
+                              MakeCredentialOptions options,
                               MakeCredentialCallback callback) = 0;
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             CtapGetAssertionOptions options,
@@ -187,6 +211,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       const PublicKeyCredentialDescriptor& credential_id,
       DeleteCredentialCallback callback);
 
+  virtual bool SupportsUpdateUserInformation() const;
+  virtual void UpdateUserInformation(
+      const pin::TokenResponse& pin_token,
+      const PublicKeyCredentialDescriptor& credential_id,
+      const PublicKeyCredentialUserEntity& updated_user,
+      UpdateUserInformationCallback callback);
+
   // Biometric enrollment commands.
   virtual void GetModality(BioEnrollmentCallback callback);
   virtual void GetSensorInfo(BioEnrollmentCallback callback);
@@ -265,9 +296,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual bool IsChromeOSAuthenticator() const = 0;
 #endif
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FidoAuthenticator);
 };
 
 }  // namespace device

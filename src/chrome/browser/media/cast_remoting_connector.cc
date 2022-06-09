@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "components/media_router/browser/media_router.h"
@@ -52,6 +53,9 @@ class CastRemotingConnector::RemotingBridge final
                        RemotingStopReason::SOURCE_GONE));
     connector_->RegisterBridge(this);
   }
+
+  RemotingBridge(const RemotingBridge&) = delete;
+  RemotingBridge& operator=(const RemotingBridge&) = delete;
 
   ~RemotingBridge() final {
     if (connector_)
@@ -121,9 +125,7 @@ class CastRemotingConnector::RemotingBridge final
 
   // Weak pointer. Will be set to nullptr if the CastRemotingConnector is
   // destroyed before this RemotingBridge.
-  CastRemotingConnector* connector_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemotingBridge);
+  raw_ptr<CastRemotingConnector> connector_;
 };
 
 // static

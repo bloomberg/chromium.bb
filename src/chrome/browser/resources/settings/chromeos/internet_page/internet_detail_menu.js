@@ -6,13 +6,32 @@
  * @fileoverview 'settings-internet-detail-menu' is a menu that provides
  * additional actions for a network in the network detail page.
  */
+import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '../../settings_shared_css.js';
+
+import {ESimManagerListenerBehavior} from '//resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.m.js';
+import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from '//resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+import {OncMojo} from '//resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-internet-detail-menu',
 
   // TODO(crbug.com/1093185): Implement DeepLinkingBehavior and override methods
   // to show the actions for search result.
   behaviors: [
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     ESimManagerListenerBehavior,
     DeepLinkingBehavior,
   ],
@@ -34,14 +53,6 @@ Polymer({
     },
 
     /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
-    },
-
-    /** @private */
     isGuest_: {
       type: Boolean,
       value() {
@@ -53,6 +64,15 @@ Polymer({
     guid_: {
       type: String,
       value: '',
+    },
+
+    /** @private {boolean} */
+    isESimPolicyEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('esimPolicyEnabled') &&
+            loadTimeData.getBoolean('esimPolicyEnabled');
+      }
     },
 
     /**
@@ -74,12 +94,12 @@ Polymer({
    * @return {boolean}
    */
   beforeDeepLinkAttempt(settingId) {
-    Polymer.RenderStatus.afterNextRender(this, () => {
+    afterNextRender(this, () => {
       const menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
       menu.showAt(/** @type {!Element} */ (this.$$('#moreNetworkDetail')));
 
       // Wait for menu to open.
-      Polymer.RenderStatus.afterNextRender(this, () => {
+      afterNextRender(this, () => {
         let element;
         if (settingId ===
             chromeos.settings.mojom.Setting.kCellularRenameESimNetwork) {
@@ -103,16 +123,15 @@ Polymer({
   },
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
-   * @param {!settings.Route} oldRoute
+   * RouteObserverBehavior
+   * @param {!Route} route
+   * @param {!Route} oldRoute
    * @protected
    */
   currentRouteChanged(route, oldRoute) {
     this.eSimNetworkState_ = null;
     this.guid_ = '';
-    if (route !== settings.routes.NETWORK_DETAIL ||
-        !this.isUpdatedCellularUiEnabled_) {
+    if (route !== routes.NETWORK_DETAIL) {
       return;
     }
 
@@ -120,7 +139,7 @@ Polymer({
     // current route. We can't use the 'type' parameter in the url
     // directly because Cellular and Tethering share the same subpage and have
     // the same 'type' in the route.
-    const queryParams = settings.Router.getInstance().getQueryParameters();
+    const queryParams = Router.getInstance().getQueryParameters();
     const guid = queryParams.get('guid') || '';
     if (!guid) {
       console.error('No guid specified for page:' + route);
@@ -146,8 +165,8 @@ Polymer({
    * @private
    */
   setESimNetworkState_() {
-    const networkConfig = network_config.MojoInterfaceProviderImpl.getInstance()
-                              .getMojoServiceRemote();
+    const networkConfig =
+        MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
     networkConfig.getNetworkState(this.guid_).then(response => {
       if (!response.result ||
           response.result.type !==
@@ -155,7 +174,6 @@ Polymer({
           !response.result.typeState.cellular.eid ||
           !response.result.typeState.cellular.iccid) {
         this.eSimNetworkState_ = null;
-        console.warn('Unable to find eSIM network with GUID: ', this.guid_);
         return;
       }
       this.eSimNetworkState_ = response.result;
@@ -176,11 +194,6 @@ Polymer({
    * @private
    */
   shouldShowDotsMenuButton_() {
-    // Only shown if the flag is enabled.
-    if (!this.isUpdatedCellularUiEnabled_) {
-      return false;
-    }
-
     // Not shown in guest mode.
     if (this.isGuest_) {
       return false;
@@ -196,7 +209,14 @@ Polymer({
    * @private
    */
   isDotsMenuButtonDisabled_() {
-    if (!this.deviceState || !this.isUpdatedCellularUiEnabled_) {
+    // Managed eSIM networks cannot be renamed or removed by user.
+    if (this.isESimPolicyEnabled_ && this.eSimNetworkState_ &&
+        this.eSimNetworkState_.source ===
+            chromeos.networkConfig.mojom.OncSource.kDevicePolicy) {
+      return true;
+    }
+
+    if (!this.deviceState) {
       return false;
     }
     return OncMojo.deviceIsInhibited(this.deviceState);

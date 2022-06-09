@@ -77,10 +77,6 @@ void KSVSearchBoxView::SetAccessibleValue(const std::u16string& value) {
   NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
-void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
-  GetSearchBoxBackground()->SetNativeControlColor(color);
-}
-
 void KSVSearchBoxView::UpdateSearchBoxBorder() {
   // TODO(wutao): Rename this function or create another function in base class.
   // It updates many things in addition to the border.
@@ -104,13 +100,6 @@ void KSVSearchBoxView::UpdateSearchBoxBorder() {
 
 void KSVSearchBoxView::SetupCloseButton() {
   views::ImageButton* close = close_button();
-  close->SetCallback(base::BindRepeating(
-      [](ash::SearchBoxViewBase* view) {
-        // Focus on the search box text field after clicking close button.
-        view->search_box()->RequestFocus();
-        view->ClearSearch();
-      },
-      this));
   close->SetHasInkDropActionOnClick(true);
   close->SetImage(
       views::ImageButton::STATE_NORMAL,
@@ -141,9 +130,7 @@ void KSVSearchBoxView::SetupBackButton() {
   back->SetVisible(false);
 }
 
-void KSVSearchBoxView::OnSearchBoxActiveChanged(bool active) {
-  // Update to override default placeholder attributes set by base class when
-  // the search box is no longer active.
+void KSVSearchBoxView::UpdatePlaceholderTextStyle() {
   SetPlaceholderTextAttributes();
 }
 

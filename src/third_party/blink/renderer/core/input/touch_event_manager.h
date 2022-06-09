@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
@@ -67,7 +68,6 @@ class CORE_EXPORT TouchEventManager final
     // unless more new events arrives for this touch point.
     Vector<WebPointerEvent> coalesced_events_;
     Member<Node> target_;  // The target of each active touch point.
-    String region_;        //  // The region of each active touch point.
     bool stale_;
   };
 

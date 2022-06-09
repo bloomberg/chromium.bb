@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
@@ -42,6 +42,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
       std::unique_ptr<extensions::PrinterProviderPrintJob>)>;
 
   explicit ExtensionPrinterHandler(Profile* profile);
+
+  ExtensionPrinterHandler(const ExtensionPrinterHandler&) = delete;
+  ExtensionPrinterHandler& operator=(const ExtensionPrinterHandler&) = delete;
 
   ~ExtensionPrinterHandler() override;
 
@@ -95,15 +98,13 @@ class ExtensionPrinterHandler : public PrinterHandler {
       AddedPrintersCallback callback,
       std::vector<device::mojom::UsbDeviceInfoPtr> devices);
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
   GetPrintersDoneCallback done_callback_;
   PrintJobCallback print_job_callback_;
   std::unique_ptr<PwgRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;
 
   base::WeakPtrFactory<ExtensionPrinterHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPrinterHandler);
 };
 
 }  // namespace printing

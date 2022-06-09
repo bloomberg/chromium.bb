@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SITE_INSTANCE_GROUP_MANAGER_H_
 #define CONTENT_BROWSER_SITE_INSTANCE_GROUP_MANAGER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 namespace content {
@@ -32,10 +33,10 @@ class SiteInstanceImpl;
 // get assigned to groups. Currently this object only holds the logic for the
 // 'default process' model which implements mode 2 mentioned above for any
 // SiteInstance that does not require a dedicated process.
-class SiteInstanceGroupManager : private RenderProcessHostObserver {
+class SiteInstanceGroupManager final : private RenderProcessHostObserver {
  public:
   SiteInstanceGroupManager();
-  ~SiteInstanceGroupManager() final;
+  ~SiteInstanceGroupManager() override;
 
   // Returns a process that can be assigned to `site_instance`. This may be
   // the process for an existing group the SiteInstance is assigned to, or
@@ -61,7 +62,7 @@ class SiteInstanceGroupManager : private RenderProcessHostObserver {
 
  private:
   // RenderProcessHostObserver implementation.
-  void RenderProcessHostDestroyed(RenderProcessHost* host) final;
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Evaluates the process assigned to `site_instance` and determines if it is
   // suitable to be the default process. If suitable, it keeps a reference
@@ -73,7 +74,7 @@ class SiteInstanceGroupManager : private RenderProcessHostObserver {
 
   // The process to use for any SiteInstance in this BrowsingInstance that
   // doesn't require a dedicated process.
-  RenderProcessHost* default_process_ = nullptr;
+  raw_ptr<RenderProcessHost> default_process_ = nullptr;
 };
 }  // namespace content
 

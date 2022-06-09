@@ -5,4 +5,4 @@
 
 base_dir=$(dirname "$0")
 
-PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/clang_format_merge_driver.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python3 "$base_dir/clang_format_merge_driver.py" "$@"

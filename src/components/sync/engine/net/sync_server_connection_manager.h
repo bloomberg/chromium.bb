@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sync/engine/net/server_connection_manager.h"
 #include "url/gurl.h"
 
@@ -28,6 +28,11 @@ class SyncServerConnectionManager : public ServerConnectionManager {
   SyncServerConnectionManager(const GURL& sync_request_url,
                               std::unique_ptr<HttpPostProviderFactory> factory,
                               CancelationSignal* cancelation_signal);
+
+  SyncServerConnectionManager(const SyncServerConnectionManager&) = delete;
+  SyncServerConnectionManager& operator=(const SyncServerConnectionManager&) =
+      delete;
+
   ~SyncServerConnectionManager() override;
 
   HttpResponse PostBuffer(const std::string& buffer_in,
@@ -44,9 +49,7 @@ class SyncServerConnectionManager : public ServerConnectionManager {
 
   // Cancelation signal is signalled when engine shuts down. Current blocking
   // operation should be aborted.
-  CancelationSignal* const cancelation_signal_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncServerConnectionManager);
+  const raw_ptr<CancelationSignal> cancelation_signal_;
 };
 
 }  // namespace syncer

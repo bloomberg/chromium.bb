@@ -15,7 +15,7 @@
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -63,7 +63,7 @@ void InitNetwork() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-AccountInfo SignInSecondaryAccount(
+AccountInfo SignInUnconsentedAccount(
     Profile* profile,
     network::TestURLLoaderFactory* test_url_loader_factory,
     const std::string& email) {
@@ -71,15 +71,20 @@ AccountInfo SignInSecondaryAccount(
       IdentityManagerFactory::GetForProfile(profile);
   AccountInfo account_info =
       signin::MakeAccountAvailable(identity_manager, email);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Unlike other platforms, ChromeOS does not get the primary account from the
+  // cookies, and it needs to be set explicitly.
+  identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      account_info.account_id, signin::ConsentLevel::kSignin);
+#endif
   signin::SetCookieAccounts(identity_manager, test_url_loader_factory,
                             {{account_info.email, account_info.gaia}});
   return account_info;
 }
 
-void SignOutSecondaryAccount(
-    Profile* profile,
-    network::TestURLLoaderFactory* test_url_loader_factory,
-    const CoreAccountId& account_id) {
+void SignOutAccount(Profile* profile,
+                    network::TestURLLoaderFactory* test_url_loader_factory,
+                    const CoreAccountId& account_id) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   signin::SetCookieAccounts(identity_manager, test_url_loader_factory, {});
@@ -87,16 +92,14 @@ void SignOutSecondaryAccount(
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-void MakeAccountPrimary(Profile* profile, const std::string& email) {
+void GrantSyncConsent(Profile* profile, const std::string& email) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  absl::optional<AccountInfo> maybe_account =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
-              email);
-  DCHECK(maybe_account.has_value());
+  AccountInfo account =
+      identity_manager->FindExtendedAccountInfoByEmailAddress(email);
+  DCHECK(!account.IsEmpty());
   auto* primary_account_mutator = identity_manager->GetPrimaryAccountMutator();
-  primary_account_mutator->SetPrimaryAccount(maybe_account->account_id,
+  primary_account_mutator->SetPrimaryAccount(account.account_id,
                                              signin::ConsentLevel::kSync);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

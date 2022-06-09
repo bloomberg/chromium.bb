@@ -2,39 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js'; // eslint-disable-line no-unused-vars
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as Snippets from '../snippets/snippets.js';
 
 import {Plugin} from './Plugin.js';
 
-export class JavaScriptCompilerPlugin extends Plugin {
-  _textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor;
-  _uiSourceCode: Workspace.UISourceCode.UISourceCode;
-  _compiling: boolean;
-  _recompileScheduled: boolean;
-  _timeout: number|null;
-  _message: Workspace.UISourceCode.Message|null;
-  _disposed: boolean;
-  constructor(
-      textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor, uiSourceCode: Workspace.UISourceCode.UISourceCode) {
-    super();
-    this._textEditor = textEditor;
-    this._uiSourceCode = uiSourceCode;
-    this._compiling = false;
-    this._recompileScheduled = false;
-    this._timeout = null;
-    this._message = null;
-    this._disposed = false;
+// Plugin that tries to compile the editor content and highlights
+// compilation errors.
 
-    this._textEditor.addEventListener(UI.TextEditor.Events.TextChanged, this._scheduleCompile, this);
-    if (this._uiSourceCode.hasCommits() || this._uiSourceCode.isDirty()) {
-      this._scheduleCompile();
+export class JavaScriptCompilerPlugin extends Plugin {
+  private compiling: boolean = false;
+  private recompileScheduled: boolean = false;
+  private timeout: number|null = null;
+  private message: Workspace.UISourceCode.Message|null = null;
+  private disposed: boolean = false;
+  private editor: TextEditor.TextEditor.TextEditor|null = null;
+
+  constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode) {
+    super(uiSourceCode);
+  }
+
+  editorExtension(): CodeMirror.Extension {
+    return CodeMirror.EditorView.updateListener.of(update => {
+      if (update.docChanged) {
+        this.scheduleCompile();
+      }
+    });
+  }
+
+  editorInitialized(editor: TextEditor.TextEditor.TextEditor): void {
+    this.editor = editor;
+    if (this.uiSourceCode.hasCommits() || this.uiSourceCode.isDirty()) {
+      this.scheduleCompile();
     }
   }
 
@@ -45,7 +49,7 @@ export class JavaScriptCompilerPlugin extends Plugin {
     if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
       return true;
     }
-    for (const debuggerModel of SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+    for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
       if (Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
               uiSourceCode, debuggerModel)) {
         return true;
@@ -54,33 +58,33 @@ export class JavaScriptCompilerPlugin extends Plugin {
     return false;
   }
 
-  _scheduleCompile(): void {
-    if (this._compiling) {
-      this._recompileScheduled = true;
+  private scheduleCompile(): void {
+    if (this.compiling) {
+      this.recompileScheduled = true;
       return;
     }
-    if (this._timeout) {
-      clearTimeout(this._timeout);
+    if (this.timeout) {
+      clearTimeout(this.timeout);
     }
-    this._timeout = window.setTimeout(this._compile.bind(this), CompileDelay);
+    this.timeout = window.setTimeout(this.compile.bind(this), CompileDelay);
   }
 
-  _findRuntimeModel(): SDK.RuntimeModel.RuntimeModel|null {
-    const debuggerModels = SDK.SDKModel.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel);
+  private findRuntimeModel(): SDK.RuntimeModel.RuntimeModel|null {
+    const debuggerModels = SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel);
     for (let i = 0; i < debuggerModels.length; ++i) {
       const scriptFile = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
-          this._uiSourceCode, debuggerModels[i]);
+          this.uiSourceCode, debuggerModels[i]);
       if (scriptFile) {
         return debuggerModels[i].runtimeModel();
       }
     }
-    const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+    const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
     return mainTarget ? mainTarget.model(SDK.RuntimeModel.RuntimeModel) : null;
   }
 
-  async _compile(): Promise<void> {
-    const runtimeModel = this._findRuntimeModel();
-    if (!runtimeModel) {
+  private async compile(): Promise<void> {
+    const runtimeModel = this.findRuntimeModel();
+    if (!runtimeModel || !this.editor) {
       return;
     }
     const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
@@ -88,52 +92,52 @@ export class JavaScriptCompilerPlugin extends Plugin {
       return;
     }
 
-    const code = this._textEditor.text();
-    if (code.length > 1024 * 100) {
+    if (this.editor.state.doc.length > 1024 * 100) {
       return;
     }
 
+    const code = this.editor.state.doc.toString();
     const scripts =
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForResource(this._uiSourceCode);
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForResource(this.uiSourceCode);
     const isModule = scripts.reduce((v, s) => v || s.isModule === true, false);
     if (isModule) {
       return;
     }
 
-    this._compiling = true;
+    this.compiling = true;
     const result = await runtimeModel.compileScript(code, '', false, currentExecutionContext.id);
 
-    this._compiling = false;
-    if (this._recompileScheduled) {
-      this._recompileScheduled = false;
-      this._scheduleCompile();
+    this.compiling = false;
+    if (this.recompileScheduled) {
+      this.recompileScheduled = false;
+      this.scheduleCompile();
       return;
     }
-    if (this._message) {
-      this._uiSourceCode.removeMessage(this._message);
+    if (this.message) {
+      this.uiSourceCode.removeMessage(this.message);
+      this.message = null;
     }
-    if (this._disposed || !result || !result.exceptionDetails) {
+    if (this.disposed || !result || !result.exceptionDetails) {
       return;
     }
 
     const exceptionDetails = result.exceptionDetails;
     const text = SDK.RuntimeModel.RuntimeModel.simpleTextFromException(exceptionDetails);
-    this._message = this._uiSourceCode.addLineMessage(
+    this.message = this.uiSourceCode.addLineMessage(
         Workspace.UISourceCode.Message.Level.Error, text, exceptionDetails.lineNumber, exceptionDetails.columnNumber);
-    this._compilationFinishedForTest();
+    this.compilationFinishedForTest();
   }
 
-  _compilationFinishedForTest(): void {
+  private compilationFinishedForTest(): void {
   }
 
   dispose(): void {
-    this._textEditor.removeEventListener(UI.TextEditor.Events.TextChanged, this._scheduleCompile, this);
-    if (this._message) {
-      this._uiSourceCode.removeMessage(this._message);
+    if (this.message) {
+      this.uiSourceCode.removeMessage(this.message);
     }
-    this._disposed = true;
-    if (this._timeout) {
-      clearTimeout(this._timeout);
+    this.disposed = true;
+    if (this.timeout) {
+      clearTimeout(this.timeout);
     }
   }
 }

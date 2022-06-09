@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_CLIENT_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_CLIENT_H_
 
+#include "base/callback.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/device_context.h"
@@ -14,6 +15,7 @@
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "components/version_info/channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -30,6 +32,7 @@ class MockClient : public Client {
   MOCK_CONST_METHOD0(GetScreenOrientation,
                      ClientContextProto::ScreenOrientation());
   MOCK_CONST_METHOD0(IsAccessibilityEnabled, bool());
+  MOCK_CONST_METHOD0(IsSpokenFeedbackAccessibilityServiceEnabled, bool());
   MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
   MOCK_CONST_METHOD0(GetChromeSignedInEmailAddress, std::string());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
@@ -42,6 +45,8 @@ class MockClient : public Client {
   MOCK_METHOD0(DestroyUI, void());
   MOCK_CONST_METHOD0(HasHadUI, bool());
   MOCK_CONST_METHOD0(IsFirstTimeTriggerScriptUser, bool());
+  MOCK_METHOD1(FetchPaymentsClientToken,
+               void(base::OnceCallback<void(const std::string&)>));
 
  private:
   std::unique_ptr<MockPersonalDataManager> mock_personal_data_manager_;

@@ -38,7 +38,6 @@ limitations under the License.
 #include "tensorflow/stream_executor/launch_dim.h"
 #include "tensorflow/stream_executor/plugin.h"
 #include "tensorflow/stream_executor/rng.h"
-#include "tensorflow/stream_executor/shared_memory_config.h"
 #include "tensorflow/stream_executor/stream.h"
 #include "tensorflow/stream_executor/stream_executor.h"
 #include "tensorflow/stream_executor/stream_executor_internal.h"
@@ -68,7 +67,7 @@ class XlaInterpreterExecutor : public internal::StreamExecutorInterface {
     return port::UnimplementedError("Not Implemented");
   }
 
-  DeviceMemoryBase Allocate(uint64 size, int64 memory_space) override;
+  DeviceMemoryBase Allocate(uint64 size, int64_t memory_space) override;
   void *GetSubBuffer(DeviceMemoryBase *parent, uint64 offset_bytes,
                      uint64 size_bytes) override;
   void Deallocate(DeviceMemoryBase *mem) override;
@@ -162,7 +161,7 @@ class XlaInterpreterExecutor : public internal::StreamExecutorInterface {
 
   int PlatformDeviceCount() override { return 1; }
 
-  bool DeviceMemoryUsage(int64 *free, int64 *total) const override {
+  bool DeviceMemoryUsage(int64_t *free, int64_t *total) const override {
     return false;
   }
 
@@ -180,15 +179,6 @@ class XlaInterpreterExecutor : public internal::StreamExecutorInterface {
 
   bool CanEnablePeerAccessTo(StreamExecutorInterface *other) override {
     return true;
-  }
-
-  SharedMemoryConfig GetDeviceSharedMemoryConfig() override {
-    return SharedMemoryConfig::kDefault;
-  }
-
-  port::Status SetDeviceSharedMemoryConfig(SharedMemoryConfig config) override {
-    return port::Status{port::error::UNIMPLEMENTED,
-                        "Shared memory not supported"};
   }
 
   std::unique_ptr<internal::EventInterface> CreateEventImplementation()

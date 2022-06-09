@@ -62,7 +62,7 @@ to handle cancellation and other stuff. The
 [AuthPolicyCredentialsManager](https://cs.chromium.org/chromium/src/chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h)
 keeps track of user credential status, shows notifications if the Kerberos
 ticket expires and handles network connection changes. The
-[ActiveDirectoryPolicyManager](https://cs.chromium.org/chromium/src/chrome/browser/chromeos/policy/active_directory_policy_manager.h)
+[ActiveDirectoryPolicyManager](https://cs.chromium.org/chromium/src/chrome/browser/ash/policy/active_directory/active_directory_policy_manager.h)
 is the AD equivalent of the CloudPolicyManager and handles policy for AD-managed
 devices.
 
@@ -78,7 +78,7 @@ For this purpose, DM Server creates a LaForge account for the user. A LaForge
 account is a shadow Gaia account with scope limited to the Play Store. To prove
 the user's identity, a SAML flow is employed with DM Server as service provider
 and AD (or really any other) as identity provider. The SAML flow is triggered by
-[ArcActiveDirectoryEnrollmentTokenFetcher](https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ash/arc/auth/arc_active_directory_enrollment_token_fetcher.h).
+[ArcActiveDirectoryEnrollmentTokenFetcher](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ash/arc/auth/arc_active_directory_enrollment_token_fetcher.h).
 
 ### Instructions for Google Employees
 See [go/cros-ad-test-env](https://goto.google.com/cros-ad-test-env) for setting

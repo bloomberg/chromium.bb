@@ -18,7 +18,7 @@
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/test/gfx_util.h"
+#include "ui/gfx/test/scoped_default_font_description.h"
 
 namespace {
 
@@ -67,8 +67,12 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
     return suggestions_.at(row);
   }
 
-  const std::u16string& GetSuggestionValueAt(int row) const override {
+  std::u16string GetSuggestionMainTextAt(int row) const override {
     return suggestions_.at(row).value;
+  }
+
+  std::u16string GetSuggestionMinorTextAt(int row) const override {
+    return std::u16string();
   }
 
   const std::u16string& GetSuggestionLabelAt(int row) const override {

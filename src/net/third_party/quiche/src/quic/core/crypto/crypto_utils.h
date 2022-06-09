@@ -166,16 +166,6 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
                          CrypterPair* crypters,
                          std::string* subkey_secret);
 
-  // Performs key extraction to derive a new secret of |result_len| bytes
-  // dependent on |subkey_secret|, |label|, and |context|. Returns false if the
-  // parameters are invalid (e.g. |label| contains null bytes); returns true on
-  // success.
-  static bool ExportKeyingMaterial(absl::string_view subkey_secret,
-                                   absl::string_view label,
-                                   absl::string_view context,
-                                   size_t result_len,
-                                   std::string* result);
-
   // Computes the FNV-1a hash of the provided DER-encoded cert for use in the
   // XLCT tag.
   static uint64_t ComputeLeafCertHash(absl::string_view cert);
@@ -225,6 +215,27 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
       QuicVersionLabel client_version,
       ParsedQuicVersion connection_version,
       const ParsedQuicVersionVector& supported_versions,
+      std::string* error_details);
+
+  // Validates that the chosen version from the version_information matches the
+  // version from the session. Returns true if they match, otherwise returns
+  // false and fills in |error_details|.
+  static bool ValidateChosenVersion(
+      const QuicVersionLabel& version_information_chosen_version,
+      const ParsedQuicVersion& session_version, std::string* error_details);
+
+  // Validates that there was no downgrade attack involving a version
+  // negotiation packet. This verifies that if the client was initially
+  // configured with |client_original_supported_versions| and it had received a
+  // version negotiation packet with |version_information_other_versions|, then
+  // it would have selected |session_version|. Returns true if they match (or if
+  // |client_original_supported_versions| is empty indicating no version
+  // negotiation packet was received), otherwise returns
+  // false and fills in |error_details|.
+  static bool ValidateServerVersions(
+      const QuicVersionLabelVector& version_information_other_versions,
+      const ParsedQuicVersion& session_version,
+      const ParsedQuicVersionVector& client_original_supported_versions,
       std::string* error_details);
 
   // Returns the name of the HandshakeFailureReason as a char*

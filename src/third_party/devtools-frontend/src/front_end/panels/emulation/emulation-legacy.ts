@@ -4,6 +4,8 @@
 
 // @ts-nocheck
 
+import * as EmulationModelModule from '../../models/emulation/emulation.js';
+
 import * as EmulationModule from './emulation.js';
 
 self.Emulation = self.Emulation || {};
@@ -22,10 +24,10 @@ Emulation.AdvancedAppProvider = EmulationModule.AdvancedApp.AdvancedAppProvider;
 /**
  * @constructor
  */
-Emulation.DeviceModeModel = EmulationModule.DeviceModeModel.DeviceModeModel;
+Emulation.DeviceModeModel = EmulationModelModule.DeviceModeModel.DeviceModeModel;
 
 /** @enum {string} */
-Emulation.DeviceModeModel.Type = EmulationModule.DeviceModeModel.Type;
+Emulation.DeviceModeModel.Type = EmulationModelModule.DeviceModeModel.Type;
 
 /**
  * @constructor
@@ -43,24 +45,14 @@ Emulation.DeviceModeWrapper = EmulationModule.DeviceModeWrapper.DeviceModeWrappe
 Emulation.DeviceModeWrapper.ActionDelegate = EmulationModule.DeviceModeWrapper.ActionDelegate;
 
 /**
- * @constructor
- */
-Emulation.DevicesSettingsTab = EmulationModule.DevicesSettingsTab.DevicesSettingsTab;
+  * @constructor
+  */
+Emulation.EmulatedDevice = EmulationModelModule.EmulatedDevices.EmulatedDevice;
 
 /**
  * @constructor
  */
-Emulation.EmulatedDevice = EmulationModule.EmulatedDevices.EmulatedDevice;
-
-/**
- * @constructor
- */
-Emulation.EmulatedDevicesList = EmulationModule.EmulatedDevices.EmulatedDevicesList;
-
-/**
- * @constructor
- */
-Emulation.LocationsSettingsTab = EmulationModule.LocationsSettingsTab.LocationsSettingsTab;
+Emulation.EmulatedDevicesList = EmulationModelModule.EmulatedDevices.EmulatedDevicesList;
 
 /**
  * @constructor
@@ -74,13 +66,3 @@ Emulation.InspectedPagePlaceholder.instance =
  * @constructor
  */
 Emulation.MediaQueryInspector = EmulationModule.MediaQueryInspector.MediaQueryInspector;
-
-/**
- * @constructor
- */
-Emulation.SensorsView = EmulationModule.SensorsView.SensorsView;
-
-/**
- * @constructor
- */
-Emulation.SensorsView.ShowActionDelegate = EmulationModule.SensorsView.ShowActionDelegate;

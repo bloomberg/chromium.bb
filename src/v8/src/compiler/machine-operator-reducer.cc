@@ -544,7 +544,7 @@ Reduction MachineOperatorReducer::Reduce(Node* node) {
     case IrOpcode::kFloat64Sub: {
       Float64BinopMatcher m(node);
       if (allow_signalling_nan_ && m.right().Is(0) &&
-          (Double(m.right().ResolvedValue()).Sign() > 0)) {
+          (base::Double(m.right().ResolvedValue()).Sign() > 0)) {
         return Replace(m.left().node());  // x - 0 => x
       }
       if (m.right().IsNaN()) {  // x - NaN => NaN
@@ -947,6 +947,20 @@ Reduction MachineOperatorReducer::Reduce(Node* node) {
       }
       return ReduceWord64Comparisons(node);
     }
+    case IrOpcode::kFloat32Select:
+    case IrOpcode::kFloat64Select:
+    case IrOpcode::kWord32Select:
+    case IrOpcode::kWord64Select: {
+      Int32Matcher match(node->InputAt(0));
+      if (match.HasResolvedValue()) {
+        if (match.Is(0)) {
+          return Replace(node->InputAt(2));
+        } else {
+          return Replace(node->InputAt(1));
+        }
+      }
+      break;
+    }
     default:
       break;
   }
@@ -1009,7 +1023,7 @@ Reduction MachineOperatorReducer::ReduceInt64Add(Node* node) {
     return ReplaceInt64(base::AddWithWraparound(m.left().ResolvedValue(),
                                                 m.right().ResolvedValue()));
   }
-  // (x + Int64Constant(a)) + Int64Constant(b)) => x + Int64Constant(a + b)
+  // (x + Int64Constant(a)) + Int64Constant(b) => x + Int64Constant(a + b)
   if (m.right().HasResolvedValue() && m.left().IsInt64Add()) {
     Int64BinopMatcher n(m.left().node());
     if (n.right().HasResolvedValue() && m.OwnsInput(m.left().node())) {
@@ -1240,17 +1254,12 @@ Reduction MachineOperatorReducer::ReduceUint32Mod(Node* node) {
 
 Reduction MachineOperatorReducer::ReduceStore(Node* node) {
   NodeMatcher nm(node);
-  MachineRepresentation rep;
-  int value_input;
-  if (nm.IsStore()) {
-    rep = StoreRepresentationOf(node->op()).representation();
-    value_input = 2;
-  } else {
-    DCHECK(nm.IsUnalignedStore());
-    rep = UnalignedStoreRepresentationOf(node->op());
-    value_input = 2;
-  }
+  DCHECK(nm.IsStore() || nm.IsUnalignedStore());
+  MachineRepresentation rep =
+      nm.IsStore() ? StoreRepresentationOf(node->op()).representation()
+                   : UnalignedStoreRepresentationOf(node->op());
 
+  const int value_input = 2;
   Node* const value = node->InputAt(value_input);
 
   switch (value->opcode()) {
@@ -2060,7 +2069,6 @@ bool IsFloat64RepresentableAsFloat32(const Float64Matcher& m) {
 }
 
 }  // namespace
-
 
 Reduction MachineOperatorReducer::ReduceFloat64Compare(Node* node) {
   DCHECK(IrOpcode::kFloat64Equal == node->opcode() ||

@@ -4,8 +4,8 @@
 
 #include "ash/metrics/pointer_metrics_recorder.h"
 
+#include "ash/constants/app_types.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
@@ -53,10 +53,10 @@ void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
       static_cast<aura::Window*>(event_target));
   DownEventFormFactor form_factor = DownEventFormFactor::kClamshell;
   if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    OrientationLockType screen_orientation =
+    chromeos::OrientationType screen_orientation =
         Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
-    if (screen_orientation == OrientationLockType::kLandscapePrimary ||
-        screen_orientation == OrientationLockType::kLandscapeSecondary) {
+    if (screen_orientation == chromeos::OrientationType::kLandscapePrimary ||
+        screen_orientation == chromeos::OrientationType::kLandscapeSecondary) {
       form_factor = DownEventFormFactor::kTabletModeLandscape;
     } else {
       form_factor = DownEventFormFactor::kTabletModePortrait;

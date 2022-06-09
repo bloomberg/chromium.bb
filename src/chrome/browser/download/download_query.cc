@@ -46,28 +46,38 @@ template<> bool GetAs(const base::Value& in, bool* out) {
 }
 template <>
 bool GetAs(const base::Value& in, double* out) {
-  return in.GetAsDouble(out);
+  // `GetIfDouble()` incapsulates type verification logic.
+  const absl::optional<double> maybe_value = in.GetIfDouble();
+  if (maybe_value.has_value()) {
+    *out = maybe_value.value();
+    return true;
+  }
+  return false;
 }
 template<> bool GetAs(const base::Value& in, std::string* out) {
-  return in.GetAsString(out);
+  auto is_string = in.is_string();
+  if (is_string)
+    *out = in.GetString();
+  return is_string;
 }
 template <>
 bool GetAs(const base::Value& in, std::u16string* out) {
-  return in.GetAsString(out);
+  auto is_string = in.is_string();
+  if (is_string)
+    *out = base::UTF8ToUTF16(in.GetString());
+  return is_string;
 }
 template <>
 bool GetAs(const base::Value& in, std::vector<std::u16string>* out) {
   out->clear();
-  const base::ListValue* list = NULL;
-  if (!in.GetAsList(&list))
+  if (!in.is_list())
     return false;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    std::u16string element;
-    if (!list->GetString(i, &element)) {
+  for (const auto& value : in.GetList()) {
+    if (!value.is_string()) {
       out->clear();
       return false;
     }
-    out->push_back(element);
+    out->push_back(base::UTF8ToUTF16(value.GetString()));
   }
   return true;
 }

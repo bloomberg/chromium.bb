@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include <vector>
 
 #include "build/build_config.h"
+#include "constants/ascii.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 using pdfium::kTextFormChecksum;
 
@@ -31,14 +31,6 @@ using testing::NiceMock;
 using testing::StrEq;
 
 using FPDFFormFillEmbedderTest = EmbedderTest;
-
-namespace {
-
-int TranslateOnCharToModifierOnChar(int keychar) {
-  return keychar - FWL_VKEY_A + 1;
-}
-
-}  // namespace
 
 // A base class for many related tests that involve clicking and typing into
 // form fields.
@@ -94,7 +86,7 @@ class FPDFFormFillInteractiveEmbedderTest : public FPDFFormFillEmbedderTest {
 
     // Type text starting with 'A' to as many chars as specified by |num_chars|.
     for (int i = 0; i < num_chars; ++i) {
-      FORM_OnChar(form_handle(), page_, FWL_VKEY_A + i, 0);
+      FORM_OnChar(form_handle(), page_, 'A' + i, 0);
     }
   }
 
@@ -1045,10 +1037,10 @@ TEST_F(FPDFFormFillEmbedderTest, CheckReadOnlyInCheckbox) {
     // The read-only checkbox is initially in checked state.
     EXPECT_TRUE(FPDFAnnot_IsChecked(form_handle(), annot));
 
-    EXPECT_TRUE(FORM_OnChar(form_handle(), page, FWL_VKEY_Return, 0));
+    EXPECT_TRUE(FORM_OnChar(form_handle(), page, pdfium::ascii::kReturn, 0));
     EXPECT_TRUE(FPDFAnnot_IsChecked(form_handle(), annot));
 
-    EXPECT_TRUE(FORM_OnChar(form_handle(), page, FWL_VKEY_Space, 0));
+    EXPECT_TRUE(FORM_OnChar(form_handle(), page, pdfium::ascii::kSpace, 0));
     EXPECT_TRUE(FPDFAnnot_IsChecked(form_handle(), annot));
 
     FPDFPage_CloseAnnot(annot);
@@ -1079,10 +1071,10 @@ TEST_F(FPDFFormFillEmbedderTest, CheckReadOnlyInRadiobutton) {
     // The read-only radio button is initially in checked state.
     EXPECT_FALSE(FPDFAnnot_IsChecked(form_handle(), annot));
 
-    EXPECT_TRUE(FORM_OnChar(form_handle(), page, FWL_VKEY_Return, 0));
+    EXPECT_TRUE(FORM_OnChar(form_handle(), page, pdfium::ascii::kReturn, 0));
     EXPECT_FALSE(FPDFAnnot_IsChecked(form_handle(), annot));
 
-    EXPECT_TRUE(FORM_OnChar(form_handle(), page, FWL_VKEY_Space, 0));
+    EXPECT_TRUE(FORM_OnChar(form_handle(), page, pdfium::ascii::kSpace, 0));
     EXPECT_FALSE(FPDFAnnot_IsChecked(form_handle(), annot));
 
     FPDFPage_CloseAnnot(annot);
@@ -1329,27 +1321,20 @@ TEST_F(FPDFFormFillEmbedderTest, BUG_765384) {
 TEST_F(FPDFFormFillEmbedderTest, FormText) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   const char kFocusedTextFormWithAbcChecksum[] =
-      "42af2135e20deb09cbdbfb6418d86382";
+      "199536b979a42da3c2745297f6e87a77";
   const char kUnfocusedTextFormWithAbcChecksum[] =
-      "4a961599a512a08468b26b89d389c30a";
-#else
-#if defined(OS_WIN)
-  const char kFocusedTextFormWithAbcChecksum[] =
-      "29d1c3fd226ca6a69597f75937690320";
-  const char kUnfocusedTextFormWithAbcChecksum[] =
-      "5e678a55912cb568fd677bf34abb8727";
+      "574aa06445957315f0dadd24a0c59811";
 #elif defined(OS_APPLE)
   const char kFocusedTextFormWithAbcChecksum[] =
-      "c6e4a2fb10661116771ee74f54d9c5e0";
+      "9fb14198d75ca0a107060c60ca21b0c7";
   const char kUnfocusedTextFormWithAbcChecksum[] =
-      "e0c8d5099301d7c10ed831a43e974d9d";
+      "3c3209357e0c057a0620afa7d83eb784";
 #else
   const char kFocusedTextFormWithAbcChecksum[] =
-      "11487d5597599a26e8912b9c1d9422cb";
+      "6e6f790bb14c4fc6107faf8c17d23dbd";
   const char kUnfocusedTextFormWithAbcChecksum[] =
-      "bffe0ecea9a533f217047ee41d6be466";
+      "94b7e10ac8c662b73e33628ca2f5e63b";
 #endif
-#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   {
     ASSERT_TRUE(OpenDocument("text_form.pdf"));
     FPDF_PAGE page = LoadPage(0);
@@ -1367,9 +1352,9 @@ TEST_F(FPDFFormFillEmbedderTest, FormText) {
     FORM_OnLButtonUp(form_handle(), page, 0, 120.0, 120.0);
 
     // Write "ABC"
-    FORM_OnChar(form_handle(), page, FWL_VKEY_A, 0);
-    FORM_OnChar(form_handle(), page, FWL_VKEY_B, 0);
-    FORM_OnChar(form_handle(), page, FWL_VKEY_C, 0);
+    FORM_OnChar(form_handle(), page, 'A', 0);
+    FORM_OnChar(form_handle(), page, 'B', 0);
+    FORM_OnChar(form_handle(), page, 'C', 0);
     ScopedFPDFBitmap bitmap2 = RenderLoadedPage(page);
     CompareBitmap(bitmap2.get(), 300, 300, kFocusedTextFormWithAbcChecksum);
 
@@ -1422,16 +1407,12 @@ TEST_F(FPDFFormFillEmbedderTest, BUG_1281) {
 
 TEST_F(FPDFFormFillEmbedderTest, RemoveFormFieldHighlight) {
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-  const char kMd5NoHighlight[] = "6fe3921e4fe3f4190c248acf34e9bd3b";
+  const char kMd5NoHighlight[] = "013aa241c39c02505d9525550be04e48";
+#elif defined(OS_APPLE)
+  const char kMd5NoHighlight[] = "5c82aa43e3b478aa1e4c94bb9ef1f11f";
 #else
-#if defined(OS_APPLE)
-  const char kMd5NoHighlight[] = "5e4b87c5b304c6fa9bd5f6311260494e";
-#elif defined(OS_WIN)
-  const char kMd5NoHighlight[] = "3ec0938828e0a37ef23f687ee95a80e1";
-#else
-  const char kMd5NoHighlight[] = "006010c318457810a518aa5e0b33c498";
+  const char kMd5NoHighlight[] = "a6268304f7eedfa9ee98fac3caaf2efb";
 #endif
-#endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 
   ASSERT_TRUE(OpenDocument("text_form.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1454,22 +1435,22 @@ TEST_F(FPDFFormFillEmbedderTest, RemoveFormFieldHighlight) {
 
 TEST_F(FPDFFormFillEmbedderTest, HasFormInfoNone) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
-  EXPECT_EQ(FORMTYPE_NONE, FPDF_GetFormType(document_));
+  EXPECT_EQ(FORMTYPE_NONE, FPDF_GetFormType(document()));
 }
 
 TEST_F(FPDFFormFillEmbedderTest, HasFormInfoAcroForm) {
   ASSERT_TRUE(OpenDocument("text_form.pdf"));
-  EXPECT_EQ(FORMTYPE_ACRO_FORM, FPDF_GetFormType(document_));
+  EXPECT_EQ(FORMTYPE_ACRO_FORM, FPDF_GetFormType(document()));
 }
 
 TEST_F(FPDFFormFillEmbedderTest, HasFormInfoXFAFull) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
-  EXPECT_EQ(FORMTYPE_XFA_FULL, FPDF_GetFormType(document_));
+  EXPECT_EQ(FORMTYPE_XFA_FULL, FPDF_GetFormType(document()));
 }
 
 TEST_F(FPDFFormFillEmbedderTest, HasFormInfoXFAForeground) {
   ASSERT_TRUE(OpenDocument("bug_216.pdf"));
-  EXPECT_EQ(FORMTYPE_XFA_FOREGROUND, FPDF_GetFormType(document_));
+  EXPECT_EQ(FORMTYPE_XFA_FOREGROUND, FPDF_GetFormType(document()));
 }
 
 TEST_F(FPDFFormFillEmbedderTest, BadApiInputsText) {
@@ -2354,8 +2335,8 @@ TEST_F(FPDFFormFillComboBoxFormEmbedderTest,
   CheckIsIndexSelected(0, false);
   CheckIsIndexSelected(1, true);
 
-  // Verify that the Enter key is handled.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Return, 0));
+  // Verify that the Return character is handled.
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kReturn, 0));
 
   // Change the selection in the combo-box using the arrow down key.
   EXPECT_TRUE(FORM_OnKeyDown(form_handle(), page(), FWL_VKEY_Down, 0));
@@ -2363,28 +2344,28 @@ TEST_F(FPDFFormFillComboBoxFormEmbedderTest,
   CheckIsIndexSelected(2, true);
 
   // Tab to the next control.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, 0));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab, 0));
 
   // Shift-tab to the previous control.
-  EXPECT_TRUE(
-      FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, FWL_EVENTFLAG_ShiftKey));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab,
+                          FWL_EVENTFLAG_ShiftKey));
 
   // Verify that the selection is unchanged.
   CheckIsIndexSelected(2, true);
 
-  // Verify that the Space key is handled.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Space, 0));
+  // Verify that the Space character is handled.
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kSpace, 0));
 
   // Change the selection in the combo-box using the arrow down key.
   EXPECT_TRUE(FORM_OnKeyDown(form_handle(), page(), FWL_VKEY_Down, 0));
   CheckIsIndexSelected(3, true);
 
   // Tab to the next control.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, 0));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab, 0));
 
   // Shift-tab to the previous control.
-  EXPECT_TRUE(
-      FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, FWL_EVENTFLAG_ShiftKey));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab,
+                          FWL_EVENTFLAG_ShiftKey));
 
   // Verify that the selection is unchanged.
   CheckIsIndexSelected(3, true);
@@ -2397,8 +2378,8 @@ TEST_F(FPDFFormFillComboBoxFormEmbedderTest,
   CheckIsIndexSelected(0, false);
   CheckIsIndexSelected(1, false);
 
-  // Verify that the Enter key is handled.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Return, 0));
+  // Verify that the Return character is handled.
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kReturn, 0));
 
   // Change the selection in the combo-box using the arrow down key.
   EXPECT_TRUE(FORM_OnKeyDown(form_handle(), page(), FWL_VKEY_Down, 0));
@@ -2406,17 +2387,17 @@ TEST_F(FPDFFormFillComboBoxFormEmbedderTest,
   CheckIsIndexSelected(1, false);
 
   // Tab to the next control.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, 0));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab, 0));
 
   // Shift-tab to the previous control.
-  EXPECT_TRUE(
-      FORM_OnChar(form_handle(), page(), FWL_VKEY_Tab, FWL_EVENTFLAG_ShiftKey));
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kTab,
+                          FWL_EVENTFLAG_ShiftKey));
 
   // Verify that the selection is unchanged.
   CheckIsIndexSelected(0, true);
 
-  // Verify that the Space key is handled.
-  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Space, 0));
+  // Verify that the Space character is handled.
+  EXPECT_TRUE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kSpace, 0));
 
   CheckFocusedFieldText(L" ");
   CheckIsIndexSelected(0, false);
@@ -3146,8 +3127,8 @@ TEST_F(FPDFFormFillTextFormEmbedderTest, SelectAllWithKeyboardShortcut) {
 #else
   constexpr int kCorrectModifier = FWL_EVENTFLAG_ControlKey;
 #endif
-  FORM_OnChar(form_handle(), page(),
-              TranslateOnCharToModifierOnChar(FWL_VKEY_A), kCorrectModifier);
+  FORM_OnChar(form_handle(), page(), pdfium::ascii::kControlA,
+              kCorrectModifier);
   CheckSelection(L"AB");
 
   // Reset the selection again.
@@ -3160,8 +3141,7 @@ TEST_F(FPDFFormFillTextFormEmbedderTest, SelectAllWithKeyboardShortcut) {
 #else
   constexpr int kWrongModifier = FWL_EVENTFLAG_MetaKey;
 #endif
-  FORM_OnChar(form_handle(), page(),
-              TranslateOnCharToModifierOnChar(FWL_VKEY_A), kWrongModifier);
+  FORM_OnChar(form_handle(), page(), pdfium::ascii::kControlA, kWrongModifier);
   CheckSelection(L"");
 }
 
@@ -3250,7 +3230,7 @@ TEST_F(FPDFFormFillActionUriTest, ButtonActionInvokeTest) {
 
   // TODO(crbug.com/1028991): Following should be changed to ASSERT_TRUE after
   // handling key press implementation on buttons.
-  ASSERT_FALSE(FORM_OnChar(form_handle(), page(), FWL_VKEY_Return, 0));
+  ASSERT_FALSE(FORM_OnChar(form_handle(), page(), pdfium::ascii::kReturn, 0));
 }
 
 TEST_F(FPDFFormFillActionUriTest, LinkActionInvokeTest) {

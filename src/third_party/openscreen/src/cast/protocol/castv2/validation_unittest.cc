@@ -71,8 +71,6 @@ std::string BuildSchema(const char* definitions,
 }
 
 bool TestValidate(absl::string_view document, absl::string_view schema) {
-  OSP_DVLOG << "Validating document: \"" << document << "\" against schema: \""
-            << schema << "\"";
   ErrorOr<Json::Value> document_root = json::Parse(document);
   EXPECT_TRUE(document_root.is_value());
   ErrorOr<Json::Value> schema_root = json::Parse(schema);

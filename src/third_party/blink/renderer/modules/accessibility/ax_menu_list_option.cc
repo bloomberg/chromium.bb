@@ -25,13 +25,13 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_option.h"
 
+#include "skia/ext/skia_matrix_44.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
-#include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
 
@@ -143,10 +143,11 @@ bool AXMenuListOption::ComputeAccessibilityIsIgnored(
   return AccessibilityIsIgnoredByDefault(ignored_reasons);
 }
 
-void AXMenuListOption::GetRelativeBounds(AXObject** out_container,
-                                         FloatRect& out_bounds_in_container,
-                                         SkMatrix44& out_container_transform,
-                                         bool* clips_children) const {
+void AXMenuListOption::GetRelativeBounds(
+    AXObject** out_container,
+    FloatRect& out_bounds_in_container,
+    skia::Matrix44& out_container_transform,
+    bool* clips_children) const {
   DCHECK(!IsDetached());
   *out_container = nullptr;
   out_bounds_in_container = FloatRect();
@@ -174,12 +175,13 @@ void AXMenuListOption::GetRelativeBounds(AXObject** out_container,
   }
 }
 
-String AXMenuListOption::TextAlternative(bool recursive,
-                                         bool in_aria_labelled_by_traversal,
-                                         AXObjectSet& visited,
-                                         ax::mojom::NameFrom& name_from,
-                                         AXRelatedObjectVector* related_objects,
-                                         NameSources* name_sources) const {
+String AXMenuListOption::TextAlternative(
+    bool recursive,
+    const AXObject* aria_label_or_description_root,
+    AXObjectSet& visited,
+    ax::mojom::NameFrom& name_from,
+    AXRelatedObjectVector* related_objects,
+    NameSources* name_sources) const {
   // If nameSources is non-null, relatedObjects is used in filling it in, so it
   // must be non-null as well.
   if (name_sources)
@@ -190,7 +192,7 @@ String AXMenuListOption::TextAlternative(bool recursive,
 
   bool found_text_alternative = false;
   String text_alternative = AriaTextAlternative(
-      recursive, in_aria_labelled_by_traversal, visited, name_from,
+      recursive, aria_label_or_description_root, visited, name_from,
       related_objects, name_sources, &found_text_alternative);
   if (found_text_alternative && !name_sources)
     return text_alternative;

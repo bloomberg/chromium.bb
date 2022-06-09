@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "crypto/nss_crypto_module_delegate.h"
@@ -56,6 +55,10 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
         password_delegate_(std::move(password_delegate)),
         key_(std::move(key)),
         supports_pss_(PK11_DoesMechanism(key_->pkcs11Slot, CKM_RSA_PKCS_PSS)) {}
+
+  SSLPlatformKeyNSS(const SSLPlatformKeyNSS&) = delete;
+  SSLPlatformKeyNSS& operator=(const SSLPlatformKeyNSS&) = delete;
+
   ~SSLPlatformKeyNSS() override = default;
 
   std::string GetProviderName() override {
@@ -183,8 +186,6 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
       password_delegate_;
   crypto::ScopedSECKEYPrivateKey key_;
   bool supports_pss_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyNSS);
 };
 
 }  // namespace

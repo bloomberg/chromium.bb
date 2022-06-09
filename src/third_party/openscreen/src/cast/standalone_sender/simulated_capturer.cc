@@ -85,6 +85,14 @@ SimulatedCapturer::SimulatedCapturer(Environment* environment,
 
 SimulatedCapturer::~SimulatedCapturer() = default;
 
+void SimulatedCapturer::SetPlaybackRate(double rate) {
+  playback_rate_is_non_zero_ = rate > 0;
+  if (playback_rate_is_non_zero_) {
+    // Restart playback now that playback rate is nonzero.
+    StartDecodingNextFrame();
+  }
+}
+
 void SimulatedCapturer::SetAdditionalDecoderParameters(
     AVCodecContext* decoder_context) {}
 
@@ -119,6 +127,9 @@ Clock::duration SimulatedCapturer::ToApproximateClockDuration(
 }
 
 void SimulatedCapturer::StartDecodingNextFrame() {
+  if (!playback_rate_is_non_zero_) {
+    return;
+  }
   const int read_frame_result =
       av_read_frame(format_context_.get(), packet_.get());
   if (read_frame_result < 0) {

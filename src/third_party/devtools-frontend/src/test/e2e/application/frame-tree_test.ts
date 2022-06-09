@@ -33,7 +33,12 @@ const ensureApplicationPanel = async () => {
   }
 };
 
-describe('The Application Tab', async () => {
+declare global {
+  interface Window {
+    iFrameWindow: Window|null|undefined;
+  }
+}
+describe('[crbug.com/12]: The Application Tab', async () => {
   afterEach(async () => {
     const {target} = getBrowserAndPages();
     await target.evaluate(async () => {
@@ -51,7 +56,7 @@ describe('The Application Tab', async () => {
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
 
-    await waitForFunction(async () => {
+    const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         // This contains some CSS from the svg icon link being rendered. It's
@@ -61,22 +66,27 @@ describe('The Application Tab', async () => {
       if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
         fieldValues[9] = 'accelerometer';
       }
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/frame-tree.html`,
-        `https://localhost:${getTestServerPort()}`,
-        '<#document>',
-        'Yes Localhost is always a secure context',
-        'No',
-        'None',
-        'UnsafeNone',
-        'unavailable requires cross-origin isolated context',
-        'unavailable Learn more',
-        'accelerometer',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 10) {
+        return fieldValues;
+      }
+      return undefined;
     });
-  });
+    const expected = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/frame-tree.html`,
+      `https://localhost:${getTestServerPort()}`,
+      '<#document>',
+      'Yes\xA0Localhost is always a secure context',
+      'No',
+      'None',
+      'UnsafeNone',
+      'unavailable\xA0requires cross-origin isolated context',
+      'unavailable\xA0Learn more',
+      'accelerometer',
+    ];
 
+    assert.deepEqual(fieldValuesTextContent, expected);
+  });
 
   it('shows stack traces for OOPIF', async () => {
     await goToResource('application/js-oopif.html');
@@ -86,17 +96,22 @@ describe('The Application Tab', async () => {
       await doubleClickSourceTreeItem(IFRAME_SELECTOR);
       return (await $$(EXPAND_STACKTRACE_BUTTON_SELECTOR)).length === 1;
     });
-    await waitForFunction(async () => {
+    const stackTraceRowsTextContent = await waitForFunction(async () => {
       await ensureApplicationPanel();
       await click(EXPAND_STACKTRACE_BUTTON_SELECTOR);
       const stackTraceRows = await getTrimmedTextContent(STACKTRACE_ROW_SELECTOR);
-      const expected = [
-        'second @ js-oopif.html:17',
-        'first @ js-oopif.html:11',
-        '(anonymous) @ js-oopif.html:20',
-      ];
-      return JSON.stringify(stackTraceRows) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (stackTraceRows.length === 3) {
+        return stackTraceRows;
+      }
+      return undefined;
     });
+    const expected = [
+      'second\xA0@\xA0js-oopif.html:17',
+      'first\xA0@\xA0js-oopif.html:11',
+      '(anonymous)\xA0@\xA0js-oopif.html:20',
+    ];
+    assert.deepEqual(stackTraceRowsTextContent, expected);
   });
 
   it('shows details for opened windows in the frame tree', async () => {
@@ -106,21 +121,29 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
 
     await target.evaluate(() => {
-      window.open('iframe.html');
+      window.iFrameWindow = window.open('iframe.html');
     });
 
     await doubleClickSourceTreeItem(OPENED_WINDOWS_SELECTOR);
     await waitFor(`${OPENED_WINDOWS_SELECTOR} + ol li:first-child`);
     pressKey('ArrowDown');
 
-    await waitForFunction(async () => {
+    const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
-        '<#document>',
-        'Yes',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 3) {
+        return fieldValues;
+      }
+      return undefined;
+    });
+    const expected = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
+      '<#document>',
+      'Yes',
+    ];
+    assert.deepEqual(fieldValuesTextContent, expected);
+    await target.evaluate(() => {
+      window.iFrameWindow?.close();
     });
   });
 
@@ -136,18 +159,24 @@ describe('The Application Tab', async () => {
     await waitFor(`${WEB_WORKERS_SELECTOR} + ol li:first-child`);
     pressKey('ArrowDown');
 
-    await waitForFunction(async () => {
+    const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/dedicated-worker.js`,
-        'Web Worker',
-        'None',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 3) {
+        return fieldValues;
+      }
+      return undefined;
     });
+    const expected = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/dedicated-worker.js`,
+      'Web Worker',
+      'None',
+    ];
+    assert.deepEqual(fieldValuesTextContent, expected);
   });
 
-  it('shows service workers in the frame tree', async () => {
+  // Flaky test
+  it.skipOnPlatforms(['win32'], '[crbug.com/1231056]: shows service workers in the frame tree', async () => {
     await goToResource('application/service-worker-network.html');
     await click('#tab-resources');
     await doubleClickSourceTreeItem(TOP_FRAME_SELECTOR);
@@ -155,15 +184,20 @@ describe('The Application Tab', async () => {
     await waitFor(`${SERVICE_WORKERS_SELECTOR} + ol li:first-child`);
     pressKey('ArrowDown');
 
-    await waitForFunction(async () => {
+    const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('.report-field-value');
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/service-worker.js`,
-        'Service Worker',
-        'None',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 3) {
+        return fieldValues;
+      }
+      return undefined;
     });
+    const expected = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/service-worker.js`,
+      'Service Worker',
+      'None',
+    ];
+    assert.deepEqual(fieldValuesTextContent, expected);
   });
 
   // Update and reactivate when the whole FrameDetailsView is a custom component
@@ -175,7 +209,7 @@ describe('The Application Tab', async () => {
     await doubleClickSourceTreeItem(IFRAME_FRAME_ID_SELECTOR);
 
     // check iframe's URL after pageload
-    await waitForFunction(async () => {
+    const fieldValuesTextContent = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         // This contains some CSS from the svg icon link being rendered. It's
@@ -185,20 +219,25 @@ describe('The Application Tab', async () => {
       if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
         fieldValues[9] = 'accelerometer';
       }
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
-        `https://localhost:${getTestServerPort()}`,
-        '<iframe>',
-        'Yes Localhost is always a secure context',
-        'No',
-        'None',
-        'UnsafeNone',
-        'unavailable requires cross-origin isolated context',
-        'unavailable Learn more',
-        'accelerometer',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 10) {
+        return fieldValues;
+      }
+      return undefined;
     });
+    const expected = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/iframe.html`,
+      `https://localhost:${getTestServerPort()}`,
+      '<iframe>',
+      'Yes\xA0Localhost is always a secure context',
+      'No',
+      'None',
+      'UnsafeNone',
+      'unavailable\xA0requires cross-origin isolated context',
+      'unavailable\xA0Learn more',
+      'accelerometer',
+    ];
+    assert.deepEqual(fieldValuesTextContent, expected);
 
     assert.deepEqual(await getFrameTreeTitles(), ['top', 'frameId (iframe.html)', 'iframe.html', 'main-frame.html']);
 
@@ -215,7 +254,7 @@ describe('The Application Tab', async () => {
 
     // check that iframe's URL has changed
     await doubleClickSourceTreeItem(MAIN_FRAME_SELECTOR);
-    await waitForFunction(async () => {
+    const fieldValuesTextContent2 = await waitForFunction(async () => {
       const fieldValues = await getTrimmedTextContent('devtools-report-value');
       if (fieldValues[0]) {
         fieldValues[0] = getTrailingURL(fieldValues[0]);
@@ -223,20 +262,25 @@ describe('The Application Tab', async () => {
       if (fieldValues[9] && fieldValues[9].includes('accelerometer')) {
         fieldValues[9] = 'accelerometer';
       }
-      const expected = [
-        `https://localhost:${getTestServerPort()}/test/e2e/resources/application/main-frame.html`,
-        `https://localhost:${getTestServerPort()}`,
-        '<iframe>',
-        'Yes Localhost is always a secure context',
-        'No',
-        'None',
-        'UnsafeNone',
-        'unavailable requires cross-origin isolated context',
-        'unavailable Learn more',
-        'accelerometer',
-      ];
-      return JSON.stringify(fieldValues) === JSON.stringify(expected);
+      // Make sure the length is equivalent to the expected value below
+      if (fieldValues.length === 10) {
+        return fieldValues;
+      }
+      return undefined;
     });
+    const expected2 = [
+      `https://localhost:${getTestServerPort()}/test/e2e/resources/application/main-frame.html`,
+      `https://localhost:${getTestServerPort()}`,
+      '<iframe>',
+      'Yes\xA0Localhost is always a secure context',
+      'No',
+      'None',
+      'UnsafeNone',
+      'unavailable\xA0requires cross-origin isolated context',
+      'unavailable\xA0Learn more',
+      'accelerometer',
+    ];
+    assert.deepEqual(fieldValuesTextContent2, expected2);
 
     assert.deepEqual(
         await getFrameTreeTitles(), ['top', 'frameId (main-frame.html)', 'Document not available', 'main-frame.html']);

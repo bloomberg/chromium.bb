@@ -26,40 +26,71 @@ std::string expected_texture_overload(
   using ValidTextureOverload = ast::intrinsic::test::ValidTextureOverload;
   switch (overload) {
     case ValidTextureOverload::kDimensions1d:
-    case ValidTextureOverload::kDimensionsStorageRO1d:
     case ValidTextureOverload::kDimensionsStorageWO1d:
       return R"(int(texture.get_width()))";
     case ValidTextureOverload::kDimensions2d:
     case ValidTextureOverload::kDimensions2dArray:
+    case ValidTextureOverload::kDimensionsCube:
+    case ValidTextureOverload::kDimensionsCubeArray:
     case ValidTextureOverload::kDimensionsMultisampled2d:
     case ValidTextureOverload::kDimensionsDepth2d:
     case ValidTextureOverload::kDimensionsDepth2dArray:
-    case ValidTextureOverload::kDimensionsStorageRO2d:
-    case ValidTextureOverload::kDimensionsStorageRO2dArray:
+    case ValidTextureOverload::kDimensionsDepthCube:
+    case ValidTextureOverload::kDimensionsDepthCubeArray:
+    case ValidTextureOverload::kDimensionsDepthMultisampled2d:
     case ValidTextureOverload::kDimensionsStorageWO2d:
     case ValidTextureOverload::kDimensionsStorageWO2dArray:
       return R"(int2(texture.get_width(), texture.get_height()))";
     case ValidTextureOverload::kDimensions3d:
-    case ValidTextureOverload::kDimensionsStorageRO3d:
     case ValidTextureOverload::kDimensionsStorageWO3d:
       return R"(int3(texture.get_width(), texture.get_height(), texture.get_depth()))";
-    case ValidTextureOverload::kDimensionsCube:
-    case ValidTextureOverload::kDimensionsCubeArray:
-    case ValidTextureOverload::kDimensionsDepthCube:
-    case ValidTextureOverload::kDimensionsDepthCubeArray:
-      return R"(int3(texture.get_width(), texture.get_height(), texture.get_height()))";
     case ValidTextureOverload::kDimensions2dLevel:
+    case ValidTextureOverload::kDimensionsCubeLevel:
+    case ValidTextureOverload::kDimensionsCubeArrayLevel:
     case ValidTextureOverload::kDimensions2dArrayLevel:
     case ValidTextureOverload::kDimensionsDepth2dLevel:
     case ValidTextureOverload::kDimensionsDepth2dArrayLevel:
+    case ValidTextureOverload::kDimensionsDepthCubeLevel:
+    case ValidTextureOverload::kDimensionsDepthCubeArrayLevel:
       return R"(int2(texture.get_width(1), texture.get_height(1)))";
     case ValidTextureOverload::kDimensions3dLevel:
       return R"(int3(texture.get_width(1), texture.get_height(1), texture.get_depth(1)))";
-    case ValidTextureOverload::kDimensionsCubeLevel:
-    case ValidTextureOverload::kDimensionsCubeArrayLevel:
-    case ValidTextureOverload::kDimensionsDepthCubeLevel:
-    case ValidTextureOverload::kDimensionsDepthCubeArrayLevel:
-      return R"(int3(texture.get_width(1), texture.get_height(1), texture.get_height(1)))";
+    case ValidTextureOverload::kGather2dF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), int2(0), component::x))";
+    case ValidTextureOverload::kGather2dOffsetF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), int2(3, 4), component::x))";
+    case ValidTextureOverload::kGather2dArrayF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), 3, int2(0), component::x))";
+    case ValidTextureOverload::kGather2dArrayOffsetF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), 3, int2(4, 5), component::x))";
+    case ValidTextureOverload::kGatherCubeF32:
+      return R"(texture.gather(sampler, float3(1.0f, 2.0f, 3.0f), component::x))";
+    case ValidTextureOverload::kGatherCubeArrayF32:
+      return R"(texture.gather(sampler, float3(1.0f, 2.0f, 3.0f), 4, component::x))";
+    case ValidTextureOverload::kGatherDepth2dF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f)))";
+    case ValidTextureOverload::kGatherDepth2dOffsetF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), int2(3, 4)))";
+    case ValidTextureOverload::kGatherDepth2dArrayF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), 3))";
+    case ValidTextureOverload::kGatherDepth2dArrayOffsetF32:
+      return R"(texture.gather(sampler, float2(1.0f, 2.0f), 3, int2(4, 5)))";
+    case ValidTextureOverload::kGatherDepthCubeF32:
+      return R"(texture.gather(sampler, float3(1.0f, 2.0f, 3.0f)))";
+    case ValidTextureOverload::kGatherDepthCubeArrayF32:
+      return R"(texture.gather(sampler, float3(1.0f, 2.0f, 3.0f), 4))";
+    case ValidTextureOverload::kGatherCompareDepth2dF32:
+      return R"(texture.gather_compare(sampler, float2(1.0f, 2.0f), 3.0f))";
+    case ValidTextureOverload::kGatherCompareDepth2dOffsetF32:
+      return R"(texture.gather_compare(sampler, float2(1.0f, 2.0f), 3.0f, int2(4, 5)))";
+    case ValidTextureOverload::kGatherCompareDepth2dArrayF32:
+      return R"(texture.gather_compare(sampler, float2(1.0f, 2.0f), 3, 4.0f))";
+    case ValidTextureOverload::kGatherCompareDepth2dArrayOffsetF32:
+      return R"(texture.gather_compare(sampler, float2(1.0f, 2.0f), 3, 4.0f, int2(5, 6)))";
+    case ValidTextureOverload::kGatherCompareDepthCubeF32:
+      return R"(texture.gather_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4.0f))";
+    case ValidTextureOverload::kGatherCompareDepthCubeArrayF32:
+      return R"(texture.gather_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4, 5.0f))";
     case ValidTextureOverload::kNumLayers2dArray:
     case ValidTextureOverload::kNumLayersCubeArray:
     case ValidTextureOverload::kNumLayersDepth2dArray:
@@ -76,6 +107,7 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kNumLevelsDepthCube:
     case ValidTextureOverload::kNumLevelsDepthCubeArray:
       return R"(int(texture.get_num_mip_levels()))";
+    case ValidTextureOverload::kNumSamplesDepthMultisampled2d:
     case ValidTextureOverload::kNumSamplesMultisampled2d:
       return R"(int(texture.get_num_samples()))";
     case ValidTextureOverload::kSample1dF32:
@@ -155,15 +187,15 @@ std::string expected_texture_overload(
     case ValidTextureOverload::kSampleGrad2dF32:
       return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f))))";
     case ValidTextureOverload::kSampleGrad2dOffsetF32:
-      return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f)), int2(7, 8)))";
+      return R"(texture.sample(sampler, float2(1.0f, 2.0f), gradient2d(float2(3.0f, 4.0f), float2(5.0f, 6.0f)), int2(7, 7)))";
     case ValidTextureOverload::kSampleGrad2dArrayF32:
       return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f))))";
     case ValidTextureOverload::kSampleGrad2dArrayOffsetF32:
-      return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f)), int2(8, 9)))";
+      return R"(texture.sample(sampler, float2(1.0f, 2.0f), 3, gradient2d(float2(4.0f, 5.0f), float2(6.0f, 7.0f)), int2(6, 7)))";
     case ValidTextureOverload::kSampleGrad3dF32:
       return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f))))";
     case ValidTextureOverload::kSampleGrad3dOffsetF32:
-      return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f)), int3(10, 11, 12)))";
+      return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradient3d(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f)), int3(0, 1, 2)))";
     case ValidTextureOverload::kSampleGradCubeF32:
       return R"(texture.sample(sampler, float3(1.0f, 2.0f, 3.0f), gradientcube(float3(4.0f, 5.0f, 6.0f), float3(7.0f, 8.0f, 9.0f))))";
     case ValidTextureOverload::kSampleGradCubeArrayF32:
@@ -180,71 +212,61 @@ std::string expected_texture_overload(
       return R"(texture.sample_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4.0f))";
     case ValidTextureOverload::kSampleCompareDepthCubeArrayF32:
       return R"(texture.sample_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4, 5.0f))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dF32:
+      return R"(texture.sample_compare(sampler, float2(1.0f, 2.0f), 3.0f))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dOffsetF32:
+      return R"(texture.sample_compare(sampler, float2(1.0f, 2.0f), 3.0f, int2(4, 5)))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dArrayF32:
+      return R"(texture.sample_compare(sampler, float2(1.0f, 2.0f), 4, 3.0f))";
+    case ValidTextureOverload::kSampleCompareLevelDepth2dArrayOffsetF32:
+      return R"(texture.sample_compare(sampler, float2(1.0f, 2.0f), 4, 3.0f, int2(5, 6)))";
+    case ValidTextureOverload::kSampleCompareLevelDepthCubeF32:
+      return R"(texture.sample_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4.0f))";
+    case ValidTextureOverload::kSampleCompareLevelDepthCubeArrayF32:
+      return R"(texture.sample_compare(sampler, float3(1.0f, 2.0f, 3.0f), 4, 5.0f))";
     case ValidTextureOverload::kLoad1dLevelF32:
-      return R"(texture.read(1, 3))";
+      return R"(texture.read(uint(1), 3))";
     case ValidTextureOverload::kLoad1dLevelU32:
-      return R"(texture.read(1, 3))";
+      return R"(texture.read(uint(1), 3))";
     case ValidTextureOverload::kLoad1dLevelI32:
-      return R"(texture.read(1, 3))";
+      return R"(texture.read(uint(1), 3))";
     case ValidTextureOverload::kLoad2dLevelF32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoad2dLevelU32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoad2dLevelI32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoad2dArrayLevelF32:
-      return R"(texture.read(int2(1, 2), 3, 4))";
+      return R"(texture.read(uint2(int2(1, 2)), 3, 4))";
     case ValidTextureOverload::kLoad2dArrayLevelU32:
-      return R"(texture.read(int2(1, 2), 3, 4))";
+      return R"(texture.read(uint2(int2(1, 2)), 3, 4))";
     case ValidTextureOverload::kLoad2dArrayLevelI32:
-      return R"(texture.read(int2(1, 2), 3, 4))";
+      return R"(texture.read(uint2(int2(1, 2)), 3, 4))";
     case ValidTextureOverload::kLoad3dLevelF32:
-      return R"(texture.read(int3(1, 2, 3), 4))";
+      return R"(texture.read(uint3(int3(1, 2, 3)), 4))";
     case ValidTextureOverload::kLoad3dLevelU32:
-      return R"(texture.read(int3(1, 2, 3), 4))";
+      return R"(texture.read(uint3(int3(1, 2, 3)), 4))";
     case ValidTextureOverload::kLoad3dLevelI32:
-      return R"(texture.read(int3(1, 2, 3), 4))";
+      return R"(texture.read(uint3(int3(1, 2, 3)), 4))";
     case ValidTextureOverload::kLoadMultisampled2dF32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadMultisampled2dU32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadMultisampled2dI32:
-      return R"(texture.read(int2(1, 2), 3))";
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadDepth2dLevelF32:
-      return R"(texture.read(int2(1, 2), 3))";
+    case ValidTextureOverload::kLoadDepthMultisampled2dF32:
+      return R"(texture.read(uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kLoadDepth2dArrayLevelF32:
-      return R"(texture.read(int2(1, 2), 3, 4))";
-    case ValidTextureOverload::kLoadStorageRO1dRgba32float:
-      return R"(texture.read(1))";
-    case ValidTextureOverload::kLoadStorageRO2dRgba8unorm:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8snorm:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16float:
-    case ValidTextureOverload::kLoadStorageRO2dR32uint:
-    case ValidTextureOverload::kLoadStorageRO2dR32sint:
-    case ValidTextureOverload::kLoadStorageRO2dR32float:
-    case ValidTextureOverload::kLoadStorageRO2dRg32uint:
-    case ValidTextureOverload::kLoadStorageRO2dRg32sint:
-    case ValidTextureOverload::kLoadStorageRO2dRg32float:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32float:
-      return R"(texture.read(int2(1, 2)))";
-    case ValidTextureOverload::kLoadStorageRO2dArrayRgba32float:
-      return R"(texture.read(int2(1, 2), 3))";
-    case ValidTextureOverload::kLoadStorageRO3dRgba32float:
-      return R"(texture.read(int3(1, 2, 3)))";
+      return R"(texture.read(uint2(int2(1, 2)), 3, 4))";
     case ValidTextureOverload::kStoreWO1dRgba32float:
-      return R"(texture.write(float4(2.0f, 3.0f, 4.0f, 5.0f), 1))";
+      return R"(texture.write(float4(2.0f, 3.0f, 4.0f, 5.0f), uint(1)))";
     case ValidTextureOverload::kStoreWO2dRgba32float:
-      return R"(texture.write(float4(3.0f, 4.0f, 5.0f, 6.0f), int2(1, 2)))";
+      return R"(texture.write(float4(3.0f, 4.0f, 5.0f, 6.0f), uint2(int2(1, 2))))";
     case ValidTextureOverload::kStoreWO2dArrayRgba32float:
-      return R"(texture.write(float4(4.0f, 5.0f, 6.0f, 7.0f), int2(1, 2), 3))";
+      return R"(texture.write(float4(4.0f, 5.0f, 6.0f, 7.0f), uint2(int2(1, 2)), 3))";
     case ValidTextureOverload::kStoreWO3dRgba32float:
-      return R"(texture.write(float4(4.0f, 5.0f, 6.0f, 7.0f), int3(1, 2, 3)))";
+      return R"(texture.write(float4(4.0f, 5.0f, 6.0f, 7.0f), uint3(int3(1, 2, 3))))";
   }
   return "<unmatched texture overload>";
 }  // NOLINT - Ignore the length of this function
@@ -255,26 +277,21 @@ class MslGeneratorIntrinsicTextureTest
 TEST_P(MslGeneratorIntrinsicTextureTest, Call) {
   auto param = GetParam();
 
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
-  auto* call =
-      create<ast::CallExpression>(Expr(param.function), param.args(this));
+  auto* call = Call(Expr(param.function), param.args(this));
+  auto* stmt = CallStmt(call);
 
-  Func("main", ast::VariableList{}, ty.void_(),
-       ast::StatementList{
-           create<ast::CallStatement>(call),
-       },
-       ast::DecorationList{
-           Stage(ast::PipelineStage::kFragment),
-       });
+  Func("main", {}, ty.void_(), {stmt}, {Stage(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(call)) << gen.error();
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
 
   auto expected = expected_texture_overload(param.overload);
-  EXPECT_EQ(expected, gen.result());
+  EXPECT_EQ(expected, out.str());
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "media/audio/audio_device_description.h"
@@ -19,8 +20,10 @@ namespace content {
 // MediaSessionPlayerObserver to be used in tests.
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
+  MockMediaSessionPlayerObserver(RenderFrameHost* render_frame_host,
+                                 media::MediaContentType media_content_type);
   explicit MockMediaSessionPlayerObserver(
-      RenderFrameHost* render_frame_host = nullptr);
+      media::MediaContentType media_content_type);
   ~MockMediaSessionPlayerObserver() override;
 
   // Implements MediaSessionPlayerObserver.
@@ -34,6 +37,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnExitPictureInPicture(int player_id) override;
   void OnSetAudioSinkId(int player_id,
                         const std::string& raw_device_id) override;
+  void OnSetMute(int player_id, bool mute) override;
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;
   bool IsPictureInPictureAvailable(int player_id) const override;
@@ -42,6 +46,9 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   bool HasVideo(int player_id) const override;
   std::string GetAudioOutputSinkId(int player_id) const override;
   bool SupportsAudioOutputDeviceSwitching(int player_id) const override;
+  media::MediaContentType GetMediaContentType() const override;
+
+  void SetMediaContentType(media::MediaContentType media_content_type);
 
   // Simulate that a new player started.
   // Returns the player_id.
@@ -93,7 +100,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   // player_id. The value of the vector is the playing status and volume.
   std::vector<MockPlayer> players_;
 
-  RenderFrameHost* render_frame_host_;
+  raw_ptr<RenderFrameHost> render_frame_host_;
 
   int received_resume_calls_ = 0;
   int received_suspend_calls_ = 0;
@@ -103,6 +110,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   int received_enter_picture_in_picture_calls_ = 0;
   int received_exit_picture_in_picture_calls_ = 0;
   int received_set_audio_sink_id_calls_ = 0;
+
+  media::MediaContentType media_content_type_;
 };
 
 }  // namespace content

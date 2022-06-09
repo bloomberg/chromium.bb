@@ -6,6 +6,7 @@
  */
 
 #include "include/core/SkString.h"
+#include "include/core/SkStringView.h"
 #include "include/private/SkTPin.h"
 #include "include/private/SkTo.h"
 #include "src/core/SkSafeMath.h"
@@ -250,15 +251,19 @@ bool SkString::Rec::unique() const {
 }
 
 #ifdef SK_DEBUG
+int32_t SkString::Rec::getRefCnt() const {
+    return fRefCnt.load(std::memory_order_relaxed);
+}
+
 const SkString& SkString::validate() const {
-    // make sure know one has written over our global
+    // make sure no one has written over our global
     SkASSERT(0 == gEmptyRec.fLength);
-    SkASSERT(0 == gEmptyRec.fRefCnt.load(std::memory_order_relaxed));
+    SkASSERT(0 == gEmptyRec.getRefCnt());
     SkASSERT(0 == gEmptyRec.data()[0]);
 
     if (fRec.get() != &gEmptyRec) {
         SkASSERT(fRec->fLength > 0);
-        SkASSERT(fRec->fRefCnt.load(std::memory_order_relaxed) > 0);
+        SkASSERT(fRec->getRefCnt() > 0);
         SkASSERT(0 == fRec->data()[fRec->fLength]);
     }
     return *this;
@@ -292,6 +297,10 @@ SkString::SkString(SkString&& src) : fRec(std::move(src.validate().fRec)) {
 
 SkString::SkString(const std::string& src) {
     fRec = Rec::Make(src.c_str(), src.size());
+}
+
+SkString::SkString(skstd::string_view src) {
+    fRec = Rec::Make(src.data(), src.length());
 }
 
 SkString::~SkString() {

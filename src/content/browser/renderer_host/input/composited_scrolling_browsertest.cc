@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -71,6 +71,11 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
     scoped_feature_list_.InitAndDisableFeature(
         blink::features::kResamplingScrollEvents);
   }
+
+  CompositedScrollingBrowserTest(const CompositedScrollingBrowserTest&) =
+      delete;
+  CompositedScrollingBrowserTest& operator=(
+      const CompositedScrollingBrowserTest&) = delete;
 
   ~CompositedScrollingBrowserTest() override = default;
 
@@ -163,8 +168,6 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<MessageLoopRunner> runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositedScrollingBrowserTest);
 };
 
 // Verify transforming a scroller doesn't prevent it from scrolling. See

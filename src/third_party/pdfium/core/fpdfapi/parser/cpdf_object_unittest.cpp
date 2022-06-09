@@ -23,7 +23,7 @@
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/base/stl_util.h"
+#include "third_party/base/cxx17_backports.h"
 
 namespace {
 
@@ -428,6 +428,22 @@ TEST_F(PDFObjectsTest, MakeReferenceGeneric) {
             ToReference(ref_obj.Get())->GetRefObjNum());
 }
 
+TEST_F(PDFObjectsTest, KeyForCache) {
+  std::set<uint64_t> key_set;
+
+  // Check all direct objects inserted without collision.
+  for (const auto& direct : m_DirectObjs) {
+    EXPECT_TRUE(key_set.insert(direct->KeyForCache()).second);
+  }
+  // Check indirect objects inserted without collision.
+  for (const auto& pair : *m_ObjHolder) {
+    EXPECT_TRUE(key_set.insert(pair.second->KeyForCache()).second);
+  }
+
+  // Check all expected objects counted.
+  EXPECT_EQ(18u, key_set.size());
+}
+
 TEST(PDFArrayTest, GetMatrix) {
   float elems[][6] = {{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
                       {1, 2, 3, 4, 5, 6},
@@ -456,7 +472,7 @@ TEST(PDFArrayTest, GetRect) {
                       {0.05f, 0.1f, 1.34f, 99.9f}};
   for (size_t i = 0; i < pdfium::size(elems); ++i) {
     auto arr = pdfium::MakeRetain<CPDF_Array>();
-    CFX_FloatRect rect(elems[i]);
+    CFX_FloatRect rect(elems[i][0], elems[i][1], elems[i][2], elems[i][3]);
     for (size_t j = 0; j < 4; ++j)
       arr->AppendNew<CPDF_Number>(elems[i][j]);
     CFX_FloatRect arr_rect = arr->GetRect();
@@ -576,7 +592,7 @@ TEST(PDFArrayTest, GetTypeAt) {
       vals[i] = arr->AppendNew<CPDF_Array>();
       for (size_t j = 0; j < 3; ++j) {
         int value = j + 100;
-        vals[i]->InsertNewAt<CPDF_Number>(i, value);
+        vals[i]->InsertNewAt<CPDF_Number>(j, value);
       }
     }
     for (size_t i = 0; i < 3; ++i) {
@@ -825,8 +841,8 @@ TEST(PDFArrayTest, ConvertIndirect) {
 
 TEST(PDFStreamTest, SetData) {
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> data(100);
-  auto stream = pdfium::MakeRetain<CPDF_Stream>();
-  stream->InitStream(data, pdfium::MakeRetain<CPDF_Dictionary>());
+  auto stream = pdfium::MakeRetain<CPDF_Stream>(
+      data, pdfium::MakeRetain<CPDF_Dictionary>());
   EXPECT_EQ(static_cast<int>(data.size()),
             stream->GetDict()->GetIntegerFor(pdfium::stream::kLength));
 
@@ -851,8 +867,8 @@ TEST(PDFStreamTest, SetData) {
 
 TEST(PDFStreamTest, SetDataAndRemoveFilter) {
   std::vector<uint8_t, FxAllocAllocator<uint8_t>> data(100);
-  auto stream = pdfium::MakeRetain<CPDF_Stream>();
-  stream->InitStream(data, pdfium::MakeRetain<CPDF_Dictionary>());
+  auto stream = pdfium::MakeRetain<CPDF_Stream>(
+      data, pdfium::MakeRetain<CPDF_Dictionary>());
   EXPECT_EQ(static_cast<int>(data.size()),
             stream->GetDict()->GetIntegerFor(pdfium::stream::kLength));
 

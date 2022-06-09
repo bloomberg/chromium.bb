@@ -9,7 +9,7 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/commands/bookmark_page_command.h"
+#import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -94,10 +94,15 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (void)performActivity {
-  BookmarkPageCommand* command =
-      [[BookmarkPageCommand alloc] initWithURL:self.URL title:self.title];
-  [self.handler bookmarkPage:command];
+  // Activity must be marked finished first, otherwise it may dismiss UI
+  // presented by the bookmark command below.
   [self activityDidFinish:YES];
+
+  BookmarkAddCommand* command =
+      [[BookmarkAddCommand alloc] initWithURL:self.URL
+                                        title:self.title
+                         presentFolderChooser:NO];
+  [self.handler bookmark:command];
 }
 
 #pragma mark - Private

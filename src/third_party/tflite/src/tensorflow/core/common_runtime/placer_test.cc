@@ -201,6 +201,18 @@ REGISTER_KERNEL_BUILDER(Name("TestXlaOp").Device("XLA_CPU").Priority(2),
 REGISTER_KERNEL_BUILDER(Name("TestXlaOp").Device("FakeCPU").Priority(1),
                         DummyOp);
 
+// Op with no-copy type definition.
+REGISTER_OP("TestUncopiableTypeGeneratorCPU")
+    .Output("d: variant")
+    .SetTypeConstructor(full_type::UnaryGeneric(TFT_DATASET));
+REGISTER_KERNEL_BUILDER(
+    Name("TestUncopiableTypeGeneratorCPU").Device("FakeCPU"), DummyOp);
+
+// Op consuming a typed input.
+REGISTER_OP("TestTypedConsumer").Input("i: variant");
+REGISTER_KERNEL_BUILDER(Name("TestTypedConsumer").Device("FakeCPU"), DummyOp);
+REGISTER_KERNEL_BUILDER(Name("TestTypedConsumer").Device("FakeGPU"), DummyOp);
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // A PlacerTest method has three phases:
@@ -2972,9 +2984,9 @@ TEST_F(NestedPlacerTest, NestedTwoFunctionsBackToBack) {
   EXPECT_EQ(error::INVALID_ARGUMENT, s.code()) << s.ToString();
   EXPECT_TRUE(absl::StrContains(
       s.error_message(),
-      "Nodes were connected by a reference connection (requiring them to be on "
-      "the same device), but the two nodes were assigned two different "
-      "devices"))
+      "Nodes were connected by a reference or resource connection (requiring "
+      "them to be on the same device), but the two nodes were assigned two "
+      "different devices"))
       << s.ToString();
 }
 

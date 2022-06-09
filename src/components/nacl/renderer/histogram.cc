@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
+#include "build/build_config.h"
 
 namespace nacl {
 
@@ -91,13 +92,10 @@ void HistogramTimeSmall(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      name,
-      base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromMilliseconds(20000),
-      100,
+      name, base::Milliseconds(1), base::Milliseconds(20000), 100,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   if (counter)
-    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+    counter->AddTime(base::Milliseconds(sample));
 }
 
 // Records values up to 3 minutes, 20 seconds.
@@ -105,13 +103,10 @@ void HistogramTimeMedium(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      name,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMilliseconds(200000),
-      100,
+      name, base::Milliseconds(10), base::Milliseconds(200000), 100,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   if (counter)
-    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+    counter->AddTime(base::Milliseconds(sample));
 }
 
 // Records values up to 33 minutes.
@@ -119,13 +114,10 @@ void HistogramTimeLarge(const std::string& name, int64_t sample) {
   if (sample < 0)
     sample = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      name,
-      base::TimeDelta::FromMilliseconds(100),
-      base::TimeDelta::FromMilliseconds(2000000),
-      100,
+      name, base::Milliseconds(100), base::Milliseconds(2000000), 100,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   if (counter)
-    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
+    counter->AddTime(base::Milliseconds(sample));
 }
 
 // Records values up to 12 minutes.
@@ -133,13 +125,10 @@ void HistogramTimeTranslation(const std::string& name, int64_t sample_ms) {
   if (sample_ms < 0)
     sample_ms = 0;
   base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
-      name,
-      base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMilliseconds(720000),
-      100,
+      name, base::Milliseconds(10), base::Milliseconds(720000), 100,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   if (counter)
-    counter->AddTime(base::TimeDelta::FromMilliseconds(sample_ms));
+    counter->AddTime(base::Milliseconds(sample_ms));
 }
 
 void HistogramStartupTimeSmall(const std::string& name,

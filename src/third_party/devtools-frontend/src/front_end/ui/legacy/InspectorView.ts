@@ -28,31 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 
-import type {ActionDelegate as ActionDelegateInterface} from './ActionRegistration.js'; // eslint-disable-line no-unused-vars
-import type {Context} from './Context.js';         // eslint-disable-line no-unused-vars
-import type {ContextMenu} from './ContextMenu.js'; // eslint-disable-line no-unused-vars
+import type {ActionDelegate as ActionDelegateInterface} from './ActionRegistration.js';
+import type {Context} from './Context.js';
+import type {ContextMenu} from './ContextMenu.js';
 import {Dialog} from './Dialog.js';
-import {DockController, State} from './DockController.js';
+import {DockController, DockState} from './DockController.js';
 import {GlassPane} from './GlassPane.js';
-import type {Icon} from './Icon.js'; // eslint-disable-line no-unused-vars
+import type {Icon} from './Icon.js';
 import {Infobar, Type as InfobarType} from './Infobar.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import type {Panel} from './Panel.js'; // eslint-disable-line no-unused-vars
+import type {Panel} from './Panel.js';
 import {SplitWidget} from './SplitWidget.js';
 import {Events as TabbedPaneEvents} from './TabbedPane.js';
-import type {TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js'; // eslint-disable-line no-unused-vars
+import type {EventData, TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js';
 import {ToolbarButton} from './Toolbar.js';
-import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js'; // eslint-disable-line no-unused-vars
+import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js';
 import {ViewManager} from './ViewManager.js';
 import type {Widget} from './Widget.js';
-import {VBox, WidgetFocusRestorer} from './Widget.js';  // eslint-disable-line no-unused-vars
+import {VBox, WidgetFocusRestorer} from './Widget.js';
+import * as ARIAUtils from './ARIAUtils.js';
+import inspectorViewTabbedPaneStyles from './inspectorViewTabbedPane.css.legacy.js';
 
 const UIStrings = {
   /**
@@ -79,83 +79,132 @@ const UIStrings = {
   *@description Text for context menu action to move a tab to the drawer
   */
   moveToBottom: 'Move to bottom',
+  /**
+   * @description Text shown in a prompt to the user when DevTools is started and the
+   * currently selected DevTools locale does not match Chrome's locale.
+   * The placeholder is the current Chrome language.
+   * @example {German} PH1
+   */
+  devToolsLanguageMissmatch: 'DevTools is now available in {PH1}!',
+  /**
+   * @description An option the user can select when we notice that DevTools
+   * is configured with a different locale than Chrome. This option means DevTools will
+   * always try and display the DevTools UI in the same language as Chrome.
+   */
+  setToBrowserLanguage: 'Always match Chrome\'s language',
+  /**
+   * @description An option the user can select when DevTools notices that DevTools
+   * is configured with a different locale than Chrome. This option means DevTools UI
+   * will be switched to the language specified in the placeholder.
+   * @example {German} PH1
+   */
+  setToSpecificLanguage: 'Switch DevTools to {PH1}',
+  /**
+  *@description The aria label for main toolbar
+  */
+  mainToolbar: 'Main toolbar',
+  /**
+  *@description The aria label for the drawer.
+  */
+  drawer: 'Tool drawer',
+  /**
+  *@description The aria label for the drawer shown.
+  */
+  drawerShown: 'Drawer shown',
+  /**
+  *@description The aria label for the drawer hidden.
+  */
+  drawerHidden: 'Drawer hidden',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/InspectorView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let inspectorViewInstance: InspectorView;
 
 export class InspectorView extends VBox implements ViewLocationResolver {
-  _drawerSplitWidget: SplitWidget;
-  _tabDelegate: InspectorViewTabDelegate;
-  _drawerTabbedLocation: TabbedViewLocation;
-  _drawerTabbedPane: TabbedPane;
-  _infoBarDiv!: HTMLDivElement|null;
-  _tabbedLocation: TabbedViewLocation;
-  _tabbedPane: TabbedPane;
-  _keyDownBound: (event: Event) => void;
-  _currentPanelLocked?: boolean;
-  _focusRestorer?: WidgetFocusRestorer|null;
-  _ownerSplitWidget?: SplitWidget;
-  _reloadRequiredInfobar?: Infobar;
+  private readonly drawerSplitWidget: SplitWidget;
+  private readonly tabDelegate: InspectorViewTabDelegate;
+  private readonly drawerTabbedLocation: TabbedViewLocation;
+  private drawerTabbedPane: TabbedPane;
+  private infoBarDiv!: HTMLDivElement|null;
+  private readonly tabbedLocation: TabbedViewLocation;
+  readonly tabbedPane: TabbedPane;
+  private readonly keyDownBound: (event: Event) => void;
+  private currentPanelLocked?: boolean;
+  private focusRestorer?: WidgetFocusRestorer|null;
+  private ownerSplitWidget?: SplitWidget;
+  private reloadRequiredInfobar?: Infobar;
 
   constructor() {
     super();
     GlassPane.setContainer(this.element);
-    this.setMinimumSize(240, 72);
+    this.setMinimumSize(250, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
-    this._drawerSplitWidget = new SplitWidget(false, true, 'Inspector.drawerSplitViewState', 200, 200);
-    this._drawerSplitWidget.hideSidebar();
-    this._drawerSplitWidget.enableShowModeSaving();
-    this._drawerSplitWidget.show(this.element);
+    this.drawerSplitWidget = new SplitWidget(false, true, 'Inspector.drawerSplitViewState', 200, 200);
+    this.drawerSplitWidget.hideSidebar();
+    this.drawerSplitWidget.enableShowModeSaving();
+    this.drawerSplitWidget.show(this.element);
 
-    this._tabDelegate = new InspectorViewTabDelegate();
+    this.tabDelegate = new InspectorViewTabDelegate();
 
     // Create drawer tabbed pane.
-    this._drawerTabbedLocation =
-        ViewManager.instance().createTabbedLocation(this._showDrawer.bind(this, false), 'drawer-view', true, true);
-    const moreTabsButton = this._drawerTabbedLocation.enableMoreTabsButton();
+    this.drawerTabbedLocation =
+        ViewManager.instance().createTabbedLocation(this.showDrawer.bind(this, false), 'drawer-view', true, true);
+    const moreTabsButton = this.drawerTabbedLocation.enableMoreTabsButton();
     moreTabsButton.setTitle(i18nString(UIStrings.moreTools));
-    this._drawerTabbedPane = this._drawerTabbedLocation.tabbedPane();
-    this._drawerTabbedPane.setMinimumSize(0, 27);
-    this._drawerTabbedPane.element.classList.add('drawer-tabbed-pane');
+    this.drawerTabbedPane = this.drawerTabbedLocation.tabbedPane();
+    this.drawerTabbedPane.setMinimumSize(0, 27);
+    this.drawerTabbedPane.element.classList.add('drawer-tabbed-pane');
     const closeDrawerButton = new ToolbarButton(i18nString(UIStrings.closeDrawer), 'largeicon-delete');
-    closeDrawerButton.addEventListener(ToolbarButton.Events.Click, this._closeDrawer, this);
-    this._drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this._tabSelected, this);
-    this._drawerTabbedPane.setTabDelegate(this._tabDelegate);
+    closeDrawerButton.addEventListener(ToolbarButton.Events.Click, this.closeDrawer, this);
+    this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
+    this.drawerTabbedPane.setTabDelegate(this.tabDelegate);
 
-    this._drawerSplitWidget.installResizer(this._drawerTabbedPane.headerElement());
-    this._drawerSplitWidget.setSidebarWidget(this._drawerTabbedPane);
-    this._drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
+    const drawerElement = this.drawerTabbedPane.element;
+    ARIAUtils.markAsComplementary(drawerElement);
+    ARIAUtils.setAccessibleName(drawerElement, i18nString(UIStrings.drawer));
+
+    this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
+    this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
+    this.drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
 
     // Create main area tabbed pane.
-    this._tabbedLocation = ViewManager.instance().createTabbedLocation(
+    this.tabbedLocation = ViewManager.instance().createTabbedLocation(
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(
             Host.InspectorFrontendHost.InspectorFrontendHostInstance),
         'panel', true, true, Root.Runtime.Runtime.queryParam('panel'));
 
-    this._tabbedPane = this._tabbedLocation.tabbedPane();
-    this._tabbedPane.element.classList.add('main-tabbed-pane');
-    this._tabbedPane.registerRequiredCSS('ui/legacy/inspectorViewTabbedPane.css', {enableLegacyPatching: false});
-    this._tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this._tabSelected, this);
-    this._tabbedPane.setAccessibleName(i18nString(UIStrings.panels));
-    this._tabbedPane.setTabDelegate(this._tabDelegate);
+    this.tabbedPane = this.tabbedLocation.tabbedPane();
+    this.tabbedPane.element.classList.add('main-tabbed-pane');
+    this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
+    this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
+    this.tabbedPane.setAccessibleName(i18nString(UIStrings.panels));
+    this.tabbedPane.setTabDelegate(this.tabDelegate);
+
+    const mainHeaderElement = this.tabbedPane.headerElement();
+    ARIAUtils.markAsNavigation(mainHeaderElement);
+    ARIAUtils.setAccessibleName(mainHeaderElement, i18nString(UIStrings.mainToolbar));
 
     // Store the initial selected panel for use in launch histograms
-    Host.userMetrics.setLaunchPanel(this._tabbedPane.selectedTabId);
+    Host.userMetrics.setLaunchPanel(this.tabbedPane.selectedTabId);
 
     if (Host.InspectorFrontendHost.isUnderTest()) {
-      this._tabbedPane.setAutoSelectFirstItemOnShow(false);
+      this.tabbedPane.setAutoSelectFirstItemOnShow(false);
     }
-    this._drawerSplitWidget.setMainWidget(this._tabbedPane);
+    this.drawerSplitWidget.setMainWidget(this.tabbedPane);
 
-    this._keyDownBound = this._keyDown.bind(this);
+    this.keyDownBound = this.keyDown.bind(this);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
-    function showPanel(this: InspectorView, event: Common.EventTarget.EventTargetEvent): void {
-      const panelName = (event.data as string);
+    function showPanel(this: InspectorView, {data: panelName}: Common.EventTarget.EventTargetEvent<string>): void {
       this.showPanel(panelName);
+    }
+
+    if (shouldShowLocaleInfobar()) {
+      const infobar = createLocaleInfobar();
+      infobar.setParentView(this);
+      this.attachInfobar(infobar);
     }
   }
 
@@ -170,35 +219,39 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     return inspectorViewInstance;
   }
 
+  static maybeGetInspectorViewInstance(): InspectorView|undefined {
+    return inspectorViewInstance;
+  }
+
   wasShown(): void {
-    this.element.ownerDocument.addEventListener('keydown', this._keyDownBound, false);
+    this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
   }
 
   willHide(): void {
-    this.element.ownerDocument.removeEventListener('keydown', this._keyDownBound, false);
+    this.element.ownerDocument.removeEventListener('keydown', this.keyDownBound, false);
   }
 
   resolveLocation(locationName: string): ViewLocation|null {
     if (locationName === 'drawer-view') {
-      return this._drawerTabbedLocation;
+      return this.drawerTabbedLocation;
     }
     if (locationName === 'panel') {
-      return this._tabbedLocation;
+      return this.tabbedLocation;
     }
     return null;
   }
 
   async createToolbars(): Promise<void> {
-    await this._tabbedPane.leftToolbar().appendItemsAtLocation('main-toolbar-left');
-    await this._tabbedPane.rightToolbar().appendItemsAtLocation('main-toolbar-right');
+    await this.tabbedPane.leftToolbar().appendItemsAtLocation('main-toolbar-left');
+    await this.tabbedPane.rightToolbar().appendItemsAtLocation('main-toolbar-right');
   }
 
   addPanel(view: View): void {
-    this._tabbedLocation.appendView(view);
+    this.tabbedLocation.appendView(view);
   }
 
   hasPanel(panelName: string): boolean {
-    return this._tabbedPane.hasTab(panelName);
+    return this.tabbedPane.hasTab(panelName);
   }
 
   async panel(panelName: string): Promise<Panel> {
@@ -210,14 +263,14 @@ export class InspectorView extends VBox implements ViewLocationResolver {
   }
 
   onSuspendStateChanged(allTargetsSuspended: boolean): void {
-    this._currentPanelLocked = allTargetsSuspended;
-    this._tabbedPane.setCurrentTabLocked(this._currentPanelLocked);
-    this._tabbedPane.leftToolbar().setEnabled(!this._currentPanelLocked);
-    this._tabbedPane.rightToolbar().setEnabled(!this._currentPanelLocked);
+    this.currentPanelLocked = allTargetsSuspended;
+    this.tabbedPane.setCurrentTabLocked(this.currentPanelLocked);
+    this.tabbedPane.leftToolbar().setEnabled(!this.currentPanelLocked);
+    this.tabbedPane.rightToolbar().setEnabled(!this.currentPanelLocked);
   }
 
   canSelectPanel(panelName: string): boolean {
-    return !this._currentPanelLocked || this._tabbedPane.selectedTabId === panelName;
+    return !this.currentPanelLocked || this.tabbedPane.selectedTabId === panelName;
   }
 
   async showPanel(panelName: string): Promise<void> {
@@ -226,26 +279,26 @@ export class InspectorView extends VBox implements ViewLocationResolver {
 
   setPanelIcon(tabId: string, icon: Icon|null): void {
     // Find the tabbed location where the panel lives
-    const tabbedPane = this._getTabbedPaneForTabId(tabId);
+    const tabbedPane = this.getTabbedPaneForTabId(tabId);
     if (tabbedPane) {
       tabbedPane.setTabIcon(tabId, icon);
     }
   }
 
-  _emitDrawerChangeEvent(isDrawerOpen: boolean): void {
+  private emitDrawerChangeEvent(isDrawerOpen: boolean): void {
     const evt = new CustomEvent(Events.DrawerChange, {bubbles: true, cancelable: true, detail: {isDrawerOpen}});
     document.body.dispatchEvent(evt);
   }
 
-  _getTabbedPaneForTabId(tabId: string): TabbedPane|null {
+  private getTabbedPaneForTabId(tabId: string): TabbedPane|null {
     // Tab exists in the main panel
-    if (this._tabbedPane.hasTab(tabId)) {
-      return this._tabbedPane;
+    if (this.tabbedPane.hasTab(tabId)) {
+      return this.tabbedPane;
     }
 
     // Tab exists in the drawer
-    if (this._drawerTabbedPane.hasTab(tabId)) {
-      return this._drawerTabbedPane;
+    if (this.drawerTabbedPane.hasTab(tabId)) {
+      return this.drawerTabbedPane;
     }
 
     // Tab is not open
@@ -253,55 +306,57 @@ export class InspectorView extends VBox implements ViewLocationResolver {
   }
 
   currentPanelDeprecated(): Widget|null {
-    return (ViewManager.instance().materializedWidget(this._tabbedPane.selectedTabId || '') as Widget | null);
+    return (ViewManager.instance().materializedWidget(this.tabbedPane.selectedTabId || '') as Widget | null);
   }
 
-  _showDrawer(focus: boolean): void {
-    if (this._drawerTabbedPane.isShowing()) {
+  showDrawer(focus: boolean): void {
+    if (this.drawerTabbedPane.isShowing()) {
       return;
     }
-    this._drawerSplitWidget.showBoth();
+    this.drawerSplitWidget.showBoth();
     if (focus) {
-      this._focusRestorer = new WidgetFocusRestorer(this._drawerTabbedPane);
+      this.focusRestorer = new WidgetFocusRestorer(this.drawerTabbedPane);
     } else {
-      this._focusRestorer = null;
+      this.focusRestorer = null;
     }
-    this._emitDrawerChangeEvent(true);
+    this.emitDrawerChangeEvent(true);
+    ARIAUtils.alert(i18nString(UIStrings.drawerShown));
   }
 
   drawerVisible(): boolean {
-    return this._drawerTabbedPane.isShowing();
+    return this.drawerTabbedPane.isShowing();
   }
 
-  _closeDrawer(): void {
-    if (!this._drawerTabbedPane.isShowing()) {
+  closeDrawer(): void {
+    if (!this.drawerTabbedPane.isShowing()) {
       return;
     }
-    if (this._focusRestorer) {
-      this._focusRestorer.restore();
+    if (this.focusRestorer) {
+      this.focusRestorer.restore();
     }
-    this._drawerSplitWidget.hideSidebar(true);
+    this.drawerSplitWidget.hideSidebar(true);
 
-    this._emitDrawerChangeEvent(false);
+    this.emitDrawerChangeEvent(false);
+    ARIAUtils.alert(i18nString(UIStrings.drawerHidden));
   }
 
   setDrawerMinimized(minimized: boolean): void {
-    this._drawerSplitWidget.setSidebarMinimized(minimized);
-    this._drawerSplitWidget.setResizable(!minimized);
+    this.drawerSplitWidget.setSidebarMinimized(minimized);
+    this.drawerSplitWidget.setResizable(!minimized);
   }
 
   isDrawerMinimized(): boolean {
-    return this._drawerSplitWidget.isSidebarMinimized();
+    return this.drawerSplitWidget.isSidebarMinimized();
   }
 
   closeDrawerTab(id: string, userGesture?: boolean): void {
-    this._drawerTabbedPane.closeTab(id, userGesture);
+    this.drawerTabbedPane.closeTab(id, userGesture);
     Host.userMetrics.panelClosed(id);
   }
 
-  _keyDown(event: Event): void {
+  private keyDown(event: Event): void {
     const keyboardEvent = (event as KeyboardEvent);
-    if (!KeyboardShortcut.eventHasCtrlOrMeta(keyboardEvent) || keyboardEvent.altKey || keyboardEvent.shiftKey) {
+    if (!KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) || keyboardEvent.altKey || keyboardEvent.shiftKey) {
       return;
     }
 
@@ -317,9 +372,9 @@ export class InspectorView extends VBox implements ViewLocationResolver {
         panelIndex = keyboardEvent.keyCode - 0x61;
       }
       if (panelIndex !== -1) {
-        const panelName = this._tabbedPane.tabIds()[panelIndex];
+        const panelName = this.tabbedPane.tabIds()[panelIndex];
         if (panelName) {
-          if (!Dialog.hasInstance() && !this._currentPanelLocked) {
+          if (!Dialog.hasInstance() && !this.currentPanelLocked) {
             this.showPanel(panelName);
           }
           event.consume(true);
@@ -333,70 +388,134 @@ export class InspectorView extends VBox implements ViewLocationResolver {
   }
 
   topResizerElement(): Element {
-    return this._tabbedPane.headerElement();
+    return this.tabbedPane.headerElement();
   }
 
   toolbarItemResized(): void {
-    this._tabbedPane.headerResized();
+    this.tabbedPane.headerResized();
   }
 
-  _tabSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const tabId = (event.data['tabId'] as string);
+  private tabSelected(event: Common.EventTarget.EventTargetEvent<EventData>): void {
+    const {tabId} = event.data;
     Host.userMetrics.panelShown(tabId);
   }
 
   setOwnerSplit(splitWidget: SplitWidget): void {
-    this._ownerSplitWidget = splitWidget;
+    this.ownerSplitWidget = splitWidget;
   }
 
   ownerSplit(): SplitWidget|null {
-    return this._ownerSplitWidget || null;
+    return this.ownerSplitWidget || null;
   }
 
   minimize(): void {
-    if (this._ownerSplitWidget) {
-      this._ownerSplitWidget.setSidebarMinimized(true);
+    if (this.ownerSplitWidget) {
+      this.ownerSplitWidget.setSidebarMinimized(true);
     }
   }
 
   restore(): void {
-    if (this._ownerSplitWidget) {
-      this._ownerSplitWidget.setSidebarMinimized(false);
+    if (this.ownerSplitWidget) {
+      this.ownerSplitWidget.setSidebarMinimized(false);
     }
   }
 
   displayReloadRequiredWarning(message: string): void {
-    if (!this._reloadRequiredInfobar) {
+    if (!this.reloadRequiredInfobar) {
       const infobar = new Infobar(InfobarType.Info, message, [
         {
           text: i18nString(UIStrings.reloadDevtools),
           highlight: true,
-          delegate: (): void => {
-            if (DockController.instance().canDock() && DockController.instance().dockSide() === State.Undocked) {
-              Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(true, function() {});
-            }
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.reattach(() => window.location.reload());
-          },
+          delegate: (): void => reloadDevTools(),
           dismiss: false,
         },
       ]);
       infobar.setParentView(this);
-      this._attachReloadRequiredInfobar(infobar);
-      this._reloadRequiredInfobar = infobar;
+      this.attachInfobar(infobar);
+      this.reloadRequiredInfobar = infobar;
       infobar.setCloseCallback(() => {
-        delete this._reloadRequiredInfobar;
+        delete this.reloadRequiredInfobar;
       });
     }
   }
 
-  _attachReloadRequiredInfobar(infobar: Infobar): void {
-    if (!this._infoBarDiv) {
-      this._infoBarDiv = (document.createElement('div') as HTMLDivElement);
-      this._infoBarDiv.classList.add('flex-none');
-      this.contentElement.insertBefore(this._infoBarDiv, this.contentElement.firstChild);
+  private createInfoBarDiv(): void {
+    if (!this.infoBarDiv) {
+      this.infoBarDiv = document.createElement('div');
+      this.infoBarDiv.classList.add('flex-none');
+      this.contentElement.insertBefore(this.infoBarDiv, this.contentElement.firstChild);
     }
-    this._infoBarDiv.appendChild(infobar.element);
   }
+
+  private attachInfobar(infobar: Infobar): void {
+    this.createInfoBarDiv();
+    this.infoBarDiv?.appendChild(infobar.element);
+  }
+}
+
+function getDisableLocaleInfoBarSetting(): Common.Settings.Setting<boolean> {
+  return Common.Settings.Settings.instance().createSetting('disableLocaleInfoBar', false);
+}
+
+function shouldShowLocaleInfobar(): boolean {
+  if (getDisableLocaleInfoBarSetting().get()) {
+    return false;
+  }
+
+  // If the language setting is different than 'en-US', the user already
+  // used the setting before, so don't show the toolbar.
+  const languageSettingValue = Common.Settings.Settings.instance().moduleSetting<string>('language').get();
+  if (languageSettingValue !== 'en-US') {
+    return false;
+  }
+
+  // When the selected DevTools locale differs from the locale of the browser UI, we want to notify
+  // users only once, that they have the opportunity to adjust DevTools locale to match Chrome's locale.
+  return !i18n.DevToolsLocale.localeLanguagesMatch(navigator.language, languageSettingValue) &&
+      i18n.DevToolsLocale.DevToolsLocale.instance().languageIsSupportedByDevTools(navigator.language);
+}
+
+function createLocaleInfobar(): Infobar {
+  const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
+  const closestSupportedLocale = devtoolsLocale.lookupClosestDevToolsLocale(navigator.language);
+  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
+  const locale = new Intl.Locale(closestSupportedLocale);
+  const closestSupportedLanguageInCurrentLocale =
+      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language || 'en');
+
+  const languageSetting = Common.Settings.Settings.instance().moduleSetting<string>('language');
+  return new Infobar(
+      InfobarType.Info, i18nString(UIStrings.devToolsLanguageMissmatch, {PH1: closestSupportedLanguageInCurrentLocale}),
+      [
+        {
+          text: i18nString(UIStrings.setToBrowserLanguage),
+          highlight: true,
+          delegate: (): void => {
+            languageSetting.set('browserLanguage');
+            getDisableLocaleInfoBarSetting().set(true);
+            reloadDevTools();
+          },
+          dismiss: true,
+        },
+        {
+          text: i18nString(UIStrings.setToSpecificLanguage, {PH1: closestSupportedLanguageInCurrentLocale}),
+          highlight: true,
+          delegate: (): void => {
+            languageSetting.set(closestSupportedLocale);
+            getDisableLocaleInfoBarSetting().set(true);
+            reloadDevTools();
+          },
+          dismiss: true,
+        },
+      ],
+      getDisableLocaleInfoBarSetting());
+}
+
+function reloadDevTools(): void {
+  if (DockController.instance().canDock() && DockController.instance().dockSide() === DockState.UNDOCKED) {
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(true, function() {});
+  }
+  Host.InspectorFrontendHost.InspectorFrontendHostInstance.reattach(() => window.location.reload());
 }
 
 let actionDelegateInstance: ActionDelegate;
@@ -417,18 +536,18 @@ export class ActionDelegate implements ActionDelegateInterface {
     switch (actionId) {
       case 'main.toggle-drawer':
         if (InspectorView.instance().drawerVisible()) {
-          InspectorView.instance()._closeDrawer();
+          InspectorView.instance().closeDrawer();
         } else {
-          InspectorView.instance()._showDrawer(true);
+          InspectorView.instance().showDrawer(true);
         }
         return true;
       case 'main.next-tab':
-        InspectorView.instance()._tabbedPane.selectNextTab();
-        InspectorView.instance()._tabbedPane.focus();
+        InspectorView.instance().tabbedPane.selectNextTab();
+        InspectorView.instance().tabbedPane.focus();
         return true;
       case 'main.previous-tab':
-        InspectorView.instance()._tabbedPane.selectPrevTab();
-        InspectorView.instance()._tabbedPane.focus();
+        InspectorView.instance().tabbedPane.selectPrevTab();
+        InspectorView.instance().tabbedPane.focus();
         return true;
     }
     return false;

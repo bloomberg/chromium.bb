@@ -29,9 +29,6 @@ sadrul@chromium.org
 kylechar@chromium.org
 jonross@chromium.org
 
-# frame sink video capturer
-per-file client_frame_sink_video_capturer*=ilnik@chromium.org
-
 # gpu
 sadrul@chromium.org
 kylechar@chromium.org
@@ -41,6 +38,7 @@ rjkroege@chromium.org
 sadrul@chromium.org
 
 # math / geometry
+dbaron@chromium.org
 flackr@chromium.org
 
 # overlays
@@ -59,3 +57,4 @@ sunnyps@chromium.org
 # general
 vmpstr@chromium.org
 kylechar@chromium.org
+khushalsagar@chromium.org

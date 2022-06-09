@@ -4,6 +4,7 @@
 
 #include "content/browser/background_sync/periodic_background_sync_service_impl.h"
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/background_sync/background_sync_service_impl_test_harness.h"
 
 namespace content {
@@ -26,7 +27,8 @@ class PeriodicBackgroundSyncServiceImplTest
         receiver = periodic_sync_service_remote_.BindNewPipeAndPassReceiver();
     // Create a new PeriodicBackgroundSyncServiceImpl bound to the dummy
     // channel.
-    background_sync_context_->CreatePeriodicSyncService(std::move(receiver));
+    background_sync_context_->CreatePeriodicSyncService(
+        url::Origin::Create(GURL(kServiceWorkerOrigin)), std::move(receiver));
     base::RunLoop().RunUntilIdle();
 
     // Since |background_sync_context_| is deleted after
@@ -66,7 +68,7 @@ class PeriodicBackgroundSyncServiceImplTest
       periodic_sync_service_remote_;
 
   // Owned by |background_sync_context_|
-  PeriodicBackgroundSyncServiceImpl* periodic_sync_service_impl_;
+  raw_ptr<PeriodicBackgroundSyncServiceImpl> periodic_sync_service_impl_;
 };
 
 // Tests
@@ -93,7 +95,7 @@ TEST_F(PeriodicBackgroundSyncServiceImplTest, RegisterWithInvalidMinInterval) {
   auto to_register = default_sync_registration_.Clone();
   to_register->min_interval = -1;
 
-  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::FakeMessageDispatchContext fake_dispatch_context;
   RegisterPeriodicSync(
       std::move(to_register),
       base::BindOnce(&ErrorAndRegistrationCallback, &called, &error, &reg));

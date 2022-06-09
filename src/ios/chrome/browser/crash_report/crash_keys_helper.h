@@ -11,9 +11,6 @@
 
 namespace crash_keys {
 
-// Key for breadcrumbs attached to crash reports.
-extern const char kBreadcrumbsProductDataKey[];
-
 // Sets a key if |background| is true, unset if false. This will allow tracking
 // of crashes that occur when the app is backgrounded.
 void SetCurrentlyInBackground(bool background);
@@ -62,6 +59,12 @@ void SetCurrentHorizontalSizeClass(int horizontalSizeClass);
 // values from 0 to 2).
 void SetCurrentUserInterfaceStyle(int userInterfaceStyle);
 
+// Sets the number of connected scenes. Only reported if not 1.
+void SetConnectedScenesCount(int connectedScenes);
+
+// Sets the number of foreground scenes. Only reported if not 1.
+void SetForegroundScenesCount(int connectedScenes);
+
 // Sets a key in browser_state dictionary to store the count of regular tabs.
 void SetRegularTabCount(int tabCount);
 
@@ -83,9 +86,6 @@ void SetGridToVisibleTabAnimation(NSString* to_view_controller,
 // Removes the key to help debug a crash when animating from grid to visible
 // tab.
 void RemoveGridToVisibleTabAnimation();
-
-// Sets a key with the given |breadcrumbs| events.
-void SetBreadcrumbEvents(NSString* breadcrumbs);
 
 // Sets a key in browser to store the playback state of media player (audio or
 // video). This function records a new start. This function is called for each

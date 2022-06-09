@@ -2,7 +2,6 @@ export const description = `
 Tests for the indirect-specific aspects of drawIndirect/drawIndexedIndirect.
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 
@@ -27,9 +26,9 @@ Params:
     - indirectOffset= {0, 4, k * sizeof(args struct), k * sizeof(args struct) + 4}
     `
   )
-  .subcases(() =>
-    params().combine(
-      poptions('indirectOffset', [
+  .paramsSubcasesOnly(u =>
+    u //
+      .combine('indirectOffset', [
         0,
         Uint32Array.BYTES_PER_ELEMENT,
         1 * kDrawIndirectParametersSize,
@@ -39,7 +38,6 @@ Params:
         99 * kDrawIndirectParametersSize,
         99 * kDrawIndirectParametersSize + Uint32Array.BYTES_PER_ELEMENT,
       ] as const)
-    )
   )
   .fn(t => {
     const { indirectOffset } = t.params;

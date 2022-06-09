@@ -16,7 +16,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -47,6 +46,7 @@
 #include "net/base/escape.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/gurl.h"
@@ -249,9 +249,8 @@ void ZeroSuggestProvider::ResetSession() {
   set_field_trial_triggered(false);
 }
 
-ZeroSuggestProvider::ZeroSuggestProvider(
-    AutocompleteProviderClient* client,
-    AutocompleteProviderListener* listener)
+ZeroSuggestProvider::ZeroSuggestProvider(AutocompleteProviderClient* client,
+                                         AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
       listener_(listener),
       result_type_running_(NONE) {
@@ -297,7 +296,7 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
 }
 
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
-      const SearchSuggestionParser::SuggestResult& result) const {
+    const SearchSuggestionParser::SuggestResult& result) const {
   // We always use the default provider for search, so append the params.
   return true;
 }
@@ -346,11 +345,11 @@ bool ZeroSuggestProvider::UpdateResults(const std::string& json_data) {
 
     // If we received an empty result list, we should update the display, as it
     // may be showing cached results that should not be shown.
-    const base::ListValue* root_list = nullptr;
-    const base::ListValue* results_list = nullptr;
-    const bool non_empty_parsed_list = data->GetAsList(&root_list) &&
-                                       root_list->GetList(1, &results_list) &&
-                                       !results_list->empty();
+    //
+    // `data->GetList()[1]` is the results list.
+    const bool non_empty_parsed_list =
+        data->is_list() && data->GetList().size() >= 2u &&
+        data->GetList()[1].is_list() && !data->GetList()[1].GetList().empty();
     const bool non_empty_cache = !results_.suggest_results.empty() ||
                                  !results_.navigation_results.empty();
     if (non_empty_parsed_list && non_empty_cache)
@@ -488,6 +487,12 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
                    omnibox::kClobberTriggersContextualWebZeroSuggest);
       }
 
+      if (IsSearchResultsPage(page_class)) {
+        return input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
+               base::FeatureList::IsEnabled(
+                   omnibox::kClobberTriggersSRPZeroSuggest);
+      }
+
       return false;
     };
 
@@ -570,10 +575,13 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
-  if (current_page_classification == OmniboxEventProto::CHROMEOS_APP_LIST)
+  if (current_page_classification == OmniboxEventProto::CHROMEOS_APP_LIST ||
+      current_page_classification ==
+          OmniboxEventProto::ANDROID_SHORTCUTS_WIDGET) {
     return REMOTE_NO_URL;
+  }
 
-  // Contextual Open Web - (same client side behavior for multiple variants).
+  // Contextual Open Web - does NOT include Search Results Page.
   if (current_page_classification == OmniboxEventProto::OTHER &&
       can_send_current_url) {
     if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
@@ -587,6 +595,21 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     if (input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
         base::FeatureList::IsEnabled(
             omnibox::kClobberTriggersContextualWebZeroSuggest)) {
+      return REMOTE_SEND_URL;
+    }
+  }
+
+  // Search Results page classification only.
+  if (IsSearchResultsPage(current_page_classification) &&
+      can_send_current_url) {
+    if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
+        base::FeatureList::IsEnabled(
+            omnibox::kOnFocusSuggestionsContextualWebAllowSRP)) {
+      return REMOTE_SEND_URL;
+    }
+
+    if (input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
+        base::FeatureList::IsEnabled(omnibox::kClobberTriggersSRPZeroSuggest)) {
       return REMOTE_SEND_URL;
     }
   }

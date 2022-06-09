@@ -65,7 +65,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void Trace(Visitor*) const override;
 
  private:
-  FloatRect GetBBox() override;
+  gfx::RectF GetBBox() override;
 
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,
@@ -92,8 +92,8 @@ class SVGUseElement final : public SVGGraphicsElement,
   bool SelfHasRelativeLengths() const override;
 
   ShadowRoot& UseShadowRoot() const {
-    CHECK(ClosedShadowRoot());
-    return *ClosedShadowRoot();
+    CHECK(UserAgentShadowRoot());
+    return *UserAgentShadowRoot();
   }
 
   Element* ResolveTargetElement();

@@ -16,9 +16,10 @@ import select
 import subprocess
 import sys
 import threading
+import time
 import uuid
 
-from symbolizer import BuildIdsPaths, RunSymbolizer, SymbolizerFilter
+from symbolizer import BuildIdsPaths, RunSymbolizer
 
 FAR = common.GetHostToolPathFromPlatform('far')
 
@@ -30,50 +31,21 @@ def _AttachKernelLogReader(target):
   """Attaches a kernel log reader as a long-running SSH task."""
 
   logging.info('Attaching kernel logger.')
-  return target.RunCommandPiped(['dlog', '-f'],
+  return target.RunCommandPiped(['log_listener',
+                                 '--since_now',
+                                 '--hide_metadata',
+                                 '--tag',
+                                 'klog',
+                                ],
                                 stdin=open(os.devnull, 'r'),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
 
 
-class SystemLogReader(object):
-  """Collects and symbolizes Fuchsia system log to a file."""
-
-  def __init__(self):
-    self._listener_proc = None
-    self._symbolizer_proc = None
-    self._system_log = None
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    """Stops the system logging processes and closes the output file."""
-    if self._symbolizer_proc:
-      self._symbolizer_proc.kill()
-    if self._listener_proc:
-      self._listener_proc.kill()
-    if self._system_log:
-      self._system_log.close()
-
-  def Start(self, target, package_paths, system_log_file):
-    """Start a system log reader as a long-running SSH task."""
-    logging.debug('Writing fuchsia system log to %s' % system_log_file)
-
-    self._listener_proc = target.RunCommandPiped(['log_listener'],
-                                                 stdout=subprocess.PIPE,
-                                                 stderr=subprocess.STDOUT)
-
-    self._system_log = open(system_log_file, 'w', buffering=1)
-    self._symbolizer_proc = RunSymbolizer(self._listener_proc.stdout,
-                                          self._system_log,
-                                          BuildIdsPaths(package_paths))
-
-
 class MergedInputStream(object):
-  """Merges a number of input streams into a UNIX pipe on a dedicated thread.
-  Terminates when the file descriptor of the primary stream (the first in
-  the sequence) is closed."""
+  """Merges a number of input streams into a UTF-8 encoded UNIX pipe on a
+  dedicated thread. Terminates when the file descriptor of the primary stream
+  (the first in the sequence) is closed."""
 
   def __init__(self, streams):
     assert len(streams) > 0
@@ -86,7 +58,7 @@ class MergedInputStream(object):
 
     read_pipe, write_pipe = os.pipe()
 
-    self._output_stream = os.fdopen(write_pipe, 'wb', 1)
+    self._output_stream = os.fdopen(write_pipe, 'wb', 0)
     self._thread = threading.Thread(target=self._Run)
     self._thread.start()
 
@@ -152,7 +124,6 @@ class RunTestPackageArgs:
 
   code_coverage: If set, the test package will be run via 'runtests', and the
                  output will be saved to /tmp folder on the device.
-  system_logging: If set, connects a system log reader to the target.
   test_realm_label: Specifies the realm name that run-test-component should use.
       This must be specified if a filter file is to be set, or a results summary
       file fetched after the test suite has run.
@@ -162,7 +133,6 @@ class RunTestPackageArgs:
 
   def __init__(self):
     self.code_coverage = False
-    self.system_logging = False
     self.test_realm_label = None
     self.use_run_test_component = False
 
@@ -170,7 +140,6 @@ class RunTestPackageArgs:
   def FromCommonArgs(args):
     run_test_package_args = RunTestPackageArgs()
     run_test_package_args.code_coverage = args.code_coverage
-    run_test_package_args.system_logging = args.include_system_logs
     return run_test_package_args
 
 
@@ -184,6 +153,14 @@ def _DrainStreamToStdout(stream, quit_event):
       if not line:
         return
       print(line.rstrip())
+
+
+def _SymbolizeStream(input_fd, ids_txt_files):
+  """Returns a Popen object for a symbolizer process invocation.
+  input_fd: The data to symbolize.
+  ids_txt_files: A list of ids.txt files which contain symbol data."""
+
+  return RunSymbolizer(input_fd, subprocess.PIPE, ids_txt_files)
 
 
 def RunTestPackage(output_dir, target, package_paths, package_name,
@@ -200,24 +177,24 @@ def RunTestPackage(output_dir, target, package_paths, package_name,
 
   Returns the exit code of the remote package process."""
 
-  system_logger = (_AttachKernelLogReader(target)
-                   if args.system_logging else None)
+  kernel_logger = _AttachKernelLogReader(target)
   try:
-    if system_logger:
-      # Spin up a thread to asynchronously dump the system log to stdout
-      # for easier diagnoses of early, pre-execution failures.
-      log_output_quit_event = multiprocessing.Event()
-      log_output_thread = threading.Thread(target=lambda: _DrainStreamToStdout(
-          system_logger.stdout, log_output_quit_event))
-      log_output_thread.daemon = True
-      log_output_thread.start()
+    # Spin up a thread to asynchronously dump the system log to stdout
+    # for easier diagnoses of early, pre-execution failures.
+    log_output_quit_event = multiprocessing.Event()
+    log_output_thread = threading.Thread(target=lambda: _DrainStreamToStdout(
+        kernel_logger.stdout, log_output_quit_event))
+    log_output_thread.daemon = True
+    log_output_thread.start()
 
-    with target.GetAmberRepo():
+    with target.GetPkgRepo():
+      start_time = time.time()
       target.InstallPackage(package_paths)
+      logging.info('Test installed in {:.2f} seconds.'.format(time.time() -
+                                                              start_time))
 
-      if system_logger:
-        log_output_quit_event.set()
-        log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
+      log_output_quit_event.set()
+      log_output_thread.join(timeout=_JOIN_TIMEOUT_SECS)
 
       logging.info('Running application.')
 
@@ -234,9 +211,9 @@ def RunTestPackage(output_dir, target, package_paths, package_name,
         if args.test_realm_label:
           command += ['--realm-label=%s' % args.test_realm_label]
         command.append(_GetComponentUri(package_name))
+        command.append('--')
       else:
         command = ['run', _GetComponentUri(package_name)]
-
       command.extend(package_args)
 
       process = target.RunCommandPiped(command,
@@ -244,20 +221,20 @@ def RunTestPackage(output_dir, target, package_paths, package_name,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.STDOUT)
 
-      if system_logger:
-        output_stream = MergedInputStream(
-            [process.stdout, system_logger.stdout]).Start()
-      else:
-        output_stream = process.stdout
-
-      # Run the log data through the symbolizer process.
-      output_stream = SymbolizerFilter(output_stream,
-                                       BuildIdsPaths(package_paths))
-
-      for next_line in output_stream:
-        # TODO(crbug/1198733): Switch to having stream encode to utf-8 directly
-        # once we drop Python 2 support.
-        print(next_line.encode('utf-8').rstrip())
+      # Symbolize klog and systemlog as separate streams. The symbolizer
+      # protocol is stateful, so comingled raw stack dumps can yield
+      # unsymbolizable garbage data.
+      ids_txt_paths = BuildIdsPaths(package_paths)
+      with _SymbolizeStream(process.stdout, ids_txt_paths) as \
+              symbolized_stdout, \
+           _SymbolizeStream(kernel_logger.stdout, ids_txt_paths) as \
+               symbolized_klog:
+        output_stream = MergedInputStream([symbolized_stdout.stdout,
+                                           symbolized_klog.stdout]).Start()
+        for next_line in output_stream:
+          print(next_line.rstrip())
+        symbolized_stdout.wait()  # Should return instantly.
+        symbolized_klog.kill()    # klog is never-ending and must be killed.
 
       process.wait()
       if process.returncode == 0:
@@ -269,10 +246,9 @@ def RunTestPackage(output_dir, target, package_paths, package_name,
                         process.returncode)
 
   finally:
-    if system_logger:
-      logging.info('Terminating kernel log reader.')
-      log_output_quit_event.set()
-      log_output_thread.join()
-      system_logger.kill()
+    logging.info('Terminating kernel log reader.')
+    log_output_quit_event.set()
+    log_output_thread.join()
+    kernel_logger.kill()
 
   return process.returncode

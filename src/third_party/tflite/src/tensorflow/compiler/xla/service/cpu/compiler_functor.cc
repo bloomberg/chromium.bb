@@ -66,22 +66,36 @@ class FilteredPassManager : public llvm::legacy::PassManager {
   explicit FilteredPassManager(bool disable_expensive_passes)
       : disable_expensive_passes_(disable_expensive_passes) {}
   void add(llvm::Pass* p) override {
-    bool pass_disabled =
-        disable_expensive_passes_ && p->getPassName().contains("Unroll loops");
-    if (!pass_disabled) {
-      llvm::legacy::PassManager::add(p);
-    } else {
+    // Disable all the loop unroll passes in the pipeline if
+    // `disable_expensive_passes_` is true (TODO: Maybe we should use
+    // `builder.DisableUnrollLoops` for this legacy feature?). Disable only the
+    // early loop full unroll pass, otherwise. The early loop full unroll pass
+    // applies excesive unrolling in statically bounded low trip-count loops,
+    // which are very common in XLA. It also creates a strong dependency on the
+    // SLP vectorizer to produce all the vector code, since the loops are fully
+    // unrolled. By disabling it, the Loop Vectorizer would have an opportunity
+    // to vectorize the code. A later loop unroll pass will still unroll the
+    // loops before SLP for those cases missed by the Loop Vectorizer.
+    constexpr unsigned loop_full_unroll_pos = 0;
+    if (p->getPassName().contains("Unroll loops") &&
+        (disable_expensive_passes_ ||
+         num_unroll_passes_ == loop_full_unroll_pos)) {
+      ++num_unroll_passes_;
       delete p;
+      return;
     }
+
+    llvm::legacy::PassManager::add(p);
   }
 
  private:
+  unsigned num_unroll_passes_ = 0;
   bool disable_expensive_passes_;
 };
 }  // anonymous namespace
 
-std::unique_ptr<llvm::MemoryBuffer> CompilerFunctor::operator()(
-    llvm::Module& module) const {
+llvm::Expected<std::unique_ptr<llvm::MemoryBuffer>> CompilerFunctor::operator()(
+    llvm::Module& module) {
   FilteredPassManager module_passes(disable_expensive_passes_);
   llvm::legacy::FunctionPassManager function_passes(&module);
 
@@ -155,37 +169,47 @@ std::unique_ptr<llvm::MemoryBuffer> CompilerFunctor::operator()(
     }
   }
 
-  return memory_buffer;
+  return std::move(memory_buffer);
 }
 
 static std::vector<llvm::VecDesc> VectorFunctionsForTargetLibraryInfoImpl() {
   std::vector<llvm::VecDesc> result = {
-      {"tanhf", runtime::kTanhV4F32SymbolName, 4},
-      {"llvm.tanh.f32", runtime::kTanhV4F32SymbolName, 4},
+      {"tanhf", runtime::kTanhV4F32SymbolName, llvm::ElementCount::getFixed(4)},
+      {"llvm.tanh.f32", runtime::kTanhV4F32SymbolName,
+       llvm::ElementCount::getFixed(4)},
 
-      {"tanhf", runtime::kTanhV8F32SymbolName, 8},
-      {"llvm.tanh.f32", runtime::kTanhV8F32SymbolName, 8},
+      {"tanhf", runtime::kTanhV8F32SymbolName, llvm::ElementCount::getFixed(8)},
+      {"llvm.tanh.f32", runtime::kTanhV8F32SymbolName,
+       llvm::ElementCount::getFixed(8)},
 
-      {"tanhf", runtime::kTanhV16F32SymbolName, 16},
-      {"llvm.tanh.f32", runtime::kTanhV16F32SymbolName, 16},
+      {"tanhf", runtime::kTanhV16F32SymbolName,
+       llvm::ElementCount::getFixed(16)},
+      {"llvm.tanh.f32", runtime::kTanhV16F32SymbolName,
+       llvm::ElementCount::getFixed(16)},
 
-      {"expf", runtime::kExpV4F32SymbolName, 4},
-      {"llvm.exp.f32", runtime::kExpV4F32SymbolName, 4},
+      {"expf", runtime::kExpV4F32SymbolName, llvm::ElementCount::getFixed(4)},
+      {"llvm.exp.f32", runtime::kExpV4F32SymbolName,
+       llvm::ElementCount::getFixed(4)},
 
-      {"expf", runtime::kExpV8F32SymbolName, 8},
-      {"llvm.exp.f32", runtime::kExpV8F32SymbolName, 8},
+      {"expf", runtime::kExpV8F32SymbolName, llvm::ElementCount::getFixed(8)},
+      {"llvm.exp.f32", runtime::kExpV8F32SymbolName,
+       llvm::ElementCount::getFixed(8)},
 
-      {"expf", runtime::kExpV16F32SymbolName, 16},
-      {"llvm.exp.f32", runtime::kExpV16F32SymbolName, 16},
+      {"expf", runtime::kExpV16F32SymbolName, llvm::ElementCount::getFixed(16)},
+      {"llvm.exp.f32", runtime::kExpV16F32SymbolName,
+       llvm::ElementCount::getFixed(16)},
 
-      {"logf", runtime::kLogV4F32SymbolName, 4},
-      {"llvm.log.f32", runtime::kLogV4F32SymbolName, 4},
+      {"logf", runtime::kLogV4F32SymbolName, llvm::ElementCount::getFixed(4)},
+      {"llvm.log.f32", runtime::kLogV4F32SymbolName,
+       llvm::ElementCount::getFixed(4)},
 
-      {"logf", runtime::kLogV8F32SymbolName, 8},
-      {"llvm.log.f32", runtime::kLogV8F32SymbolName, 8},
+      {"logf", runtime::kLogV8F32SymbolName, llvm::ElementCount::getFixed(8)},
+      {"llvm.log.f32", runtime::kLogV8F32SymbolName,
+       llvm::ElementCount::getFixed(8)},
 
-      {"logf", runtime::kLogV16F32SymbolName, 16},
-      {"llvm.log.f32", runtime::kLogV16F32SymbolName, 16},
+      {"logf", runtime::kLogV16F32SymbolName, llvm::ElementCount::getFixed(16)},
+      {"llvm.log.f32", runtime::kLogV16F32SymbolName,
+       llvm::ElementCount::getFixed(16)},
   };
   return result;
 }

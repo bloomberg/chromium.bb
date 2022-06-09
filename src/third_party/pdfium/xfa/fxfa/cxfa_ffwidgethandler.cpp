@@ -30,74 +30,64 @@ void CXFA_FFWidgetHandler::Trace(cppgc::Visitor* visitor) const {
 }
 
 bool CXFA_FFWidgetHandler::OnMouseEnter(CXFA_FFWidget* hWidget) {
-  m_pDocView->LockUpdate();
-  bool bRet = hWidget->OnMouseEnter();
-  m_pDocView->UnlockUpdate();
-  m_pDocView->UpdateDocView();
-  return bRet;
+  CXFA_FFDocView::UpdateScope scope(m_pDocView);
+  return hWidget->OnMouseEnter();
 }
 
 bool CXFA_FFWidgetHandler::OnMouseExit(CXFA_FFWidget* hWidget) {
-  m_pDocView->LockUpdate();
-  bool bRet = hWidget->OnMouseExit();
-  m_pDocView->UnlockUpdate();
-  m_pDocView->UpdateDocView();
-  return bRet;
+  CXFA_FFDocView::UpdateScope scope(m_pDocView);
+  return hWidget->OnMouseExit();
 }
 
 bool CXFA_FFWidgetHandler::OnLButtonDown(CXFA_FFWidget* hWidget,
-                                         uint32_t dwFlags,
+                                         Mask<XFA_FWL_KeyFlag> dwFlags,
                                          const CFX_PointF& point) {
-  m_pDocView->LockUpdate();
-  bool bRet = hWidget->AcceptsFocusOnButtonDown(
-      dwFlags, hWidget->Rotate2Normal(point), FWL_MouseCommand::LeftButtonDown);
-  if (bRet) {
-    // May re-enter JS.
-    if (m_pDocView->SetFocus(hWidget))
-      m_pDocView->GetDoc()->SetFocusWidget(hWidget);
-
-    bRet = hWidget->OnLButtonDown(dwFlags, hWidget->Rotate2Normal(point));
+  CXFA_FFDocView::UpdateScope scope(m_pDocView);
+  if (!hWidget->AcceptsFocusOnButtonDown(
+          dwFlags, hWidget->Rotate2Normal(point),
+          CFWL_MessageMouse::MouseCommand::kLeftButtonDown)) {
+    return false;
   }
-  m_pDocView->UnlockUpdate();
-  m_pDocView->UpdateDocView();
-  return bRet;
+  // May re-enter JS.
+  if (m_pDocView->SetFocus(hWidget))
+    m_pDocView->GetDoc()->SetFocusWidget(hWidget);
+
+  return hWidget->OnLButtonDown(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnLButtonUp(CXFA_FFWidget* hWidget,
-                                       uint32_t dwFlags,
+                                       Mask<XFA_FWL_KeyFlag> dwFlags,
                                        const CFX_PointF& point) {
-  m_pDocView->LockUpdate();
-  m_pDocView->m_bLayoutEvent = true;
-  bool bRet = hWidget->OnLButtonUp(dwFlags, hWidget->Rotate2Normal(point));
-  m_pDocView->UnlockUpdate();
-  m_pDocView->UpdateDocView();
-  return bRet;
+  CXFA_FFDocView::UpdateScope scope(m_pDocView);
+  m_pDocView->SetLayoutEvent();
+  return hWidget->OnLButtonUp(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnLButtonDblClk(CXFA_FFWidget* hWidget,
-                                           uint32_t dwFlags,
+                                           Mask<XFA_FWL_KeyFlag> dwFlags,
                                            const CFX_PointF& point) {
   return hWidget->OnLButtonDblClk(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnMouseMove(CXFA_FFWidget* hWidget,
-                                       uint32_t dwFlags,
+                                       Mask<XFA_FWL_KeyFlag> dwFlags,
                                        const CFX_PointF& point) {
   return hWidget->OnMouseMove(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnMouseWheel(CXFA_FFWidget* hWidget,
-                                        uint32_t dwFlags,
+                                        Mask<XFA_FWL_KeyFlag> dwFlags,
                                         const CFX_PointF& point,
                                         const CFX_Vector& delta) {
   return hWidget->OnMouseWheel(dwFlags, hWidget->Rotate2Normal(point), delta);
 }
 
 bool CXFA_FFWidgetHandler::OnRButtonDown(CXFA_FFWidget* hWidget,
-                                         uint32_t dwFlags,
+                                         Mask<XFA_FWL_KeyFlag> dwFlags,
                                          const CFX_PointF& point) {
-  if (!hWidget->AcceptsFocusOnButtonDown(dwFlags, hWidget->Rotate2Normal(point),
-                                         FWL_MouseCommand::RightButtonDown)) {
+  if (!hWidget->AcceptsFocusOnButtonDown(
+          dwFlags, hWidget->Rotate2Normal(point),
+          CFWL_MessageMouse::MouseCommand::kRightButtonDown)) {
     return false;
   }
   // May re-enter JS.
@@ -108,34 +98,34 @@ bool CXFA_FFWidgetHandler::OnRButtonDown(CXFA_FFWidget* hWidget,
 }
 
 bool CXFA_FFWidgetHandler::OnRButtonUp(CXFA_FFWidget* hWidget,
-                                       uint32_t dwFlags,
+                                       Mask<XFA_FWL_KeyFlag> dwFlags,
                                        const CFX_PointF& point) {
   return hWidget->OnRButtonUp(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnRButtonDblClk(CXFA_FFWidget* hWidget,
-                                           uint32_t dwFlags,
+                                           Mask<XFA_FWL_KeyFlag> dwFlags,
                                            const CFX_PointF& point) {
   return hWidget->OnRButtonDblClk(dwFlags, hWidget->Rotate2Normal(point));
 }
 
 bool CXFA_FFWidgetHandler::OnKeyDown(CXFA_FFWidget* hWidget,
-                                     uint32_t dwKeyCode,
-                                     uint32_t dwFlags) {
+                                     XFA_FWL_VKEYCODE dwKeyCode,
+                                     Mask<XFA_FWL_KeyFlag> dwFlags) {
   bool bRet = hWidget->OnKeyDown(dwKeyCode, dwFlags);
   m_pDocView->UpdateDocView();
   return bRet;
 }
 
 bool CXFA_FFWidgetHandler::OnKeyUp(CXFA_FFWidget* hWidget,
-                                   uint32_t dwKeyCode,
-                                   uint32_t dwFlags) {
+                                   XFA_FWL_VKEYCODE dwKeyCode,
+                                   Mask<XFA_FWL_KeyFlag> dwFlags) {
   return hWidget->OnKeyUp(dwKeyCode, dwFlags);
 }
 
 bool CXFA_FFWidgetHandler::OnChar(CXFA_FFWidget* hWidget,
                                   uint32_t dwChar,
-                                  uint32_t dwFlags) {
+                                  Mask<XFA_FWL_KeyFlag> dwFlags) {
   return hWidget->OnChar(dwChar, dwFlags);
 }
 
@@ -184,7 +174,7 @@ bool CXFA_FFWidgetHandler::Redo(CXFA_FFWidget* widget) {
 
 FWL_WidgetHit CXFA_FFWidgetHandler::HitTest(CXFA_FFWidget* pWidget,
                                             const CFX_PointF& point) {
-  if (!pWidget->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible))
+  if (!pWidget->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus::kVisible))
     return FWL_WidgetHit::Unknown;
   return pWidget->HitTest(pWidget->Rotate2Normal(point));
 }
@@ -217,7 +207,7 @@ bool CXFA_FFWidgetHandler::HasEvent(CXFA_Node* pNode,
     default:
       break;
   }
-  return !pNode->GetEventByActivity(gs_EventActivity[eEventType], false)
+  return !pNode->GetEventByActivity(kXFAEventActivity[eEventType], false)
               .empty();
 }
 
@@ -248,5 +238,5 @@ XFA_EventError CXFA_FFWidgetHandler::ProcessEvent(CXFA_Node* pNode,
       break;
   }
   return pNode->ProcessEvent(m_pDocView.Get(),
-                             gs_EventActivity[pParam->m_eType], pParam);
+                             kXFAEventActivity[pParam->m_eType], pParam);
 }

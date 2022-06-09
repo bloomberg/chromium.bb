@@ -22,6 +22,7 @@ class WebContents;
 namespace webshare {
 
 class PrepareDirectoryTask;
+class PrepareSubDirectoryTask;
 
 // Chrome-OS implementation of navigator.share() sharing to
 // sharesheet::SharesheetService.
@@ -32,6 +33,7 @@ class SharesheetClient : public content::WebContentsObserver {
       content::WebContents* web_contents,
       const std::vector<base::FilePath>& file_paths,
       const std::vector<std::string>& content_types,
+      const std::vector<uint64_t>& file_sizes,
       const std::string& text,
       const std::string& title,
       DeliveredCallback delivered_callback)>;
@@ -52,6 +54,8 @@ class SharesheetClient : public content::WebContentsObserver {
  private:
   void OnPrepareDirectory(blink::mojom::ShareError);
 
+  void OnPrepareSubdirectory(blink::mojom::ShareError);
+
   void OnStoreFiles(blink::mojom::ShareError);
 
   void OnShowSharesheet(sharesheet::SharesheetResult result);
@@ -59,6 +63,7 @@ class SharesheetClient : public content::WebContentsObserver {
   static void ShowSharesheet(content::WebContents* web_contents,
                              const std::vector<base::FilePath>& file_paths,
                              const std::vector<std::string>& content_types,
+                             const std::vector<uint64_t>& file_sizes,
                              const std::string& text,
                              const std::string& title,
                              DeliveredCallback delivered_callback);
@@ -80,11 +85,13 @@ class SharesheetClient : public content::WebContentsObserver {
     base::FilePath directory;
     std::vector<base::FilePath> file_paths;
     std::vector<std::string> content_types;
+    std::vector<uint64_t> file_sizes;
     std::string text;
     std::string title;
     blink::mojom::ShareService::ShareCallback callback;
 
     std::unique_ptr<PrepareDirectoryTask> prepare_directory_task;
+    std::unique_ptr<PrepareSubDirectoryTask> prepare_subdirectory_task;
   };
 
   absl::optional<CurrentShare> current_share_;

@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "base/cxx17_backports.h"
 #include "base/guid.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -296,7 +296,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleNoInternet) {
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandleTimeout) {
   GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 
-  FakeAssociatedUserValidator validator(base::TimeDelta::FromMilliseconds(50));
+  FakeAssociatedUserValidator validator(base::Milliseconds(50));
   CComBSTR sid;
   ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                       L"username", L"password", L"fullname", L"comment",
@@ -602,8 +602,8 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
     }
     // Advance the time that is more than the offline validity period.
     TimeClockOverrideValue::current_time_ =
-        last_token_valid + base::TimeDelta::FromDays(validity_period_in_days) +
-        base::TimeDelta::FromMilliseconds(1);
+        last_token_valid + base::Days(validity_period_in_days) +
+        base::Milliseconds(1);
   }
 
   if (contains_stored_password) {
@@ -938,7 +938,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
   // invalid result now.
   TimeClockOverrideValue::current_time_ +=
       AssociatedUserValidator::kTokenHandleValidityLifetime +
-      base::TimeDelta::FromMilliseconds(1);
+      base::Milliseconds(1);
   EXPECT_TRUE(validator.IsAuthEnforcedForUser(OLE2W(sid)));
   EXPECT_EQ(2u, fake_http_url_fetcher_factory()->requests_created());
 }

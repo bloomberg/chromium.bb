@@ -9,7 +9,7 @@
 #include <wrl/implements.h>
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 
 namespace ui {
@@ -33,6 +33,10 @@ class DragSourceWin
   // are an error - it is only public because a WRL helper function creates the
   // objects.
   DragSourceWin();
+
+  DragSourceWin(const DragSourceWin&) = delete;
+  DragSourceWin& operator=(const DragSourceWin&) = delete;
+
   ~DragSourceWin() override = default;
 
   // Stop the drag operation at the next chance we get.  This doesn't
@@ -65,15 +69,13 @@ class DragSourceWin
   // Set to true if we want to cancel the drag operation.
   bool cancel_drag_;
 
-  const OSExchangeData* data_;
+  raw_ptr<const OSExchangeData> data_;
 
   // The number of times for this drag that Windows asked if the drag should
   // continue. This is used in DesktopDragDropClientWin::StartDragAndDrop to
   // detect if touch drag drop started successfully. See comment there for much
   // more info.
   int num_query_continues_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DragSourceWin);
 };
 
 }  // namespace ui

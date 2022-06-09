@@ -22,6 +22,7 @@ limitations under the License.
 
 #include "absl/base/call_once.h"
 #include "llvm-c/Target.h"
+#include "llvm/Support/ManagedStatic.h"
 #include "tensorflow/compiler/aot/codegen.h"
 #include "tensorflow/compiler/aot/flags.h"
 #include "tensorflow/compiler/aot/quantize.h"
@@ -168,6 +169,12 @@ static void InitializeTargets() {
   LLVMInitializeAArch64TargetMC();
   LLVMInitializeAArch64AsmPrinter();
 #endif
+#if TF_LLVM_S390X_AVAILABLE
+  LLVMInitializeSystemZTarget();
+  LLVMInitializeSystemZTargetInfo();
+  LLVMInitializeSystemZTargetMC();
+  LLVMInitializeSystemZAsmPrinter();
+#endif
   LLVMInitializeARMTarget();
   LLVMInitializeARMTargetInfo();
   LLVMInitializeARMTargetMC();
@@ -229,8 +236,8 @@ Status Main(const MainFlags& flags) {
   Status status =
       CompileGraph(std::move(graph_def), config, flags, &compile_result);
   if (!status.ok()) {
-    return Status(status.code(),
-                  InterpolateErrorMessage(status.error_message()));
+    return errors::CreateWithUpdatedMessage(
+        status, InterpolateErrorMessage(status.error_message()));
   }
 
   // Write output files.

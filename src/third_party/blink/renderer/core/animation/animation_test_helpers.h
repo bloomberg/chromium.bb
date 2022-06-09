@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TEST_HELPERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_TEST_HELPERS_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/css_numeric_value_or_string_or_css_keyword_value_or_scroll_timeline_element_based_offset.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -17,6 +17,7 @@ namespace blink {
 class Document;
 class Element;
 class KeyframeEffect;
+class KeyframeEffectModelBase;
 
 namespace animation_test_helpers {
 
@@ -36,6 +37,10 @@ KeyframeEffect* CreateSimpleKeyframeEffectForTest(Element*,
                                                   CSSPropertyID,
                                                   String value_start,
                                                   String value_end);
+KeyframeEffectModelBase* CreateSimpleKeyframeEffectModelForTest(
+    CSSPropertyID,
+    String value_start,
+    String value_end);
 
 // Ensures that a set of interpolations actually computes and caches their
 // internal interpolated value, so that tests can retrieve them.
@@ -50,7 +55,7 @@ void EnsureInterpolatedValueCached(ActiveInterpolations*, Document&, Element*);
 //   <length-percentage>.
 // - A CSSKeywordValue. if the incoming string can be parsed as 'auto'.
 // - Otherwise, the incoming string.
-ScrollTimelineOffsetValue OffsetFromString(Document&, const String&);
+V8ScrollTimelineOffset* OffsetFromString(Document&, const String&);
 
 }  // namespace animation_test_helpers
 }  // namespace blink

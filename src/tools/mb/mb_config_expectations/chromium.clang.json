@@ -1,6 +1,7 @@
 {
   "CFI Linux CF": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_cfi": true,
       "is_component_build": false,
       "is_debug": false,
@@ -28,6 +29,7 @@
   },
   "CrWinAsan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_ipc_fuzzer": true,
       "is_asan": true,
       "is_clang": true,
@@ -40,6 +42,7 @@
   },
   "CrWinAsan(dll)": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_asan": true,
       "is_clang": true,
       "is_component_build": true,
@@ -51,6 +54,7 @@
   },
   "ToTAndroid": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_clang": true,
       "is_component_build": false,
@@ -82,8 +86,20 @@
       "target_os": "android"
     }
   },
+  "ToTAndroid x86": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_clang": true,
+      "is_component_build": true,
+      "is_debug": false,
+      "llvm_force_head_revision": true,
+      "target_cpu": "x86",
+      "target_os": "android"
+    }
+  },
   "ToTAndroid64": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "llvm_force_head_revision": true,
@@ -103,8 +119,21 @@
       "target_os": "android"
     }
   },
+  "ToTAndroidCoverage x86": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_clang": true,
+      "is_component_build": true,
+      "is_debug": false,
+      "llvm_force_head_revision": true,
+      "target_cpu": "x86",
+      "target_os": "android",
+      "use_clang_coverage": true
+    }
+  },
   "ToTAndroidOfficial": {
     "gn_args": {
+      "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
       "is_clang": true,
       "is_component_build": false,
@@ -117,8 +146,30 @@
       "target_os": "android"
     }
   },
+  "ToTChromeOS": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_clang": true,
+      "is_debug": false,
+      "llvm_force_head_revision": true,
+      "target_os": "chromeos"
+    }
+  },
+  "ToTChromeOS (dbg)": {
+    "gn_args": {
+      "also_build_ash_chrome": true,
+      "chromeos_is_browser_only": true,
+      "is_clang": true,
+      "is_debug": true,
+      "llvm_force_head_revision": true,
+      "target_os": "chromeos"
+    }
+  },
   "ToTFuchsia x64": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
@@ -133,11 +184,13 @@
       "is_official_build": true,
       "llvm_force_head_revision": true,
       "target_cpu": "arm64",
-      "target_os": "fuchsia"
+      "target_os": "fuchsia",
+      "test_host_cpu": "arm64"
     }
   },
   "ToTLinux": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": true,
       "is_debug": false,
@@ -155,6 +208,7 @@
   },
   "ToTLinuxASan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_asan": true,
       "is_clang": true,
       "is_component_build": false,
@@ -165,12 +219,16 @@
   },
   "ToTLinuxASanLibfuzzer": {
     "gn_args": {
+      "dcheck_always_on": false,
+      "enable_mojom_fuzzer": true,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
       "is_asan": true,
       "is_clang": true,
+      "is_component_build": true,
       "is_debug": false,
       "llvm_force_head_revision": true,
+      "optimize_for_fuzzing": true,
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "use_libfuzzer": true
@@ -178,6 +236,7 @@
   },
   "ToTLinuxCoverage": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "llvm_force_head_revision": true,
@@ -187,6 +246,7 @@
   },
   "ToTLinuxMSan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "is_msan": true,
@@ -202,27 +262,28 @@
       "llvm_force_head_revision": true
     }
   },
+  "ToTLinuxPGO": {
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "is_clang": true,
+      "is_official_build": true,
+      "llvm_force_head_revision": true,
+      "strip_absolute_paths_from_debug_symbols": true,
+      "symbol_level": 0
+    }
+  },
   "ToTLinuxTSan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "is_tsan": true,
       "llvm_force_head_revision": true
     }
   },
-  "ToTLinuxThinLTO": {
-    "gn_args": {
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "llvm_force_head_revision": true,
-      "symbol_level": 1,
-      "thin_lto_enable_optimizations": true,
-      "use_thin_lto": true
-    }
-  },
   "ToTLinuxUBSanVptr": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
@@ -233,6 +294,7 @@
   },
   "ToTMac": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": true,
       "is_debug": false,
@@ -250,6 +312,7 @@
   },
   "ToTMacASan": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "is_asan": true,
       "is_clang": true,
@@ -261,6 +324,7 @@
   },
   "ToTMacCoverage": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "llvm_force_head_revision": true,
@@ -279,11 +343,10 @@
   },
   "ToTWin": {
     "gn_args": {
-      "is_chrome_branded": true,
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
-      "is_official_build": true,
       "llvm_force_head_revision": true,
       "symbol_level": 1,
       "target_cpu": "x86"
@@ -311,11 +374,10 @@
   },
   "ToTWin64": {
     "gn_args": {
-      "is_chrome_branded": true,
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
-      "is_official_build": true,
       "llvm_force_head_revision": true,
       "symbol_level": 1
     }
@@ -337,8 +399,19 @@
       "llvm_force_head_revision": true
     }
   },
+  "ToTWin64PGO": {
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "is_clang": true,
+      "is_official_build": true,
+      "llvm_force_head_revision": true,
+      "strip_absolute_paths_from_debug_symbols": true,
+      "symbol_level": 0
+    }
+  },
   "ToTWinASanLibfuzzer": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "is_asan": true,
@@ -389,11 +462,10 @@
       "llvm_force_head_revision": true,
       "symbol_level": 2,
       "target_cpu": "x86",
-      "use_thin_lto": true,
       "win_linker_timing": true
     }
   },
-  "ToTWinThinLTO64": {
+  "ToTWinOfficial64": {
     "gn_args": {
       "is_chrome_branded": true,
       "is_clang": true,
@@ -401,12 +473,12 @@
       "is_official_build": true,
       "llvm_force_head_revision": true,
       "symbol_level": 2,
-      "use_thin_lto": true,
       "win_linker_timing": true
     }
   },
   "ToTWindowsCoverage": {
     "gn_args": {
+      "dcheck_always_on": false,
       "is_clang": true,
       "is_debug": false,
       "llvm_force_head_revision": true,
@@ -416,12 +488,14 @@
   },
   "ToTiOS": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_run_ios_unittests_with_xctest": true,
       "ios_enable_code_signing": false,
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
+      "is_p2p_enabled": false,
       "llvm_force_head_revision": true,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -430,11 +504,13 @@
   },
   "ToTiOSDevice": {
     "gn_args": {
+      "dcheck_always_on": false,
       "enable_run_ios_unittests_with_xctest": true,
       "ios_code_signing_identity_description": "iPhone Developer",
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_clang": true,
       "is_debug": false,
+      "is_p2p_enabled": false,
       "llvm_force_head_revision": true,
       "target_cpu": "arm64",
       "target_environment": "device",

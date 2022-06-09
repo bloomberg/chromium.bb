@@ -4,14 +4,13 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/scale_factor.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/base/ui_base_paths.h"
 
 namespace {
@@ -19,6 +18,10 @@ namespace {
 class DeviceTestSuite : public base::TestSuite {
  public:
   DeviceTestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+  DeviceTestSuite(const DeviceTestSuite&) = delete;
+  DeviceTestSuite& operator=(const DeviceTestSuite&) = delete;
+
   ~DeviceTestSuite() override = default;
 
  protected:
@@ -36,12 +39,12 @@ class DeviceTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     ASSERT_TRUE(base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &path));
 #else
-    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_ASSETS, &path));
 #endif  // defined(OS_ANDROID)
     base::FilePath bluetooth_test_strings =
         path.Append(FILE_PATH_LITERAL("bluetooth_test_strings.pak"));
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        bluetooth_test_strings, ui::SCALE_FACTOR_NONE);
+        bluetooth_test_strings, ui::kScaleFactorNone);
 #endif  // !defined(OS_IOS)
   }
 
@@ -52,9 +55,6 @@ class DeviceTestSuite : public base::TestSuite {
 
     base::TestSuite::Shutdown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceTestSuite);
 };
 
 }  // namespace

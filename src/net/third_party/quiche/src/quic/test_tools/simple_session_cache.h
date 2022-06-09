@@ -17,6 +17,7 @@ namespace test {
 // the total number of entries in the cache. When Lookup is called, if a cache
 // entry exists for the provided QuicServerId, the entry will be removed from
 // the cached when it is returned.
+// TODO(fayang): Remove SimpleSessionCache by using QuicClientSessionCache.
 class SimpleSessionCache : public SessionCache {
  public:
   SimpleSessionCache() = default;
@@ -27,14 +28,20 @@ class SimpleSessionCache : public SessionCache {
               const TransportParameters& params,
               const ApplicationState* application_state) override;
   std::unique_ptr<QuicResumptionState> Lookup(const QuicServerId& server_id,
+                                              QuicWallTime now,
                                               const SSL_CTX* ctx) override;
   void ClearEarlyData(const QuicServerId& server_id) override;
+  void OnNewTokenReceived(const QuicServerId& server_id,
+                          absl::string_view token) override;
+  void RemoveExpiredEntries(QuicWallTime now) override;
+  void Clear() override;
 
  private:
   struct Entry {
     bssl::UniquePtr<SSL_SESSION> session;
     std::unique_ptr<TransportParameters> params;
     std::unique_ptr<ApplicationState> application_state;
+    std::string token;
   };
   std::map<QuicServerId, Entry> cache_entries_;
 };

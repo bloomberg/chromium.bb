@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_COMMON_CAST_EXTENSIONS_API_PROVIDER_H_
 #define CHROMECAST_COMMON_CAST_EXTENSIONS_API_PROVIDER_H_
 
-#include "base/macros.h"
 #include "extensions/common/extensions_api_provider.h"
 
 namespace extensions {
@@ -13,6 +12,11 @@ namespace extensions {
 class CastExtensionsAPIProvider : public ExtensionsAPIProvider {
  public:
   CastExtensionsAPIProvider();
+
+  CastExtensionsAPIProvider(const CastExtensionsAPIProvider&) = delete;
+  CastExtensionsAPIProvider& operator=(const CastExtensionsAPIProvider&) =
+      delete;
+
   ~CastExtensionsAPIProvider() override;
 
   // ExtensionsAPIProvider:
@@ -25,9 +29,6 @@ class CastExtensionsAPIProvider : public ExtensionsAPIProvider {
   base::StringPiece GetAPISchema(const std::string& name) override;
   void RegisterPermissions(PermissionsInfo* permissions_info) override;
   void RegisterManifestHandlers() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastExtensionsAPIProvider);
 };
 
 }  // namespace extensions

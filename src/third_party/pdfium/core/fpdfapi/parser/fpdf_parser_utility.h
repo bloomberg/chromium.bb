@@ -10,9 +10,9 @@
 #include <iosfwd>
 #include <vector>
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_Array;
 class CPDF_Dictionary;
@@ -42,7 +42,7 @@ inline bool PDFCharIsLineEnding(uint8_t c) {
 // On success, return a positive offset value to the PDF header. If the header
 // cannot be found, or if there is an error reading from |pFile|, then return
 // nullopt.
-Optional<FX_FILESIZE> GetHeaderOffset(
+absl::optional<FX_FILESIZE> GetHeaderOffset(
     const RetainPtr<IFX_SeekableReadStream>& pFile);
 
 int32_t GetDirectInteger(const CPDF_Dictionary* pDict, const ByteString& key);
@@ -55,13 +55,14 @@ ByteString PDF_NameEncode(const ByteString& orig);
 std::vector<float> ReadArrayElementsToVector(const CPDF_Array* pArray,
                                              size_t nCount);
 
-// Returns true if |dict| has a /Type name entry that matches |type|.
-bool ValidateDictType(const CPDF_Dictionary* dict, const ByteString& type);
+// Returns true if |dict| is non-null and has a /Type name entry that matches
+// |type|.
+bool ValidateDictType(const CPDF_Dictionary* dict, ByteStringView type);
 
 // Returns true if |dict| is non-null and all entries in |dict| are dictionaries
 // of |type|.
 bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,
-                                    const ByteString& type);
+                                    ByteStringView type);
 
 // Shorthand for ValidateDictAllResourcesOfType(dict, "Font").
 bool ValidateFontResourceDict(const CPDF_Dictionary* dict);

@@ -19,35 +19,48 @@
 #include <string>
 
 #include "src/writer/text.h"
-#include "src/writer/wgsl/generator_impl.h"
 
 namespace tint {
+
+// Forward declarations
+class Program;
+
 namespace writer {
 namespace wgsl {
 
-/// Class to generate WGSL source
-class Generator : public Text {
- public:
+class GeneratorImpl;
+
+/// Configuration options used for generating WGSL.
+struct Options {};
+
+/// The result produced when generating WGSL.
+struct Result {
   /// Constructor
-  /// @param program the program to convert
-  explicit Generator(const Program* program);
+  Result();
 
   /// Destructor
-  ~Generator() override;
+  ~Result();
 
-  /// Generates the result data
-  /// @returns true on successful generation; false otherwise
-  bool Generate() override;
+  /// Copy constructor
+  Result(const Result&);
 
-  /// @returns the result data
-  std::string result() const override;
+  /// True if generation was successful.
+  bool success = false;
 
-  /// @returns the error
-  std::string error() const;
+  /// The errors generated during code generation, if any.
+  std::string error;
 
- private:
-  std::unique_ptr<GeneratorImpl> impl_;
+  /// The generated WGSL.
+  std::string wgsl = "";
 };
+
+/// Generate WGSL for a program, according to a set of configuration options.
+/// The result will contain the WGSL, as well as success status and diagnostic
+/// information.
+/// @param program the program to translate to WGSL
+/// @param options the configuration options to use when generating WGSL
+/// @returns the resulting WGSL and supplementary information
+Result Generate(const Program* program, const Options& options);
 
 }  // namespace wgsl
 }  // namespace writer

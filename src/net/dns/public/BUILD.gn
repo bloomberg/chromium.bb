@@ -27,6 +27,8 @@ source_set("public") {
     "dns_query_type.h",
     "doh_provider_entry.cc",
     "doh_provider_entry.h",
+    "host_resolver_source.h",
+    "mdns_listener_update_type.h",
     "resolve_error_info.cc",
     "resolve_error_info.h",
     "secure_dns_mode.h",
@@ -34,6 +36,20 @@ source_set("public") {
     "util.cc",
     "util.h",
   ]
+
+  if (is_linux) {
+    sources += [
+      "resolv_reader.cc",
+      "resolv_reader.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "win_dns_system_settings.cc",
+      "win_dns_system_settings.h",
+    ]
+  }
 
   deps = [ "//net:net_deps" ]
 
@@ -52,6 +68,14 @@ source_set("tests") {
     "doh_provider_entry_unittest.cc",
     "util_unittest.cc",
   ]
+
+  if (is_linux) {
+    sources += [ "resolv_reader_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "win_dns_system_settings_unittest.cc" ]
+  }
 
   deps = [
     "//net",

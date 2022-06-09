@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
@@ -53,6 +53,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   static const char kPassphraseFailedPageStatus[];
 
   explicit PeopleHandler(Profile* profile);
+
+  PeopleHandler(const PeopleHandler&) = delete;
+  PeopleHandler& operator=(const PeopleHandler&) = delete;
+
   ~PeopleHandler() override;
 
  protected:
@@ -132,7 +136,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
   // syncer::SyncServiceObserver implementation.
-  void OnStateChanged(syncer::SyncService* sync) override;
+  void OnStateChanged(syncer::SyncService* sync_service) override;
 
   // content::WebContentsObserver implementation
   void BeforeUnloadDialogCancelled() override;
@@ -161,9 +165,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleAttemptUserExit(const base::ListValue* args);
   void HandleTurnOnSync(const base::ListValue* args);
   void HandleTurnOffSync(const base::ListValue* args);
-#endif
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#else
   void HandleStartSignin(const base::ListValue* args);
+#endif
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandleSignout(const base::ListValue* args);
   void HandlePauseSync(const base::ListValue* args);
 #endif
@@ -208,12 +213,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   // |sync_blocker_|.
   void InitializeSyncBlocker();
 
-  // Whether the entry in settings to opt in to trusted vault encryption
-  // should be visible.
-  bool ShouldOfferTrustedVaultOptIn() const;
-
   // Weak pointer.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
@@ -238,8 +239,6 @@ class PeopleHandler : public SettingsPageUIHandler,
       sync_service_observation_{this};
 
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PeopleHandler);
 };
 
 }  // namespace settings

@@ -13,8 +13,8 @@ g.test('not_lost_on_gc')
   )
   .unimplemented();
 
-g.test('not_lost_on_destroy')
-  .desc(`'lost' is not resolved on GPUDevice.destroy() (if GPUDevice.destroy is added).`)
+g.test('lost_on_destroy')
+  .desc(`'lost' is resolved, with reason='destroyed', on GPUDevice.destroy().`)
   .unimplemented();
 
 g.test('same_object')

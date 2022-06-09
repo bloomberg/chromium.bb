@@ -27,8 +27,7 @@ namespace chromecast {
 namespace external_service_support {
 
 namespace {
-constexpr base::TimeDelta kConnectRetryDelay =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kConnectRetryDelay = base::Milliseconds(500);
 }  // namespace
 
 // Since we are only allowed to make a single underlying connection to the
@@ -266,6 +265,7 @@ std::unique_ptr<ExternalConnector> ExternalConnectorImpl::Clone() {
   if (broker_connection_) {
     return std::make_unique<ExternalConnectorImpl>(broker_connection_);
   }
+  // Bind to the current sequence since this is a public method.
   BindConnectorIfNecessary();
   mojo::PendingRemote<external_mojo::mojom::ExternalConnector> remote;
   connector_->Clone(remote.InitWithNewPipeAndPassReceiver());

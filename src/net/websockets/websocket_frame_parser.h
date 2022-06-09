@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_frame.h"
@@ -27,6 +26,10 @@ namespace net {
 class NET_EXPORT WebSocketFrameParser {
  public:
   WebSocketFrameParser();
+
+  WebSocketFrameParser(const WebSocketFrameParser&) = delete;
+  WebSocketFrameParser& operator=(const WebSocketFrameParser&) = delete;
+
   ~WebSocketFrameParser();
 
   // Decodes the given byte stream and stores parsed WebSocket frames in
@@ -81,8 +84,6 @@ class NET_EXPORT WebSocketFrameParser {
   uint64_t frame_offset_;
 
   WebSocketError websocket_error_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebSocketFrameParser);
 };
 
 }  // namespace net

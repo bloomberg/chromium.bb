@@ -16,11 +16,11 @@
 #include "config/av1_rtcd.h"
 
 #include "aom_dsp/txfm_common.h"
+#include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"
 #include "av1/common/arm/convolve_neon.h"
-#include "av1/common/arm/mem_neon.h"
-#include "av1/common/arm/transpose_neon.h"
 
 /* Wiener filter 2D
    Apply horizontal filter and store in a temporary buffer. When applying

@@ -2865,8 +2865,7 @@ void ConversionDatabase::addEntryToConversionDatabase(PixelData src_topleft, Pix
 	if (src_topleft.data_internalformat != src_topright.data_internalformat ||
 		src_topleft.data_internalformat != src_bottomleft.data_internalformat ||
 		src_topleft.data_internalformat != src_bottomright.data_internalformat ||
-		src_topleft.data_internalformat != src_topright.data_internalformat ||
-		src_topleft.data_type != src_topright.data_type || src_topleft.data_type != src_bottomleft.data_type ||
+			src_topleft.data_type != src_topright.data_type || src_topleft.data_type != src_bottomleft.data_type ||
 		src_topleft.data_type != src_bottomright.data_type)
 	{
 		return;
@@ -4779,7 +4778,7 @@ TestBase::TestBase(deqp::Context& context, GLenum source_attachment_type, GLenum
 		attachment_name_map[GL_TEXTURE_2D_ARRAY]			= "texture_array";
 		attachment_name_map[GL_TEXTURE_3D]					= "texture3d";
 		attachment_name_map[GL_RENDERBUFFER]				= "renderbuffer";
-	};
+	}
 
 	m_name = attachment_name_map[m_source_attachment_type] + "_" + attachment_name_map[m_destination_attachment_type];
 }
@@ -8698,7 +8697,6 @@ bool RequiredCase::getRawDataFromPixelData(std::vector<char>& result, PixelData 
 				unsigned int* result_traveller32 = (unsigned int*)result_traveller;
 
 				*result_traveller32 = channels[0]->unsigned_integer_data;
-				;
 				result_traveller += 4;
 			}
 			else

@@ -9,14 +9,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
-#include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
-#include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -55,8 +57,8 @@ class RemoteSafeBrowsingDatabaseManager::ClientRequest {
   }
 
  private:
-  Client* client_;
-  RemoteSafeBrowsingDatabaseManager* db_manager_;
+  raw_ptr<Client> client_;
+  raw_ptr<RemoteSafeBrowsingDatabaseManager> db_manager_;
   GURL url_;
   base::ElapsedTimer timer_;
   base::WeakPtrFactory<ClientRequest> weak_factory_{this};
@@ -95,7 +97,9 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
 //
 
 // TODO(nparker): Add more tests for this class
-RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
+RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
+    : SafeBrowsingDatabaseManager(content::GetUIThreadTaskRunner({}),
+                                  content::GetIOThreadTaskRunner({})) {
   // Avoid memory allocations growing the underlying vector. Although this
   // usually wastes a bit of memory, it will still be less than the default
   // vector allocation strategy.
@@ -108,6 +112,8 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
       network::mojom::RequestDestination::kIframe);
   request_destinations_to_check_.insert(
       network::mojom::RequestDestination::kFrame);
+  request_destinations_to_check_.insert(
+      network::mojom::RequestDestination::kFencedframe);
 
   // The param is expected to be a comma-separated list of ints
   // corresponding to the enum types.  We're keeping this finch
@@ -118,7 +124,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
     // By default, we check all types except a few.
     static_assert(
         network::mojom::RequestDestination::kMaxValue ==
-            network::mojom::RequestDestination::kXslt,
+            network::mojom::RequestDestination::kFencedframe,
         "Decide if new request destination should be skipped on mobile.");
     for (int t_int = 0;
          t_int <=
@@ -252,6 +258,13 @@ RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
   return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
 }
 
+bool RemoteSafeBrowsingDatabaseManager::CheckUrlForAccuracyTips(
+    const GURL& url,
+    Client* client) {
+  NOTREACHED();
+  return true;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
     const GURL& url,
     Client* client) {
@@ -296,12 +309,6 @@ AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdAllowlistUrl(
   SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
   bool is_match = api_handler->StartCSDAllowlistCheck(url);
   return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchDownloadAllowlistString(
-    const std::string& str) {
-  NOTREACHED();
-  return true;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::MatchDownloadAllowlistUrl(

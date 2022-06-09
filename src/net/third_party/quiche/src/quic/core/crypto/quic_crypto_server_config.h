@@ -20,10 +20,8 @@
 #include "quic/core/crypto/crypto_secret_boxer.h"
 #include "quic/core/crypto/key_exchange.h"
 #include "quic/core/crypto/proof_source.h"
-#include "quic/core/crypto/proof_verifier.h"
 #include "quic/core/crypto/quic_compressed_certs_cache.h"
 #include "quic/core/crypto/quic_crypto_proof.h"
-#include "quic/core/crypto/server_proof_verifier.h"
 #include "quic/core/proto/cached_network_parameters_proto.h"
 #include "quic/core/proto/source_address_token_proto.h"
 #include "quic/core/quic_time.h"
@@ -433,9 +431,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // Returns HANDSHAKE_OK if |token| could be parsed, or the reason for the
   // failure.
   HandshakeFailureReason ParseSourceAddressToken(
-      const CryptoSecretBoxer& crypto_secret_boxer,
-      absl::string_view token,
-      SourceAddressTokens* tokens) const;
+      const CryptoSecretBoxer& crypto_secret_boxer, absl::string_view token,
+      SourceAddressTokens& tokens) const;
 
   // ValidateSourceAddressTokens returns HANDSHAKE_OK if the source address
   // tokens in |tokens| contain a valid and timely token for the IP address
@@ -455,11 +452,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   }
 
   ProofSource* proof_source() const;
-  ServerProofVerifier* proof_verifier() const;
-  void set_proof_verifier(std::unique_ptr<ServerProofVerifier> proof_verifier);
-
-  ClientCertMode client_cert_mode() const;
-  void set_client_cert_mode(ClientCertMode client_cert_mode);
 
   SSL_CTX* ssl_ctx() const;
 
@@ -506,9 +498,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     // key_exchanges contains key exchange objects. The values correspond,
     // one-to-one, with the tags in |kexs| from the parent class.
     std::vector<std::unique_ptr<AsynchronousKeyExchange>> key_exchanges;
-
-    // tag_value_map contains the raw key/value pairs for the config.
-    QuicTagValueMap tag_value_map;
 
     // channel_id_enabled is true if the config in |serialized| specifies that
     // ChannelIDs are supported.
@@ -923,8 +912,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
   std::unique_ptr<ProofSource> proof_source_;
-  std::unique_ptr<ServerProofVerifier> proof_verifier_;
-  ClientCertMode client_cert_mode_;
 
   // key_exchange_source_ contains an object that can provide key exchange
   // objects.

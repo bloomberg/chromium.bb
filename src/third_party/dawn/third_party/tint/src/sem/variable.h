@@ -17,9 +17,11 @@
 
 #include <vector>
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/ast/storage_class.h"
+#include "src/sem/binding_point.h"
 #include "src/sem/expression.h"
+#include "src/sem/parameter_usage.h"
 
 namespace tint {
 
@@ -32,29 +34,25 @@ class Variable;
 namespace sem {
 
 // Forward declarations
+class CallTarget;
 class Type;
 class VariableUser;
 
-/// Variable holds the semantic information for variables.
+/// Variable is the base class for local variables, global variables and
+/// parameters.
 class Variable : public Castable<Variable, Node> {
  public:
-  /// Constructor for variables and non-overridable constants
+  /// Constructor
   /// @param declaration the AST declaration node
   /// @param type the variable type
   /// @param storage_class the variable storage class
-  /// @param access_control the variable access control type
+  /// @param access the variable access control type
+  /// @param constant_value the constant value for the variable. May be invalid
   Variable(const ast::Variable* declaration,
            const sem::Type* type,
            ast::StorageClass storage_class,
-           ast::AccessControl::Access access_control);
-
-  /// Constructor for overridable pipeline constants
-  /// @param declaration the AST declaration node
-  /// @param type the variable type
-  /// @param constant_id the pipeline constant ID
-  Variable(const ast::Variable* declaration,
-           const sem::Type* type,
-           uint16_t constant_id);
+           ast::Access access,
+           Constant constant_value);
 
   /// Destructor
   ~Variable() override;
@@ -63,13 +61,26 @@ class Variable : public Castable<Variable, Node> {
   const ast::Variable* Declaration() const { return declaration_; }
 
   /// @returns the canonical type for the variable
-  sem::Type* Type() const { return const_cast<sem::Type*>(type_); }
+  const sem::Type* Type() const { return type_; }
 
   /// @returns the storage class for the variable
   ast::StorageClass StorageClass() const { return storage_class_; }
 
   /// @returns the access control for the variable
-  ast::AccessControl::Access AccessControl() const { return access_control_; }
+  ast::Access Access() const { return access_; }
+
+  /// @return the constant value of this expression
+  const Constant& ConstantValue() const { return constant_value_; }
+
+  /// @returns the variable constructor expression, or nullptr if the variable
+  /// does not have one.
+  const Expression* Constructor() const { return constructor_; }
+
+  /// Sets the variable constructor expression.
+  /// @param constructor the constructor expression to assign to this variable.
+  void SetConstructor(const Expression* constructor) {
+    constructor_ = constructor;
+  }
 
   /// @returns the expressions that use the variable
   const std::vector<const VariableUser*>& Users() const { return users_; }
@@ -77,21 +88,146 @@ class Variable : public Castable<Variable, Node> {
   /// @param user the user to add
   void AddUser(const VariableUser* user) { users_.emplace_back(user); }
 
-  /// @returns true if this variable is an overridable pipeline constant
-  bool IsPipelineConstant() const { return is_pipeline_constant_; }
+ private:
+  const ast::Variable* const declaration_;
+  const sem::Type* const type_;
+  const ast::StorageClass storage_class_;
+  const ast::Access access_;
+  const Constant constant_value_;
+  const Expression* constructor_ = nullptr;
+  std::vector<const VariableUser*> users_;
+};
+
+/// LocalVariable is a function-scope variable
+class LocalVariable : public Castable<LocalVariable, Variable> {
+ public:
+  /// Constructor
+  /// @param declaration the AST declaration node
+  /// @param type the variable type
+  /// @param storage_class the variable storage class
+  /// @param access the variable access control type
+  /// @param statement the statement that declared this local variable
+  /// @param constant_value the constant value for the variable. May be invalid
+  LocalVariable(const ast::Variable* declaration,
+                const sem::Type* type,
+                ast::StorageClass storage_class,
+                ast::Access access,
+                const sem::Statement* statement,
+                Constant constant_value);
+
+  /// Destructor
+  ~LocalVariable() override;
+
+  /// @returns the statement that declares this local variable
+  const sem::Statement* Statement() const { return statement_; }
+
+  /// @returns the Type, Function or Variable that this local variable shadows
+  const sem::Node* Shadows() const { return shadows_; }
+
+  /// Sets the Type, Function or Variable that this local variable shadows
+  /// @param shadows the Type, Function or Variable that this variable shadows
+  void SetShadows(const sem::Node* shadows) { shadows_ = shadows; }
+
+ private:
+  const sem::Statement* const statement_;
+  const sem::Node* shadows_ = nullptr;
+};
+
+/// GlobalVariable is a module-scope variable
+class GlobalVariable : public Castable<GlobalVariable, Variable> {
+ public:
+  /// Constructor
+  /// @param declaration the AST declaration node
+  /// @param type the variable type
+  /// @param storage_class the variable storage class
+  /// @param access the variable access control type
+  /// @param constant_value the constant value for the variable. May be invalid
+  /// @param binding_point the optional resource binding point of the variable
+  GlobalVariable(const ast::Variable* declaration,
+                 const sem::Type* type,
+                 ast::StorageClass storage_class,
+                 ast::Access access,
+                 Constant constant_value,
+                 sem::BindingPoint binding_point = {});
+
+  /// Destructor
+  ~GlobalVariable() override;
+
+  /// @returns the resource binding point for the variable
+  sem::BindingPoint BindingPoint() const { return binding_point_; }
+
+  /// @param id the constant identifier to assign to this variable
+  void SetConstantId(uint16_t id) {
+    constant_id_ = id;
+    is_overridable_ = true;
+  }
 
   /// @returns the pipeline constant ID associated with the variable
   uint16_t ConstantId() const { return constant_id_; }
 
+  /// @param is_overridable true if this is a pipeline overridable constant
+  void SetIsOverridable(bool is_overridable = true) {
+    is_overridable_ = is_overridable;
+  }
+
+  /// @returns true if this is pipeline overridable constant
+  bool IsOverridable() const { return is_overridable_; }
+
  private:
-  const ast::Variable* const declaration_;
-  const sem::Type* const type_;
-  ast::StorageClass const storage_class_;
-  ast::AccessControl::Access const access_control_;
-  std::vector<const VariableUser*> users_;
-  const bool is_pipeline_constant_;
-  const uint16_t constant_id_ = 0;
+  const sem::BindingPoint binding_point_;
+
+  bool is_overridable_ = false;
+  uint16_t constant_id_ = 0;
 };
+
+/// Parameter is a function parameter
+class Parameter : public Castable<Parameter, Variable> {
+ public:
+  /// Constructor for function parameters
+  /// @param declaration the AST declaration node
+  /// @param index the index of the parmeter in the function
+  /// @param type the variable type
+  /// @param storage_class the variable storage class
+  /// @param access the variable access control type
+  /// @param usage the semantic usage for the parameter
+  Parameter(const ast::Variable* declaration,
+            uint32_t index,
+            const sem::Type* type,
+            ast::StorageClass storage_class,
+            ast::Access access,
+            const ParameterUsage usage = ParameterUsage::kNone);
+
+  /// Destructor
+  ~Parameter() override;
+
+  /// @return the index of the parmeter in the function
+  uint32_t Index() const { return index_; }
+
+  /// @returns the semantic usage for the parameter
+  ParameterUsage Usage() const { return usage_; }
+
+  /// @returns the CallTarget owner of this parameter
+  CallTarget const* Owner() const { return owner_; }
+
+  /// @param owner the CallTarget owner of this parameter
+  void SetOwner(CallTarget const* owner) { owner_ = owner; }
+
+  /// @returns the Type, Function or Variable that this local variable shadows
+  const sem::Node* Shadows() const { return shadows_; }
+
+  /// Sets the Type, Function or Variable that this local variable shadows
+  /// @param shadows the Type, Function or Variable that this variable shadows
+  void SetShadows(const sem::Node* shadows) { shadows_ = shadows; }
+
+ private:
+  const uint32_t index_;
+  const ParameterUsage usage_;
+  CallTarget const* owner_ = nullptr;
+  const sem::Node* shadows_ = nullptr;
+};
+
+/// ParameterList is a list of Parameter
+using ParameterList = std::vector<const Parameter*>;
 
 /// VariableUser holds the semantic information for an identifier expression
 /// node that resolves to a variable.
@@ -99,11 +235,9 @@ class VariableUser : public Castable<VariableUser, Expression> {
  public:
   /// Constructor
   /// @param declaration the AST identifier node
-  /// @param type the resolved type of the expression
   /// @param statement the statement that owns this expression
   /// @param variable the semantic variable
-  VariableUser(ast::IdentifierExpression* declaration,
-               const sem::Type* type,
+  VariableUser(const ast::IdentifierExpression* declaration,
                Statement* statement,
                sem::Variable* variable);
 
@@ -111,7 +245,7 @@ class VariableUser : public Castable<VariableUser, Expression> {
   const sem::Variable* Variable() const { return variable_; }
 
  private:
-  sem::Variable const* const variable_;
+  const sem::Variable* const variable_;
 };
 
 }  // namespace sem

@@ -14,9 +14,8 @@
 # =============================================================================
 """Utility to convert FunctionDef to GraphDef and Graph."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import itertools
+
 
 from tensorflow.core.framework import function_pb2
 from tensorflow.core.framework import graph_pb2
@@ -24,13 +23,18 @@ from tensorflow.core.framework import tensor_shape_pb2
 from tensorflow.core.framework import types_pb2
 from tensorflow.core.framework import versions_pb2
 from tensorflow.python.eager import context
+from tensorflow.python.framework import cpp_shape_inference_pb2
 from tensorflow.python.framework import importer
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import versions
 from tensorflow.python.framework.func_graph import FuncGraph
+from tensorflow.python.ops import resource_variable_ops
 
 
-def function_def_to_graph(fdef, input_shapes=None):
+def function_def_to_graph(fdef,
+                          structured_input_signature=None,
+                          structured_outputs=None,
+                          input_shapes=None):
   """Converts a FunctionDef to a FuncGraph (sub-class Graph).
 
   The returned FuncGraph's `name`, `inputs` and `outputs` fields will be set.
@@ -41,6 +45,12 @@ def function_def_to_graph(fdef, input_shapes=None):
 
   Args:
     fdef: FunctionDef.
+    structured_input_signature: Optional. The structured input signature to
+      use for initializing the FuncGraph. See the docstring for FuncGraph for
+      more information.
+    structured_outputs: Optional. The structured outputs to use for
+      initializing the FuncGraph. See the docstring for FuncGraph for more
+      information.
     input_shapes: Optional. A list of TensorShape objects of the shapes of
       function inputs. Defaults to the function's "_input_shapes" attribute. If
       specified, its length must match length of `fdef.signature.input_arg`. If
@@ -50,7 +60,9 @@ def function_def_to_graph(fdef, input_shapes=None):
   Returns:
     A FuncGraph.
   """
-  func_graph = FuncGraph(fdef.signature.name)
+  func_graph = FuncGraph(fdef.signature.name,
+                         structured_input_signature=structured_input_signature,
+                         structured_outputs=structured_outputs)
   if input_shapes is None:
     input_shapes_attr = fdef.attr.get("_input_shapes", None)
     if input_shapes_attr is not None:
@@ -84,6 +96,9 @@ def function_def_to_graph(fdef, input_shapes=None):
         func_graph.get_operation_by_name(fdef.control_ret[ret_name])
         for ret_name in fdef.signature.control_output
     ]
+
+    _set_handle_data(func_graph, fdef)
+
     for node in graph_def.node:
       output_shapes = node.attr.get("_output_shapes", None)
       if output_shapes is not None:
@@ -156,9 +171,10 @@ def function_def_to_graph_def(fdef, input_shapes=None):
   copied_functions = set()
 
   if input_shapes and len(input_shapes) != len(fdef.signature.input_arg):
-    raise ValueError("Length of input_shapes must match the number of " +
-                     "input_args. len(input_shapes): {} len(input_arg): {}".
-                     format(len(input_shapes), len(fdef.signature.input_arg)))
+    raise ValueError("Length of `input_shapes` must match the number "
+                     f"of `input_arg`s in `fdef`. Got "
+                     f"{len(input_shapes)} `input_shapes` and "
+                     f"{len(fdef.signature.input_arg)} `input_arg`s.")
 
   # 1. Create placeholders for input nodes.
   for i, arg_def in enumerate(fdef.signature.input_arg):
@@ -176,7 +192,10 @@ def function_def_to_graph_def(fdef, input_shapes=None):
       # Only copy internal attributes. Normal attributes for nodes cannot be
       # applied to these Placeholder nodes.
       if k == "_output_shapes":
-        node_def.attr["shape"].shape.CopyFrom(arg_attrs[k].list.shape[0])
+        if arg_attrs[k].WhichOneof("value") == "list":
+          node_def.attr["shape"].shape.CopyFrom(arg_attrs[k].list.shape[0])
+        elif arg_attrs[k].WhichOneof("value") == "shape":
+          node_def.attr["shape"].shape.CopyFrom(arg_attrs[k].shape)
       elif k.startswith("_"):
         node_def.attr[k].CopyFrom(arg_attrs[k])
 
@@ -223,12 +242,14 @@ def function_def_to_graph_def(fdef, input_shapes=None):
       if attr.type == "func":
         fname = node_def.attr[attr.name].func.name
         if not is_function(fname):
-          raise ValueError("%s function not found." % fname)
+          raise ValueError(f"Function {fname} was not found. Please make sure "
+                           "the FunctionDef `fdef` is correct.")
       elif attr.type == "list(func)":
         for fn in node_def.attr[attr.name].list.func:
           fname = fn.name
           if not is_function(fname):
-            raise ValueError("%s function not found." % fname)
+            raise ValueError(f"Function {fname} was not found. Please make "
+                             "sure the FunctionDef `fdef` is correct.")
 
     # Iterate over output_args in op_def to build the map.
     # Index of the output tensor in the flattened list of *all* output
@@ -263,4 +284,21 @@ def _get_num_args(arg_def, node_def):
   elif arg_def.type_attr or arg_def.type != types_pb2.DT_INVALID:
     return 1
   else:
-    raise ValueError("Invalid arg_def:\n\n{}".format(str(arg_def)))
+    raise ValueError(f"Invalid arg_def:\n\n{arg_def}. Please make sure the "
+                     "FunctionDef `fdef` is correct.")
+
+
+def _set_handle_data(func_graph, fdef):
+  """Adds handle data for resource type inputs and outputs."""
+  for tensor, arg_def in itertools.chain(
+      zip(func_graph.inputs, fdef.signature.input_arg),
+      zip(func_graph.outputs, fdef.signature.output_arg)):
+    if arg_def.handle_data:
+      shape_and_dtype = arg_def.handle_data[0]
+      handle_data = cpp_shape_inference_pb2.CppShapeInferenceResult.HandleData()
+      handle_data.is_set = True
+      handle_data.shape_and_type.append(
+          cpp_shape_inference_pb2.CppShapeInferenceResult.HandleShapeAndType(
+              shape=shape_and_dtype.shape, dtype=shape_and_dtype.dtype))
+      resource_variable_ops._set_handle_shapes_and_types(  # pylint: disable=protected-access
+          tensor, handle_data, True)

@@ -121,6 +121,11 @@ namespace dawn_native {
                     cmd->~ExecuteBundlesCmd();
                     break;
                 }
+                case Command::ClearBuffer: {
+                    ClearBufferCmd* cmd = commands->NextCommand<ClearBufferCmd>();
+                    cmd->~ClearBufferCmd();
+                    break;
+                }
                 case Command::InsertDebugMarker: {
                     InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
                     commands->NextData<char>(cmd->length + 1);
@@ -189,6 +194,12 @@ namespace dawn_native {
                 case Command::SetVertexBuffer: {
                     SetVertexBufferCmd* cmd = commands->NextCommand<SetVertexBufferCmd>();
                     cmd->~SetVertexBufferCmd();
+                    break;
+                }
+                case Command::WriteBuffer: {
+                    WriteBufferCmd* write = commands->NextCommand<WriteBufferCmd>();
+                    commands->NextData<uint8_t>(write->size);
+                    write->~WriteBufferCmd();
                     break;
                 }
                 case Command::WriteTimestamp: {
@@ -274,6 +285,10 @@ namespace dawn_native {
                 break;
             }
 
+            case Command::ClearBuffer:
+                commands->NextCommand<ClearBufferCmd>();
+                break;
+
             case Command::InsertDebugMarker: {
                 InsertDebugMarkerCmd* cmd = commands->NextCommand<InsertDebugMarkerCmd>();
                 commands->NextData<char>(cmd->length + 1);
@@ -335,6 +350,10 @@ namespace dawn_native {
                 commands->NextCommand<SetVertexBufferCmd>();
                 break;
             }
+
+            case Command::WriteBuffer:
+                commands->NextCommand<WriteBufferCmd>();
+                break;
 
             case Command::WriteTimestamp: {
                 commands->NextCommand<WriteTimestampCmd>();

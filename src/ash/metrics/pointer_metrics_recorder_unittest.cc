@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "ash/constants/app_types.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -29,6 +29,11 @@ const char kCombinationHistogramName[] =
 class PointerMetricsRecorderTest : public AshTestBase {
  public:
   PointerMetricsRecorderTest();
+
+  PointerMetricsRecorderTest(const PointerMetricsRecorderTest&) = delete;
+  PointerMetricsRecorderTest& operator=(const PointerMetricsRecorderTest&) =
+      delete;
+
   ~PointerMetricsRecorderTest() override;
 
   // AshTestBase:
@@ -48,9 +53,6 @@ class PointerMetricsRecorderTest : public AshTestBase {
 
   // Where down events are dispatched to.
   std::unique_ptr<views::Widget> widget_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PointerMetricsRecorderTest);
 };
 
 PointerMetricsRecorderTest::PointerMetricsRecorderTest() = default;

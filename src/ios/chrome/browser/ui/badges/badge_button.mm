@@ -37,11 +37,8 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
 + (instancetype)badgeButtonWithType:(BadgeType)badgeType {
   BadgeButton* button = [self buttonWithType:UIButtonTypeSystem];
   button.badgeType = badgeType;
-  if (@available(iOS 13.4, *)) {
-      button.pointerInteractionEnabled = YES;
-      button.pointerStyleProvider =
-          CreateDefaultEffectCirclePointerStyleProvider();
-  }
+  button.pointerInteractionEnabled = YES;
+  button.pointerStyleProvider = CreateDefaultEffectCirclePointerStyleProvider();
   return button;
 }
 
@@ -111,6 +108,9 @@ const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
     case BadgeType::kBadgeTypeTranslate:
       return accepted ? kBadgeButtonTranslateAcceptedAccessibilityIdentifier
                       : kBadgeButtonTranslateAccessibilityIdentifier;
+    case BadgeType::kBadgeTypeAddToReadingList:
+      return accepted ? kBadgeButtonReadingListAcceptedAccessibilityIdentifier
+                      : kBadgeButtonReadingListAccessibilityIdentifier;
   }
 }
 

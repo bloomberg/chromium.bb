@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "remoting/host/host_extension.h"
 
 namespace remoting {
@@ -25,6 +24,10 @@ class FakeExtension : public HostExtension {
  public:
   FakeExtension(const std::string& message_type,
                 const std::string& capability);
+
+  FakeExtension(const FakeExtension&) = delete;
+  FakeExtension& operator=(const FakeExtension&) = delete;
+
   ~FakeExtension() override;
 
   // HostExtension interface.
@@ -52,8 +55,6 @@ class FakeExtension : public HostExtension {
 
   // True if CreateExtensionSession() was called on this extension.
   bool was_instantiated_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeExtension);
 };
 
 } // namespace remoting

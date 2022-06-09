@@ -13,10 +13,6 @@
 # limitations under the License.
 # =============================================================================
 """Generates and prints out imports and constants for new TensorFlow python api."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import collections
 import importlib
@@ -47,12 +43,10 @@ _GENERATED_FILE_HEADER = """# This file is MACHINE GENERATED! Do not edit.
 \"\"\"%s
 \"\"\"
 
-from __future__ import print_function as _print_function
-
 import sys as _sys
 
 """
-_GENERATED_FILE_FOOTER = '\n\ndel _print_function\n'
+_GENERATED_FILE_FOOTER = ''
 _DEPRECATION_FOOTER = """
 from tensorflow.python.util import module_wrapper as _module_wrapper
 
@@ -119,7 +113,7 @@ class _ModuleInitCodeBuilder(object):
         lambda: collections.defaultdict(set))
     self._dest_import_to_id = collections.defaultdict(int)
     # Names that start with underscore in the root module.
-    self._underscore_names_in_root = []
+    self._underscore_names_in_root = set()
     self._api_version = api_version
     # Controls whether or not exported symbols are lazily loaded or statically
     # imported.
@@ -130,7 +124,7 @@ class _ModuleInitCodeBuilder(object):
     if (api_name in self._dest_import_to_id and
         symbol_id != self._dest_import_to_id[api_name] and symbol_id != -1):
       raise SymbolExposedTwiceError(
-          'Trying to export multiple symbols with same name: %s.' % api_name)
+          f'Trying to export multiple symbols with same name: {api_name}')
     self._dest_import_to_id[api_name] = symbol_id
 
   def add_import(self, symbol, source_module_name, source_name,
@@ -162,7 +156,7 @@ class _ModuleInitCodeBuilder(object):
     self._check_already_imported(symbol_id, full_api_name)
 
     if not dest_module_name and dest_name.startswith('_'):
-      self._underscore_names_in_root.append(dest_name)
+      self._underscore_names_in_root.add(dest_name)
 
     # The same symbol can be available in multiple modules.
     # We store all possible ways of importing this symbol and later pick just
@@ -248,7 +242,7 @@ class _ModuleInitCodeBuilder(object):
     root_module_footer = ''
     if not self._lazy_loading:
       underscore_names_str = ', '.join(
-          '\'%s\'' % name for name in self._underscore_names_in_root)
+          '\'%s\'' % name for name in sorted(self._underscore_names_in_root))
 
       root_module_footer = """
 _names_with_underscore = [%s]
@@ -448,6 +442,7 @@ def add_imports_for_symbol(module_code_builder,
 
 
 def get_api_init_text(packages,
+                      packages_to_ignore,
                       output_package,
                       api_name,
                       api_version,
@@ -459,6 +454,8 @@ def get_api_init_text(packages,
   Args:
     packages: Base python packages containing python with target tf_export
       decorators.
+    packages_to_ignore: python packages to be ignored when checking for
+      tf_export decorators.
     output_package: Base output python package where generated API will be
       added.
     api_name: API you want to generate (e.g. `tensorflow` or `estimator`).
@@ -493,6 +490,10 @@ def get_api_init_text(packages,
     if (not module or not hasattr(module, '__name__') or
         module.__name__ is None or not in_packages(module.__name__)):
       continue
+    if packages_to_ignore and any([p for p in packages_to_ignore
+                                   if p in module.__name__]):
+      continue
+
     # Do not generate __init__.py files for contrib modules for now.
     if (('.contrib.' in module.__name__ or module.__name__.endswith('.contrib'))
         and '.lite' not in module.__name__):
@@ -585,6 +586,7 @@ def get_module_docstring(module_name, package, api_name):
 
 def create_api_files(output_files,
                      packages,
+                     packages_to_ignore,
                      root_init_template,
                      output_dir,
                      output_package,
@@ -600,6 +602,8 @@ def create_api_files(output_files,
     output_files: List of __init__.py file paths to create.
     packages: Base python packages containing python with target tf_export
       decorators.
+    packages_to_ignore: python packages to be ignored when checking for
+      tf_export decorators.
     root_init_template: Template for top-level __init__.py file. "# API IMPORTS
       PLACEHOLDER" comment in the template file will be replaced with imports.
     output_dir: output API root directory.
@@ -633,8 +637,9 @@ def create_api_files(output_files,
       module_text_map,
       deprecation_footer_map,
       root_module_footer,
-  ) = get_api_init_text(packages, output_package, api_name, api_version,
-                        compat_api_versions, lazy_loading, use_relative_imports)
+  ) = get_api_init_text(packages, packages_to_ignore, output_package, api_name,
+                        api_version, compat_api_versions, lazy_loading,
+                        use_relative_imports)
 
   # Add imports to output files.
   missing_output_files = []
@@ -684,12 +689,14 @@ def create_api_files(output_files,
       fp.write(contents)
 
   if missing_output_files:
+    missing_files = ',\n'.join(sorted(missing_output_files))
     raise ValueError(
-        """Missing outputs for genrule:\n%s. Be sure to add these targets to
-tensorflow/python/tools/api/generator/api_init_files_v1.bzl and
-tensorflow/python/tools/api/generator/api_init_files.bzl (tensorflow repo), or
-tensorflow_estimator/python/estimator/api/api_gen.bzl (estimator repo)""" %
-        ',\n'.join(sorted(missing_output_files)))
+        f'Missing outputs for genrule:\n{missing_files}. Be sure to add these '
+        'targets to tensorflow/python/tools/api/generator/api_init_files_v1.bzl'
+        ' and tensorflow/python/tools/api/generator/api_init_files.bzl '
+        '(tensorflow repo), keras/api/api_init_files.bzl (keras repo), or '
+        'tensorflow_estimator/python/estimator/api/api_gen.bzl (estimator '
+        'repo)')
 
 
 def main():
@@ -699,7 +706,7 @@ def main():
       metavar='O',
       type=str,
       nargs='+',
-      help='If a single file is passed in, then we we assume it contains a '
+      help='If a single file is passed in, then we assume it contains a '
       'semicolon-separated list of Python files that we expect this script to '
       'output. If multiple files are passed in, then we assume output files '
       'are listed directly as arguments.')
@@ -709,6 +716,14 @@ def main():
       type=str,
       help='Base packages that import modules containing the target tf_export '
       'decorators.')
+  parser.add_argument(
+      '--packages_to_ignore',
+      default='',
+      type=str,
+      help='Packages to exclude from the api generation. This is used to hide '
+      'certain packages from this script when multiple copy of code exists, '
+      'eg Keras. It is useful to avoid the SymbolExposedTwiceError.'
+      )
   parser.add_argument(
       '--root_init_template',
       default='',
@@ -784,6 +799,7 @@ def main():
   packages = args.packages.split(',')
   for package in packages:
     importlib.import_module(package)
+  packages_to_ignore = args.packages_to_ignore.split(',')
 
   # Determine if the modules shall be loaded lazily or statically.
   if args.loading == 'default':
@@ -794,10 +810,11 @@ def main():
     lazy_loading = False
   else:
     # This should never happen (tm).
-    raise ValueError('Invalid value for --loading flag: %s. Must be one of '
-                     'lazy, static, default.' % args.loading)
+    raise ValueError(f'Invalid value for --loading flag: {args.loading}. Must '
+                     'be one of lazy, static, default.')
 
-  create_api_files(outputs, packages, args.root_init_template, args.apidir,
+  create_api_files(outputs, packages, packages_to_ignore,
+                   args.root_init_template, args.apidir,
                    args.output_package, args.apiname, args.apiversion,
                    args.compat_apiversions, args.compat_init_templates,
                    lazy_loading, args.use_relative_imports)

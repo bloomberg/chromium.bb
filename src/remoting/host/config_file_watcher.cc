@@ -12,9 +12,9 @@
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 
@@ -43,6 +43,8 @@ class ConfigFileWatcherImpl
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const base::FilePath& config_path);
 
+  ConfigFileWatcherImpl(const ConfigFileWatcherImpl&) = delete;
+  ConfigFileWatcherImpl& operator=(const ConfigFileWatcherImpl&) = delete;
 
   // Notify |delegate| of config changes.
   void Watch(ConfigWatcher::Delegate* delegate);
@@ -79,14 +81,12 @@ class ConfigFileWatcherImpl
   // Monitors the host configuration file.
   std::unique_ptr<base::FilePathWatcher> config_watcher_;
 
-  ConfigWatcher::Delegate* delegate_;
+  raw_ptr<ConfigWatcher::Delegate> delegate_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   base::WeakPtrFactory<ConfigFileWatcherImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ConfigFileWatcherImpl);
 };
 
 ConfigFileWatcher::ConfigFileWatcher(
@@ -136,8 +136,7 @@ void ConfigFileWatcherImpl::WatchOnIoThread() {
   // Create the timer that will be used for delayed-reading the configuration
   // file.
   config_updated_timer_ = std::make_unique<base::DelayTimer>(
-      FROM_HERE, base::TimeDelta::FromSeconds(2), this,
-      &ConfigFileWatcherImpl::ReloadConfig);
+      FROM_HERE, base::Seconds(2), this, &ConfigFileWatcherImpl::ReloadConfig);
 
   // Start watching the configuration file.
   config_watcher_ = std::make_unique<base::FilePathWatcher>();

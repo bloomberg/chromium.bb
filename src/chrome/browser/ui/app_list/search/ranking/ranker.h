@@ -6,36 +6,55 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_RANKING_RANKER_H_
 
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
+#include "chrome/browser/ui/app_list/search/ranking/types.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 
 #include <string>
 
 namespace app_list {
 
-// Interface for a ranker.
+// Interface for all kinds of rankers. These are ultiamtely owned and called by
+// SearchController.
 class Ranker {
  public:
-  Ranker() {}
-  virtual ~Ranker() {}
+  Ranker() = default;
+  virtual ~Ranker() = default;
 
   Ranker(const Ranker&) = delete;
   Ranker& operator=(const Ranker&) = delete;
 
-  // Called each time a new search session begins, eg. when the user types a
-  // character.
-  virtual void Start(const std::u16string& query) {}
+  // Called each time a new search 'session' begins, eg. when the user opens the
+  // launcher or changes the query.
+  virtual void Start(const std::u16string& query,
+                     ResultsMap& results,
+                     CategoriesList& categories);
 
-  // Called each time a search provider sets new results. Passed the |provider|
-  // type that triggered this call, and all |results| received so far for this
-  // search session.
-  //
-  // The results for a provider can be updated more than once in a search
-  // session, which will invalidate pointers to previous results. It is
-  // recommended that rankers don't explicitly store any result pointers.
-  virtual void Rank(ResultsMap& results, ProviderType provider) {}
+  // Ranks search results. Should return a vector of scores that is the same
+  // length as |results|.
+  virtual std::vector<double> GetResultRanks(const ResultsMap& results,
+                                             ProviderType provider);
+
+  // Ranks search results. Implementations should modify the scoring structs of
+  // |results|, but not modify the ordering of the vector itself.
+  virtual void UpdateResultRanks(ResultsMap& results, ProviderType provider);
+
+  // Ranks categories. Should return a vector of scores that is the same
+  // length as |categories|.
+  virtual std::vector<double> GetCategoryRanks(const ResultsMap& results,
+                                               const CategoriesList& categories,
+                                               ProviderType provider);
+
+  // Ranks categories. Implementations should modify the scoring members of
+  // structs in |categories|, but not modify the ordering of the vector itself.
+  virtual void UpdateCategoryRanks(const ResultsMap& results,
+                                   CategoriesList& categories,
+                                   ProviderType provider);
 
   // Called each time a user launches a result.
-  virtual void Train(const LaunchData& launch) {}
+  virtual void Train(const LaunchData& launch);
+
+  // Called each time a user removes a result.
+  virtual void Remove(ChromeSearchResult* result);
 };
 
 }  // namespace app_list

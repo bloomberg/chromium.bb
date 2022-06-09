@@ -17,11 +17,10 @@ import * as m from 'mithril';
 import {searchSegment} from '../../base/binary_search';
 import {assertTrue} from '../../base/logging';
 import {Actions} from '../../common/actions';
-import {TrackState} from '../../common/state';
 import {toNs} from '../../common/time';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
-import {Track} from '../../frontend/track';
+import {NewTrackArgs, Track} from '../../frontend/track';
 import {TrackButton, TrackButtonAttrs} from '../../frontend/track_panel';
 import {trackRegistry} from '../../frontend/track_registry';
 
@@ -81,17 +80,17 @@ function getCounterScaleAttribute(scale?: CounterScaleOptions):
 
 class CounterTrack extends Track<Config, Data> {
   static readonly kind = COUNTER_TRACK_KIND;
-  static create(trackState: TrackState): CounterTrack {
-    return new CounterTrack(trackState);
+  static create(args: NewTrackArgs): CounterTrack {
+    return new CounterTrack(args);
   }
 
-  private mouseXpos = 0;
+  private mousePos = {x: 0, y: 0};
   private hoveredValue: number|undefined = undefined;
   private hoveredTs: number|undefined = undefined;
   private hoveredTsEnd: number|undefined = undefined;
 
-  constructor(trackState: TrackState) {
-    super(trackState);
+  constructor(args: NewTrackArgs) {
+    super(args);
   }
 
   getHeight() {
@@ -262,7 +261,7 @@ class CounterTrack extends Track<Config, Data> {
       ctx.stroke();
 
       // Draw the tooltip.
-      this.drawTrackHoverTooltip(ctx, this.mouseXpos, text);
+      this.drawTrackHoverTooltip(ctx, this.mousePos, text);
     }
 
     // Write the Y scale on the top left corner.
@@ -297,12 +296,12 @@ class CounterTrack extends Track<Config, Data> {
         timeScale.timeToPx(data.end));
   }
 
-  onMouseMove({x}: {x: number, y: number}) {
+  onMouseMove(pos: {x: number, y: number}) {
     const data = this.data();
     if (data === undefined) return;
-    this.mouseXpos = x;
+    this.mousePos = pos;
     const {timeScale} = globals.frontendLocalState;
-    const time = timeScale.pxToTime(x);
+    const time = timeScale.pxToTime(pos.x);
 
     const values = this.config.scale === 'DELTA_FROM_PREVIOUS' ?
         data.totalDeltas :

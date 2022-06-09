@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is a copy of Chromium's /src/base/containers/linked_list.h
+// This file is a copy of Chromium's /src/base/containers/linked_list.h with the following
+// modifications:
+//   - Added iterators for ranged based iterations
+//   - Added in list check before removing node to prevent segfault, now returns true iff removed
+//   - Added MoveInto functionality for moving list elements to another list
 
 #ifndef COMMON_LINKED_LIST_H
 #define COMMON_LINKED_LIST_H
@@ -39,6 +43,11 @@
 //   for (LinkNode<MyNodeType>* node = list.head();
 //        node != list.end();
 //        node = node->next()) {
+//     MyNodeType* value = node->value();
+//     ...
+//   }
+//
+//   for (LinkNode<MyNodeType*> node : list) {
 //     MyNodeType* value = node->value();
 //     ...
 //   }
@@ -80,6 +89,12 @@
 //    Whereas with std::list<T> the type can be anything, so the implementation
 //    needs to glue on the "next" and "previous" pointers using
 //    some internal node type.
+
+// Forward declarations of the types in order for recursive referencing and friending.
+template <typename T>
+class LinkNode;
+template <typename T>
+class LinkedList;
 
 template <typename T>
 class LinkNode {
@@ -125,14 +140,18 @@ class LinkNode {
         return this->next_ != nullptr;
     }
 
-    // Remove |this| from the linked list.
-    void RemoveFromList() {
+    // Remove |this| from the linked list. Returns true iff removed from a list.
+    bool RemoveFromList() {
+        if (!IsInList()) {
+            return false;
+        }
+
         this->previous_->next_ = this->next_;
         this->next_->previous_ = this->previous_;
-        // next() and previous() return non-null if and only this node is not in any
-        // list.
+        // next() and previous() return non-null if and only this node is not in any list.
         this->next_ = nullptr;
         this->previous_ = nullptr;
+        return true;
     }
 
     LinkNode<T>* previous() const {
@@ -153,6 +172,7 @@ class LinkNode {
     }
 
   private:
+    friend class LinkedList<T>;
     LinkNode<T>* previous_;
     LinkNode<T>* next_;
 };
@@ -178,6 +198,20 @@ class LinkedList {
         e->InsertBefore(&root_);
     }
 
+    // Moves all elements (in order) of the list and appends them into |l| leaving the list empty.
+    void MoveInto(LinkedList<T>* l) {
+        if (empty()) {
+            return;
+        }
+        l->root_.previous_->next_ = root_.next_;
+        root_.next_->previous_ = l->root_.previous_;
+        l->root_.previous_ = root_.previous_;
+        root_.previous_->next_ = &l->root_;
+
+        root_.next_ = &root_;
+        root_.previous_ = &root_;
+    }
+
     LinkNode<T>* head() const {
         return root_.next();
     }
@@ -197,4 +231,44 @@ class LinkedList {
   private:
     LinkNode<T> root_;
 };
+
+template <typename T>
+class LinkedListIterator {
+  public:
+    LinkedListIterator(LinkNode<T>* node) : current_(node), next_(node->next()) {
+    }
+
+    // We keep an early reference to the next node in the list so that even if the current element
+    // is modified or removed from the list, we have a valid next node.
+    LinkedListIterator<T> const& operator++() {
+        current_ = next_;
+        next_ = current_->next();
+        return *this;
+    }
+
+    bool operator!=(const LinkedListIterator<T>& other) const {
+        return current_ != other.current_;
+    }
+
+    LinkNode<T>* operator*() const {
+        return current_;
+    }
+
+  private:
+    LinkNode<T>* current_;
+    LinkNode<T>* next_;
+};
+
+template <typename T>
+LinkedListIterator<T> begin(LinkedList<T>& l) {
+    return LinkedListIterator<T>(l.head());
+}
+
+// Free end function does't use LinkedList<T>::end because of it's const nature. Instead we wrap
+// around from tail.
+template <typename T>
+LinkedListIterator<T> end(LinkedList<T>& l) {
+    return LinkedListIterator<T>(l.tail()->next());
+}
+
 #endif  // COMMON_LINKED_LIST_H

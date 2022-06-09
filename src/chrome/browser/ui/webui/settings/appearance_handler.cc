@@ -25,14 +25,14 @@ void AppearanceHandler::OnJavascriptAllowed() {}
 void AppearanceHandler::OnJavascriptDisallowed() {}
 
 void AppearanceHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "useDefaultTheme",
       base::BindRepeating(&AppearanceHandler::HandleUseDefaultTheme,
                           base::Unretained(this)));
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "useSystemTheme",
       base::BindRepeating(&AppearanceHandler::HandleUseSystemTheme,
                           base::Unretained(this)));
@@ -47,7 +47,7 @@ void AppearanceHandler::HandleUseDefaultTheme(const base::ListValue* args) {
 // of lacros-chrome is complete.
 #if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 void AppearanceHandler::HandleUseSystemTheme(const base::ListValue* args) {
-  if (profile_->IsSupervised())
+  if (profile_->IsChild())
     NOTREACHED();
   else
     ThemeServiceFactory::GetForProfile(profile_)->UseSystemTheme();

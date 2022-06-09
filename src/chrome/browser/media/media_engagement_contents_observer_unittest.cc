@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -77,7 +78,7 @@ class MediaEngagementContentsObserverTest
   }
 
   bool IsTimerRunningForPlayer(int id) const {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     auto audible_row = contents_observer_->audible_players_.find(player_id);
     return audible_row != contents_observer_->audible_players_.end() &&
            audible_row->second.second;
@@ -117,7 +118,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateResizeEvent(int id, gfx::Size size) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->MediaResized(size, player_id);
   }
 
@@ -133,7 +134,7 @@ class MediaEngagementContentsObserverTest
       content::WebContentsObserver::MediaPlayerInfo player_info,
       int id,
       bool muted_state) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->MediaStartedPlaying(player_info, player_id);
     SimulateMutedStateChange(id, muted_state);
   }
@@ -144,7 +145,7 @@ class MediaEngagementContentsObserverTest
     test_clock_.Advance(elapsed);
 
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->MediaStoppedPlaying(
         player_info, player_id,
         finished
@@ -154,11 +155,11 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulatePlaybackStopped(int id) {
-    SimulatePlaybackStoppedWithTime(id, true, base::TimeDelta::FromSeconds(0));
+    SimulatePlaybackStoppedWithTime(id, true, base::Seconds(0));
   }
 
   void SimulateMutedStateChange(int id, bool muted) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->MediaMutedStatusChanged(player_id, muted);
   }
 
@@ -204,7 +205,7 @@ class MediaEngagementContentsObserverTest
 
   void SimulateSignificantPlaybackTimeForPlayer(int id) {
     SimulateLongMediaPlayback(id);
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->OnSignificantMediaPlaybackTimeForPlayer(player_id);
   }
 
@@ -217,7 +218,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void SimulateMediaDestroyed(int id) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->MediaDestroyed(player_id);
   }
 
@@ -341,7 +342,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ForceUpdateTimer(int id) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     contents_observer_->UpdatePlayerTimer(player_id);
   }
 
@@ -372,7 +373,7 @@ class MediaEngagementContentsObserverTest
   }
 
   void ExpectPlaybackTime(int id, base::TimeDelta expected_time) {
-    content::MediaPlayerId player_id(content::GlobalFrameRoutingId(), id);
+    content::MediaPlayerId player_id(content::GlobalRenderFrameHostId(), id);
     EXPECT_EQ(expected_time, contents_observer_->GetPlayerState(player_id)
                                  .playback_timer->Elapsed());
   }
@@ -396,9 +397,7 @@ class MediaEngagementContentsObserverTest
 
   base::Time Now() { return test_clock_.Now(); }
 
-  void Advance15Minutes() {
-    test_clock_.Advance(base::TimeDelta::FromMinutes(15));
-  }
+  void Advance15Minutes() { test_clock_.Advance(base::Minutes(15)); }
 
   ukm::TestAutoSetUkmRecorder& test_ukm_recorder() {
     return test_ukm_recorder_;
@@ -406,7 +405,7 @@ class MediaEngagementContentsObserverTest
 
  private:
   // contents_observer_ auto-destroys when WebContents is destroyed.
-  MediaEngagementContentsObserver* contents_observer_;
+  raw_ptr<MediaEngagementContentsObserver> contents_observer_;
 
   std::unique_ptr<MediaEngagementService> service_;
 
@@ -420,7 +419,7 @@ class MediaEngagementContentsObserverTest
 
   const base::TimeDelta kMaxWaitingTime =
       MediaEngagementContentsObserver::kSignificantMediaPlaybackTime +
-      base::TimeDelta::FromSeconds(2);
+      base::Seconds(2);
 };
 
 // TODO(mlamouri): test that visits are not recorded multiple times when a
@@ -1217,20 +1216,20 @@ TEST_F(MediaEngagementContentsObserverTest, SignificantAudibleTabMuted_Off) {
 
 TEST_F(MediaEngagementContentsObserverTest, RecordPlaybackTime) {
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, false, base::TimeDelta::FromSeconds(3));
-  ExpectPlaybackTime(0, base::TimeDelta::FromSeconds(3));
+  SimulatePlaybackStoppedWithTime(0, false, base::Seconds(3));
+  ExpectPlaybackTime(0, base::Seconds(3));
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, false, base::TimeDelta::FromSeconds(6));
-  ExpectPlaybackTime(0, base::TimeDelta::FromSeconds(9));
+  SimulatePlaybackStoppedWithTime(0, false, base::Seconds(6));
+  ExpectPlaybackTime(0, base::Seconds(9));
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, true, base::TimeDelta::FromSeconds(2));
-  ExpectPlaybackTime(0, base::TimeDelta::FromSeconds(11));
+  SimulatePlaybackStoppedWithTime(0, true, base::Seconds(2));
+  ExpectPlaybackTime(0, base::Seconds(11));
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, false, base::TimeDelta::FromSeconds(2));
-  ExpectPlaybackTime(0, base::TimeDelta::FromSeconds(2));
+  SimulatePlaybackStoppedWithTime(0, false, base::Seconds(2));
+  ExpectPlaybackTime(0, base::Seconds(2));
 }
 
 TEST_F(MediaEngagementContentsObserverTest, ShortMediaIgnored) {
@@ -1241,14 +1240,14 @@ TEST_F(MediaEngagementContentsObserverTest, ShortMediaIgnored) {
   SimulateSignificantAudioPlayer(0);
   SimulateSignificantPlaybackTimeForPlayer(0);
   SimulateSignificantVideoPlayer(1);
-  SimulatePlaybackStoppedWithTime(1, true, base::TimeDelta::FromSeconds(1));
+  SimulatePlaybackStoppedWithTime(1, true, base::Seconds(1));
   SimulateSignificantVideoPlayer(2);
   SimulateSignificantPlaybackTimeForPlayer(2);
 
   // Navigate to a sub page and continue watching.
   Navigate(GURL("https://www.google.com/test"));
   SimulateSignificantAudioPlayer(1);
-  SimulatePlaybackStoppedWithTime(1, true, base::TimeDelta::FromSeconds(2));
+  SimulatePlaybackStoppedWithTime(1, true, base::Seconds(2));
 
   // Test that when we navigate to a new origin the audible players the scores
   // are recorded and we log extra UKM events with the times.
@@ -1262,12 +1261,12 @@ TEST_F(MediaEngagementContentsObserverTest, TotalTimeUsedInShortCalculation) {
   Navigate(origin.GetURL());
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, false, base::TimeDelta::FromSeconds(8));
+  SimulatePlaybackStoppedWithTime(0, false, base::Seconds(8));
   SimulateSignificantPlaybackTimeForPlayer(0);
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, true, base::TimeDelta::FromSeconds(2));
-  ExpectPlaybackTime(0, base::TimeDelta::FromSeconds(10));
+  SimulatePlaybackStoppedWithTime(0, true, base::Seconds(2));
+  ExpectPlaybackTime(0, base::Seconds(10));
 
   SimulateDestroy();
   ExpectScores(origin, 0, 1, 0);
@@ -1279,7 +1278,7 @@ TEST_F(MediaEngagementContentsObserverTest, OnlyIgnoreFinishedMedia) {
   Navigate(origin.GetURL());
 
   SimulateSignificantAudioPlayer(0);
-  SimulatePlaybackStoppedWithTime(0, false, base::TimeDelta::FromSeconds(2));
+  SimulatePlaybackStoppedWithTime(0, false, base::Seconds(2));
 
   SimulateDestroy();
   ExpectScores(origin, 0, 1, 0);

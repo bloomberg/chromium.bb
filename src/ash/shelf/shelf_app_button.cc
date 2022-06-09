@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
@@ -18,33 +17,34 @@
 #include "ash/style/default_colors.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/dot_indicator.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
-#include "ui/views/style/platform_style.h"
 
 namespace {
 
@@ -83,6 +83,9 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
     virtual ~Observer() = default;
   };
 
+  ShelfAppButtonAnimation(const ShelfAppButtonAnimation&) = delete;
+  ShelfAppButtonAnimation& operator=(const ShelfAppButtonAnimation&) = delete;
+
   static ShelfAppButtonAnimation* GetInstance() {
     static ShelfAppButtonAnimation* s_instance = new ShelfAppButtonAnimation();
     return s_instance;
@@ -109,7 +112,7 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
 
  private:
   ShelfAppButtonAnimation() : animation_(this) {
-    animation_.SetThrobDuration(base::TimeDelta::FromMilliseconds(800));
+    animation_.SetThrobDuration(base::Milliseconds(800));
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
@@ -135,8 +138,6 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
 
   gfx::ThrobAnimation animation_;
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppButtonAnimation);
 };
 
 }  // namespace
@@ -154,6 +155,9 @@ class ShelfAppButton::AppStatusIndicatorView
     // Make sure the events reach the parent view for handling.
     SetCanProcessEventsWithinSubtree(false);
   }
+
+  AppStatusIndicatorView(const AppStatusIndicatorView&) = delete;
+  AppStatusIndicatorView& operator=(const AppStatusIndicatorView&) = delete;
 
   ~AppStatusIndicatorView() override {
     ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);
@@ -212,8 +216,7 @@ class ShelfAppButton::AppStatusIndicatorView
 
     show_attention_ = show;
     if (show_attention_) {
-      animation_end_time_ =
-          base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
+      animation_end_time_ = base::TimeTicks::Now() + base::Seconds(10);
       ShelfAppButtonAnimation::GetInstance()->AddObserver(this);
     } else {
       ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);
@@ -244,8 +247,6 @@ class ShelfAppButton::AppStatusIndicatorView
   bool active_ = false;
   bool horizontal_shelf_ = true;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
-
-  DISALLOW_COPY_AND_ASSIGN(AppStatusIndicatorView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -277,9 +278,7 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
       shelf_view_(shelf_view),
       indicator_(new AppStatusIndicatorView()),
       notification_indicator_(nullptr),
-      state_(STATE_NORMAL),
-      is_notification_indicator_enabled_(
-          features::IsNotificationIndicatorEnabled()) {
+      state_(STATE_NORMAL) {
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -287,17 +286,24 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   };
   icon_shadows_.assign(kShadows, kShadows + base::size(kShadows));
 
-  ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks. This crashes if fetching a11y node
+  // data during paint because message_view_ is null.
+  SetProperty(views::kSkipAccessibilityPaintChecks, true);
+
+  views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
       [](ShelfAppButton* host) -> std::unique_ptr<views::InkDropRipple> {
         const gfx::Rect small_ripple_area = host->CalculateSmallRippleArea();
         const int ripple_size = host->shelf_view_->GetShelfItemRippleSize();
 
         return std::make_unique<views::SquareInkDropRipple>(
             gfx::Size(ripple_size, ripple_size),
-            host->ink_drop()->GetLargeCornerRadius(), small_ripple_area.size(),
-            host->ink_drop()->GetSmallCornerRadius(),
-            small_ripple_area.CenterPoint(), host->ink_drop()->GetBaseColor(),
-            host->ink_drop()->GetVisibleOpacity());
+            views::InkDrop::Get(host)->GetLargeCornerRadius(),
+            small_ripple_area.size(),
+            views::InkDrop::Get(host)->GetSmallCornerRadius(),
+            small_ripple_area.CenterPoint(),
+            views::InkDrop::Get(host)->GetBaseColor(),
+            views::InkDrop::Get(host)->GetVisibleOpacity());
       },
       this));
 
@@ -316,26 +322,26 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
 
   AddChildView(indicator_);
   AddChildView(icon_view_);
-  if (is_notification_indicator_enabled_) {
-    notification_indicator_ = views::DotIndicator::Install(this);
-    SetNotificationBadgeColor(kDefaultIndicatorColor);
-  }
-  ink_drop()->GetInkDrop()->AddObserver(this);
+  notification_indicator_ = views::DotIndicator::Install(this);
+  SetNotificationBadgeColor(kDefaultIndicatorColor);
+
+  views::InkDrop::Get(this)->GetInkDrop()->AddObserver(this);
 
   // Do not set a clip, allow the ink drop to burst out.
   views::InstallEmptyHighlightPathGenerator(this);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
-  focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+  views::FocusRing::Get(this)->SetColor(
+      ShelfConfig::Get()->shelf_focus_border_color());
   // The focus ring should have an inset of half the focus border thickness, so
   // the parent view won't clip it.
-  focus_ring()->SetPathGenerator(
+  views::FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(views::PlatformStyle::kFocusHaloThickness / 2, 0), 0));
+          gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
 }
 
 ShelfAppButton::~ShelfAppButton() {
-  ink_drop()->GetInkDrop()->RemoveObserver(this);
+  views::InkDrop::Get(this)->GetInkDrop()->RemoveObserver(this);
 }
 
 void ShelfAppButton::SetShadowedImage(const gfx::ImageSkia& image) {
@@ -389,7 +395,7 @@ void ShelfAppButton::AddState(State state) {
     if (state & STATE_ACTIVE)
       indicator_->ShowActiveStatus(true);
 
-    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
+    if (state & STATE_NOTIFICATION)
       notification_indicator_->Show();
 
     if (state & STATE_DRAGGING)
@@ -406,7 +412,7 @@ void ShelfAppButton::ClearState(State state) {
     if (state & STATE_ACTIVE)
       indicator_->ShowActiveStatus(false);
 
-    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
+    if (state & STATE_NOTIFICATION)
       notification_indicator_->Hide();
 
     if (state & STATE_DRAGGING)
@@ -424,22 +430,24 @@ gfx::Rect ShelfAppButton::GetIconBounds() const {
   return icon_view_->bounds();
 }
 
-gfx::Rect ShelfAppButton::GetIconBoundsInScreen() const {
-  return icon_view_->GetBoundsInScreen();
+gfx::Rect ShelfAppButton::GetIdealIconBounds(const gfx::Size& button_size,
+                                             float icon_scale) const {
+  return GetIconViewBounds(gfx::Rect(button_size), icon_scale);
 }
 
 views::InkDrop* ShelfAppButton::GetInkDropForTesting() {
-  return ink_drop()->GetInkDrop();
+  return views::InkDrop::Get(this)->GetInkDrop();
 }
 
 void ShelfAppButton::OnDragStarted(const ui::LocatedEvent* event) {
-  ink_drop()->AnimateToState(views::InkDropState::HIDDEN, event);
+  views::InkDrop::Get(this)->AnimateToState(views::InkDropState::HIDDEN, event);
 }
 
 void ShelfAppButton::OnMenuClosed() {
   DCHECK_EQ(views::InkDropState::ACTIVATED,
-            ink_drop()->GetInkDrop()->GetTargetInkDropState());
-  ink_drop()->GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
+            views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState());
+  views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+      views::InkDropState::DEACTIVATED);
 }
 
 void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
@@ -493,12 +501,10 @@ bool ShelfAppButton::ShouldEnterPushedState(const ui::Event& event) {
 }
 
 void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
-  if (features::IsNotificationIndicatorEnabled()) {
-    if (item.has_notification)
-      AddState(ShelfAppButton::STATE_NOTIFICATION);
-    else
-      ClearState(ShelfAppButton::STATE_NOTIFICATION);
-  }
+  if (item.has_notification)
+    AddState(ShelfAppButton::STATE_NOTIFICATION);
+  else
+    ClearState(ShelfAppButton::STATE_NOTIFICATION);
 
   app_status_ = item.app_status;
 
@@ -600,8 +606,7 @@ bool ShelfAppButton::OnMousePressed(const ui::MouseEvent& event) {
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
 
   if (shelf_view_->IsDraggedView(this)) {
-    drag_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
+    drag_timer_.Start(FROM_HERE, base::Milliseconds(kDragTimeThresholdMs),
                       base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
                                      base::Unretained(this)));
   }
@@ -630,11 +635,11 @@ bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
+gfx::Rect ShelfAppButton::GetIconViewBounds(const gfx::Rect& button_bounds,
+                                            float icon_scale) const {
   const float icon_size = shelf_view_->GetButtonIconSize() * icon_scale;
   const float icon_padding = (shelf_view_->GetButtonSize() - icon_size) / 2;
 
-  const gfx::Rect button_bounds(GetContentsBounds());
   const Shelf* shelf = shelf_view_->shelf();
   const bool is_horizontal_shelf = shelf->IsHorizontalAlignment();
   float x_offset = is_horizontal_shelf ? 0 : icon_padding;
@@ -672,7 +677,8 @@ gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
 }
 
 gfx::Rect ShelfAppButton::GetNotificationIndicatorBounds(float icon_scale) {
-  gfx::Rect scaled_icon_view_bounds = GetIconViewBounds(icon_scale);
+  gfx::Rect scaled_icon_view_bounds =
+      GetIconViewBounds(GetContentsBounds(), icon_scale);
   float diameter =
       std::floor(kNotificationIndicatorRadiusDip * icon_scale * 2.0f);
   return gfx::Rect(scaled_icon_view_bounds.right() - diameter -
@@ -683,22 +689,22 @@ gfx::Rect ShelfAppButton::GetNotificationIndicatorBounds(float icon_scale) {
 
 void ShelfAppButton::Layout() {
   Shelf* shelf = shelf_view_->shelf();
-  gfx::Rect icon_view_bounds = GetIconViewBounds(icon_scale_);
+  gfx::Rect icon_view_bounds =
+      GetIconViewBounds(GetContentsBounds(), icon_scale_);
   const gfx::Rect button_bounds(GetContentsBounds());
   const int status_indicator_offet_from_shelf_edge =
       ShelfConfig::Get()->status_indicator_offset_from_shelf_edge();
 
   icon_view_->SetBoundsRect(icon_view_bounds);
 
-  if (is_notification_indicator_enabled_) {
-    notification_indicator_->SetBoundsRect(
-        GetNotificationIndicatorBounds(icon_scale_));
-  }
+  notification_indicator_->SetBoundsRect(
+      GetNotificationIndicatorBounds(icon_scale_));
 
   // The indicators should be aligned with the icon, not the icon + shadow.
   // Use 1.0 as icon scale for |indicator_midpoint|, otherwise integer rounding
   // can incorrectly move the midpoint.
-  gfx::Point indicator_midpoint = GetIconViewBounds(1.0).CenterPoint();
+  gfx::Point indicator_midpoint =
+      GetIconViewBounds(GetContentsBounds(), 1.0).CenterPoint();
   switch (shelf->alignment()) {
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
@@ -722,7 +728,7 @@ void ShelfAppButton::Layout() {
   indicator_->SetBoundsRect(indicator_bounds);
 
   UpdateState();
-  focus_ring()->Layout();
+  views::FocusRing::Get(this)->Layout();
 }
 
 void ShelfAppButton::ChildPreferredSizeChanged(views::View* child) {
@@ -734,16 +740,14 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP_DOWN:
       if (shelf_view_->shelf()->IsVisible()) {
         AddState(STATE_HOVERED);
-        drag_timer_.Start(
-            FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
-            base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
-                           base::Unretained(this)));
+        drag_timer_.Start(FROM_HERE, base::Milliseconds(kDragTimeThresholdMs),
+                          base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
+                                         base::Unretained(this)));
         ripple_activation_timer_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kInkDropRippleActivationTimeMs),
+            FROM_HERE, base::Milliseconds(kInkDropRippleActivationTimeMs),
             base::BindOnce(&ShelfAppButton::OnRippleTimer,
                            base::Unretained(this)));
-        ink_drop()->GetInkDrop()->AnimateToState(
+        views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
             views::InkDropState::ACTION_PENDING);
         event->SetHandled();
       }
@@ -755,11 +759,27 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
       // for this ShelfAppButton, don't deactivate the ink drop.
       if (!(state_ & STATE_DRAGGING) &&
           !shelf_view_->IsShowingMenuForView(this) &&
-          (ink_drop()->GetInkDrop()->GetTargetInkDropState() ==
+          (views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() ==
            views::InkDropState::ACTIVATED)) {
-        ink_drop()->GetInkDrop()->AnimateToState(
+        views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
             views::InkDropState::DEACTIVATED);
+      } else if (event->type() == ui::ET_GESTURE_END) {
+        // When the gesture ends, we may need to deactivate the button's
+        // inkdrop. For example, when a mouse event interputs the gesture press
+        // on a shelf app button, the button's inkdrop could be in the pending
+        // state while the button's context menu is hidden. In this case, we
+        // have to hide the inkdrop explicitly.
+
+        // Note that the ET_GESTURE_END event may be received during the
+        // building of the context menu by triggering the synthesized gesture
+        // end event. Therefore we have to wait until the context menu is
+        // completely built.
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&ShelfAppButton::MaybeHideInkDropWhenGestureEnds,
+                           weak_factory_.GetWeakPtr()));
       }
+
       ClearDragStateOnGestureEnd();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -770,7 +790,8 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
         // The drag went to the bezel and is about to be passed to
         // ShelfLayoutManager.
         drag_timer_.Stop();
-        ink_drop()->GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
+        views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+            views::InkDropState::HIDDEN);
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -788,12 +809,21 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_LONG_TAP:
-      ink_drop()->GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
-      // Handle LONG_TAP to avoid opening the context menu twice.
-      event->SetHandled();
+      views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+          views::InkDropState::ACTIVATED);
+
+      // The context menu may not show (for example, a mouse click which occurs
+      // before the end of gesture could close the context menu). In this case,
+      // let the overridden function handles the event to show the context menu
+      // (see https://crbug.com/1126491).
+      if (shelf_view_->IsShowingMenu()) {
+        // Handle LONG_TAP to avoid opening the context menu twice.
+        event->SetHandled();
+      }
       break;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
-      ink_drop()->GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
+      views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+          views::InkDropState::ACTIVATED);
       break;
     default:
       break;
@@ -848,16 +878,19 @@ void ShelfAppButton::OnTouchDragTimer() {
 }
 
 void ShelfAppButton::OnRippleTimer() {
-  if (ink_drop()->GetInkDrop()->GetTargetInkDropState() !=
+  if (views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() !=
       views::InkDropState::ACTION_PENDING) {
     return;
   }
-  ink_drop()->GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
+  views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+      views::InkDropState::ACTIVATED);
 }
 
 gfx::Transform ShelfAppButton::GetScaleTransform(float icon_scale) {
-  gfx::RectF pre_scaling_bounds(GetMirroredRect(GetIconViewBounds(1.0f)));
-  gfx::RectF target_bounds(GetMirroredRect(GetIconViewBounds(icon_scale)));
+  gfx::RectF pre_scaling_bounds(
+      GetMirroredRect(GetIconViewBounds(GetContentsBounds(), 1.0f)));
+  gfx::RectF target_bounds(
+      GetMirroredRect(GetIconViewBounds(GetContentsBounds(), icon_scale)));
   return gfx::TransformBetweenRects(target_bounds, pre_scaling_bounds);
 }
 
@@ -871,7 +904,7 @@ void ShelfAppButton::ScaleAppIcon(bool scale_up) {
   }
   ui::ScopedLayerAnimationSettings settings(icon_view_->layer()->GetAnimator());
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
+      base::Milliseconds(kDragDropAppIconScaleTransitionMs));
   if (scale_up) {
     icon_view_->layer()->SetTransform(gfx::Transform());
   } else {
@@ -894,7 +927,7 @@ void ShelfAppButton::ScaleAppIcon(bool scale_up) {
     ui::ScopedLayerAnimationSettings notification_settings(
         notification_indicator_->layer()->GetAnimator());
     notification_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
+        base::Milliseconds(kDragDropAppIconScaleTransitionMs));
     notification_indicator_->layer()->SetTransform(scale_up ? gfx::Transform()
                                                             : scale_transform);
   }
@@ -925,6 +958,19 @@ void ShelfAppButton::SetNotificationBadgeColor(SkColor color) {
   if (notification_indicator_)
     notification_indicator_->SetColor(
         /*dot_color=*/color, /*border_color=*/SkColorSetA(SK_ColorBLACK, 0x4D));
+}
+
+void ShelfAppButton::MaybeHideInkDropWhenGestureEnds() {
+  if (shelf_view_->IsShowingMenuForView(this) ||
+      views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() ==
+          views::InkDropState::HIDDEN) {
+    // Return early if the shelf app button's context menu is showing or
+    // the button's inkdrop has been hidden.
+    return;
+  }
+
+  views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
+      views::InkDropState::HIDDEN);
 }
 
 }  // namespace ash

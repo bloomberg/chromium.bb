@@ -1,5 +1,6 @@
 /*
  * Copyright 2015-2021 Arm Limited
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@
  * At your option, you may choose to accept this material under either:
  *  1. The Apache License, Version 2.0, found at <http://www.apache.org/licenses/LICENSE-2.0>, or
  *  2. The MIT License, found at <http://opensource.org/licenses/MIT>.
- * SPDX-License-Identifier: Apache-2.0 OR MIT.
  */
 
 #ifndef SPIRV_CROSS_GLSL_HPP
@@ -133,6 +133,9 @@ public:
 		// what happens on legacy GLSL targets for blocks and structs.
 		bool force_flattened_io_blocks = false;
 
+		// If non-zero, controls layout(num_views = N) in; in GL_OVR_multiview2.
+		uint32_t ovr_multiview_view_count = 0;
+
 		enum Precision
 		{
 			DontCare,
@@ -178,7 +181,8 @@ public:
 
 	// Redirect a subpassInput reading from input_attachment_index to instead load its value from
 	// the color attachment at location = color_location. Requires ESSL.
-	void remap_ext_framebuffer_fetch(uint32_t input_attachment_index, uint32_t color_location);
+	// If coherent, uses GL_EXT_shader_framebuffer_fetch, if not, uses noncoherent variant.
+	void remap_ext_framebuffer_fetch(uint32_t input_attachment_index, uint32_t color_location, bool coherent);
 
 	explicit CompilerGLSL(std::vector<uint32_t> spirv_)
 	    : Compiler(std::move(spirv_))
@@ -382,7 +386,7 @@ protected:
 	virtual void emit_struct_padding_target(const SPIRType &type);
 	virtual std::string image_type_glsl(const SPIRType &type, uint32_t id = 0);
 	std::string constant_expression(const SPIRConstant &c);
-	std::string constant_op_expression(const SPIRConstantOp &cop);
+	virtual std::string constant_op_expression(const SPIRConstantOp &cop);
 	virtual std::string constant_expression_vector(const SPIRConstant &c, uint32_t vector);
 	virtual void emit_fixup();
 	virtual std::string variable_decl(const SPIRType &type, const std::string &name, uint32_t id = 0);
@@ -582,13 +586,14 @@ protected:
 		bool needs_row_major_load_workaround = false;
 		bool support_pointer_to_pointer = false;
 		bool support_precise_qualifier = false;
+		bool support_64bit_switch = false;
 	} backend;
 
 	void emit_struct(SPIRType &type);
 	void emit_resources();
 	void emit_extension_workarounds(spv::ExecutionModel model);
 	void emit_buffer_block_native(const SPIRVariable &var);
-	void emit_buffer_reference_block(SPIRType &type, bool forward_declaration);
+	void emit_buffer_reference_block(uint32_t type_id, bool forward_declaration);
 	void emit_buffer_block_legacy(const SPIRVariable &var);
 	void emit_buffer_block_flattened(const SPIRVariable &type);
 	void fixup_implicit_builtin_block_names();
@@ -858,7 +863,9 @@ protected:
 
 	// GL_EXT_shader_framebuffer_fetch support.
 	std::vector<std::pair<uint32_t, uint32_t>> subpass_to_framebuffer_fetch_attachment;
-	std::unordered_set<uint32_t> inout_color_attachments;
+	std::vector<std::pair<uint32_t, bool>> inout_color_attachments;
+	bool location_is_framebuffer_fetch(uint32_t location) const;
+	bool location_is_non_coherent_framebuffer_fetch(uint32_t location) const;
 	bool subpass_input_is_framebuffer_fetch(uint32_t id) const;
 	void emit_inout_fragment_outputs_copy_to_subpass_inputs();
 	const SPIRVariable *find_subpass_input_by_attachment_index(uint32_t index) const;
@@ -897,8 +904,8 @@ protected:
 	// Builtins in GLSL are always specific signedness, but the SPIR-V can declare them
 	// as either unsigned or signed.
 	// Sometimes we will need to automatically perform casts on load and store to make this work.
-	virtual void cast_to_builtin_store(uint32_t target_id, std::string &expr, const SPIRType &expr_type);
-	virtual void cast_from_builtin_load(uint32_t source_id, std::string &expr, const SPIRType &expr_type);
+	virtual void cast_to_variable_store(uint32_t target_id, std::string &expr, const SPIRType &expr_type);
+	virtual void cast_from_variable_load(uint32_t source_id, std::string &expr, const SPIRType &expr_type);
 	void unroll_array_from_complex_load(uint32_t target_id, uint32_t source_id, std::string &expr);
 	bool unroll_array_to_complex_store(uint32_t target_id, uint32_t source_id);
 	void convert_non_uniform_expression(std::string &expr, uint32_t ptr_id);

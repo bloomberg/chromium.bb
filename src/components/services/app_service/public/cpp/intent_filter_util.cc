@@ -4,10 +4,43 @@
 
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
+#include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "url/url_constants.h"
 
 namespace {
+
+// Returns true if |value1| has overlapping values with |value2|. This method
+// should be called twice, with |value1| and |value2| swapped.
+bool ConditionValuesHaveOverlap(const apps::mojom::ConditionValuePtr& value1,
+                                const apps::mojom::ConditionValuePtr& value2) {
+  if (value1 == value2) {
+    return true;
+  }
+
+  if (value1->match_type == apps::mojom::PatternMatchType::kLiteral) {
+    if (value2->match_type == apps::mojom::PatternMatchType::kPrefix) {
+      return base::StartsWith(/*str=*/value1->value,
+                              /*search_for=*/value2->value);
+    } else if (value2->match_type == apps::mojom::PatternMatchType::kGlob) {
+      return apps_util::MatchGlob(/*value=*/value1->value,
+                                  /*pattern=*/value2->value);
+    }
+  }
+
+  else if (value1->match_type == apps::mojom::PatternMatchType::kPrefix &&
+           value2->match_type == apps::mojom::PatternMatchType::kPrefix) {
+    return base::StartsWith(/*str=*/value1->value,
+                            /*search_for=*/value2->value) ||
+           base::StartsWith(/*str=*/value2->value,
+                            /*search_for=*/value1->value);
+  }
+
+  return false;
+}
 
 bool ConditionsHaveOverlap(const apps::mojom::ConditionPtr& condition1,
                            const apps::mojom::ConditionPtr& condition2) {
@@ -18,7 +51,8 @@ bool ConditionsHaveOverlap(const apps::mojom::ConditionPtr& condition1,
   // is an overlap.
   for (auto& value1 : condition1->condition_values) {
     for (auto& value2 : condition2->condition_values) {
-      if (value1 == value2) {
+      if (ConditionValuesHaveOverlap(value1, value2) ||
+          ConditionValuesHaveOverlap(value2, value1)) {
         return true;
       }
     }
@@ -62,16 +96,12 @@ void AddSingleValueCondition(apps::mojom::ConditionType condition_type,
   intent_filter->conditions.push_back(std::move(condition));
 }
 
-apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(
-    const GURL& url,
-    bool with_action_view) {
+apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url) {
   auto intent_filter = apps::mojom::IntentFilter::New();
 
-  if (with_action_view) {
-    AddSingleValueCondition(
-        apps::mojom::ConditionType::kAction, apps_util::kIntentActionView,
-        apps::mojom::PatternMatchType::kNone, intent_filter);
-  }
+  AddSingleValueCondition(apps::mojom::ConditionType::kAction,
+                          apps_util::kIntentActionView,
+                          apps::mojom::PatternMatchType::kNone, intent_filter);
 
   AddSingleValueCondition(apps::mojom::ConditionType::kScheme, url.scheme(),
                           apps::mojom::PatternMatchType::kNone, intent_filter);
@@ -104,6 +134,7 @@ int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter) {
         match_level += IntentFilterMatchLevel::kPattern;
         break;
       case apps::mojom::ConditionType::kMimeType:
+      case apps::mojom::ConditionType::kFile:
         match_level += IntentFilterMatchLevel::kMimeType;
         break;
     }
@@ -170,18 +201,20 @@ bool IsBrowserFilter(const apps::mojom::IntentFilterPtr& filter) {
 // accept, to be used in listing all of the supported links for a given app.
 std::set<std::string> AppManagementGetSupportedLinks(
     const apps::mojom::IntentFilterPtr& intent_filter) {
-  std::set<std::string> supported_links;
-  std::set<std::string> schemes;
   std::set<std::string> hosts;
+  std::set<std::string> paths;
+  bool is_http_or_https = false;
 
   for (auto& condition : intent_filter->conditions) {
-    // For scheme conditions we add each value to the the |schemes| set.
+    // For scheme conditions we check if it's http or https and set a Boolean
+    // if this intent filter is for one of those schemes.
     if (condition->condition_type == apps::mojom::ConditionType::kScheme) {
       for (auto& condition_value : condition->condition_values) {
         // We only care about http and https schemes.
         if (condition_value->value == url::kHttpScheme ||
             condition_value->value == url::kHttpsScheme) {
-          schemes.insert(condition_value->value);
+          is_http_or_https = true;
+          break;
         }
       }
 
@@ -189,28 +222,138 @@ std::set<std::string> AppManagementGetSupportedLinks(
       // aren't any http or https scheme values this indicates that no http or
       // https scheme exists in the intent filter and thus we will have to
       // return an empty list.
-      if (schemes.empty()) {
+      if (!is_http_or_https) {
         break;
       }
     }
 
     // For host conditions we add each value to the the |hosts| set.
-    if (condition->condition_type != apps::mojom::ConditionType::kHost) {
+    if (condition->condition_type == apps::mojom::ConditionType::kHost) {
       for (auto& condition_value : condition->condition_values) {
         hosts.insert(condition_value->value);
       }
     }
+
+    // For path conditions we add each value to the the |paths| set.
+    if (condition->condition_type == apps::mojom::ConditionType::kPattern) {
+      for (auto& condition_value : condition->condition_values) {
+        std::string value = condition_value->value;
+        // Glob and literal patterns can be printed exactly, but prefix
+        // patterns must have be appended with "*" to indicate that
+        // anything with that prefix can be matched.
+        if (condition_value->match_type ==
+            apps::mojom::PatternMatchType::kPrefix) {
+          value.append("*");
+        }
+        paths.insert(value);
+      }
+    }
   }
 
-  // Loop through all combinations of scheme and host and add to
-  // supported links.
-  for (auto& scheme : schemes) {
-    for (auto& host : hosts) {
-      supported_links.insert(scheme + url::kStandardSchemeSeparator + host);
+  // We only care about http and https schemes.
+  if (!is_http_or_https) {
+    return std::set<std::string>();
+  }
+
+  std::set<std::string> supported_links;
+  for (auto& host : hosts) {
+    for (auto& path : paths) {
+      if (path.front() == '/') {
+        supported_links.insert(host + path);
+      } else {
+        supported_links.insert(host + "/" + path);
+      }
     }
   }
 
   return supported_links;
 }
 
+bool IsSupportedLinkForApp(const std::string& app_id,
+                           const apps::mojom::IntentFilterPtr& intent_filter) {
+  // Filters associated with kUseBrowserForLink are a special case. These
+  // filters do not "belong" to the app and should not be treated as supported
+  // links.
+  if (app_id == apps::kUseBrowserForLink) {
+    return false;
+  }
+
+  bool action = false;
+  bool scheme = false;
+  bool host = false;
+  bool pattern = false;
+  for (auto& condition : intent_filter->conditions) {
+    switch (condition->condition_type) {
+      case apps::mojom::ConditionType::kAction:
+        for (auto& condition_value : condition->condition_values) {
+          if (condition_value->value == apps_util::kIntentActionView) {
+            action = true;
+            break;
+          }
+        }
+        break;
+      case apps::mojom::ConditionType::kScheme:
+        for (auto& condition_value : condition->condition_values) {
+          if (condition_value->value == "http" ||
+              condition_value->value == "https") {
+            scheme = true;
+            break;
+          }
+        }
+        break;
+      case apps::mojom::ConditionType::kHost:
+        host = true;
+        break;
+      case apps::mojom::ConditionType::kPattern:
+        pattern = true;
+        break;
+      default:
+        break;
+    }
+
+    if (action && scheme && host && pattern) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace apps_util
+
+namespace apps {
+
+// Example output:
+//
+// activity_name: FooActivity
+// activity_label: Foo
+// conditions:
+// - kAction: view
+// - kPattern: /a /b*
+std::ostream& operator<<(std::ostream& out,
+                         const apps::mojom::IntentFilterPtr& intent_filter) {
+  if (intent_filter->activity_name.has_value()) {
+    out << "activity_name: " << intent_filter->activity_name.value()
+        << std::endl;
+  }
+  if (intent_filter->activity_label.has_value()) {
+    out << "activity_label: " << intent_filter->activity_label.value()
+        << std::endl;
+  }
+  out << "conditions:" << std::endl;
+  for (const auto& condition : intent_filter->conditions) {
+    out << "- " << condition->condition_type << ": ";
+    for (const auto& value : condition->condition_values) {
+      out << value->value;
+      if (value->match_type == apps::mojom::PatternMatchType::kPrefix) {
+        out << "*";
+      }
+      out << " ";
+    }
+    out << std::endl;
+  }
+
+  return out;
+}
+
+}  // namespace apps

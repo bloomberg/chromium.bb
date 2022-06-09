@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "remoting/base/compound_buffer.h"
@@ -41,6 +41,10 @@ class MessageReader {
   typedef base::OnceCallback<void(int)> ReadFailedCallback;
 
   MessageReader();
+
+  MessageReader(const MessageReader&) = delete;
+  MessageReader& operator=(const MessageReader&) = delete;
+
   virtual ~MessageReader();
 
   // Starts reading from |socket|.
@@ -60,7 +64,7 @@ class MessageReader {
 
   ReadFailedCallback read_failed_callback_;
 
-  P2PStreamSocket* socket_ = nullptr;
+  raw_ptr<P2PStreamSocket> socket_ = nullptr;
 
   // Set to true, when we have a socket read pending, and expecting
   // OnRead() to be called when new data is received.
@@ -77,8 +81,6 @@ class MessageReader {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<MessageReader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MessageReader);
 };
 
 }  // namespace protocol

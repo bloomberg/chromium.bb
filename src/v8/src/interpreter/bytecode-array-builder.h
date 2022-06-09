@@ -134,9 +134,6 @@ class V8_EXPORT_PRIVATE BytecodeArrayBuilder final {
   BytecodeArrayBuilder& LoadNamedProperty(Register object,
                                           const AstRawString* name,
                                           int feedback_slot);
-  // Named load property without feedback
-  BytecodeArrayBuilder& LoadNamedPropertyNoFeedback(Register object,
-                                                    const AstRawString* name);
 
   BytecodeArrayBuilder& LoadNamedPropertyFromSuper(Register object,
                                                    const AstRawString* name,
@@ -174,11 +171,6 @@ class V8_EXPORT_PRIVATE BytecodeArrayBuilder final {
                                            int feedback_slot,
                                            LanguageMode language_mode);
 
-  // Store a property named by a property name without feedback slot. The value
-  // to be stored should be in the accumulator.
-  BytecodeArrayBuilder& StoreNamedPropertyNoFeedback(
-      Register object, const AstRawString* name, LanguageMode language_mode);
-
   // Store a property named by a constant from the constant pool. The value to
   // be stored should be in the accumulator.
   BytecodeArrayBuilder& StoreNamedProperty(Register object,
@@ -195,6 +187,9 @@ class V8_EXPORT_PRIVATE BytecodeArrayBuilder final {
   BytecodeArrayBuilder& StoreKeyedProperty(Register object, Register key,
                                            int feedback_slot,
                                            LanguageMode language_mode);
+  BytecodeArrayBuilder& DefineKeyedProperty(Register object, Register key,
+                                            int feedback_slot);
+
   // Store an own element in an array literal. The value to be stored should be
   // in the accumulator.
   BytecodeArrayBuilder& StoreInArrayLiteral(Register array, Register index,
@@ -304,11 +299,6 @@ class V8_EXPORT_PRIVATE BytecodeArrayBuilder final {
   // feedback is recorded in the |feedback_slot| in the type feedback vector.
   BytecodeArrayBuilder& CallAnyReceiver(Register callable, RegisterList args,
                                         int feedback_slot);
-
-  // Call a JS function with an any receiver, possibly (but not necessarily)
-  // undefined. The JSFunction or Callable to be called should be in |callable|.
-  // The arguments should be in |args|, with the receiver in |args[0]|.
-  BytecodeArrayBuilder& CallNoFeedback(Register callable, RegisterList args);
 
   // Tail call into a JS function. The JSFunction or Callable to be called
   // should be in |callable|. The arguments should be in |args|, with the
@@ -509,6 +499,17 @@ class V8_EXPORT_PRIVATE BytecodeArrayBuilder final {
 
   void SetStatementPosition(Statement* stmt) {
     SetStatementPosition(stmt->position());
+  }
+
+  BytecodeSourceInfo PopSourcePosition() {
+    BytecodeSourceInfo source_info = latest_source_info_;
+    latest_source_info_.set_invalid();
+    return source_info;
+  }
+
+  void PushSourcePosition(BytecodeSourceInfo source_info) {
+    DCHECK(!latest_source_info_.is_valid());
+    latest_source_info_ = source_info;
   }
 
   void SetStatementPosition(int position) {

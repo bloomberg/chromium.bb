@@ -6,7 +6,6 @@
 #define IOS_WEB_SHELL_SHELL_BROWSER_STATE_H_
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ios/web/public/browser_state.h"
 
@@ -19,6 +18,10 @@ class ShellURLRequestContextGetter;
 class ShellBrowserState final : public BrowserState {
  public:
   ShellBrowserState();
+
+  ShellBrowserState(const ShellBrowserState&) = delete;
+  ShellBrowserState& operator=(const ShellBrowserState&) = delete;
+
   ~ShellBrowserState() override;
 
   // BrowserState implementation.
@@ -29,8 +32,6 @@ class ShellBrowserState final : public BrowserState {
  private:
   base::FilePath path_;
   scoped_refptr<ShellURLRequestContextGetter> request_context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellBrowserState);
 };
 
 }  // namespace web

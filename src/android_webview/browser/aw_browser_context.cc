@@ -30,8 +30,8 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
@@ -59,10 +59,12 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/zoom_level_delegate.h"
 #include "media/mojo/buildflags.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 using base::FilePath;
 using content::BrowserThread;
@@ -130,7 +132,6 @@ void MigrateProfileData(base::FilePath cache_path,
   migrate_context_storage_data("Session Storage");
 
   // These were missed in the initial migration
-  migrate_context_storage_data("Application Cache");
   migrate_context_storage_data("File System");
   migrate_context_storage_data("IndexedDB");
   migrate_context_storage_data("Local Storage");
@@ -395,6 +396,11 @@ storage::SpecialStoragePolicy* AwBrowserContext::GetSpecialStoragePolicy() {
   return NULL;
 }
 
+content::PlatformNotificationService*
+AwBrowserContext::GetPlatformNotificationService() {
+  return nullptr;
+}
+
 content::PushMessagingService* AwBrowserContext::GetPushMessagingService() {
   // TODO(johnme): Support push messaging in WebView.
   return NULL;
@@ -448,6 +454,12 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
       /*wake_lock_provider_binder*/ base::NullCallback());
 }
 
+std::unique_ptr<content::ZoomLevelDelegate>
+AwBrowserContext::CreateZoomLevelDelegate(
+    const base::FilePath& partition_path) {
+  return nullptr;
+}
+
 void AwBrowserContext::RebuildTable(
     const scoped_refptr<URLEnumerator>& enumerator) {
   // Android WebView rebuilds from WebChromeClient.getVisitedHistory. The client
@@ -485,7 +497,10 @@ void AwBrowserContext::ConfigureNetworkContextParams(
 
   // WebView should persist and restore cookies between app sessions (including
   // session cookies).
-  context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->file_paths = network::mojom::NetworkContextFilePaths::New();
+  base::FilePath cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->file_paths->data_path = cookie_path.DirName();
+  context_params->file_paths->cookie_database_name = cookie_path.BaseName();
   context_params->restore_old_session_cookies = true;
   context_params->persist_session_cookies = true;
   context_params->cookie_manager_params =
@@ -506,13 +521,16 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
   // defer to the Android system.
   context_params->initial_ssl_config->symantec_enforcement_disabled = true;
+  // Do not enforce Legacy TLS removal if support is still enabled.
+  if (base::FeatureList::IsEnabled(
+          android_webview::features::kWebViewLegacyTlsSupport)) {
+    context_params->initial_ssl_config->version_min =
+        network::mojom::SSLVersion::kTLS1;
+  }
 
   // WebView does not currently support Certificate Transparency
   // (http://crbug.com/921750).
   context_params->enforce_chrome_ct_policy = false;
-
-  // WebView does not support ftp yet.
-  context_params->enable_ftp_url_support = false;
 
   context_params->enable_brotli = base::FeatureList::IsEnabled(
       android_webview::features::kWebViewBrotliSupport);

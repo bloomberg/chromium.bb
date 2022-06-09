@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sync/model/metadata_batch.h"
 
 namespace syncer {
@@ -21,7 +22,7 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   // |other| must not be nullptr and must outlive this object.
   explicit ForwardingModelTypeChangeProcessor(ModelTypeChangeProcessor* other)
       : other_(other) {}
-  ~ForwardingModelTypeChangeProcessor() override {}
+  ~ForwardingModelTypeChangeProcessor() override = default;
 
   void Put(const std::string& client_tag,
            std::unique_ptr<EntityData> entity_data,
@@ -92,14 +93,14 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   }
 
  private:
-  ModelTypeChangeProcessor* other_;
+  raw_ptr<ModelTypeChangeProcessor> other_;
 };
 
 }  // namespace
 
-MockModelTypeChangeProcessor::MockModelTypeChangeProcessor() {}
+MockModelTypeChangeProcessor::MockModelTypeChangeProcessor() = default;
 
-MockModelTypeChangeProcessor::~MockModelTypeChangeProcessor() {}
+MockModelTypeChangeProcessor::~MockModelTypeChangeProcessor() = default;
 
 std::unique_ptr<ModelTypeChangeProcessor>
 MockModelTypeChangeProcessor::CreateForwardingProcessor() {

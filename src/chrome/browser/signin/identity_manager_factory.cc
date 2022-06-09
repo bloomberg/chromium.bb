@@ -19,12 +19,13 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_manager_builder.h"
 #include "components/signin/public/webdata/token_web_data.h"
 #include "content/public/browser/network_service_instance.h"
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -33,14 +34,15 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/account_manager/account_manager_factory.h"
-#include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/account_manager_facade_factory.h"
+#include "chrome/browser/lacros/account_manager/profile_account_manager.h"
+#include "chrome/browser/lacros/account_manager/profile_account_manager_factory.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
 #if defined(OS_WIN)
@@ -57,11 +59,13 @@ IdentityManagerFactory::IdentityManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "IdentityManager",
           BrowserContextDependencyManager::GetInstance()) {
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   DependsOn(WebDataServiceFactory::GetInstance());
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  DependsOn(ProfileAccountManagerFactory::GetInstance());
+#endif
   DependsOn(ChromeSigninClientFactory::GetInstance());
-
   signin::SetIdentityManagerProvider(
       base::BindRepeating([](content::BrowserContext* context) {
         return GetForProfile(Profile::FromBrowserContext(context));
@@ -120,7 +124,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.profile_path = profile->GetPath();
   params.signin_client = ChromeSigninClientFactory::GetForProfile(profile);
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   params.delete_signin_cookies_on_exit =
       signin::SettingsDeleteSigninCookiesOnExit(
           CookieSettingsFactory::GetForProfile(profile).get());
@@ -129,11 +133,6 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto* factory =
-      g_browser_process->platform_part()->GetAccountManagerFactory();
-  DCHECK(factory);
-  params.account_manager =
-      factory->GetAccountManager(profile->GetPath().value());
   params.account_manager_facade =
       GetAccountManagerFacade(profile->GetPath().value());
   params.is_regular_profile =
@@ -141,16 +140,20 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  params.account_manager_facade =
-      GetAccountManagerFacade(profile->GetPath().value());
-  // Lacros runs inside a user session and is not used to render Chrome OS's
-  // Login Screen, or its Lock Screen. Hence, all Profiles in Lacros are regular
-  // Profiles.
-  params.is_regular_profile = true;
-#endif
+  // The system and (original profile of the) guest profiles are not regular.
+  const bool is_regular_profile = profile->IsRegularProfile();
+  const bool use_profile_account_manager =
+      is_regular_profile &&
+      // `ProfileManager` may be null in tests, and is required for account
+      // consistency.
+      g_browser_process->profile_manager();
 
-  // Ephemeral Guest profiles are not supposed to fetch Dice access tokens.
-  params.allow_access_token_fetch = !profile->IsEphemeralGuestProfile();
+  params.account_manager_facade =
+      use_profile_account_manager
+          ? ProfileAccountManagerFactory::GetForProfile(profile)
+          : GetAccountManagerFacade(profile->GetPath().value());
+  params.is_regular_profile = is_regular_profile;
+#endif
 
 #if defined(OS_WIN)
   params.reauth_callback =

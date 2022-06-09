@@ -29,6 +29,10 @@ class ServiceContext;
 class AssistantSettingsImpl : public AssistantSettings {
  public:
   explicit AssistantSettingsImpl(ServiceContext* context);
+
+  AssistantSettingsImpl(const AssistantSettingsImpl&) = delete;
+  AssistantSettingsImpl& operator=(const AssistantSettingsImpl&) = delete;
+
   ~AssistantSettingsImpl() override;
 
   void Initialize(
@@ -40,6 +44,8 @@ class AssistantSettingsImpl : public AssistantSettings {
   // AssistantSettings overrides:
   void GetSettings(const std::string& selector,
                    GetSettingsCallback callback) override;
+  void GetSettingsWithHeader(const std::string& selector,
+                             GetSettingsCallback callback) override;
   void UpdateSettings(const std::string& update,
                       UpdateSettingsCallback callback) override;
   void StartSpeakerIdEnrollment(
@@ -68,8 +74,6 @@ class AssistantSettingsImpl : public AssistantSettings {
       speaker_id_enrollment_remote_;
 
   base::WeakPtrFactory<AssistantSettingsImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantSettingsImpl);
 };
 
 }  // namespace assistant

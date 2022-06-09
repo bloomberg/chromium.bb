@@ -4,14 +4,17 @@
 
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
 
+#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/ash/child_accounts/child_status_reporting_service_factory.h"
@@ -19,31 +22,36 @@
 #include "chrome/browser/ash/child_accounts/family_user_metrics_service_factory.h"
 #include "chrome/browser/ash/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
 #include "chrome/browser/ash/login/startup_utils.h"
+#include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
+#include "chrome/browser/ash/policy/reporting/app_install_event_log_manager_wrapper.h"
+#include "chrome/browser/ash/policy/reporting/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
-#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
-#include "chrome/browser/chromeos/policy/extension_install_event_log_manager_wrapper.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
-#include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/net/nss_service.h"
+#include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
+#include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/pciguard/pciguard_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
@@ -78,9 +86,26 @@ UserSessionInitializer::RlzInitParams CollectRlzParams() {
 }
 #endif
 
-// Callback to GetNSSCertDatabaseForProfile. It passes the user-specific NSS
-// database to NetworkCertLoader. It must be called for primary user only.
-void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
+void GetCertDBOnIOThread(
+    NssCertDatabaseGetter database_getter,
+    base::OnceCallback<void(net::NSSCertDatabase*)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
+  net::NSSCertDatabase* cert_db =
+      std::move(database_getter).Run(std::move(split_callback.first));
+  if (cert_db)
+    std::move(split_callback.second).Run(cert_db);
+}
+
+// Configures the NetworkCertLoader for the primary user. This method is
+// unsafe to call multiple times (e.g. for non-primary users).
+// Note: This unsafely grabs a persistent pointer to the `NssService`'s
+// `NSSCertDatabase` outside of the IO thread, and the `NSSCertDatabase`
+// will be invalidated once the associated profile is shut down.
+// TODO(https://crbug.com/1186373): Provide better lifetime guarantees and
+// pass the Getter to the NetworkCertLoader.
+void OnGotNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
   if (!NetworkCertLoader::IsInitialized())
     return;
 
@@ -177,12 +202,22 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
 }
 
 void UserSessionInitializer::InitializeCerts(Profile* profile) {
-  // Now that the user profile has been initialized
-  // `GetNSSCertDatabaseForProfile` is safe to be used.
+  // Now that the user profile has been initialized, the NSS database can
+  // be used.
   if (NetworkCertLoader::IsInitialized() &&
       base::SysInfo::IsRunningOnChromeOS()) {
-    GetNSSCertDatabaseForProfile(profile,
-                                 base::BindOnce(&OnGetNSSCertDatabaseForUser));
+    // Note: This unsafely grabs a persistent reference to the `NssService`'s
+    // `NSSCertDatabase`, which may be invalidated once `profile` is shut down.
+    // TODO(https://crbug.com/1186373): Provide better lifetime guarantees and
+    // pass the `NssCertDatabaseGetter` to the `NetworkCertLoader`.
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &GetCertDBOnIOThread,
+            NssServiceFactory::GetForContext(profile)
+                ->CreateNSSCertDatabaseGetterForIOThread(),
+            base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+                               base::BindOnce(&OnGotNSSCertDatabaseForUser))));
   }
 }
 
@@ -240,6 +275,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   // Ensure that the `HoldingSpaceKeyedService` for `profile` is created.
   HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
 
+  // Ensure that the `CalendarKeyedService` for `profile` is created. It is
+  // created one per user in a multiprofile session.
+  CalendarKeyedServiceFactory::GetInstance()->GetService(profile);
+
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
 
@@ -255,13 +294,14 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
     VmCameraMicManager::Get()->OnPrimaryUserSessionStarted(primary_profile_);
 
-    bool pcie_tunneling_allowed = false;
-    CrosSettings::Get()->GetBoolean(
-        chromeos::kDevicePeripheralDataAccessEnabled, &pcie_tunneling_allowed);
     // Pciguard can only be set by non-guest, primary users. By default,
     // Pciguard is turned on.
+    if (PciePeripheralManager::IsInitialized()) {
+      PciePeripheralManager::Get()->SetPcieTunnelingAllowedState(
+          chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
+    }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(
-        pcie_tunneling_allowed);
+        chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
 
     if (features::IsInputNoiseCancellationUiEnabled()) {
       chromeos::CrasAudioClient::Get()->GetNoiseCancellationSupported(
@@ -270,8 +310,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   }
 }
 
-void UserSessionInitializer::PreStartSession() {
-  NetworkCertLoader::Get()->MarkUserNSSDBWillBeInitialized();
+void UserSessionInitializer::PreStartSession(bool is_primary_session) {
+  if (is_primary_session) {
+    NetworkCertLoader::Get()->MarkUserNSSDBWillBeInitialized();
+  }
 }
 
 void UserSessionInitializer::InitRlzImpl(Profile* profile,
@@ -315,8 +357,8 @@ void UserSessionInitializer::InitRlzImpl(Profile* profile,
   // Negative ping delay means to send ping immediately after a first search is
   // recorded.
   bool send_ping_immediately = ping_delay < 0;
-  base::TimeDelta delay = base::TimeDelta::FromSeconds(abs(ping_delay)) -
-                          params.time_since_oobe_completion;
+  base::TimeDelta delay =
+      base::Seconds(abs(ping_delay)) - params.time_since_oobe_completion;
   rlz::RLZTracker::SetRlzDelegate(
       base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(

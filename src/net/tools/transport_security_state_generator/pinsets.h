@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/transport_security_state_generator/cert_util.h"
 #include "net/tools/transport_security_state_generator/pinset.h"
@@ -27,6 +26,10 @@ using PinsetMap = std::map<std::string, std::unique_ptr<Pinset>>;
 class Pinsets {
  public:
   Pinsets();
+
+  Pinsets(const Pinsets&) = delete;
+  Pinsets& operator=(const Pinsets&) = delete;
+
   ~Pinsets();
 
   void RegisterSPKIHash(base::StringPiece name, const SPKIHash& hash);
@@ -44,8 +47,6 @@ class Pinsets {
 
   // Contains all pinsets in the input JSON file.
   PinsetMap pinsets_;
-
-  DISALLOW_COPY_AND_ASSIGN(Pinsets);
 };
 
 }  // namespace transport_security_state

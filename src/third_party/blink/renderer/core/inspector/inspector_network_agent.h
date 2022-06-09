@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Network.h"
+#include "third_party/blink/renderer/core/inspector/protocol/network.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -175,10 +175,11 @@ class CORE_EXPORT InspectorNetworkAgent final
                                 ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
 
-  void DidCreateWebSocket(ExecutionContext*,
-                          uint64_t identifier,
-                          const KURL& request_url,
-                          const String&);
+  void WillCreateWebSocket(ExecutionContext*,
+                           uint64_t identifier,
+                           const KURL& request_url,
+                           const String&,
+                           absl::optional<base::UnguessableToken>*);
   void WillSendWebSocketHandshakeRequest(
       ExecutionContext*,
       uint64_t identifier,
@@ -241,8 +242,6 @@ class CORE_EXPORT InspectorNetworkAgent final
       Maybe<String> connection_type) override;
   protocol::Response setCacheDisabled(bool) override;
   protocol::Response setBypassServiceWorker(bool) override;
-  protocol::Response setDataSizeLimitsForTest(int max_total_size,
-                                              int max_resource_size) override;
   protocol::Response getCertificate(
       const String& origin,
       std::unique_ptr<protocol::Array<String>>* certificate) override;

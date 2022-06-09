@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_context_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_timestamp.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_audiocontextlatencycategory_double.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -32,7 +34,7 @@
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -103,18 +105,22 @@ AudioContext* AudioContext::Create(Document& document,
       WebFeature::kAudioContextCrossOriginIframe);
 
   WebAudioLatencyHint latency_hint(WebAudioLatencyHint::kCategoryInteractive);
-  if (context_options->latencyHint().IsAudioContextLatencyCategory()) {
-    latency_hint = WebAudioLatencyHint(
-        context_options->latencyHint().GetAsAudioContextLatencyCategory());
-  } else if (context_options->latencyHint().IsDouble()) {
-    // This should be the requested output latency in seconds, without taking
-    // into account double buffering (same as baseLatency).
-    latency_hint =
-        WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
+  switch (context_options->latencyHint()->GetContentType()) {
+    case V8UnionAudioContextLatencyCategoryOrDouble::ContentType::
+        kAudioContextLatencyCategory:
+      latency_hint =
+          WebAudioLatencyHint(context_options->latencyHint()
+                                  ->GetAsAudioContextLatencyCategory()
+                                  .AsString());
+      break;
+    case V8UnionAudioContextLatencyCategoryOrDouble::ContentType::kDouble:
+      // This should be the requested output latency in seconds, without taking
+      // into account double buffering (same as baseLatency).
+      latency_hint =
+          WebAudioLatencyHint(context_options->latencyHint()->GetAsDouble());
 
-    base::UmaHistogramTimes(
-        "WebAudio.AudioContext.latencyHintMilliSeconds",
-        base::TimeDelta::FromSecondsD(latency_hint.Seconds()));
+      base::UmaHistogramTimes("WebAudio.AudioContext.latencyHintMilliSeconds",
+                              base::Seconds(latency_hint.Seconds()));
   }
 
   base::UmaHistogramEnumeration(
@@ -140,6 +146,7 @@ AudioContext* AudioContext::Create(Document& document,
     return nullptr;
   }
 
+  SCOPED_UMA_HISTOGRAM_TIMER("WebAudio.AudioContext.CreateTime");
   AudioContext* audio_context =
       MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
   ++g_hardware_context_count;
@@ -176,8 +183,7 @@ AudioContext::AudioContext(Document& document,
                            absl::optional<float> sample_rate)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++),
-      audio_context_manager_(document.GetExecutionContext()),
-      keep_alive_(PERSISTENT_FROM_HERE, this) {
+      audio_context_manager_(document.GetExecutionContext()) {
   SendLogMessage(GetAudioContextLogString(latency_hint, sample_rate));
   destination_node_ =
       RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);
@@ -281,7 +287,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (IsContextClosed()) {
+  if (IsContextCleared()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "cannot resume a closed AudioContext");
     return ScriptPromise();
@@ -363,7 +369,7 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
   }
 
   double performance_time = performance->MonotonicTimeToDOMHighResTimeStamp(
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(position.timestamp));
+      base::TimeTicks() + base::Seconds(position.timestamp));
   if (performance_time < 0.0)
     performance_time = 0.0;
 
@@ -374,7 +380,7 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
 
 ScriptPromise AudioContext::closeContext(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  if (IsContextClosed()) {
+  if (IsContextCleared()) {
     // We've already closed the context previously, but it hasn't yet been
     // resolved, so just throw a DOM exception to trigger a promise rejection
     // and return an empty promise.
@@ -406,8 +412,8 @@ void AudioContext::DidClose() {
     close_resolver_->Resolve();
 }
 
-bool AudioContext::IsContextClosed() const {
-  return close_resolver_ || BaseAudioContext::IsContextClosed();
+bool AudioContext::IsContextCleared() const {
+  return close_resolver_ || BaseAudioContext::IsContextCleared();
 }
 
 void AudioContext::StartRendering() {

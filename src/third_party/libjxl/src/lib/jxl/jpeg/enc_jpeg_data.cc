@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "lib/jxl/jpeg/enc_jpeg_data.h"
 
@@ -176,22 +167,6 @@ Status ParseChunkedMarker(const jpeg::JPEGData& src, uint8_t marker_type,
   return true;
 }
 
-Status SetColorEncodingFromJpegData(const jpeg::JPEGData& jpg,
-                                    ColorEncoding* color_encoding) {
-  PaddedBytes icc_profile;
-  if (!ParseChunkedMarker(jpg, kApp2, ByteSpan(kIccProfileTag), &icc_profile)) {
-    JXL_WARNING("ReJPEG: corrupted ICC profile\n");
-    icc_profile.clear();
-  }
-
-  if (icc_profile.empty()) {
-    bool is_gray = (jpg.components.size() == 1);
-    *color_encoding = ColorEncoding::SRGB(is_gray);
-    return true;
-  }
-
-  return color_encoding->SetICC(std::move(icc_profile));
-}
 Status SetBlobsFromJpegData(const jpeg::JPEGData& jpeg_data, Blobs* blobs) {
   for (size_t i = 0; i < jpeg_data.app_data.size(); i++) {
     auto& marker = jpeg_data.app_data[i];
@@ -232,6 +207,23 @@ Status SetBlobsFromJpegData(const jpeg::JPEGData& jpeg_data, Blobs* blobs) {
 }
 
 }  // namespace
+
+Status SetColorEncodingFromJpegData(const jpeg::JPEGData& jpg,
+                                    ColorEncoding* color_encoding) {
+  PaddedBytes icc_profile;
+  if (!ParseChunkedMarker(jpg, kApp2, ByteSpan(kIccProfileTag), &icc_profile)) {
+    JXL_WARNING("ReJPEG: corrupted ICC profile\n");
+    icc_profile.clear();
+  }
+
+  if (icc_profile.empty()) {
+    bool is_gray = (jpg.components.size() == 1);
+    *color_encoding = ColorEncoding::SRGB(is_gray);
+    return true;
+  }
+
+  return color_encoding->SetICC(std::move(icc_profile));
+}
 
 Status EncodeJPEGData(JPEGData& jpeg_data, PaddedBytes* bytes) {
   jpeg_data.app_marker_type.resize(jpeg_data.app_data.size(),
@@ -363,7 +355,7 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, CodecInOut* io) {
 
   io->Main().chroma_subsampling = cs;
   io->Main().color_transform =
-      !is_rgb ? ColorTransform::kYCbCr : ColorTransform::kNone;
+      (!is_rgb || nbcomp == 1) ? ColorTransform::kYCbCr : ColorTransform::kNone;
 
   io->metadata.m.SetIntensityTarget(
       io->target_nits != 0 ? io->target_nits : kDefaultIntensityTarget);

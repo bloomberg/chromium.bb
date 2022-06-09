@@ -27,28 +27,28 @@ QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() =
     default;
 
 void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "startFetch", base::BindRepeating(
                         &QueryTilesInternalsUIMessageHandler::HandleStartFetch,
                         base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "purgeDb",
       base::BindRepeating(&QueryTilesInternalsUIMessageHandler::HandlePurgeDb,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getServiceStatus",
       base::BindRepeating(
           &QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus,
           weak_ptr_factory_.GetWeakPtr()));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getTileData",
       base::BindRepeating(
           &QueryTilesInternalsUIMessageHandler::HandleGetTileData,
           weak_ptr_factory_.GetWeakPtr()));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "setServerUrl",
       base::BindRepeating(
           &QueryTilesInternalsUIMessageHandler::HandleSetServerUrl,
@@ -58,20 +58,16 @@ void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
 void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  auto result = args->Get(0, &callback_id);
-  DCHECK(result);
-  ResolveJavascriptCallback(*callback_id,
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id,
                             tile_service_->GetLogger()->GetTileData());
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  auto result = args->Get(0, &callback_id);
-  DCHECK(result);
-  ResolveJavascriptCallback(*callback_id,
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(callback_id,
                             tile_service_->GetLogger()->GetServiceStatus());
 }
 

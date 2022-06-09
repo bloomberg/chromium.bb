@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/cc/saved_model/loader.h"
-
 #include "tensorflow/cc/saved_model/constants.h"
+#include "tensorflow/cc/saved_model/loader.h"
+#include "tensorflow/cc/saved_model/metrics.h"
+#include "tensorflow/cc/saved_model/reader.h"
 #include "tensorflow/cc/saved_model/signature_constants.h"
 #include "tensorflow/cc/saved_model/tag_constants.h"
 #include "tensorflow/core/example/example.pb.h"
@@ -26,6 +27,7 @@ limitations under the License.
 #include "tensorflow/core/lib/io/path.h"
 #include "tensorflow/core/lib/strings/str_util.h"
 #include "tensorflow/core/platform/test.h"
+#include "tensorflow/core/protobuf/meta_graph.pb.h"
 
 namespace tensorflow {
 namespace {
@@ -44,6 +46,10 @@ constexpr char kTestFuzzGeneratedNegativeShape[] =
     "cc/saved_model/testdata/fuzz_generated/negative_shape";
 constexpr char kTestFuzzGeneratedConstWithNoValue[] =
     "cc/saved_model/testdata/fuzz_generated/const_with_no_value";
+constexpr char kTestFuzzGeneratedBadNodeAttr[] =
+    "cc/saved_model/testdata/fuzz_generated/bad_node_attr";
+constexpr char kTestCyclicModule[] = "cc/saved_model/testdata/CyclicModule";
+constexpr char kTestSimpleV1Model[] = "cc/saved_model/testdata/SimpleV1Model";
 
 class LoaderTest : public ::testing::Test {
  protected:
@@ -129,6 +135,43 @@ TEST_F(LoaderTest, TagMatch) {
   TF_ASSERT_OK(LoadSavedModel(session_options, run_options, export_dir,
                               {kSavedModelTagServe}, &bundle));
   CheckSavedModelBundle(export_dir, bundle);
+}
+
+TEST_F(LoaderTest, ReadMetaGraphFromSavedModel) {
+  SavedModelBundle bundle;
+  SessionOptions session_options;
+  RunOptions run_options;
+
+  const string export_dir =
+      io::JoinPath(testing::TensorFlowSrcRoot(), kTestDataSharded);
+  TF_ASSERT_OK(LoadSavedModel(session_options, run_options, export_dir,
+                              {kSavedModelTagServe}, &bundle));
+  MetaGraphDef actual_metagraph;
+  TF_ASSERT_OK(ReadMetaGraphDefFromSavedModel(export_dir, {kSavedModelTagServe},
+                                              &actual_metagraph));
+  EXPECT_EQ(actual_metagraph.DebugString(),
+            bundle.meta_graph_def.DebugString());
+}
+
+TEST_F(LoaderTest, RestoreSession) {
+  SavedModelBundle bundle;
+  SessionOptions session_options;
+  RunOptions run_options;
+
+  const string export_dir =
+      io::JoinPath(testing::TensorFlowSrcRoot(), kTestDataSharded);
+  TF_ASSERT_OK(LoadSavedModel(session_options, run_options, export_dir,
+                              {kSavedModelTagServe}, &bundle));
+
+  SavedModelBundle actual_bundle;
+  const std::unordered_set<std::string> tags = {kSavedModelTagServe};
+  TF_ASSERT_OK(ReadMetaGraphDefFromSavedModel(export_dir, tags,
+                                              &actual_bundle.meta_graph_def));
+  TF_ASSERT_OK(LoadMetagraphIntoSession(
+      session_options, actual_bundle.meta_graph_def, &actual_bundle.session));
+  TF_ASSERT_OK(RestoreSession(run_options, actual_bundle.meta_graph_def,
+                              export_dir, &actual_bundle.session));
+  CheckSavedModelBundle(export_dir, actual_bundle);
 }
 
 TEST_F(LoaderTest, NoTagMatch) {
@@ -270,6 +313,9 @@ TEST_F(LoaderTest, NegativeShapeDimension) {
   Status st = LoadSavedModel(session_options, run_options, export_dir,
                              {kSavedModelTagServe}, &bundle);
   EXPECT_FALSE(st.ok());
+  EXPECT_NE(
+      st.error_message().find("initializes from a tensor with -1 elements"),
+      std::string::npos);
 }
 
 TEST_F(LoaderTest, ConstNoValue) {
@@ -282,6 +328,61 @@ TEST_F(LoaderTest, ConstNoValue) {
   Status st = LoadSavedModel(session_options, run_options, export_dir,
                              {kSavedModelTagServe}, &bundle);
   EXPECT_FALSE(st.ok());
+  EXPECT_NE(
+      st.error_message().find("constant tensor but no value has been provided"),
+      std::string::npos);
+}
+
+TEST_F(LoaderTest, BadNodeAttr) {
+  SavedModelBundle bundle;
+  RunOptions run_options;
+  SessionOptions session_options;
+
+  const string export_dir =
+      io::JoinPath(testing::TensorFlowSrcRoot(), kTestFuzzGeneratedBadNodeAttr);
+  Status st = LoadSavedModel(session_options, run_options, export_dir,
+                             {kSavedModelTagServe}, &bundle);
+  EXPECT_FALSE(st.ok());
+  EXPECT_NE(
+      st.error_message().find("constant tensor but no value has been provided"),
+      std::string::npos);
+}
+
+TEST_F(LoaderTest, UpdateMetricsV2) {
+  SavedModelBundle bundle;
+  SessionOptions session_options;
+  RunOptions run_options;
+  const string kCCLoadLabel = "cc_load";
+
+  const int read_count_v2 = metrics::SavedModelRead("2").value();
+  const int api_count = metrics::SavedModelReadApi(kCCLoadLabel).value();
+  const string export_dir =
+      io::JoinPath(testing::TensorFlowSrcRoot(), kTestCyclicModule);
+  TF_ASSERT_OK(LoadSavedModel(session_options, run_options, export_dir,
+                              {kSavedModelTagServe}, &bundle));
+
+  EXPECT_EQ(metrics::SavedModelRead("2").value(), read_count_v2 + 1);
+  EXPECT_EQ(metrics::SavedModelReadApi(kCCLoadLabel).value(), api_count + 1);
+}
+
+TEST_F(LoaderTest, UpdateMetricsV1) {
+  SavedModelBundle bundle;
+  SessionOptions session_options;
+  RunOptions run_options;
+  const string kCCLoadLabel = "cc_load";
+
+  const int read_count_v1 = metrics::SavedModelRead("1").value();
+  const int read_count_v2 = metrics::SavedModelRead("2").value();
+
+  const int api_count = metrics::SavedModelReadApi(kCCLoadLabel).value();
+  const string export_dir =
+      io::JoinPath(testing::TensorFlowSrcRoot(), kTestSimpleV1Model);
+  TF_ASSERT_OK(LoadSavedModel(session_options, run_options, export_dir,
+                              {kSavedModelTagServe}, &bundle));
+
+  EXPECT_EQ(metrics::SavedModelRead("1").value(), read_count_v1 + 1);
+  EXPECT_EQ(metrics::SavedModelRead("2").value(), read_count_v2);
+  EXPECT_EQ(metrics::SavedModelReadApi(kCCLoadLabel).value(), api_count + 1);
 }
 
 }  // namespace

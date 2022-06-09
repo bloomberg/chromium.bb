@@ -6,7 +6,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "include/v8.h"
+#include "include/libplatform/libplatform.h"
+#include "include/v8-context.h"
+#include "include/v8-exception.h"
+#include "include/v8-isolate.h"
+#include "include/v8-local-handle.h"
 #include "src/execution/isolate-inl.h"
 #include "src/heap/factory.h"
 #include "src/objects/objects-inl.h"
@@ -54,7 +58,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   i::Handle<i::WasmModuleObject> module_object;
   auto enabled_features = i::wasm::WasmFeatures::FromIsolate(i_isolate);
   bool compiles =
-      i_isolate->wasm_engine()
+      i::wasm::GetWasmEngine()
           ->SyncCompile(i_isolate, enabled_features, &thrower, wire_bytes)
           .ToHandle(&module_object);
 

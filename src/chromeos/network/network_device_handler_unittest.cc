@@ -4,11 +4,13 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,6 +22,7 @@
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -41,6 +44,10 @@ class NetworkDeviceHandlerTest : public testing::Test {
   NetworkDeviceHandlerTest()
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
+
+  NetworkDeviceHandlerTest(const NetworkDeviceHandlerTest&) = delete;
+  NetworkDeviceHandlerTest& operator=(const NetworkDeviceHandlerTest&) = delete;
+
   ~NetworkDeviceHandlerTest() override = default;
 
   void SetUp() override {
@@ -61,7 +68,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
     device_test->AddDevice(kDefaultWifiDevicePath, shill::kTypeWifi, "wifi1");
 
     base::ListValue test_ip_configs;
-    test_ip_configs.AppendString("ip_config1");
+    test_ip_configs.Append("ip_config1");
     device_test->SetDeviceProperty(kDefaultWifiDevicePath,
                                    shill::kIPConfigsProperty, test_ip_configs,
                                    /*notify_changed=*/true);
@@ -124,10 +131,9 @@ class NetworkDeviceHandlerTest : public testing::Test {
                             const std::string& property_name,
                             const std::string& expected_value) {
     GetDeviceProperties(device_path, kResultSuccess);
-    std::string value;
-    ASSERT_TRUE(
-        properties_->GetStringWithoutPathExpansion(property_name, &value));
-    ASSERT_EQ(value, expected_value);
+    std::string* value = properties_->FindStringKey(property_name);
+    ASSERT_NE(value, nullptr);
+    ASSERT_EQ(*value, expected_value);
   }
 
  protected:
@@ -137,9 +143,6 @@ class NetworkDeviceHandlerTest : public testing::Test {
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<base::DictionaryValue> properties_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerTest);
 };
 
 TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
@@ -161,10 +164,10 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   // GetDeviceProperties should return the value set by SetDeviceProperty.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  int interval = 0;
-  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
-      shill::kScanIntervalProperty, &interval));
-  EXPECT_EQ(1, interval);
+  absl::optional<int> interval =
+      properties_->FindIntKey(shill::kScanIntervalProperty);
+  EXPECT_TRUE(interval.has_value());
+  EXPECT_EQ(1, interval.value());
 
   // Repeat the same with value false.
   network_device_handler_->SetDeviceProperty(
@@ -175,9 +178,9 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
 
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
-      shill::kScanIntervalProperty, &interval));
-  EXPECT_EQ(2, interval);
+  interval = properties_->FindIntKey(shill::kScanIntervalProperty);
+  EXPECT_TRUE(interval.has_value());
+  EXPECT_EQ(2, interval.value());
 
   // Set property on an invalid path.
   network_device_handler_->SetDeviceProperty(
@@ -189,40 +192,38 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
   // Setting a owner-protected device property through SetDeviceProperty must
   // fail.
   network_device_handler_->SetDeviceProperty(
-      kDefaultCellularDevicePath, shill::kCellularAllowRoamingProperty,
+      kDefaultCellularDevicePath, shill::kCellularPolicyAllowRoamingProperty,
       base::Value(true), GetSuccessCallback(), GetErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(kResultSuccess, result_);
 }
 
 TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
-  // Start with disabled data roaming.
   ShillDeviceClient::TestInterface* device_test =
       fake_device_client_->GetTestInterface();
   device_test->SetDeviceProperty(kDefaultCellularDevicePath,
-                                 shill::kCellularAllowRoamingProperty,
+                                 shill::kCellularPolicyAllowRoamingProperty,
                                  base::Value(false), /*notify_changed=*/true);
 
-  network_device_handler_->SetCellularAllowRoaming(true);
+  network_device_handler_->SetCellularPolicyAllowRoaming(true);
   base::RunLoop().RunUntilIdle();
 
-  // Roaming should be enabled now.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  bool allow_roaming;
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_TRUE(allow_roaming);
+  absl::optional<bool> policy_allow_roaming =
+      properties_->FindBoolKey(shill::kCellularPolicyAllowRoamingProperty);
+  EXPECT_TRUE(policy_allow_roaming.has_value());
+  EXPECT_TRUE(policy_allow_roaming.value());
 
-  network_device_handler_->SetCellularAllowRoaming(false);
+  network_device_handler_->SetCellularPolicyAllowRoaming(false);
   base::RunLoop().RunUntilIdle();
 
-  // Roaming should be disable again.
   GetDeviceProperties(kDefaultCellularDevicePath, kResultSuccess);
 
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_FALSE(allow_roaming);
+  policy_allow_roaming =
+      properties_->FindBoolKey(shill::kCellularPolicyAllowRoamingProperty);
+  EXPECT_TRUE(policy_allow_roaming.has_value());
+  EXPECT_FALSE(policy_allow_roaming.value());
 }
 
 TEST_F(NetworkDeviceHandlerTest,

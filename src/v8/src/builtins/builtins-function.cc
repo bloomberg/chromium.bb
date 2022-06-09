@@ -47,7 +47,7 @@ MaybeHandle<Object> CreateDynamicFunction(Isolate* isolate,
     IncrementalStringBuilder builder(isolate);
     builder.AppendCharacter('(');
     builder.AppendCString(token);
-    builder.AppendCString(" anonymous(");
+    builder.AppendCStringLiteral(" anonymous(");
     if (argc > 1) {
       for (int i = 1; i < argc; ++i) {
         if (i > 1) builder.AppendCharacter(',');
@@ -60,14 +60,14 @@ MaybeHandle<Object> CreateDynamicFunction(Isolate* isolate,
     }
     builder.AppendCharacter('\n');
     parameters_end_pos = builder.Length();
-    builder.AppendCString(") {\n");
+    builder.AppendCStringLiteral(") {\n");
     if (argc > 0) {
       Handle<String> body;
       ASSIGN_RETURN_ON_EXCEPTION(
           isolate, body, Object::ToString(isolate, args.at(argc)), Object);
       builder.AppendString(body);
     }
-    builder.AppendCString("\n})");
+    builder.AppendCStringLiteral("\n})");
     ASSIGN_RETURN_ON_EXCEPTION(isolate, source, builder.Finish(), Object);
   }
 
@@ -195,7 +195,7 @@ Object DoFunctionBind(Isolate* isolate, BuiltinArguments args) {
   // Allocate the bound function with the given {this_arg} and {args}.
   Handle<JSReceiver> target = args.at<JSReceiver>(0);
   Handle<Object> this_arg = isolate->factory()->undefined_value();
-  ScopedVector<Handle<Object>> argv(std::max(0, args.length() - 2));
+  base::ScopedVector<Handle<Object>> argv(std::max(0, args.length() - 2));
   if (args.length() > 1) {
     this_arg = args.at(1);
     for (int i = 2; i < args.length(); ++i) {

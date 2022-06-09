@@ -17,7 +17,7 @@
 #include "chrome/browser/permissions/abusive_origin_permission_revocation_request.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_actions_history.h"
+#include "chrome/browser/permissions/permission_actions_history_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/prediction_based_permission_ui_selector.h"
@@ -34,6 +34,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/permissions/contexts/bluetooth_chooser_context.h"
 #include "components/permissions/features.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/request_type.h"
 #include "components/prefs/pref_service.h"
 #include "components/site_engagement/content/site_engagement_service.h"
@@ -48,8 +49,12 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
+#include "chrome/browser/permissions/notification_blocked_message_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/permissions/permission_update_message_controller_android.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/messages/android/messages_feature.h"
+#include "components/permissions/permission_request_manager.h"
 #else
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
@@ -61,6 +66,20 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
+
+namespace {
+
+#if defined(OS_ANDROID)
+bool ShouldUseQuietUI(content::WebContents* web_contents,
+                      ContentSettingsType type) {
+  auto* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
+  return type == ContentSettingsType::NOTIFICATIONS &&
+         manager->ShouldCurrentRequestUseQuietUI();
+}
+#endif
+
+}  // namespace
 
 // static
 ChromePermissionsClient* ChromePermissionsClient::GetInstance() {
@@ -105,6 +124,13 @@ ChromePermissionsClient::GetChooserContext(
       NOTREACHED();
       return nullptr;
   }
+}
+
+permissions::PermissionActionsHistory*
+ChromePermissionsClient::GetPermissionActionsHistory(
+    content::BrowserContext* browser_context) {
+  return PermissionActionsHistoryFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
 }
 
 permissions::PermissionDecisionAutoBlocker*
@@ -223,11 +249,12 @@ void ChromePermissionsClient::OnPromptResolved(
     permissions::RequestType request_type,
     permissions::PermissionAction action,
     const GURL& origin,
+    permissions::PermissionPromptDisposition prompt_disposition,
     absl::optional<QuietUiReason> quiet_ui_reason) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
 
-  PermissionActionsHistory::GetForProfile(profile)->RecordAction(action,
-                                                                 request_type);
+  PermissionActionsHistoryFactory::GetForProfile(profile)->RecordAction(
+      action, request_type, prompt_disposition);
 
   if (request_type == permissions::RequestType::kNotifications) {
     AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile)
@@ -294,18 +321,22 @@ bool ChromePermissionsClient::CanBypassEmbeddingOriginCheck(
   // origin may be the Default Search Engine origin. Extensions are also
   // excluded as currently they can request permission from iframes when
   // embedded in non-secure contexts (https://crbug.com/530507).
-  return embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
+  return embedding_origin ==
+             GURL(chrome::kChromeUINewTabURL).DeprecatedGetOriginAsURL() ||
+         embedding_origin ==
+             GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL() ||
          requesting_origin.SchemeIs(extensions::kExtensionScheme);
 }
 
 absl::optional<GURL> ChromePermissionsClient::OverrideCanonicalOrigin(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  if (embedding_origin.GetOrigin() ==
-      GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
-    if (requesting_origin.GetOrigin() ==
-        GURL(chrome::kChromeUINewTabPageURL).GetOrigin()) {
-      return GURL(UIThreadSearchTermsData().GoogleBaseURLValue()).GetOrigin();
+  if (embedding_origin.DeprecatedGetOriginAsURL() ==
+      GURL(chrome::kChromeUINewTabURL).DeprecatedGetOriginAsURL()) {
+    if (requesting_origin.DeprecatedGetOriginAsURL() ==
+        GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL()) {
+      return GURL(UIThreadSearchTermsData().GoogleBaseURLValue())
+          .DeprecatedGetOriginAsURL();
     }
     return requesting_origin;
   }
@@ -321,6 +352,15 @@ absl::optional<GURL> ChromePermissionsClient::OverrideCanonicalOrigin(
   return absl::nullopt;
 }
 
+bool ChromePermissionsClient::DoOriginsMatchNewTabPage(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  return embedding_origin ==
+             GURL(chrome::kChromeUINewTabURL).DeprecatedGetOriginAsURL() &&
+         requesting_origin ==
+             GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL();
+}
+
 #if defined(OS_ANDROID)
 bool ChromePermissionsClient::IsPermissionControlledByDse(
     content::BrowserContext* browser_context,
@@ -330,6 +370,14 @@ bool ChromePermissionsClient::IsPermissionControlledByDse(
       SearchPermissionsService::Factory::GetForBrowserContext(browser_context);
   return search_helper &&
          search_helper->IsPermissionControlledByDSE(type, origin);
+}
+
+bool ChromePermissionsClient::IsDseOrigin(
+    content::BrowserContext* browser_context,
+    const url::Origin& origin) {
+  SearchPermissionsService* search_helper =
+      SearchPermissionsService::Factory::GetForBrowserContext(browser_context);
+  return search_helper && search_helper->IsDseOrigin(origin);
 }
 
 bool ChromePermissionsClient::ResetPermissionIfControlledByDse(
@@ -357,21 +405,42 @@ infobars::InfoBar* ChromePermissionsClient::MaybeCreateInfoBar(
     base::WeakPtr<permissions::PermissionPromptAndroid> prompt) {
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents);
-  if (infobar_manager &&
-      GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(web_contents,
-                                                              type)) {
+  if (infobar_manager && ShouldUseQuietUI(web_contents, type)) {
     return GroupedPermissionInfoBarDelegate::Create(std::move(prompt),
                                                     infobar_manager);
   }
   return nullptr;
 }
 
+std::unique_ptr<ChromePermissionsClient::PermissionMessageDelegate>
+ChromePermissionsClient::MaybeCreateMessageUI(
+    content::WebContents* web_contents,
+    ContentSettingsType type,
+    base::WeakPtr<permissions::PermissionPromptAndroid> prompt) {
+  if (messages::IsNotificationBlockedMessagesUiEnabled() &&
+      ShouldUseQuietUI(web_contents, type)) {
+    auto delegate =
+        std::make_unique<NotificationBlockedMessageDelegate::Delegate>(
+            std::move(prompt));
+    return std::make_unique<NotificationBlockedMessageDelegate>(
+        web_contents, std::move(delegate));
+  }
+
+  return {};
+}
+
 void ChromePermissionsClient::RepromptForAndroidPermissions(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types,
     PermissionsUpdatedCallback callback) {
-  PermissionUpdateInfoBarDelegate::Create(web_contents, content_settings_types,
-                                          std::move(callback));
+  if (messages::IsPermissionUpdateMessagesUiEnabled()) {
+    PermissionUpdateMessageController::CreateForWebContents(web_contents);
+    PermissionUpdateMessageController::FromWebContents(web_contents)
+        ->ShowMessage(content_settings_types, std::move(callback));
+  } else {
+    PermissionUpdateInfoBarDelegate::Create(
+        web_contents, content_settings_types, std::move(callback));
+  }
 }
 
 int ChromePermissionsClient::MapToJavaDrawableId(int resource_id) {

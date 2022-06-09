@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "remoting/protocol/input_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -25,6 +25,10 @@ class InputEventTracker : public InputStub {
  public:
   InputEventTracker();
   explicit InputEventTracker(InputStub* input_stub);
+
+  InputEventTracker(const InputEventTracker&) = delete;
+  InputEventTracker& operator=(const InputEventTracker&) = delete;
+
   ~InputEventTracker() override;
 
   void set_input_stub(InputStub* input_stub) {
@@ -54,7 +58,7 @@ class InputEventTracker : public InputStub {
   void InjectTouchEvent(const TouchEvent& event) override;
 
  private:
-  InputStub* input_stub_ = nullptr;
+  raw_ptr<InputStub> input_stub_ = nullptr;
 
   std::set<ui::DomCode> pressed_keys_;
 
@@ -62,8 +66,6 @@ class InputEventTracker : public InputStub {
   uint32_t mouse_button_state_ = 0;
 
   std::set<uint32_t> touch_point_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventTracker);
 };
 
 }  // namespace protocol

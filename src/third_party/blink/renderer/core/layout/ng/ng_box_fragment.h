@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_H_
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -19,16 +20,26 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                 const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_direction, physical_fragment) {}
 
+  const NGPhysicalBoxFragment& PhysicalBoxFragment() const {
+    return To<NGPhysicalBoxFragment>(physical_fragment_);
+  }
+
   absl::optional<LayoutUnit> FirstBaseline() const {
     if (writing_direction_.GetWritingMode() !=
         physical_fragment_.Style().GetWritingMode())
       return absl::nullopt;
 
-    return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
+    return PhysicalBoxFragment().Baseline();
   }
 
-  LayoutUnit FirstBaselineOrSynthesize() const {
-    return FirstBaseline().value_or(BlockSize());
+  LayoutUnit FirstBaselineOrSynthesize(FontBaseline baseline_type) const {
+    if (auto first_baseline = FirstBaseline())
+      return *first_baseline;
+
+    if (baseline_type == kAlphabeticBaseline)
+      return BlockSize();
+
+    return BlockSize() / 2;
   }
 
   // Returns the baseline for this fragment wrt. the parent writing mode. Will
@@ -40,15 +51,20 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
         physical_fragment_.Style().GetWritingMode())
       return absl::nullopt;
 
-    if (auto last_baseline =
-            To<NGPhysicalBoxFragment>(physical_fragment_).LastBaseline())
+    if (auto last_baseline = PhysicalBoxFragment().LastBaseline())
       return last_baseline;
 
-    return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
+    return PhysicalBoxFragment().Baseline();
   }
 
-  LayoutUnit BaselineOrSynthesize() const {
-    return Baseline().value_or(BlockSize());
+  LayoutUnit BaselineOrSynthesize(FontBaseline baseline_type) const {
+    if (auto baseline = Baseline())
+      return *baseline;
+
+    if (baseline_type == kAlphabeticBaseline)
+      return BlockSize();
+
+    return BlockSize() / 2;
   }
 
   // Compute baseline metrics (ascent/descent) for this box.
@@ -58,21 +74,17 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   FontHeight BaselineMetrics(const NGLineBoxStrut& margins, FontBaseline) const;
 
   NGBoxStrut Borders() const {
-    const NGPhysicalBoxFragment& physical_box_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
-    return physical_box_fragment.Borders().ConvertToLogical(writing_direction_);
+    return PhysicalBoxFragment().Borders().ConvertToLogical(writing_direction_);
   }
   NGBoxStrut Padding() const {
-    const NGPhysicalBoxFragment& physical_box_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
-    return physical_box_fragment.Padding().ConvertToLogical(writing_direction_);
+    return PhysicalBoxFragment().Padding().ConvertToLogical(writing_direction_);
   }
 
   bool HasDescendantsForTablePart() const {
-    const NGPhysicalBoxFragment& box_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
-    return box_fragment.HasDescendantsForTablePart();
+    return PhysicalBoxFragment().HasDescendantsForTablePart();
   }
+
+  bool HasBlockLayoutOverflow() const;
 };
 
 }  // namespace blink

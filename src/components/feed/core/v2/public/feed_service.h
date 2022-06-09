@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/feed/core/v2/public/feed_api.h"
@@ -72,6 +73,9 @@ class FeedService : public KeyedService {
     virtual void PrefetchImage(const GURL& url) = 0;
     // Register the synthetic field experiments for UMA.
     virtual void RegisterExperiments(const Experiments& experiments) = 0;
+    // Registers a synthetic field trial "FollowingFeedFollowCount".
+    virtual void RegisterFollowingFeedFollowCountFieldTrial(
+        size_t follow_count) = 0;
   };
 
   // Construct a FeedService given an already constructed FeedStream.
@@ -146,7 +150,7 @@ class FeedService : public KeyedService {
       application_status_listener_;
 #endif
   std::unique_ptr<FeedStream> stream_;
-  FeedApi* api_;  // Points to `stream_`, overridden for testing.
+  raw_ptr<FeedApi> api_;  // Points to `stream_`, overridden for testing.
 };
 
 }  // namespace feed

@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
-
 namespace extensions {
 class ScriptContext;
 class TestIPCMessageSender;
@@ -23,6 +21,10 @@ class SendMessageTester {
                     ScriptContext* script_context,
                     int next_port_id,
                     const std::string& api_namespace);
+
+  SendMessageTester(const SendMessageTester&) = delete;
+  SendMessageTester& operator=(const SendMessageTester&) = delete;
+
   ~SendMessageTester();
 
   // Whether we expect the port to be open or closed at the end of the call.
@@ -65,8 +67,6 @@ class SendMessageTester {
   ScriptContext* script_context_;
   int next_port_id_;
   std::string api_namespace_;
-
-  DISALLOW_COPY_AND_ASSIGN(SendMessageTester);
 };
 
 }  // namespace extensions

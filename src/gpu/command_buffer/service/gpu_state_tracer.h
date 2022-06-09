@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace gfx {
 class Size;
@@ -22,6 +22,10 @@ struct ContextState;
 class GPUStateTracer {
  public:
   static std::unique_ptr<GPUStateTracer> Create(const ContextState* state);
+
+  GPUStateTracer(const GPUStateTracer&) = delete;
+  GPUStateTracer& operator=(const GPUStateTracer&) = delete;
+
   ~GPUStateTracer();
 
   // Take a state snapshot with a screenshot of the currently bound framebuffer.
@@ -30,8 +34,7 @@ class GPUStateTracer {
  private:
   explicit GPUStateTracer(const ContextState* state);
 
-  const ContextState* state_;
-  DISALLOW_COPY_AND_ASSIGN(GPUStateTracer);
+  raw_ptr<const ContextState> state_;
 };
 
 }  // namespace gles2

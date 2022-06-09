@@ -22,6 +22,10 @@
 @property(nonatomic, assign) BOOL finalToolbarExpandedState;
 @property(nonatomic, assign) int inProgressAnimationCount;
 
+// Sometimes, the toolbar animations finish before the omnibox animations are
+// even queued, causing the final completions to be run too early.
+@property(nonatomic, assign) BOOL areOmniboxChangesQueued;
+
 @end
 
 @implementation OmniboxFocusOrchestrator
@@ -43,6 +47,7 @@
   }
 
   self.isAnimating = animated;
+  self.areOmniboxChangesQueued = NO;
   self.inProgressAnimationCount = 0;
 
   if (toolbarExpanded) {
@@ -62,10 +67,18 @@
   // with a constraint animation seems to be to let the constraint animation
   // start and compute the final frames, then perform the transform animation.
   dispatch_async(dispatch_get_main_queue(), ^{
+    self.areOmniboxChangesQueued = YES;
     if (omniboxFocused) {
       [self focusOmniboxAnimated:animated];
     } else {
       [self defocusOmniboxAnimated:animated];
+    }
+
+    // Make sure that some omnibox animations were queued. Otherwise, the final
+    // call to |animationFinished after the toolbar animations finished was
+    // interrupted and cleanup still needs to occur.
+    if (self.inProgressAnimationCount == 0 && self.isAnimating) {
+      [self animationFinished];
     }
   });
 }
@@ -139,6 +152,7 @@
         completion:^(BOOL _) {
           [self animationFinished];
         }];
+
     self.inProgressAnimationCount += 1;
     [UIView animateWithDuration:duration * 0.2
         delay:duration * 0.8
@@ -320,7 +334,8 @@
 
 - (void)animationFinished {
   self.inProgressAnimationCount -= 1;
-  if (self.inProgressAnimationCount > 0) {
+  // Make sure all the animations have been queued and finished.
+  if (!self.areOmniboxChangesQueued || self.inProgressAnimationCount > 0) {
     return;
   }
 

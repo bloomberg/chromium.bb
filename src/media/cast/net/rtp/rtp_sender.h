@@ -14,7 +14,7 @@
 #include <memory>
 #include <set>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_environment.h"
@@ -36,6 +36,9 @@ class RtpSender {
   RtpSender(
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacedSender* const transport);
+
+  RtpSender(const RtpSender&) = delete;
+  RtpSender& operator=(const RtpSender&) = delete;
 
   ~RtpSender();
 
@@ -73,13 +76,11 @@ class RtpSender {
   RtpPacketizerConfig config_;
   PacketStorage storage_;
   std::unique_ptr<RtpPacketizer> packetizer_;
-  PacedSender* const transport_;
+  const raw_ptr<PacedSender> transport_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<RtpSender> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RtpSender);
 };
 
 }  // namespace cast

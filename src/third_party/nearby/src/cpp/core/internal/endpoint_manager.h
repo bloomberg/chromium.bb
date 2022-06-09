@@ -18,20 +18,21 @@
 #include <cstdint>
 #include <memory>
 
+#include "absl/base/thread_annotations.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/time/time.h"
 #include "core/internal/client_proxy.h"
 #include "core/internal/endpoint_channel.h"
 #include "core/internal/endpoint_channel_manager.h"
 #include "core/listeners.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/runnable.h"
+#include "platform/public/condition_variable.h"
 #include "platform/public/count_down_latch.h"
 #include "platform/public/multi_thread_executor.h"
 #include "platform/public/single_thread_executor.h"
 #include "platform/public/system_clock.h"
-#include "absl/base/thread_annotations.h"
-#include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -103,7 +104,8 @@ class EndpointManager {
                         const ConnectionResponseInfo& info,
                         const ConnectionOptions& options,
                         std::unique_ptr<EndpointChannel> channel,
-                        const ConnectionListener& listener);
+                        const ConnectionListener& listener,
+                        const std::string& connection_token);
   // Called when a client explicitly asks to disconnect from this endpoint. In
   // this case, we do not notify the client of onDisconnected().
   void UnregisterEndpoint(ClientProxy* client, const std::string& endpoint_id);
@@ -140,13 +142,49 @@ class EndpointManager {
   void DiscardEndpoint(ClientProxy* client, const std::string& endpoint_id);
 
  private:
-  struct EndpointState {
-    // ClientProxy object associated with this endpoint.
-    ClientProxy* client;
-    // Execution barrier, used to ensure that all workers associated with an
-    // endpoint on handlers_executor_ and keep_alive_executor_ are terminated.
-    std::shared_ptr<CountDownLatch> barrier =
-        std::make_shared<CountDownLatch>(2);
+  class EndpointState {
+   public:
+    EndpointState(const std::string& endpoint_id,
+                  EndpointChannelManager* channel_manager)
+        : endpoint_id_{endpoint_id},
+          channel_manager_{channel_manager},
+          keep_alive_waiter_mutex_{std::make_unique<Mutex>()},
+          keep_alive_waiter_{std::make_unique<ConditionVariable>(
+              keep_alive_waiter_mutex_.get())} {}
+
+    EndpointState(const EndpointState&) = delete;
+    // The default move constructor would not reset |channel_manager_|, for
+    // example. This needs to be nullified so the destructor shutdown logic is
+    // bypassed when objects are moved.
+    EndpointState(EndpointState&& other)
+        : endpoint_id_{std::move(other.endpoint_id_)},
+          channel_manager_{std::exchange(other.channel_manager_, nullptr)},
+          reader_thread_{std::move(other.reader_thread_)},
+          keep_alive_waiter_mutex_{
+              std::exchange(other.keep_alive_waiter_mutex_, nullptr)},
+          keep_alive_waiter_{std::exchange(other.keep_alive_waiter_, nullptr)},
+          keep_alive_thread_{std::move(other.keep_alive_thread_)} {}
+    EndpointState& operator=(const EndpointState&) = delete;
+    EndpointState&& operator=(EndpointState&&) = delete;
+    ~EndpointState();
+
+    void StartEndpointReader(Runnable&& runnable);
+    void StartEndpointKeepAliveManager(
+        std::function<void(Mutex*, ConditionVariable*)> runnable);
+
+   private:
+    const std::string endpoint_id_;
+    EndpointChannelManager* channel_manager_;
+    SingleThreadExecutor reader_thread_;
+
+    // Use a condition variable so we can wait on the thread but still be able
+    // to wake it up before shutting down. We don't want to just sleep and risk
+    // blocking shutdown. Note: Create the mutex/condition variable on the heap
+    // so raw pointers sent to HandleKeepAlive() aren't invalidated during
+    // std::move operations.
+    mutable std::unique_ptr<Mutex> keep_alive_waiter_mutex_;
+    std::unique_ptr<ConditionVariable> keep_alive_waiter_;
+    SingleThreadExecutor keep_alive_thread_;
   };
 
   // RAII accessor for FrameProcessor
@@ -173,18 +211,20 @@ class EndpointManager {
 
   ExceptionOr<bool> HandleKeepAlive(EndpointChannel* endpoint_channel,
                                     absl::Duration keep_alive_interval,
-                                    absl::Duration keep_alive_timeout);
+                                    absl::Duration keep_alive_timeout,
+                                    Mutex* keep_alive_waiter_mutex,
+                                    ConditionVariable* keep_alive_waiter);
 
   // Waits for a given endpoint EndpointChannelLoopRunnable() workers to
   // terminate.
   // Is called from RegisterEndpoint to avoid races; also called from
   // RemoveEndpoint as part of proper endpoint shutdown sequence.
   // @EndpointManagerThread
-  void EnsureWorkersTerminated(const std::string& endpoint_id);
+  void RemoveEndpointState(const std::string& endpoint_id);
 
   void EndpointChannelLoopRunnable(
       const std::string& runnable_name, ClientProxy* client_proxy,
-      const std::string& endpoint_id, std::weak_ptr<CountDownLatch> barrier,
+      const std::string& endpoint_id,
       std::function<ExceptionOr<bool>(EndpointChannel*)> handler);
 
   static void WaitForLatch(const std::string& method_name,
@@ -194,7 +234,6 @@ class EndpointManager {
 
   static constexpr absl::Duration kProcessEndpointDisconnectionTimeout =
       absl::Milliseconds(2000);
-  static constexpr std::int32_t kMaxConcurrentEndpoints = 50;
   static constexpr absl::Time kInvalidTimestamp = absl::InfinitePast();
 
   // It should be noted that this method may be called multiple times (because
@@ -217,18 +256,6 @@ class EndpointManager {
       const ByteArray& payload_transfer_frame_bytes, std::int64_t payload_id,
       std::int64_t offset, const std::string& packet_type);
 
-  // Executes data-handing jobs on a separate thread for each endpoint, on a
-  // handlers_executor_.
-  // If amount of concurrent connections is less the pool capacity, it is
-  // possible that while a channel is being replaced, two jobs are trying to
-  // run for the same endpoint (for a short time).
-  // TODO (apolyudov): do not let extra job start.
-  void StartEndpointReader(Runnable runnable);
-
-  // Executes keep-alive jobs on a separate thread for each endpoint on a
-  // keep_alive_executor_.
-  void StartEndpointKeepAliveManager(Runnable runnable);
-
   // Executes all jobs sequentially, on a serial_executor_.
   void RunOnEndpointManagerThread(const std::string& name, Runnable runnable);
 
@@ -241,8 +268,6 @@ class EndpointManager {
   // We keep track of all registered channel endpoints here.
   absl::flat_hash_map<std::string, EndpointState> endpoints_;
 
-  MultiThreadExecutor keep_alive_executor_{kMaxConcurrentEndpoints};
-  MultiThreadExecutor handlers_executor_{kMaxConcurrentEndpoints};
   SingleThreadExecutor serial_executor_;
 };
 

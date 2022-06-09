@@ -15,6 +15,7 @@
 #include "ash/public/cpp/clipboard_image_model_factory.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -228,7 +229,7 @@ void WaitForOperationConfirmed() {
 
 // Verify clipboard history's features in the multiprofile environment.
 class ClipboardHistoryWithMultiProfileBrowserTest
-    : public chromeos::LoginManagerTest {
+    : public ash::LoginManagerTest {
  public:
   ClipboardHistoryWithMultiProfileBrowserTest() : LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
@@ -348,16 +349,16 @@ class ClipboardHistoryWithMultiProfileBrowserTest
     EXPECT_TRUE(item_view->IsSelected());
   }
 
-  // chromeos::LoginManagerTest:
+  // ash::LoginManagerTest:
   void SetUpOnMainThread() override {
-    chromeos::LoginManagerTest::SetUpOnMainThread();
+    ash::LoginManagerTest::SetUpOnMainThread();
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
         ash::Shell::GetPrimaryRootWindow());
   }
 
   AccountId account_id1_;
   AccountId account_id2_;
-  chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
+  ash::LoginManagerMixin login_mixin_{&mixin_host_};
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -382,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   }
 
   // Log in as the user2. The clipboard history should be non-empty.
-  chromeos::UserAddingScreen::Get()->Start();
+  ash::UserAddingScreen::Get()->Start();
   AddUser(account_id2_);
   EXPECT_FALSE(GetClipboardItems().empty());
 
@@ -505,13 +506,10 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
   // Verify that the first menu item's delete button shows. In addition, the
   // delete button's inkdrop highlight should fade in or be visible.
-  const ash::ClipboardHistoryDeleteButton* delete_button =
-      static_cast<const ash::ClipboardHistoryDeleteButton*>(
-          first_history_item_view->GetViewByID(
-              ash::ClipboardHistoryUtil::kDeleteButtonViewID));
+  const views::View* const delete_button = first_history_item_view->GetViewByID(
+      ash::ClipboardHistoryUtil::kDeleteButtonViewID);
   ASSERT_TRUE(delete_button->GetVisible());
-  EXPECT_TRUE(const_cast<ash::ClipboardHistoryDeleteButton*>(delete_button)
-                  ->ink_drop()
+  EXPECT_TRUE(views::InkDrop::Get(const_cast<views::View*>(delete_button))
                   ->GetInkDrop()
                   ->IsHighlightFadingInOrVisible());
 
@@ -856,16 +854,19 @@ class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
 // Verifies that the images rendered from the copied web contents should
 // show in the clipboard history menu. Switching the auto resize mode is covered
 // in this test case.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyHTMLRendering) {
+// Flaky: crbug/1224777
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
+                       DISABLED_VerifyHTMLRendering) {
   // Load the web page which contains images and text.
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/image-and-text.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/image-and-text.html")));
 
   // Select one part of the web page. Wait until the selection region updates.
   // Then copy the selected part to clipboard.
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::BoundingBoxUpdateWaiter select_part_one(web_contents);
   ASSERT_TRUE(ExecuteScript(web_contents, "selectPart1();"));
-  content::WaitForSelectionBoundingBoxUpdate(web_contents);
+  select_part_one.Wait();
   ASSERT_TRUE(ExecuteScript(web_contents, "copyToClipboard();"));
 
   // Wait until the clipboard history updates.
@@ -882,8 +883,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyHTMLRendering) {
   // history shows, the process of HTML rendering starts.
   auto event_generator = std::make_unique<ui::test::EventGenerator>(
       ash::Shell::GetPrimaryRootWindow());
-  event_generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator->PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
 
   // Render HTML with auto-resize mode enabled. Wait until the rendering
   // finishes.
@@ -904,14 +904,14 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyHTMLRendering) {
 
   // Verify that the clipboard history menu shows. Then close the menu.
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
-  event_generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EF_NONE);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EF_NONE);
+  event_generator->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 
   // Select another part. Wait until the selection region updates. Then copy
   // the selected html code to clipboard.
+  content::BoundingBoxUpdateWaiter select_part_two(web_contents);
   ASSERT_TRUE(ExecuteScript(web_contents, "selectPart2();"));
-  content::WaitForSelectionBoundingBoxUpdate(web_contents);
+  select_part_two.Wait();
   ASSERT_TRUE(ExecuteScript(web_contents, "copyToClipboard();"));
 
   // Wait until the clipboard history updates.
@@ -922,8 +922,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyHTMLRendering) {
   }
 
   // Show the clipboard history menu.
-  event_generator->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
-  event_generator->ReleaseKey(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
+  event_generator->PressAndReleaseKey(ui::VKEY_V, ui::EF_COMMAND_DOWN);
 
   // Render HTML with auto-resize mode disabled. Wait until the rendering
   // finishes.
@@ -1163,9 +1162,9 @@ class FakeDataTransferPolicyController
   ~FakeDataTransferPolicyController() override = default;
 
   // ui::DataTransferPolicyController:
-  bool IsClipboardReadAllowed(
-      const ui::DataTransferEndpoint* const data_src,
-      const ui::DataTransferEndpoint* const data_dst) override {
+  bool IsClipboardReadAllowed(const ui::DataTransferEndpoint* const data_src,
+                              const ui::DataTransferEndpoint* const data_dst,
+                              const absl::optional<size_t> size) override {
     // The multipaste menu should have access to any clipboard data.
     if (data_dst && data_dst->type() == ui::EndpointType::kClipboardHistory)
       return true;
@@ -1173,19 +1172,18 @@ class FakeDataTransferPolicyController
     // For other data destinations, only the data from `allowed_origin_`
     // should be accessible.
     return data_src && data_src->IsUrlType() &&
-           (*data_src->origin() == allowed_origin_);
+           (*data_src->GetOrigin() == allowed_origin_);
   }
 
   void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
                       const ui::DataTransferEndpoint* const data_dst,
-                      content::WebContents* web_contents,
+                      const absl::optional<size_t> size,
+                      content::RenderFrameHost* rfh,
                       base::OnceCallback<void(bool)> callback) override {}
 
-  bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
-                         const ui::DataTransferEndpoint* const data_dst,
-                         const bool is_drop) override {
-    return false;
-  }
+  void DropIfAllowed(const ui::DataTransferEndpoint* data_src,
+                     const ui::DataTransferEndpoint* data_dst,
+                     base::OnceClosure drop_cb) override {}
 
  private:
   const url::Origin allowed_origin_;

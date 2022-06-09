@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "constants/ascii.h"
 #include "fpdfsdk/pwl/cpwl_cbbutton.h"
 #include "fpdfsdk/pwl/cpwl_cblistbox.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
@@ -117,12 +118,6 @@ void CPWL_ComboBox::SetEditSelection(int32_t nStartChar, int32_t nEndChar) {
     m_pEdit->SetSelection(nStartChar, nEndChar);
 }
 
-std::pair<int32_t, int32_t> CPWL_ComboBox::GetEditSelection() const {
-  if (!m_pEdit)
-    return std::make_pair(-1, -1);
-  return m_pEdit->GetSelection();
-}
-
 void CPWL_ComboBox::ClearSelection() {
   if (m_pEdit)
     m_pEdit->ClearSelection();
@@ -154,7 +149,6 @@ void CPWL_ComboBox::CreateEdit(const CreateParams& cp) {
 
   auto pEdit = std::make_unique<CPWL_Edit>(ecp, CloneAttachedData());
   m_pEdit = pEdit.get();
-  m_pEdit->AttachFFLData(m_pFormFiller.Get());
   AddChild(std::move(pEdit));
   m_pEdit->Realize();
 }
@@ -167,7 +161,7 @@ void CPWL_ComboBox::CreateButton(const CreateParams& cp) {
   bcp.dwFlags = PWS_VISIBLE | PWS_BORDER | PWS_BACKGROUND;
   bcp.sBackgroundColor = CFX_Color(CFX_Color::Type::kRGB, 220.0f / 255.0f,
                                    220.0f / 255.0f, 220.0f / 255.0f);
-  bcp.sBorderColor = PWL_DEFAULT_BLACKCOLOR;
+  bcp.sBorderColor = kDefaultBlackColor;
   bcp.dwBorderWidth = 2;
   bcp.nBorderStyle = BorderStyle::kBeveled;
   bcp.eCursorType = IPWL_SystemHandler::CursorStyle::kArrow;
@@ -188,19 +182,17 @@ void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
   lcp.dwBorderWidth = 1;
   lcp.eCursorType = IPWL_SystemHandler::CursorStyle::kArrow;
   lcp.rcRectWnd = CFX_FloatRect();
-
   lcp.fFontSize =
       (cp.dwFlags & PWS_AUTOFONTSIZE) ? kComboBoxDefaultFontSize : cp.fFontSize;
 
   if (cp.sBorderColor.nColorType == CFX_Color::Type::kTransparent)
-    lcp.sBorderColor = PWL_DEFAULT_BLACKCOLOR;
+    lcp.sBorderColor = kDefaultBlackColor;
 
   if (cp.sBackgroundColor.nColorType == CFX_Color::Type::kTransparent)
-    lcp.sBackgroundColor = PWL_DEFAULT_WHITECOLOR;
+    lcp.sBackgroundColor = kDefaultWhiteColor;
 
   auto pList = std::make_unique<CPWL_CBListBox>(lcp, CloneAttachedData());
   m_pList = pList.get();
-  m_pList->AttachFFLData(m_pFormFiller.Get());
   AddChild(std::move(pList));
   m_pList->Realize();
 }
@@ -296,7 +288,7 @@ bool CPWL_ComboBox::SetPopup(bool bPopup) {
   if (bPopup == m_bPopup)
     return true;
   float fListHeight = m_pList->GetContentRect().Height();
-  if (!IsFloatBigger(fListHeight, 0.0f))
+  if (!FXSYS_IsFloatBigger(fListHeight, 0.0f))
     return true;
 
   if (!bPopup) {
@@ -308,7 +300,7 @@ bool CPWL_ComboBox::SetPopup(bool bPopup) {
     return true;
 
   ObservedPtr<CPWL_ComboBox> thisObserved(this);
-  if (m_pFillerNotify->OnPopupPreOpen(GetAttachedData(), 0))
+  if (m_pFillerNotify->OnPopupPreOpen(GetAttachedData(), {}))
     return !!thisObserved;
   if (!thisObserved)
     return false;
@@ -323,7 +315,7 @@ bool CPWL_ComboBox::SetPopup(bool bPopup) {
   float fPopupRet;
   m_pFillerNotify->QueryWherePopup(GetAttachedData(), fPopupMin, fPopupMax,
                                    &bBottom, &fPopupRet);
-  if (!IsFloatBigger(fPopupRet, 0.0f))
+  if (!FXSYS_IsFloatBigger(fPopupRet, 0.0f))
     return true;
 
   m_rcOldWindow = CPWL_Wnd::GetWindowRect();
@@ -339,11 +331,12 @@ bool CPWL_ComboBox::SetPopup(bool bPopup) {
   if (!Move(rcWindow, true, true))
     return false;
 
-  m_pFillerNotify->OnPopupPostOpen(GetAttachedData(), 0);
+  m_pFillerNotify->OnPopupPostOpen(GetAttachedData(), {});
   return !!thisObserved;
 }
 
-bool CPWL_ComboBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_ComboBox::OnKeyDown(FWL_VKEYCODE nKeyCode,
+                              Mask<FWL_EVENTFLAG> nFlag) {
   if (!m_pList)
     return false;
   if (!m_pEdit)
@@ -351,7 +344,7 @@ bool CPWL_ComboBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
 
   m_nSelectItem = -1;
 
-  switch (nChar) {
+  switch (nKeyCode) {
     case FWL_VKEY_Up:
       if (m_pList->GetCurSel() > 0) {
         if (m_pFillerNotify) {
@@ -360,8 +353,8 @@ bool CPWL_ComboBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
           if (m_pFillerNotify->OnPopupPostOpen(GetAttachedData(), nFlag))
             return false;
         }
-        if (m_pList->IsMovementKey(nChar)) {
-          if (m_pList->OnMovementKeyDown(nChar, nFlag))
+        if (m_pList->IsMovementKey(nKeyCode)) {
+          if (m_pList->OnMovementKeyDown(nKeyCode, nFlag))
             return false;
           SetSelectText();
         }
@@ -375,22 +368,24 @@ bool CPWL_ComboBox::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
           if (m_pFillerNotify->OnPopupPostOpen(GetAttachedData(), nFlag))
             return false;
         }
-        if (m_pList->IsMovementKey(nChar)) {
-          if (m_pList->OnMovementKeyDown(nChar, nFlag))
+        if (m_pList->IsMovementKey(nKeyCode)) {
+          if (m_pList->OnMovementKeyDown(nKeyCode, nFlag))
             return false;
           SetSelectText();
         }
       }
       return true;
+    default:
+      break;
   }
 
   if (HasFlag(PCBS_ALLOWCUSTOMTEXT))
-    return m_pEdit->OnKeyDown(nChar, nFlag);
+    return m_pEdit->OnKeyDown(nKeyCode, nFlag);
 
   return false;
 }
 
-bool CPWL_ComboBox::OnChar(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_ComboBox::OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   if (!m_pList)
     return false;
 
@@ -400,11 +395,11 @@ bool CPWL_ComboBox::OnChar(uint16_t nChar, uint32_t nFlag) {
   // In a combo box if the ENTER/SPACE key is pressed, show the combo box
   // options.
   switch (nChar) {
-    case FWL_VKEY_Return:
+    case pdfium::ascii::kReturn:
       SetPopup(!IsPopup());
       SetSelectText();
       return true;
-    case FWL_VKEY_Space:
+    case pdfium::ascii::kSpace:
       // Show the combo box options with space only if the combo box is not
       // editable
       if (!HasFlag(PCBS_ALLOWCUSTOMTEXT)) {

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/system/sys_info.h"
 #include "media/media_buildflags.h"
 
 namespace media {
@@ -16,10 +15,10 @@ const char kClearKeyCdmLibraryName[] = "clearkeycdm";
 
 const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
 const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
-const base::Token kClearKeyCdmGuid{0x3a2e0fadde4bd1b7ull,
+const base::Token kClearKeyCdmType{0x3a2e0fadde4bd1b7ull,
                                    0xcb90df3e240d1694ull};
-const base::Token kClearKeyCdmDifferentGuid{0xc3914773474bdb02ull,
-                                            0x8e8de4d84d3ca030ull};
+const base::Token kClearKeyCdmDifferentCdmType{0xc3914773474bdb02ull,
+                                               0x8e8de4d84d3ca030ull};
 
 // As the file system was initially used by the CDM running as a pepper plugin,
 // this ID is based on the pepper plugin MIME type.
@@ -41,14 +40,10 @@ base::FilePath GetPlatformSpecificDirectory(const std::string& cdm_base_path) {
 }
 
 #if defined(OS_WIN)
-const char kCdmStore[] = "CdmStore";
-
-base::FilePath GetCdmStorePath(const base::FilePath& user_data_dir,
+base::FilePath GetCdmStorePath(const base::FilePath& cdm_store_path_root,
                                const base::UnguessableToken& cdm_origin_id,
                                const std::string& key_system) {
-  return user_data_dir.AppendASCII(kCdmStore)
-      .AppendASCII(base::SysInfo::ProcessCPUArchitecture())
-      .AppendASCII(cdm_origin_id.ToString())
+  return cdm_store_path_root.AppendASCII(cdm_origin_id.ToString())
       .AppendASCII(key_system);
 }
 #endif  // defined(OS_WIN)

@@ -17,7 +17,6 @@
 #ifdef VK_USE_PLATFORM_FUCHSIA
 #include <zircon/types.h>
 #include "vulkan_fuchsia.h"
-#include "vulkan_fuchsia_extras.h"
 #endif
 
 #ifdef VK_USE_PLATFORM_IOS_MVK
@@ -85,7 +84,6 @@
 #include <screen/screen.h>
 #include "vulkan_screen.h"
 #endif
-
 
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 #include "vulkan_beta.h"

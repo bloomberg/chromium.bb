@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_LOADER_H_
 
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -26,7 +25,7 @@ class ServiceWorkerVersion;
 // - a service worker that was new when it started and became installed while
 //   running requests an installed script, e.g., importScripts('a.js') after
 //   installation.
-class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
+class ServiceWorkerInstalledScriptLoader
     : public network::mojom::URLLoader,
       public ServiceWorkerInstalledScriptReader::Client,
       public mojo::DataPipeDrainer::Client {
@@ -38,6 +37,12 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
       scoped_refptr<ServiceWorkerVersion>
           version_for_main_script_http_response_info,
       const GURL& request_url);
+
+  ServiceWorkerInstalledScriptLoader(
+      const ServiceWorkerInstalledScriptLoader&) = delete;
+  ServiceWorkerInstalledScriptLoader& operator=(
+      const ServiceWorkerInstalledScriptLoader&) = delete;
+
   ~ServiceWorkerInstalledScriptLoader() override;
 
   // ServiceWorkerInstalledScriptReader::Client overrides:
@@ -75,8 +80,6 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
   mojo::ScopedDataPipeConsumerHandle body_handle_;
   uint64_t body_size_ = 0;
   std::unique_ptr<mojo::DataPipeDrainer> metadata_drainer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerInstalledScriptLoader);
 };
 
 }  // namespace content

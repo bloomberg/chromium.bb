@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SUBSEQUENCE_RECORDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SUBSEQUENCE_RECORDER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -36,22 +35,21 @@ class SubsequenceRecorder final {
   }
 
   SubsequenceRecorder(GraphicsContext& context, const DisplayItemClient& client)
-      : paint_controller_(context.GetPaintController()), client_(client) {
-    paint_controller_.BeginSubsequence(subsequence_index_, start_chunk_index_);
+      : paint_controller_(context.GetPaintController()) {
+    subsequence_index_ = paint_controller_.BeginSubsequence(client);
+    paint_controller_.MarkClientForValidation(client);
   }
 
+  SubsequenceRecorder(const SubsequenceRecorder&) = delete;
+  SubsequenceRecorder& operator=(const SubsequenceRecorder&) = delete;
+
   ~SubsequenceRecorder() {
-    paint_controller_.EndSubsequence(client_, subsequence_index_,
-                                     start_chunk_index_);
+    paint_controller_.EndSubsequence(subsequence_index_);
   }
 
  private:
   PaintController& paint_controller_;
-  const DisplayItemClient& client_;
   wtf_size_t subsequence_index_;
-  wtf_size_t start_chunk_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubsequenceRecorder);
 };
 
 }  // namespace blink

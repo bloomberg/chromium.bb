@@ -9,14 +9,19 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/proto/v2/wire/reliability_logging_enums.pb.h"
 #include "components/feed/core/proto/v2/wire/response.pb.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/feed/core/v2/launch_reliability_logger.h"
+#include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/scheduling.h"
+#include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 #include "components/feed/core/v2/tasks/upload_actions_task.h"
+#include "components/feed/core/v2/types.h"
 #include "components/offline_pages/task/task.h"
 #include "components/version_info/channel.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -27,18 +32,9 @@ class FeedStream;
 // Loads the stream model from storage or network. If data is refreshed from the
 // network, it is persisted to |FeedStore| by overwriting any existing stream
 // data.
-// This task has two modes, see |LoadStreamTask::LoadType|.
+// This task has three modes, see |LoadType| in enums.h.
 class LoadStreamTask : public offline_pages::Task {
  public:
-  enum class LoadType {
-    // Loads the stream model into memory. If successful, this directly forces a
-    // model load in |FeedStream()| before completing the task.
-    kInitialLoad,
-    // Refreshes the stored stream data from the network. This will fail if the
-    // model is already loaded.
-    kBackgroundRefresh,
-  };
-
   struct Options {
     // The stream type to load.
     StreamType stream_type;
@@ -64,7 +60,7 @@ class LoadStreamTask : public offline_pages::Task {
     base::TimeDelta stored_content_age;
     // Set of content IDs present in the feed.
     ContentIdSet content_ids;
-    LoadType load_type;
+    LoadType load_type = LoadType::kInitialLoad;
     std::unique_ptr<StreamModelUpdateRequest> update_request;
     absl::optional<RequestSchedule> request_schedule;
 
@@ -79,6 +75,10 @@ class LoadStreamTask : public offline_pages::Task {
 
     // Experiments information from the server.
     Experiments experiments;
+
+    // Reliability logging feed launch result: CARDS_UNSPECIFIED if loading is
+    // successful.
+    feedwire::DiscoverLaunchResult launch_result;
   };
 
   LoadStreamTask(const Options& options,
@@ -93,7 +93,14 @@ class LoadStreamTask : public offline_pages::Task {
   base::WeakPtr<LoadStreamTask> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+  void CheckIfSubscriberComplete(bool is_web_feed_subscriber);
+  void ResumeAtStart();
+  bool CheckPreconditions();
+  void PassedPreconditions();
 
+  void LoadFromNetwork(
+      std::vector<feedstore::StoredAction> pending_actions_from_store,
+      bool need_to_read_pending_actions);
   void LoadFromStoreComplete(LoadStreamFromStoreTask::Result result);
   void UploadActionsComplete(UploadActionsTask::Result result);
   void QueryApiRequestComplete(
@@ -101,10 +108,11 @@ class LoadStreamTask : public offline_pages::Task {
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
   void ProcessNetworkResponse(std::unique_ptr<feedwire::Response> response,
                               NetworkResponseInfo response_info);
-  void Done(LoadStreamStatus status);
+  void RequestFinished(LaunchResult result);
+  void Done(LaunchResult result);
 
   Options options_;
-  FeedStream* stream_;  // Unowned.
+  FeedStream& stream_;  // Unowned.
   std::unique_ptr<LoadStreamFromStoreTask> load_from_store_task_;
   std::unique_ptr<StreamModelUpdateRequest> stale_store_state_;
 
@@ -117,6 +125,8 @@ class LoadStreamTask : public offline_pages::Task {
   Experiments experiments_;
   std::unique_ptr<StreamModelUpdateRequest> update_request_;
   absl::optional<RequestSchedule> request_schedule_;
+  NetworkRequestId network_request_id_;
+  base::TimeTicks response_received_timestamp_;
 
   std::unique_ptr<LoadLatencyTimes> latencies_;
   base::TimeTicks task_creation_time_;
@@ -125,6 +135,9 @@ class LoadStreamTask : public offline_pages::Task {
   std::unique_ptr<UploadActionsTask> upload_actions_task_;
   std::unique_ptr<UploadActionsTask::Result> upload_actions_result_;
   absl::optional<bool> fetched_content_has_notice_card_;
+  LaunchReliabilityLogger& launch_reliability_logger_;
+  int64_t server_receive_timestamp_ns_ = 0l;
+  int64_t server_send_timestamp_ns_ = 0l;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};
 };
 

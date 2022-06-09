@@ -1,16 +1,23 @@
-
+#version 400
 out vec4 sk_FragColor;
-void main() {
-    float x;
-    switch (int(sqrt(1.0))) {
-        case 0:
-            x = 0.0;
+uniform vec4 colorGreen;
+uniform vec4 colorRed;
+vec4 main() {
+    vec4 color;
+    int _tmpSwitchValue1 = int(colorGreen.y), _tmpSwitchFallthrough0 = 0;
+    for (int _tmpSwitchLoop2 = 0; _tmpSwitchLoop2 < 1; _tmpSwitchLoop2++) {
+        if ((_tmpSwitchValue1 == 0)) {
+            color = colorRed;
             break;
-        case 1:
-            x = 1.0;
+            _tmpSwitchFallthrough0 = 1;
+        }
+        if ((_tmpSwitchFallthrough0 > 0) || (_tmpSwitchValue1 == 1)) {
+            color = colorGreen;
             break;
-        default:
-            x = 2.0;
+            _tmpSwitchFallthrough0 = 1;
+        }
+        color = colorRed;
+        break;
     }
-    sk_FragColor = vec4(x);
+    return color;
 }

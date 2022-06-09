@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "ruy/kernel.h"
+#include "ruy/kernel_arm.h"
 #include "ruy/opt_set.h"
 #include "ruy/platform.h"
 #include "ruy/profiler/instrumentation.h"
@@ -78,10 +78,9 @@ void CheckOffsetsInKernelParamsFloat32(const Params&) {
 // Just like Float 64 version, except accumulate in to 8x4 block to only
 // use 16 128-bit NEON registers. This is a "first pass" kernel and not
 // tuned. It is meant to run on out-of-order CPUs like the Krait 400 or A9.
-void KernelFloat32NeonOutOfOrder(const KernelParamsFloat<8, 4>& params) {
+void KernelFloat32Neon(const KernelParamsFloat<8, 4>& params) {
   CheckOffsetsInKernelParamsFloat32(params);
-  profiler::ScopeLabel label(
-      "Kernel (kNeon, optimized for out-of-order cores)");
+  profiler::ScopeLabel label("Kernel (kNeon)");
 
   const float* lhs_ptr = params.lhs_base_ptr;
   const float* rhs_ptr = params.rhs_base_ptr;
@@ -280,16 +279,24 @@ void KernelFloat32NeonOutOfOrder(const KernelParamsFloat<8, 4>& params) {
         "ldrb r4, [%[params], #" RUY_STR(RUY_OFFSET_FLAGS) "]\n"
         "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_BIAS) "]\n"
 
-        // Offset these base pointers as needed given the current row, col.
-        "ldr r8, [sp, #" RUY_STR(RUY_STACK_OFFSET_ROW) "]\n"
-        "add r5, r1, r8, lsl #2\n"
-
+        // Let r8 be stack offset of the row or column variable, whichever
+        // is the channel index.
+        "tst r4, #" RUY_STR(RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL) "\n"
+        "ite eq\n"
+        "moveq r8, #" RUY_STR(RUY_STACK_OFFSET_ROW) "\n"
+        "movne r8, #" RUY_STR(RUY_STACK_OFFSET_COL) "\n"
+        // Let r8 be the channel index.
+        "ldr r8, [sp, r8]\n"
+        // Compute the bias pointer, by conditionally using the channel index
+        // (r8) as offset into bias buffer (r1).
         "tst r4, #" RUY_STR(RUY_ASM_FLAG_HAS_BIAS) "\n"
         "it ne\n"
-        "movne r1, r5\n"
+        "addne r1, r1, r8, lsl #2\n"
 
-        // Load 8 bias values.
-        "vld1.32 {d24, d25, d26, d27}, [r1]\n"
+        // Load 4 bias values. When the channel dimension is rows, we will load
+        // another 4 bias values just before performing the bias addition below,
+        // as this kernel has a 8x4 rectangular shape.
+        "vld1.32 {d24, d25}, [r1]!\n"
 
         // Now that we know what LHS and RHS data the next iteration of the
         // main loop will need to load, we start loading the first 32 bytes of
@@ -302,16 +309,39 @@ void KernelFloat32NeonOutOfOrder(const KernelParamsFloat<8, 4>& params) {
         "vld1.32 {d4, d5}, [%[rhs_ptr]]!\n"
         RUY_PREFETCH_LOAD("pld [%[rhs_ptr]]\n")
 
-        // Perform the bias-addition (per the above, we have just folded into
-        // the bias the (depth * lhs_zero_point * rhs_zero_point) term.)
+        // Perform the bias-addition.
+        // Jump based on channel dimension.
+        "tst r4, #" RUY_STR(RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL) "\n"
+        "bne 6f\n"
+        // Case where channels are rows.
+        // Load the remaining 4 bias values, since we're on the width-8 side
+        // of this 8x4 kernel.
+        "vld1.32 {d26, d27}, [r1]\n"
         "vadd.f32 q3, q3, q12\n"
-        "vadd.f32 q4, q4, q13\n"
         "vadd.f32 q5, q5, q12\n"
-        "vadd.f32 q6, q6, q13\n"
         "vadd.f32 q7, q7, q12\n"
-        "vadd.f32 q8, q8, q13\n"
         "vadd.f32 q9, q9, q12\n"
+        "vadd.f32 q4, q4, q13\n"
+        "vadd.f32 q6, q6, q13\n"
+        "vadd.f32 q8, q8, q13\n"
         "vadd.f32 q10, q10, q13\n"
+        "b 7f\n"
+
+        "6:\n"
+        // Case where channels are columns.
+        "vdup.32 q11, d24[0]\n"
+        "vdup.32 q13, d24[1]\n"
+        "vdup.32 q14, d25[0]\n"
+        "vdup.32 q15, d25[1]\n"
+        "vadd.f32 q3, q3, q11\n"
+        "vadd.f32 q4, q4, q11\n"
+        "vadd.f32 q5, q5, q13\n"
+        "vadd.f32 q6, q6, q13\n"
+        "vadd.f32 q7, q7, q14\n"
+        "vadd.f32 q8, q8, q14\n"
+        "vadd.f32 q9, q9, q15\n"
+        "vadd.f32 q10, q10, q15\n"
+        "7:\n"
 
         // Load the clamp_min, clamp_max bounds
         "ldr r2, [%[params], #" RUY_STR(RUY_OFFSET_CLAMP_MIN) "]\n"
@@ -594,9 +624,8 @@ void CheckOffsetsInKernelParams8bit(const Params&) {
 // Fast-int8 kernel, ported from ARM 64 version.
 // Relevant target CPUs for this kernel include Krait 400 and A9,
 // since these are 32-bit, out-of-order CPUs.
-void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
-  profiler::ScopeLabel label(
-      "Kernel (kNeon, optimized for out-of-order cores)");
+void Kernel8bitNeon(const KernelParams8bit<4, 2>& params) {
+  profiler::ScopeLabel label("Kernel (kNeon)");
 
   CheckOffsetsInKernelParams8bit(params);
 
@@ -863,16 +892,24 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
         "ldrb r4, [%[params], #" RUY_STR(RUY_OFFSET_FLAGS) "]\n"
         "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_BIAS) "]\n"
 
-        // Offset these base pointers as needed given the current row, col.
-        "ldr r8, [sp, #" RUY_STR(RUY_STACK_OFFSET_ROW) "]\n"
-        "add r5, r1, r8, lsl #2\n"
-
+        // Let r8 be stack offset of the row or column variable, whichever
+        // is the channel index.
+        "tst r4, #" RUY_STR(RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL) "\n"
+        "ite eq\n"
+        "moveq r8, #" RUY_STR(RUY_STACK_OFFSET_ROW) "\n"
+        "movne r8, #" RUY_STR(RUY_STACK_OFFSET_COL) "\n"
+        // Let r8 be the channel index.
+        "ldr r8, [sp, r8]\n"
+        // Compute the bias pointer, by conditionally using the channel index
+        // (r8) as offset into bias buffer (r1).
         "tst r4, #" RUY_STR(RUY_ASM_FLAG_HAS_BIAS) "\n"
         "it ne\n"
-        "movne r1, r5\n"
+        "addne r1, r1, r8, lsl #2\n"
 
-        // Load 4 bias values.
-        "vld1.32 {d24, d25}, [r1]\n"
+        // Load 2 bias values. When the channel dimension is rows, we will load
+        // another 2 bias values just before performing the bias addition below,
+        // as this kernel has a 4x2 rectangular shape.
+        "vld1.32 {d24}, [r1]!\n"
 
         // Now that we know what LHS and RHS data the next iteration of the
         // main loop will need to load, we start loading the first 32 bytes of
@@ -889,12 +926,29 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
         // https://arxiv.org/pdf/1712.05877.pdf
         "ldr r3, [%[params], #" RUY_STR(RUY_OFFSET_PROD_ZP_DEPTH) "]\n"
         "vdup.32 q9, r3\n"
-        "vadd.i32 q12, q12, q9\n"
+        "vadd.i32 d24, d24, d18\n"
 
         // Perform the bias-addition (per the above, we have just folded into
         // the bias the (depth * lhs_zero_point * rhs_zero_point) term.)
+        // Jump based on channel dimension.
+        "tst r4, #" RUY_STR(RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL) "\n"
+        "bne 6f\n"
+        // Case where channels are rows.
+        // Load the remaining 2 bias values, since we're on the width-4 side
+        // of this 4x2 kernel.
+        "vld1.32 {d25}, [r1]\n"
+        "vadd.i32 d25, d25, d19\n"
         "vadd.i32 q14, q14, q12\n"
         "vadd.i32 q15, q15, q12\n"
+        "b 7f\n"
+
+        "6:\n"
+        // Case where channels are columns.
+        "vdup.32 q10, d24[0]\n"
+        "vdup.32 q11, d24[1]\n"
+        "vadd.i32 q14, q14, q10\n"
+        "vadd.i32 q15, q15, q11\n"
+        "7:\n"
 
         // LHS/RHS zero points
         // Has RHS sums
@@ -950,75 +1004,70 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
         // multiplied by a multiplier that has a fixed-point component and an
         // exponent component.
 
-        //Load the exponent part of the multiplier.
+        // Compute the data pointers for the multiplier data
+        //   r1 = exponent part
+        //   r2 = fixedpoint part
         "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_MULTIPLIER_EXPONENT) "]\n"
-        "tst r6, #" RUY_STR(RUY_ASM_FLAG_HAS_PERCHANNEL) "\n"
-        "ldr r4, [sp, #" RUY_STR(RUY_STACK_OFFSET_ROW) "]\n"
-        "add r5, r1, r4, lsl #2\n"
-        "it ne\n"
-        "movne r1, r5\n"
-
-        "vld1.32 {q10}, [r1]\n"
-
-        RUY_MAKE_ZERO(q8)
-        "vmax.s32 q12, q10, q8\n"
-
-        "vshl.s32 q14, q14, q12\n"
-        "vshl.s32 q15, q15, q12\n"
-
-        "vmin.s32 q12, q10, q8\n"
-
-        // Load fixed point part of the multiplier
-        "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_MULTIPLIER_FIXEDPOINT) "]\n"
-        // r6 has flags, r4 has row
-        "add r5, r1, r4, lsl #2\n"
+        "ldr r2, [%[params], #" RUY_STR(RUY_OFFSET_MULTIPLIER_FIXEDPOINT) "]\n"
+        // r6 has flags, r8 has channel index
         "tst r6, #" RUY_STR(RUY_ASM_FLAG_HAS_PERCHANNEL) "\n"
         "it ne\n"
-        "movne r1, r5\n"
-        "vld1.32 {q10}, [r1]\n" // multiplier_fixedpoint
+        "addne r1, r1, r8, lsl #2\n"
+        "it ne\n"
+        "addne r2, r2, r8, lsl #2\n"
+
+        // Load the first 2 values of multiplier exponent and fixedpoint data
+        // Since this kernel is rectangular 4x2, we will only conditionally load
+        // 2 more values below.
+        "vld1.32 {d20}, [r1]!\n"  // 2 values of multiplier_exponent
+        "vld1.32 {d12}, [r2]!\n"  // 2 values of multiplier_fixedpoint
+
+        "tst r6, #" RUY_STR(RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL) "\n"
+        "vmvn.i32 q8, #0\n"
+        "bne 8f\n"
+        // Case where channels are rows.
+        // Load the remaining 2 bias values, since we're on the width-4 side
+        // of this 4x2 kernel.
+        "vld1.32 {d21}, [r1]\n"  // 2 more values of multiplier_exponent
+        "vld1.32 {d13}, [r2]\n"  // 2 more values of multiplier_fixedpoint
+        "vmin.s32 q11, q10, q8\n"
+        "vsub.s32 q10, q10, q11\n"
+
+        // Apply the positive exponent part of the multiplier.
+        "vshl.s32 q14, q14, q10\n"
+        "vshl.s32 q15, q15, q10\n"
 
         // Apply the fixed-point part of the multiplier.
-        "vqrdmulh.s32 q14, q14, q10\n"
-        "vqrdmulh.s32 q15, q15, q10\n"
+        "vqdmulh.s32 q14, q14, q6\n"
+        "vqdmulh.s32 q15, q15, q6\n"
 
-        // We have some rounding division-by-power-of-two to do. This should
-        // always use "round to nearest". We allow for some
-        // freedom in how ties are broken, to strike a good compromise of
-        // performance on given hardware vs. perfect agreement of results
-        // across hardware.
-        //
-        // When RUY_OPT_NATIVE_ROUNDING is enabled, we allow for implementation
-        // defined tie-breaks to help performance. On NEON, this means that we
-        // can just use the NEON rounding instructions, such as srshl. They
-        // happen to be breaking ties upward.
-        //
-        // When RUY_OPT_NATIVE_ROUNDING is disabled, we implement strict
-        // break-ties-away-from zero, as described in Appendix B of
-        // https://arxiv.org/pdf/1712.05877.pdf
-        // When we wrote that, we thought that that would be better unbiased
-        // than the NEON upwards tie-breaks, and we had observed some
-        // improvement on some model. However, that is only more unbiased for
-        // data centered at zero, which was likely the case in that model,
-        // but is not always the case. If we wanted something more consistently
-        // unbiased then we should try breaking ties toward-nearest-even.
-#if !RUY_OPT(NATIVE_ROUNDING)
-        // Fix up values to be right-shifted, so that the (round to nearest,
-        // break ties upward) behavior of srshl applied to these fixed-up
-        // values, produces the same result as the desired (round to nearest,
-        // break ties away from zero) behavior on the original values.
-        "vand q8, q14, q12\n"
-        "vand q9, q15, q12\n"
-        "vshr.s32 q8, q8, #31\n"
-        "vshr.s32 q9, q9, #31\n"
-        "vqadd.s32 q14, q14, q8\n"
-        "vqadd.s34 q15, q15, q9\n"
+        // Apply the negative exponent part of the multiplier.
+        "vrshl.s32 q14, q14, q11\n"
+        "vrshl.s32 q15, q15, q11\n"
+        "b 9f\n"
 
-#endif
-        // At this point we have reduced the problem of correctly implementing
-        // rounding divide-by-power-of-two, to what the SRSHL instruction can
-        // do.
+        "8:\n"
+        // Case where channels are columns.
+        "vmin.s32 d22, d20, d16\n"
+        "vsub.s32 d20, d20, d22\n"
+
+        // Apply the positive exponent part of the multiplier.
+        "vdup.32  q12, d20[0]\n"
+        "vdup.32  q13, d20[1]\n"
+        "vshl.s32 q14, q14, q12\n"
+        "vshl.s32 q15, q15, q13\n"
+
+        // Apply the fixed-point part of the multiplier.
+        "vqdmulh.s32 q14, q14, d12[0]\n"
+        "vqdmulh.s32 q15, q15, d12[1]\n"
+
+        // Apply the negative exponent part of the multiplier.
+        "vdup.32  q12, d22[0]\n"
+        "vdup.32  q13, d22[1]\n"
         "vrshl.s32 q14, q14, q12\n"
-        "vrshl.s32 q15, q15, q12\n"
+        "vrshl.s32 q15, q15, q13\n"
+
+        "9:\n"
 
         "ldrb r10, [%[params], #" RUY_STR(RUY_OFFSET_DST_TYPE_ID) "]\n"
         "cmp r10, #" RUY_STR(RUY_ASM_TYPE_ID_INT16) "\n"
@@ -1053,7 +1102,7 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
         "vdup.16 q13, r4\n" // dst_zero_point
 
         // Add the destination zero point
-        "vadd.i16 q14, q14, q13\n"
+        "vqadd.s16 q14, q14, q13\n"
 
         // Cast-and-saturate from int16 to uint8
         // Now all 8 1-byte values are in d30.
@@ -1177,7 +1226,7 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
         "vdup.16 q13, r4\n" // dst_zero_point
 
         // Add the destination zero point
-        "vadd.i16 q14, q14, q13\n"
+        "vqadd.s16 q14, q14, q13\n"
 
         // Cast-and-saturate from int16 to int8
         // Now all 8 1-byte values are in d30.
@@ -1575,9 +1624,8 @@ void Kernel8bitNeonOutOfOrder(const KernelParams8bit<4, 2>& params) {
 
 // Fast-int8 true "GEMV" kernel (RHS has 1 column). We assume the RHS
 // is still packed as if it has two columns
-void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
-  profiler::ScopeLabel label(
-      "Kernel (kNeon, optimized for out-of-order cores)");
+void Kernel8bitNeon1Col(const KernelParams8bit<4, 2>& params) {
+  profiler::ScopeLabel label("Kernel (kNeon)");
 
   CheckOffsetsInKernelParams8bit(params);
 
@@ -1585,6 +1633,8 @@ void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
   const std::int8_t* rhs_col_ptr = params.rhs_base_ptr;
   const std::int8_t* lhs_ptr = lhs_col_ptr;
   const std::int8_t* rhs_ptr = rhs_col_ptr;
+
+  RUY_DCHECK(!(params.flags & RUY_ASM_FLAG_CHANNEL_DIMENSION_IS_COL));
 
   // The asm kernel below has the following NEON register allocation:
   //
@@ -1816,11 +1866,10 @@ void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
 
         // Offset these base pointers as needed given the current row, col.
         "ldr r8, [sp, #" RUY_STR(RUY_STACK_OFFSET_ROW) "]\n"
-        "add r5, r1, r8, lsl #2\n"
 
         "tst r4, #" RUY_STR(RUY_ASM_FLAG_HAS_BIAS) "\n"
         "it ne\n"
-        "movne r1, r5\n"
+        "addne r1, r1, r8, lsl #2\n"
 
         // Load 4 bias values.
         "vld1.32 {d24, d25}, [r1]\n"
@@ -1907,65 +1956,31 @@ void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
         "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_MULTIPLIER_EXPONENT) "]\n"
         "tst r6, #" RUY_STR(RUY_ASM_FLAG_HAS_PERCHANNEL) "\n"
         "ldr r4, [sp, #" RUY_STR(RUY_STACK_OFFSET_ROW) "]\n"
-        "add r5, r1, r4, lsl #2\n"
         "it ne\n"
-        "movne r1, r5\n"
+        "addne r1, r1, r4, lsl #2\n"
 
         "vld1.32 {q10}, [r1]\n"
 
-        RUY_MAKE_ZERO(q8)
-        "vmax.s32 q12, q10, q8\n"
+        "vmvn.i32 q8, #0\n"
+        "vmin.s32 q13, q10, q8\n"
+        "vsub.s32 q12, q10, q13\n"
 
+        // Apply the positive exponent part of the multiplier.
         "vshl.s32 q14, q14, q12\n"
-
-        "vmin.s32 q12, q10, q8\n"
 
         // Load fixed point part of the multiplier
         "ldr r1, [%[params], #" RUY_STR(RUY_OFFSET_MULTIPLIER_FIXEDPOINT) "]\n"
         // r6 has flags, r4 has row
-        "add r5, r1, r4, lsl #2\n"
         "tst r6, #" RUY_STR(RUY_ASM_FLAG_HAS_PERCHANNEL) "\n"
         "it ne\n"
-        "movne r1, r5\n"
+        "addne r1, r1, r4, lsl #2\n"
         "vld1.32 {q10}, [r1]\n" // multiplier_fixedpoint
 
         // Apply the fixed-point part of the multiplier.
-        "vqrdmulh.s32 q14, q14, q10\n"
+        "vqdmulh.s32 q14, q14, q10\n"
 
-        // We have some rounding division-by-power-of-two to do. This should
-        // always use "round to nearest". We allow for some
-        // freedom in how ties are broken, to strike a good compromise of
-        // performance on given hardware vs. perfect agreement of results
-        // across hardware.
-        //
-        // When RUY_OPT_NATIVE_ROUNDING is enabled, we allow for implementation
-        // defined tie-breaks to help performance. On NEON, this means that we
-        // can just use the NEON rounding instructions, such as srshl. They
-        // happen to be breaking ties upward.
-        //
-        // When RUY_OPT_NATIVE_ROUNDING is disabled, we implement strict
-        // break-ties-away-from zero, as described in Appendix B of
-        // https://arxiv.org/pdf/1712.05877.pdf
-        // When we wrote that, we thought that that would be better unbiased
-        // than the NEON upwards tie-breaks, and we had observed some
-        // improvement on some model. However, that is only more unbiased for
-        // data centered at zero, which was likely the case in that model,
-        // but is not always the case. If we wanted something more consistently
-        // unbiased then we should try breaking ties toward-nearest-even.
-#if !RUY_OPT(NATIVE_ROUNDING)
-        // Fix up values to be right-shifted, so that the (round to nearest,
-        // break ties upward) behavior of srshl applied to these fixed-up
-        // values, produces the same result as the desired (round to nearest,
-        // break ties away from zero) behavior on the original values.
-        "vand q8, q14, q12\n"
-        "vshr.s32 q8, q8, #31\n"
-        "vqadd.s32 q14, q14, q8\n"
-
-#endif
-        // At this point we have reduced the problem of correctly implementing
-        // rounding divide-by-power-of-two, to what the SRSHL instruction can
-        // do.
-        "vrshl.s32 q14, q14, q12\n"
+        // Apply the negative exponent part of the multiplier.
+        "vrshl.s32 q14, q14, q13\n"
 
         "ldrb r10, [%[params], #" RUY_STR(RUY_OFFSET_DST_TYPE_ID) "]\n"
         "cmp r10, #" RUY_STR(RUY_ASM_TYPE_ID_INT16) "\n"
@@ -1999,7 +2014,7 @@ void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
         "vdup.16 q13, r4\n" // dst_zero_point
 
         // Add the destination zero point
-        "vadd.i16 q14, q14, q13\n"
+        "vqadd.s16 q14, q14, q13\n"
 
         // Cast-and-saturate from int16 to uint8
         "vqmovun.s16 d30, q14\n"
@@ -2111,7 +2126,7 @@ void Kernel8bitNeonOutOfOrder1Col(const KernelParams8bit<4, 2>& params) {
         "vdup.16 q13, r4\n" // dst_zero_point
 
         // Add the destination zero point
-        "vadd.i16 q14, q14, q13\n"
+        "vqadd.s16 q14, q14, q13\n"
 
         // Cast-and-saturate from int16 to int8
         "vqmovn.s16 d30, q14\n"

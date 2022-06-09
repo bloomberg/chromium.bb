@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -35,6 +35,10 @@ class TemplateURLFetcher : public KeyedService {
  public:
   // Creates a TemplateURLFetcher.
   explicit TemplateURLFetcher(TemplateURLService* template_url_service);
+
+  TemplateURLFetcher(const TemplateURLFetcher&) = delete;
+  TemplateURLFetcher& operator=(const TemplateURLFetcher&) = delete;
+
   ~TemplateURLFetcher() override;
 
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
@@ -67,12 +71,10 @@ class TemplateURLFetcher : public KeyedService {
  private:
   friend class RequestDelegate;
 
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
 
   // In progress requests.
   std::vector<std::unique_ptr<RequestDelegate>> requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcher);
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_FETCHER_H_

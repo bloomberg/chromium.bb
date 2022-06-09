@@ -15,12 +15,16 @@
 #include "util/win/registration_protocol_win.h"
 
 #include <windows.h>
+
+// Must be after windows.h.
+#include <versionhelpers.h>
+
 #include <aclapi.h>
 #include <sddl.h>
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "util/win/exception_handler_server.h"
 #include "util/win/loader_lock.h"
 #include "util/win/scoped_handle.h"
@@ -146,10 +150,7 @@ HANDLE CreateNamedPipeInstance(const std::wstring& pipe_name,
 
   if (first_instance) {
     // Pre-Vista does not have integrity levels.
-    const DWORD version = GetVersion();
-    const DWORD major_version = LOBYTE(LOWORD(version));
-    const bool is_vista_or_later = major_version >= 6;
-    if (is_vista_or_later) {
+    if (IsWindowsVistaOrGreater()) {
       memset(&security_attributes, 0, sizeof(security_attributes));
       security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
       security_attributes.lpSecurityDescriptor =

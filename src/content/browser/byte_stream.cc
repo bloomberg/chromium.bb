@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 
 namespace content {
 namespace {
@@ -32,14 +32,15 @@ class ByteStreamReaderImpl;
 struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
  public:
   LifetimeFlag() : is_alive(true) { }
+
+  LifetimeFlag(const LifetimeFlag&) = delete;
+  LifetimeFlag& operator=(const LifetimeFlag&) = delete;
+
   bool is_alive;
 
  protected:
   friend class base::RefCountedThreadSafe<LifetimeFlag>;
-  virtual ~LifetimeFlag() { }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LifetimeFlag);
+  virtual ~LifetimeFlag() {}
 };
 
 // For both ByteStreamWriterImpl and ByteStreamReaderImpl, Construction and
@@ -101,7 +102,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
 
   // Only valid to access on peer_task_runner_ if
   // |*peer_lifetime_flag_ == true|
-  ByteStreamReaderImpl* peer_;
+  raw_ptr<ByteStreamReaderImpl> peer_;
 };
 
 class ByteStreamReaderImpl : public ByteStreamReader {
@@ -174,7 +175,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
 
   // Only valid to access on peer_task_runner_ if
   // |*peer_lifetime_flag_ == true|
-  ByteStreamWriterImpl* peer_;
+  raw_ptr<ByteStreamWriterImpl> peer_;
 };
 
 ByteStreamWriterImpl::ByteStreamWriterImpl(

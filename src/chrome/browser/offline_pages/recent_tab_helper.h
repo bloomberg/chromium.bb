@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/snapshot_controller.h"
@@ -46,6 +47,9 @@ class RecentTabHelper
     // changes.
     kMaxValue = kSamePageSameQuality,
   };
+
+  RecentTabHelper(const RecentTabHelper&) = delete;
+  RecentTabHelper& operator=(const RecentTabHelper&) = delete;
 
   ~RecentTabHelper() override;
 
@@ -134,7 +138,7 @@ class RecentTabHelper
 
   // Page model is a service, no ownership. Can be null - for example, in
   // case when tab is in incognito profile.
-  OfflinePageModel* page_model_ = nullptr;
+  raw_ptr<OfflinePageModel> page_model_ = nullptr;
 
   // If false, never make snapshots off the attached WebContents.
   // Not page-specific.
@@ -185,8 +189,6 @@ class RecentTabHelper
   base::WeakPtrFactory<RecentTabHelper> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(RecentTabHelper);
 };
 
 }  // namespace offline_pages

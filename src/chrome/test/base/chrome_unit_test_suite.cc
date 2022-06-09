@@ -26,6 +26,7 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "extensions/buildflags/buildflags.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,9 +36,14 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/dbus/constants/dbus_paths.h"
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_paths.h"
-#include "chromeos/dbus/constants/dbus_paths.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "crypto/nss_util_internal.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -107,6 +113,10 @@ class ChromeUnitTestSuiteInitializer : public testing::EmptyTestEventListener {
     DCHECK(ui::AXPlatformNode::GetAccessibilityMode() == 0)
         << "Please use ScopedAxModeSetter, or add a call to "
            "AXPlatformNode::ResetAxModeForTesting() at the end of your test.";
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    arc::ClearArcAllowedCheckForTesting();
+    crypto::ResetTokenManagerForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
  private:
@@ -128,6 +138,8 @@ void ChromeUnitTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new ChromeUnitTestSuiteInitializer);
+  listeners.Append(
+      new content::CheckForLeakedWebUIControllerFactoryRegistrations);
 
   {
     ChromeContentClient content_client;
@@ -171,6 +183,9 @@ void ChromeUnitTestSuite::InitializeProviders() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::RegisterPathProvider();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::dbus_paths::RegisterPathProvider();
 #endif
 
@@ -197,11 +212,11 @@ void ChromeUnitTestSuite::InitializeResourceBundle() {
   base::FilePath resources_pack_path;
   base::PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pack_path, ui::SCALE_FACTOR_NONE);
+      resources_pack_path, ui::kScaleFactorNone);
 
   base::FilePath unit_tests_pack_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &unit_tests_pack_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_ASSETS, &unit_tests_pack_path));
   unit_tests_pack_path = unit_tests_pack_path.AppendASCII("unit_tests.pak");
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      unit_tests_pack_path, ui::SCALE_FACTOR_NONE);
+      unit_tests_pack_path, ui::kScaleFactorNone);
 }

@@ -16,18 +16,20 @@
 
 typedef uint32_t GrColor;
 class GrMtlBuffer;
+class GrMtlFramebuffer;
 class GrMtlPipelineState;
+class GrMtlRenderCommandEncoder;
 class GrMtlRenderTarget;
 
 class GrMtlOpsRenderPass : public GrOpsRenderPass {
 public:
-    GrMtlOpsRenderPass(GrMtlGpu* gpu, GrRenderTarget* rt, GrSurfaceOrigin origin,
-                       const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
+    GrMtlOpsRenderPass(GrMtlGpu* gpu, GrRenderTarget* rt, sk_sp<GrMtlFramebuffer>,
+                       GrSurfaceOrigin origin, const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                        const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo);
 
     ~GrMtlOpsRenderPass() override;
 
-    void initRenderState(id<MTLRenderCommandEncoder>);
+    void initRenderState(GrMtlRenderCommandEncoder*);
 
     void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override;
     void submit();
@@ -61,25 +63,23 @@ private:
     void setupRenderPass(const GrOpsRenderPass::LoadAndStoreInfo& colorInfo,
                          const GrOpsRenderPass::StencilLoadAndStoreInfo& stencilInfo);
 
-    void setVertexBuffer(id<MTLRenderCommandEncoder>, const GrBuffer*, size_t offset,
+    void setVertexBuffer(GrMtlRenderCommandEncoder*, const GrBuffer*, size_t offset,
                          size_t inputBufferIndex);
-    void resetBufferBindings();
-    void precreateCmdEncoder();
+
+    GrMtlRenderCommandEncoder* setupResolve();
 
     GrMtlGpu*                   fGpu;
 
-    id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
+    sk_sp<GrMtlFramebuffer>     fFramebuffer;
+    GrMtlRenderCommandEncoder*  fActiveRenderCmdEncoder;
     GrMtlPipelineState*         fActivePipelineState = nullptr;
     MTLPrimitiveType            fActivePrimitiveType;
     MTLRenderPassDescriptor*    fRenderPassDesc;
     SkRect                      fBounds;
     size_t                      fCurrentVertexStride;
-
-    static constexpr size_t kNumBindings = GrMtlUniformHandler::kLastUniformBinding + 3;
-    struct {
-        id<MTLBuffer> fBuffer;
-        size_t fOffset;
-    } fBufferBindings[kNumBindings];
+#ifdef SK_ENABLE_MTL_DEBUG_INFO
+    bool                        fDebugGroupActive = false;
+#endif
 
     using INHERITED = GrOpsRenderPass;
 };

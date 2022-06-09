@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_placement.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_properties.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -35,62 +36,36 @@ namespace {
 class NGGridLayoutAlgorithmTest
     : public NGBaseLayoutAlgorithmTest,
       private ScopedLayoutNGGridForTest,
-      private ScopedLayoutNGBlockFragmentationForTest {
+      private ScopedLayoutNGBlockFragmentationForTest,
+      private ScopedLayoutNGSubgridForTest {
  protected:
   NGGridLayoutAlgorithmTest()
       : ScopedLayoutNGGridForTest(true),
-        ScopedLayoutNGBlockFragmentationForTest(true) {}
+        ScopedLayoutNGBlockFragmentationForTest(true),
+        ScopedLayoutNGSubgridForTest(true) {}
 
   void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
 
-  void BuildGridItemsAndTrackCollections(
-      const NGGridLayoutAlgorithm& algorithm) {
-    // Measure items.
-    algorithm.ConstructAndAppendGridItems(&grid_items_, &out_of_flow_items_);
-
+  void BuildGridItemsAndTrackCollections(NGGridLayoutAlgorithm& algorithm) {
     NGGridPlacement grid_placement(
         algorithm.Style(), algorithm.ComputeAutomaticRepetitions(kForColumns),
         algorithm.ComputeAutomaticRepetitions(kForRows));
 
+    // Measure items.
+    algorithm.ConstructAndAppendGridItems(&grid_items_, &grid_placement);
+
     // Build block track collections.
     NGGridBlockTrackCollection column_block_track_collection(kForColumns);
     NGGridBlockTrackCollection row_block_track_collection(kForRows);
-    algorithm.BuildBlockTrackCollections(
-        &grid_items_, &column_block_track_collection,
-        &row_block_track_collection, &grid_placement);
+    algorithm.BuildBlockTrackCollections(grid_placement, &grid_items_,
+                                         &column_block_track_collection,
+                                         &row_block_track_collection);
 
-    // Build algorithm track collections from the block track collections.
-    column_track_collection_ = NGGridLayoutAlgorithmTrackCollection(
-        column_block_track_collection,
-        algorithm.grid_available_size_.inline_size == kIndefiniteSize);
-
-    row_track_collection_ = NGGridLayoutAlgorithmTrackCollection(
-        row_block_track_collection,
-        algorithm.grid_available_size_.block_size == kIndefiniteSize);
-
-    // Cache track span properties for grid items.
-    algorithm.CacheGridItemsTrackSpanProperties(column_track_collection_,
-                                                &grid_items_);
-    algorithm.CacheGridItemsTrackSpanProperties(row_track_collection_,
-                                                &grid_items_);
-
-    for (auto& grid_item : grid_items_) {
-      grid_item.ComputeSetIndices(column_track_collection_);
-      grid_item.ComputeSetIndices(row_track_collection_);
-    }
-
-    grid_geometry_ = {algorithm.InitializeTrackSizes(&column_track_collection_),
-                      algorithm.InitializeTrackSizes(&row_track_collection_)};
-
-    // Resolve inline size.
-    bool unused;
-    algorithm.ComputeUsedTrackSizes(
-        NGGridLayoutAlgorithm::SizingConstraint::kLayout, grid_geometry_,
-        &column_track_collection_, &grid_items_, &unused);
-    // Resolve block size.
-    algorithm.ComputeUsedTrackSizes(
-        NGGridLayoutAlgorithm::SizingConstraint::kLayout, grid_geometry_,
-        &row_track_collection_, &grid_items_, &unused);
+    LayoutUnit unused_intrinsic_block_size;
+    grid_geometry_ = algorithm.ComputeGridGeometry(
+        column_block_track_collection, row_block_track_collection, &grid_items_,
+        &unused_intrinsic_block_size, &column_track_collection_,
+        &row_track_collection_);
   }
 
   NGGridLayoutAlgorithmTrackCollection& TrackCollection(
@@ -190,19 +165,13 @@ class NGGridLayoutAlgorithmTest
     return fragment->DumpFragmentTree(flags);
   }
 
-  NGGridLayoutAlgorithm::GridItems grid_items_;
-  Vector<NGGridLayoutAlgorithm::GridItemData> out_of_flow_items_;
-
+  GridItems grid_items_;
+  NGGridGeometry grid_geometry_;
   NGGridLayoutAlgorithmTrackCollection column_track_collection_;
   NGGridLayoutAlgorithmTrackCollection row_track_collection_;
-
-  NGGridLayoutAlgorithm::GridGeometry grid_geometry_;
 };
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmBaseSetSizes) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -234,17 +203,14 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmBaseSetSizes) {
 
   NGGridLayoutAlgorithm algorithm({node, fragment_geometry, space});
   BuildGridItemsAndTrackCollections(algorithm);
-  EXPECT_EQ(BaseRowSizeForChild(algorithm, 0), kIndefiniteSize);
-  EXPECT_EQ(BaseRowSizeForChild(algorithm, 1), kIndefiniteSize);
+  EXPECT_EQ(BaseRowSizeForChild(algorithm, 0), LayoutUnit(0));
+  EXPECT_EQ(BaseRowSizeForChild(algorithm, 1), LayoutUnit(110));
   EXPECT_EQ(BaseRowSizeForChild(algorithm, 2), LayoutUnit(210));
   EXPECT_EQ(BaseRowSizeForChild(algorithm, 3), LayoutUnit(100));
-  EXPECT_EQ(BaseRowSizeForChild(algorithm, 4), kIndefiniteSize);
+  EXPECT_EQ(BaseRowSizeForChild(algorithm, 4), LayoutUnit(110));
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRanges) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -299,9 +265,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRanges) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesWithAutoRepeater) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -369,9 +332,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesWithAutoRepeater) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicit) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -444,9 +404,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicit) {
 
 TEST_F(NGGridLayoutAlgorithmTest,
        NGGridLayoutAlgorithmRangesImplicitAutoColumns) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -511,9 +468,6 @@ TEST_F(NGGridLayoutAlgorithmTest,
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitAutoRows) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -581,9 +535,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitAutoRows) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitMixed) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid1 {
@@ -640,9 +591,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmRangesImplicitMixed) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoGridPositions) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
   <style>
       body {
@@ -717,9 +665,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoGridPositions) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoDense) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #grid {
@@ -876,9 +821,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmAutoDense) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmGridPositions) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #grid {
@@ -943,9 +885,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmGridPositions) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmResolveFixedTrackSizes) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid {
@@ -1004,9 +943,6 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridLayoutAlgorithmResolveFixedTrackSizes) {
 
 TEST_F(NGGridLayoutAlgorithmTest,
        NGGridLayoutAlgorithmDetermineGridItemsSpanningIntrinsicOrFlexTracks) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
     #grid {
@@ -1089,9 +1025,6 @@ TEST_F(NGGridLayoutAlgorithmTest,
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, FixedSizePositioning) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1141,9 +1074,6 @@ TEST_F(NGGridLayoutAlgorithmTest, FixedSizePositioning) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, FixedSizePositioningAutoRows) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1201,9 +1131,6 @@ TEST_F(NGGridLayoutAlgorithmTest, FixedSizePositioningAutoRows) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, SpecifiedPositionsOutOfOrder) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1278,9 +1205,6 @@ TEST_F(NGGridLayoutAlgorithmTest, SpecifiedPositionsOutOfOrder) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, GridWithGap) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1331,9 +1255,6 @@ TEST_F(NGGridLayoutAlgorithmTest, GridWithGap) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, GridWithPercentGap) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1388,9 +1309,6 @@ TEST_F(NGGridLayoutAlgorithmTest, GridWithPercentGap) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, AutoSizedGridWithGap) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1445,9 +1363,6 @@ TEST_F(NGGridLayoutAlgorithmTest, AutoSizedGridWithGap) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, AutoSizedGridWithPercentageGap) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #grid {
@@ -1493,9 +1408,6 @@ TEST_F(NGGridLayoutAlgorithmTest, AutoSizedGridWithPercentageGap) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, ItemsSizeWithGap) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1557,9 +1469,6 @@ TEST_F(NGGridLayoutAlgorithmTest, ItemsSizeWithGap) {
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, PositionedOutOfFlowItems) {
-  if (!RuntimeEnabledFeatures::LayoutNGGridEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <style>
       #grid {
@@ -1697,6 +1606,136 @@ TEST_F(NGGridLayoutAlgorithmTest, PositionedOutOfFlowItems) {
       offset:5,210 size:50x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGGridLayoutAlgorithmTest, NGGridAxisType) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #grid {
+        display: grid;
+      }
+
+      #subgrid {
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid [a];
+      }
+
+    </style>
+    <div id="grid">
+      <div id="subgrid"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode grid_node(GetLayoutBoxByElementId("grid"));
+  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  const ComputedStyle& grid_style = grid_node.Style();
+  const ComputedStyle& subgrid_style = subgrid_node.Style();
+
+  EXPECT_EQ(grid_style.GridColumnsAxisType(), GridAxisType::kStandaloneAxis);
+  EXPECT_EQ(grid_style.GridRowsAxisType(), GridAxisType::kStandaloneAxis);
+  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+}
+
+TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameList) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #grid {
+        display: grid;
+      }
+
+      #subgrid {
+        grid-template-columns: subgrid;
+        grid-template-rows: subgrid [a] [b] [c];
+      }
+
+    </style>
+    <div id="grid">
+      <div id="subgrid"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  const ComputedStyle& subgrid_style = subgrid_node.Style();
+
+  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+
+  EXPECT_TRUE(subgrid_style.OrderedNamedGridColumnLines().IsEmpty());
+
+  const OrderedNamedGridLines& ordered_named_grid_row_lines =
+      subgrid_style.OrderedNamedGridRowLines();
+  EXPECT_EQ(ordered_named_grid_row_lines.size(), 3u);
+
+  const Vector<NamedGridLine> row_named_lines = {
+      NamedGridLine("a"), NamedGridLine("b"), NamedGridLine("c")};
+  for (wtf_size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(ordered_named_grid_row_lines.find(i)->value[0],
+              row_named_lines[i]);
+  }
+}
+
+TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameListWithRepeaters) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #grid {
+        display: grid;
+      }
+
+      #subgrid {
+        grid-template-columns: subgrid [a] repeat(auto-fill, [b] [c]) [d];
+        grid-template-rows: subgrid [a] repeat(2, [b] [c]) [d];
+      }
+
+    </style>
+    <div id="grid">
+      <div id="subgrid"></div>
+    </div>
+  )HTML");
+
+  NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
+  const ComputedStyle& subgrid_style = subgrid_node.Style();
+
+  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+
+  const OrderedNamedGridLines& ordered_named_grid_column_lines =
+      subgrid_style.OrderedNamedGridColumnLines();
+  const OrderedNamedGridLines& auto_repeat_ordered_named_grid_column_lines =
+      subgrid_style.AutoRepeatOrderedNamedGridColumnLines();
+
+  EXPECT_EQ(ordered_named_grid_column_lines.size(), 2u);
+  EXPECT_EQ(auto_repeat_ordered_named_grid_column_lines.size(), 2u);
+
+  const Vector<NamedGridLine> column_named_lines = {
+      NamedGridLine("a"), NamedGridLine("b"), NamedGridLine("c"),
+      NamedGridLine("d")};
+
+  EXPECT_EQ(ordered_named_grid_column_lines.find(0)->value[0],
+            column_named_lines[0]);
+  EXPECT_EQ(ordered_named_grid_column_lines.find(2)->value[0],
+            column_named_lines[3]);
+  for (wtf_size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(auto_repeat_ordered_named_grid_column_lines.find(i)->value[0],
+              column_named_lines[i + 1]);
+  }
+
+  const OrderedNamedGridLines& ordered_named_grid_row_lines =
+      subgrid_style.OrderedNamedGridRowLines();
+  EXPECT_EQ(ordered_named_grid_row_lines.size(), 6u);
+
+  const Vector<NamedGridLine> row_named_lines = {
+      NamedGridLine("a"),
+      NamedGridLine("b", /* is_in_repeat */ true, /* is_first_repeat */ true),
+      NamedGridLine("c", /* is_in_repeat */ true, /* is_first_repeat */ true),
+      NamedGridLine("b", /* is_in_repeat */ true),
+      NamedGridLine("c", /* is_in_repeat */ true),
+      NamedGridLine("d")};
+
+  for (wtf_size_t i = 0; i < 6; ++i) {
+    EXPECT_EQ(ordered_named_grid_row_lines.find(i)->value[0],
+              row_named_lines[i]);
+  }
 }
 
 }  // namespace blink

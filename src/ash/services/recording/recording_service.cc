@@ -4,12 +4,16 @@
 
 #include "ash/services/recording/recording_service.h"
 
+#include <cmath>
+#include <cstdint>
 #include <cstdlib>
 
+#include "ash/constants/ash_features.h"
 #include "ash/services/recording/recording_encoder_muxer.h"
 #include "ash/services/recording/recording_service_constants.h"
 #include "ash/services/recording/video_capture_params.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/location.h"
 #include "base/task/task_traits.h"
@@ -20,6 +24,7 @@
 #include "media/base/status.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojom/video_capture_buffer.mojom.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/audio/public/cpp/device_factory.h"
@@ -30,34 +35,30 @@ namespace recording {
 
 namespace {
 
-// For a capture size of 320 by 240, we use a bitrate of 256 kbit/s. Based on
-// that, we calculate the bits per second per squared pixel.
-constexpr uint64_t kMinBitrateInBitsPerSecond = 256 * 1000;
-constexpr float kBitsPerSecondPerSquarePixel =
-    static_cast<float>(kMinBitrateInBitsPerSecond) / (320.f * 240.f);
+// For a capture size of 320 by 240, we use a bitrate of 256 kbit/s. This value
+// is used as the minimum bitrate that we don't go below regardless of the video
+// size.
+constexpr uint32_t kMinBitrateInBitsPerSecond = 256 * 1000;
 
-// The maximum number of muxed chunks to buffer before sending them over IPC to
-// the client. This value has been chosen as half the average number of chunks
-// needed to fill a buffer of size 512 KB while recording a screen size of
-// 1366 x 768 for about a minute and a half. Note that bombarding the client
-// (e.g. Ash) with a ton of IPCs will cause the captured video to sometimes be
-// janky.
-// TODO(afakhry): Choose a different value if needed, or make it a function of
-// the capture size (like the bitrate), or a function of the time since the last
-// IPC call to the client.
-constexpr int kMaxBufferedChunks = 238;
-
-// The size within which we will try to fit a thumbnail image extracted from the
-// first valid video frame. The value was chosen to be suitable with the image
-// container in the notification UI.
+// The size (in DIPs) within which we will try to fit a thumbnail image
+// extracted from the first valid video frame. The value was chosen to be
+// suitable with the image container in the notification UI.
 constexpr gfx::Size kThumbnailSize{328, 184};
 
-// Calculates the bitrate used to initialize the video encoder based on the
-// given |capture_size|.
-uint64_t CalculateVpxEncoderBitrate(const gfx::Size& capture_size) {
-  return std::max(kMinBitrateInBitsPerSecond,
-                  static_cast<uint64_t>(capture_size.GetArea() *
-                                        kBitsPerSecondPerSquarePixel));
+// Calculates the bitrate (in bits/seconds) used to initialize the video encoder
+// based on the given |capture_size|.
+uint32_t CalculateVpxEncoderBitrate(const gfx::Size& capture_size) {
+  // We use the Kush Gauge formula which goes like this:
+  // bitrate (bits/s) = width * height * frame rate * motion factor * 0.07.
+  // Here we use a motion factor = 1, which works well for our use cases.
+  // This formula gives a balance between the video quality and the file size so
+  // it doesn't become too large.
+  const uint32_t bitrate =
+      std::ceil(capture_size.GetArea() * kMaxFrameRate * 0.07f);
+
+  // Make sure to return a value that is divisible by 8 so that we work with
+  // whole bytes.
+  return std::max(kMinBitrateInBitsPerSecond, (bitrate & ~7));
 }
 
 // Given the desired |capture_size|, it creates and returns the options needed
@@ -65,7 +66,8 @@ uint64_t CalculateVpxEncoderBitrate(const gfx::Size& capture_size) {
 media::VideoEncoder::Options CreateVideoEncoderOptions(
     const gfx::Size& capture_size) {
   media::VideoEncoder::Options video_encoder_options;
-  video_encoder_options.bitrate = CalculateVpxEncoderBitrate(capture_size);
+  video_encoder_options.bitrate =
+      media::Bitrate::ConstantBitrate(CalculateVpxEncoderBitrate(capture_size));
   video_encoder_options.framerate = kMaxFrameRate;
   video_encoder_options.frame_size = capture_size;
   // This value, expressed as a number of frames, forces the encoder to code
@@ -151,59 +153,68 @@ RecordingService::~RecordingService() {
   StopRecording();
   video_capturer_remote_.reset();
   consumer_receiver_.reset();
-  if (number_of_buffered_chunks_)
-    FlushBufferedChunks();
-  SignalRecordingEndedToClient(/*success=*/false);
-
-  // Note that we don't need to call FlushAndFinalize() on the |encoder_muxer_|,
-  // since it will be done asynchronously on the |encoding_task_runner_|, and by
-  // then this |RecordingService| instance will have been already gone.
+  // Note that we can call FlushAndFinalize() on the |encoder_muxer_| even
+  // though it will be done asynchronously on the |encoding_task_runner_| and by
+  // then this |RecordingService| instance will have already been gone. This is
+  // because the muxer writes directly to the file and does not rely on this
+  // instance.
+  encoder_muxer_.AsyncCall(&RecordingEncoderMuxer::FlushAndFinalize)
+      .WithArgs(base::DoNothing());
+  SignalRecordingEndedToClient(mojom::RecordingStatus::kServiceClosing);
 }
 
 void RecordingService::RecordFullscreen(
     mojo::PendingRemote<mojom::RecordingServiceClient> client,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
     mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory,
+    const base::FilePath& webm_file_path,
     const viz::FrameSinkId& frame_sink_id,
-    const gfx::Size& frame_sink_size) {
+    const gfx::Size& frame_sink_size_dip,
+    float device_scale_factor) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  StartNewRecording(std::move(client), std::move(video_capturer),
-                    std::move(audio_stream_factory),
-                    VideoCaptureParams::CreateForFullscreenCapture(
-                        frame_sink_id, frame_sink_size));
+  StartNewRecording(
+      std::move(client), std::move(video_capturer),
+      std::move(audio_stream_factory), webm_file_path,
+      VideoCaptureParams::CreateForFullscreenCapture(
+          frame_sink_id, frame_sink_size_dip, device_scale_factor));
 }
 
 void RecordingService::RecordWindow(
     mojo::PendingRemote<mojom::RecordingServiceClient> client,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
     mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory,
+    const base::FilePath& webm_file_path,
     const viz::FrameSinkId& frame_sink_id,
-    const gfx::Size& frame_sink_size,
+    const gfx::Size& frame_sink_size_dip,
+    float device_scale_factor,
     const viz::SubtreeCaptureId& subtree_capture_id,
-    const gfx::Size& window_size) {
+    const gfx::Size& window_size_dip) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  StartNewRecording(
-      std::move(client), std::move(video_capturer),
-      std::move(audio_stream_factory),
-      VideoCaptureParams::CreateForWindowCapture(
-          frame_sink_id, subtree_capture_id, window_size, frame_sink_size));
+  StartNewRecording(std::move(client), std::move(video_capturer),
+                    std::move(audio_stream_factory), webm_file_path,
+                    VideoCaptureParams::CreateForWindowCapture(
+                        frame_sink_id, subtree_capture_id, frame_sink_size_dip,
+                        device_scale_factor, window_size_dip));
 }
 
 void RecordingService::RecordRegion(
     mojo::PendingRemote<mojom::RecordingServiceClient> client,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
     mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory,
+    const base::FilePath& webm_file_path,
     const viz::FrameSinkId& frame_sink_id,
-    const gfx::Size& frame_sink_size,
-    const gfx::Rect& crop_region) {
+    const gfx::Size& frame_sink_size_dip,
+    float device_scale_factor,
+    const gfx::Rect& crop_region_dip) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   StartNewRecording(std::move(client), std::move(video_capturer),
-                    std::move(audio_stream_factory),
+                    std::move(audio_stream_factory), webm_file_path,
                     VideoCaptureParams::CreateForRegionCapture(
-                        frame_sink_id, frame_sink_size, crop_region));
+                        frame_sink_id, frame_sink_size_dip, device_scale_factor,
+                        crop_region_dip));
 }
 
 void RecordingService::StopRecording() {
@@ -216,7 +227,8 @@ void RecordingService::StopRecording() {
 
 void RecordingService::OnRecordedWindowChangingRoot(
     const viz::FrameSinkId& new_frame_sink_id,
-    const gfx::Size& new_frame_sink_size) {
+    const gfx::Size& new_frame_sink_size_dip,
+    float new_device_scale_factor) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   if (!current_video_capture_params_) {
@@ -225,16 +237,18 @@ void RecordingService::OnRecordedWindowChangingRoot(
     return;
   }
 
-  // If there's a change in the new root's size, we must reconfigure the video
-  // encoder so that output video has the correct dimensions.
+  // If there's a change in the pixel size of the recorded window as a result of
+  // it moving to a different display, we must reconfigure the video encoder so
+  // that output video has the correct dimensions.
   if (current_video_capture_params_->OnRecordedWindowChangingRoot(
-          video_capturer_remote_, new_frame_sink_id, new_frame_sink_size)) {
+          video_capturer_remote_, new_frame_sink_id, new_frame_sink_size_dip,
+          new_device_scale_factor)) {
     ReconfigureVideoEncoder();
   }
 }
 
 void RecordingService::OnRecordedWindowSizeChanged(
-    const gfx::Size& new_window_size) {
+    const gfx::Size& new_window_size_dip) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   if (!current_video_capture_params_) {
@@ -244,13 +258,14 @@ void RecordingService::OnRecordedWindowSizeChanged(
   }
 
   if (current_video_capture_params_->OnRecordedWindowSizeChanged(
-          video_capturer_remote_, new_window_size)) {
+          video_capturer_remote_, new_window_size_dip)) {
     ReconfigureVideoEncoder();
   }
 }
 
 void RecordingService::OnFrameSinkSizeChanged(
-    const gfx::Size& new_frame_sink_size) {
+    const gfx::Size& new_frame_sink_size_dip,
+    float new_device_scale_factor) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   if (!current_video_capture_params_) {
@@ -259,16 +274,19 @@ void RecordingService::OnFrameSinkSizeChanged(
     return;
   }
 
-  // If there's a change in the new root's size, we must reconfigure the video
-  // encoder so that output video has the correct dimensions.
+  // A change in the pixel size of the frame sink may result in changing the
+  // pixel size of the captured target (e.g. window or region). we must
+  // reconfigure the video encoder so that output video has the correct
+  // dimensions.
   if (current_video_capture_params_->OnFrameSinkSizeChanged(
-          video_capturer_remote_, new_frame_sink_size)) {
+          video_capturer_remote_, new_frame_sink_size_dip,
+          new_device_scale_factor)) {
     ReconfigureVideoEncoder();
   }
 }
 
 void RecordingService::OnFrameCaptured(
-    base::ReadOnlySharedMemoryRegion data,
+    media::mojom::VideoBufferHandlePtr data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
@@ -276,16 +294,22 @@ void RecordingService::OnFrameCaptured(
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(encoder_muxer_);
 
+  CHECK(data->is_read_only_shmem_region());
+  base::ReadOnlySharedMemoryRegion& shmem_region =
+      data->get_read_only_shmem_region();
+
+  // The |data| parameter is not nullable and mojo type mapping for
+  // `base::ReadOnlySharedMemoryRegion` defines that nullable version of it is
+  // the same type, with null check being equivalent to IsValid() check. Given
+  // the above, we should never be able to receive a read only shmem region that
+  // is not valid - mojo will enforce it for us.
+  DCHECK(shmem_region.IsValid());
+
   // We ignore any subsequent frames after a failure.
   if (did_failure_occur_)
     return;
 
-  if (!data.IsValid()) {
-    DLOG(ERROR) << "Video frame shared memory is invalid.";
-    return;
-  }
-
-  base::ReadOnlySharedMemoryMapping mapping = data.Map();
+  base::ReadOnlySharedMemoryMapping mapping = shmem_region.Map();
   if (!mapping.IsValid()) {
     DLOG(ERROR) << "Mapping of video frame shared memory failed.";
     return;
@@ -328,6 +352,11 @@ void RecordingService::OnFrameCaptured(
   if (video_thumbnail_.isNull())
     video_thumbnail_ = ExtractImageFromVideoFrame(*frame);
 
+  if (on_video_frame_delivered_callback_for_testing_) {
+    std::move(on_video_frame_delivered_callback_for_testing_)
+        .Run(*frame, content_rect);
+  }
+
   encoder_muxer_.AsyncCall(&RecordingEncoderMuxer::EncodeVideo).WithArgs(frame);
 }
 
@@ -337,7 +366,7 @@ void RecordingService::OnStopped() {
   // If a failure occurred, we don't wait till the capturer sends us this
   // signal. The recording had already been terminated by now.
   if (!did_failure_occur_)
-    TerminateRecording(/*success=*/true);
+    TerminateRecording(mojom::RecordingStatus::kSuccess);
 }
 
 void RecordingService::OnLog(const std::string& message) {
@@ -371,7 +400,8 @@ void RecordingService::Capture(const media::AudioBus* audio_source,
 void RecordingService::OnCaptureError(
     media::AudioCapturerSource::ErrorCode code,
     const std::string& message) {
-  LOG(ERROR) << static_cast<uint32_t>(code) << ", " << message;
+  LOG(ERROR) << "AudioCaptureError: code=" << static_cast<uint32_t>(code)
+             << ", " << message;
 }
 
 void RecordingService::OnCaptureMuted(bool is_muted) {}
@@ -380,6 +410,7 @@ void RecordingService::StartNewRecording(
     mojo::PendingRemote<mojom::RecordingServiceClient> client,
     mojo::PendingRemote<viz::mojom::FrameSinkVideoCapturer> video_capturer,
     mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory,
+    const base::FilePath& webm_file_path,
     std::unique_ptr<VideoCaptureParams> capture_params) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
@@ -399,8 +430,7 @@ void RecordingService::StartNewRecording(
   encoder_muxer_ = RecordingEncoderMuxer::Create(
       encoding_task_runner_,
       CreateVideoEncoderOptions(current_video_capture_params_->GetVideoSize()),
-      should_record_audio ? &audio_parameters_ : nullptr,
-      BindRepeatingToMainThread(&RecordingService::OnMuxerOutput),
+      should_record_audio ? &audio_parameters_ : nullptr, webm_file_path,
       BindOnceToMainThread(&RecordingService::OnEncodingFailure));
 
   ConnectAndStartVideoCapturer(std::move(video_capturer));
@@ -421,12 +451,13 @@ void RecordingService::ReconfigureVideoEncoder() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(current_video_capture_params_);
 
+  ++number_of_video_encoder_reconfigures_;
   encoder_muxer_.AsyncCall(&RecordingEncoderMuxer::InitializeVideoEncoder)
       .WithArgs(CreateVideoEncoderOptions(
           current_video_capture_params_->GetVideoSize()));
 }
 
-void RecordingService::TerminateRecording(bool success) {
+void RecordingService::TerminateRecording(mojom::RecordingStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(encoder_muxer_);
 
@@ -436,7 +467,7 @@ void RecordingService::TerminateRecording(bool success) {
 
   encoder_muxer_.AsyncCall(&RecordingEncoderMuxer::FlushAndFinalize)
       .WithArgs(BindOnceToMainThread(&RecordingService::OnEncoderMuxerFlushed,
-                                     success));
+                                     status));
 }
 
 void RecordingService::ConnectAndStartVideoCapturer(
@@ -452,7 +483,8 @@ void RecordingService::ConnectAndStartVideoCapturer(
       &RecordingService::OnVideoCapturerDisconnected, base::Unretained(this)));
   current_video_capture_params_->InitializeVideoCapturer(
       video_capturer_remote_);
-  video_capturer_remote_->Start(consumer_receiver_.BindNewPipeAndPassRemote());
+  video_capturer_remote_->Start(consumer_receiver_.BindNewPipeAndPassRemote(),
+                                viz::mojom::BufferFormatPreference::kDefault);
 }
 
 void RecordingService::OnVideoCapturerDisconnected() {
@@ -466,7 +498,7 @@ void RecordingService::OnVideoCapturerDisconnected() {
   if (audio_capturer_)
     audio_capturer_->Stop();
   audio_capturer_.reset();
-  TerminateRecording(/*success=*/false);
+  TerminateRecording(mojom::RecordingStatus::kVizVideoCapturerDisconnected);
 }
 
 void RecordingService::OnAudioCaptured(
@@ -483,13 +515,7 @@ void RecordingService::OnAudioCaptured(
       .WithArgs(std::move(audio_bus), audio_capture_time);
 }
 
-void RecordingService::OnEncodingFailure(FailureType type, bool for_video) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-
-  OnRecordingFailure();
-}
-
-void RecordingService::OnRecordingFailure() {
+void RecordingService::OnEncodingFailure(mojom::RecordingStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
   did_failure_occur_ = true;
@@ -498,50 +524,22 @@ void RecordingService::OnRecordingFailure() {
   // terminate recording immediately. We still need to flush the encoders, and
   // muxer since they may contain valid frames from before the failure occurred,
   // that we can propagate to the client.
-  TerminateRecording(/*success=*/false);
+  TerminateRecording(status);
 }
 
-void RecordingService::OnEncoderMuxerFlushed(bool success) {
+void RecordingService::OnEncoderMuxerFlushed(mojom::RecordingStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
-  // If flushing the encoders and muxers resulted in some chunks being cached
-  // here, we flush them to the client now.
-  if (number_of_buffered_chunks_)
-    FlushBufferedChunks();
-
-  SignalRecordingEndedToClient(success);
+  SignalRecordingEndedToClient(status);
 }
 
-void RecordingService::SignalMuxerOutputToClient(std::string muxer_output) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-
-  client_remote_->OnMuxerOutput(std::move(muxer_output));
-}
-
-void RecordingService::SignalRecordingEndedToClient(bool success) {
+void RecordingService::SignalRecordingEndedToClient(
+    mojom::RecordingStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(encoder_muxer_);
 
   encoder_muxer_.Reset();
-  client_remote_->OnRecordingEnded(success, video_thumbnail_);
-}
-
-void RecordingService::OnMuxerOutput(std::string data) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-
-  ++number_of_buffered_chunks_;
-  muxed_chunks_buffer_.append(data);
-
-  if (number_of_buffered_chunks_ >= kMaxBufferedChunks)
-    FlushBufferedChunks();
-}
-
-void RecordingService::FlushBufferedChunks() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
-  DCHECK(number_of_buffered_chunks_);
-
-  SignalMuxerOutputToClient(std::move(muxed_chunks_buffer_));
-  number_of_buffered_chunks_ = 0;
+  client_remote_->OnRecordingEnded(status, video_thumbnail_);
 }
 
 }  // namespace recording

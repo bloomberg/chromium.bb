@@ -32,20 +32,51 @@
 
 namespace libgav1 {
 namespace dsp {
-namespace low_bitdepth {
 namespace {
 
-constexpr int kRoundingBits8bpp = 4;
+inline int16x8x2_t LoadPred(const int16_t* LIBGAV1_RESTRICT prediction_0,
+                            const int16_t* LIBGAV1_RESTRICT prediction_1) {
+  const int16x8x2_t pred = {vld1q_s16(prediction_0), vld1q_s16(prediction_1)};
+  return pred;
+}
 
-template <bool mask_is_inverse>
-inline void WeightMask8_NEON(const int16_t* prediction_0,
-                             const int16_t* prediction_1, uint8_t* mask) {
-  const int16x8_t pred_0 = vld1q_s16(prediction_0);
-  const int16x8_t pred_1 = vld1q_s16(prediction_1);
+#if LIBGAV1_MAX_BITDEPTH >= 10
+inline uint16x8x2_t LoadPred(const uint16_t* LIBGAV1_RESTRICT prediction_0,
+                             const uint16_t* LIBGAV1_RESTRICT prediction_1) {
+  const uint16x8x2_t pred = {vld1q_u16(prediction_0), vld1q_u16(prediction_1)};
+  return pred;
+}
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+template <int bitdepth>
+inline uint16x8_t AbsolutePredDifference(const int16x8x2_t pred) {
+  static_assert(bitdepth == 8, "");
+  constexpr int rounding_bits = bitdepth - 8 + ((bitdepth == 12) ? 2 : 4);
+  return vrshrq_n_u16(
+      vreinterpretq_u16_s16(vabdq_s16(pred.val[0], pred.val[1])),
+      rounding_bits);
+}
+
+template <int bitdepth>
+inline uint16x8_t AbsolutePredDifference(const uint16x8x2_t pred) {
+  constexpr int rounding_bits = bitdepth - 8 + ((bitdepth == 12) ? 2 : 4);
+  return vrshrq_n_u16(vabdq_u16(pred.val[0], pred.val[1]), rounding_bits);
+}
+
+template <bool mask_is_inverse, int bitdepth>
+inline void WeightMask8_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                             const void* LIBGAV1_RESTRICT prediction_1,
+                             uint8_t* LIBGAV1_RESTRICT mask) {
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
+  using PredTypeVecx2 =
+      typename std::conditional<bitdepth == 8, int16x8x2_t, uint16x8x2_t>::type;
+  const PredTypeVecx2 pred =
+      LoadPred(static_cast<const PredType*>(prediction_0),
+               static_cast<const PredType*>(prediction_1));
+  const uint16x8_t difference = AbsolutePredDifference<bitdepth>(pred);
   const uint8x8_t difference_offset = vdup_n_u8(38);
   const uint8x8_t mask_ceiling = vdup_n_u8(64);
-  const uint16x8_t difference = vrshrq_n_u16(
-      vreinterpretq_u16_s16(vabdq_s16(pred_0, pred_1)), kRoundingBits8bpp);
   const uint8x8_t adjusted_difference =
       vqadd_u8(vqshrn_n_u16(difference, 4), difference_offset);
   const uint8x8_t mask_value = vmin_u8(adjusted_difference, mask_ceiling);
@@ -58,7 +89,7 @@ inline void WeightMask8_NEON(const int16_t* prediction_0,
 }
 
 #define WEIGHT8_WITHOUT_STRIDE \
-  WeightMask8_NEON<mask_is_inverse>(pred_0, pred_1, mask)
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0, pred_1, mask)
 
 #define WEIGHT8_AND_STRIDE \
   WEIGHT8_WITHOUT_STRIDE;  \
@@ -66,9 +97,12 @@ inline void WeightMask8_NEON(const int16_t* prediction_0,
   pred_1 += 8;             \
   mask += mask_stride
 
-template <bool mask_is_inverse>
-void WeightMask8x8_NEON(const void* prediction_0, const void* prediction_1,
-                        uint8_t* mask, ptrdiff_t mask_stride) {
+// |pred_0| and |pred_1| are cast as int16_t* for the sake of pointer math. They
+// are uint16_t* for 10bpp and 12bpp, and this is handled in WeightMask8_NEON.
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask8x8_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                        const void* LIBGAV1_RESTRICT prediction_1,
+                        uint8_t* LIBGAV1_RESTRICT mask, ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y = 0;
@@ -78,9 +112,11 @@ void WeightMask8x8_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT8_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask8x16_NEON(const void* prediction_0, const void* prediction_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask8x16_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                         const void* LIBGAV1_RESTRICT prediction_1,
+                         uint8_t* LIBGAV1_RESTRICT mask,
+                         ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -92,9 +128,11 @@ void WeightMask8x16_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT8_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask8x32_NEON(const void* prediction_0, const void* prediction_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask8x32_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                         const void* LIBGAV1_RESTRICT prediction_1,
+                         uint8_t* LIBGAV1_RESTRICT mask,
+                         ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y5 = 0;
@@ -109,9 +147,9 @@ void WeightMask8x32_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT8_WITHOUT_STRIDE;
 }
 
-#define WEIGHT16_WITHOUT_STRIDE                            \
-  WeightMask8_NEON<mask_is_inverse>(pred_0, pred_1, mask); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 8, pred_1 + 8, mask + 8)
+#define WEIGHT16_WITHOUT_STRIDE                                      \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0, pred_1, mask); \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 8, pred_1 + 8, mask + 8)
 
 #define WEIGHT16_AND_STRIDE \
   WEIGHT16_WITHOUT_STRIDE;  \
@@ -119,9 +157,11 @@ void WeightMask8x32_NEON(const void* prediction_0, const void* prediction_1,
   pred_1 += 16;             \
   mask += mask_stride
 
-template <bool mask_is_inverse>
-void WeightMask16x8_NEON(const void* prediction_0, const void* prediction_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask16x8_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                         const void* LIBGAV1_RESTRICT prediction_1,
+                         uint8_t* LIBGAV1_RESTRICT mask,
+                         ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y = 0;
@@ -131,9 +171,11 @@ void WeightMask16x8_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT16_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask16x16_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask16x16_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -145,9 +187,11 @@ void WeightMask16x16_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT16_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask16x32_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask16x32_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y5 = 0;
@@ -162,9 +206,11 @@ void WeightMask16x32_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT16_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask16x64_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask16x64_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -176,11 +222,14 @@ void WeightMask16x64_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT16_WITHOUT_STRIDE;
 }
 
-#define WEIGHT32_WITHOUT_STRIDE                                           \
-  WeightMask8_NEON<mask_is_inverse>(pred_0, pred_1, mask);                \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 8, pred_1 + 8, mask + 8);    \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 16, pred_1 + 16, mask + 16); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 24, pred_1 + 24, mask + 24)
+#define WEIGHT32_WITHOUT_STRIDE                                         \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0, pred_1, mask);    \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 8, pred_1 + 8,   \
+                                              mask + 8);                \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 16, pred_1 + 16, \
+                                              mask + 16);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 24, pred_1 + 24, \
+                                              mask + 24)
 
 #define WEIGHT32_AND_STRIDE \
   WEIGHT32_WITHOUT_STRIDE;  \
@@ -188,9 +237,11 @@ void WeightMask16x64_NEON(const void* prediction_0, const void* prediction_1,
   pred_1 += 32;             \
   mask += mask_stride
 
-template <bool mask_is_inverse>
-void WeightMask32x8_NEON(const void* prediction_0, const void* prediction_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask32x8_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                         const void* LIBGAV1_RESTRICT prediction_1,
+                         uint8_t* LIBGAV1_RESTRICT mask,
+                         ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   WEIGHT32_AND_STRIDE;
@@ -203,9 +254,11 @@ void WeightMask32x8_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT32_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask32x16_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask32x16_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -217,9 +270,11 @@ void WeightMask32x16_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT32_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask32x32_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask32x32_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y5 = 0;
@@ -234,9 +289,11 @@ void WeightMask32x32_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT32_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask32x64_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask32x64_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -248,15 +305,22 @@ void WeightMask32x64_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT32_WITHOUT_STRIDE;
 }
 
-#define WEIGHT64_WITHOUT_STRIDE                                           \
-  WeightMask8_NEON<mask_is_inverse>(pred_0, pred_1, mask);                \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 8, pred_1 + 8, mask + 8);    \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 16, pred_1 + 16, mask + 16); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 24, pred_1 + 24, mask + 24); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 32, pred_1 + 32, mask + 32); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 40, pred_1 + 40, mask + 40); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 48, pred_1 + 48, mask + 48); \
-  WeightMask8_NEON<mask_is_inverse>(pred_0 + 56, pred_1 + 56, mask + 56)
+#define WEIGHT64_WITHOUT_STRIDE                                         \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0, pred_1, mask);    \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 8, pred_1 + 8,   \
+                                              mask + 8);                \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 16, pred_1 + 16, \
+                                              mask + 16);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 24, pred_1 + 24, \
+                                              mask + 24);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 32, pred_1 + 32, \
+                                              mask + 32);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 40, pred_1 + 40, \
+                                              mask + 40);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 48, pred_1 + 48, \
+                                              mask + 48);               \
+  WeightMask8_NEON<mask_is_inverse, bitdepth>(pred_0 + 56, pred_1 + 56, \
+                                              mask + 56)
 
 #define WEIGHT64_AND_STRIDE \
   WEIGHT64_WITHOUT_STRIDE;  \
@@ -264,9 +328,11 @@ void WeightMask32x64_NEON(const void* prediction_0, const void* prediction_1,
   pred_1 += 64;             \
   mask += mask_stride
 
-template <bool mask_is_inverse>
-void WeightMask64x16_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask64x16_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -278,9 +344,11 @@ void WeightMask64x16_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT64_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask64x32_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask64x32_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y5 = 0;
@@ -295,9 +363,11 @@ void WeightMask64x32_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT64_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask64x64_NEON(const void* prediction_0, const void* prediction_1,
-                          uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask64x64_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                          const void* LIBGAV1_RESTRICT prediction_1,
+                          uint8_t* LIBGAV1_RESTRICT mask,
+                          ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -309,9 +379,11 @@ void WeightMask64x64_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT64_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask64x128_NEON(const void* prediction_0, const void* prediction_1,
-                           uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask64x128_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                           const void* LIBGAV1_RESTRICT prediction_1,
+                           uint8_t* LIBGAV1_RESTRICT mask,
+                           ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -324,9 +396,11 @@ void WeightMask64x128_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT64_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask128x64_NEON(const void* prediction_0, const void* prediction_1,
-                           uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask128x64_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                           const void* LIBGAV1_RESTRICT prediction_1,
+                           uint8_t* LIBGAV1_RESTRICT mask,
+                           ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -366,9 +440,11 @@ void WeightMask128x64_NEON(const void* prediction_0, const void* prediction_1,
   WEIGHT64_WITHOUT_STRIDE;
 }
 
-template <bool mask_is_inverse>
-void WeightMask128x128_NEON(const void* prediction_0, const void* prediction_1,
-                            uint8_t* mask, ptrdiff_t mask_stride) {
+template <bool mask_is_inverse, int bitdepth>
+void WeightMask128x128_NEON(const void* LIBGAV1_RESTRICT prediction_0,
+                            const void* LIBGAV1_RESTRICT prediction_1,
+                            uint8_t* LIBGAV1_RESTRICT mask,
+                            ptrdiff_t mask_stride) {
   const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
   const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   int y3 = 0;
@@ -416,11 +492,20 @@ void WeightMask128x128_NEON(const void* prediction_0, const void* prediction_1,
   mask += 64;
   WEIGHT64_WITHOUT_STRIDE;
 }
+#undef WEIGHT8_WITHOUT_STRIDE
+#undef WEIGHT8_AND_STRIDE
+#undef WEIGHT16_WITHOUT_STRIDE
+#undef WEIGHT16_AND_STRIDE
+#undef WEIGHT32_WITHOUT_STRIDE
+#undef WEIGHT32_AND_STRIDE
+#undef WEIGHT64_WITHOUT_STRIDE
+#undef WEIGHT64_AND_STRIDE
 
 #define INIT_WEIGHT_MASK_8BPP(width, height, w_index, h_index) \
   dsp->weight_mask[w_index][h_index][0] =                      \
-      WeightMask##width##x##height##_NEON<0>;                  \
-  dsp->weight_mask[w_index][h_index][1] = WeightMask##width##x##height##_NEON<1>
+      WeightMask##width##x##height##_NEON<0, 8>;               \
+  dsp->weight_mask[w_index][h_index][1] =                      \
+      WeightMask##width##x##height##_NEON<1, 8>
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
@@ -442,11 +527,51 @@ void Init8bpp() {
   INIT_WEIGHT_MASK_8BPP(128, 64, 4, 3);
   INIT_WEIGHT_MASK_8BPP(128, 128, 4, 4);
 }
+#undef INIT_WEIGHT_MASK_8BPP
 
 }  // namespace
-}  // namespace low_bitdepth
 
-void WeightMaskInit_NEON() { low_bitdepth::Init8bpp(); }
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
+
+#define INIT_WEIGHT_MASK_10BPP(width, height, w_index, h_index) \
+  dsp->weight_mask[w_index][h_index][0] =                       \
+      WeightMask##width##x##height##_NEON<0, 10>;               \
+  dsp->weight_mask[w_index][h_index][1] =                       \
+      WeightMask##width##x##height##_NEON<1, 10>
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+  INIT_WEIGHT_MASK_10BPP(8, 8, 0, 0);
+  INIT_WEIGHT_MASK_10BPP(8, 16, 0, 1);
+  INIT_WEIGHT_MASK_10BPP(8, 32, 0, 2);
+  INIT_WEIGHT_MASK_10BPP(16, 8, 1, 0);
+  INIT_WEIGHT_MASK_10BPP(16, 16, 1, 1);
+  INIT_WEIGHT_MASK_10BPP(16, 32, 1, 2);
+  INIT_WEIGHT_MASK_10BPP(16, 64, 1, 3);
+  INIT_WEIGHT_MASK_10BPP(32, 8, 2, 0);
+  INIT_WEIGHT_MASK_10BPP(32, 16, 2, 1);
+  INIT_WEIGHT_MASK_10BPP(32, 32, 2, 2);
+  INIT_WEIGHT_MASK_10BPP(32, 64, 2, 3);
+  INIT_WEIGHT_MASK_10BPP(64, 16, 3, 1);
+  INIT_WEIGHT_MASK_10BPP(64, 32, 3, 2);
+  INIT_WEIGHT_MASK_10BPP(64, 64, 3, 3);
+  INIT_WEIGHT_MASK_10BPP(64, 128, 3, 4);
+  INIT_WEIGHT_MASK_10BPP(128, 64, 4, 3);
+  INIT_WEIGHT_MASK_10BPP(128, 128, 4, 4);
+}
+#undef INIT_WEIGHT_MASK_10BPP
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+void WeightMaskInit_NEON() {
+  Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+}
 
 }  // namespace dsp
 }  // namespace libgav1

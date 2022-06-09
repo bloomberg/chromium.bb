@@ -6,12 +6,12 @@
 # We want to run python in unbuffered mode; however shebangs on linux grab the
 # entire rest of the shebang line as a single argument, leading to errors like:
 #
-#   /usr/bin/env: 'python2 -u': No such file or directory
+#   /usr/bin/env: 'python3 -u': No such file or directory
 #
 # This little shell hack is a triple-quoted noop in python, but in sh it
 # evaluates to re-exec'ing this script in unbuffered mode.
 # pylint: disable=pointless-string-statement
-''''exec python2 -u -- "$0" ${1+"$@"} # '''
+''''exec python3 -u -- "$0" ${1+"$@"} # '''
 # vi: syntax=python
 """Bootstrap script to clone and forward to the recipe engine tool.
 
@@ -33,6 +33,7 @@ import subprocess
 import sys
 
 from collections import namedtuple
+from io import open  # pylint: disable=redefined-builtin
 
 try:
   import urllib.parse as urlparse
@@ -70,7 +71,7 @@ def parse(repo_root, recipes_cfg_path):
       current repo (i.e. the folder containing `recipes/` and/or
       `recipe_modules`)
   """
-  with open(recipes_cfg_path, 'rU') as fh:
+  with open(recipes_cfg_path, 'r') as fh:
     pb = json.load(fh)
 
   try:
@@ -105,14 +106,16 @@ def parse(repo_root, recipes_cfg_path):
                                 recipes_path.replace('/', os.path.sep))
     return EngineDep(**engine), recipes_path
   except KeyError as ex:
-    raise MalformedRecipesCfg(ex.message, recipes_cfg_path)
+    raise MalformedRecipesCfg(str(ex), recipes_cfg_path)
 
 
 IS_WIN = sys.platform.startswith(('win', 'cygwin'))
 
 _BAT = '.bat' if IS_WIN else ''
 GIT = 'git' + _BAT
-VPYTHON = 'vpython' + _BAT
+VPYTHON = ('vpython' +
+           ('3' if os.getenv('RECIPES_USE_PY3') == 'true' else '') +
+           _BAT)
 CIPD = 'cipd' + _BAT
 REQUIRED_BINARIES = {GIT, VPYTHON, CIPD}
 
@@ -241,7 +244,6 @@ def main():
     repo_root = os.path.abspath(repo_root).decode()
     recipes_cfg_path = os.path.join(repo_root, 'infra', 'config', 'recipes.cfg')
     args = ['--package', recipes_cfg_path] + args
-
   engine_path = checkout_engine(engine_override, repo_root, recipes_cfg_path)
 
   argv = (

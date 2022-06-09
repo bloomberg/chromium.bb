@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLABLE_AREA_H_
 
 #include "base/callback_helpers.h"
+#include "base/gtest_prod_util.h"
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
@@ -35,11 +36,11 @@
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -56,16 +57,17 @@ class Layer;
 
 namespace blink {
 class ChromeClient;
+class Color;
 class CompositorAnimationTimeline;
 class Document;
 class LayoutBox;
 class LayoutObject;
 class LocalFrame;
+class MacScrollbarAnimator;
 class Node;
 class PaintLayer;
 class ProgrammaticScrollAnimator;
 class ScrollAnchor;
-class MacScrollbarAnimator;
 class ScrollAnimatorBase;
 struct SerializedAnchor;
 class SmoothScrollSequencer;
@@ -185,7 +187,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       bool scrolled_y,
       base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
   bool SnapForEndPosition(
-      const FloatPoint& end_position,
+      const gfx::PointF& end_position,
       bool scrolled_x,
       bool scrolled_y,
       base::ScopedClosureRunner on_finish = base::ScopedClosureRunner());
@@ -201,7 +203,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   //
   // NOTE: If a target position is found, then it is expected that this position
   // will be scrolled to.
-  virtual absl::optional<FloatPoint> GetSnapPositionAndSetTarget(
+  virtual absl::optional<gfx::PointF> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) {
     return absl::nullopt;
   }
@@ -221,12 +223,14 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // overflow:overlay might be deprecated soon.
   bool HasOverlayScrollbars() const;
   void SetScrollbarOverlayColorTheme(ScrollbarOverlayColorTheme);
-  void RecalculateScrollbarOverlayColorTheme(Color);
+  void RecalculateScrollbarOverlayColorTheme(const Color& background_color);
   ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const {
     return static_cast<ScrollbarOverlayColorTheme>(
         scrollbar_overlay_color_theme_);
   }
 
+  // This getter will create a MacScrollAnimator if it doesn't already exist,
+  // only on MacOS.
   MacScrollbarAnimator* GetMacScrollbarAnimator() const;
 
   // This getter will create a ScrollAnimatorBase if it doesn't already exist.
@@ -269,9 +273,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool IsThrottled() const = 0;
   virtual int ScrollSize(ScrollbarOrientation) const = 0;
   virtual bool IsScrollCornerVisible() const = 0;
-  virtual IntRect ScrollCornerRect() const = 0;
+  virtual gfx::Rect ScrollCornerRect() const = 0;
   virtual bool HasTickmarks() const { return false; }
-  virtual Vector<IntRect> GetTickmarks() const { return Vector<IntRect>(); }
+  virtual Vector<gfx::Rect> GetTickmarks() const { return Vector<gfx::Rect>(); }
 
   // Note that this function just set the scrollbar itself needs repaint by
   // blink during paint, but doesn't set the scrollbar parts (thumb or track)
@@ -288,32 +292,32 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Convert points and rects between the scrollbar and its containing
   // EmbeddedContentView. The client needs to implement these in order to be
   // aware of layout effects like CSS transforms.
-  virtual IntRect ConvertFromScrollbarToContainingEmbeddedContentView(
+  virtual gfx::Rect ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar& scrollbar,
-      const IntRect& scrollbar_rect) const {
-    IntRect local_rect = scrollbar_rect;
-    local_rect.MoveBy(scrollbar.Location());
+      const gfx::Rect& scrollbar_rect) const {
+    gfx::Rect local_rect = scrollbar_rect;
+    local_rect.Offset(scrollbar.Location().OffsetFromOrigin());
     return local_rect;
   }
-  virtual IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
+  virtual gfx::Point ConvertFromContainingEmbeddedContentViewToScrollbar(
       const Scrollbar& scrollbar,
-      const IntPoint& parent_point) const {
+      const gfx::Point& parent_point) const {
     NOTREACHED();
     return parent_point;
   }
-  virtual IntPoint ConvertFromScrollbarToContainingEmbeddedContentView(
+  virtual gfx::Point ConvertFromScrollbarToContainingEmbeddedContentView(
       const Scrollbar& scrollbar,
-      const IntPoint& scrollbar_point) const {
+      const gfx::Point& scrollbar_point) const {
     NOTREACHED();
     return scrollbar_point;
   }
-  virtual IntPoint ConvertFromRootFrame(
-      const IntPoint& point_in_root_frame) const {
+  virtual gfx::Point ConvertFromRootFrame(
+      const gfx::Point& point_in_root_frame) const {
     NOTREACHED();
     return point_in_root_frame;
   }
-  virtual IntPoint ConvertFromRootFrameToVisualViewport(
-      const IntPoint& point_in_root_frame) const {
+  virtual gfx::Point ConvertFromRootFrameToVisualViewport(
+      const gfx::Point& point_in_root_frame) const {
     NOTREACHED();
     return point_in_root_frame;
   }
@@ -327,36 +331,42 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // "Scroll offset" is in content-flow-aware coordinates, "Scroll position" is
   // in physical (i.e., not flow-aware) coordinates. Among ScrollableArea
   // sub-classes, only PaintLayerScrollableArea has a real distinction between
-  // the two. For a more detailed explanation of scrollPosition, scrollOffset,
-  // and scrollOrigin, see core/layout/README.md.
-  virtual FloatPoint ScrollPosition() const {
-    return FloatPoint(GetScrollOffset());
+  // the two. For a more detailed explanation of ScrollPosition, ScrollOffset,
+  // and ScrollOrigin, see core/layout/README.md.
+  // Note that in Chrome code except for blink renderer, there is no concept of
+  // "scroll origin", and the term "scroll offset" has the same definition as
+  // "scroll position" here. When a "scroll offset" is requested from outside
+  // of blink renderer, we should pass "scroll origin". Similarly, when "scroll
+  // offset" is set from outside of blink renderer, we should set "scroll
+  // position" here.
+  gfx::PointF ScrollPosition() const {
+    return ScrollOffsetToPosition(GetScrollOffset());
   }
-  virtual FloatPoint ScrollOffsetToPosition(const ScrollOffset& offset) const {
-    return FloatPoint(offset);
+  virtual gfx::PointF ScrollOffsetToPosition(const ScrollOffset& offset) const {
+    return gfx::PointAtOffsetFromOrigin(offset);
   }
   virtual ScrollOffset ScrollPositionToOffset(
-      const FloatPoint& position) const {
-    return ToScrollOffset(position);
+      const gfx::PointF& position) const {
+    return position.OffsetFromOrigin();
   }
-  virtual IntSize ScrollOffsetInt() const = 0;
+  virtual gfx::Vector2d ScrollOffsetInt() const = 0;
   virtual ScrollOffset GetScrollOffset() const {
     return ScrollOffset(ScrollOffsetInt());
   }
-  virtual IntSize MinimumScrollOffsetInt() const = 0;
+  virtual gfx::Vector2d MinimumScrollOffsetInt() const = 0;
   virtual ScrollOffset MinimumScrollOffset() const {
     return ScrollOffset(MinimumScrollOffsetInt());
   }
-  virtual IntSize MaximumScrollOffsetInt() const = 0;
+  virtual gfx::Vector2d MaximumScrollOffsetInt() const = 0;
   virtual ScrollOffset MaximumScrollOffset() const {
     return ScrollOffset(MaximumScrollOffsetInt());
   }
 
-  virtual IntRect VisibleContentRect(
+  virtual gfx::Rect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const = 0;
-  virtual int VisibleHeight() const { return VisibleContentRect().Height(); }
-  virtual int VisibleWidth() const { return VisibleContentRect().Width(); }
-  virtual IntSize ContentsSize() const = 0;
+  virtual int VisibleHeight() const { return VisibleContentRect().height(); }
+  virtual int VisibleWidth() const { return VisibleContentRect().width(); }
+  virtual gfx::Size ContentsSize() const = 0;
 
   // scroll snapport is the area of the scrollport that is used as the alignment
   // container for the scroll snap areas when calculating snap positions. It's
@@ -367,7 +377,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return PhysicalRect(VisibleContentRect(scrollbar_inclusion));
   }
 
-  virtual IntPoint LastKnownMousePosition() const { return IntPoint(); }
+  virtual gfx::Point LastKnownMousePosition() const { return gfx::Point(); }
 
   virtual bool ShouldSuspendScrollAnimations() const { return true; }
   virtual bool ScrollbarsCanBeActive() const = 0;
@@ -380,10 +390,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool ScrollAnimatorEnabled() const { return false; }
 
   // NOTE: Only called from Internals for testing.
-  void UpdateScrollOffsetFromInternals(const IntSize&);
+  void UpdateScrollOffsetFromInternals(const gfx::Vector2d&);
 
-  virtual IntSize ClampScrollOffset(const IntSize&) const;
-  virtual ScrollOffset ClampScrollOffset(const ScrollOffset&) const;
+  gfx::Vector2d ClampScrollOffset(const gfx::Vector2d&) const;
+  ScrollOffset ClampScrollOffset(const ScrollOffset&) const;
 
   // Let subclasses provide a way of asking for and servicing scroll
   // animations.
@@ -393,8 +403,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void RegisterForAnimation() {}
   virtual void DeregisterForAnimation() {}
 
-  bool UsesCompositedScrolling() const { return uses_composited_scrolling_; }
+  virtual bool UsesCompositedScrolling() const {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    return uses_composited_scrolling_;
+  }
   void SetUsesCompositedScrolling(bool uses_composited_scrolling) {
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
     uses_composited_scrolling_ = uses_composited_scrolling;
   }
   virtual bool ShouldScrollOnMainThread() const { return false; }
@@ -418,15 +432,15 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Convenience functions
   float MinimumScrollOffset(ScrollbarOrientation orientation) {
-    return orientation == kHorizontalScrollbar ? MinimumScrollOffset().Width()
-                                               : MinimumScrollOffset().Height();
+    return orientation == kHorizontalScrollbar ? MinimumScrollOffset().x()
+                                               : MinimumScrollOffset().y();
   }
   float MaximumScrollOffset(ScrollbarOrientation orientation) {
-    return orientation == kHorizontalScrollbar ? MaximumScrollOffset().Width()
-                                               : MaximumScrollOffset().Height();
+    return orientation == kHorizontalScrollbar ? MaximumScrollOffset().x()
+                                               : MaximumScrollOffset().y();
   }
   float ClampScrollOffset(ScrollbarOrientation orientation, float offset) {
-    return clampTo(offset, MinimumScrollOffset(orientation),
+    return ClampTo(offset, MinimumScrollOffset(orientation),
                    MaximumScrollOffset(orientation));
   }
 
@@ -473,7 +487,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Subtracts space occupied by this ScrollableArea's scrollbars.
   // Does nothing if overlay scrollbars are enabled.
-  IntSize ExcludeScrollbars(const IntSize&) const;
+  gfx::Size ExcludeScrollbars(const gfx::Size&) const;
 
   virtual int VerticalScrollbarWidth(
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize) const;
@@ -520,7 +534,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       const = 0;
 
   // Callback for compositor-side scrolling.
-  virtual void DidScroll(const FloatPoint&);
+  virtual void DidCompositorScroll(const gfx::PointF& position);
 
   virtual void ScrollbarFrameRectChanged() {}
 
@@ -546,6 +560,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // For <fieldset>, a ScrollableArea is associated to its internal anonymous
   // box. GetLayoutBox()->GetNode() doesn't work in this case.
   Node* EventTargetNode() const;
+
+  ScrollOffset PendingScrollAnchorAdjustment() const;
+  void ClearPendingScrollAnchorAdjustment();
 
   scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner();
 
@@ -597,7 +614,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   void ProgrammaticScrollHelper(const ScrollOffset&,
                                 mojom::blink::ScrollBehavior,
-                                bool,
+                                bool is_sequenced_scroll,
+                                gfx::Vector2d animation_adjustment,
                                 ScrollCallback on_finish);
   void UserScrollHelper(const ScrollOffset&, mojom::blink::ScrollBehavior);
 
@@ -630,7 +648,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // using AppKit-specific code (Cocoa APIs). It requires input from
   // ScrollableArea about changes on scrollbars. For other platforms, painting
   // is done by blink, and this member will be a nullptr.
-  mutable Member<MacScrollbarAnimator> scrollbar_animator_;
+  mutable Member<MacScrollbarAnimator> mac_scrollbar_animator_;
 
   mutable Member<ScrollAnimatorBase> scroll_animator_;
   mutable Member<ProgrammaticScrollAnimator> programmatic_scroll_animator_;
@@ -639,6 +657,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
       fade_overlay_scrollbars_timer_;
 
   Vector<ScrollCallback> pending_scroll_complete_callbacks_;
+
+  ScrollOffset pending_scroll_anchor_adjustment_;
 
   unsigned scrollbar_overlay_color_theme_ : 2;
 

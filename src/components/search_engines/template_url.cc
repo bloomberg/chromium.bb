@@ -151,6 +151,9 @@ class SearchTermLocation {
     }
   }
 
+  SearchTermLocation(const SearchTermLocation&) = delete;
+  SearchTermLocation& operator=(const SearchTermLocation&) = delete;
+
   bool found() const { return found_; }
   const std::string& key() const { return key_; }
   const std::string& value_prefix() const { return value_prefix_; }
@@ -173,8 +176,6 @@ class SearchTermLocation {
   std::string key_;
   std::string value_prefix_;
   std::string value_suffix_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchTermLocation);
 };
 
 bool IsTemplateParameterString(const std::string& param) {
@@ -713,6 +714,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
                                         start));
   } else if (parameter == "google:pageClassification") {
     replacements->push_back(Replacement(GOOGLE_PAGE_CLASSIFICATION, start));
+  } else if (parameter == "google:clientCacheTimeToLive") {
+    replacements->push_back(
+        Replacement(GOOGLE_CLIENT_CACHE_TIME_TO_LIVE, start));
   } else if (parameter == "google:pathWildcard") {
     // Do nothing, we just want the path wildcard removed from the URL.
   } else if (parameter == "google:prefetchQuery") {
@@ -1132,6 +1136,17 @@ std::string TemplateURLRef::HandleReplacements(
         }
         break;
 
+      case GOOGLE_CLIENT_CACHE_TIME_TO_LIVE:
+        if (search_terms_args.search_terms.size() == 0 &&
+            search_terms_args.zero_suggest_cache_duration_sec > 0) {
+          HandleReplacement(
+              "ccttl",
+              base::NumberToString(
+                  search_terms_args.zero_suggest_cache_duration_sec),
+              *i, &url);
+        }
+        break;
+
       case GOOGLE_PREFETCH_QUERY: {
         const std::string& query = search_terms_args.prefetch_query;
         const std::string& type = search_terms_args.prefetch_query_type;
@@ -1150,7 +1165,7 @@ std::string TemplateURLRef::HandleReplacements(
           // prefetch to allow the search server to treat the requests based on
           // source. "cs" represents Chrome Suggestions as the source. Adding a
           // new source should be supported by the Search engine.
-          HandleReplacement(std::string(), "pf=cs&", *i, &url);
+          HandleReplacement("pf", "cs", *i, &url);
         }
         break;
       }
@@ -1195,11 +1210,8 @@ std::string TemplateURLRef::HandleReplacements(
       }
 
       case GOOGLE_SUGGEST_CLIENT:
-        HandleReplacement(
-            std::string(),
-            search_terms_data.GetSuggestClient(
-                search_terms_args.request_source == NON_SEARCHBOX_NTP),
-            *i, &url);
+        HandleReplacement(std::string(), search_terms_data.GetSuggestClient(),
+                          *i, &url);
         break;
 
       case GOOGLE_SUGGEST_REQUEST_ID:
@@ -1412,10 +1424,9 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
   DCHECK(url.is_valid());
   GURL::Replacements rep;
 
-  const char favicon_path[] = "/favicon.ico";
-  int favicon_path_len = base::size(favicon_path) - 1;
+  static const char kFaviconPath[] = "/favicon.ico";
 
-  rep.SetPath(favicon_path, url::Component(0, favicon_path_len));
+  rep.SetPathStr(kFaviconPath);
   rep.ClearUsername();
   rep.ClearPassword();
   rep.ClearQuery();

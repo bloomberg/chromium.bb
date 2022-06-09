@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "components/query_tiles/internal/image_prefetcher.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
@@ -97,7 +99,7 @@ class TileServiceImpl : public InitializableTileService,
   std::unique_ptr<TileFetcher> tile_fetcher_;
 
   // Clock object.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   std::unique_ptr<Logger> logger_;
 

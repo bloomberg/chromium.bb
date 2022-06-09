@@ -41,7 +41,15 @@ namespace test {
 // initialization in the test harness's constructor.
 class ScopedFeatureList final {
  public:
+  // Constructs the instance in a non-initialized state.
   ScopedFeatureList();
+
+  // Shorthand for immediately initializing with InitAndEnableFeature().
+  explicit ScopedFeatureList(const Feature& enable_feature);
+
+  ScopedFeatureList(const ScopedFeatureList&) = delete;
+  ScopedFeatureList& operator=(const ScopedFeatureList&) = delete;
+
   ~ScopedFeatureList();
 
   struct FeatureAndParams {
@@ -137,8 +145,6 @@ class ScopedFeatureList final {
   base::FieldTrialList* original_field_trial_list_ = nullptr;
   std::string original_params_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFeatureList);
 };
 
 }  // namespace test

@@ -22,8 +22,8 @@
 #include "src/gpu/GrImageContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/gpu/effects/GrBicubicEffect.h"
 #include "src/gpu/effects/GrYUVtoRGBEffect.h"
 #include "src/image/SkImage_Gpu.h"
@@ -96,7 +96,8 @@ bool SkImage_GpuYUVA::setupMipmapsForPlanes(GrRecordingContext* context) const {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-GrSemaphoresSubmitted SkImage_GpuYUVA::onFlush(GrDirectContext* dContext, const GrFlushInfo& info) {
+GrSemaphoresSubmitted SkImage_GpuYUVA::onFlush(GrDirectContext* dContext,
+                                               const GrFlushInfo& info) const {
     if (!fContext->priv().matches(dContext) || dContext->abandoned()) {
         if (info.fSubmittedProc) {
             info.fSubmittedProc(info.fSubmittedContext, false);
@@ -150,25 +151,24 @@ sk_sp<SkImage> SkImage_GpuYUVA::onReinterpretColorSpace(sk_sp<SkColorSpace> newC
 }
 
 std::tuple<GrSurfaceProxyView, GrColorType> SkImage_GpuYUVA::onAsView(
-        GrRecordingContext* context,
+        GrRecordingContext* rContext,
         GrMipmapped mipmapped,
         GrImageTexGenPolicy) const {
-    if (!fContext->priv().matches(context)) {
+    if (!fContext->priv().matches(rContext)) {
         return {};
     }
-    auto sfc = GrSurfaceFillContext::Make(context,
-                                          this->imageInfo(),
-                                          SkBackingFit::kExact,
-                                          /*sample count*/ 1,
-                                          mipmapped,
-                                          GrProtected::kNo,
-                                          kTopLeft_GrSurfaceOrigin,
-                                          SkBudgeted::kYes);
+    auto sfc = rContext->priv().makeSFC(this->imageInfo(),
+                                        SkBackingFit::kExact,
+                                        /*sample count*/ 1,
+                                        mipmapped,
+                                        GrProtected::kNo,
+                                        kTopLeft_GrSurfaceOrigin,
+                                        SkBudgeted::kYes);
     if (!sfc) {
         return {};
     }
 
-    const GrCaps& caps = *context->priv().caps();
+    const GrCaps& caps = *rContext->priv().caps();
     auto fp = GrYUVtoRGBEffect::Make(fYUVAProxies, GrSamplerState::Filter::kNearest, caps);
     if (fFromColorSpace) {
         fp = GrColorSpaceXformEffect::Make(std::move(fp),

@@ -28,10 +28,9 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOnFlushResourceProvider.h"
 #include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrXferProcessor.h"
-#include "src/gpu/ops/GrAtlasTextOp.h"
+#include "src/gpu/ops/AtlasTextOp.h"
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/ops/GrOp.h"
 #include "src/gpu/text/GrAtlasManager.h"
@@ -72,7 +71,7 @@ void GrDrawOpAtlas::setMaxPages_TestingOnly(uint32_t maxPages) {
     fMaxPages = maxPages;
 }
 
-class DummyEvict : public GrDrawOpAtlas::EvictionCallback {
+class AssertOnEvict : public GrDrawOpAtlas::EvictionCallback {
 public:
     void evict(GrDrawOpAtlas::PlotLocator) override {
         SkASSERT(0); // The unit test shouldn't exercise this code path
@@ -144,7 +143,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(BasicDrawOpAtlas, reporter, ctxInfo) {
     GrBackendFormat format = caps->getDefaultBackendFormat(GrColorType::kAlpha_8,
                                                            GrRenderable::kNo);
 
-    DummyEvict evictor;
+    AssertOnEvict evictor;
     GrDrawOpAtlas::GenerationCounter counter;
 
     std::unique_ptr<GrDrawOpAtlas> atlas = GrDrawOpAtlas::Make(
@@ -187,17 +186,21 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(BasicDrawOpAtlas, reporter, ctxInfo) {
     check(reporter, atlas.get(), 1, 4, 1);
 }
 
-// This test verifies that the GrAtlasTextOp::onPrepare method correctly handles a failure
+#if SK_GPU_V1
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
+
+// This test verifies that the AtlasTextOp::onPrepare method correctly handles a failure
 // when allocating an atlas page.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) {
 
-    auto context = ctxInfo.directContext();
+    auto dContext = ctxInfo.directContext();
 
-    auto gpu = context->priv().getGpu();
-    auto resourceProvider = context->priv().resourceProvider();
+    auto gpu = dContext->priv().getGpu();
+    auto resourceProvider = dContext->priv().resourceProvider();
 
-    auto rtc = GrSurfaceDrawContext::Make(context, GrColorType::kRGBA_8888, nullptr,
-                                          SkBackingFit::kApprox, {32, 32}, SkSurfaceProps());
+    auto sdc = skgpu::v1::SurfaceDrawContext::Make(dContext, GrColorType::kRGBA_8888, nullptr,
+                                                   SkBackingFit::kApprox, {32, 32},
+                                                   SkSurfaceProps());
 
     SkPaint paint;
     paint.setColor(SK_ColorRED);
@@ -206,34 +209,34 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
     font.setEdging(SkFont::Edging::kAlias);
 
     const char* text = "a";
-    SkSimpleMatrixProvider matrixProvider(SkMatrix::I());
+    SkMatrixProvider matrixProvider(SkMatrix::I());
 
-    GrOp::Owner op =
-            GrAtlasTextOp::CreateOpTestingOnly(
-                    rtc.get(), paint, font, matrixProvider, text, 16, 16);
+    GrOp::Owner op = skgpu::v1::AtlasTextOp::CreateOpTestingOnly(sdc.get(), paint,
+                                                                 font, matrixProvider,
+                                                                 text, 16, 16);
     if (!op) {
         return;
     }
 
-    GrAtlasTextOp* atlasTextOp = (GrAtlasTextOp*)op.get();
-    atlasTextOp->finalize(*context->priv().caps(), nullptr, GrClampType::kAuto);
+    auto atlasTextOp = (skgpu::v1::AtlasTextOp*)op.get();
+    atlasTextOp->finalize(*dContext->priv().caps(), nullptr, GrClampType::kAuto);
 
     TestingUploadTarget uploadTarget;
 
     GrOpFlushState flushState(gpu, resourceProvider, uploadTarget.writeableTokenTracker());
 
-    GrSurfaceProxyView surfaceView = rtc->writeSurfaceView();
+    GrSurfaceProxyView surfaceView = sdc->writeSurfaceView();
     GrOpFlushState::OpArgs opArgs(op.get(),
                                   surfaceView,
                                   false /*usesMSAASurface*/,
                                   nullptr,
-                                  GrXferProcessor::DstProxyView(),
+                                  GrDstProxyView(),
                                   GrXferBarrierFlags::kNone,
                                   GrLoadOp::kLoad);
 
     // Modify the atlas manager so it can't allocate any pages. This will force a failure
     // in the preparation of the text op
-    auto atlasManager = context->priv().getAtlasManager();
+    auto atlasManager = dContext->priv().getAtlasManager();
     unsigned int numProxies;
     atlasManager->getViews(kA8_GrMaskFormat, &numProxies);
     atlasManager->setMaxPages_TestingOnly(0);
@@ -242,6 +245,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
     op->prepare(&flushState);
     flushState.setOpArgs(nullptr);
 }
+#endif // SK_GPU_V1
 
 void test_atlas_config(skiatest::Reporter* reporter, int maxTextureSize, size_t maxBytes,
                        GrMaskFormat maskFormat, SkISize expectedDimensions,

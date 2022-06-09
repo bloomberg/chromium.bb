@@ -12,9 +12,10 @@
 #include <iomanip>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/math_constants.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/scoped_propvariant.h"
@@ -261,6 +262,9 @@ class EventListener
     DCHECK(platform_sensor_reader_);
   }
 
+  EventListener(const EventListener&) = delete;
+  EventListener& operator=(const EventListener&) = delete;
+
   static Microsoft::WRL::ComPtr<ISensorEvents> CreateInstance(
       PlatformSensorReaderWin32* platform_sensor_reader) {
     Microsoft::WRL::ComPtr<EventListener> event_listener =
@@ -346,10 +350,8 @@ class EventListener
   }
 
  private:
-  PlatformSensorReaderWin32* const platform_sensor_reader_;
+  const raw_ptr<PlatformSensorReaderWin32> platform_sensor_reader_;
   SensorReading last_sensor_reading_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventListener);
 };
 
 // static
@@ -371,7 +373,7 @@ std::unique_ptr<PlatformSensorReaderWinBase> PlatformSensorReaderWin32::Create(
                                    min_interval.Receive());
   if (SUCCEEDED(hr) && min_interval.get().vt == VT_UI4) {
     params->min_reporting_interval =
-        base::TimeDelta::FromMilliseconds(min_interval.get().ulVal);
+        base::Milliseconds(min_interval.get().ulVal);
   }
 
   GUID interests[] = {SENSOR_EVENT_STATE_CHANGED, SENSOR_EVENT_DATA_UPDATED};

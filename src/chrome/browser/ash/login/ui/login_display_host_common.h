@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "ash/public/cpp/login_accelerators.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/ui/kiosk_app_menu_controller.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
@@ -22,8 +24,7 @@
 
 class AccountId;
 
-namespace chromeos {
-
+namespace ash {
 class LoginFeedback;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
@@ -35,6 +36,10 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                                public SigninUI {
  public:
   LoginDisplayHostCommon();
+
+  LoginDisplayHostCommon(const LoginDisplayHostCommon&) = delete;
+  LoginDisplayHostCommon& operator=(const LoginDisplayHostCommon&) = delete;
+
   ~LoginDisplayHostCommon() override;
 
   // LoginDisplayHost:
@@ -59,20 +64,23 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
-  bool HandleAccelerator(ash::LoginAcceleratorAction action) final;
-  SigninUI* GetSigninUI() final;
+  bool HandleAccelerator(LoginAcceleratorAction action) final;
+  void AddWizardCreatedObserverForTests(
+      base::RepeatingClosure on_created) final;
 
   // SigninUI:
   void SetAuthSessionForOnboarding(const UserContext& user_context) final;
+  void ClearOnboardingAuthSession() final;
   void StartUserOnboarding() final;
+  void ResumeUserOnboarding(OobeScreenId screen_id) final;
   void StartManagementTransition() final;
+  void ShowTosForExistingUser() final;
   void StartEncryptionMigration(
       const UserContext& user_context,
       EncryptionMigrationMode migration_mode,
       base::OnceCallback<void(const UserContext&)> on_skip_migration) final;
-  void ShowSigninError(SigninError error,
-                       const std::string& details,
-                       int login_attempts) final;
+  void ShowSigninError(SigninError error, const std::string& details) final;
+  WizardContext* GetWizardContextForTesting() final;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -81,6 +89,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  WizardContext* GetWizardContext() override;
 
  protected:
   virtual void OnStartSignInScreen() = 0;
@@ -91,6 +101,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   virtual void OnCancelPasswordChangedFlow() = 0;
   virtual void ShowEnableConsumerKioskScreen() = 0;
 
+  // This function needed to isolate error messages on the Views and WebUI side.
+  virtual bool IsOobeUIDialogVisible() const = 0;
+
   // Marks display host for deletion.
   void ShutdownDisplayHost();
 
@@ -99,6 +112,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // Common code for ShowGaiaDialog() call above.
   void ShowGaiaDialogCommon(const AccountId& prefilled_account);
+
+  // Triggers |on_wizard_controller_created_for_tests_| callback.
+  void NotifyWizardCreated();
 
   // Kiosk launch controller.
   std::unique_ptr<KioskLaunchController> kiosk_launch_controller_;
@@ -109,6 +125,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void Cleanup();
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();
+  // Set screen, from which WC flow will continue after attempt to show
+  // TermsOfServiceScreen.
+  void SetScreenAfterManagedTos(OobeScreenId screen_id);
 
   // True if session start is in progress.
   bool session_starting_ = false;
@@ -131,11 +150,14 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   std::unique_ptr<LoginFeedback> login_feedback_;
 
-  base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_{this};
+  std::unique_ptr<WizardContext> wizard_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostCommon);
+  // Callback to be executed when WebUI is started.
+  base::RepeatingClosure on_wizard_controller_created_for_tests_;
+
+  base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_COMMON_H_

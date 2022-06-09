@@ -23,14 +23,13 @@
 #include "quic/core/quic_data_writer.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_stream.h"
+#include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_expect_bug.h"
 #include "quic/platform/api/quic_flags.h"
-#include "quic/platform/api/quic_map_util.h"
 #include "quic/platform/api/quic_mem_slice_storage.h"
 #include "quic/platform/api/quic_test.h"
-#include "quic/platform/api/quic_test_mem_slice_vector.h"
 #include "quic/test_tools/mock_quic_session_visitor.h"
 #include "quic/test_tools/quic_config_peer.h"
 #include "quic/test_tools/quic_connection_peer.h"
@@ -142,10 +141,19 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   void OnHandshakePacketSent() override {}
   void OnHandshakeDoneReceived() override {}
   void OnNewTokenReceived(absl::string_view /*token*/) override {}
-  std::string GetAddressToken() const override { return ""; }
+  std::string GetAddressToken(
+      const CachedNetworkParameters* /*cached_network_parameters*/)
+      const override {
+    return "";
+  }
   bool ValidateAddressToken(absl::string_view /*token*/) const override {
     return true;
   }
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override {
+    return nullptr;
+  }
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters /*cached_network_params*/) override {}
   HandshakeState GetHandshakeState() const override {
     return one_rtt_keys_available() ? HANDSHAKE_COMPLETE : HANDSHAKE_START;
   }
@@ -169,6 +177,15 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   void OnConnectionClosed(QuicErrorCode /*error*/,
                           ConnectionCloseSource /*source*/) override {}
 
+  bool ExportKeyingMaterial(absl::string_view /*label*/,
+                            absl::string_view /*context*/,
+                            size_t /*result_len*/,
+                            std::string* /*result*/) override {
+    return false;
+  }
+
+  SSL* GetSsl() const override { return nullptr; }
+
  private:
   using QuicCryptoStream::session;
 
@@ -188,8 +205,8 @@ class TestStream : public QuicStream {
              StreamType type)
       : QuicStream(id, session, is_static, type) {}
 
-  TestStream(PendingStream* pending, QuicSession* session, StreamType type)
-      : QuicStream(pending, session, type, /*is_static=*/false) {}
+  TestStream(PendingStream* pending, QuicSession* session)
+      : QuicStream(pending, session, /*is_static=*/false) {}
 
   using QuicStream::CloseWriteSide;
   using QuicStream::WriteMemSlices;
@@ -280,11 +297,7 @@ class TestSession : public QuicSession {
   }
 
   TestStream* CreateIncomingStream(PendingStream* pending) override {
-    QuicStreamId id = pending->id();
-    TestStream* stream = new TestStream(
-        pending, this,
-        DetermineStreamType(id, connection()->version(), perspective(),
-                            /*is_incoming=*/true, BIDIRECTIONAL));
+    TestStream* stream = new TestStream(pending, this);
     ActivateStream(absl::WrapUnique(stream));
     ++num_incoming_streams_created_;
     return stream;
@@ -294,6 +307,9 @@ class TestSession : public QuicSession {
   // test that the session handles pending streams correctly in terms of
   // receiving stream frames.
   QuicStream* ProcessPendingStream(PendingStream* pending) override {
+    if (pending->is_bidirectional()) {
+      return CreateIncomingStream(pending);
+    }
     struct iovec iov;
     if (pending->sequencer()->GetReadableRegion(&iov)) {
       // Create TestStream once the first byte is received.
@@ -314,12 +330,10 @@ class TestSession : public QuicSession {
     return GetNumActiveStreams() > 0;
   }
 
-  QuicConsumedData WritevData(QuicStreamId id,
-                              size_t write_length,
-                              QuicStreamOffset offset,
-                              StreamSendingState state,
+  QuicConsumedData WritevData(QuicStreamId id, size_t write_length,
+                              QuicStreamOffset offset, StreamSendingState state,
                               TransmissionType type,
-                              absl::optional<EncryptionLevel> level) override {
+                              EncryptionLevel level) override {
     bool fin = state != NO_FIN;
     QuicConsumedData consumed(write_length, fin);
     if (!writev_consumes_all_data_) {
@@ -371,10 +385,43 @@ class TestSession : public QuicSession {
                       GetEncryptionLevelToSendApplicationData());
   }
 
-  bool UsesPendingStreams() const override { return uses_pending_streams_; }
+  bool UsesPendingStreamForFrame(QuicFrameType type,
+                                 QuicStreamId stream_id) const override {
+    if (!uses_pending_streams_) {
+      return false;
+    }
+    // Uses pending stream for STREAM/RST_STREAM frames with unidirectional read
+    // stream and uses pending stream for
+    // STREAM/RST_STREAM/STOP_SENDING/WINDOW_UPDATE frames with bidirectional
+    // stream.
+    bool is_incoming_stream = IsIncomingStream(stream_id);
+    StreamType stream_type = QuicUtils::GetStreamType(
+        stream_id, perspective(), is_incoming_stream, version());
+    switch (type) {
+      case STREAM_FRAME:
+        ABSL_FALLTHROUGH_INTENDED;
+      case RST_STREAM_FRAME:
+        return is_incoming_stream;
+      case STOP_SENDING_FRAME:
+        ABSL_FALLTHROUGH_INTENDED;
+      case WINDOW_UPDATE_FRAME:
+        return stream_type == BIDIRECTIONAL;
+      default:
+        return false;
+    }
+  }
+
+  bool ShouldProcessPendingStreamImmediately() const override {
+    return process_pending_stream_immediately_;
+  }
 
   void set_uses_pending_streams(bool uses_pending_streams) {
     uses_pending_streams_ = uses_pending_streams;
+  }
+
+  void set_process_pending_stream_immediately(
+      bool process_pending_stream_immediately) {
+    process_pending_stream_immediately_ = process_pending_stream_immediately;
   }
 
   int num_incoming_streams_created() const {
@@ -393,6 +440,7 @@ class TestSession : public QuicSession {
 
   bool writev_consumes_all_data_;
   bool uses_pending_streams_;
+  bool process_pending_stream_immediately_ = true;
   QuicFrame save_frame_;
   int num_incoming_streams_created_;
 };
@@ -452,7 +500,7 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
           QuicUtils::GetCryptoStreamId(connection_->transport_version());
     }
     for (QuicStreamId i = first_stream_id; i < 100; i++) {
-      if (!QuicContainsKey(closed_streams_, i)) {
+      if (closed_streams_.find(i) == closed_streams_.end()) {
         EXPECT_FALSE(session_.IsClosedStream(i)) << " stream id: " << i;
       } else {
         EXPECT_TRUE(session_.IsClosedStream(i)) << " stream id: " << i;
@@ -1529,56 +1577,6 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
 }
 
-TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
-  if (QuicVersionUsesCryptoFrames(GetParam().transport_version) ||
-      connection_->encrypted_control_frames()) {
-    // QUIC version 47 onwards uses CRYPTO frames for the handshake, so this
-    // test doesn't make sense for those versions since CRYPTO frames aren't
-    // flow controlled.
-    return;
-  }
-  // Test that if the crypto stream is flow control blocked, then if the SHLO
-  // contains a larger send window offset, the stream becomes unblocked.
-  session_.set_writev_consumes_all_data(true);
-  TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-  EXPECT_CALL(*connection_, SendControlFrame(_))
-      .WillOnce(Invoke(&ClearControlFrame));
-  for (QuicStreamId i = 0; !crypto_stream->IsFlowControlBlocked() && i < 1000u;
-       i++) {
-    EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-    EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-    QuicStreamOffset offset = crypto_stream->stream_bytes_written();
-    QuicConfig config;
-    CryptoHandshakeMessage crypto_message;
-    config.ToHandshakeMessage(&crypto_message, transport_version());
-    crypto_stream->SendHandshakeMessage(crypto_message, ENCRYPTION_INITIAL);
-    char buf[1000];
-    QuicDataWriter writer(1000, buf, quiche::NETWORK_BYTE_ORDER);
-    crypto_stream->WriteStreamData(offset, crypto_message.size(), &writer);
-  }
-  EXPECT_TRUE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_TRUE(session_.IsStreamFlowControlBlocked());
-  EXPECT_FALSE(session_.HasDataToWrite());
-  EXPECT_TRUE(crypto_stream->HasBufferedData());
-
-  // Now complete the crypto handshake, resulting in an increased flow control
-  // send window.
-  CompleteHandshake();
-  EXPECT_TRUE(QuicSessionPeer::IsStreamWriteBlocked(
-      &session_,
-      QuicUtils::GetCryptoStreamId(connection_->transport_version())));
-  // Stream is now unblocked and will no longer have buffered data.
-  EXPECT_FALSE(crypto_stream->IsFlowControlBlocked());
-  EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
-  EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
-}
-
 TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingRstOutOfOrder) {
   CompleteHandshake();
   // Test that when we receive an out of order stream RST we correctly adjust
@@ -1814,7 +1812,9 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpenedOutgoing) {
   QuicStreamId stream_id = stream->id();
   QuicStreamFrame data1(stream_id, true, 0, absl::string_view("HT"));
   session_.OnStreamFrame(data1);
-  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream(false)).Times(1);
+  if (!VersionHasIetfQuicFrames(transport_version())) {
+    EXPECT_CALL(session_, OnCanCreateNewOutgoingStream(false)).Times(1);
+  }
   session_.StreamDraining(stream_id, /*unidirectional=*/false);
 }
 
@@ -1837,6 +1837,7 @@ TEST_P(QuicSessionTestServer, PendingStreams) {
     return;
   }
   session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(true);
 
   QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
       transport_version(), Perspective::IS_CLIENT);
@@ -1851,11 +1852,50 @@ TEST_P(QuicSessionTestServer, PendingStreams) {
   EXPECT_EQ(1, session_.num_incoming_streams_created());
 }
 
+TEST_P(QuicSessionTestServer, BufferAllIncomingStreams) {
+  if (!VersionUsesHttp3(transport_version())) {
+    return;
+  }
+  session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(false);
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data1(stream_id, true, 10, absl::string_view("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+  // Read unidirectional stream is still buffered when the first byte arrives.
+  QuicStreamFrame data2(stream_id, false, 0, absl::string_view("HT"));
+  session_.OnStreamFrame(data2);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  // Bidirectional stream is buffered.
+  QuicStreamId bidirectional_stream_id =
+      QuicUtils::GetFirstBidirectionalStreamId(transport_version(),
+                                               Perspective::IS_CLIENT);
+  QuicStreamFrame data3(bidirectional_stream_id, false, 0,
+                        absl::string_view("HT"));
+  session_.OnStreamFrame(data3);
+  EXPECT_TRUE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  session_.ProcessAllPendingStreams();
+  // Both bidirectional and read-unidirectional streams are unbuffered.
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_FALSE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(2, session_.num_incoming_streams_created());
+}
+
 TEST_P(QuicSessionTestServer, RstPendingStreams) {
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
   session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(false);
 
   QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
       transport_version(), Perspective::IS_CLIENT);
@@ -1877,6 +1917,27 @@ TEST_P(QuicSessionTestServer, RstPendingStreams) {
   EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(&session_));
+
+  session_.ProcessAllPendingStreams();
+  // Bidirectional stream is buffered.
+  QuicStreamId bidirectional_stream_id =
+      QuicUtils::GetFirstBidirectionalStreamId(transport_version(),
+                                               Perspective::IS_CLIENT);
+  QuicStreamFrame data3(bidirectional_stream_id, false, 0,
+                        absl::string_view("HT"));
+  session_.OnStreamFrame(data3);
+  EXPECT_TRUE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  // Bidirectional pending stream is removed after RST_STREAM is received.
+  QuicRstStreamFrame rst2(kInvalidControlFrameId, bidirectional_stream_id,
+                          QUIC_ERROR_PROCESSING_STREAM, 12);
+  session_.OnRstStream(rst2);
+  EXPECT_FALSE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+  EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(&session_));
 }
 
 TEST_P(QuicSessionTestServer, OnFinPendingStreams) {
@@ -1884,6 +1945,7 @@ TEST_P(QuicSessionTestServer, OnFinPendingStreams) {
     return;
   }
   session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(true);
 
   QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
       transport_version(), Perspective::IS_CLIENT);
@@ -1893,9 +1955,30 @@ TEST_P(QuicSessionTestServer, OnFinPendingStreams) {
   EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   EXPECT_EQ(0u, QuicSessionPeer::GetNumOpenDynamicStreams(&session_));
+
+  session_.set_process_pending_stream_immediately(false);
+  // Bidirectional pending stream remains after Fin is received.
+  // Bidirectional stream is buffered.
+  QuicStreamId bidirectional_stream_id =
+      QuicUtils::GetFirstBidirectionalStreamId(transport_version(),
+                                               Perspective::IS_CLIENT);
+  QuicStreamFrame data2(bidirectional_stream_id, true, 0,
+                        absl::string_view("HT"));
+  session_.OnStreamFrame(data2);
+  EXPECT_TRUE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  session_.ProcessAllPendingStreams();
+  EXPECT_FALSE(
+      QuicSessionPeer::GetPendingStream(&session_, bidirectional_stream_id));
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+  QuicStream* bidirectional_stream =
+      QuicSessionPeer::GetStream(&session_, bidirectional_stream_id);
+  EXPECT_TRUE(bidirectional_stream->fin_received());
 }
 
-TEST_P(QuicSessionTestServer, PendingStreamOnWindowUpdate) {
+TEST_P(QuicSessionTestServer, UnidirectionalPendingStreamOnWindowUpdate) {
   if (!VersionUsesHttp3(transport_version())) {
     return;
   }
@@ -1915,6 +1998,80 @@ TEST_P(QuicSessionTestServer, PendingStreamOnWindowUpdate) {
           QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM,
           "WindowUpdateFrame received on READ_UNIDIRECTIONAL stream.", _));
   session_.OnWindowUpdateFrame(window_update_frame);
+}
+
+TEST_P(QuicSessionTestServer, BidirectionalPendingStreamOnWindowUpdate) {
+  if (!VersionUsesHttp3(transport_version())) {
+    return;
+  }
+
+  session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(false);
+  QuicStreamId stream_id = QuicUtils::GetFirstBidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data(stream_id, true, 10, absl::string_view("HT"));
+  session_.OnStreamFrame(data);
+  QuicWindowUpdateFrame window_update_frame(kInvalidControlFrameId, stream_id,
+                                            kDefaultFlowControlSendWindow * 2);
+  session_.OnWindowUpdateFrame(window_update_frame);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  session_.ProcessAllPendingStreams();
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+  QuicStream* bidirectional_stream =
+      QuicSessionPeer::GetStream(&session_, stream_id);
+  QuicByteCount send_window =
+      QuicStreamPeer::SendWindowSize(bidirectional_stream);
+  EXPECT_EQ(send_window, kDefaultFlowControlSendWindow * 2);
+}
+
+TEST_P(QuicSessionTestServer, UnidirectionalPendingStreamOnStopSending) {
+  if (!VersionUsesHttp3(transport_version())) {
+    return;
+  }
+
+  session_.set_uses_pending_streams(true);
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data1(stream_id, true, 10, absl::string_view("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+  QuicStopSendingFrame stop_sending_frame(kInvalidControlFrameId, stream_id,
+                                          QUIC_STREAM_CANCELLED);
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_INVALID_STREAM_ID,
+                      "Received STOP_SENDING for a read-only stream", _));
+  session_.OnStopSendingFrame(stop_sending_frame);
+}
+
+TEST_P(QuicSessionTestServer, BidirectionalPendingStreamOnStopSending) {
+  if (!VersionUsesHttp3(transport_version())) {
+    return;
+  }
+
+  session_.set_uses_pending_streams(true);
+  session_.set_process_pending_stream_immediately(false);
+  QuicStreamId stream_id = QuicUtils::GetFirstBidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data(stream_id, true, 0, absl::string_view("HT"));
+  session_.OnStreamFrame(data);
+  QuicStopSendingFrame stop_sending_frame(kInvalidControlFrameId, stream_id,
+                                          QUIC_STREAM_CANCELLED);
+  session_.OnStopSendingFrame(stop_sending_frame);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+
+  EXPECT_CALL(*connection_, OnStreamReset(stream_id, _));
+  session_.ProcessAllPendingStreams();
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(1, session_.num_incoming_streams_created());
+  QuicStream* bidirectional_stream =
+      QuicSessionPeer::GetStream(&session_, stream_id);
+  EXPECT_TRUE(bidirectional_stream->write_side_closed());
 }
 
 TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
@@ -2451,36 +2608,26 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
 TEST_P(QuicSessionTestServer, SendMessage) {
   // Cannot send message when encryption is not established.
   EXPECT_FALSE(session_.OneRttKeysAvailable());
-  quic::QuicMemSliceStorage storage(nullptr, 0, nullptr, 0);
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         "", &storage)));
+            session_.SendMessage(MemSliceFromString("")));
 
   CompleteHandshake();
   EXPECT_TRUE(session_.OneRttKeysAvailable());
 
-  absl::string_view message;
   EXPECT_CALL(*connection_, SendMessage(1, _, false))
       .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 1),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
   // Verify message_id increases.
   EXPECT_CALL(*connection_, SendMessage(2, _, false))
       .WillOnce(Return(MESSAGE_STATUS_TOO_LARGE));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_TOO_LARGE, 0),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
   // Verify unsent message does not consume a message_id.
   EXPECT_CALL(*connection_, SendMessage(2, _, false))
       .WillOnce(Return(MESSAGE_STATUS_SUCCESS));
   EXPECT_EQ(MessageResult(MESSAGE_STATUS_SUCCESS, 2),
-            session_.SendMessage(
-                MakeSpan(connection_->helper()->GetStreamSendBufferAllocator(),
-                         message, &storage)));
+            session_.SendMessage(MemSliceFromString("")));
 
   QuicMessageFrame frame(1);
   QuicMessageFrame frame2(2);
@@ -2507,7 +2654,7 @@ TEST_P(QuicSessionTestServer, LocallyResetZombieStreams) {
   EXPECT_TRUE(stream2->IsWaitingForAcks());
   // Verify stream2 is a zombie streams.
   auto& stream_map = QuicSessionPeer::stream_map(&session_);
-  ASSERT_TRUE(QuicContainsKey(stream_map, stream2->id()));
+  ASSERT_TRUE(stream_map.contains(stream2->id()));
   auto* stream = stream_map.find(stream2->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 
@@ -2556,7 +2703,7 @@ TEST_P(QuicSessionTestServer, WriteUnidirectionalStream) {
   stream4->WriteOrBufferData(body, false, nullptr);
   stream4->WriteOrBufferData(body, true, nullptr);
   auto& stream_map = QuicSessionPeer::stream_map(&session_);
-  ASSERT_TRUE(QuicContainsKey(stream_map, stream4->id()));
+  ASSERT_TRUE(stream_map.contains(stream4->id()));
   auto* stream = stream_map.find(stream4->id())->second.get();
   EXPECT_TRUE(stream->IsZombie());
 }
@@ -2634,12 +2781,11 @@ TEST_P(QuicSessionTestServer, WriteMemSlicesOnReadUnidirectionalStream) {
               CloseConnection(
                   QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM, _, _))
       .Times(1);
-  char data[1024];
-  std::vector<std::pair<char*, size_t>> buffers;
-  buffers.push_back(std::make_pair(data, ABSL_ARRAYSIZE(data)));
-  buffers.push_back(std::make_pair(data, ABSL_ARRAYSIZE(data)));
-  QuicTestMemSliceVector vector(buffers);
-  stream4->WriteMemSlices(vector.span(), false);
+  std::string data(1024, 'a');
+  std::vector<QuicMemSlice> buffers;
+  buffers.push_back(MemSliceFromString(data));
+  buffers.push_back(MemSliceFromString(data));
+  stream4->WriteMemSlices(absl::MakeSpan(buffers), false);
 }
 
 // Test code that tests that an incoming stream frame with a new (not previously

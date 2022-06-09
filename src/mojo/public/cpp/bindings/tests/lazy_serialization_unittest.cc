@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -19,12 +18,14 @@ namespace {
 class LazySerializationTest : public testing::Test {
  public:
   LazySerializationTest() = default;
+
+  LazySerializationTest(const LazySerializationTest&) = delete;
+  LazySerializationTest& operator=(const LazySerializationTest&) = delete;
+
   ~LazySerializationTest() override = default;
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(LazySerializationTest);
 };
 
 class TestUnserializedStructImpl : public test::TestUnserializedStruct {
@@ -32,6 +33,11 @@ class TestUnserializedStructImpl : public test::TestUnserializedStruct {
   explicit TestUnserializedStructImpl(
       PendingReceiver<test::TestUnserializedStruct> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  TestUnserializedStructImpl(const TestUnserializedStructImpl&) = delete;
+  TestUnserializedStructImpl& operator=(const TestUnserializedStructImpl&) =
+      delete;
+
   ~TestUnserializedStructImpl() override = default;
 
   // test::TestUnserializedStruct:
@@ -43,14 +49,16 @@ class TestUnserializedStructImpl : public test::TestUnserializedStruct {
 
  private:
   Receiver<test::TestUnserializedStruct> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestUnserializedStructImpl);
 };
 
 class ForceSerializeTesterImpl : public test::ForceSerializeTester {
  public:
   ForceSerializeTesterImpl(PendingReceiver<test::ForceSerializeTester> receiver)
       : receiver_(this, std::move(receiver)) {}
+
+  ForceSerializeTesterImpl(const ForceSerializeTesterImpl&) = delete;
+  ForceSerializeTesterImpl& operator=(const ForceSerializeTesterImpl&) = delete;
+
   ~ForceSerializeTesterImpl() override = default;
 
   // test::ForceSerializeTester:
@@ -68,8 +76,6 @@ class ForceSerializeTesterImpl : public test::ForceSerializeTester {
 
  private:
   Receiver<test::ForceSerializeTester> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ForceSerializeTesterImpl);
 };
 
 TEST_F(LazySerializationTest, NeverSerialize) {

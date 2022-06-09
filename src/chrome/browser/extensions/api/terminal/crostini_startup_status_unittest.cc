@@ -25,14 +25,12 @@ class CrostiniStartupStatusTest : public testing::Test {
 
   void Done() { done_ = true; }
 
-  CrostiniStartupStatus* NewStartupStatus(bool verbose) {
-    return new CrostiniStartupStatus(
+  std::unique_ptr<CrostiniStartupStatus> NewStartupStatus(bool verbose) {
+    return std::make_unique<CrostiniStartupStatus>(
         base::BindRepeating(&CrostiniStartupStatusTest::Print,
                             base::Unretained(this)),
         verbose);
   }
-
-  void SetUp() override {}
 
   std::vector<std::string> output_;
   bool done_ = false;
@@ -40,15 +38,24 @@ class CrostiniStartupStatusTest : public testing::Test {
 };
 
 TEST_F(CrostiniStartupStatusTest, TestNotVerbose) {
-  auto* startup_status = NewStartupStatus(false);
+  auto startup_status = NewStartupStatus(false);
   startup_status->OnStageStarted(InstallerState::kStart);
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
   startup_status->OnCrostiniConnected(crostini::CrostiniResult::SUCCESS);
 
-  ASSERT_EQ(output_.size(), 1u);
+  ASSERT_EQ(output_.size(), 4u);
+  // Hide cursor, init progress.
+  EXPECT_EQ(output_[0], "\x1b[?25l\x1b[35m[          ] ");
+
+  // CR, purple, forward 12, yellow, empty-stage.
+  EXPECT_EQ(output_[1], "\r\x1b[35m[\x1b[12C\x1b[K\x1b[33m ");
+
+  // CR, purple, progress, forward 11, erase, yellow, empty-stage.
+  EXPECT_EQ(output_[2], "\r\x1b[35m[=\x1b[11C\x1b[K\x1b[33m ");
+
   // CR, delete line, default color, show cursor.
-  EXPECT_EQ(output_[0], "\r\x1b[K\x1b[0m\x1b[?25h");
+  EXPECT_EQ(output_[3], "\r\x1b[K\x1b[0m\x1b[?25h");
 
   histogram_tester_.ExpectBucketCount("Crostini.AppLaunchResult",
                                       crostini::CrostiniResult::SUCCESS, 1);
@@ -57,7 +64,7 @@ TEST_F(CrostiniStartupStatusTest, TestNotVerbose) {
 }
 
 TEST_F(CrostiniStartupStatusTest, TestVerbose) {
-  auto* startup_status = NewStartupStatus(true);
+  auto startup_status = NewStartupStatus(true);
   startup_status->OnStageStarted(InstallerState::kStart);
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
@@ -95,7 +102,7 @@ TEST_F(CrostiniStartupStatusTest, TestVerbose) {
 TEST_F(CrostiniStartupStatusTest,
        TestNoOutOfBoundsAccessWhenRestartBeforeStageStart) {
   // Repro case for crbug/1214039.
-  auto* startup_status = NewStartupStatus(true);
+  auto startup_status = NewStartupStatus(true);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
 
   ASSERT_EQ(output_.size(), 2u);

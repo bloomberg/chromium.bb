@@ -25,9 +25,9 @@ describe('Segment', () => {
 });
 
 describe('SegmentedRange', () => {
-  let segmentedRange: Common.SegmentedRange.SegmentedRange;
+  let segmentedRange: Common.SegmentedRange.SegmentedRange<string>;
 
-  function mergeSegments(first: Common.SegmentedRange.Segment, second: Common.SegmentedRange.Segment) {
+  function mergeSegments(first: Common.SegmentedRange.Segment<string>, second: Common.SegmentedRange.Segment<string>) {
     const inOrder = first.end >= second.begin;
     const matchingData = first.data === second.data;
     return inOrder && matchingData ? first : null;
@@ -57,7 +57,6 @@ describe('SegmentedRange', () => {
   it('handles two overlapping mergeable ranges', () => {
     const segmentA = new Segment(1, 2, 'A');
     const segmentB = new Segment(1.5, 3, 'A');
-
 
     segmentedRange.append(segmentA);
     segmentedRange.append(segmentB);

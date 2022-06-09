@@ -2,22 +2,23 @@ export const description = `
 Basic command buffer compute tests.
 `;
 
-import { params, poptions } from '../../../../common/framework/params_builder.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { DefaultLimits } from '../../../constants.js';
 import { GPUTest } from '../../../gpu_test.js';
+import { checkElementsEqualGenerated } from '../../../util/check_contents.js';
 
 export const g = makeTestGroup(GPUTest);
+
+const kMaxComputeWorkgroupSize = [
+  DefaultLimits.maxComputeWorkgroupSizeX,
+  DefaultLimits.maxComputeWorkgroupSizeY,
+  DefaultLimits.maxComputeWorkgroupSizeZ,
+];
 
 g.test('memcpy').fn(async t => {
   const data = new Uint32Array([0x01020304]);
 
-  const src = t.device.createBuffer({
-    mappedAtCreation: true,
-    size: 4,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
-  });
-  new Uint32Array(src.getMappedRange()).set(data);
-  src.unmap();
+  const src = t.makeBufferWithContents(data, GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE);
 
   const dst = t.device.createBuffer({
     size: 4,
@@ -29,13 +30,13 @@ g.test('memcpy').fn(async t => {
       module: t.device.createShaderModule({
         code: `
           [[block]] struct Data {
-              [[offset(0)]] value : u32;
+              value : u32;
           };
 
-          [[group(0), binding(0)]] var<storage> src : [[access(read)]] Data;
-          [[group(0), binding(1)]] var<storage> dst : [[access(read_write)]] Data;
+          [[group(0), binding(0)]] var<storage, read> src : Data;
+          [[group(0), binding(1)]] var<storage, read_write> dst : Data;
 
-          [[stage(compute)]] fn main() {
+          [[stage(compute), workgroup_size(1)]] fn main() {
             dst.value = src.value;
             return;
           }
@@ -61,42 +62,38 @@ g.test('memcpy').fn(async t => {
   pass.endPass();
   t.device.queue.submit([encoder.finish()]);
 
-  t.expectContents(dst, data);
+  t.expectGPUBufferValuesEqual(dst, data);
 });
 
 g.test('large_dispatch')
-  .desc(
-    `
-TODO: add query for the maximum dispatch size and test closer to those limits.
-
-Test reasonably-sized large dispatches (see also stress tests).
-`
-  )
-  .cases(
-    params()
-      .combine(
-        // Reasonably-sized powers of two, and some stranger larger sizes.
-        poptions('dispatchSize', [256, 512, 1024, 2048, 315, 628, 1053, 2179] as const)
-      )
-      .combine(
-        // Test some reasonable workgroup sizes.
-        poptions('workgroupSize', [1, 2, 4, 8, 16, 32, 64] as const)
-      )
-  )
-  .subcases(() =>
-    // 0 == x axis; 1 == y axis; 2 == z axis.
-    poptions('largeDimension', [0, 1, 2] as const)
+  .desc(`Test reasonably-sized large dispatches (see also: stress tests).`)
+  .params(u =>
+    u
+      // Reasonably-sized powers of two, and some stranger larger sizes.
+      .combine('dispatchSize', [
+        256,
+        2048,
+        315,
+        628,
+        2179,
+        DefaultLimits.maxComputeWorkgroupsPerDimension,
+      ])
+      // Test some reasonable workgroup sizes.
+      .beginSubcases()
+      // 0 == x axis; 1 == y axis; 2 == z axis.
+      .combine('largeDimension', [0, 1, 2] as const)
+      .expand('workgroupSize', p => [1, 2, 8, 32, kMaxComputeWorkgroupSize[p.largeDimension]])
   )
   .fn(async t => {
     // The output storage buffer is filled with this value.
     const val = 0x01020304;
     const badVal = 0xbaadf00d;
-    const data = new Uint32Array([val]);
 
     const wgSize = t.params.workgroupSize;
-    const bufferSize = Uint32Array.BYTES_PER_ELEMENT * t.params.dispatchSize * wgSize;
+    const bufferLength = t.params.dispatchSize * wgSize;
+    const bufferByteSize = Uint32Array.BYTES_PER_ELEMENT * bufferLength;
     const dst = t.device.createBuffer({
-      size: bufferSize,
+      size: bufferByteSize,
       usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE,
     });
 
@@ -114,7 +111,7 @@ Test reasonably-sized large dispatches (see also stress tests).
               value : array<u32>;
             };
 
-            [[group(0), binding(0)]] var<storage> dst : [[access(read_write)]] OutputBuffer;
+            [[group(0), binding(0)]] var<storage, read_write> dst : OutputBuffer;
 
             [[stage(compute), workgroup_size(${wgSizes[0]}, ${wgSizes[1]}, ${wgSizes[2]})]]
             fn main(
@@ -143,7 +140,7 @@ Test reasonably-sized large dispatches (see also stress tests).
     });
 
     const bg = t.device.createBindGroup({
-      entries: [{ binding: 0, resource: { buffer: dst, offset: 0, size: bufferSize } }],
+      entries: [{ binding: 0, resource: { buffer: dst, offset: 0, size: bufferByteSize } }],
       layout: pipeline.getBindGroupLayout(0),
     });
 
@@ -155,7 +152,10 @@ Test reasonably-sized large dispatches (see also stress tests).
     pass.endPass();
     t.device.queue.submit([encoder.finish()]);
 
-    t.expectSingleValueContents(dst, data, bufferSize);
+    t.expectGPUBufferValuesPassCheck(dst, a => checkElementsEqualGenerated(a, i => val), {
+      type: Uint32Array,
+      typedLength: bufferLength,
+    });
 
     dst.destroy();
   });

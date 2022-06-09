@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_TRACK_PLATFORM_H_
 
 #include "base/callback.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -17,11 +18,6 @@ namespace blink {
 class PLATFORM_EXPORT MediaStreamTrackPlatform {
  public:
   enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
-
-  struct CaptureHandle {
-    String origin;
-    String handle;
-  };
 
   struct Settings {
     bool HasFrameRate() const { return frame_rate >= 0.0; }
@@ -60,10 +56,18 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
     absl::optional<media::mojom::DisplayCaptureSurfaceType> display_surface;
     absl::optional<bool> logical_surface;
     absl::optional<media::mojom::CursorCaptureType> cursor;
-    absl::optional<CaptureHandle> capture_handle;
+  };
+
+  struct CaptureHandle {
+    bool IsEmpty() const { return origin.IsEmpty() && handle.IsEmpty(); }
+
+    String origin;
+    String handle;
   };
 
   explicit MediaStreamTrackPlatform(bool is_local_track);
+  MediaStreamTrackPlatform(const MediaStreamTrackPlatform&) = delete;
+  MediaStreamTrackPlatform& operator=(const MediaStreamTrackPlatform&) = delete;
   virtual ~MediaStreamTrackPlatform();
 
   static MediaStreamTrackPlatform* GetTrack(const WebMediaStreamTrack& track);
@@ -80,14 +84,12 @@ class PLATFORM_EXPORT MediaStreamTrackPlatform {
 
   // TODO(hta): Make method pure virtual when all tracks have the method.
   virtual void GetSettings(Settings& settings) {}
+  virtual CaptureHandle GetCaptureHandle();
 
   bool is_local_track() const { return is_local_track_; }
 
  private:
   const bool is_local_track_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackPlatform);
 };
 
 }  // namespace blink

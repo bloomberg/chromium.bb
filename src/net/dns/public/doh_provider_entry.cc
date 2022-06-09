@@ -34,7 +34,7 @@ const DohProviderEntry::List& DohProviderEntry::GetList() {
   //
   // The provider names in these entries should be kept in sync with the
   // DohProviderId histogram suffix list in
-  // tools/metrics/histograms/histograms_xml/histogram_suffixes_list.xml.
+  // tools/metrics/histograms/metadata/histogram_suffixes_list.xml.
   static const base::NoDestructor<DohProviderEntry::List> providers{{
       new DohProviderEntry("AlekBergNl", DohProviderIdForHistogram::kAlekBergNl,
                            {} /* ip_strs */, {} /* dns_over_tls_hostnames */,
@@ -93,6 +93,13 @@ const DohProviderEntry::List& DohProviderEntry::GetList() {
           "https://doh.xfinity.com/dns-query{?dns}", "" /* ui_name */,
           "" /* privacy_policy */, false /* display_globally */,
           {} /* display_countries */, LoggingLevel::kExtra),
+      new DohProviderEntry("Cox", /*provider_id_for_histogram=*/absl::nullopt,
+                           {"68.105.28.11", "68.105.28.12", "2001:578:3f::30"},
+                           /*dns_over_tls_hostnames=*/{"dot.cox.net"},
+                           "https://doh.cox.net/dns-query",
+                           /*ui_name=*/"", /*privacy_policy=*/"",
+                           /*display_globally=*/false, /*display_countries=*/{},
+                           LoggingLevel::kNormal),
       new DohProviderEntry(
           "Cznic", DohProviderIdForHistogram::kCznic,
           {"185.43.135.1", "193.17.47.1", "2001:148f:fffe::1",
@@ -102,23 +109,13 @@ const DohProviderEntry::List& DohProviderEntry::GetList() {
           "https://www.nic.cz/odvr/" /* privacy_policy */,
           false /* display_globally */, {"CZ"} /* display_countries */,
           LoggingLevel::kNormal),
-      // Note: DNS.SB has separate entries for autoupgrade and settings UI to
-      // allow the extra |no_ecs| parameter for autoupgrade. This parameter
-      // disables EDNS Client Subnet (ECS) handling in order to match the
-      // behavior of the upgraded-from classic DNS server.
       new DohProviderEntry(
-          "Dnssb", absl::nullopt /* provider_id_for_histogram */,
-          {"185.222.222.222", "185.184.222.222", "2a09::", "2a09::1"},
-          {"dns.sb"} /* dns_over_tls_hostnames */,
-          "https://doh.dns.sb/dns-query?no_ecs=true{&dns}", "" /* ui_name */,
-          "" /* privacy_policy */, false /* display_globally */,
-          {} /* display_countries */, LoggingLevel::kNormal),
-      new DohProviderEntry(
-          "DnssbUserSelected", DohProviderIdForHistogram::kDnsSb,
-          {} /* ip_strs */, {} /* dns_over_tls_hostnames */,
-          "https://doh.dns.sb/dns-query{?dns}", "DNS.SB" /* ui_name */,
-          "https://dns.sb/privacy/" /* privacy_policy */,
-          false /* display_globally */, {"EE", "DE"} /* display_countries */,
+          "Dnssb", DohProviderIdForHistogram::kDnsSb,
+          {"185.222.222.222", "45.11.45.11", "2a09::", "2a11::"},
+          /*dns_over_tls_hostnames=*/{"dns.sb"},
+          "https://doh.dns.sb/dns-query{?dns}", /*ui_name=*/"DNS.SB",
+          /*privacy_policy=*/"https://dns.sb/privacy/",
+          /*display_globally=*/false, /*display_countries=*/{"EE", "DE"},
           LoggingLevel::kNormal),
       new DohProviderEntry("Google", DohProviderIdForHistogram::kGoogle,
                            {"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888",

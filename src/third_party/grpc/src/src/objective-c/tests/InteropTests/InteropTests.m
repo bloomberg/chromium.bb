@@ -37,8 +37,11 @@
 
 #import "InteropTestsBlockCallbacks.h"
 
-#define TEST_TIMEOUT 32
-#define STREAMING_CALL_TEST_TIMEOUT 64
+#define TEST_TIMEOUT 64
+
+#define SMALL_PAYLOAD_SIZE 10
+#define LARGE_REQUEST_PAYLOAD_SIZE 271828
+#define LARGE_RESPONSE_PAYLOAD_SIZE 314159
 
 static const int kTestRetries = 3;
 extern const char *kCFStreamVarName;
@@ -579,8 +582,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
   RMTSimpleRequest *request = [RMTSimpleRequest message];
   request.responseType = RMTPayloadType_Compressable;
-  request.responseSize = 314159;
-  request.payload.body = [NSMutableData dataWithLength:271828];
+  request.responseSize = LARGE_RESPONSE_PAYLOAD_SIZE;
+  request.payload.body = [NSMutableData dataWithLength:LARGE_REQUEST_PAYLOAD_SIZE];
 
   [_service unaryCallWithRequest:request
                          handler:^(RMTSimpleResponse *response, NSError *error) {
@@ -588,7 +591,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
                            RMTSimpleResponse *expectedResponse = [RMTSimpleResponse message];
                            expectedResponse.payload.type = RMTPayloadType_Compressable;
-                           expectedResponse.payload.body = [NSMutableData dataWithLength:314159];
+                           expectedResponse.payload.body =
+                               [NSMutableData dataWithLength:LARGE_RESPONSE_PAYLOAD_SIZE];
                            XCTAssertEqualObjects(response, expectedResponse);
 
                            [expectation fulfill];
@@ -607,8 +611,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
   RMTSimpleRequest *request = [RMTSimpleRequest message];
   request.responseType = RMTPayloadType_Compressable;
-  request.responseSize = 314159;
-  request.payload.body = [NSMutableData dataWithLength:271828];
+  request.responseSize = LARGE_RESPONSE_PAYLOAD_SIZE;
+  request.payload.body = [NSMutableData dataWithLength:LARGE_REQUEST_PAYLOAD_SIZE];
 
   GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
   // For backwards compatibility
@@ -628,7 +632,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
         XCTAssertNil(error, @"Unexpected error: %@", error);
         RMTSimpleResponse *expectedResponse = [RMTSimpleResponse message];
         expectedResponse.payload.type = RMTPayloadType_Compressable;
-        expectedResponse.payload.body = [NSMutableData dataWithLength:314159];
+        expectedResponse.payload.body = [NSMutableData dataWithLength:LARGE_RESPONSE_PAYLOAD_SIZE];
         XCTAssertEqualObjects(response, expectedResponse);
         XCTAssertEqualObjects(handler.responseHeaders[@"x-grpc-test-echo-initial"], @"test-header");
         XCTAssertEqualObjects(handler.responseTrailers[@"x-grpc-test-echo-trailing-bin"],
@@ -641,7 +645,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
         XCTAssertNil(error, @"Unexpected error: %@", error);
         RMTSimpleResponse *expectedResponse = [RMTSimpleResponse message];
         expectedResponse.payload.type = RMTPayloadType_Compressable;
-        expectedResponse.payload.body = [NSMutableData dataWithLength:314159];
+        expectedResponse.payload.body = [NSMutableData dataWithLength:LARGE_RESPONSE_PAYLOAD_SIZE];
         XCTAssertEqualObjects(response, expectedResponse);
         XCTAssertEqualObjects(handlerMainQueue.responseHeaders[@"x-grpc-test-echo-initial"],
                               @"test-header");
@@ -666,8 +670,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
   RMTSimpleRequest *request = [RMTSimpleRequest message];
   request.responseType = RMTPayloadType_Compressable;
-  request.responseSize = 314159;
-  request.payload.body = [NSMutableData dataWithLength:271828];
+  request.responseSize = LARGE_RESPONSE_PAYLOAD_SIZE;
+  request.payload.body = [NSMutableData dataWithLength:LARGE_REQUEST_PAYLOAD_SIZE];
 
   GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
   // For backwards compatibility
@@ -686,7 +690,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                        [RMTSimpleResponse message];
                                    expectedResponse.payload.type = RMTPayloadType_Compressable;
                                    expectedResponse.payload.body =
-                                       [NSMutableData dataWithLength:314159];
+                                       [NSMutableData dataWithLength:LARGE_RESPONSE_PAYLOAD_SIZE];
                                    XCTAssertEqualObjects(message, expectedResponse);
 
                                    [expectReceive fulfill];
@@ -712,8 +716,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
     RMTSimpleRequest *request = [RMTSimpleRequest message];
     request.responseType = RMTPayloadType_Compressable;
-    request.responseSize = 314159;
-    request.payload.body = [NSMutableData dataWithLength:271828];
+    request.responseSize = SMALL_PAYLOAD_SIZE;
+    request.payload.body = [NSMutableData dataWithLength:SMALL_PAYLOAD_SIZE];
     if (i % 3 == 0) {
       request.responseStatus.code = GRPC_STATUS_UNAVAILABLE;
     } else if (i % 7 == 0) {
@@ -735,7 +739,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                          [RMTSimpleResponse message];
                                      expectedResponse.payload.type = RMTPayloadType_Compressable;
                                      expectedResponse.payload.body =
-                                         [NSMutableData dataWithLength:314159];
+                                         [NSMutableData dataWithLength:SMALL_PAYLOAD_SIZE];
                                      XCTAssertEqualObjects(message, expectedResponse);
                                    }
                                  }
@@ -750,7 +754,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
     GRPCUnaryProtoCall *call = calls[i];
     [call start];
   }
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+
+  [self waitForExpectations:completeExpectations timeout:TEST_TIMEOUT];
 }
 
 - (void)concurrentRPCsWithErrors {
@@ -762,8 +767,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
   for (int i = 0; i < kNumRpcs; ++i) {
     RMTSimpleRequest *request = [RMTSimpleRequest message];
     request.responseType = RMTPayloadType_Compressable;
-    request.responseSize = 314159;
-    request.payload.body = [NSMutableData dataWithLength:271828];
+    request.responseSize = SMALL_PAYLOAD_SIZE;
+    request.payload.body = [NSMutableData dataWithLength:SMALL_PAYLOAD_SIZE];
     if (i % 3 == 0) {
       request.responseStatus.code = GRPC_STATUS_UNAVAILABLE;
     } else if (i % 7 == 0) {
@@ -776,7 +781,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
                             if (error == nil) {
                               RMTSimpleResponse *expectedResponse = [RMTSimpleResponse message];
                               expectedResponse.payload.type = RMTPayloadType_Compressable;
-                              expectedResponse.payload.body = [NSMutableData dataWithLength:314159];
+                              expectedResponse.payload.body =
+                                  [NSMutableData dataWithLength:SMALL_PAYLOAD_SIZE];
                               XCTAssertEqualObjects(response, expectedResponse);
                             }
                             // DEBUG
@@ -805,8 +811,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
   RMTSimpleRequest *request = [RMTSimpleRequest message];
   request.responseType = RMTPayloadType_Compressable;
-  request.responseSize = 10;
-  request.payload.body = [NSMutableData dataWithLength:10];
+  request.responseSize = SMALL_PAYLOAD_SIZE;
+  request.payload.body = [NSMutableData dataWithLength:SMALL_PAYLOAD_SIZE];
 
   [GRPCCall enableOpBatchLog:YES];
   [_service unaryCallWithRequest:request
@@ -872,7 +878,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                            // - If you're developing the server, consider using response streaming,
                            // or let clients filter
                            //   responses by setting a google.protobuf.FieldMask in the request:
-                           //   https://github.com/google/protobuf/blob/master/src/google/protobuf/field_mask.proto
+                           //   https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/field_mask.proto
                            XCTAssertEqualObjects(
                                error.localizedDescription,
                                @"Received message larger than max (4194305 vs. 4194304)");
@@ -935,7 +941,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                            [expectation fulfill];
                                          }];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
 }
 
 - (void)testServerStreamingRPC {
@@ -974,7 +980,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                           }
                         }];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
 }
 
 - (void)testPingPongRPC {
@@ -1021,7 +1027,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                     [expectation fulfill];
                                   }
                                 }];
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
 }
 
 - (void)testPingPongRPCWithV2API {
@@ -1075,7 +1081,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   [call start];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
 }
 
 - (void)testPingPongRPCWithFlowControl {
@@ -1096,7 +1102,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   options.PEMRootCertificates = [[self class] PEMRootCertificates];
   options.hostNameOverride = [[self class] hostNameOverride];
   options.flowControlEnabled = YES;
-  __block BOOL canWriteData = NO;
+  __block int writeMessageCount = 0;
 
   __block GRPCStreamingProtoCall *call = [_service
       fullDuplexCallWithResponseHandler:[[InteropTestsBlockCallbacks alloc]
@@ -1112,8 +1118,6 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                                 id request = [RMTStreamingOutputCallRequest
                                                     messageWithPayloadSize:requests[index]
                                                      requestedResponseSize:responses[index]];
-                                                XCTAssertTrue(canWriteData);
-                                                canWriteData = NO;
                                                 [call writeMessage:request];
                                                 [call receiveNextMessage];
                                               } else {
@@ -1131,14 +1135,15 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                               [expectation fulfill];
                                             }
                                             writeMessageCallback:^{
-                                              canWriteData = YES;
+                                              writeMessageCount++;
                                             }]
                             callOptions:options];
   [call start];
   [call receiveNextMessage];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
+  XCTAssertEqual(writeMessageCount, 4);
 }
 
 - (void)testEmptyStreamRPC {
@@ -1352,8 +1357,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
   RMTSimpleRequest *request = [RMTSimpleRequest message];
   request.responseType = RMTPayloadType_Compressable;
-  request.responseSize = 314159;
-  request.payload.body = [NSMutableData dataWithLength:271828];
+  request.responseSize = LARGE_RESPONSE_PAYLOAD_SIZE;
+  request.payload.body = [NSMutableData dataWithLength:LARGE_REQUEST_PAYLOAD_SIZE];
   request.expectCompressed.value = YES;
   [GRPCCall setDefaultCompressMethod:GRPCCompressGzip forhost:[[self class] host]];
 
@@ -1363,7 +1368,8 @@ static dispatch_once_t initGlobalInterceptorFactory;
 
                            RMTSimpleResponse *expectedResponse = [RMTSimpleResponse message];
                            expectedResponse.payload.type = RMTPayloadType_Compressable;
-                           expectedResponse.payload.body = [NSMutableData dataWithLength:314159];
+                           expectedResponse.payload.body =
+                               [NSMutableData dataWithLength:LARGE_RESPONSE_PAYLOAD_SIZE];
                            XCTAssertEqualObjects(response, expectedResponse);
 
                            [expectation fulfill];
@@ -1400,10 +1406,9 @@ static dispatch_once_t initGlobalInterceptorFactory;
                               messageCallback:nil
                                 closeCallback:^(NSDictionary *trailingMetadata, NSError *error) {
                                   XCTAssertNotNil(error);
-                                  XCTAssertEqual(
-                                      error.code, GRPC_STATUS_UNAVAILABLE,
-                                      @"Received status %ld instead of UNAVAILABLE (14).",
-                                      error.code);
+                                  XCTAssertEqual(error.code, GRPC_STATUS_UNAVAILABLE,
+                                                 @"Received status %@ instead of UNAVAILABLE (14).",
+                                                 @(error.code));
                                   [expectation fulfill];
                                 }]
                             callOptions:options];
@@ -1467,7 +1472,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   [call start];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
 }
 
 - (void)testLoggingInterceptor {
@@ -1527,10 +1532,10 @@ static dispatch_once_t initGlobalInterceptorFactory;
   NSArray *requests = @[ @1, @2, @3, @4 ];
   NSArray *responses = @[ @1, @2, @3, @4 ];
 
-  __block int index = 0;
+  __block int messageIndex = 0;
 
-  id request = [RMTStreamingOutputCallRequest messageWithPayloadSize:requests[index]
-                                               requestedResponseSize:responses[index]];
+  id request = [RMTStreamingOutputCallRequest messageWithPayloadSize:requests[messageIndex]
+                                               requestedResponseSize:responses[messageIndex]];
   GRPCMutableCallOptions *options = [[GRPCMutableCallOptions alloc] init];
   // For backwards compatibility
   options.transportType = [[self class] transportType];
@@ -1539,24 +1544,23 @@ static dispatch_once_t initGlobalInterceptorFactory;
   options.hostNameOverride = [[self class] hostNameOverride];
   options.flowControlEnabled = YES;
   options.interceptorFactories = @[ factory ];
-  __block BOOL canWriteData = NO;
+
+  __block int writeMessageCount = 0;
 
   __block GRPCStreamingProtoCall *call = [_service
       fullDuplexCallWithResponseHandler:[[InteropTestsBlockCallbacks alloc]
                                             initWithInitialMetadataCallback:nil
                                             messageCallback:^(id message) {
-                                              XCTAssertLessThan(index, 4,
+                                              XCTAssertLessThan(messageIndex, 4,
                                                                 @"More than 4 responses received.");
                                               id expected = [RMTStreamingOutputCallResponse
-                                                  messageWithPayloadSize:responses[index]];
+                                                  messageWithPayloadSize:responses[messageIndex]];
                                               XCTAssertEqualObjects(message, expected);
-                                              index += 1;
-                                              if (index < 4) {
+                                              messageIndex += 1;
+                                              if (messageIndex < 4) {
                                                 id request = [RMTStreamingOutputCallRequest
-                                                    messageWithPayloadSize:requests[index]
-                                                     requestedResponseSize:responses[index]];
-                                                XCTAssertTrue(canWriteData);
-                                                canWriteData = NO;
+                                                    messageWithPayloadSize:requests[messageIndex]
+                                                     requestedResponseSize:responses[messageIndex]];
                                                 [call writeMessage:request];
                                                 [call receiveNextMessage];
                                               } else {
@@ -1568,13 +1572,13 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                               XCTAssertNil(error,
                                                            @"Finished with unexpected error: %@",
                                                            error);
-                                              XCTAssertEqual(index, 4,
+                                              XCTAssertEqual(messageIndex, 4,
                                                              @"Received %i responses instead of 4.",
-                                                             index);
+                                                             messageIndex);
                                               [expectation fulfill];
                                             }
                                             writeMessageCallback:^{
-                                              canWriteData = YES;
+                                              writeMessageCount++;
                                             }]
                             callOptions:options];
   [call start];
@@ -1590,17 +1594,18 @@ static dispatch_once_t initGlobalInterceptorFactory;
   XCTAssertEqual(responseDataCount, 4);
   XCTAssertEqual(responseCloseCount, 1);
   XCTAssertEqual(didWriteDataCount, 4);
+  XCTAssertEqual(writeMessageCount, 4);
 }
 
-// Chain a default interceptor and a hook interceptor which, after two writes, cancels the call
+// Chain a default interceptor and a hook interceptor which, after one write, cancels the call
 // under the hood but forward further data to the user.
 - (void)testHijackingInterceptor {
-  NSUInteger kCancelAfterWrites = 2;
+  NSUInteger kCancelAfterWrites = 1;
   XCTAssertNotNil([[self class] host]);
   __weak XCTestExpectation *expectUserCallComplete =
       [self expectationWithDescription:@"User call completed."];
-  __weak XCTestExpectation *expectCallInternalComplete =
-      [self expectationWithDescription:@"Internal gRPC call completed."];
+  __weak XCTestExpectation *expectResponseCallbackComplete =
+      [self expectationWithDescription:@"Hook interceptor response callback completed"];
 
   NSArray *responses = @[ @1, @2, @3, @4 ];
   __block int index = 0;
@@ -1657,7 +1662,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
         XCTAssertNil(trailingMetadata);
         XCTAssertNotNil(error);
         XCTAssertEqual(error.code, GRPC_STATUS_CANCELLED);
-        [expectCallInternalComplete fulfill];
+        [expectResponseCallbackComplete fulfill];
       }
       didWriteDataHook:nil];
 
@@ -1674,46 +1679,42 @@ static dispatch_once_t initGlobalInterceptorFactory;
   options.interceptorFactories = @[ [[DefaultInterceptorFactory alloc] init], factory ];
 
   __block GRPCStreamingProtoCall *call = [_service
-      fullDuplexCallWithResponseHandler:[[InteropTestsBlockCallbacks alloc]
-                                            initWithInitialMetadataCallback:nil
-                                            messageCallback:^(id message) {
-                                              XCTAssertLessThan(index, 4,
-                                                                @"More than 4 responses received.");
-                                              id expected = [RMTStreamingOutputCallResponse
-                                                  messageWithPayloadSize:responses[index]];
-                                              XCTAssertEqualObjects(message, expected);
-                                              index += 1;
-                                              if (index < 4) {
-                                                id request = [RMTStreamingOutputCallRequest
-                                                    messageWithPayloadSize:requests[index]
-                                                     requestedResponseSize:responses[index]];
-                                                [call writeMessage:request];
-                                                [call receiveNextMessage];
-                                              } else {
-                                                [call finish];
-                                              }
-                                            }
-                                            closeCallback:^(NSDictionary *trailingMetadata,
-                                                            NSError *error) {
-                                              XCTAssertNil(error,
-                                                           @"Finished with unexpected error: %@",
-                                                           error);
-                                              XCTAssertEqual(index, 4,
-                                                             @"Received %i responses instead of 4.",
-                                                             index);
-                                              [expectUserCallComplete fulfill];
-                                            }]
+      fullDuplexCallWithResponseHandler:
+          [[InteropTestsBlockCallbacks alloc] initWithInitialMetadataCallback:nil
+              messageCallback:^(id message) {
+                XCTAssertLessThan(index, 4, @"More than 4 responses received.");
+                id expected =
+                    [RMTStreamingOutputCallResponse messageWithPayloadSize:responses[index]];
+                XCTAssertEqualObjects(message, expected);
+                index += 1;
+                if (index < 4) {
+                  id request =
+                      [RMTStreamingOutputCallRequest messageWithPayloadSize:requests[index]
+                                                      requestedResponseSize:responses[index]];
+                  [call writeMessage:request];
+                  [call receiveNextMessage];
+                } else {
+                  [self waitForExpectations:@[ expectResponseCallbackComplete ]
+                                    timeout:TEST_TIMEOUT];
+                  [call finish];
+                }
+              }
+              closeCallback:^(NSDictionary *trailingMetadata, NSError *error) {
+                XCTAssertNil(error, @"Finished with unexpected error: %@", error);
+                XCTAssertEqual(index, 4, @"Received %i responses instead of 4.", index);
+                [expectUserCallComplete fulfill];
+              }]
                             callOptions:options];
   [call start];
   [call receiveNextMessage];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectations:@[ expectUserCallComplete ] timeout:TEST_TIMEOUT];
   XCTAssertEqual(startCount, 1);
   XCTAssertEqual(writeDataCount, 4);
   XCTAssertEqual(finishCount, 1);
   XCTAssertEqual(responseHeaderCount, 1);
-  XCTAssertEqual(responseDataCount, 2);
+  XCTAssertEqual(responseDataCount, 1);
   XCTAssertEqual(responseCloseCount, 1);
 }
 
@@ -1786,7 +1787,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   options.flowControlEnabled = YES;
   globalInterceptorFactory.enabled = YES;
 
-  __block BOOL canWriteData = NO;
+  __block int writeMessageCount = 0;
   __block GRPCStreamingProtoCall *call = [_service
       fullDuplexCallWithResponseHandler:[[InteropTestsBlockCallbacks alloc]
                                             initWithInitialMetadataCallback:nil
@@ -1798,8 +1799,6 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                                 id request = [RMTStreamingOutputCallRequest
                                                     messageWithPayloadSize:requests[index]
                                                      requestedResponseSize:responses[index]];
-                                                XCTAssertTrue(canWriteData);
-                                                canWriteData = NO;
                                                 [call writeMessage:request];
                                                 [call receiveNextMessage];
                                               } else {
@@ -1814,14 +1813,14 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                               [expectation fulfill];
                                             }
                                             writeMessageCallback:^{
-                                              canWriteData = YES;
+                                              writeMessageCount++;
                                             }]
                             callOptions:options];
   [call start];
   [call receiveNextMessage];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
   XCTAssertEqual(startCount, 1);
   XCTAssertEqual(writeDataCount, 4);
   XCTAssertEqual(finishCount, 1);
@@ -1830,6 +1829,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   XCTAssertEqual(responseDataCount, 4);
   XCTAssertEqual(responseCloseCount, 1);
   XCTAssertEqual(didWriteDataCount, 4);
+  XCTAssertEqual(writeMessageCount, 4);
   globalInterceptorFactory.enabled = NO;
 }
 
@@ -1973,7 +1973,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   options.interceptorFactories = @[ factory ];
   globalInterceptorFactory.enabled = YES;
 
-  __block BOOL canWriteData = NO;
+  __block int writeMessageCount = 0;
   __block GRPCStreamingProtoCall *call = [_service
       fullDuplexCallWithResponseHandler:[[InteropTestsBlockCallbacks alloc]
                                             initWithInitialMetadataCallback:nil
@@ -1983,7 +1983,6 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                                 id request = [RMTStreamingOutputCallRequest
                                                     messageWithPayloadSize:requests[index]
                                                      requestedResponseSize:responses[index]];
-                                                canWriteData = NO;
                                                 [call writeMessage:request];
                                                 [call receiveNextMessage];
                                               } else {
@@ -1995,14 +1994,14 @@ static dispatch_once_t initGlobalInterceptorFactory;
                                               [expectation fulfill];
                                             }
                                             writeMessageCallback:^{
-                                              canWriteData = YES;
+                                              writeMessageCount++;
                                             }]
                             callOptions:options];
   [call start];
   [call receiveNextMessage];
   [call writeMessage:request];
 
-  [self waitForExpectationsWithTimeout:STREAMING_CALL_TEST_TIMEOUT handler:nil];
+  [self waitForExpectationsWithTimeout:TEST_TIMEOUT handler:nil];
   XCTAssertEqual(startCount, 1);
   XCTAssertEqual(writeDataCount, 4);
   XCTAssertEqual(finishCount, 1);
@@ -2019,6 +2018,7 @@ static dispatch_once_t initGlobalInterceptorFactory;
   XCTAssertEqual(globalResponseDataCount, 4);
   XCTAssertEqual(globalResponseCloseCount, 1);
   XCTAssertEqual(globalDidWriteDataCount, 4);
+  XCTAssertEqual(writeMessageCount, 4);
   globalInterceptorFactory.enabled = NO;
 }
 

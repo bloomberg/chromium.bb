@@ -8,6 +8,7 @@
   * [Heap profiling](quickstart/heap-profiling.md)
 
 * [Case studies](#)
+  * [Android boot tracing](case-studies/android-boot-tracing.md)
   * [Debugging memory usage](case-studies/memory.md)
 
 * [Data sources](#)
@@ -40,6 +41,8 @@
 * [Trace visualization](#)
   * [Perfetto UI](visualization/perfetto-ui.md)
   * [Visualising large traces](visualization/large-traces.md)
+  * [Deep linking to Perfetto UI](visualization/deep-linking-to-perfetto-ui.md)
+  * [Perfetto UI release process](visualization/perfetto-ui-release-process.md)
 
 * [Core concepts](#)
   * [Trace configuration](concepts/config.md)
@@ -70,5 +73,8 @@
     * [Heapprofd sampling](design-docs/heapprofd-sampling.md)
     * [Life of a tracing session](design-docs/life-of-a-tracing-session.md)
     * [Perfetto CI](design-docs/continuous-integration.md)
+    * [Pivot tables](design-docs/pivot-tables.md)
     * [ProtoZero](design-docs/protozero.md)
     * [Security model](design-docs/security-model.md)
+    * [Statsd Checkpoint Atoms](design-docs/checkpoint-atoms.md)
+

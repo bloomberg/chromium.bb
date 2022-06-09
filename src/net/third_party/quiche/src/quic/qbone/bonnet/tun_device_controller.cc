@@ -49,6 +49,10 @@ bool TunDeviceController::UpdateAddress(const IpRange& desired_range) {
 
   if (address_updated) {
     current_address_ = desired_address;
+
+    for (const auto& cb : address_update_cbs_) {
+      cb(current_address_);
+    }
   }
 
   return address_updated;
@@ -110,6 +114,19 @@ bool TunDeviceController::UpdateRoutes(
   return true;
 }
 
+bool TunDeviceController::UpdateRoutesWithRetries(
+    const IpRange& desired_range,
+    const std::vector<IpRange>& desired_routes,
+    int retries) {
+  while (retries-- > 0) {
+    if (UpdateRoutes(desired_range, desired_routes)) {
+      return true;
+    }
+    absl::SleepFor(absl::Milliseconds(100));
+  }
+  return false;
+}
+
 bool TunDeviceController::UpdateRules(IpRange desired_range) {
   if (!absl::GetFlag(FLAGS_qbone_tun_device_replace_default_routing_rules)) {
     return true;
@@ -146,6 +163,11 @@ bool TunDeviceController::UpdateRules(IpRange desired_range) {
 
 QuicIpAddress TunDeviceController::current_address() {
   return current_address_;
+}
+
+void TunDeviceController::RegisterAddressUpdateCallback(
+    const std::function<void(QuicIpAddress)>& cb) {
+  address_update_cbs_.push_back(cb);
 }
 
 }  // namespace quic

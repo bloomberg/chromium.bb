@@ -80,12 +80,12 @@ class TransformTestBase {
         }
       }
 
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           RunFwdTxfm(test_input_block, test_temp_block, pitch_));
       if (bit_depth_ == AOM_BITS_8) {
-        ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
+        API_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
       } else {
-        ASM_REGISTER_STATE_CHECK(
+        API_REGISTER_STATE_CHECK(
             RunInvTxfm(test_temp_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
       }
 
@@ -148,7 +148,7 @@ class TransformTestBase {
       }
 
       fwd_txfm_ref(input_block, output_ref_block, stride, &txfm_param_);
-      ASM_REGISTER_STATE_CHECK(RunFwdTxfm(input_block, output_block, stride));
+      API_REGISTER_STATE_CHECK(RunFwdTxfm(input_block, output_block, stride));
 
       // The minimum quant value is 4.
       for (j = 0; j < height_; ++j) {
@@ -198,7 +198,7 @@ class TransformTestBase {
       fwd_txfm_ref(input_block, trans_block, pitch_, &txfm_param_);
 
       inv_txfm_ref(trans_block, output_ref_block, stride, &txfm_param_);
-      ASM_REGISTER_STATE_CHECK(RunInvTxfm(trans_block, output_block, stride));
+      API_REGISTER_STATE_CHECK(RunInvTxfm(trans_block, output_block, stride));
 
       for (j = 0; j < height_; ++j) {
         for (k = 0; k < pitch_; ++k) {
@@ -238,7 +238,7 @@ class TransformTestBase {
       }
 
       fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_, &txfm_param_);
-      ASM_REGISTER_STATE_CHECK(
+      API_REGISTER_STATE_CHECK(
           RunFwdTxfm(input_extreme_block, output_block, pitch_));
 
       int row_length = FindRowLength();
@@ -292,9 +292,9 @@ class TransformTestBase {
       fwd_txfm_ref(in, coeff, pitch_, &txfm_param_);
 
       if (bit_depth_ == AOM_BITS_8) {
-        ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
+        API_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
       } else {
-        ASM_REGISTER_STATE_CHECK(
+        API_REGISTER_STATE_CHECK(
             RunInvTxfm(coeff, CONVERT_TO_BYTEPTR(dst16), pitch_));
       }
 

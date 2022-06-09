@@ -10,9 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 class AppListControllerDelegate;
@@ -43,6 +41,10 @@ class AppSearchProvider : public SearchProvider {
                     AppListControllerDelegate* list_controller,
                     base::Clock* clock,
                     AppListModelUpdater* model_updater);
+
+  AppSearchProvider(const AppSearchProvider&) = delete;
+  AppSearchProvider& operator=(const AppSearchProvider&) = delete;
+
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
@@ -96,8 +98,6 @@ class AppSearchProvider : public SearchProvider {
       nullptr;
   base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_{this};
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);
 };
 
 }  // namespace app_list

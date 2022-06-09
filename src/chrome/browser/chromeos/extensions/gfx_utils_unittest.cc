@@ -4,14 +4,13 @@
 
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 
@@ -33,6 +32,10 @@ constexpr char kKeepExtensionId[] = "hmjkmjkepdijhoojdojkdfohbdgmmhki";
 class DualBadgeMapTest : public ExtensionServiceTestBase {
  public:
   DualBadgeMapTest() {}
+
+  DualBadgeMapTest(const DualBadgeMapTest&) = delete;
+  DualBadgeMapTest& operator=(const DualBadgeMapTest&) = delete;
+
   ~DualBadgeMapTest() override { profile_.reset(); }
 
   void SetUp() override {
@@ -95,8 +98,6 @@ class DualBadgeMapTest : public ExtensionServiceTestBase {
 
  private:
   ArcAppTest arc_test_;
-
-  DISALLOW_COPY_AND_ASSIGN(DualBadgeMapTest);
 };
 
 TEST_F(DualBadgeMapTest, ExtensionToArcAppMapTest) {

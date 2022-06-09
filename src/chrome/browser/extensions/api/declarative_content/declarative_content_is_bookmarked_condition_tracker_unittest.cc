@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -68,10 +68,19 @@ using testing::UnorderedElementsAreArray;
 
 class DeclarativeContentIsBookmarkedConditionTrackerTest
     : public DeclarativeContentConditionTrackerTest {
+ public:
+  DeclarativeContentIsBookmarkedConditionTrackerTest(
+      const DeclarativeContentIsBookmarkedConditionTrackerTest&) = delete;
+  DeclarativeContentIsBookmarkedConditionTrackerTest& operator=(
+      const DeclarativeContentIsBookmarkedConditionTrackerTest&) = delete;
+
  protected:
   class Delegate : public ContentPredicateEvaluator::Delegate {
    public:
     Delegate() {}
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
 
     std::set<content::WebContents*>& evaluation_requests() {
       return evaluation_requests_;
@@ -90,8 +99,6 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
 
    private:
     std::set<content::WebContents*> evaluation_requests_;
-
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   DeclarativeContentIsBookmarkedConditionTrackerTest() {
@@ -146,16 +153,13 @@ class DeclarativeContentIsBookmarkedConditionTrackerTest
   }
 
   Delegate delegate_;
-  bookmarks::BookmarkModel* bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
   std::unique_ptr<DeclarativeContentIsBookmarkedConditionTracker> tracker_;
   scoped_refptr<const Extension> extension_;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>
       is_bookmarked_predicate_;
   std::unique_ptr<DeclarativeContentIsBookmarkedPredicate>
       is_not_bookmarked_predicate_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedConditionTrackerTest);
 };
 
 

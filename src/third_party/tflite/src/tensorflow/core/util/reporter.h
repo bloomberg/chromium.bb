@@ -102,7 +102,7 @@ class TestReporter {
   // Only does something if the reporting env flag is set.
   // Does not guarantee the report is written.  Use Close() to
   // enforce I/O operations.
-  Status Benchmark(int64 iters, double cpu_time, double wall_time,
+  Status Benchmark(int64_t iters, double cpu_time, double wall_time,
                    double throughput);
 
   // Set property on Benchmark to the given value.
@@ -110,6 +110,9 @@ class TestReporter {
 
   // Set property on Benchmark to the given value.
   Status SetProperty(const string& name, const string& value);
+
+  // Add the given value to the metrics on the Benchmark.
+  Status AddMetric(const string& name, double value);
 
   // TODO(b/32704451): Don't just ignore the ::tensorflow::Status object!
   ~TestReporter() { Close().IgnoreError(); }  // Autoclose in destructor.

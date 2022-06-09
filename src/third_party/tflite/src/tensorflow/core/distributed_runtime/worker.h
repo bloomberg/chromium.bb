@@ -45,7 +45,7 @@ class Worker : public WorkerInterface {
   Worker(WorkerEnv* env);
   virtual ~Worker() {}
 
-  void GetStatusAsync(const GetStatusRequest* request,
+  void GetStatusAsync(CallOptions* opts, const GetStatusRequest* request,
                       GetStatusResponse* response, bool fail_fast,
                       StatusCallback done) override;
 
@@ -115,7 +115,7 @@ class Worker : public WorkerInterface {
   Status PrepareRecvTensor(const Rendezvous::ParsedKey& parsed,
                            Device** src_dev);
 
-  void AbortStep(int64);
+  void AbortStep(int64_t);
 
  private:
   PartialRunMgr partial_run_mgr_;

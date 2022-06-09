@@ -3,15 +3,12 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Profiler from '../profiler/profiler.js';
+import * as i18n from '../../core/i18n/i18n.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Timeline from './timeline.js';
 
-import type * as Profiler from '../profiler/profiler.js';
-
-import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
   /**
   *@description Text for the performance of something
@@ -86,13 +83,10 @@ let loadedProfilerModule: (typeof Profiler|undefined);
 
 async function loadTimelineModule(): Promise<typeof Timeline> {
   if (!loadedTimelineModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/timeline');
     loadedTimelineModule = await import('./timeline.js');
   }
   return loadedTimelineModule;
 }
-
 
 // The profiler module is imported here because the js profiler tab is implemented
 // in the profiler module. Since the tab doesn't belong to all apps that extend
@@ -104,8 +98,6 @@ async function loadTimelineModule(): Promise<typeof Timeline> {
 
 async function loadProfilerModule(): Promise<typeof Profiler> {
   if (!loadedProfilerModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('profiler');
     loadedProfilerModule = await import('../profiler/profiler.js');
   }
   return loadedProfilerModule;
@@ -125,7 +117,6 @@ function maybeRetrieveContextTypes<T = unknown>(getClassCallBack: (timelineModul
   }
   return getClassCallBack(loadedTimelineModule);
 }
-
 
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.PANEL,
@@ -188,7 +179,6 @@ UI.ActionRegistration.registerActionExtension({
   ],
 });
 
-
 UI.ActionRegistration.registerActionExtension({
   actionId: 'timeline.record-reload',
   iconClass: UI.ActionRegistration.IconClass.LARGEICON_REFRESH,
@@ -250,11 +240,11 @@ UI.ActionRegistration.registerActionExtension({
   bindings: [
     {
       platform: UI.ActionRegistration.Platforms.WindowsLinux,
-      shortcut: 'Ctrl+0',
+      shortcut: 'Ctrl+O',
     },
     {
       platform: UI.ActionRegistration.Platforms.Mac,
-      shortcut: 'Meta+0',
+      shortcut: 'Meta+O',
     },
   ],
 });
@@ -393,6 +383,7 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.PERFORMANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
   settingName: 'frameViewerHideChromeWindow',
   settingType: Common.Settings.SettingType.BOOLEAN,

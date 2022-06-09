@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "services/device/hid/hid_device_info.h"
 #include "services/device/public/mojom/hid.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -72,6 +73,7 @@ class HidService {
   // failure.
   virtual void Connect(const std::string& device_guid,
                        bool allow_protected_reports,
+                       bool allow_fido_reports,
                        ConnectCallback callback) = 0;
 
  protected:

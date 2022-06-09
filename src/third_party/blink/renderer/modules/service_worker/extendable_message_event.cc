@@ -78,7 +78,6 @@ ScriptValue ExtendableMessageEvent::data(ScriptState* script_state) const {
   return ScriptValue(script_state->GetIsolate(), value);
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8UnionClientOrMessagePortOrServiceWorker* ExtendableMessageEvent::source()
     const {
   if (source_as_client_) {
@@ -93,21 +92,6 @@ V8UnionClientOrMessagePortOrServiceWorker* ExtendableMessageEvent::source()
   }
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void ExtendableMessageEvent::source(
-    ClientOrServiceWorkerOrMessagePort& result) const {
-  if (source_as_client_)
-    result = ClientOrServiceWorkerOrMessagePort::FromClient(source_as_client_);
-  else if (source_as_service_worker_)
-    result = ClientOrServiceWorkerOrMessagePort::FromServiceWorker(
-        source_as_service_worker_);
-  else if (source_as_message_port_)
-    result = ClientOrServiceWorkerOrMessagePort::FromMessagePort(
-        source_as_message_port_);
-  else
-    result = ClientOrServiceWorkerOrMessagePort();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 MessagePortArray ExtendableMessageEvent::ports() const {
   // TODO(bashi): Currently we return a copied array because the binding
@@ -151,13 +135,19 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     origin_ = initializer->origin();
   if (initializer->hasLastEventId())
     last_event_id_ = initializer->lastEventId();
-  if (initializer->hasSource()) {
-    if (initializer->source().IsClient())
-      source_as_client_ = initializer->source().GetAsClient();
-    else if (initializer->source().IsServiceWorker())
-      source_as_service_worker_ = initializer->source().GetAsServiceWorker();
-    else if (initializer->source().IsMessagePort())
-      source_as_message_port_ = initializer->source().GetAsMessagePort();
+  if (initializer->hasSource() and initializer->source()) {
+    switch (initializer->source()->GetContentType()) {
+      case V8UnionClientOrMessagePortOrServiceWorker::ContentType::kClient:
+        source_as_client_ = initializer->source()->GetAsClient();
+        break;
+      case V8UnionClientOrMessagePortOrServiceWorker::ContentType::kMessagePort:
+        source_as_message_port_ = initializer->source()->GetAsMessagePort();
+        break;
+      case V8UnionClientOrMessagePortOrServiceWorker::ContentType::
+          kServiceWorker:
+        source_as_service_worker_ = initializer->source()->GetAsServiceWorker();
+        break;
+    }
   }
   if (initializer->hasPorts())
     ports_ = MakeGarbageCollected<MessagePortArray>(initializer->ports());

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 #
 # Copyright 2017 gRPC authors.
 #
@@ -15,26 +15,26 @@
 # limitations under the License.
 """ Runs the entire bm_*.py pipeline, and possible comments on the PR """
 
-import bm_constants
-import bm_build
-import bm_run
-import bm_diff
-
-import sys
-import os
-import random
 import argparse
 import multiprocessing
+import os
+import random
 import subprocess
+import sys
 
 sys.path.append(
     os.path.join(os.path.dirname(sys.argv[0]), '..', '..', 'run_tests',
                  'python_utils'))
-import check_on_pr
 
 sys.path.append(
     os.path.join(os.path.dirname(sys.argv[0]), '..', '..', '..', 'run_tests',
                  'python_utils'))
+
+import bm_build
+import bm_constants
+import bm_diff
+import bm_run
+import check_on_pr
 import jobset
 
 
@@ -135,8 +135,9 @@ def main(args):
     random.shuffle(jobs_list, random.SystemRandom().random)
     jobset.run(jobs_list, maxjobs=args.jobs)
 
-    diff, note = bm_diff.diff(args.benchmarks, args.loops, args.regex,
-                              args.track, old, 'new', args.counters)
+    diff, note, significance = bm_diff.diff(args.benchmarks, args.loops,
+                                            args.regex, args.track, old, 'new',
+                                            args.counters)
     if diff:
         text = '[%s] Performance differences noted:\n%s' % (
             args.pr_comment_name, diff)
@@ -146,6 +147,7 @@ def main(args):
         text = note + '\n\n' + text
     print('%s' % text)
     check_on_pr.check_on_pr('Benchmark', '```\n%s\n```' % text)
+    check_on_pr.label_significance_on_pr('perf-change', significance)
 
 
 if __name__ == '__main__':

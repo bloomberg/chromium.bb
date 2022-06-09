@@ -28,9 +28,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -72,6 +71,9 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   class NetworkStateObserver {
    public:
+    NetworkStateObserver(const NetworkStateObserver&) = delete;
+    NetworkStateObserver& operator=(const NetworkStateObserver&) = delete;
+
     // Will be called on the task runner that is passed in add*Observer.
     virtual void ConnectionChange(
         WebConnectionType,
@@ -82,6 +84,14 @@ class PLATFORM_EXPORT NetworkStateNotifier {
         const absl::optional<double>& downlink_throughput_mbps,
         bool save_data) {}
     virtual void OnLineStateChange(bool on_line) {}
+
+   protected:
+    NetworkStateObserver() = default;
+
+    // We don't delete these objects via the base class, so a virtual destructor
+    // isn't necessary, but protect the destructor to make sure we don't call it
+    // by accident.
+    ~NetworkStateObserver() = default;
   };
 
   enum class ObserverType {
@@ -97,6 +107,9 @@ class PLATFORM_EXPORT NetworkStateNotifier {
                                ObserverType,
                                NetworkStateObserver*,
                                scoped_refptr<base::SingleThreadTaskRunner>);
+    NetworkStateObserverHandle(const NetworkStateObserverHandle&) = delete;
+    NetworkStateObserverHandle& operator=(const NetworkStateObserverHandle&) =
+        delete;
     ~NetworkStateObserverHandle();
 
    private:
@@ -104,11 +117,11 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     ObserverType type_;
     NetworkStateObserver* observer_;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(NetworkStateObserverHandle);
   };
 
   NetworkStateNotifier() : has_override_(false) {}
+  NetworkStateNotifier(const NetworkStateNotifier&) = delete;
+  NetworkStateNotifier& operator=(const NetworkStateNotifier&) = delete;
 
   ~NetworkStateNotifier() {
     DCHECK(connection_observers_.IsEmpty());
@@ -370,8 +383,6 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   ObserverListMap on_line_state_observers_;
 
   const uint8_t randomization_salt_ = base::RandInt(1, 20);
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
 PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();

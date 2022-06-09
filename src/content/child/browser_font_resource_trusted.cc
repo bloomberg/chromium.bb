@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_canvas.h"
@@ -77,6 +77,9 @@ class TextRunCollection {
     }
   }
 
+  TextRunCollection(const TextRunCollection&) = delete;
+  TextRunCollection& operator=(const TextRunCollection&) = delete;
+
   ~TextRunCollection() {
     if (bidi_)
       ubidi_close(bidi_);
@@ -105,7 +108,7 @@ class TextRunCollection {
 
  private:
   // Will be null if we skipped autodetection.
-  UBiDi* bidi_;
+  raw_ptr<UBiDi> bidi_;
 
   // Text of all the runs.
   std::u16string text_;
@@ -115,8 +118,6 @@ class TextRunCollection {
   // When the content specifies override_direction (bidi_ is null) then this
   // will contain the single text run for WebKit.
   WebTextRun override_run_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextRunCollection);
 };
 
 bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,

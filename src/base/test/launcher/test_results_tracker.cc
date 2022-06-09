@@ -18,12 +18,14 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_switches.h"
 #include "base/time/time.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 
 namespace base {
@@ -111,8 +113,8 @@ TestResultsTracker::~TestResultsTracker() {
     all_tests_aggregator.Add(result);
   }
 
-  fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-  fprintf(out_,
+  fprintf(out_.get(), "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+  fprintf(out_.get(),
           "<testsuites name=\"AllTests\" tests=\"%d\" failures=\"%d\""
           " disabled=\"%d\" errors=\"%d\" time=\"%.3f\" timestamp=\"%s\">\n",
           all_tests_aggregator.tests, all_tests_aggregator.failures,
@@ -128,7 +130,7 @@ TestResultsTracker::~TestResultsTracker() {
     for (const TestResult& result : results) {
       aggregator.Add(result);
     }
-    fprintf(out_,
+    fprintf(out_.get(),
             "  <testsuite name=\"%s\" tests=\"%d\" "
             "failures=\"%d\" disabled=\"%d\" errors=\"%d\" time=\"%.3f\" "
             "timestamp=\"%s\">\n",
@@ -138,23 +140,29 @@ TestResultsTracker::~TestResultsTracker() {
             FormatTimeAsIso8601(Time::Now()).c_str());
 
     for (const TestResult& result : results) {
-      fprintf(out_, "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
-              " classname=\"%s\">\n",
-              result.GetTestName().c_str(),
-              result.elapsed_time.InSecondsF(),
+      fprintf(out_.get(),
+              "    <testcase name=\"%s\" status=\"run\" time=\"%.3f\""
+              "%s classname=\"%s\">\n",
+              result.GetTestName().c_str(), result.elapsed_time.InSecondsF(),
+              (result.timestamp
+                   ? StrCat({" timestamp=\"",
+                             FormatTimeAsIso8601(*result.timestamp), "\""})
+                         .c_str()
+                   : ""),
               result.GetTestCaseName().c_str());
       if (result.status != TestResult::TEST_SUCCESS) {
         // The actual failure message is not propagated up to here, as it's too
         // much work to escape it properly, and in case of failure, almost
         // always one needs to look into full log anyway.
-        fprintf(out_, "      <failure message=\"\" type=\"\"></failure>\n");
+        fprintf(out_.get(),
+                "      <failure message=\"\" type=\"\"></failure>\n");
       }
-      fprintf(out_, "    </testcase>\n");
+      fprintf(out_.get(), "    </testcase>\n");
     }
-    fprintf(out_, "  </testsuite>\n");
+    fprintf(out_.get(), "  </testsuite>\n");
   }
 
-  fprintf(out_, "</testsuites>\n");
+  fprintf(out_.get(), "</testsuites>\n");
   fclose(out_);
 }
 
@@ -251,27 +259,58 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
   std::string test_name_without_disabled_prefix =
       TestNameWithoutDisabledPrefix(result.full_name);
   auto it = results_map.find(test_name_without_disabled_prefix);
-  // If the test name is not present in the results map, then we did not
-  // generate a placeholder for the test. We shouldn't record its result either.
-  // It's a test that the delegate ran, e.g. a PRE_XYZ test.
-  if (it == results_map.end())
-    return;
 
   // Record disabled test names without DISABLED_ prefix so that they are easy
   // to compare with regular test names, e.g. before or after disabling.
   AggregateTestResult& aggregate_test_result = it->second;
 
+  // If the current test_result is a PRE test and it failed, insert its result
+  // in the corresponding non-PRE test's place.
+  std::string test_name_without_pre_prefix(test_name_without_disabled_prefix);
+  ReplaceSubstringsAfterOffset(&test_name_without_pre_prefix, 0, "PRE_", "");
+  if (test_name_without_pre_prefix != test_name_without_disabled_prefix) {
+    if (result.status != TestResult::TEST_SUCCESS) {
+      it = results_map.find(test_name_without_pre_prefix);
+      if (!it->second.test_results.empty() &&
+          it->second.test_results.back().status == TestResult::TEST_NOT_RUN) {
+        // Also need to remove the non-PRE test's placeholder.
+        it->second.test_results.pop_back();
+      }
+      it->second.test_results.push_back(result);
+    }
+    // We quit early here and let the non-PRE test detect this result and
+    // modify its result appropriately.
+    return;
+  }
+
   // If the last test result is a placeholder, then get rid of it now that we
-  // have real results. It's possible for no placeholder to exist if the test is
-  // setup for another test, e.g. PRE_ComponentAppBackgroundPage is a test whose
-  // sole purpose is to prime the test ComponentAppBackgroundPage.
+  // have real results.
   if (!aggregate_test_result.test_results.empty() &&
       aggregate_test_result.test_results.back().status ==
           TestResult::TEST_NOT_RUN) {
     aggregate_test_result.test_results.pop_back();
   }
 
-  aggregate_test_result.test_results.push_back(result);
+  TestResult result_to_add = result;
+  if (!aggregate_test_result.test_results.empty()) {
+    TestResult prev_result = aggregate_test_result.test_results.back();
+    if (prev_result.full_name != test_name_without_disabled_prefix) {
+      // Some other test's result is in our place! It must be our failed PRE
+      // test. Modify our own result if it failed and we succeeded so we don't
+      // end up silently swallowing PRE-only failures.
+      std::string prev_result_name(prev_result.full_name);
+      ReplaceSubstringsAfterOffset(&prev_result_name, 0, "PRE_", "");
+      CHECK_EQ(prev_result_name, test_name_without_disabled_prefix);
+
+      if (result.status == TestResult::TEST_SUCCESS) {
+        TestResult modified_result(prev_result);
+        modified_result.full_name = test_name_without_disabled_prefix;
+        result_to_add = modified_result;
+      }
+      aggregate_test_result.test_results.pop_back();
+    }
+  }
+  aggregate_test_result.test_results.push_back(result_to_add);
 }
 
 void TestResultsTracker::AddLeakedItems(
@@ -422,6 +461,18 @@ bool TestResultsTracker::SaveSummaryAsJSON(
         test_result_value.SetIntKey(
             "elapsed_time_ms",
             static_cast<int>(test_result.elapsed_time.InMilliseconds()));
+
+        if (test_result.thread_id)
+          test_result_value.SetIntKey("thread_id", *test_result.thread_id);
+        if (test_result.process_num)
+          test_result_value.SetIntKey("process_num", *test_result.process_num);
+        if (test_result.timestamp) {
+          // The timestamp is formatted using TimeToISO8601 instead of
+          // FormatTimeAsIso8601 here for a better accuracy that the former
+          // method would include a fraction of second (and the Z suffix).
+          test_result_value.SetStringKey(
+              "timestamp", TimeToISO8601(*test_result.timestamp).c_str());
+        }
 
         bool lossless_snippet = false;
         if (IsStringUTF8(test_result.output_snippet)) {

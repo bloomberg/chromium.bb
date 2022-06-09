@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
@@ -78,12 +79,14 @@ struct DialPendingRequest {
   DialPendingRequest(std::unique_ptr<DialURLFetcher> fetcher,
                      CallbackType callback)
       : fetcher(std::move(fetcher)), callback(std::move(callback)) {}
+
+  DialPendingRequest(const DialPendingRequest&) = delete;
+  DialPendingRequest& operator=(const DialPendingRequest&) = delete;
+
   ~DialPendingRequest() = default;
 
   std::unique_ptr<DialURLFetcher> fetcher;
   CallbackType callback;
-
-  DISALLOW_COPY_AND_ASSIGN(DialPendingRequest);
 };
 
 // Keeps track of all ongoing custom DIAL launch activities, and is the source
@@ -107,6 +110,10 @@ class DialActivityManager {
   using LaunchAppCallback = base::OnceCallback<void(bool)>;
 
   explicit DialActivityManager(DialAppDiscoveryService* app_discovery_service);
+
+  DialActivityManager(const DialActivityManager&) = delete;
+  DialActivityManager& operator=(const DialActivityManager&) = delete;
+
   virtual ~DialActivityManager();
 
   // Adds |activity| to the manager. This call is valid only if there is no
@@ -167,6 +174,10 @@ class DialActivityManager {
   // Represents the state of a launch activity.
   struct Record {
     explicit Record(const DialActivity& activity);
+
+    Record(const Record&) = delete;
+    Record& operator=(const Record&) = delete;
+
     ~Record();
 
     enum State { kLaunching, kLaunched };
@@ -176,8 +187,6 @@ class DialActivityManager {
     std::unique_ptr<DialLaunchRequest> pending_launch_request;
     std::unique_ptr<DialStopRequest> pending_stop_request;
     State state = kLaunching;
-
-    DISALLOW_COPY_AND_ASSIGN(Record);
   };
 
   // Marked virtual for tests.
@@ -204,10 +213,9 @@ class DialActivityManager {
 
   base::flat_map<MediaRoute::Id, std::unique_ptr<Record>> records_;
 
-  DialAppDiscoveryService* const app_discovery_service_;
+  const raw_ptr<DialAppDiscoveryService> app_discovery_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(DialActivityManager);
 };
 
 }  // namespace media_router

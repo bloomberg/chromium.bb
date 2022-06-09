@@ -11,8 +11,9 @@
 #include "build/build_config.h"
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/containers/contains.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
-#include "third_party/base/stl_util.h"
 
 namespace fxcrt {
 
@@ -650,7 +651,20 @@ TEST(WideString, Delete) {
   EXPECT_EQ(L"", empty);
 }
 
-TEST(WideString, Substr) {
+TEST(WideString, OneArgSubstr) {
+  WideString fred(L"FRED");
+  EXPECT_EQ(L"FRED", fred.Substr(0));
+  EXPECT_EQ(L"RED", fred.Substr(1));
+  EXPECT_EQ(L"ED", fred.Substr(2));
+  EXPECT_EQ(L"D", fred.Substr(3));
+  EXPECT_EQ(L"", fred.Substr(4));
+
+  WideString empty;
+  EXPECT_EQ(L"", empty.Substr(0));
+  EXPECT_EQ(L"", empty.Substr(1));
+}
+
+TEST(WideString, TwoArgSubstr) {
   WideString fred(L"FRED");
   EXPECT_EQ(L"", fred.Substr(0, 0));
   EXPECT_EQ(L"", fred.Substr(3, 0));
@@ -713,7 +727,7 @@ TEST(WideString, Find) {
   EXPECT_FALSE(empty_string.Find(L'\0').has_value());
 
   WideString single_string(L"a");
-  Optional<size_t> result = single_string.Find(L'a');
+  absl::optional<size_t> result = single_string.Find(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find(L'b').has_value());
@@ -760,7 +774,7 @@ TEST(WideString, ReverseFind) {
   EXPECT_FALSE(empty_string.ReverseFind(L'\0').has_value());
 
   WideString single_string(L"a");
-  Optional<size_t> result = single_string.ReverseFind(L'a');
+  absl::optional<size_t> result = single_string.ReverseFind(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.ReverseFind(L'b').has_value());
@@ -1473,7 +1487,7 @@ TEST(WideStringView, Find) {
   EXPECT_FALSE(empty_string.Find(L'\0').has_value());
 
   WideStringView single_string(L"a");
-  Optional<size_t> result = single_string.Find(L'a');
+  absl::optional<size_t> result = single_string.Find(L'a');
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(0u, result.value());
   EXPECT_FALSE(single_string.Find(L'b').has_value());
@@ -2033,14 +2047,13 @@ TEST(WideStringView, WideOStreamOverload) {
 }
 
 TEST(WideString, FX_HashCode_Wide) {
-  EXPECT_EQ(0u, FX_HashCode_GetW(L"", false));
-  EXPECT_EQ(65u, FX_HashCode_GetW(L"A", false));
-  EXPECT_EQ(97u, FX_HashCode_GetW(L"A", true));
-  EXPECT_EQ(1313 * 65u + 66u, FX_HashCode_GetW(L"AB", false));
-  EXPECT_EQ(FX_HashCode_GetAsIfW("AB\xff", false),
-            FX_HashCode_GetW(L"AB\xff", false));
-  EXPECT_EQ(FX_HashCode_GetAsIfW("AB\xff", true),
-            FX_HashCode_GetW(L"AB\xff", true));
+  EXPECT_EQ(0u, FX_HashCode_GetW(L""));
+  EXPECT_EQ(65u, FX_HashCode_GetW(L"A"));
+  EXPECT_EQ(97u, FX_HashCode_GetLoweredW(L"A"));
+  EXPECT_EQ(1313 * 65u + 66u, FX_HashCode_GetW(L"AB"));
+  EXPECT_EQ(FX_HashCode_GetAsIfW("AB\xff"), FX_HashCode_GetW(L"AB\xff"));
+  EXPECT_EQ(FX_HashCode_GetLoweredAsIfW("AB\xff"),
+            FX_HashCode_GetLoweredW(L"AB\xff"));
 }
 
 }  // namespace fxcrt

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -27,6 +26,10 @@ class MockSourceStream : public SourceStream {
     ASYNC,
   };
   MockSourceStream();
+
+  MockSourceStream(const MockSourceStream&) = delete;
+  MockSourceStream& operator=(const MockSourceStream&) = delete;
+
   // The destructor will crash in debug build if there is any pending read.
   ~MockSourceStream() override;
 
@@ -80,8 +83,6 @@ class MockSourceStream : public SourceStream {
   scoped_refptr<IOBuffer> dest_buffer_;
   CompletionOnceCallback callback_;
   int dest_buffer_size_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSourceStream);
 };
 
 }  // namespace net

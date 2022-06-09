@@ -9,9 +9,9 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/interfaces/bindings/native_struct.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace IPC {
 
@@ -22,6 +22,10 @@ class COMPONENT_EXPORT(IPC_MOJOM) MessageView {
       base::span<const uint8_t> bytes,
       absl::optional<std::vector<mojo::native::SerializedHandlePtr>> handles);
   MessageView(MessageView&&);
+
+  MessageView(const MessageView&) = delete;
+  MessageView& operator=(const MessageView&) = delete;
+
   ~MessageView();
 
   MessageView& operator=(MessageView&&);
@@ -32,8 +36,6 @@ class COMPONENT_EXPORT(IPC_MOJOM) MessageView {
  private:
   base::span<const uint8_t> bytes_;
   absl::optional<std::vector<mojo::native::SerializedHandlePtr>> handles_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 
 }  // namespace IPC

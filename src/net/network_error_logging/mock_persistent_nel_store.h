@@ -5,11 +5,9 @@
 #ifndef NET_NETWORK_ERROR_LOGGING_MOCK_PERSISTENT_NEL_STORE_H_
 #define NET_NETWORK_ERROR_LOGGING_MOCK_PERSISTENT_NEL_STORE_H_
 
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "url/origin.h"
 
@@ -60,6 +58,10 @@ class MockPersistentNelStore
   using CommandList = std::vector<Command>;
 
   MockPersistentNelStore();
+
+  MockPersistentNelStore(const MockPersistentNelStore&) = delete;
+  MockPersistentNelStore& operator=(const MockPersistentNelStore&) = delete;
+
   ~MockPersistentNelStore() override;
 
   // PersistentNelStore implementation:
@@ -111,8 +113,6 @@ class MockPersistentNelStore
   // Simulates the delta to be added to |policy_count_| the next time Flush() is
   // called. Reset to 0 when Flush() is called.
   int queued_policy_count_delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPersistentNelStore);
 };
 
 bool operator==(const MockPersistentNelStore::Command& lhs,

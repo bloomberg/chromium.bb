@@ -8,6 +8,10 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 namespace features {
 
 // Enable recognizing "aria-virtualcontent" as a valid aria property.
@@ -91,41 +95,64 @@ const base::Feature kIChromeAccessible{"IChromeAccessible",
 bool IsIChromeAccessibleEnabled() {
   return base::FeatureList::IsEnabled(::features::kIChromeAccessible);
 }
+
+const base::Feature kSelectiveUIAEnablement{"SelectiveUIAEnablement",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Returns true if accessibility will be selectively enabled depending on the
+// UIA APIs that are called, allowing non-screenreader usage to enable less of
+// the accessibility system.
+bool IsSelectiveUIAEnablementEnabled() {
+  return base::FeatureList::IsEnabled(::features::kSelectiveUIAEnablement);
+}
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kMagnifierPanningImprovements{
-    "MagnifierPanningImprovements", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMagnifierPanningImprovementsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kMagnifierPanningImprovements);
-}
-
 const base::Feature kMagnifierContinuousMouseFollowingModeSetting{
     "MagnifierContinuousMouseFollowingModeSetting",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
 }
 
-const base::Feature kEnableSwitchAccessPointScanning{
-    "EnableSwitchAccessPointScanning", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kDockedMagnifierResizing{"DockedMagnifierResizing",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsSwitchAccessPointScanningEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kEnableSwitchAccessPointScanning);
+bool IsDockedMagnifierResizingEnabled() {
+  return base::FeatureList::IsEnabled(::features::kDockedMagnifierResizing);
 }
 
-const base::Feature kExperimentalAccessibilityDictationListening{
-    "ExperimentalAccessibilityDictationListening",
+const base::Feature kExperimentalAccessibilityDictationOffline{
+    "ExperimentalAccessibilityDictationOffline",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool IsExperimentalAccessibilityDictationListeningEnabled() {
+bool IsExperimentalAccessibilityDictationOfflineEnabled() {
   return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationListening);
+      ::features::kExperimentalAccessibilityDictationOffline);
+}
+
+bool IsDictationOfflineAvailableAndEnabled() {
+  return base::FeatureList::IsEnabled(
+             ash::features::kOnDeviceSpeechRecognition) &&
+         IsExperimentalAccessibilityDictationOfflineEnabled();
+}
+
+const base::Feature kExperimentalAccessibilityDictationCommands{
+    "ExperimentalAccessibilityDictationCommands",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationCommandsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationCommands);
+}
+
+const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsEnhancedNetworkVoicesEnabled() {
+  return base::FeatureList::IsEnabled(::features::kEnhancedNetworkVoices);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -151,16 +178,6 @@ bool IsAriaElementReflectionEnabled() {
   return base::FeatureList::IsEnabled(::features::kEnableAriaElementReflection);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kSelectToSpeakNavigationControl{
-    "SelectToSpeakNavigationControl", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsSelectToSpeakNavigationControlEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kSelectToSpeakNavigationControl);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if defined(OS_ANDROID)
 const base::Feature kComputeAXMode{"ComputeAXMode",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
@@ -169,5 +186,12 @@ bool IsComputeAXModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kComputeAXMode);
 }
 #endif  // defined(OS_ANDROID)
+
+const base::Feature kReaderModeSidePanel{"ReaderModeSidePanel",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsReaderModeSidePanelEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReaderModeSidePanel);
+}
 
 }  // namespace features

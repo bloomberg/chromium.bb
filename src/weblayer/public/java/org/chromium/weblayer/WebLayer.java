@@ -514,7 +514,7 @@ public class WebLayer {
     /**
      * Creates a new WebLayer Fragment using the incognito profile with the specified name.
      *
-     * @param profileName The name of the incongito profile, null is mapped to an empty string.
+     * @param profileName The name of the incognito profile, null is mapped to an empty string.
      * @param persistenceId If non-null and not empty uniquely identifies the Browser for saving
      * state.
      *
@@ -556,7 +556,8 @@ public class WebLayer {
             args.putString(BrowserFragmentArgs.PERSISTENCE_ID, params.getPersistenceId());
         }
         args.putBoolean(BrowserFragmentArgs.IS_INCOGNITO, isIncognito);
-        BrowserFragment fragment = new BrowserFragment(params.getUseViewModel());
+        args.putBoolean(BrowserFragmentArgs.USE_VIEW_MODEL, params.getUseViewModel());
+        BrowserFragment fragment = new BrowserFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -824,6 +825,11 @@ public class WebLayer {
             StrictModeWorkaround.apply();
             // The id is part of the public library to avoid conflicts.
             return R.id.weblayer_remote_playback_api_notification;
+        }
+
+        @Override
+        public int getMaxNavigationsPerTabForInstanceState() {
+            return Browser.getMaxNavigationsPerTabForInstanceState();
         }
     }
 

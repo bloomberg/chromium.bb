@@ -20,6 +20,7 @@ limitations under the License.
 #include "ruy/matrix.h"
 #include "ruy/prepacked_cache.h"
 #include "ruy/side_pair.h"
+#include "ruy/trace.h"
 #include "ruy/trmul_params.h"
 
 namespace ruy {
@@ -37,9 +38,10 @@ bool ShouldCache(const TrMulParams& params, Side side) {
   const CachePolicy cache_policy = params.src[side].cache_policy;
   // The width that matters is that of the other side, it is what determines
   // the amortization of the packing work done on the present side.
-  const Side other_side = Other(side);
+  const Side other_side = OtherSide(side);
   const int other_width = params.src[other_side].layout.cols;
-  const int other_kernel_width = params.packed[other_side].layout.kernel.cols;
+  const int other_kernel_width =
+      params.packed_matrix[other_side].layout.kernel.cols;
   switch (cache_policy) {
     case CachePolicy::kNeverCache:
       return false;
@@ -65,21 +67,25 @@ bool ShouldCache(const TrMulParams& params, Side side) {
 }  // namespace
 
 void PreparePackedMatrices(Ctx* ctx, TrMulParams* params) {
+  RUY_TRACE_SCOPE;
   for (Side side : {Side::kLhs, Side::kRhs}) {
+    PEMat& packed_matrix = params->packed_matrix[side];
     if (ShouldCache(*params, side)) {
       // Use a cached packed matrix (possibly packing and caching now).
       auto* cache = ctx->GetPrepackedCache();
-      auto action = cache->Get(params->src[side].data, &params->packed[side]);
+      auto action = cache->Get(params->src[side].data, &packed_matrix);
+      RUY_TRACE_INFO(PREPARE_PACKED_MATRICES_SHOULD_CACHE);
       if (action == PrepackedCache::Action::kInsertedNewEntry) {
         params->RunPack(side, ctx->GetMainThreadTuning(), 0,
-                        params->packed[side].layout.cols);
+                        packed_matrix.layout.cols);
       }
       params->is_prepacked[side] = true;
     } else {
+      RUY_TRACE_INFO(PREPARE_PACKED_MATRICES_NO_CACHE);
       // Do not use a cached packed matrix. Only need to allocate buffers now.
       Allocator* allocator = ctx->GetMainAllocator();
-      PEMat& packed_matrix = params->packed[side];
-      packed_matrix.data = allocator->AllocateBytes(DataBytes(packed_matrix));
+      packed_matrix.data = allocator->AllocateBytesAvoidingAliasingWith(
+          DataBytes(packed_matrix), params->src[side].data);
       packed_matrix.sums = allocator->AllocateBytes(SumsBytes(packed_matrix));
     }
   }

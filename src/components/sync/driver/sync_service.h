@@ -10,12 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/enum_set.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
 
@@ -25,7 +24,6 @@ class GURL;
 
 namespace syncer {
 
-class JsController;
 class ProtocolEventObserver;
 class SyncCycleSnapshot;
 struct TypeEntitiesCount;
@@ -141,7 +139,7 @@ class SyncService : public KeyedService {
   };
 
   using DisableReasonSet =
-      EnumSet<DisableReason, DISABLE_REASON_FIRST, DISABLE_REASON_LAST>;
+      base::EnumSet<DisableReason, DISABLE_REASON_FIRST, DISABLE_REASON_LAST>;
 
   // The overall state of Sync-the-transport, in ascending order of
   // "activeness". Note that this refers to the transport layer, which may be
@@ -174,6 +172,9 @@ class SyncService : public KeyedService {
     // GetActiveDataTypes()).
     ACTIVE
   };
+
+  SyncService(const SyncService&) = delete;
+  SyncService& operator=(const SyncService&) = delete;
 
   ~SyncService() override {}
 
@@ -216,12 +217,14 @@ class SyncService : public KeyedService {
   // etc. is considered not granted.
   virtual bool IsLocalSyncEnabled() const = 0;
 
-  // Information about the currently signed in user.
-  virtual CoreAccountInfo GetAuthenticatedAccountInfo() const = 0;
-  // Whether the currently signed in user is the "primary" browser account (see
-  // IdentityManager). If this is false, then IsSyncFeatureEnabled will also be
-  // false, but Sync-the-transport might still run.
-  virtual bool IsAuthenticatedAccountPrimary() const = 0;
+  // Information about the primary account. Note that this account doesn't
+  // necessarily have Sync consent (in that case, only Sync-the-transport may be
+  // running).
+  virtual CoreAccountInfo GetAccountInfo() const = 0;
+  // Whether the primary account has consented to Sync (see IdentityManager). If
+  // this is false, then IsSyncFeatureEnabled will also be false, but
+  // Sync-the-transport might still run.
+  virtual bool HasSyncConsent() const = 0;
 
   // Returns whether the SyncService has completed at least one Sync cycle since
   // starting up (i.e. since browser startup or signin). This can be useful
@@ -248,7 +251,7 @@ class SyncService : public KeyedService {
   //////////////////////////////////////////////////////////////////////////////
 
   // Returns whether all conditions are satisfied for Sync-the-feature to start.
-  // This means that there is a primary account, no disable reasons, and
+  // This means that there is a Sync-consented account, no disable reasons, and
   // first-time Sync setup has been completed by the user.
   // Note: This does not imply that Sync is actually running. Check
   // IsSyncFeatureActive or GetTransportState to get the current state.
@@ -264,9 +267,9 @@ class SyncService : public KeyedService {
   bool IsEngineInitialized() const;
 
   // Returns whether Sync-the-feature can (attempt to) start. This means that
-  // there is a primary account and no disable reasons. It does *not* require
-  // first-time Sync setup to be complete, because that can only happen after
-  // the engine has started.
+  // there is a Sync-consented account and no disable reasons. It does *not*
+  // require first-time Sync setup to be complete, because that can only happen
+  // after the engine has started.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even if this is false.
   bool CanSyncFeatureStart() const;
@@ -315,8 +318,8 @@ class SyncService : public KeyedService {
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Stops sync-the-feature and clears all local data. Sync-the-transport may
-  // remain active after calling this.
+  // Stops and disables Sync-the-feature and clears all local data.
+  // Sync-the-transport may remain active after calling this.
   virtual void StopAndClear() = 0;
 
   // Controls whether sync is allowed at the platform level. If set to false
@@ -424,8 +427,6 @@ class SyncService : public KeyedService {
   virtual void AddProtocolEventObserver(ProtocolEventObserver* observer) = 0;
   virtual void RemoveProtocolEventObserver(ProtocolEventObserver* observer) = 0;
 
-  virtual base::WeakPtr<JsController> GetJsController() = 0;
-
   // Asynchronously fetches base::Value representations of all sync nodes and
   // returns them to the specified callback on this thread.
   //
@@ -437,9 +438,6 @@ class SyncService : public KeyedService {
 
  protected:
   SyncService() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncService);
 };
 
 }  // namespace syncer

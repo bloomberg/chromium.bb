@@ -11,13 +11,14 @@
 #include <sstream>
 #include <utility>
 
+#include "constants/ascii.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfdoc/cpvt_word.h"
 #include "core/fpdfdoc/ipvt_fontmap.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/fx_font.h"
 #include "fpdfsdk/pwl/cpwl_caret.h"
@@ -42,6 +43,7 @@ CPWL_Edit::~CPWL_Edit() {
 
 void CPWL_Edit::SetText(const WideString& csText) {
   m_pEditImpl->SetText(csText);
+  m_pEditImpl->Paint();
 }
 
 bool CPWL_Edit::RePosChildWnd() {
@@ -49,7 +51,7 @@ bool CPWL_Edit::RePosChildWnd() {
     CFX_FloatRect rcWindow = m_rcOldWindow;
     CFX_FloatRect rcVScroll =
         CFX_FloatRect(rcWindow.right, rcWindow.bottom,
-                      rcWindow.right + PWL_SCROLLBAR_WIDTH, rcWindow.top);
+                      rcWindow.right + CPWL_ScrollBar::kWidth, rcWindow.top);
 
     ObservedPtr<CPWL_Edit> thisObserved(this);
     pVSB->Move(rcVScroll, true, false);
@@ -68,23 +70,22 @@ bool CPWL_Edit::RePosChildWnd() {
   }
 
   m_pEditImpl->SetPlateRect(GetClientRect());
+  m_pEditImpl->Paint();
   return true;
 }
 
 CFX_FloatRect CPWL_Edit::GetClientRect() const {
   float width = static_cast<float>(GetBorderWidth() + GetInnerBorderWidth());
   CFX_FloatRect rcClient = GetWindowRect().GetDeflated(width, width);
-  if (CPWL_ScrollBar* pVSB = GetVScrollBar()) {
-    if (pVSB->IsVisible()) {
-      rcClient.right -= PWL_SCROLLBAR_WIDTH;
-    }
-  }
-
+  CPWL_ScrollBar* pVSB = GetVScrollBar();
+  if (pVSB && pVSB->IsVisible())
+    rcClient.right -= CPWL_ScrollBar::kWidth;
   return rcClient;
 }
 
 void CPWL_Edit::SetAlignFormatVerticalCenter() {
-  m_pEditImpl->SetAlignmentV(static_cast<int32_t>(PEAV_CENTER), true);
+  m_pEditImpl->SetAlignmentV(static_cast<int32_t>(PEAV_CENTER));
+  m_pEditImpl->Paint();
 }
 
 bool CPWL_Edit::CanSelectAll() const {
@@ -122,32 +123,32 @@ void CPWL_Edit::OnCreated() {
 
 void CPWL_Edit::SetParamByFlag() {
   if (HasFlag(PES_RIGHT)) {
-    m_pEditImpl->SetAlignmentH(2, false);
+    m_pEditImpl->SetAlignmentH(2);
   } else if (HasFlag(PES_MIDDLE)) {
-    m_pEditImpl->SetAlignmentH(1, false);
+    m_pEditImpl->SetAlignmentH(1);
   } else {
-    m_pEditImpl->SetAlignmentH(0, false);
+    m_pEditImpl->SetAlignmentH(0);
   }
 
   if (HasFlag(PES_CENTER)) {
-    m_pEditImpl->SetAlignmentV(1, false);
+    m_pEditImpl->SetAlignmentV(1);
   } else {
-    m_pEditImpl->SetAlignmentV(0, false);
+    m_pEditImpl->SetAlignmentV(0);
   }
 
   if (HasFlag(PES_PASSWORD)) {
-    m_pEditImpl->SetPasswordChar('*', false);
+    m_pEditImpl->SetPasswordChar('*');
   }
 
-  m_pEditImpl->SetMultiLine(HasFlag(PES_MULTILINE), false);
-  m_pEditImpl->SetAutoReturn(HasFlag(PES_AUTORETURN), false);
-  m_pEditImpl->SetAutoFontSize(HasFlag(PWS_AUTOFONTSIZE), false);
-  m_pEditImpl->SetAutoScroll(HasFlag(PES_AUTOSCROLL), false);
+  m_pEditImpl->SetMultiLine(HasFlag(PES_MULTILINE));
+  m_pEditImpl->SetAutoReturn(HasFlag(PES_AUTORETURN));
+  m_pEditImpl->SetAutoFontSize(HasFlag(PWS_AUTOFONTSIZE));
+  m_pEditImpl->SetAutoScroll(HasFlag(PES_AUTOSCROLL));
   m_pEditImpl->EnableUndo(HasFlag(PES_UNDO));
 
   if (HasFlag(PES_TEXTOVERFLOW)) {
     SetClipRect(CFX_FloatRect());
-    m_pEditImpl->SetTextOverflow(true, false);
+    m_pEditImpl->SetTextOverflow(true);
   } else {
     if (m_pCaret) {
       CFX_FloatRect rect = GetClientRect();
@@ -187,17 +188,17 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     }
 
     const float width = (rcClient.right - rcClient.left) / nCharArray;
-    CFX_PathData path;
+    CFX_Path path;
     CFX_PointF bottom(0, rcClient.bottom);
     CFX_PointF top(0, rcClient.top);
     for (int32_t i = 0; i < nCharArray - 1; ++i) {
       bottom.x = rcClient.left + width * (i + 1);
       top.x = bottom.x;
-      path.AppendPoint(bottom, FXPT_TYPE::MoveTo);
-      path.AppendPoint(top, FXPT_TYPE::LineTo);
+      path.AppendPoint(bottom, CFX_Path::Point::Type::kMove);
+      path.AppendPoint(top, CFX_Path::Point::Type::kLine);
     }
     if (!path.GetPoints().empty()) {
-      pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0,
+      pDevice->DrawPath(path, &mtUser2Device, &gsd, 0,
                         GetBorderColor().ToFXColor(255),
                         CFX_FillRenderOptions::EvenOddOptions());
     }
@@ -210,13 +211,10 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
     rcClip = GetClientRect();
     pRange = &wrRange;
   }
-
-  CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device, m_pEditImpl.get(),
-                          GetTextColor().ToFXColor(GetTransparency()), rcClip,
-                          CFX_PointF(), pRange, GetSystemHandler(),
-                          m_pFormFiller.Get());
+  m_pEditImpl->DrawEdit(
+      pDevice, mtUser2Device, GetTextColor().ToFXColor(GetTransparency()),
+      rcClip, CFX_PointF(), pRange, GetSystemHandler(), GetAttachedData());
 }
-
 
 void CPWL_Edit::OnSetFocus() {
   ObservedPtr<CPWL_Edit> observed_ptr(this);
@@ -253,12 +251,8 @@ void CPWL_Edit::OnKillFocus() {
   if (!SetCaret(false, CFX_PointF(), CFX_PointF()))
     return;
 
-  SetCharSet(FX_CHARSET_ANSI);
+  SetCharSet(FX_Charset::kANSI);
   m_bFocus = false;
-}
-
-void CPWL_Edit::SetCharSpace(float fCharSpace) {
-  m_pEditImpl->SetCharSpace(fCharSpace);
 }
 
 CPVT_WordRange CPWL_Edit::GetSelectWordRange() const {
@@ -298,7 +292,8 @@ void CPWL_Edit::SetCharArray(int32_t nCharArray) {
     return;
 
   m_pEditImpl->SetCharArray(nCharArray);
-  m_pEditImpl->SetTextOverflow(true, true);
+  m_pEditImpl->SetTextOverflow(true);
+  m_pEditImpl->Paint();
 
   if (!HasFlag(PWS_AUTOFONTSIZE))
     return;
@@ -312,12 +307,14 @@ void CPWL_Edit::SetCharArray(int32_t nCharArray) {
   if (fFontSize <= 0.0f)
     return;
 
-  m_pEditImpl->SetAutoFontSize(false, true);
+  m_pEditImpl->SetAutoFontSize(false);
   m_pEditImpl->SetFontSize(fFontSize);
+  m_pEditImpl->Paint();
 }
 
 void CPWL_Edit::SetLimitChar(int32_t nLimitChar) {
   m_pEditImpl->SetLimitChar(nLimitChar);
+  m_pEditImpl->Paint();
 }
 
 CFX_FloatRect CPWL_Edit::GetFocusRect() const {
@@ -329,11 +326,11 @@ bool CPWL_Edit::IsVScrollBarVisible() const {
   return pScroll && pScroll->IsVisible();
 }
 
-bool CPWL_Edit::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_Edit::OnKeyDown(FWL_VKEYCODE nKeyCode, Mask<FWL_EVENTFLAG> nFlag) {
   if (m_bMouseDown)
     return true;
 
-  if (nChar == FWL_VKEY_Delete) {
+  if (nKeyCode == FWL_VKEY_Delete) {
     if (m_pFillerNotify) {
       WideString strChange;
       WideString strChangeEx;
@@ -363,27 +360,28 @@ bool CPWL_Edit::OnKeyDown(uint16_t nChar, uint32_t nFlag) {
     }
   }
 
-  bool bRet = OnKeyDownInternal(nChar, nFlag);
+  bool bRet = OnKeyDownInternal(nKeyCode, nFlag);
 
   // In case of implementation swallow the OnKeyDown event.
-  if (IsProceedtoOnChar(nChar, nFlag))
+  if (IsProceedtoOnChar(nKeyCode, nFlag))
     return true;
 
   return bRet;
 }
 
 // static
-bool CPWL_Edit::IsProceedtoOnChar(uint16_t nKeyCode, uint32_t nFlag) {
+bool CPWL_Edit::IsProceedtoOnChar(FWL_VKEYCODE nKeyCode,
+                                  Mask<FWL_EVENTFLAG> nFlag) {
   bool bCtrl = IsPlatformShortcutKey(nFlag);
-  bool bAlt = IsALTpressed(nFlag);
+  bool bAlt = IsALTKeyDown(nFlag);
   if (bCtrl && !bAlt) {
     // hot keys for edit control.
     switch (nKeyCode) {
-      case 'C':
-      case 'V':
-      case 'X':
-      case 'A':
-      case 'Z':
+      case FWL_VKEY_A:
+      case FWL_VKEY_C:
+      case FWL_VKEY_V:
+      case FWL_VKEY_X:
+      case FWL_VKEY_Z:
         return true;
       default:
         break;
@@ -401,14 +399,14 @@ bool CPWL_Edit::IsProceedtoOnChar(uint16_t nKeyCode, uint32_t nFlag) {
   }
 }
 
-bool CPWL_Edit::OnChar(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_Edit::OnChar(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   if (m_bMouseDown)
     return true;
 
   bool bRC = true;
   bool bExit = false;
 
-  if (!IsCTRLpressed(nFlag)) {
+  if (!IsCTRLKeyDown(nFlag)) {
     if (m_pFillerNotify) {
       WideString swChange;
 
@@ -417,11 +415,11 @@ bool CPWL_Edit::OnChar(uint16_t nChar, uint32_t nFlag) {
       std::tie(nSelStart, nSelEnd) = GetSelection();
 
       switch (nChar) {
-        case FWL_VKEY_Back:
+        case pdfium::ascii::kBackspace:
           if (nSelStart == nSelEnd)
             nSelStart = nSelEnd - 1;
           break;
-        case FWL_VKEY_Return:
+        case pdfium::ascii::kReturn:
           break;
         default:
           swChange += nChar;
@@ -446,9 +444,9 @@ bool CPWL_Edit::OnChar(uint16_t nChar, uint32_t nFlag) {
     return false;
 
   if (IPVT_FontMap* pFontMap = GetFontMap()) {
-    int32_t nOldCharSet = GetCharSet();
-    int32_t nNewCharSet =
-        pFontMap->CharSetFromUnicode(nChar, FX_CHARSET_Default);
+    FX_Charset nOldCharSet = GetCharSet();
+    FX_Charset nNewCharSet =
+        pFontMap->CharSetFromUnicode(nChar, FX_Charset::kDefault);
     if (nOldCharSet != nNewCharSet) {
       SetCharSet(nNewCharSet);
     }
@@ -457,7 +455,7 @@ bool CPWL_Edit::OnChar(uint16_t nChar, uint32_t nFlag) {
   return OnCharInternal(nChar, nFlag);
 }
 
-bool CPWL_Edit::OnMouseWheel(uint32_t nFlag,
+bool CPWL_Edit::OnMouseWheel(Mask<FWL_EVENTFLAG> nFlag,
                              const CFX_PointF& point,
                              const CFX_Vector& delta) {
   if (!HasFlag(PES_MULTILINE))
@@ -540,20 +538,22 @@ void CPWL_Edit::CreateEditCaret(const CreateParams& cp) {
 
 void CPWL_Edit::SetFontSize(float fFontSize) {
   m_pEditImpl->SetFontSize(fFontSize);
+  m_pEditImpl->Paint();
 }
 
 float CPWL_Edit::GetFontSize() const {
   return m_pEditImpl->GetFontSize();
 }
 
-bool CPWL_Edit::OnKeyDownInternal(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_Edit::OnKeyDownInternal(FWL_VKEYCODE nKeyCode,
+                                  Mask<FWL_EVENTFLAG> nFlag) {
   if (m_bMouseDown)
     return true;
 
-  bool bRet = CPWL_Wnd::OnKeyDown(nChar, nFlag);
+  bool bRet = CPWL_Wnd::OnKeyDown(nKeyCode, nFlag);
 
   // FILTER
-  switch (nChar) {
+  switch (nKeyCode) {
     default:
       return false;
     case FWL_VKEY_Delete:
@@ -564,50 +564,45 @@ bool CPWL_Edit::OnKeyDownInternal(uint16_t nChar, uint32_t nFlag) {
     case FWL_VKEY_Home:
     case FWL_VKEY_End:
     case FWL_VKEY_Insert:
-    case 'C':
-    case 'V':
-    case 'X':
-    case 'A':
-    case 'Z':
-    case 'c':
-    case 'v':
-    case 'x':
-    case 'a':
-    case 'z':
+    case FWL_VKEY_A:
+    case FWL_VKEY_C:
+    case FWL_VKEY_V:
+    case FWL_VKEY_X:
+    case FWL_VKEY_Z:
       break;
   }
 
-  if (nChar == FWL_VKEY_Delete && m_pEditImpl->IsSelected())
-    nChar = FWL_VKEY_Unknown;
+  if (nKeyCode == FWL_VKEY_Delete && m_pEditImpl->IsSelected())
+    nKeyCode = FWL_VKEY_Unknown;
 
-  switch (nChar) {
+  switch (nKeyCode) {
     case FWL_VKEY_Delete:
       Delete();
       return true;
     case FWL_VKEY_Insert:
-      if (IsSHIFTpressed(nFlag))
+      if (IsSHIFTKeyDown(nFlag))
         PasteText();
       return true;
     case FWL_VKEY_Up:
-      m_pEditImpl->OnVK_UP(IsSHIFTpressed(nFlag), false);
+      m_pEditImpl->OnVK_UP(IsSHIFTKeyDown(nFlag), false);
       return true;
     case FWL_VKEY_Down:
-      m_pEditImpl->OnVK_DOWN(IsSHIFTpressed(nFlag), false);
+      m_pEditImpl->OnVK_DOWN(IsSHIFTKeyDown(nFlag), false);
       return true;
     case FWL_VKEY_Left:
-      m_pEditImpl->OnVK_LEFT(IsSHIFTpressed(nFlag), false);
+      m_pEditImpl->OnVK_LEFT(IsSHIFTKeyDown(nFlag), false);
       return true;
     case FWL_VKEY_Right:
-      m_pEditImpl->OnVK_RIGHT(IsSHIFTpressed(nFlag), false);
+      m_pEditImpl->OnVK_RIGHT(IsSHIFTKeyDown(nFlag), false);
       return true;
     case FWL_VKEY_Home:
-      m_pEditImpl->OnVK_HOME(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pEditImpl->OnVK_HOME(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       return true;
     case FWL_VKEY_End:
-      m_pEditImpl->OnVK_END(IsSHIFTpressed(nFlag), IsCTRLpressed(nFlag));
+      m_pEditImpl->OnVK_END(IsSHIFTKeyDown(nFlag), IsCTRLKeyDown(nFlag));
       return true;
     case FWL_VKEY_Unknown:
-      if (!IsSHIFTpressed(nFlag))
+      if (!IsSHIFTKeyDown(nFlag))
         ClearSelection();
       else
         CutText();
@@ -619,7 +614,7 @@ bool CPWL_Edit::OnKeyDownInternal(uint16_t nChar, uint32_t nFlag) {
   return bRet;
 }
 
-bool CPWL_Edit::OnCharInternal(uint16_t nChar, uint32_t nFlag) {
+bool CPWL_Edit::OnCharInternal(uint16_t nChar, Mask<FWL_EVENTFLAG> nFlag) {
   if (m_bMouseDown)
     return true;
 
@@ -627,34 +622,34 @@ bool CPWL_Edit::OnCharInternal(uint16_t nChar, uint32_t nFlag) {
 
   // FILTER
   switch (nChar) {
-    case 0x0A:
-    case 0x1B:
+    case pdfium::ascii::kNewline:
+    case pdfium::ascii::kEscape:
       return false;
     default:
       break;
   }
 
   bool bCtrl = IsPlatformShortcutKey(nFlag);
-  bool bAlt = IsALTpressed(nFlag);
-  bool bShift = IsSHIFTpressed(nFlag);
+  bool bAlt = IsALTKeyDown(nFlag);
+  bool bShift = IsSHIFTKeyDown(nFlag);
 
   uint16_t word = nChar;
 
   if (bCtrl && !bAlt) {
     switch (nChar) {
-      case 'C' - 'A' + 1:
+      case pdfium::ascii::kControlC:
         CopyText();
         return true;
-      case 'V' - 'A' + 1:
+      case pdfium::ascii::kControlV:
         PasteText();
         return true;
-      case 'X' - 'A' + 1:
+      case pdfium::ascii::kControlX:
         CutText();
         return true;
-      case 'A' - 'A' + 1:
+      case pdfium::ascii::kControlA:
         SelectAllText();
         return true;
-      case 'Z' - 'A' + 1:
+      case pdfium::ascii::kControlZ:
         if (bShift)
           Redo();
         else
@@ -669,19 +664,19 @@ bool CPWL_Edit::OnCharInternal(uint16_t nChar, uint32_t nFlag) {
   if (IsReadOnly())
     return true;
 
-  if (m_pEditImpl->IsSelected() && word == FWL_VKEY_Back)
-    word = FWL_VKEY_Unknown;
+  if (m_pEditImpl->IsSelected() && word == pdfium::ascii::kBackspace)
+    word = pdfium::ascii::kNul;
 
   ClearSelection();
 
   switch (word) {
-    case FWL_VKEY_Back:
+    case pdfium::ascii::kBackspace:
       Backspace();
       break;
-    case FWL_VKEY_Return:
+    case pdfium::ascii::kReturn:
       InsertReturn();
       break;
-    case FWL_VKEY_Unknown:
+    case pdfium::ascii::kNul:
       break;
     default:
       InsertWord(word, GetCharSet());
@@ -691,7 +686,8 @@ bool CPWL_Edit::OnCharInternal(uint16_t nChar, uint32_t nFlag) {
   return true;
 }
 
-bool CPWL_Edit::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_Edit::OnLButtonDown(Mask<FWL_EVENTFLAG> nFlag,
+                              const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDown(nFlag, point);
   if (HasFlag(PES_TEXTOVERFLOW) || ClientHitTest(point)) {
     if (m_bMouseDown && !InvalidateRect(nullptr))
@@ -699,13 +695,14 @@ bool CPWL_Edit::OnLButtonDown(uint32_t nFlag, const CFX_PointF& point) {
 
     m_bMouseDown = true;
     SetCapture();
-    m_pEditImpl->OnMouseDown(point, IsSHIFTpressed(nFlag),
-                             IsCTRLpressed(nFlag));
+    m_pEditImpl->OnMouseDown(point, IsSHIFTKeyDown(nFlag),
+                             IsCTRLKeyDown(nFlag));
   }
   return true;
 }
 
-bool CPWL_Edit::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_Edit::OnLButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                            const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonUp(nFlag, point);
   if (m_bMouseDown) {
     // can receive keybord message
@@ -718,7 +715,8 @@ bool CPWL_Edit::OnLButtonUp(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_Edit::OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_Edit::OnLButtonDblClk(Mask<FWL_EVENTFLAG> nFlag,
+                                const CFX_PointF& point) {
   CPWL_Wnd::OnLButtonDblClk(nFlag, point);
   if (HasFlag(PES_TEXTOVERFLOW) || ClientHitTest(point))
     m_pEditImpl->SelectAll();
@@ -726,7 +724,8 @@ bool CPWL_Edit::OnLButtonDblClk(uint32_t nFlag, const CFX_PointF& point) {
   return true;
 }
 
-bool CPWL_Edit::OnRButtonUp(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_Edit::OnRButtonUp(Mask<FWL_EVENTFLAG> nFlag,
+                            const CFX_PointF& point) {
   if (m_bMouseDown)
     return false;
 
@@ -738,7 +737,8 @@ bool CPWL_Edit::OnRButtonUp(uint32_t nFlag, const CFX_PointF& point) {
   return false;
 }
 
-bool CPWL_Edit::OnMouseMove(uint32_t nFlag, const CFX_PointF& point) {
+bool CPWL_Edit::OnMouseMove(Mask<FWL_EVENTFLAG> nFlag,
+                            const CFX_PointF& point) {
   CPWL_Wnd::OnMouseMove(nFlag, point);
 
   if (m_bMouseDown)
@@ -822,7 +822,7 @@ void CPWL_Edit::CopyText() {}
 
 void CPWL_Edit::PasteText() {}
 
-void CPWL_Edit::InsertWord(uint16_t word, int32_t nCharset) {
+void CPWL_Edit::InsertWord(uint16_t word, FX_Charset nCharset) {
   if (!IsReadOnly())
     m_pEditImpl->InsertWord(word, nCharset);
 }

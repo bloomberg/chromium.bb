@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
@@ -24,6 +23,9 @@ class StrikeDatabaseFactory : public BrowserStateKeyedServiceFactory {
   static StrikeDatabase* GetForBrowserState(ChromeBrowserState* browser_state);
   static StrikeDatabaseFactory* GetInstance();
 
+  StrikeDatabaseFactory(const StrikeDatabaseFactory&) = delete;
+  StrikeDatabaseFactory& operator=(const StrikeDatabaseFactory&) = delete;
+
  private:
   friend class base::NoDestructor<StrikeDatabaseFactory>;
 
@@ -33,8 +35,6 @@ class StrikeDatabaseFactory : public BrowserStateKeyedServiceFactory {
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(StrikeDatabaseFactory);
 };
 
 }  // namespace autofill

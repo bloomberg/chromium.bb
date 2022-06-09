@@ -11,9 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -170,6 +168,11 @@ class CertificateProviderServiceTest : public testing::Test {
     test_delegate_->provider_extensions_.insert(kExtension1);
   }
 
+  CertificateProviderServiceTest(const CertificateProviderServiceTest&) =
+      delete;
+  CertificateProviderServiceTest& operator=(
+      const CertificateProviderServiceTest&) = delete;
+
   // Triggers a GetCertificates request and returns the request id. Assumes that
   // at least one extension is registered as a certificate provider.
   int RequestCertificatesFromExtensions(net::ClientCertIdentityList* certs) {
@@ -252,9 +255,6 @@ class CertificateProviderServiceTest : public testing::Test {
   std::unique_ptr<CertificateProviderService> service_;
   const certificate_provider::CertificateInfo cert_info1_;
   const certificate_provider::CertificateInfo cert_info2_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CertificateProviderServiceTest);
 };
 
 TEST_F(CertificateProviderServiceTest, GetCertificates) {

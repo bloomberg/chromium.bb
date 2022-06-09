@@ -1,12 +1,13 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import unittest
 
 from py_utils import modules_util
 
 
-class FakeModule(object):
+class FakeModule():
   def __init__(self, name, version):
     self.__name__ = name
     self.__version__ = version

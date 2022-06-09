@@ -20,7 +20,7 @@ namespace media {
 namespace {
 
 // The default method to create frames.
-scoped_refptr<VideoFrame> DefaultCreateFrame(
+CroStatus::Or<scoped_refptr<VideoFrame>> DefaultCreateFrame(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     VideoPixelFormat format,
     const gfx::Size& coded_size,
@@ -33,7 +33,10 @@ scoped_refptr<VideoFrame> DefaultCreateFrame(
       timestamp,
       use_protected ? gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE
                     : gfx::BufferUsage::SCANOUT_VDA_WRITE);
-  if (frame && use_protected) {
+  if (!frame)
+    return CroStatus::Codes::kFailedToCreateVideoFrame;
+
+  if (use_protected) {
     media::VideoFrameMetadata frame_metadata;
     frame_metadata.protected_video = true;
     frame_metadata.hw_protected = true;
@@ -97,14 +100,16 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     // with (10, 20), 100x100 we cannot (even though it's contained in the
     // former). Hence the use of GetRectSizeFromOrigin() to calculate the
     // visible rect for |new_frame|.
-    scoped_refptr<VideoFrame> new_frame =
+    CroStatus::Or<scoped_refptr<VideoFrame>> new_frame =
         create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
                              gfx::Rect(GetRectSizeFromOrigin(visible_rect_)),
                              coded_size, use_protected_, base::TimeDelta());
-    if (!new_frame)
+    if (new_frame.has_error()) {
+      // TODO(crbug.com/c/1103510) Push the error up instead of dropping it.
       return nullptr;
+    }
 
-    InsertFreeFrame_Locked(std::move(new_frame));
+    InsertFreeFrame_Locked(std::move(new_frame).value());
   }
 
   DCHECK(!free_frames_.empty());
@@ -138,7 +143,11 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   return wrapped_frame;
 }
 
-absl::optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
+PlatformVideoFramePool* PlatformVideoFramePool::AsPlatformVideoFramePool() {
+  return this;
+}
+
+CroStatus::Or<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     const Fourcc& fourcc,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -152,13 +161,13 @@ absl::optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
   VideoPixelFormat format = fourcc.ToVideoPixelFormat();
   if (format == PIXEL_FORMAT_UNKNOWN) {
     VLOGF(1) << "Unsupported fourcc: " << fourcc.ToString();
-    return absl::nullopt;
+    return CroStatus::Codes::kFourccUnknownFormat;
   }
 
 #if !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
   if (use_protected) {
     VLOGF(1) << "Protected buffers unsupported";
-    return absl::nullopt;
+    return CroStatus::Codes::kProtectedContentUnsupported;
   }
 #endif
 
@@ -177,21 +186,20 @@ absl::optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
   if (!IsSameFormat_Locked(format, coded_size, visible_rect, use_protected)) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
-
-    // Create a temporary frame in order to know VideoFrameLayout that
-    // VideoFrame that will be allocated in GetFrame() has.
-    auto frame = create_frame_cb_.Run(gpu_memory_buffer_factory_, format,
-                                      coded_size, visible_rect, natural_size,
-                                      use_protected, base::TimeDelta());
-    if (!frame) {
-      VLOGF(1) << "Failed to create video frame " << format << " (fourcc "
-               << fourcc.ToString() << ")";
-      return absl::nullopt;
-    }
+    auto maybe_frame = create_frame_cb_.Run(
+        gpu_memory_buffer_factory_, format, coded_size, visible_rect,
+        natural_size, use_protected, base::TimeDelta());
+    if (maybe_frame.has_error())
+      return std::move(maybe_frame).error();
+    auto frame = std::move(maybe_frame).value();
     frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
                                             frame->layout().planes(),
                                             frame->layout().modifier());
+    if (!frame_layout_)
+      return CroStatus::Codes::kFailedToGetFrameLayout;
   }
+
+  DCHECK(frame_layout_);
 
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
@@ -203,7 +211,13 @@ absl::optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();
 
-  return frame_layout_;
+  return *frame_layout_;
+}
+
+void PlatformVideoFramePool::SetCustomFrameAllocator(
+    DmabufVideoFramePool::CreateFrameCB allocator) {
+  base::AutoLock auto_lock(lock_);
+  create_frame_cb_ = allocator;
 }
 
 bool PlatformVideoFramePool::IsExhausted() {
@@ -239,6 +253,16 @@ void PlatformVideoFramePool::NotifyWhenFrameAvailable(base::OnceClosure cb) {
   }
 
   frame_available_cb_ = std::move(cb);
+}
+
+void PlatformVideoFramePool::ReleaseAllFrames() {
+  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+  DVLOGF(4);
+  base::AutoLock auto_lock(lock_);
+  free_frames_.clear();
+  frames_in_use_.clear();
+  weak_this_factory_.InvalidateWeakPtrs();
+  weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 // static

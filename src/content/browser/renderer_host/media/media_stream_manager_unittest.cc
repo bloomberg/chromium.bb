@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -81,6 +81,10 @@ class MockAudioManager : public AudioManagerPlatform {
                              &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(2) {}
+
+  MockAudioManager(const MockAudioManager&) = delete;
+  MockAudioManager& operator=(const MockAudioManager&) = delete;
+
   ~MockAudioManager() override {}
 
   void GetAudioInputDeviceNames(
@@ -136,7 +140,6 @@ class MockAudioManager : public AudioManagerPlatform {
   media::FakeAudioLogFactory fake_audio_log_factory_;
   size_t num_output_devices_;
   size_t num_input_devices_;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 
 class MockMediaObserver : public MediaObserver {
@@ -163,7 +166,7 @@ class TestBrowserClient : public ContentBrowserClient {
   MediaObserver* GetMediaObserver() override { return media_observer_; }
 
  private:
-  MediaObserver* media_observer_;
+  raw_ptr<MediaObserver> media_observer_;
 };
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
@@ -207,6 +210,9 @@ class MediaStreamManagerTest : public ::testing::Test {
               std::move(result_callback).Run(stub_results);
             }));
   }
+
+  MediaStreamManagerTest(const MediaStreamManagerTest&) = delete;
+  MediaStreamManagerTest& operator=(const MediaStreamManagerTest&) = delete;
 
   ~MediaStreamManagerTest() override { audio_manager_->Shutdown(); }
 
@@ -400,11 +406,8 @@ class MediaStreamManagerTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MockAudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
-  MockVideoCaptureProvider* video_capture_provider_;
+  raw_ptr<MockVideoCaptureProvider> video_capture_provider_;
   base::RunLoop run_loop_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamManagerTest);
 };
 
 TEST_F(MediaStreamManagerTest, MakeMediaAccessRequest) {

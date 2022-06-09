@@ -14,12 +14,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -47,6 +47,12 @@ class MockStylusButtonEventConverterEvdev
                                       base::FilePath path,
                                       const EventDeviceInfo& devinfo,
                                       DeviceEventDispatcherEvdev* dispatcher);
+
+  MockStylusButtonEventConverterEvdev(
+      const MockStylusButtonEventConverterEvdev&) = delete;
+  MockStylusButtonEventConverterEvdev& operator=(
+      const MockStylusButtonEventConverterEvdev&) = delete;
+
   ~MockStylusButtonEventConverterEvdev() override {}
 
   void ConfigureReadMock(struct input_event* queue,
@@ -64,8 +70,6 @@ class MockStylusButtonEventConverterEvdev
   int write_pipe_;
 
   std::vector<std::unique_ptr<Event>> dispatched_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockStylusButtonEventConverterEvdev);
 };
 
 MockStylusButtonEventConverterEvdev::MockStylusButtonEventConverterEvdev(
@@ -107,6 +111,11 @@ void MockStylusButtonEventConverterEvdev::ConfigureReadMock(
 class StylusButtonEventConverterEvdevTest : public testing::Test {
  public:
   StylusButtonEventConverterEvdevTest() {}
+
+  StylusButtonEventConverterEvdevTest(
+      const StylusButtonEventConverterEvdevTest&) = delete;
+  StylusButtonEventConverterEvdevTest& operator=(
+      const StylusButtonEventConverterEvdevTest&) = delete;
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -158,8 +167,6 @@ class StylusButtonEventConverterEvdevTest : public testing::Test {
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
   base::ScopedFD events_out_;
-
-  DISALLOW_COPY_AND_ASSIGN(StylusButtonEventConverterEvdevTest);
 };
 
 TEST_F(StylusButtonEventConverterEvdevTest, DellActivePenSingleClick) {

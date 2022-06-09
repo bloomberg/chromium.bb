@@ -5,9 +5,11 @@
 #include <memory>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
+#include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -33,6 +35,8 @@
 #include "google_apis/gaia/fake_gaia.h"
 #include "rlz/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace ash {
 namespace system {
@@ -52,6 +56,10 @@ using ::chromeos::StubInstallAttributes;
 class UserAddingScreenWaiter : public UserAddingScreen::Observer {
  public:
   UserAddingScreenWaiter() { UserAddingScreen::Get()->AddObserver(this); }
+
+  UserAddingScreenWaiter(const UserAddingScreenWaiter&) = delete;
+  UserAddingScreenWaiter& operator=(const UserAddingScreenWaiter&) = delete;
+
   ~UserAddingScreenWaiter() override {
     UserAddingScreen::Get()->RemoveObserver(this);
   }
@@ -71,8 +79,6 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserAddingScreenWaiter);
 };
 
 }  // anonymous namespace
@@ -80,6 +86,10 @@ class UserAddingScreenWaiter : public UserAddingScreen::Observer {
 class ChromeSessionManagerTest : public LoginManagerTest {
  public:
   ChromeSessionManagerTest() = default;
+
+  ChromeSessionManagerTest(const ChromeSessionManagerTest&) = delete;
+  ChromeSessionManagerTest& operator=(const ChromeSessionManagerTest&) = delete;
+
   ~ChromeSessionManagerTest() override {}
 
   // LoginManagerTest:
@@ -90,12 +100,9 @@ class ChromeSessionManagerTest : public LoginManagerTest {
   }
 
  protected:
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeSessionManagerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
@@ -174,6 +181,75 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerExistingUsersTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ChromeSessionManagerExistingUsersTest,
+                       CheckPastingBehavior) {
+  const auto& users = login_manager_.users();
+  LoginUser(users[0].account_id);
+  auto* session_controller = ash::Shell::Get()->session_controller();
+
+  // Write a text in the clipboard during active session.
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_controller->GetSessionState());
+  const std::u16string session_clipboard_text = u"active session text";
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+      .WriteText(session_clipboard_text);
+
+  // Reach the secondary login screen.
+  UserAddingScreen::Get()->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(session_manager::SessionState::LOGIN_SECONDARY,
+            session_controller->GetSessionState());
+
+  // Check that the text can still be pasted: secondary login screen clipboard
+  // should be the same than the active session one since we can return to
+  // active session by selecting Cancel.
+  std::u16string clipboard_text;
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard_text);
+  EXPECT_EQ(clipboard_text, session_clipboard_text);
+
+  // Go back to active session, with another user.
+  UserAddingScreenWaiter waiter;
+  AddUser(users[1].account_id);
+  waiter.Wait();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_controller->GetSessionState());
+
+  // Check that the new active session clipboard is empty.
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard_text);
+  EXPECT_TRUE(clipboard_text.empty());
+
+  // Write a text in the new active session clipboard.
+  const std::u16string other_session_clipboard_text =
+      u"other active session text";
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+      .WriteText(other_session_clipboard_text);
+
+  // Lock the screen.
+  ScreenLockerTester locker_tester;
+  locker_tester.Lock();
+  EXPECT_EQ(session_manager::SessionState::LOCKED,
+            session_controller->GetSessionState());
+
+  // Check that the clipboard is empty, for security reasons.
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard_text);
+  EXPECT_TRUE(clipboard_text.empty());
+
+  // Go back to the active session.
+  locker_tester.UnlockWithPassword(users[1].account_id, "password");
+  locker_tester.WaitForUnlock();
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_controller->GetSessionState());
+
+  // Check that the clipboard has been restored.
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, /*data_dst=*/nullptr, &clipboard_text);
+  EXPECT_EQ(clipboard_text, other_session_clipboard_text);
+}
+
 #if BUILDFLAG(ENABLE_RLZ)
 
 class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
@@ -247,6 +323,9 @@ class GuestSessionRlzTest : public InProcessBrowserTest,
  public:
   GuestSessionRlzTest() : is_locked_(GetParam()) {}
 
+  GuestSessionRlzTest(const GuestSessionRlzTest&) = delete;
+  GuestSessionRlzTest& operator=(const GuestSessionRlzTest&) = delete;
+
  protected:
   StubInstallAttributes* stub_install_attributes() {
     return scoped_stub_install_attributes_->Get();
@@ -284,8 +363,6 @@ class GuestSessionRlzTest : public InProcessBrowserTest,
   std::unique_ptr<system::ScopedFakeStatisticsProvider>
       scoped_fake_statistics_provider_;
   std::unique_ptr<ScopedStubInstallAttributes> scoped_stub_install_attributes_;
-
-  DISALLOW_COPY_AND_ASSIGN(GuestSessionRlzTest);
 };
 
 IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {

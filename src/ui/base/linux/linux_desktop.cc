@@ -4,41 +4,31 @@
 
 #include "ui/base/linux/linux_desktop.h"
 
+#include <vector>
+
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "ui/display/util/gpu_info_util.h"
 
 namespace ui {
 
-namespace {
-
-// Must be in sync with the copy in //content/browser/gpu/gpu_internals_ui.cc.
-base::Value NewDescriptionValuePair(base::StringPiece desc,
-                                    base::StringPiece value) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("description", base::Value(desc));
-  dict.SetKey("value", base::Value(value));
-  return dict;
-}
-
-}  // namespace
-
-base::Value GetDesktopEnvironmentInfoAsListValue() {
-  base::Value result(base::Value::Type::LIST);
+std::vector<base::Value> GetDesktopEnvironmentInfo() {
+  std::vector<base::Value> result;
   auto env(base::Environment::Create());
   std::string value;
   if (env->GetVar(base::nix::kXdgCurrentDesktopEnvVar, &value)) {
-    result.Append(
-        NewDescriptionValuePair(base::nix::kXdgCurrentDesktopEnvVar, value));
+    result.push_back(
+        display::BuildGpuInfoEntry(base::nix::kXdgCurrentDesktopEnvVar, value));
   }
   if (env->GetVar(base::nix::kXdgSessionTypeEnvVar, &value)) {
-    result.Append(
-        NewDescriptionValuePair(base::nix::kXdgSessionTypeEnvVar, value));
+    result.push_back(
+        display::BuildGpuInfoEntry(base::nix::kXdgSessionTypeEnvVar, value));
   }
   constexpr char kGDMSession[] = "GDMSESSION";
   if (env->GetVar(kGDMSession, &value))
-    result.Append(NewDescriptionValuePair(kGDMSession, value));
+    result.push_back(display::BuildGpuInfoEntry(kGDMSession, value));
   return result;
 }
 

@@ -30,19 +30,24 @@ namespace dawn_native {
     struct CopyTextureToBufferCmd;
     struct TextureCopy;
 
-    class CommandBufferBase : public ObjectBase {
+    class CommandBufferBase : public ApiObjectBase {
       public:
         CommandBufferBase(CommandEncoder* encoder, const CommandBufferDescriptor* descriptor);
 
         static CommandBufferBase* MakeError(DeviceBase* device);
 
+        ObjectType GetType() const override;
+
         MaybeError ValidateCanUseInSubmitNow() const;
-        void Destroy();
 
         const CommandBufferResourceUsage& GetResourceUsages() const;
 
+        CommandIterator* GetCommandIteratorForTesting();
+
       protected:
-        ~CommandBufferBase();
+        // Constructor used only for mocking and testing.
+        CommandBufferBase(DeviceBase* device);
+        void DestroyImpl() override;
 
         CommandIterator mCommands;
 
@@ -50,7 +55,6 @@ namespace dawn_native {
         CommandBufferBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         CommandBufferResourceUsage mResourceUsages;
-        bool mDestroyed = false;
     };
 
     bool IsCompleteSubresourceCopiedTo(const TextureBase* texture,

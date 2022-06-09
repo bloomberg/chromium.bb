@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -20,8 +20,8 @@
 #include "google_apis/google_api_keys.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"  // nogncheck
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #else
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif
@@ -127,7 +127,7 @@ ExtensionFunction::ResponseAction SystemPrivateGetUpdateStatusFunction::Run() {
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kStateKey, state);
-  dict->SetDouble(kDownloadProgressKey, download_progress);
+  dict->SetDoubleKey(kDownloadProgressKey, download_progress);
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
 }

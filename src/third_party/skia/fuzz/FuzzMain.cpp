@@ -93,10 +93,13 @@ static void fuzz_sksl2glsl(sk_sp<SkData>);
 static void fuzz_sksl2metal(sk_sp<SkData>);
 static void fuzz_sksl2pipeline(sk_sp<SkData>);
 static void fuzz_sksl2spirv(sk_sp<SkData>);
-static void fuzz_svg_dom(sk_sp<SkData>);
 static void fuzz_textblob_deserialize(sk_sp<SkData>);
 
 static void print_api_names();
+
+#if defined(SK_ENABLE_SVG)
+static void fuzz_svg_dom(sk_sp<SkData>);
+#endif
 
 #if defined(SK_ENABLE_SKOTTIE)
 static void fuzz_skottie_json(sk_sp<SkData>);
@@ -249,10 +252,12 @@ static int fuzz_file(SkString path, SkString type) {
         fuzz_sksl2pipeline(bytes);
         return 0;
     }
+#if defined(SK_ENABLE_SVG)
     if (type.equals("svg_dom")) {
         fuzz_svg_dom(bytes);
         return 0;
     }
+#endif
     if (type.equals("textblob")) {
         fuzz_textblob_deserialize(bytes);
         return 0;
@@ -304,7 +309,9 @@ static std::map<std::string, std::string> cf_map = {
 #if defined(SK_ENABLE_SKOTTIE)
     {"skottie_json", "skottie_json"},
 #endif
+#if defined(SK_ENABLE_SVG)
     {"svg_dom", "svg_dom"},
+#endif
     {"textblob_deserialize", "textblob"}
 };
 
@@ -355,11 +362,14 @@ static void fuzz_skottie_json(sk_sp<SkData> bytes){
 }
 #endif
 
+#if defined(SK_ENABLE_SVG)
 void FuzzSVG(sk_sp<SkData> bytes);
+
 static void fuzz_svg_dom(sk_sp<SkData> bytes){
     FuzzSVG(bytes);
     SkDebugf("[terminated] Done DOM!\n");
 }
+#endif
 
 // This adds up the first 1024 bytes and returns it as an 8 bit integer.  This allows afl-fuzz to
 // deterministically excercise different paths, or *options* (such as different scaling sizes or
@@ -592,12 +602,7 @@ static void fuzz_img(sk_sp<SkData> bytes, uint8_t scale, uint8_t mode) {
             SkBitmap subsetBm;
             // We will reuse pixel memory from bitmap.
             void* pixels = bitmap.getPixels();
-            // Keep track of left and top (for drawing subsetBm into canvas). We could use
-            // fscale * x and fscale * y, but we want integers such that the next subset will start
-            // where the last one ended. So we'll add decodeInfo.width() and height().
-            int left = 0;
             for (int x = 0; x < W; x += w) {
-                int top = 0;
                 for (int y = 0; y < H; y+= h) {
                     // Do not make the subset go off the edge of the image.
                     const int preScaleW = std::min(w, W - x);
@@ -645,11 +650,7 @@ static void fuzz_img(sk_sp<SkData> bytes, uint8_t scale, uint8_t mode) {
                                                   W, H, result);
                             return;
                     }
-                    // translate by the scaled height.
-                    top += decodeInfo.height();
                 }
-                // translate by the scaled width.
-                left += decodeInfo.width();
             }
             SkDebugf("[terminated] Success!\n");
             break;
@@ -667,7 +668,7 @@ static void fuzz_img(sk_sp<SkData> bytes, uint8_t scale, uint8_t mode) {
                         bitmap.rowBytes(), &options);
                 if (SkCodec::kSuccess != result) {
                     SkDebugf("[terminated] failed to start incremental decode "
-                             "in frame %d with error %d\n", i, result);
+                             "in frame %zu with error %d\n", i, result);
                     return;
                 }
 
@@ -678,7 +679,7 @@ static void fuzz_img(sk_sp<SkData> bytes, uint8_t scale, uint8_t mode) {
                     break;
                 }
                 if (result == SkCodec::kSuccess) {
-                    SkDebugf("okay - decoded frame %d\n", i);
+                    SkDebugf("okay - decoded frame %zu\n", i);
                 } else {
                     SkDebugf("[terminated] incremental decode failed with "
                              "error %d\n", result);

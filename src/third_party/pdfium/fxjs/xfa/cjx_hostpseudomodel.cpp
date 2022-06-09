@@ -6,13 +6,13 @@
 
 #include "fxjs/xfa/cjx_hostpseudomodel.h"
 
-#include <memory>
 #include <vector>
 
 #include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "third_party/base/check.h"
+#include "v8/include/v8-object.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cscript_hostpseudomodel.h"
@@ -20,20 +20,19 @@
 
 namespace {
 
-int32_t FilterName(WideStringView wsExpression,
-                   int32_t nStart,
-                   WideString& wsFilter) {
-  DCHECK(nStart > -1);
-  int32_t iLength = wsExpression.GetLength();
-  if (nStart >= iLength)
-    return iLength;
+size_t FilterName(WideStringView wsExpression,
+                  size_t nStart,
+                  WideString& wsFilter) {
+  const size_t nLength = wsExpression.GetLength();
+  if (nStart >= nLength)
+    return nLength;
 
-  int32_t nCount = 0;
+  size_t nCount = 0;
   {
     // Span's lifetime must end before ReleaseBuffer() below.
-    pdfium::span<wchar_t> pBuf = wsFilter.GetBuffer(iLength - nStart);
+    pdfium::span<wchar_t> pBuf = wsFilter.GetBuffer(nLength - nStart);
     const wchar_t* pSrc = wsExpression.unterminated_c_str();
-    while (nStart < iLength) {
+    while (nStart < nLength) {
       wchar_t wCur = pSrc[nStart++];
       if (wCur == ',')
         break;
@@ -85,7 +84,7 @@ void CJX_HostPseudoModel::appType(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   *pValue = fxv8::NewStringHelper(pIsolate, "Exchange");
@@ -133,7 +132,8 @@ void CJX_HostPseudoModel::language(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set language value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set language value."));
     return;
   }
   ByteString lang = pNotify->GetAppProvider()->GetLanguage().ToUTF8();
@@ -150,7 +150,8 @@ void CJX_HostPseudoModel::numPages(v8::Isolate* pIsolate,
 
   CXFA_FFDoc* hDoc = pNotify->GetFFDoc();
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set numPages value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set numPages value."));
     return;
   }
   *pValue = fxv8::NewNumberHelper(pIsolate, hDoc->CountPages());
@@ -165,7 +166,8 @@ void CJX_HostPseudoModel::platform(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set platform value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set platform value."));
     return;
   }
   ByteString plat = pNotify->GetAppProvider()->GetPlatform().ToUTF8();
@@ -219,7 +221,8 @@ void CJX_HostPseudoModel::variation(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set variation value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set variation value."));
     return;
   }
   *pValue = fxv8::NewStringHelper(pIsolate, "Full");
@@ -230,7 +233,8 @@ void CJX_HostPseudoModel::version(v8::Isolate* pIsolate,
                                   bool bSetting,
                                   XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowException(WideString::FromASCII("Unable to set version value."));
+    ThrowException(pIsolate,
+                   WideString::FromASCII("Unable to set version value."));
     return;
   }
   *pValue = fxv8::NewStringHelper(pIsolate, "11");
@@ -245,7 +249,7 @@ void CJX_HostPseudoModel::name(v8::Isolate* pIsolate,
     return;
 
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   ByteString bsName = pNotify->GetAppProvider()->GetAppName().ToUTF8();
@@ -292,11 +296,12 @@ CJS_Result CJX_HostPseudoModel::openList(
     if (!pObject)
       return CJS_Result::Success();
 
-    uint32_t dwFlag = XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Parent |
-                      XFA_RESOLVENODE_Siblings;
-    Optional<CFXJSE_Engine::ResolveResult> maybeResult =
+    constexpr Mask<XFA_ResolveFlag> kFlags = {XFA_ResolveFlag::kChildren,
+                                              XFA_ResolveFlag::kParent,
+                                              XFA_ResolveFlag::kSiblings};
+    absl::optional<CFXJSE_Engine::ResolveResult> maybeResult =
         pScriptContext->ResolveObjects(
-            pObject, runtime->ToWideString(params[0]).AsStringView(), dwFlag);
+            pObject, runtime->ToWideString(params[0]).AsStringView(), kFlags);
     if (!maybeResult.has_value() ||
         !maybeResult.value().objects.front()->IsNode()) {
       return CJS_Result::Success();
@@ -366,21 +371,22 @@ CJS_Result CJX_HostPseudoModel::resetData(
     return CJS_Result::Success();
   }
 
-  int32_t iStart = 0;
   WideString wsName;
   CXFA_Node* pNode = nullptr;
-  int32_t iExpLength = expression.GetLength();
-  while (iStart < iExpLength) {
-    iStart = FilterName(expression.AsStringView(), iStart, wsName);
+  size_t nStart = 0;
+  const size_t nExpLength = expression.GetLength();
+  while (nStart < nExpLength) {
+    nStart = FilterName(expression.AsStringView(), nStart, wsName);
     CFXJSE_Engine* pScriptContext = GetDocument()->GetScriptContext();
     CXFA_Object* pObject = pScriptContext->GetThisObject();
     if (!pObject)
       return CJS_Result::Success();
 
-    uint32_t dwFlag = XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Parent |
-                      XFA_RESOLVENODE_Siblings;
-    Optional<CFXJSE_Engine::ResolveResult> maybeResult =
-        pScriptContext->ResolveObjects(pObject, wsName.AsStringView(), dwFlag);
+    constexpr Mask<XFA_ResolveFlag> kFlags = {XFA_ResolveFlag::kChildren,
+                                              XFA_ResolveFlag::kParent,
+                                              XFA_ResolveFlag::kSiblings};
+    absl::optional<CFXJSE_Engine::ResolveResult> maybeResult =
+        pScriptContext->ResolveObjects(pObject, wsName.AsStringView(), kFlags);
     if (!maybeResult.has_value() ||
         !maybeResult.value().objects.front()->IsNode())
       continue;
@@ -439,11 +445,12 @@ CJS_Result CJX_HostPseudoModel::setFocus(
       if (!pObject)
         return CJS_Result::Success();
 
-      uint32_t dwFlag = XFA_RESOLVENODE_Children | XFA_RESOLVENODE_Parent |
-                        XFA_RESOLVENODE_Siblings;
-      Optional<CFXJSE_Engine::ResolveResult> maybeResult =
+      constexpr Mask<XFA_ResolveFlag> kFlags = {XFA_ResolveFlag::kChildren,
+                                                XFA_ResolveFlag::kParent,
+                                                XFA_ResolveFlag::kSiblings};
+      absl::optional<CFXJSE_Engine::ResolveResult> maybeResult =
           pScriptContext->ResolveObjects(
-              pObject, runtime->ToWideString(params[0]).AsStringView(), dwFlag);
+              pObject, runtime->ToWideString(params[0]).AsStringView(), kFlags);
       if (!maybeResult.has_value() ||
           !maybeResult.value().objects.front()->IsNode()) {
         return CJS_Result::Success();
@@ -531,19 +538,19 @@ CJS_Result CJX_HostPseudoModel::print(
   if (!pNotify)
     return CJS_Result::Success();
 
-  uint32_t dwOptions = 0;
+  Mask<XFA_PrintOpt> dwOptions;
   if (runtime->ToBoolean(params[0]))
-    dwOptions |= XFA_PRINTOPT_ShowDialog;
+    dwOptions |= XFA_PrintOpt::kShowDialog;
   if (runtime->ToBoolean(params[3]))
-    dwOptions |= XFA_PRINTOPT_CanCancel;
+    dwOptions |= XFA_PrintOpt::kCanCancel;
   if (runtime->ToBoolean(params[4]))
-    dwOptions |= XFA_PRINTOPT_ShrinkPage;
+    dwOptions |= XFA_PrintOpt::kShrinkPage;
   if (runtime->ToBoolean(params[5]))
-    dwOptions |= XFA_PRINTOPT_AsImage;
+    dwOptions |= XFA_PrintOpt::kAsImage;
   if (runtime->ToBoolean(params[6]))
-    dwOptions |= XFA_PRINTOPT_ReverseOrder;
+    dwOptions |= XFA_PrintOpt::kReverseOrder;
   if (runtime->ToBoolean(params[7]))
-    dwOptions |= XFA_PRINTOPT_PrintAnnot;
+    dwOptions |= XFA_PrintOpt::kPrintAnnot;
 
   int32_t nStartPage = runtime->ToInt32(params[1]);
   int32_t nEndPage = runtime->ToInt32(params[2]);

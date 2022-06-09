@@ -31,6 +31,8 @@
 #include "ui/gl/init/create_gr_gl_interface.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
+#include <vulkan/vulkan.h>
+
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -206,6 +208,9 @@ SharedContextState::SharedContextState(
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "SharedContextState", base::ThreadTaskRunnerHandle::Get());
+
+    // Create |gr_cache_controller_| only if we have task runner.
+    gr_cache_controller_.emplace(this);
   }
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
@@ -530,7 +535,7 @@ bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
   const bool using_gl = GrContextIsGL() || needs_gl;
   if (using_gl) {
     gl::GLSurface* dont_care_surface =
-        last_current_surface_ ? last_current_surface_ : surface_.get();
+        last_current_surface_ ? last_current_surface_.get() : surface_.get();
     surface = surface ? surface : dont_care_surface;
 
     if (!context_->MakeCurrent(surface)) {
@@ -621,10 +626,8 @@ void SharedContextState::RemoveContextLostObserver(ContextLostObserver* obs) {
 
 void SharedContextState::PurgeMemory(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (!gr_context_) {
-    DCHECK(!transfer_cache_);
+  if (!gr_context_)
     return;
-  }
 
   // Ensure the context is current before doing any GPU cleanup.
   if (!MakeCurrent(nullptr))
@@ -770,7 +773,7 @@ void SharedContextState::RestoreTextureUnitBindings(unsigned unit) const {
 }
 
 void SharedContextState::RestoreVertexAttribArray(unsigned index) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void SharedContextState::RestoreAllExternalTextureBindingsIfNeeded() {
@@ -817,8 +820,7 @@ absl::optional<error::ContextLostReason> SharedContextState::GetResetStatus(
   }
   // Checking the reset status is expensive on some OS/drivers
   // (https://crbug.com/1090232). Rate limit it.
-  constexpr base::TimeDelta kMinCheckDelay =
-      base::TimeDelta::FromMilliseconds(5);
+  constexpr base::TimeDelta kMinCheckDelay = base::Milliseconds(5);
   base::Time now = base::Time::Now();
   if (!disable_check_reset_status_throttling_for_test_ &&
       now < last_gl_check_graphics_reset_status_ + kMinCheckDelay) {
@@ -858,6 +860,11 @@ bool SharedContextState::CheckResetStatus(bool need_gl) {
     return true;
   }
   return false;
+}
+
+void SharedContextState::ScheduleGrContextCleanup() {
+  if (gr_cache_controller_)
+    gr_cache_controller_->ScheduleGrContextCleanup();
 }
 
 }  // namespace gpu

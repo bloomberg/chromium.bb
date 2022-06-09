@@ -15,11 +15,12 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -76,7 +77,7 @@ class NET_EXPORT_PRIVATE EntryMetadata {
                    bool app_cache_has_trailer_prefetch_size);
 
   static base::TimeDelta GetLowerEpsilonForTimeComparisons() {
-    return base::TimeDelta::FromSeconds(1);
+    return base::Seconds(1);
   }
   static base::TimeDelta GetUpperEpsilonForTimeComparisons() {
     return base::TimeDelta();
@@ -216,9 +217,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   IndexInitMethod init_method() const { return init_method_; }
 
-  // Returns the estimate of dynamically allocated memory in bytes.
-  size_t EstimateMemoryUsage() const;
-
   // Returns base::Time() if hash not known.
   base::Time GetLastUsedTime(uint64_t entry_hash);
   void SetLastUsedTimeForTest(uint64_t entry_hash, const base::Time last_used);
@@ -262,13 +260,14 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   std::unique_ptr<base::android::ApplicationStatusListener>
       owned_app_status_listener_;
-  base::android::ApplicationStatusListener* app_status_listener_ = nullptr;
+  raw_ptr<base::android::ApplicationStatusListener> app_status_listener_ =
+      nullptr;
 #endif
 
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
 
   // The owner of |this| must ensure the |delegate_| outlives |this|.
-  SimpleIndexDelegate* delegate_;
+  raw_ptr<SimpleIndexDelegate> delegate_;
 
   EntrySet entries_set_;
 

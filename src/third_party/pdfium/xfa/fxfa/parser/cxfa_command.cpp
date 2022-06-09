@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kCommandPropertyData[] = {
-    {XFA_Element::Query, 1, 0},
-    {XFA_Element::Insert, 1, 0},
-    {XFA_Element::Update, 1, 0},
-    {XFA_Element::Delete, 1, 0},
+    {XFA_Element::Query, 1, {}},
+    {XFA_Element::Insert, 1, {}},
+    {XFA_Element::Update, 1, {}},
+    {XFA_Element::Delete, 1, {}},
 };
 
 const CXFA_Node::AttributeData kCommandAttributeData[] = {
@@ -31,7 +31,7 @@ const CXFA_Node::AttributeData kCommandAttributeData[] = {
 CXFA_Command::CXFA_Command(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_SourceSet,
+                XFA_XDPPACKET::kSourceSet,
                 XFA_ObjectType::Node,
                 XFA_Element::Command,
                 kCommandPropertyData,

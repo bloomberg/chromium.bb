@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ash/login/ui/captive_portal_view.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -14,6 +15,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/widget/widget.h"
 
+namespace ash {
 namespace {
 
 // A widget that uses the supplied Profile to return a ThemeProvider.  This is
@@ -29,6 +31,8 @@ class CaptivePortalWidget : public views::Widget {
 
   // views::Widget:
   const ui::ThemeProvider* GetThemeProvider() const override;
+  ui::ColorProviderManager::InitializerSupplier* GetCustomTheme()
+      const override;
 
  private:
   Profile* profile_;
@@ -39,6 +43,11 @@ CaptivePortalWidget::CaptivePortalWidget(Profile* profile)
 
 const ui::ThemeProvider* CaptivePortalWidget::GetThemeProvider() const {
   return &ThemeService::GetThemeProviderForProfile(profile_);
+}
+
+ui::ColorProviderManager::InitializerSupplier*
+CaptivePortalWidget::GetCustomTheme() const {
+  return ThemeService::GetThemeSupplierForProfile(profile_);
 }
 
 // The captive portal dialog is system-modal, but uses the web-content-modal
@@ -60,8 +69,6 @@ views::Widget* CreateWindowAsFramelessChild(
 }
 
 }  // namespace
-
-namespace chromeos {
 
 CaptivePortalWindowProxy::CaptivePortalWindowProxy(
     Delegate* delegate,
@@ -178,4 +185,4 @@ void CaptivePortalWindowProxy::DetachFromWidget(views::Widget* widget) {
   widget_ = nullptr;
 }
 
-}  // namespace chromeos
+}  // namespace ash

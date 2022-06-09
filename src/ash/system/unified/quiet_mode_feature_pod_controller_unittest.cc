@@ -8,6 +8,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace ash {
 
@@ -15,12 +16,18 @@ namespace ash {
 class QuietModeFeaturePodControllerTest : public NoSessionAshTestBase {
  public:
   QuietModeFeaturePodControllerTest() = default;
+
+  QuietModeFeaturePodControllerTest(const QuietModeFeaturePodControllerTest&) =
+      delete;
+  QuietModeFeaturePodControllerTest& operator=(
+      const QuietModeFeaturePodControllerTest&) = delete;
+
   ~QuietModeFeaturePodControllerTest() override = default;
 
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
 
-    tray_model_ = std::make_unique<UnifiedSystemTrayModel>(nullptr);
+    tray_model_ = base::MakeRefCounted<UnifiedSystemTrayModel>(nullptr);
     tray_controller_ =
         std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
   }
@@ -47,12 +54,10 @@ class QuietModeFeaturePodControllerTest : public NoSessionAshTestBase {
   FeaturePodButton* button() { return button_.get(); }
 
  private:
-  std::unique_ptr<UnifiedSystemTrayModel> tray_model_;
+  scoped_refptr<UnifiedSystemTrayModel> tray_model_;
   std::unique_ptr<UnifiedSystemTrayController> tray_controller_;
   std::unique_ptr<QuietModeFeaturePodController> controller_;
   std::unique_ptr<FeaturePodButton> button_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuietModeFeaturePodControllerTest);
 };
 
 TEST_F(QuietModeFeaturePodControllerTest, ButtonVisibilityNotLoggedIn) {

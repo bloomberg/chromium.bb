@@ -18,6 +18,11 @@ const CGFloat kContentMargin = 13;
 // Default corner radius for the button shape.
 const CGFloat kDefaultCornerRadius = 8;
 
+// Tha alpha to apply when the button is highlighted.
+const CGFloat kHighlightedAlpha = 0.8;
+// The duration of the animation when adding / removing transparency.
+const CGFloat kAnimationDuration = 0.25;
+
 }  // namespace
 
 @interface CheckboxButton ()
@@ -43,7 +48,7 @@ const CGFloat kDefaultCornerRadius = 8;
     // Custom button label.
     _label = [[UILabel alloc] init];
     _label.numberOfLines = 0;
-    _label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _label.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _label.translatesAutoresizingMaskIntoConstraints = NO;
     _label.adjustsFontForContentSizeCategory = YES;
@@ -107,6 +112,16 @@ const CGFloat kDefaultCornerRadius = 8;
 
 - (NSString*)accessibilityLabel {
   return self.label.text;
+}
+
+- (void)setHighlighted:(BOOL)highlighted {
+  __weak __typeof(self) weakSelf = self;
+  CGFloat targetAlpha = highlighted ? kHighlightedAlpha : 1.0;
+  [UIView animateWithDuration:kAnimationDuration
+                   animations:^{
+                     weakSelf.alpha = targetAlpha;
+                   }];
+  [super setHighlighted:highlighted];
 }
 
 @end

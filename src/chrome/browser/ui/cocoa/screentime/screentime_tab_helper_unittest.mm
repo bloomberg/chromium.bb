@@ -39,11 +39,15 @@ class ScreentimeTabHelperTest : public ::testing::Test {
 };
 
 TEST_F(ScreentimeTabHelperTest, NeverUsedInIncognito) {
-  auto* otr_profile = profile()->GetOffTheRecordProfile(
-      Profile::OTRProfileID::PrimaryID(), /*create_if_needed=*/true);
+  if (@available(macOS 12.1, *)) {
+    auto* otr_profile = profile()->GetOffTheRecordProfile(
+        Profile::OTRProfileID::PrimaryID(), /*create_if_needed=*/true);
 
-  EXPECT_TRUE(TabHelper::IsScreentimeEnabledForProfile(profile()));
-  EXPECT_FALSE(TabHelper::IsScreentimeEnabledForProfile(otr_profile));
+    EXPECT_TRUE(TabHelper::IsScreentimeEnabledForProfile(profile()));
+    EXPECT_FALSE(TabHelper::IsScreentimeEnabledForProfile(otr_profile));
+  } else {
+    GTEST_SKIP() << "ScreenTime is only enabled on macOS 12.1 and higher";
+  }
 }
 
 TEST_F(ScreentimeTabHelperTest, OnlyOriginsAreReported) {
@@ -62,6 +66,28 @@ TEST_F(ScreentimeTabHelperTest, OnlyOriginsAreReported) {
             GURL("https://www.chromium.org/"));
   EXPECT_EQ(controller->visited_urls_for_testing()[1],
             GURL("https://test.chromium.org/"));
+}
+
+TEST_F(ScreentimeTabHelperTest, OnlyHttpHttpsSchemesReported) {
+  auto contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto helper = std::make_unique<TabHelper>(contents.get());
+
+  FakeWebpageController* controller = static_cast<FakeWebpageController*>(
+      helper->page_controller_for_testing());
+
+  auto* tester = content::WebContentsTester::For(contents.get());
+  tester->NavigateAndCommit(GURL("https://www.chromium.org/abc"));
+  tester->NavigateAndCommit(GURL("http://test.chromium.org/def"));
+  tester->NavigateAndCommit(GURL("chrome://version"));
+  tester->NavigateAndCommit(GURL("mailto:hello@example.com"));
+
+  EXPECT_EQ(controller->visited_urls_for_testing().size(), 2u);
+
+  EXPECT_EQ(controller->visited_urls_for_testing()[0],
+            GURL("https://www.chromium.org/"));
+  EXPECT_EQ(controller->visited_urls_for_testing()[1],
+            GURL("http://test.chromium.org/"));
 }
 
 }  // namespace screentime

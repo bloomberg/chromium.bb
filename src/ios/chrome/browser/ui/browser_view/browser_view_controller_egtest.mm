@@ -5,9 +5,11 @@
 #include <map>
 
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #import "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -31,6 +33,12 @@
 
 @implementation BrowserViewControllerTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kStartSurface);
+  return config;
+}
+
 // Tests that the NTP is interactable even when multiple NTP are opened during
 // the animation of the first NTP opening. See crbug.com/1032544.
 - (void)testPageInteractable {
@@ -45,8 +53,7 @@
                                                             block:^BOOL {
                                                               return NO;
                                                             }];
-    BOOL success = [myCondition waitWithTimeout:0.05];
-    success = NO;
+    ignore_result([myCondition waitWithTimeout:0.05]);
 
     [ChromeEarlGrey openNewTab];
   }  // End of the sync disabler scope.
@@ -144,17 +151,12 @@
   // Invoke the file picker.
   [ChromeEarlGrey tapWebStateElementWithID:@"file"];
 
-  if (@available(iOS 14, *)) {
-    // Tap on the toolbar to dismiss the file picker on iOS14.  In iOS14 a
-    // UIDropShadowView covers the entire app, so tapping anywhere should
-    // dismiss the file picker.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::PrimaryToolbar()]
-        performAction:grey_tap()];
-  } else {
-    // Tap on the "Cancel" button to dismiss the file picker before iOS14.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
-        performAction:grey_tap()];
-  }
+  // Tap on the toolbar to dismiss the file picker on iOS14.  In iOS14 a
+  // UIDropShadowView covers the entire app, so tapping anywhere should
+  // dismiss the file picker.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::PrimaryToolbar()]
+      performAction:grey_tap()];
+
   [ChromeEarlGreyUI waitForAppToIdle];
 }
 
@@ -163,7 +165,7 @@
 // Tests that BVC properly handles open URL. When NTP is visible, the URL
 // should be opened in the same tab (not create a new tab).
 - (void)testOpenURLFromNTP {
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -179,7 +181,7 @@
 // tab, the URL should be opened in a new tab, adding to the tab count.
 - (void)testOpenURLFromTab {
   [ChromeEarlGrey loadURL:GURL("https://invalid")];
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -191,7 +193,7 @@
 - (void)testOpenURLFromTabSwitcher {
   [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForMainTabCount:0];
-  [ChromeEarlGrey applicationOpenURL:GURL("https://anything")];
+  [ChromeEarlGrey sceneOpenURL:GURL("https://anything")];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           "https://anything")]
       assertWithMatcher:grey_notNil()];
@@ -217,6 +219,7 @@
 
   // Opens second window and loads url.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
   [ChromeEarlGrey loadURL:secondURL inWindowWithNumber:1];
 
@@ -235,6 +238,7 @@
 
   // Opens a 'new' second window.
   [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
   // Loads urls in both windows, and verifies.

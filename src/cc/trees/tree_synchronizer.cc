@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/containers/contains.h"
@@ -24,8 +26,18 @@
 namespace cc {
 namespace {
 #if DCHECK_IS_ON()
-template <typename LayerType>
-static void AssertValidPropertyTreeIndices(LayerType* layer) {
+static void AssertValidPropertyTreeIndices(
+    const Layer* layer,
+    const PropertyTrees& property_trees) {
+  DCHECK(layer);
+  DCHECK(layer->transform_tree_index_is_valid(property_trees));
+  DCHECK(layer->effect_tree_index_is_valid(property_trees));
+  DCHECK(layer->clip_tree_index_is_valid(property_trees));
+  DCHECK(layer->scroll_tree_index_is_valid(property_trees));
+}
+
+static void AssertValidPropertyTreeIndices(const LayerImpl* layer,
+                                           const PropertyTrees&) {
   DCHECK(layer);
   DCHECK_NE(layer->transform_tree_index(), TransformTree::kInvalidNodeId);
   DCHECK_NE(layer->effect_tree_index(), EffectTree::kInvalidNodeId);
@@ -33,7 +45,7 @@ static void AssertValidPropertyTreeIndices(LayerType* layer) {
   DCHECK_NE(layer->scroll_tree_index(), ScrollTree::kInvalidNodeId);
 }
 
-static bool LayerHasValidPropertyTreeIndices(LayerImpl* layer) {
+static bool LayerHasValidPropertyTreeIndices(const LayerImpl* layer) {
   DCHECK(layer);
   return layer->transform_tree_index() != TransformTree::kInvalidNodeId &&
          layer->effect_tree_index() != EffectTree::kInvalidNodeId &&
@@ -41,11 +53,13 @@ static bool LayerHasValidPropertyTreeIndices(LayerImpl* layer) {
          layer->scroll_tree_index() != ScrollTree::kInvalidNodeId;
 }
 
-static bool LayerWillPushProperties(LayerTreeHost* host, Layer* layer) {
-  return base::Contains(host->LayersThatShouldPushProperties(), layer);
+static bool LayerWillPushProperties(const ThreadUnsafeCommitState* unsafe_state,
+                                    const Layer* layer) {
+  return unsafe_state->layers_that_should_push_properties.contains(layer);
 }
 
-static bool LayerWillPushProperties(LayerTreeImpl* tree, LayerImpl* layer) {
+static bool LayerWillPushProperties(const LayerTreeImpl* tree,
+                                    const LayerImpl* layer) {
   return base::Contains(tree->LayersThatShouldPushProperties(), layer) ||
          // TODO(crbug.com/303943): Stop always pushing PictureLayerImpl
          // properties.
@@ -68,7 +82,8 @@ std::unique_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
 template <typename LayerTreeType>
 void PushLayerList(OwnedLayerImplMap* old_layers,
                    LayerTreeType* host,
-                   LayerTreeImpl* tree_impl) {
+                   LayerTreeImpl* tree_impl,
+                   const PropertyTrees& property_trees) {
   DCHECK(tree_impl->LayerListIsEmpty());
   for (auto* layer : *host) {
     std::unique_ptr<LayerImpl> layer_impl(
@@ -76,7 +91,7 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
 
 #if DCHECK_IS_ON()
     // Every layer should have valid property tree indices
-    AssertValidPropertyTreeIndices(layer);
+    AssertValidPropertyTreeIndices(layer, property_trees);
     // Every layer_impl should either have valid property tree indices already
     // or the corresponding layer should push them onto layer_impl.
     DCHECK(LayerHasValidPropertyTreeIndices(layer_impl.get()) ||
@@ -90,7 +105,8 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
 
 template <typename LayerTreeType>
 void SynchronizeTreesInternal(LayerTreeType* source_tree,
-                              LayerTreeImpl* tree_impl) {
+                              LayerTreeImpl* tree_impl,
+                              const PropertyTrees& property_trees) {
   DCHECK(tree_impl);
 
   TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
@@ -102,17 +118,19 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
     old_layer_map[it->id()] = std::move(it);
   }
 
-  PushLayerList(&old_layer_map, source_tree, tree_impl);
+  PushLayerList(&old_layer_map, source_tree, tree_impl, property_trees);
 }
 
 }  // namespace
 
-void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
-                                        LayerTreeImpl* tree_impl) {
-  if (!layer_root) {
+void TreeSynchronizer::SynchronizeTrees(
+    const ThreadUnsafeCommitState& unsafe_state,
+    LayerTreeImpl* tree_impl) {
+  if (!unsafe_state.root_layer) {
     tree_impl->DetachLayers();
   } else {
-    SynchronizeTreesInternal(layer_root->layer_tree_host(), tree_impl);
+    SynchronizeTreesInternal(&unsafe_state, tree_impl,
+                             unsafe_state.property_trees);
   }
 }
 
@@ -121,53 +139,8 @@ void TreeSynchronizer::SynchronizeTrees(LayerTreeImpl* pending_tree,
   if (pending_tree->LayerListIsEmpty()) {
     active_tree->DetachLayers();
   } else {
-    SynchronizeTreesInternal(pending_tree, active_tree);
-  }
-}
-
-template <typename Iterator>
-static void PushLayerPropertiesInternal(Iterator source_layers_begin,
-                                        Iterator source_layers_end,
-                                        LayerTreeHost* host_tree,
-                                        LayerTreeImpl* target_impl_tree) {
-  for (Iterator it = source_layers_begin; it != source_layers_end; ++it) {
-    auto* source_layer = *it;
-    LayerImpl* target_layer = target_impl_tree->LayerById(source_layer->id());
-    DCHECK(target_layer);
-    // TODO(enne): http://crbug.com/918126 debugging
-    CHECK(source_layer);
-    if (!target_layer) {
-      bool host_set_on_source = source_layer->layer_tree_host() == host_tree;
-
-      bool source_found_by_iterator = false;
-      for (auto host_tree_it = host_tree->begin();
-           host_tree_it != host_tree->end(); ++it) {
-        if (*host_tree_it == source_layer) {
-          source_found_by_iterator = true;
-          break;
-        }
-      }
-
-      bool root_layer_valid = !!host_tree->root_layer();
-      bool found_root = false;
-      Layer* layer = source_layer;
-      while (layer) {
-        if (layer == host_tree->root_layer()) {
-          found_root = true;
-          break;
-        }
-        layer = layer->parent();
-      }
-
-      auto str = base::StringPrintf(
-          "hs: %d, sf: %d, rlv: %d, fr: %d", host_set_on_source,
-          source_found_by_iterator, root_layer_valid, found_root);
-      static auto* crash_key = base::debug::AllocateCrashKeyString(
-          "cc_null_layer_sync", base::debug::CrashKeySize::Size32);
-      base::debug::SetCrashKeyString(crash_key, str);
-      base::debug::DumpWithoutCrashing();
-    }
-    source_layer->PushPropertiesTo(target_layer);
+    SynchronizeTreesInternal(pending_tree, active_tree,
+                             *pending_tree->property_trees());
   }
 }
 
@@ -196,14 +169,24 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
   pending_tree->ClearLayersThatShouldPushProperties();
 }
 
-void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
-                                           LayerTreeImpl* impl_tree) {
-  auto layers = host_tree->LayersThatShouldPushProperties();
+void TreeSynchronizer::PushLayerProperties(
+    const CommitState& commit_state,
+    ThreadUnsafeCommitState& unsafe_state,
+    LayerTreeImpl* impl_tree) {
   TRACE_EVENT1("cc", "TreeSynchronizer::PushLayerPropertiesTo.Main",
-               "layer_count", layers.size());
-  PushLayerPropertiesInternal(layers.begin(), layers.end(), host_tree,
-                              impl_tree);
-  host_tree->ClearLayersThatShouldPushProperties();
+               "layer_count",
+               unsafe_state.layers_that_should_push_properties.size());
+  auto source_layers_begin =
+      unsafe_state.layers_that_should_push_properties.begin();
+  auto source_layers_end =
+      unsafe_state.layers_that_should_push_properties.end();
+  for (auto it = source_layers_begin; it != source_layers_end; ++it) {
+    auto* source_layer = *it;
+    LayerImpl* target_layer = impl_tree->LayerById(source_layer->id());
+    DCHECK(target_layer);
+    source_layer->PushPropertiesTo(target_layer, commit_state, unsafe_state);
+  }
+  unsafe_state.layers_that_should_push_properties.clear();
 }
 
 }  // namespace cc

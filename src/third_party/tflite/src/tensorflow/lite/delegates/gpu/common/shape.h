@@ -16,17 +16,15 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SHAPE_H_
 #define TENSORFLOW_LITE_DELEGATES_GPU_COMMON_SHAPE_H_
 
-#include <sys/types.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include <algorithm>
 #include <array>
 #include <functional>
 #include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "absl/hash/hash.h"
 
 namespace tflite {
 namespace gpu {
@@ -128,7 +126,7 @@ struct Shape {
   bool has(Axis axis) const { return HasAxis(layout, axis); }
 
   int64_t DimensionsProduct() const {
-    return std::accumulate(dimensions.begin(), dimensions.end(), 1ll,
+    return std::accumulate(dimensions.begin(), dimensions.end(), 1LL,
                            std::multiplies<int64_t>());
   }
 
@@ -665,6 +663,12 @@ inline bool Shape::set(int32_t t) {
 inline bool Shape::set(Axis axis, int32_t t) {
   return DispatchByLayout(layout,
                           internal_shape::DimensionSetterFunc{axis, this, t});
+}
+
+template <Layout T>
+std::ostream& operator<<(std::ostream& ostream, const StrongShape<T>& shape) {
+  ostream << ToString(shape);
+  return ostream;
 }
 
 }  // namespace gpu

@@ -26,7 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
-class EventHandler;
 class UserModel;
 
 class MockActionDelegate : public ActionDelegate {
@@ -73,9 +72,12 @@ class MockActionDelegate : public ActionDelegate {
            base::OnceCallback<void(const ClientStatus&, base::TimeDelta)>
                callback));
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
-  MOCK_METHOD0(GetStatusMessage, std::string());
+  MOCK_CONST_METHOD0(GetStatusMessage, std::string());
   MOCK_METHOD1(SetBubbleMessage, void(const std::string& message));
-  MOCK_METHOD0(GetBubbleMessage, std::string());
+  MOCK_CONST_METHOD0(GetBubbleMessage, std::string());
+  MOCK_METHOD1(SetTtsMessage, void(const std::string& message));
+  MOCK_CONST_METHOD0(GetTtsButtonState, TtsButtonState());
+  MOCK_METHOD0(MaybePlayTtsMessage, void());
   MOCK_CONST_METHOD2(FindElement,
                      void(const Selector& selector, ElementFinder::Callback));
   MOCK_CONST_METHOD2(FindAllElements,
@@ -90,27 +92,14 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(CleanUpAfterPrompt, void());
   MOCK_METHOD1(SetBrowseDomainsAllowlist,
                void(std::vector<std::string> domains));
-  MOCK_METHOD3(FillAddressForm,
-               void(const autofill::AutofillProfile* profile,
-                    const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
-  MOCK_METHOD4(FillCardForm,
-               void(std::unique_ptr<autofill::CreditCard> card,
-                    const std::u16string& cvc,
-                    const Selector& selector,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD2(
       RetrieveElementFormAndFieldData,
       void(const Selector& selector,
            base::OnceCallback<void(const ClientStatus&,
                                    const autofill::FormData&,
                                    const autofill::FormFieldData&)> callback));
-  MOCK_METHOD5(ScrollToElementPosition,
-               void(const Selector& selector,
-                    const TopPadding& top_padding,
-                    std::unique_ptr<ElementFinder::Result> scrollable_element,
-                    const ElementFinder::Result& element,
-                    base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD1(StoreScrolledToElement,
+               void(const ElementFinder::Result& element));
   MOCK_METHOD1(SetTouchableElementArea,
                void(const ElementAreaProto& touchable_element_area));
   MOCK_METHOD1(CollectUserData,
@@ -135,19 +124,18 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(Restart, void());
   MOCK_CONST_METHOD0(GetUserData, UserData*());
-  MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
+  MOCK_CONST_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_CONST_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
-  MOCK_METHOD0(GetWebContents, content::WebContents*());
+  MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetWebController, WebController*());
-  MOCK_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
-  MOCK_METHOD0(GetLocale, std::string());
+  MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
+  MOCK_CONST_METHOD0(GetUkmRecorder, ukm::UkmRecorder*());
   MOCK_METHOD2(SetDetails,
                void(std::unique_ptr<Details> details, base::TimeDelta delay));
   MOCK_METHOD2(AppendDetails,
                void(std::unique_ptr<Details> details, base::TimeDelta delay));
   MOCK_METHOD1(SetInfoBox, void(const InfoBox& info_box));
   MOCK_METHOD0(ClearInfoBox, void());
-  MOCK_METHOD1(SetProgress, void(int progress));
   MOCK_METHOD1(SetProgressActiveStepIdentifier,
                bool(const std::string& active_step_identifier));
   MOCK_METHOD1(SetProgressActiveStep, void(int active_step));
@@ -159,20 +147,21 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetUserActions,
                void(std::unique_ptr<std::vector<UserAction>> user_action));
   MOCK_METHOD1(SetViewportMode, void(ViewportMode mode));
-  MOCK_METHOD0(GetViewportMode, ViewportMode());
+  MOCK_CONST_METHOD0(GetViewportMode, ViewportMode());
   MOCK_METHOD1(SetPeekMode,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
-  MOCK_METHOD0(GetPeekMode, ConfigureBottomSheetProto::PeekMode());
+  MOCK_CONST_METHOD0(GetPeekMode, ConfigureBottomSheetProto::PeekMode());
   MOCK_METHOD0(ExpandBottomSheet, void());
   MOCK_METHOD0(CollapseBottomSheet, void());
+  MOCK_METHOD1(SetClientSettings,
+               void(const ClientSettingsProto& client_settings));
   MOCK_METHOD3(
       SetForm,
       bool(std::unique_ptr<FormProto> form,
            base::RepeatingCallback<void(const FormProto::Result*)>
                changed_callback,
            base::OnceCallback<void(const ClientStatus&)> cancel_callback));
-  MOCK_METHOD0(GetUserModel, UserModel*());
-  MOCK_METHOD0(GetEventHandler, EventHandler*());
+  MOCK_CONST_METHOD0(GetUserModel, UserModel*());
   MOCK_METHOD1(WaitForWindowHeightChange,
                void(base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD4(WaitForDocumentReadyState,
@@ -209,9 +198,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(MaybeShowSlowWebsiteWarning,
                void(base::OnceCallback<void(bool)>));
   MOCK_METHOD0(MaybeShowSlowConnectionWarning, void());
-  MOCK_CONST_METHOD1(
-      DispatchJsEvent,
-      void(base::OnceCallback<void(const ClientStatus&)> callback));
+  MOCK_METHOD0(GetLogInfo, ProcessedActionStatusDetailsProto&());
+  MOCK_CONST_METHOD0(GetElementStore, ElementStore*());
 
   base::WeakPtr<ActionDelegate> GetWeakPtr() const override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -221,15 +209,10 @@ class MockActionDelegate : public ActionDelegate {
     return client_settings_;
   }
 
-  ElementStore* GetElementStore() const override {
-    if (!element_store_) {
-      element_store_ = std::make_unique<FakeElementStore>();
-    }
-    return element_store_.get();
-  }
-
+ private:
+  FakeElementStore fake_element_store_;
   ClientSettings client_settings_;
-  mutable std::unique_ptr<ElementStore> element_store_;
+  ProcessedActionStatusDetailsProto log_info_;
 
   base::WeakPtrFactory<MockActionDelegate> weak_ptr_factory_{this};
 };

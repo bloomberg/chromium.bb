@@ -79,7 +79,7 @@
 #include <limits>
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -718,8 +718,7 @@ base::TimeDelta ConvertToLocalTime(base::Time time) {
   UErrorCode status = U_ZERO_ERROR;
   timezone->getOffset(ms, false, raw_offset, dst_offset, status);
   DCHECK(U_SUCCESS(status));
-  return base::TimeDelta::FromMillisecondsD(
-      ms + static_cast<double>(raw_offset + dst_offset));
+  return base::Milliseconds(ms + static_cast<double>(raw_offset + dst_offset));
 }
 
 }  // namespace WTF

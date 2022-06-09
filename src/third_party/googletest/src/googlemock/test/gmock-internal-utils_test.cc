@@ -140,6 +140,12 @@ TEST(GetRawPointerTest, WorksForRawPointers) {
   EXPECT_EQ(&n, GetRawPointer(&n));
 }
 
+TEST(GetRawPointerTest, WorksForStdReferenceWrapper) {
+  int n = 1;
+  EXPECT_EQ(&n, GetRawPointer(std::ref(n)));
+  EXPECT_EQ(&n, GetRawPointer(std::cref(n)));
+}
+
 // Tests KindOf<T>.
 
 class Base {};
@@ -361,27 +367,27 @@ TEST(ExpectTest, FailsNonfatallyOnFalse) {
 
 class LogIsVisibleTest : public ::testing::Test {
  protected:
-  void SetUp() override { original_verbose_ = GMOCK_FLAG(verbose); }
+  void SetUp() override { original_verbose_ = GMOCK_FLAG_GET(verbose); }
 
-  void TearDown() override { GMOCK_FLAG(verbose) = original_verbose_; }
+  void TearDown() override { GMOCK_FLAG_SET(verbose, original_verbose_); }
 
   std::string original_verbose_;
 };
 
 TEST_F(LogIsVisibleTest, AlwaysReturnsTrueIfVerbosityIsInfo) {
-  GMOCK_FLAG(verbose) = kInfoVerbosity;
+  GMOCK_FLAG_SET(verbose, kInfoVerbosity);
   EXPECT_TRUE(LogIsVisible(kInfo));
   EXPECT_TRUE(LogIsVisible(kWarning));
 }
 
 TEST_F(LogIsVisibleTest, AlwaysReturnsFalseIfVerbosityIsError) {
-  GMOCK_FLAG(verbose) = kErrorVerbosity;
+  GMOCK_FLAG_SET(verbose, kErrorVerbosity);
   EXPECT_FALSE(LogIsVisible(kInfo));
   EXPECT_FALSE(LogIsVisible(kWarning));
 }
 
 TEST_F(LogIsVisibleTest, WorksWhenVerbosityIsWarning) {
-  GMOCK_FLAG(verbose) = kWarningVerbosity;
+  GMOCK_FLAG_SET(verbose, kWarningVerbosity);
   EXPECT_FALSE(LogIsVisible(kInfo));
   EXPECT_TRUE(LogIsVisible(kWarning));
 }
@@ -394,8 +400,8 @@ TEST_F(LogIsVisibleTest, WorksWhenVerbosityIsWarning) {
 // and log severity.
 void TestLogWithSeverity(const std::string& verbosity, LogSeverity severity,
                          bool should_print) {
-  const std::string old_flag = GMOCK_FLAG(verbose);
-  GMOCK_FLAG(verbose) = verbosity;
+  const std::string old_flag = GMOCK_FLAG_GET(verbose);
+  GMOCK_FLAG_SET(verbose, verbosity);
   CaptureStdout();
   Log(severity, "Test log.\n", 0);
   if (should_print) {
@@ -407,18 +413,18 @@ void TestLogWithSeverity(const std::string& verbosity, LogSeverity severity,
   } else {
     EXPECT_STREQ("", GetCapturedStdout().c_str());
   }
-  GMOCK_FLAG(verbose) = old_flag;
+  GMOCK_FLAG_SET(verbose, old_flag);
 }
 
 // Tests that when the stack_frames_to_skip parameter is negative,
 // Log() doesn't include the stack trace in the output.
 TEST(LogTest, NoStackTraceWhenStackFramesToSkipIsNegative) {
-  const std::string saved_flag = GMOCK_FLAG(verbose);
-  GMOCK_FLAG(verbose) = kInfoVerbosity;
+  const std::string saved_flag = GMOCK_FLAG_GET(verbose);
+  GMOCK_FLAG_SET(verbose, kInfoVerbosity);
   CaptureStdout();
   Log(kInfo, "Test log.\n", -1);
   EXPECT_STREQ("\nTest log.\n", GetCapturedStdout().c_str());
-  GMOCK_FLAG(verbose) = saved_flag;
+  GMOCK_FLAG_SET(verbose, saved_flag);
 }
 
 struct MockStackTraceGetter : testing::internal::OsStackTraceGetterInterface {
@@ -440,7 +446,8 @@ TEST(LogTest, NoSkippingStackFrameInOptMode) {
   const std::string log = GetCapturedStdout();
 
   std::string expected_trace =
-      (testing::Message() << GTEST_FLAG(stack_trace_depth) << "::").GetString();
+      (testing::Message() << GTEST_FLAG_GET(stack_trace_depth) << "::")
+          .GetString();
   std::string expected_message =
       "\nGMOCK WARNING:\n"
       "Test log.\n"
@@ -498,11 +505,11 @@ TEST(LogTest, OnlyWarningsArePrintedWhenVerbosityIsInvalid) {
 // Verifies that Log() behaves correctly for the given verbosity level
 // and log severity.
 std::string GrabOutput(void(*logger)(), const char* verbosity) {
-  const std::string saved_flag = GMOCK_FLAG(verbose);
-  GMOCK_FLAG(verbose) = verbosity;
+  const std::string saved_flag = GMOCK_FLAG_GET(verbose);
+  GMOCK_FLAG_SET(verbose, verbosity);
   CaptureStdout();
   logger();
-  GMOCK_FLAG(verbose) = saved_flag;
+  GMOCK_FLAG_SET(verbose, saved_flag);
   return GetCapturedStdout();
 }
 
@@ -713,6 +720,46 @@ TEST(FunctionTest, LongArgumentList) {
   EXPECT_TRUE((
       std::is_same<IgnoredValue(bool, int, char*, int&, const long&),  // NOLINT
                    F::MakeResultIgnoredValue>::value));
+}
+
+TEST(Base64Unescape, InvalidString) {
+  std::string unescaped;
+  EXPECT_FALSE(Base64Unescape("(invalid)", &unescaped));
+}
+
+TEST(Base64Unescape, ShortString) {
+  std::string unescaped;
+  EXPECT_TRUE(Base64Unescape("SGVsbG8gd29ybGQh", &unescaped));
+  EXPECT_EQ("Hello world!", unescaped);
+}
+
+TEST(Base64Unescape, ShortStringWithPadding) {
+  std::string unescaped;
+  EXPECT_TRUE(Base64Unescape("SGVsbG8gd29ybGQ=", &unescaped));
+  EXPECT_EQ("Hello world", unescaped);
+}
+
+TEST(Base64Unescape, ShortStringWithoutPadding) {
+  std::string unescaped;
+  EXPECT_TRUE(Base64Unescape("SGVsbG8gd29ybGQ", &unescaped));
+  EXPECT_EQ("Hello world", unescaped);
+}
+
+TEST(Base64Unescape, LongStringWithWhiteSpaces) {
+  std::string escaped =
+      R"(TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlz
+  IHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2Yg
+  dGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGlu
+  dWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRo
+  ZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=)";
+  std::string expected =
+      "Man is distinguished, not only by his reason, but by this singular "
+      "passion from other animals, which is a lust of the mind, that by a "
+      "perseverance of delight in the continued and indefatigable generation "
+      "of knowledge, exceeds the short vehemence of any carnal pleasure.";
+  std::string unescaped;
+  EXPECT_TRUE(Base64Unescape(escaped, &unescaped));
+  EXPECT_EQ(expected, unescaped);
 }
 
 }  // namespace

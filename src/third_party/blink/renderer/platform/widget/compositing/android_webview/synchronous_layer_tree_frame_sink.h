@@ -12,10 +12,9 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/managed_memory_policy.h"
@@ -34,7 +33,7 @@
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-forward.h"
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_compositor_registry.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 class SkCanvas;
 
@@ -92,6 +91,9 @@ class SynchronousLayerTreeFrameSink
           compositor_frame_sink_remote,
       mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSinkClient>
           client_receiver);
+  SynchronousLayerTreeFrameSink(const SynchronousLayerTreeFrameSink&) = delete;
+  SynchronousLayerTreeFrameSink& operator=(
+      const SynchronousLayerTreeFrameSink&) = delete;
   ~SynchronousLayerTreeFrameSink() override;
 
   // cc::LayerTreeFrameSink implementation.
@@ -232,8 +234,6 @@ class SynchronousLayerTreeFrameSink
   base::TimeTicks nop_animation_timeout_start_;
 
   power_scheduler::FrameProductionPowerModeVoter power_mode_voter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSink);
 };
 
 }  // namespace blink

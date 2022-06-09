@@ -4,7 +4,7 @@
 
 #include "ash/display/display_highlight_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,12 +21,6 @@ class DisplayHighlightControllerTest : public AshTestBase {
 
   DisplayHighlightController* display_highlight_controller() const {
     return Shell::Get()->display_highlight_controller();
-  }
-
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDisplayIdentification);
-    AshTestBase::SetUp();
   }
 
   void ExpectNoHighlight() {
@@ -47,9 +41,6 @@ class DisplayHighlightControllerTest : public AshTestBase {
     EXPECT_EQ(widget->GetWindowBoundsInScreen(), target.bounds());
     EXPECT_TRUE(widget->IsVisible());
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(DisplayHighlightControllerTest, OnDisplayChangedNoDisplaySelected) {

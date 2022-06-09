@@ -41,10 +41,6 @@
 
 #if defined(V8_OS_STARBOARD)
 #include "starboard/atomic.h"
-
-#if SB_API_VERSION < 10
-#error Your version of Starboard must support SbAtomic8 in order to use V8.
-#endif  // SB_API_VERSION < 10
 #endif  // V8_OS_STARBOARD
 
 namespace v8 {
@@ -195,9 +191,29 @@ inline void Release_Store(volatile Atomic8* ptr, Atomic8 value) {
                              std::memory_order_release);
 }
 
+inline void Release_Store(volatile Atomic16* ptr, Atomic16 value) {
+  std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
+                             std::memory_order_release);
+}
+
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
   std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
                              std::memory_order_release);
+}
+
+inline void SeqCst_Store(volatile Atomic8* ptr, Atomic8 value) {
+  std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
+                             std::memory_order_seq_cst);
+}
+
+inline void SeqCst_Store(volatile Atomic16* ptr, Atomic16 value) {
+  std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
+                             std::memory_order_seq_cst);
+}
+
+inline void SeqCst_Store(volatile Atomic32* ptr, Atomic32 value) {
+  std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
+                             std::memory_order_seq_cst);
 }
 
 inline Atomic8 Relaxed_Load(volatile const Atomic8* ptr) {
@@ -283,6 +299,11 @@ inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
                              std::memory_order_release);
 }
 
+inline void SeqCst_Store(volatile Atomic64* ptr, Atomic64 value) {
+  std::atomic_store_explicit(helper::to_std_atomic(ptr), value,
+                             std::memory_order_seq_cst);
+}
+
 inline Atomic64 Relaxed_Load(volatile const Atomic64* ptr) {
   return std::atomic_load_explicit(helper::to_std_atomic_const(ptr),
                                    std::memory_order_relaxed);
@@ -318,6 +339,101 @@ inline void Relaxed_Memcpy(volatile Atomic8* dst, volatile const Atomic8* src,
     Relaxed_Store(dst++, Relaxed_Load(src++));
     --bytes;
   }
+}
+
+inline void Relaxed_Memmove(volatile Atomic8* dst, volatile const Atomic8* src,
+                            size_t bytes) {
+  // Use Relaxed_Memcpy if copying forwards is safe. This is the case if there
+  // is no overlap, or {dst} lies before {src}.
+  // This single check checks for both:
+  if (reinterpret_cast<uintptr_t>(dst) - reinterpret_cast<uintptr_t>(src) >=
+      bytes) {
+    Relaxed_Memcpy(dst, src, bytes);
+    return;
+  }
+
+  // Otherwise copy backwards.
+  dst += bytes;
+  src += bytes;
+  constexpr size_t kAtomicWordSize = sizeof(AtomicWord);
+  while (bytes > 0 &&
+         !IsAligned(reinterpret_cast<uintptr_t>(dst), kAtomicWordSize)) {
+    Relaxed_Store(--dst, Relaxed_Load(--src));
+    --bytes;
+  }
+  if (IsAligned(reinterpret_cast<uintptr_t>(src), kAtomicWordSize) &&
+      IsAligned(reinterpret_cast<uintptr_t>(dst), kAtomicWordSize)) {
+    while (bytes >= kAtomicWordSize) {
+      dst -= kAtomicWordSize;
+      src -= kAtomicWordSize;
+      bytes -= kAtomicWordSize;
+      Relaxed_Store(
+          reinterpret_cast<volatile AtomicWord*>(dst),
+          Relaxed_Load(reinterpret_cast<const volatile AtomicWord*>(src)));
+    }
+  }
+  while (bytes > 0) {
+    Relaxed_Store(--dst, Relaxed_Load(--src));
+    --bytes;
+  }
+}
+
+namespace helper {
+inline int MemcmpNotEqualFundamental(Atomic8 u1, Atomic8 u2) {
+  DCHECK_NE(u1, u2);
+  return u1 < u2 ? -1 : 1;
+}
+inline int MemcmpNotEqualFundamental(AtomicWord u1, AtomicWord u2) {
+  DCHECK_NE(u1, u2);
+#if defined(V8_TARGET_BIG_ENDIAN)
+  return u1 < u2 ? -1 : 1;
+#else
+  for (size_t i = 0; i < sizeof(AtomicWord); ++i) {
+    uint8_t byte1 = u1 & 0xFF;
+    uint8_t byte2 = u2 & 0xFF;
+    if (byte1 != byte2) return byte1 < byte2 ? -1 : 1;
+    u1 >>= 8;
+    u2 >>= 8;
+  }
+  UNREACHABLE();
+#endif
+}
+}  // namespace helper
+
+inline int Relaxed_Memcmp(volatile const Atomic8* s1,
+                          volatile const Atomic8* s2, size_t len) {
+  constexpr size_t kAtomicWordSize = sizeof(AtomicWord);
+  while (len > 0 &&
+         !(IsAligned(reinterpret_cast<uintptr_t>(s1), kAtomicWordSize) &&
+           IsAligned(reinterpret_cast<uintptr_t>(s2), kAtomicWordSize))) {
+    Atomic8 u1 = Relaxed_Load(s1++);
+    Atomic8 u2 = Relaxed_Load(s2++);
+    if (u1 != u2) return helper::MemcmpNotEqualFundamental(u1, u2);
+    --len;
+  }
+
+  if (IsAligned(reinterpret_cast<uintptr_t>(s1), kAtomicWordSize) &&
+      IsAligned(reinterpret_cast<uintptr_t>(s2), kAtomicWordSize)) {
+    while (len >= kAtomicWordSize) {
+      AtomicWord u1 =
+          Relaxed_Load(reinterpret_cast<const volatile AtomicWord*>(s1));
+      AtomicWord u2 =
+          Relaxed_Load(reinterpret_cast<const volatile AtomicWord*>(s2));
+      if (u1 != u2) return helper::MemcmpNotEqualFundamental(u1, u2);
+      s1 += kAtomicWordSize;
+      s2 += kAtomicWordSize;
+      len -= kAtomicWordSize;
+    }
+  }
+
+  while (len > 0) {
+    Atomic8 u1 = Relaxed_Load(s1++);
+    Atomic8 u2 = Relaxed_Load(s2++);
+    if (u1 != u2) return helper::MemcmpNotEqualFundamental(u1, u2);
+    --len;
+  }
+
+  return 0;
 }
 
 }  // namespace base

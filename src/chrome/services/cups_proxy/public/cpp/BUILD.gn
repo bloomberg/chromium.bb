@@ -20,15 +20,13 @@ source_set("cpp") {
 
   deps = [
     "//base",
-    "//chromeos",
+    "//chromeos/printing",
   ]
 
   public_deps = [
     "//chrome/services/ipp_parser/public/cpp",
-    "//printing",
+    "//printing/backend",
   ]
-
-  configs += [ "//printing:cups" ]
 }
 
 source_set("unit_tests") {
@@ -37,7 +35,7 @@ source_set("unit_tests") {
   deps = [
     ":cpp",
     "//base",
-    "//chromeos",
+    "//chromeos/printing",
     "//testing/gmock",
     "//testing/gtest",
   ]

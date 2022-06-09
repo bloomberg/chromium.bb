@@ -90,6 +90,9 @@ class CSPContextTest : public CSPContext {
  public:
   CSPContextTest() = default;
 
+  CSPContextTest(const CSPContextTest&) = delete;
+  CSPContextTest& operator=(const CSPContextTest&) = delete;
+
   const std::vector<network::mojom::CSPViolationPtr>& violations() {
     return violations_;
   }
@@ -109,8 +112,6 @@ class CSPContextTest : public CSPContext {
   }
   std::vector<network::mojom::CSPViolationPtr> violations_;
   std::vector<std::string> scheme_to_bypass_;
-
-  DISALLOW_COPY_AND_ASSIGN(CSPContextTest);
 };
 
 mojom::ContentSecurityPolicyPtr EmptyCSP() {
@@ -1430,6 +1431,17 @@ TEST(ContentSecurityPolicy, ParseSerializedSourceList) {
           base::BindOnce([] {
             auto csp = mojom::CSPSourceList::New();
             csp->allow_wasm_eval = true;
+            return csp;
+          }),
+          "The source list for the Content Security Policy directive "
+          "'script-src' contains an invalid source: ''wrong''. It will be "
+          "ignored.",
+      },
+      {
+          "'wrong' 'wasm-unsafe-eval'",
+          base::BindOnce([] {
+            auto csp = mojom::CSPSourceList::New();
+            csp->allow_wasm_unsafe_eval = true;
             return csp;
           }),
           "The source list for the Content Security Policy directive "

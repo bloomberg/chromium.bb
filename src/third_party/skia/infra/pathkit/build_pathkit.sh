@@ -13,6 +13,10 @@ set -x
 # Clean out previous builds (ignoring any errors for things like folders)
 # (e.g. we don't want to delete /OUT/depot_tools/)
 rm -f /OUT/*
+# We want to clean out previously generated code and object files to avoid
+# previous builds contaminating this one.
+rm -rf /OUT/gen
+rm -rf /OUT/obj
 set -e
 
 #BASE_DIR is the dir this script is in ($SKIA_ROOT/infra/pathkit)
@@ -21,3 +25,4 @@ PATHKIT_DIR=$BASE_DIR/../../modules/pathkit
 
 BUILD_DIR=/OUT $PATHKIT_DIR/compile.sh $@
 
+chmod -R 0777 /OUT/*

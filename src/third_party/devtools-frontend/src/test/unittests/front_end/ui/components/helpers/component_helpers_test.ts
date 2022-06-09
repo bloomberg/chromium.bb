@@ -4,7 +4,6 @@
 
 import * as ComponentHelpers from '../../../../../../front_end/ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
-import * as ThemeSupport from '../../../../../../front_end/ui/legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../../../../../front_end/ui/lit-html/lit-html.js';
 
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
@@ -39,45 +38,6 @@ customElements.define('x-devtools-test-element', TestElement);
 const {assert} = chai;
 
 describe('ComponentHelpers', () => {
-  describe('getStylesheets', () => {
-    it('returns a single stylesheet with the contents of the resource', () => {
-      const sheets = ComponentHelpers.GetStylesheet.getStyleSheets('ui/legacy/inspectorCommon.css');
-      assert.lengthOf(sheets, 1);
-      assert.instanceOf(sheets[0], CSSStyleSheet);
-    });
-
-    it('caches the stylesheet rather than constructing it every time', () => {
-      const firstCallSheet = ComponentHelpers.GetStylesheet.getStyleSheets('ui/legacy/inspectorCommon.css')[0];
-      const secondCallSheet = ComponentHelpers.GetStylesheet.getStyleSheets('ui/legacy/inspectorCommon.css')[0];
-      assert.strictEqual(firstCallSheet, secondCallSheet);
-    });
-
-    describe('patching stylesheets', () => {
-      beforeEach(() => {
-        // Patch theme support to return a patch in all cases, necessary for testing these
-        // particular set of behaviors.
-        ThemeSupport.ThemeSupport.instance().themeStyleSheet = () => {
-          return 'p { color: red; }';
-        };
-      });
-
-      it('returns the original and the patched stylesheet if there is a themed stylesheet and the option is set',
-         () => {
-           const sheets = ComponentHelpers.GetStylesheet.getStyleSheets(
-               'ui/legacy/inspectorCommon.css', {enableLegacyPatching: true});
-           assert.lengthOf(sheets, 2);
-           assert.instanceOf(sheets[0], CSSStyleSheet);
-           assert.instanceOf(sheets[1], CSSStyleSheet);
-         });
-
-      it('does not patch by default', () => {
-        const sheets = ComponentHelpers.GetStylesheet.getStyleSheets('ui/legacy/inspectorCommon.css');
-        assert.lengthOf(sheets, 1);
-        assert.instanceOf(sheets[0], CSSStyleSheet);
-      });
-    });
-  });
-
   describe('setCSSProperty', () => {
     it('sets a property on the shadow root host element', () => {
       class TestComponent extends HTMLElement {

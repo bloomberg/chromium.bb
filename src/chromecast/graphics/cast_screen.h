@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 #define CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 
-#include "base/macros.h"
 #include "chromecast/public/graphics_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
@@ -24,6 +23,10 @@ class CastBrowserMainParts;
 class CastScreen : public display::ScreenBase {
  public:
   CastScreen();
+
+  CastScreen(const CastScreen&) = delete;
+  CastScreen& operator=(const CastScreen&) = delete;
+
   ~CastScreen() override;
 
   // display::Screen overrides:
@@ -52,8 +55,6 @@ class CastScreen : public display::ScreenBase {
 
  private:
   absl::optional<display::Display> stashed_display_settings_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastScreen);
 };
 
 }  // namespace chromecast

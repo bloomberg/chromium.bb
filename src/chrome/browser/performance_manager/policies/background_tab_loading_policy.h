@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/raw_ptr.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/page_node.h"
@@ -45,7 +47,8 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   void OnTakenFromGraph(Graph* graph) override;
 
   // PageNodeObserver implementation:
-  void OnLoadingStateChanged(const PageNode* page_node) override;
+  void OnLoadingStateChanged(const PageNode* page_node,
+                             PageNode::LoadingState previous_state) override;
   void OnBeforePageNodeRemoved(const PageNode* page_node) override;
 
   // Schedules the PageNodes in |page_nodes| to be loaded when appropriate.
@@ -71,7 +74,7 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
     PageNodeToLoadData& operator=(const PageNodeToLoadData&) = delete;
 
     // Keeps a pointer to the corresponding PageNode.
-    const PageNode* page_node;
+    raw_ptr<const PageNode> page_node;
 
     // A higher value here means the tab has higher priority for restoring.
     float score = 0.0f;
@@ -188,8 +191,7 @@ class BackgroundTabLoadingPolicy : public GraphOwned,
   static constexpr uint32_t kDesiredAmountOfFreeMemoryMb = 150;
 
   // The maximum time since last use of a tab in order for it to be loaded.
-  static constexpr base::TimeDelta kMaxTimeSinceLastUseToLoad =
-      base::TimeDelta::FromDays(30);
+  static constexpr base::TimeDelta kMaxTimeSinceLastUseToLoad = base::Days(30);
 
   // Lower bound for the maximum number of tabs to load simultaneously.
   static constexpr uint32_t kMinSimultaneousTabLoads = 1;

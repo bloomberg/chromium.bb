@@ -9,8 +9,9 @@
 
 #include "base/strings/string_piece.h"
 #include "base/types/strong_alias.h"
+#include "build/build_config.h"
 #include "ui/gfx/image/image.h"
-
+#include "url/gurl.h"
 namespace autofill {
 
 struct Suggestion {
@@ -47,7 +48,11 @@ struct Suggestion {
   // (see popup_item_ids.h) have special built-in meanings.
   int frontend_id = 0;
 
+  // The text that will be filled in to the focused field and is displayed as
+  // the main text in the suggestion. Its style depends on |is_value_secondary|.
   std::u16string value;
+
+  // The text displayed on the second line in a suggestion.
   std::u16string label;
   // A label to be shown beneath |label| that will display information about any
   // credit card offers or rewards.
@@ -58,17 +63,28 @@ struct Suggestion {
   std::u16string additional_label;
   // Contains an image to display for the suggestion.
   gfx::Image custom_icon;
+
+#if defined(OS_ANDROID)
+  // The url for the custom icon. This is used by android to fetch the image as
+  // android does not support gfx::Image directly.
+  GURL custom_icon_url;
+#endif  // OS_ANDROID
+
   // TODO(crbug.com/1019660): Identify icons with enum instead of strings.
   // If |custom_icon| is empty, the name of the fallback built-in icon.
   std::string icon;
-  // This icon string shows whether the suggestion originates from local or
-  // account store. If it's empty, no store indication should be shown.
+  // For passwords, this icon string shows whether the suggestion originates
+  // from local or account store. It is also used on the settings entry for
+  // the credit card Autofill popup to indicate if all credit cards are server
+  // cards.
   std::string store_indicator_icon;
   MatchMode match = PREFIX_MATCH;
-  // |value| should be displayed as secondary text.
+  // Whether |value| should be displayed as secondary text.
   bool is_value_secondary = false;
   // Whether suggestion was interacted with and is now in a loading state.
   IsLoading is_loading = IsLoading(false);
+  // The In-Product-Help feature that should be shown for the suggestion.
+  std::string feature_for_iph;
 };
 
 }  // namespace autofill

@@ -56,9 +56,9 @@ Graph* SetUpKmeansPlusPlusInitialization(int num_dims, int num_points,
   Tensor seed(DT_INT64, TensorShape({}));
   Tensor num_retries_per_sample(DT_INT64, TensorShape({}));
   points.flat<float>().setRandom();
-  sample_size.flat<int64>().setConstant(num_to_sample);
-  seed.flat<int64>().setConstant(12345);
-  num_retries_per_sample.flat<int64>().setConstant(retries_per_sample);
+  sample_size.flat<int64_t>().setConstant(num_to_sample);
+  seed.flat<int64_t>().setConstant(12345);
+  num_retries_per_sample.flat<int64_t>().setConstant(retries_per_sample);
 
   TF_CHECK_OK(NodeBuilder("kmeans_plus_plus_initialization_op",
                           "KmeansPlusPlusInitialization")
@@ -72,22 +72,21 @@ Graph* SetUpKmeansPlusPlusInitialization(int num_dims, int num_points,
 
 template <int num_points, int num_to_sample, int num_dims,
           int retries_per_sample>
-void BM_KmeansPlusPlusInitialization(int iters) {
-  testing::StopTiming();
-  testing::ItemsProcessed(static_cast<int64>(iters) * num_points * num_dims *
-                          num_to_sample);
-  testing::UseRealTime();
+void BM_KmeansPlusPlusInitialization(::testing::benchmark::State& state) {
   Graph* g = SetUpKmeansPlusPlusInitialization(
       num_dims, num_points, num_to_sample, retries_per_sample);
-  testing::StartTiming();
-  test::Benchmark("cpu", g).Run(iters);
+  test::Benchmark("cpu", g, /*old_benchmark_api=*/false).Run(state);
+  state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) *
+                          num_points * num_dims * num_to_sample);
 }
 
-#define BENCHMARK_KMEANS_PLUS_PLUS(p, c, d, r)                            \
-  void BM_KmeansPlusPlusInitialization_##p##_##c##_##d##_##r(int iters) { \
-    BM_KmeansPlusPlusInitialization<p, c, d, r>(iters);                   \
-  }                                                                       \
-  BENCHMARK(BM_KmeansPlusPlusInitialization_##p##_##c##_##d##_##r);
+#define BENCHMARK_KMEANS_PLUS_PLUS(p, c, d, r)                     \
+  void BM_KmeansPlusPlusInitialization_##p##_##c##_##d##_##r(      \
+      ::testing::benchmark::State& state) {                        \
+    BM_KmeansPlusPlusInitialization<p, c, d, r>(state);            \
+  }                                                                \
+  BENCHMARK(BM_KmeansPlusPlusInitialization_##p##_##c##_##d##_##r) \
+      ->UseRealTime();
 
 #define RUN_BM_KmeansPlusPlusInitialization(retries)                     \
   BENCHMARK_KMEANS_PLUS_PLUS(k10Points, k2Centers, k100Dim, retries);    \
@@ -121,7 +120,7 @@ Graph* SetUpKMC2Initialization(int num_points) {
   Tensor distances(DT_FLOAT, TensorShape({num_points}));
   Tensor seed(DT_INT64, TensorShape({}));
   distances.flat<float>().setRandom();
-  seed.flat<int64>().setConstant(12345);
+  seed.flat<int64_t>().setConstant(12345);
 
   TF_CHECK_OK(
       NodeBuilder("KMC2ChainInitializationOp", "KMC2ChainInitialization")
@@ -132,20 +131,18 @@ Graph* SetUpKMC2Initialization(int num_points) {
 }
 
 template <int num_points, int num_to_sample, int num_dims>
-void BM_KMC2Initialization(int iters) {
-  testing::StopTiming();
-  testing::ItemsProcessed(static_cast<int64>(iters) * num_points * num_dims *
-                          num_to_sample);
-  testing::UseRealTime();
+void BM_KMC2Initialization(::testing::benchmark::State& state) {
   Graph* g = SetUpKMC2Initialization(num_points);
-  testing::StartTiming();
-  test::Benchmark("cpu", g).Run(iters);
+  test::Benchmark("cpu", g, /*old_benchmark_api=*/false).Run(state);
+  state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) *
+                          num_points * num_dims * num_to_sample);
 }
-#define BENCHMARK_KMC2(p, c, d)                           \
-  void BM_KMC2Initialization_##p##_##c##_##d(int iters) { \
-    BM_KMC2Initialization<p, c, d>(iters);                \
-  }                                                       \
-  BENCHMARK(BM_KMC2Initialization_##p##_##c##_##d);
+#define BENCHMARK_KMC2(p, c, d)               \
+  void BM_KMC2Initialization_##p##_##c##_##d( \
+      ::testing::benchmark::State& state) {   \
+    BM_KMC2Initialization<p, c, d>(state);    \
+  }                                           \
+  BENCHMARK(BM_KMC2Initialization_##p##_##c##_##d)->UseRealTime();
 
 #define RUN_BM_KMC2Initialization                   \
   BENCHMARK_KMC2(k10Points, k2Centers, k100Dim);    \
@@ -180,7 +177,7 @@ Graph* SetUpNearestNeighbors(int num_dims, int num_points, int num_centers,
   Tensor top(DT_INT64, TensorShape({}));
   points.flat<float>().setRandom();
   centers.flat<float>().setRandom();
-  top.flat<int64>().setConstant(k);
+  top.flat<int64_t>().setConstant(k);
 
   TF_CHECK_OK(NodeBuilder("nearest_centers_op", "NearestNeighbors")
                   .Input(test::graph::Constant(g, points))
@@ -191,14 +188,11 @@ Graph* SetUpNearestNeighbors(int num_dims, int num_points, int num_centers,
 }
 
 template <int num_dims, int num_points, int num_centers, int k>
-void BM_NearestNeighbors(int iters) {
-  testing::StopTiming();
-  testing::ItemsProcessed(static_cast<int64>(iters) * num_points * num_dims *
-                          num_centers);
-  testing::UseRealTime();
+void BM_NearestNeighbors(::testing::benchmark::State& state) {
   Graph* g = SetUpNearestNeighbors(num_dims, num_points, num_centers, k);
-  testing::StartTiming();
-  test::Benchmark("cpu", g).Run(iters);
+  test::Benchmark("cpu", g, /*old_benchmark_api=*/false).Run(state);
+  state.SetItemsProcessed(static_cast<int64_t>(state.iterations()) *
+                          num_points * num_dims * num_centers);
 }
 
 constexpr int kTop1 = 1;
@@ -206,11 +200,12 @@ constexpr int kTop2 = 2;
 constexpr int kTop5 = 5;
 constexpr int kTop10 = 10;
 
-#define BENCHMARK_NEAREST_NEIGHBORS(d, p, c, k)              \
-  void BM_NearestNeighbors##d##_##p##_##c##_##k(int iters) { \
-    BM_NearestNeighbors<d, p, c, k>(iters);                  \
-  }                                                          \
-  BENCHMARK(BM_NearestNeighbors##d##_##p##_##c##_##k);
+#define BENCHMARK_NEAREST_NEIGHBORS(d, p, c, k)  \
+  void BM_NearestNeighbors##d##_##p##_##c##_##k( \
+      ::testing::benchmark::State& state) {      \
+    BM_NearestNeighbors<d, p, c, k>(state);      \
+  }                                              \
+  BENCHMARK(BM_NearestNeighbors##d##_##p##_##c##_##k)->UseRealTime();
 
 #define RUN_BM_NearestNeighbors(k)                                 \
   BENCHMARK_NEAREST_NEIGHBORS(k100Dim, k1kPoints, k100Centers, k); \

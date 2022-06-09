@@ -5,13 +5,11 @@
 #ifndef CONTENT_WEB_TEST_RENDERER_FAKE_SCREEN_ORIENTATION_IMPL_H_
 #define CONTENT_WEB_TEST_RENDERER_FAKE_SCREEN_ORIENTATION_IMPL_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/device/public/mojom/screen_orientation_lock_types.mojom.h"
-#include "third_party/blink/public/mojom/widget/screen_orientation.mojom.h"
+#include "ui/display/mojom/screen_orientation.mojom.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -33,9 +31,9 @@ class FakeScreenOrientationImpl : public device::mojom::ScreenOrientation {
 
   void ResetData();
   bool UpdateDeviceOrientation(blink::WebView* web_view,
-                               blink::mojom::ScreenOrientation orientation);
+                               display::mojom::ScreenOrientation orientation);
 
-  absl::optional<blink::mojom::ScreenOrientation> CurrentOrientationType()
+  absl::optional<display::mojom::ScreenOrientation> CurrentOrientationType()
       const;
   bool IsDisabled() const { return is_disabled_; }
   void SetDisabled(blink::WebView* web_view, bool disabled);
@@ -53,17 +51,17 @@ class FakeScreenOrientationImpl : public device::mojom::ScreenOrientation {
                       LockOrientationCallback callback);
   void ResetLockSync();
 
-  bool UpdateScreenOrientation(blink::mojom::ScreenOrientation);
-  bool IsOrientationAllowedByCurrentLock(blink::mojom::ScreenOrientation);
-  blink::mojom::ScreenOrientation SuitableOrientationForCurrentLock();
+  bool UpdateScreenOrientation(display::mojom::ScreenOrientation);
+  bool IsOrientationAllowedByCurrentLock(display::mojom::ScreenOrientation);
+  display::mojom::ScreenOrientation SuitableOrientationForCurrentLock();
 
   blink::WebView* web_view_ = nullptr;
   device::mojom::ScreenOrientationLockType current_lock_ =
       device::mojom::ScreenOrientationLockType::DEFAULT;
-  blink::mojom::ScreenOrientation device_orientation_ =
-      blink::mojom::ScreenOrientation::kPortraitPrimary;
-  blink::mojom::ScreenOrientation current_orientation_ =
-      blink::mojom::ScreenOrientation::kPortraitPrimary;
+  display::mojom::ScreenOrientation device_orientation_ =
+      display::mojom::ScreenOrientation::kPortraitPrimary;
+  display::mojom::ScreenOrientation current_orientation_ =
+      display::mojom::ScreenOrientation::kPortraitPrimary;
   bool is_disabled_ = false;
   mojo::AssociatedReceiverSet<device::mojom::ScreenOrientation> receivers_;
 };

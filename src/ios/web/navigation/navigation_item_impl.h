@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "ios/web/navigation/error_retry_state_machine.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -72,18 +71,6 @@ class NavigationItemImpl : public web::NavigationItem {
   void SetSerializedStateObject(NSString* serialized_state_object);
   NSString* GetSerializedStateObject() const;
 
-  // Whether or not this item was created by calling history.pushState().
-  void SetIsCreatedFromPushState(bool push_state);
-  bool IsCreatedFromPushState() const;
-
-  // Whether the state for this navigation has been changed by
-  // history.replaceState().
-  // TODO(crbug.com/659816): This state is only tracked because of flaky early
-  // page script injection.  Once the root cause of this flake is found, this
-  // can be removed.
-  void SetHasStateBeenReplaced(bool replace_state);
-  bool HasStateBeenReplaced() const;
-
   // Whether this navigation is the result of a hash change.
   void SetIsCreatedFromHashChange(bool hash_change);
   bool IsCreatedFromHashChange() const;
@@ -116,10 +103,6 @@ class NavigationItemImpl : public web::NavigationItem {
   // Once a navigation item is committed, we should no longer track
   // non-persisted state, as documented on the members below.
   void ResetForCommit();
-
-  // Returns the state machine that manages the displaying and retrying of load
-  // error for this item.
-  ErrorRetryStateMachine& error_retry_state_machine();
 
   // Returns the title string to be used for a page with |url| if that page
   // doesn't specify a title.
@@ -159,13 +142,10 @@ class NavigationItemImpl : public web::NavigationItem {
   NSMutableDictionary* http_request_headers_;
 
   NSString* serialized_state_object_;
-  bool is_created_from_push_state_;
-  bool has_state_been_replaced_;
   bool is_created_from_hash_change_;
   bool should_skip_repost_form_confirmation_;
   bool should_skip_serialization_;
   NSData* post_data_;
-  ErrorRetryStateMachine error_retry_state_machine_;
 
   // The navigation initiation type of the item.  This decides whether the URL
   // should be displayed before the navigation commits.  It is cleared in

@@ -11,9 +11,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -24,21 +25,27 @@ namespace media {
 class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
  public:
   explicit MockGpuVideoAcceleratorFactories(gpu::SharedImageInterface* sii);
+
+  MockGpuVideoAcceleratorFactories(const MockGpuVideoAcceleratorFactories&) =
+      delete;
+  MockGpuVideoAcceleratorFactories& operator=(
+      const MockGpuVideoAcceleratorFactories&) = delete;
+
   ~MockGpuVideoAcceleratorFactories() override;
 
-  bool IsGpuVideoAcceleratorEnabled() override;
+  bool IsGpuVideoDecodeAcceleratorEnabled() override;
+  bool IsGpuVideoEncodeAcceleratorEnabled() override;
 
-  MOCK_METHOD0(GetChannelToken, base::UnguessableToken());
+  MOCK_METHOD1(GetChannelToken,
+               void(gpu::mojom::GpuChannel::GetChannelTokenCallback));
   MOCK_METHOD0(GetCommandBufferRouteId, int32_t());
 
-  MOCK_METHOD2(IsDecoderConfigSupported,
-               Supported(VideoDecoderImplementation,
-                         const VideoDecoderConfig&));
+  MOCK_METHOD1(IsDecoderConfigSupported, Supported(const VideoDecoderConfig&));
+  MOCK_METHOD0(GetDecoderType, VideoDecoderType());
   MOCK_METHOD0(IsDecoderSupportKnown, bool());
   MOCK_METHOD1(NotifyDecoderSupportKnown, void(base::OnceClosure));
-  MOCK_METHOD3(CreateVideoDecoder,
+  MOCK_METHOD2(CreateVideoDecoder,
                std::unique_ptr<media::VideoDecoder>(MediaLog*,
-                                                    VideoDecoderImplementation,
                                                     RequestOverlayInfoCB));
 
   MOCK_METHOD0(IsEncoderSupportKnown, bool());
@@ -77,6 +84,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     fail_to_allocate_gpu_memory_buffer_ = fail;
   }
 
+  void SetFailToMapGpuMemoryBufferForTesting(bool fail) {
+    fail_to_map_gpu_memory_buffer_ = fail;
+  }
+
   void SetGpuMemoryBuffersInUseByMacOSWindowServer(bool in_use);
 
   // Allocate & return a read-only shared memory region
@@ -94,14 +105,14 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
-
   base::Lock lock_;
   OutputFormat video_frame_output_format_ = OutputFormat::I420;
 
   bool fail_to_allocate_gpu_memory_buffer_ = false;
 
-  gpu::SharedImageInterface* sii_;
+  bool fail_to_map_gpu_memory_buffer_ = false;
+
+  raw_ptr<gpu::SharedImageInterface> sii_;
 
   std::vector<gfx::GpuMemoryBuffer*> created_memory_buffers_;
 };

@@ -10,12 +10,13 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "components/find_in_page/find_result_observer.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "weblayer/browser/i18n_util.h"
@@ -29,10 +30,6 @@
 namespace js_injection {
 class JsCommunicationHost;
 }
-
-namespace autofill {
-class AutofillProvider;
-}  // namespace autofill
 
 namespace blink {
 namespace web_pref {
@@ -108,6 +105,10 @@ class TabImpl : public Tab,
   explicit TabImpl(ProfileImpl* profile,
                    std::unique_ptr<content::WebContents> web_contents,
                    const std::string& guid = std::string());
+
+  TabImpl(const TabImpl&) = delete;
+  TabImpl& operator=(const TabImpl&) = delete;
+
   ~TabImpl() override;
 
   // Returns the TabImpl from the specified WebContents (which may be null), or
@@ -229,6 +230,8 @@ class TabImpl : public Tab,
       const std::u16string& js_object_name) override;
   std::unique_ptr<FaviconFetcher> CreateFaviconFetcher(
       FaviconFetcherDelegate* delegate) override;
+  void SetTranslateTargetLanguage(
+      const std::string& translate_target_lang) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
@@ -239,8 +242,10 @@ class TabImpl : public Tab,
   // Executes |script| with a user gesture.
   void ExecuteScriptWithUserGestureForTests(const std::u16string& script);
 
+#if defined(OS_ANDROID)
   // Initializes the autofill system for tests.
   void InitializeAutofillForTests();
+#endif  // defined(OS_ANDROID)
 
  private:
   // content::WebContentsDelegate:
@@ -252,11 +257,13 @@ class TabImpl : public Tab,
                               content::InvalidateTypes changed_flags) override;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* web_contents) override;
-  content::ColorChooser* OpenColorChooser(
+#if defined(OS_ANDROID)
+  std::unique_ptr<content::ColorChooser> OpenColorChooser(
       content::WebContents* web_contents,
       SkColor color,
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
       override;
+#endif
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -322,7 +329,8 @@ class TabImpl : public Tab,
 #endif
 
   // content::WebContentsObserver:
-  void RenderProcessGone(base::TerminationStatus status) override;
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override;
   void DidChangeVisibleSecurityState() override;
 
   // find_in_page::FindResultObserver:
@@ -342,8 +350,6 @@ class TabImpl : public Tab,
 
   void UpdateRendererPrefs(bool should_sync_prefs);
 
-  void InitializeAutofillDriver();
-
   // Returns the FindTabHelper for the page, or null if none exists.
   find_in_page::FindTabHelper* GetFindTabHelper();
 
@@ -351,6 +357,7 @@ class TabImpl : public Tab,
       content::WebContents* web_contents);
 
 #if defined(OS_ANDROID)
+  void InitializeAutofillDriver();
   void SetBrowserControlsConstraint(ControlsVisibilityReason reason,
                                     cc::BrowserControlsState constraint);
 #endif
@@ -361,20 +368,21 @@ class TabImpl : public Tab,
 
   void EnterFullscreenImpl();
 
-  BrowserImpl* browser_ = nullptr;
-  ErrorPageDelegate* error_page_delegate_ = nullptr;
-  FullscreenDelegate* fullscreen_delegate_ = nullptr;
-  NewTabDelegate* new_tab_delegate_ = nullptr;
-  GoogleAccountsDelegate* google_accounts_delegate_ = nullptr;
-  ProfileImpl* profile_;
+  raw_ptr<BrowserImpl> browser_ = nullptr;
+  raw_ptr<ErrorPageDelegate> error_page_delegate_ = nullptr;
+  raw_ptr<FullscreenDelegate> fullscreen_delegate_ = nullptr;
+  raw_ptr<NewTabDelegate> new_tab_delegate_ = nullptr;
+  raw_ptr<GoogleAccountsDelegate> google_accounts_delegate_ = nullptr;
+  raw_ptr<ProfileImpl> profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
   base::ObserverList<TabObserver>::Unchecked observers_;
   base::CallbackListSubscription locale_change_subscription_;
 
 #if defined(OS_ANDROID)
-  BrowserControlsContainerView* top_controls_container_view_ = nullptr;
-  BrowserControlsContainerView* bottom_controls_container_view_ = nullptr;
+  raw_ptr<BrowserControlsContainerView> top_controls_container_view_ = nullptr;
+  raw_ptr<BrowserControlsContainerView> bottom_controls_container_view_ =
+      nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
   std::unique_ptr<BrowserControlsNavigationStateHandler>
       browser_controls_navigation_state_handler_;
@@ -407,8 +415,6 @@ class TabImpl : public Tab,
   std::unique_ptr<js_injection::JsCommunicationHost> js_communication_host_;
 
   base::WeakPtrFactory<TabImpl> weak_ptr_factory_for_fullscreen_exit_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TabImpl);
 };
 
 }  // namespace weblayer

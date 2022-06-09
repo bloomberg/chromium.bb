@@ -61,6 +61,7 @@ import org.chromium.chrome.browser.ui.AppLaunchDrawBlocker.BlockDrawForInitialTa
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.search_engines.TemplateUrlService;
 
 import java.util.List;
 
@@ -75,6 +76,8 @@ public class AppLaunchDrawBlockerUnitTest {
     public JniMocker mJniMocker = new JniMocker();
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+    @Rule
+    public TestRule mCommandLineFlagsRule = CommandLineFlags.getTestRule();
 
     @Mock
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -86,6 +89,8 @@ public class AppLaunchDrawBlockerUnitTest {
     private Intent mIntent;
     @Mock
     private TemplateUrlServiceFactory.Natives mTemplateUrlServiceFactory;
+    @Mock
+    private TemplateUrlService mTemplateUrlService;
     @Mock
     private Supplier<Boolean> mShouldIgnoreIntentSupplier;
     @Mock
@@ -109,6 +114,7 @@ public class AppLaunchDrawBlockerUnitTest {
     public void setUp() {
         when(mView.getViewTreeObserver()).thenReturn(mViewTreeObserver);
         mJniMocker.mock(TemplateUrlServiceFactoryJni.TEST_HOOKS, mTemplateUrlServiceFactory);
+        TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         when(mShouldIgnoreIntentSupplier.get()).thenReturn(false);
         when(mIsTabletSupplier.get()).thenReturn(false);
         when(mShouldShowTabSwitcherOnStartSupplier.get()).thenReturn(false);
@@ -126,7 +132,7 @@ public class AppLaunchDrawBlockerUnitTest {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO, false);
 
-        when(mTemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
+        when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(true);
         mStartStopWithNativeObserver.onStopWithNative();
 
         assertTrue("SearchEngineHadLogo pref isn't written.",
@@ -298,7 +304,6 @@ public class AppLaunchDrawBlockerUnitTest {
         mIntent = IntentHandler.createTrustedOpenNewTabIntent(
                 ApplicationProvider.getApplicationContext(), true);
         mIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_LAUNCH_NEW_INCOGNITO_TAB, true);
-        IntentHandler.setForceIntentSenderChromeToTrue(true);
         when(mShouldIgnoreIntentSupplier.get()).thenReturn(false);
 
         mInflationObserver.onPostInflationStartup();
@@ -308,8 +313,6 @@ public class AppLaunchDrawBlockerUnitTest {
 
         assertAccuracyHistogram(false, false);
         assertDurationHistogram(false, 0);
-
-        IntentHandler.setForceIntentSenderChromeToTrue(false);
     }
 
     @Test
@@ -386,7 +389,7 @@ public class AppLaunchDrawBlockerUnitTest {
     private void setSearchEngineHasLogo(boolean hasLogo) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO, hasLogo);
-        when(mTemplateUrlServiceFactory.doesDefaultSearchEngineHaveLogo()).thenReturn(hasLogo);
+        when(mTemplateUrlService.doesDefaultSearchEngineHaveLogo()).thenReturn(hasLogo);
     }
 
     /**

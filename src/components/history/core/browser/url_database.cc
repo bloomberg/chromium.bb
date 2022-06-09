@@ -48,7 +48,7 @@ URLDatabase::~URLDatabase() = default;
 
 // Convenience to fill a URLRow. Must be in sync with the fields in
 // kURLRowFields.
-void URLDatabase::FillURLRow(const sql::Statement& s, URLRow* i) {
+void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
   DCHECK(i);
   i->set_id(s.ColumnInt64(0));
   i->set_url(GURL(s.ColumnString(1)));
@@ -191,14 +191,14 @@ URLID URLDatabase::AddURLInternal(const URLRow& info, bool is_temporary) {
 }
 
 bool URLDatabase::URLTableContainsAutoincrement() {
-  // sqlite_master has columns:
+  // sqlite_schema has columns:
   //   type - "index" or "table".
   //   name - name of created element.
   //   tbl_name - name of element, or target table in case of index.
   //   rootpage - root page of the element in database file.
   //   sql - SQL to create the element.
   sql::Statement statement(GetDB().GetUniqueStatement(
-      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'urls'"));
+      "SELECT sql FROM sqlite_schema WHERE type = 'table' AND name = 'urls'"));
 
   // urls table does not exist.
   if (!statement.Step())
@@ -404,20 +404,18 @@ bool URLDatabase::FindShortestURLFromBase(const std::string& base,
   return true;
 }
 
-bool URLDatabase::GetTextMatches(const std::u16string& query,
-                                 URLRows* results) {
-  return GetTextMatchesWithAlgorithm(
-      query, query_parser::MatchingAlgorithm::DEFAULT, results);
+URLRows URLDatabase::GetTextMatches(const std::u16string& query) {
+  return GetTextMatchesWithAlgorithm(query,
+                                     query_parser::MatchingAlgorithm::DEFAULT);
 }
 
-bool URLDatabase::GetTextMatchesWithAlgorithm(
+URLRows URLDatabase::GetTextMatchesWithAlgorithm(
     const std::u16string& query,
-    query_parser::MatchingAlgorithm algorithm,
-    URLRows* results) {
+    query_parser::MatchingAlgorithm algorithm) {
   query_parser::QueryNodeVector query_nodes;
   query_parser::QueryParser::ParseQueryNodes(query, algorithm, &query_nodes);
 
-  results->clear();
+  URLRows results;
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls WHERE hidden = 0"));
 
@@ -440,10 +438,10 @@ bool URLDatabase::GetTextMatchesWithAlgorithm(
       URLResult info;
       FillURLRow(statement, &info);
       if (info.url().is_valid())
-        results->push_back(info);
+        results.push_back(info);
     }
   }
-  return !results->empty();
+  return results;
 }
 
 bool URLDatabase::InitKeywordSearchTermsTable() {
@@ -656,7 +654,7 @@ URLDatabase::GetMostRecentNormalizedKeywordSearchTerms(
             kv.keyword_id = ?
             AND u.last_visit_time > ?
             AND kv.normalized_term IS NOT NULL
-            AND kv.normalized_term != ""
+            AND kv.normalized_term != ''
           GROUP BY normalized_term, rnd_last_visit_time
         )
       GROUP BY normalized_term
@@ -706,11 +704,6 @@ bool URLDatabase::DeleteKeywordSearchTermForURL(URLID url_id) {
       SQL_FROM_HERE, "DELETE FROM keyword_search_terms WHERE url_id=?"));
   statement.BindInt64(0, url_id);
   return statement.Run();
-}
-
-bool URLDatabase::GetVisitsForUrl2(URLID url_id, VisitVector* visits) {
-  NOTREACHED();
-  return false;
 }
 
 bool URLDatabase::DropStarredIDFromURLs() {
@@ -793,11 +786,10 @@ const int kLowQualityMatchVisitLimit = 4;
 const int kLowQualityMatchAgeLimitInDays = 3;
 
 const base::TimeDelta kAutocompleteDuplicateVisitIntervalThreshold =
-    base::TimeDelta::FromMinutes(5);
+    base::Minutes(5);
 
 base::Time AutocompleteAgeThreshold() {
-  return (base::Time::Now() -
-          base::TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays));
+  return (base::Time::Now() - base::Days(kLowQualityMatchAgeLimitInDays));
 }
 
 bool RowQualifiesAsSignificant(const URLRow& row,

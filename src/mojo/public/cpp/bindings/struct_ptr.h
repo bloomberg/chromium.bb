@@ -11,11 +11,9 @@
 #include <new>
 
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/template_util.h"
 #include "mojo/public/cpp/bindings/lib/hash_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 namespace mojo {
@@ -43,6 +41,9 @@ class StructPtr {
 
   StructPtr() = default;
   StructPtr(std::nullptr_t) {}
+
+  StructPtr(const StructPtr&) = delete;
+  StructPtr& operator=(const StructPtr&) = delete;
 
   ~StructPtr() = default;
 
@@ -125,8 +126,6 @@ class StructPtr {
   }
 
   std::unique_ptr<Struct> ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(StructPtr);
 };
 
 // Designed to be used when Struct is small and copyable.
@@ -141,6 +140,9 @@ class InlinedStructPtr {
 
   InlinedStructPtr() = default;
   InlinedStructPtr(std::nullptr_t) {}
+
+  InlinedStructPtr(const InlinedStructPtr&) = delete;
+  InlinedStructPtr& operator=(const InlinedStructPtr&) = delete;
 
   ~InlinedStructPtr() = default;
 
@@ -233,8 +235,6 @@ class InlinedStructPtr {
 
   mutable Struct value_;
   State state_ = NIL;
-
-  DISALLOW_COPY_AND_ASSIGN(InlinedStructPtr);
 };
 
 namespace internal {

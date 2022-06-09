@@ -82,8 +82,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Terminal system app commands
-#define IDC_TERMINAL_SPLIT_HORIZONTAL   34070
-#define IDC_TERMINAL_SPLIT_VERTICAL     34071
+#define IDC_TERMINAL_LINUX   34070
+#define IDC_TERMINAL_SSH     34071
 
 // Move window to other user commands
 #define IDC_VISIT_DESKTOP_OF_LRU_USER_2 34080
@@ -125,6 +125,7 @@
 #define IDC_SHARING_HUB                 35028
 #define IDC_SHARING_HUB_MENU            35029
 #define IDC_VIRTUAL_CARD_MANUAL_FALLBACK 35030
+#define IDC_SHARING_HUB_SCREENSHOT      35031
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -162,6 +163,7 @@
 #define IDC_FOCUS_PREVIOUS_PANE         39005
 #define IDC_FOCUS_BOOKMARKS             39006
 #define IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY 39007
+#define IDC_FOCUS_WEB_CONTENTS_PANE     39009
 
 // Show various bits of UI
 #define IDC_OPEN_FILE                   40000
@@ -222,8 +224,8 @@
 #define IDC_SHOW_FULL_URLS             40259
 #define IDC_CARET_BROWSING_TOGGLE      40260
 #define IDC_TOGGLE_COMMANDER     40261
-#define IDC_SHOW_KALEIDOSCOPE          40262
 #define IDC_CHROME_TIPS                40263
+#define IDC_CHROME_WHATS_NEW           40264
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -325,10 +327,12 @@
 #define IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS 50155
 #define IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION 50156
 #define IDC_CONTENT_CONTEXT_SPELLING_TOGGLE 50157
+// A gap here. Feel free to insert new IDs.
 #define IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE 50161
 #define IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP 50162
 #define IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP 50163
-// A gap here. Feel free to insert new IDs.
+#define IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH 50164
+#define IDC_CONTENT_CONTEXT_WEB_REGION_SEARCH 50165
 #define IDC_CONTENT_CONTEXT_GENERATEPASSWORD 50166
 #define IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN 50167
 #define IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS 50168
@@ -362,26 +366,28 @@
 #define IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW 51001
 #define IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO 51002
 #define IDC_BOOKMARK_BAR_OPEN_INCOGNITO 51003
-#define IDC_BOOKMARK_BAR_RENAME_FOLDER 51004
-#define IDC_BOOKMARK_BAR_EDIT 51005
-#define IDC_BOOKMARK_BAR_REMOVE 51006
-#define IDC_BOOKMARK_BAR_UNDO 51007
-#define IDC_BOOKMARK_BAR_REDO 51008
-#define IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK 51009
-#define IDC_BOOKMARK_BAR_NEW_FOLDER 51010
-#define IDC_BOOKMARK_MANAGER 51011
-#define IDC_BOOKMARK_BAR_ALWAYS_SHOW 51012
-#define IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT 51013
-#define IDC_BOOKMARK_BAR_SHOW_READING_LIST 51014
-#define IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS 51015
+#define IDC_BOOKMARK_BAR_OPEN_ALL_NEW_TAB_GROUP 51004
+#define IDC_BOOKMARK_BAR_RENAME_FOLDER 51005
+#define IDC_BOOKMARK_BAR_EDIT 51006
+#define IDC_BOOKMARK_BAR_REMOVE 51007
+#define IDC_BOOKMARK_BAR_UNDO 51008
+#define IDC_BOOKMARK_BAR_REDO 51009
+#define IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK 51010
+#define IDC_BOOKMARK_BAR_NEW_FOLDER 51011
+#define IDC_BOOKMARK_MANAGER 51012
+#define IDC_BOOKMARK_BAR_ALWAYS_SHOW 51013
+#define IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT 51014
+#define IDC_BOOKMARK_BAR_SHOW_READING_LIST 51015
+#define IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS 51016
 // Context menu items for Sharing
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE 51030
 #define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES 51031
 #define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE 51032
 #define IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES 51033
 #define IDC_CONTENT_CONTEXT_GENERATE_QR_CODE 51034
+#define IDC_CONTENT_CONTEXT_SHARING_SUBMENU 51035
 // Context menu item to show the clipboard history menu
-#define IDC_CONTENT_CLIPBOARD_HISTORY_MENU 51035
+#define IDC_CONTENT_CLIPBOARD_HISTORY_MENU 51036
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100
@@ -397,6 +403,11 @@
 #define IDC_MEDIA_ROUTER_SHOWN_BY_POLICY 51206
 #define IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR 51207
 #define IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING 51208
+
+// Context menu items for media toolbar button
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#define IDC_MEDIA_TOOLBAR_CONTEXT_REPORT_CAST_ISSUE 51209
+#endif
 
 // Context menu items for media stream status tray
 #define IDC_MEDIA_STREAM_DEVICE_STATUS_TRAY 51300
@@ -446,11 +457,15 @@
 // NOTE: The last valid command value is 57343 (0xDFFF)
 // See http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx
 
-// Starting command id for menus showing bookmarks (such as the wrench menu).
-// While command ids passed to Windows functions must not be higher than 0xDFFF,
-// these IDs are not exposed to the native system and thus can be in this
-// otherwise-reserved range. No command used in a menu (such as the wrench menu)
-// should be higher than this, otherwise it'll conflict.
-#define IDC_FIRST_BOOKMARK_MENU 0xE000
+// Starting command id for menus showing an arbitrarily high (variable) number
+// of menu items. Currently, this includes the recent tabs and bookmarks menus.
+// While command ids passed to Windows functions must not be higher than
+// 0xDFFF, these IDs are not exposed to the native system and thus can be in
+// this otherwise-reserved range.
+// WARNING: No command used in a bounded menu should be higher than this,
+// otherwise it'll conflict. Unbounded menus must also avoid conflicting with
+// each other, by only using every Nth id (where N is the number of unbounded
+// menus).
+#define IDC_FIRST_UNBOUNDED_MENU 0xE000
 
 #endif  // CHROME_APP_CHROME_COMMAND_IDS_H_

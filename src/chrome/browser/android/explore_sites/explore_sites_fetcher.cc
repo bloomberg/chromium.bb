@@ -33,6 +33,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace explore_sites {
@@ -61,6 +62,8 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
           }
           policy {
             cookies_allowed: NO
+            policy_exception_justification:
+              "TODO(crbug.com/1231780): Add this field."
           })");
 
 }  // namespace

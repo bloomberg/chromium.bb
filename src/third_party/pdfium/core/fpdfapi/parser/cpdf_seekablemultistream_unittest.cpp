@@ -4,7 +4,6 @@
 
 #include "core/fpdfapi/parser/cpdf_seekablemultistream.h"
 
-#include <memory>
 #include <vector>
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -35,17 +34,15 @@ TEST(CXFAFileReadTest, EmptyStreams) {
 
 TEST(CXFAFileReadTest, NormalStreams) {
   std::vector<const CPDF_Stream*> streams;
-  auto stream1 = pdfium::MakeRetain<CPDF_Stream>();
-  auto stream2 = pdfium::MakeRetain<CPDF_Stream>();
-  auto stream3 = pdfium::MakeRetain<CPDF_Stream>();
-
   // 16 chars total.
-  stream1->InitStream(ByteStringView("one t").raw_span(),
-                      pdfium::MakeRetain<CPDF_Dictionary>());
-  stream2->InitStream(ByteStringView("wo ").raw_span(),
-                      pdfium::MakeRetain<CPDF_Dictionary>());
-  stream3->InitStream(ByteStringView("three!!!").raw_span(),
-                      pdfium::MakeRetain<CPDF_Dictionary>());
+  auto stream1 =
+      pdfium::MakeRetain<CPDF_Stream>(ByteStringView("one t").raw_span(),
+                                      pdfium::MakeRetain<CPDF_Dictionary>());
+  auto stream2 = pdfium::MakeRetain<CPDF_Stream>(
+      ByteStringView("wo ").raw_span(), pdfium::MakeRetain<CPDF_Dictionary>());
+  auto stream3 =
+      pdfium::MakeRetain<CPDF_Stream>(ByteStringView("three!!!").raw_span(),
+                                      pdfium::MakeRetain<CPDF_Dictionary>());
 
   streams.push_back(stream1.Get());
   streams.push_back(stream2.Get());

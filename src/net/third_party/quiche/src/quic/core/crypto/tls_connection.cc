@@ -5,6 +5,7 @@
 #include "quic/core/crypto/tls_connection.h"
 
 #include "absl/strings/string_view.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
@@ -88,22 +89,44 @@ enum ssl_encryption_level_t TlsConnection::BoringEncryptionLevel(
 }
 
 TlsConnection::TlsConnection(SSL_CTX* ssl_ctx,
-                             TlsConnection::Delegate* delegate)
-    : delegate_(delegate), ssl_(SSL_new(ssl_ctx)) {
+                             TlsConnection::Delegate* delegate,
+                             QuicSSLConfig ssl_config)
+    : delegate_(delegate),
+      ssl_(SSL_new(ssl_ctx)),
+      ssl_config_(std::move(ssl_config)) {
   SSL_set_ex_data(
       ssl(), SslIndexSingleton::GetInstance()->ssl_ex_data_index_connection(),
       this);
+  if (ssl_config_.early_data_enabled.has_value()) {
+    const int early_data_enabled = *ssl_config_.early_data_enabled ? 1 : 0;
+    SSL_set_early_data_enabled(ssl(), early_data_enabled);
+  }
+  if (ssl_config_.signing_algorithm_prefs.has_value()) {
+    SSL_set_signing_algorithm_prefs(
+        ssl(), ssl_config_.signing_algorithm_prefs->data(),
+        ssl_config_.signing_algorithm_prefs->size());
+  }
+  if (ssl_config.disable_ticket_support.has_value()) {
+    if (*ssl_config.disable_ticket_support) {
+      SSL_set_options(ssl(), SSL_OP_NO_TICKET);
+    }
+  }
 }
+
+void TlsConnection::EnableInfoCallback() {
+  SSL_set_info_callback(
+      ssl(), +[](const SSL* ssl, int type, int value) {
+        ConnectionFromSsl(ssl)->delegate_->InfoCallback(type, value);
+      });
+}
+
 // static
-bssl::UniquePtr<SSL_CTX> TlsConnection::CreateSslCtx(int cert_verify_mode) {
+bssl::UniquePtr<SSL_CTX> TlsConnection::CreateSslCtx() {
   CRYPTO_library_init();
   bssl::UniquePtr<SSL_CTX> ssl_ctx(SSL_CTX_new(TLS_with_buffers_method()));
   SSL_CTX_set_min_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
   SSL_CTX_set_max_proto_version(ssl_ctx.get(), TLS1_3_VERSION);
   SSL_CTX_set_quic_method(ssl_ctx.get(), &kSslQuicMethod);
-  if (cert_verify_mode != SSL_VERIFY_NONE) {
-    SSL_CTX_set_custom_verify(ssl_ctx.get(), cert_verify_mode, &VerifyCallback);
-  }
   return ssl_ctx;
 }
 

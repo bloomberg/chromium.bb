@@ -7,6 +7,8 @@
 #ifndef CORE_FXGE_SYSTEMFONTINFO_IFACE_H_
 #define CORE_FXGE_SYSTEMFONTINFO_IFACE_H_
 
+#include "core/fxcrt/bytestring.h"
+#include "core/fxcrt/fx_codepage_forward.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "third_party/base/span.h"
 
@@ -20,15 +22,15 @@ class SystemFontInfoIface {
   virtual bool EnumFontList(CFX_FontMapper* pMapper) = 0;
   virtual void* MapFont(int weight,
                         bool bItalic,
-                        int charset,
+                        FX_Charset charset,
                         int pitch_family,
-                        const char* face) = 0;
-  virtual void* GetFont(const char* face) = 0;
+                        const ByteString& face) = 0;
+  virtual void* GetFont(const ByteString& face) = 0;
   virtual uint32_t GetFontData(void* hFont,
                                uint32_t table,
                                pdfium::span<uint8_t> buffer) = 0;
   virtual bool GetFaceName(void* hFont, ByteString* name) = 0;
-  virtual bool GetFontCharset(void* hFont, int* charset) = 0;
+  virtual bool GetFontCharset(void* hFont, FX_Charset* charset) = 0;
   virtual void DeleteFont(void* hFont) = 0;
 };
 

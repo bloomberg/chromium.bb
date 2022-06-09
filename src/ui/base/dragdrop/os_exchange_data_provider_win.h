@@ -17,7 +17,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -137,6 +136,10 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
   explicit OSExchangeDataProviderWin(IDataObject* source);
   OSExchangeDataProviderWin();
 
+  OSExchangeDataProviderWin(const OSExchangeDataProviderWin&) = delete;
+  OSExchangeDataProviderWin& operator=(const OSExchangeDataProviderWin&) =
+      delete;
+
   ~OSExchangeDataProviderWin() override;
 
   IDataObject* data_object() const { return data_.get(); }
@@ -159,6 +162,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
       DWORD tymed) override;
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
+  void SetCustomData(const FORMATETC& format,
+                     const std::u16string& data) override;
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
   void SetHtml(const std::u16string& html, const GURL& base_url) override;
@@ -177,6 +182,9 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
           callback) const override;
   bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
+  void EnumerateCustomData(std::vector<FORMATETC>* formats) const override;
+  bool GetCustomData(const FORMATETC& format,
+                     std::u16string* data) const override;
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const override;
   bool GetHtml(std::u16string* html, GURL* base_url) const override;
@@ -202,8 +210,6 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
 
   scoped_refptr<DataObjectImpl> data_;
   Microsoft::WRL::ComPtr<IDataObject> source_object_;
-
-  DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderWin);
 };
 
 }  // namespace ui

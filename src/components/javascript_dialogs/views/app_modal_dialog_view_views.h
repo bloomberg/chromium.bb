@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -28,6 +28,10 @@ class AppModalDialogViewViews : public AppModalDialogView,
                                 public views::DialogDelegate {
  public:
   explicit AppModalDialogViewViews(AppModalDialogController* controller);
+
+  AppModalDialogViewViews(const AppModalDialogViewViews&) = delete;
+  AppModalDialogViewViews& operator=(const AppModalDialogViewViews&) = delete;
+
   ~AppModalDialogViewViews() override;
 
   // AppModalDialogView:
@@ -56,9 +60,7 @@ class AppModalDialogViewViews : public AppModalDialogView,
 #endif  // IS_CHROMEOS_LACROS
 
   // The message box view whose commands we handle.
-  views::MessageBoxView* message_box_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppModalDialogViewViews);
+  raw_ptr<views::MessageBoxView> message_box_view_;
 };
 
 }  // namespace javascript_dialogs

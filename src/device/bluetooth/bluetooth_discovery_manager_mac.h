@@ -5,8 +5,6 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_MANAGER_MAC_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DISCOVERY_MANAGER_MAC_H_
 
-#include "base/macros.h"
-
 @class IOBluetoothDevice;
 
 namespace device {
@@ -33,6 +31,10 @@ class BluetoothDiscoveryManagerMac {
     virtual ~Observer() {}
   };
 
+  BluetoothDiscoveryManagerMac(const BluetoothDiscoveryManagerMac&) = delete;
+  BluetoothDiscoveryManagerMac& operator=(const BluetoothDiscoveryManagerMac&) =
+      delete;
+
   virtual ~BluetoothDiscoveryManagerMac();
 
   // Returns true, if discovery is currently being performed.
@@ -57,9 +59,6 @@ class BluetoothDiscoveryManagerMac {
 
   // Observer interested in notifications from us.
   Observer* observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDiscoveryManagerMac);
 };
 
 }  // namespace device

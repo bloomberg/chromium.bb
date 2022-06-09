@@ -17,23 +17,23 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
-#include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/account_id/account_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kAppInstallUrl[] = "https://app.com/install";
@@ -41,8 +41,6 @@ const char kAppLaunchUrl[] = "https://app.com/launch";
 const char16_t kAppTitle[] = u"title.";
 const test::UIPath kNetworkConfigureScreenContinueButton = {"error-message",
                                                             "continueButton"};
-
-}  // namespace
 
 class WebKioskTest : public OobeBaseTest {
  public:
@@ -55,8 +53,8 @@ class WebKioskTest : public OobeBaseTest {
     needs_background_networking_ = true;
     skip_splash_wait_override_ =
         KioskLaunchController::SkipSplashScreenWaitForTesting();
-    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
-        base::TimeDelta::FromSeconds(0));
+    network_wait_override_ =
+        KioskLaunchController::SetNetworkWaitForTesting(base::Seconds(0));
   }
 
   WebKioskTest(const WebKioskTest&) = delete;
@@ -82,11 +80,11 @@ class WebKioskTest : public OobeBaseTest {
             kAppInstallUrl)};
 
     settings_ = std::make_unique<ScopedDeviceSettings>();
-    int ui_update_count = ash::LoginScreenTestApi::GetUiUpdateCount();
+    int ui_update_count = LoginScreenTestApi::GetUiUpdateCount();
     policy::SetDeviceLocalAccounts(settings_->owner_settings_service(),
                                    device_local_accounts);
     // Wait for the Kiosk App configuration to reload.
-    ash::LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
+    LoginScreenTestApi::WaitForUiUpdate(ui_update_count);
   }
 
   void MakeAppAlreadyInstalled() {
@@ -98,7 +96,7 @@ class WebKioskTest : public OobeBaseTest {
   }
 
   bool LaunchApp() {
-    return ash::LoginScreenTestApi::LaunchApp(
+    return LoginScreenTestApi::LaunchApp(
         WebKioskAppManager::Get()->GetAppByAccountId(account_id())->app_id());
   }
 
@@ -136,7 +134,7 @@ class WebKioskTest : public OobeBaseTest {
 
   void ExpectKeyboardConfig() {
     const keyboard::KeyboardConfig config =
-        ash::KeyboardController::Get()->GetKeyboardConfig();
+        KeyboardController::Get()->GetKeyboardConfig();
 
     // `auto_capitalize` is not controlled by the policy
     // 'VirtualKeyboardFeatures', and its default value remains true.
@@ -154,8 +152,7 @@ class WebKioskTest : public OobeBaseTest {
  private:
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
   DeviceStateMixin device_state_mixin_{
-      &mixin_host_,
-      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   const AccountId account_id_;
   std::unique_ptr<ScopedDeviceSettings> settings_;
 
@@ -218,8 +215,9 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, LaunchWithConfigureAcceleratorPressed) {
 
   // Block app launch after it is being installed.
   SetBlockAppLaunch(true);
-  test::ExecuteOobeJS(
-      "cr.ui.Oobe.handleAccelerator(\"app_launch_network_config\")");
+  OobeScreenWaiter(AppLaunchSplashScreenView::kScreenId).Wait();
+  ASSERT_TRUE(ash::LoginScreenTestApi::PressAccelerator(
+      ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)));
   WaitNetworkConfigureScreenAndContinueWithOnlineState(
       /* require_network*/ true);
   SetBlockAppLaunch(false);
@@ -233,13 +231,22 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest,
                        AlreadyInstalledWithConfigureAcceleratorPressed) {
   SetOnline(false);
   PrepareAppLaunch();
+  // Set the threshold to a max value to disable the offline message screen,
+  // otherwise it would interfere with app launch.
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->signin_screen_handler()
+      ->SetOfflineTimeoutForTesting(base::TimeDelta::Max());
   MakeAppAlreadyInstalled();
   LaunchApp();
 
   // Block app launch after it is being installed.
   SetBlockAppLaunch(true);
-  test::ExecuteOobeJS(
-      "cr.ui.Oobe.handleAccelerator(\"app_launch_network_config\")");
+  OobeScreenWaiter(AppLaunchSplashScreenView::kScreenId).Wait();
+
+  ASSERT_TRUE(ash::LoginScreenTestApi::PressAccelerator(
+      ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)));
+
   WaitNetworkConfigureScreenAndContinueWithOnlineState(
       /* require_network*/ false);
 
@@ -254,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, HiddenShelf) {
   KioskSessionInitializedWaiter().Wait();
 
   // The shelf should be hidden at the beginning.
-  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+  EXPECT_FALSE(ShelfTestApi().IsVisible());
 
   // Simulate the swipe-up gesture.
   EXPECT_EQ(BrowserList::GetInstance()->size(), 1U);
@@ -263,14 +270,14 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, HiddenShelf) {
   const gfx::Rect display_bounds = window->bounds();
   const gfx::Point start_point = gfx::Point(
       display_bounds.width() / 4,
-      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
+      display_bounds.bottom() - ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point.x(), start_point.y() - 80);
   ui::test::EventGenerator event_generator(window);
-  event_generator.GestureScrollSequence(
-      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+  event_generator.GestureScrollSequence(start_point, end_point,
+                                        base::Milliseconds(500), 4);
 
   // The shelf should be still hidden after the gesture.
-  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+  EXPECT_FALSE(ShelfTestApi().IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(WebKioskTest, KeyboardConfigPolicy) {
@@ -298,4 +305,5 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, OpenA11ySettings) {
   ASSERT_TRUE(settings_browser);
 }
 
-}  // namespace chromeos
+}  // namespace
+}  // namespace ash

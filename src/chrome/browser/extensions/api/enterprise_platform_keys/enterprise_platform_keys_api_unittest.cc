@@ -6,12 +6,17 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/ash/attestation/mock_tpm_challenge_key.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/fake_user_private_token_kpm_service.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_manager.h"
+#include "chrome/browser/ash/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
+#include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
@@ -34,12 +39,14 @@ namespace {
 
 const char kUserEmail[] = "test@google.com";
 
-void FakeRunCheckNotRegister(chromeos::attestation::AttestationKeyType key_type,
-                             Profile* profile,
-                             ash::attestation::TpmChallengeKeyCallback callback,
-                             const std::string& challenge,
-                             bool register_key,
-                             const std::string& key_name_for_spkac) {
+void FakeRunCheckNotRegister(
+    chromeos::attestation::AttestationKeyType key_type,
+    Profile* profile,
+    ash::attestation::TpmChallengeKeyCallback callback,
+    const std::string& challenge,
+    bool register_key,
+    const std::string& key_name_for_spkac,
+    const absl::optional<::attestation::DeviceTrustSignals>& signals) {
   EXPECT_FALSE(register_key);
   std::move(callback).Run(
       ash::attestation::TpmChallengeKeyResult::MakeChallengeResponse(
@@ -50,7 +57,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
  protected:
   EPKChallengeKeyTestBase()
       : extension_(ExtensionBuilder("Test").Build()),
-        fake_user_manager_(new ash::FakeChromeUserManager),
+        fake_user_manager_(new ash::FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
     stub_install_attributes_.SetCloudManaged("google.com", "device_id");
   }
@@ -59,6 +66,19 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     prefs_ = browser()->profile()->GetPrefs();
     SetAuthenticatedUser();
+
+    // UserPrivateTokenKeyPermissionsManagerService and the underlying
+    // KeyPermissionsManager are not actually used by *ChallengeKey* classes,
+    // but they are created as a part of KeystoreService, so just fake them out.
+    // It is ok to pass an unretained pointer because the factory should only be
+    // used during the tests' lifetime.
+    ash::platform_keys::UserPrivateTokenKeyPermissionsManagerServiceFactory::
+        GetInstance()
+            ->SetTestingFactory(
+                browser()->profile(),
+                base::BindRepeating(&EPKChallengeKeyTestBase::
+                                        CreateKeyPermissionsManagerService,
+                                    base::Unretained(this)));
   }
 
   void SetMockTpmChallenger() {
@@ -77,6 +97,13 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
     fake_user_manager_->AddUserWithAffiliation(
         AccountId::FromUserEmail(kUserEmail), true);
     return profile_manager()->CreateTestingProfile(kUserEmail);
+  }
+
+  std::unique_ptr<KeyedService> CreateKeyPermissionsManagerService(
+      content::BrowserContext* context) {
+    return std::make_unique<
+        ash::platform_keys::FakeUserPrivateTokenKeyPermissionsManagerService>(
+        &key_permissions_manager_);
   }
 
   // Derived classes can override this method to set the required authenticated
@@ -111,12 +138,11 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
                        extensions::api_test_utils::NONE);
     EXPECT_TRUE(function->GetError().empty())
         << "Unexpected error: " << function->GetError();
-    const base::Value* single_result = NULL;
-    if (function->GetResultList() != NULL &&
-        function->GetResultList()->Get(0, &single_result)) {
-      return single_result->DeepCopy();
+    if (function->GetResultList() &&
+        !function->GetResultList()->GetList().empty()) {
+      return function->GetResultList()->GetList()[0].DeepCopy();
     }
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<const extensions::Extension> extension_;
@@ -124,6 +150,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // fake_user_manager_ is owned by user_manager_enabler_.
   ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
+  ash::platform_keys::MockKeyPermissionsManager key_permissions_manager_;
   PrefService* prefs_ = nullptr;
   ash::attestation::MockTpmChallengeKey* mock_tpm_challenge_key_ = nullptr;
 };
@@ -190,7 +217,7 @@ TEST_F(EPKChallengeMachineKeyTest, KeyNotRegisteredByDefault) {
   SetMockTpmChallenger();
 
   base::ListValue allowlist;
-  allowlist.AppendString(extension_->id());
+  allowlist.Append(extension_->id());
   prefs_->Set(prefs::kAttestationExtensionAllowlist, allowlist);
 
   EXPECT_CALL(*mock_tpm_challenge_key_, BuildResponse)

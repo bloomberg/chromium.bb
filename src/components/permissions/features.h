@@ -13,13 +13,40 @@
 namespace permissions {
 namespace features {
 
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kBlockPromptsIfDismissedOften;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kBlockPromptsIfIgnoredOften;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kBlockRepeatedNotificationPermissionPrompts;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kOneTimeGeolocationPermission;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionChip;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kPermissionQuietChip;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kPermissionChipAutoDismiss;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<int> kPermissionChipAutoDismissDelay;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionChipGestureSensitive;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionChipRequestTypeSensitive;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::Feature kPermissionChipIsProminentStyle;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::Feature kPermissionPredictionServiceUseUrlOverride;
 
 #if defined(OS_ANDROID)
@@ -30,9 +57,14 @@ extern const base::Feature kRevertDSEAutomaticPermissions;
 }  // namespace features
 namespace feature_params {
 
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<std::string>
     kPermissionPredictionServiceUrlOverride;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<bool> kPermissionPredictionServiceUseJson;
 
 }  // namespace feature_params

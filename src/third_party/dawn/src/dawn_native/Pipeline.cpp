@@ -16,31 +16,85 @@
 
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/ShaderModule.h"
 
 namespace dawn_native {
-
     MaybeError ValidateProgrammableStage(DeviceBase* device,
                                          const ShaderModuleBase* module,
                                          const std::string& entryPoint,
+                                         uint32_t constantCount,
+                                         const ConstantEntry* constants,
                                          const PipelineLayoutBase* layout,
                                          SingleShaderStage stage) {
         DAWN_TRY(device->ValidateObject(module));
 
-        if (!module->HasEntryPoint(entryPoint)) {
-            return DAWN_VALIDATION_ERROR("Entry point doesn't exist in the module");
-        }
+        DAWN_INVALID_IF(!module->HasEntryPoint(entryPoint),
+                        "Entry point \"%s\" doesn't exist in the shader module %s.", entryPoint,
+                        module);
 
         const EntryPointMetadata& metadata = module->GetEntryPoint(entryPoint);
 
-        if (metadata.stage != stage) {
-            return DAWN_VALIDATION_ERROR("Entry point isn't for the correct stage");
-        }
+        DAWN_INVALID_IF(metadata.stage != stage,
+                        "The stage (%s) of the entry point \"%s\" isn't the expected one (%s).",
+                        metadata.stage, entryPoint, stage);
 
         if (layout != nullptr) {
             DAWN_TRY(ValidateCompatibilityWithPipelineLayout(device, metadata, layout));
+        }
+
+        if (constantCount > 0u && device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
+            return DAWN_VALIDATION_ERROR(
+                "Pipeline overridable constants are disallowed because they are partially "
+                "implemented.");
+        }
+
+        // Validate if overridable constants exist in shader module
+        // pipelineBase is not yet constructed at this moment so iterate constants from descriptor
+        size_t numUninitializedConstants = metadata.uninitializedOverridableConstants.size();
+        // Keep an initialized constants sets to handle duplicate initialization cases
+        std::unordered_set<std::string> stageInitializedConstantIdentifiers;
+        for (uint32_t i = 0; i < constantCount; i++) {
+            DAWN_INVALID_IF(metadata.overridableConstants.count(constants[i].key) == 0,
+                            "Pipeline overridable constant \"%s\" not found in %s.",
+                            constants[i].key, module);
+
+            if (stageInitializedConstantIdentifiers.count(constants[i].key) == 0) {
+                if (metadata.uninitializedOverridableConstants.count(constants[i].key) > 0) {
+                    numUninitializedConstants--;
+                }
+                stageInitializedConstantIdentifiers.insert(constants[i].key);
+            } else {
+                // There are duplicate initializations
+                return DAWN_FORMAT_VALIDATION_ERROR(
+                    "Pipeline overridable constants \"%s\" is set more than once in %s",
+                    constants[i].key, module);
+            }
+        }
+
+        // Validate if any overridable constant is left uninitialized
+        if (DAWN_UNLIKELY(numUninitializedConstants > 0)) {
+            std::string uninitializedConstantsArray;
+            bool isFirst = true;
+            for (std::string identifier : metadata.uninitializedOverridableConstants) {
+                if (stageInitializedConstantIdentifiers.count(identifier) > 0) {
+                    continue;
+                }
+
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    uninitializedConstantsArray.append(", ");
+                }
+                uninitializedConstantsArray.append(identifier);
+            }
+
+            return DAWN_FORMAT_VALIDATION_ERROR(
+                "There are uninitialized pipeline overridable constants in shader module %s, their "
+                "identifiers:[%s]",
+                module, uninitializedConstantsArray);
         }
 
         return {};
@@ -50,8 +104,9 @@ namespace dawn_native {
 
     PipelineBase::PipelineBase(DeviceBase* device,
                                PipelineLayoutBase* layout,
+                               const char* label,
                                std::vector<StageAndDescriptor> stages)
-        : CachedObject(device), mLayout(layout) {
+        : ApiObjectBase(device, label), mLayout(layout) {
         ASSERT(!stages.empty());
 
         for (const StageAndDescriptor& stage : stages) {
@@ -66,7 +121,11 @@ namespace dawn_native {
             // Record them internally.
             bool isFirstStage = mStageMask == wgpu::ShaderStage::None;
             mStageMask |= StageBit(shaderStage);
-            mStages[shaderStage] = {module, entryPointName, &metadata};
+            mStages[shaderStage] = {module, entryPointName, &metadata, {}};
+            auto& constants = mStages[shaderStage].constants;
+            for (uint32_t i = 0; i < stage.constantCount; i++) {
+                constants.emplace(stage.constants[i].key, stage.constants[i].value);
+            }
 
             // Compute the max() of all minBufferSizes across all stages.
             RequiredBufferSizes stageMinBufferSizes =
@@ -87,9 +146,14 @@ namespace dawn_native {
         }
     }
 
-    PipelineBase::PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : CachedObject(device, tag) {
+    PipelineBase::PipelineBase(DeviceBase* device) : ApiObjectBase(device, kLabelNotImplemented) {
     }
+
+    PipelineBase::PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
+        : ApiObjectBase(device, tag) {
+    }
+
+    PipelineBase::~PipelineBase() = default;
 
     PipelineLayoutBase* PipelineBase::GetLayout() {
         ASSERT(!IsError());
@@ -115,13 +179,18 @@ namespace dawn_native {
         return mStages;
     }
 
+    wgpu::ShaderStage PipelineBase::GetStageMask() const {
+        return mStageMask;
+    }
+
     MaybeError PipelineBase::ValidateGetBindGroupLayout(uint32_t groupIndex) {
         DAWN_TRY(GetDevice()->ValidateIsAlive());
         DAWN_TRY(GetDevice()->ValidateObject(this));
         DAWN_TRY(GetDevice()->ValidateObject(mLayout.Get()));
-        if (groupIndex >= kMaxBindGroups) {
-            return DAWN_VALIDATION_ERROR("Bind group layout index out of bounds");
-        }
+        DAWN_INVALID_IF(
+            groupIndex >= kMaxBindGroups,
+            "Bind group layout index (%u) exceeds the maximum number of bind groups (%u).",
+            groupIndex, kMaxBindGroups);
         return {};
     }
 
@@ -139,7 +208,9 @@ namespace dawn_native {
 
     BindGroupLayoutBase* PipelineBase::APIGetBindGroupLayout(uint32_t groupIndexIn) {
         Ref<BindGroupLayoutBase> result;
-        if (GetDevice()->ConsumedError(GetBindGroupLayout(groupIndexIn), &result)) {
+        if (GetDevice()->ConsumedError(GetBindGroupLayout(groupIndexIn), &result,
+                                       "Validating GetBindGroupLayout (%u) on %s", groupIndexIn,
+                                       this)) {
             return BindGroupLayoutBase::MakeError(GetDevice());
         }
         return result.Detach();

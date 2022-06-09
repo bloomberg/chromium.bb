@@ -65,7 +65,7 @@
                         android:lineSpacingMultiplier="1.4"
                         android:textAppearance="@style/TextAppearance.TextMedium.Secondary" />
 
-                    <androidx.appcompat.widget.SwitchCompat
+                    <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/enable_data_saver_switch"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -85,8 +85,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:layout_gravity="bottom|center_horizontal"
-        android:paddingStart="@dimen/fre_button_padding"
-        android:paddingEnd="@dimen/fre_button_padding"
         android:text="@string/next"
         style="@style/FilledButton.Flat" />
 </org.chromium.chrome.browser.firstrun.FirstRunView>

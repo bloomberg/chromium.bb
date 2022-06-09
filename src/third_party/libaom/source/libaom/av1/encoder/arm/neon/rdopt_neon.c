@@ -13,8 +13,6 @@
 
 #include <arm_neon.h>
 
-#include "aom_ports/system_state.h"
-
 #include "av1/encoder/rdopt.h"
 #include "config/av1_rtcd.h"
 
@@ -432,8 +430,6 @@ void av1_get_horver_correlation_full_neon(const int16_t *diff, int stride,
   int64_t x2ver_sum = x2_sum - x2_finalrow;
   int64_t y2_sum = x2_sum - x2_firstcol;
   int64_t z2_sum = x2_sum - x2_firstrow;
-
-  aom_clear_system_state();
 
   const float num_hor = (float)(height * (width - 1));
   const float num_ver = (float)((height - 1) * width);

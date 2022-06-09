@@ -5,8 +5,8 @@
 #include "ash/shelf/swipe_home_to_overview_controller.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -15,9 +15,10 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -42,18 +43,16 @@ constexpr float kHomeScalingThresholdDisplayHeightRatio = 0.5f;
 
 // The amount of time the drag has to remain bellow velocity threshold before
 // the transition to the overview starts.
-constexpr base::TimeDelta kOverviewTransitionDelay =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr base::TimeDelta kOverviewTransitionDelay = base::Milliseconds(150);
 
 // The duration of transition from the home screen current scaled state to the
 // initial (unscaled) state when the gesture is canceled.
-constexpr base::TimeDelta kGestureCancelationDuration =
-    base::TimeDelta::FromMilliseconds(350);
+constexpr base::TimeDelta kGestureCancelationDuration = base::Milliseconds(350);
 
 // The duration of transition from the home screen current scaled state to the
 // initial (unscaled) state when the gesture is canceled due to a back gesture.
 constexpr base::TimeDelta kGestureCancelationForBackDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 void UpdateHomeAnimationForGestureCancel(
     bool going_back,
@@ -131,7 +130,7 @@ void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
 
   const float progress = gfx::Tween::CalculateValue(
       gfx::Tween::FAST_OUT_SLOW_IN,
-      base::ClampToRange(1.f - distance / target_distance, 0.0f, 1.0f));
+      base::clamp(1.f - distance / target_distance, 0.0f, 1.0f));
 
   float scale = gfx::Tween::FloatValueBetween(progress, 1.0f, kTargetHomeScale);
   Shell::Get()->app_list_controller()->UpdateScaleAndOpacityForHomeLauncher(
@@ -195,7 +194,8 @@ void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
   // NOTE: No need to update the home launcher opacity and scale here - the
   // AppListControllerImpl will update the home launcher state when it detects
   // that the overview is starting.
-  Shell::Get()->overview_controller()->StartOverview();
+  Shell::Get()->overview_controller()->StartOverview(
+      OverviewStartAction::kExitHomeLauncher);
 
   // No need to keep blur disabled for the drag - note that blur might remain
   // disabled at this point due to the started overview transition (which

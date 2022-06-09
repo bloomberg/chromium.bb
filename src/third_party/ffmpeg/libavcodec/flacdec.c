@@ -262,7 +262,7 @@ static int decode_residuals(FLACContext *s, int32_t *decoded, int pred_order)
         } else {
             int real_limit = tmp ? (INT_MAX >> tmp) + 2 : INT_MAX;
             for (; i < samples; i++) {
-                int v = get_sr_golomb_flac(&gb, tmp, real_limit, 0);
+                int v = get_sr_golomb_flac(&gb, tmp, real_limit, 1);
                 if (v == 0x80000000){
                     av_log(s->avctx, AV_LOG_ERROR, "invalid residual\n");
                     return AVERROR_INVALIDDATA;
@@ -660,7 +660,7 @@ static const AVClass flac_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_flac_decoder = {
+const AVCodec ff_flac_decoder = {
     .name           = "flac",
     .long_name      = NULL_IF_CONFIG_SMALL("FLAC (Free Lossless Audio Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -678,4 +678,5 @@ AVCodec ff_flac_decoder = {
                                                       AV_SAMPLE_FMT_S32P,
                                                       AV_SAMPLE_FMT_NONE },
     .priv_class     = &flac_decoder_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -25,16 +25,16 @@ bool ExtensionActionHandler::Parse(Extension* extension,
   const char* key = nullptr;
   const char* error_key = nullptr;
   ActionInfo::Type type = ActionInfo::TYPE_ACTION;
-  if (extension->manifest()->HasKey(manifest_keys::kAction)) {
+  if (extension->manifest()->FindKey(manifest_keys::kAction)) {
     key = manifest_keys::kAction;
     error_key = manifest_errors::kInvalidAction;
     // type ACTION is correct.
   }
 
-  if (extension->manifest()->HasKey(manifest_keys::kPageAction)) {
+  if (extension->manifest()->FindKey(manifest_keys::kPageAction)) {
     if (key != nullptr) {
       // An extension can only have one action.
-      *error = base::ASCIIToUTF16(manifest_errors::kOneUISurfaceOnly);
+      *error = manifest_errors::kOneUISurfaceOnly;
       return false;
     }
     key = manifest_keys::kPageAction;
@@ -42,10 +42,10 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     type = ActionInfo::TYPE_PAGE;
   }
 
-  if (extension->manifest()->HasKey(manifest_keys::kBrowserAction)) {
+  if (extension->manifest()->FindKey(manifest_keys::kBrowserAction)) {
     if (key != nullptr) {
       // An extension can only have one action.
-      *error = base::ASCIIToUTF16(manifest_errors::kOneUISurfaceOnly);
+      *error = manifest_errors::kOneUISurfaceOnly;
       return false;
     }
     key = manifest_keys::kBrowserAction;
@@ -72,10 +72,18 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     if (extension->was_installed_by_default())
       return true;  // Don't synthesize actions for default extensions.
 
-    // Set an empty page action. We use a page action (instead of a browser
-    // action) because the action should not be seen as enabled on every page.
-    auto action_info = std::make_unique<ActionInfo>(ActionInfo::TYPE_PAGE);
+    // Set an empty action. Manifest v2 extensions use page actions, whereas
+    // manifest v3 use generic "actions". We use a page action (instead of a
+    // browser action) for MV2 because the action should not be seen as enabled
+    // on every page. We achieve the same in MV3 by adjusting the default
+    // state to be disabled by default.
+    type = extension->manifest_version() >= 3 ? ActionInfo::TYPE_ACTION
+                                              : ActionInfo::TYPE_PAGE;
+    auto action_info = std::make_unique<ActionInfo>(type);
     action_info->synthesized = true;
+    if (type == ActionInfo::TYPE_ACTION)
+      action_info->default_state = ActionInfo::STATE_DISABLED;
+
     ActionInfo::SetExtensionActionInfo(extension, std::move(action_info));
   }
 

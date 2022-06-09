@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
@@ -42,7 +43,8 @@ class UsageScenarioDataStore
   // Used to store data between 2 calls to ResetIntervalData.
   struct IntervalData {
     IntervalData();
-    IntervalData(const IntervalData& rhs);
+    IntervalData(const IntervalData&);
+    IntervalData& operator=(const IntervalData&);
 
     // The uptime at the end of the interval.
     base::TimeDelta uptime_at_interval_end;
@@ -92,6 +94,9 @@ class UsageScenarioDataStore
     // |source_id_for_longest_visible_origin_duration| if there's multiple tabs
     // for the longest visible origin visible during the interval.
     base::TimeDelta longest_visible_origin_duration;
+
+    // The number of times the system has been put to sleep during the interval.
+    uint8_t sleep_events = 0;
   };
 
   // Reset the interval data with the current state information and returns the
@@ -137,6 +142,7 @@ class UsageScenarioDataStoreImpl : public UsageScenarioDataStore {
   void OnIsCapturingVideoEnded();
   void OnAudioStarts();
   void OnAudioStops();
+  void OnSleepEvent();
 
   // Should be called when a video starts in a visible tab or when a non visible
   // tab playing video becomes visible.
@@ -187,7 +193,7 @@ class UsageScenarioDataStoreImpl : public UsageScenarioDataStore {
   void FinalizeIntervalData(base::TimeTicks now);
 
   // The clock used by this class.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // The current tab count.
   uint16_t current_tab_count_ = 0;

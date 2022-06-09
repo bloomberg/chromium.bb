@@ -75,11 +75,20 @@ class QUIC_EXPORT_PRIVATE TlsConnection {
     // level |level|.
     virtual void SendAlert(EncryptionLevel level, uint8_t desc) = 0;
 
+    // Informational callback from BoringSSL. This callback is disabled by
+    // default, but can be enabled by TlsConnection::EnableInfoCallback.
+    //
+    // See |SSL_CTX_set_info_callback| for the meaning of |type| and |value|.
+    virtual void InfoCallback(int type, int value) = 0;
+
     friend class TlsConnection;
   };
 
   TlsConnection(const TlsConnection&) = delete;
   TlsConnection& operator=(const TlsConnection&) = delete;
+
+  // Configure the SSL such that delegate_->InfoCallback will be called.
+  void EnableInfoCallback();
 
   // Functions to convert between BoringSSL's enum ssl_encryption_level_t and
   // QUIC's EncryptionLevel.
@@ -89,20 +98,17 @@ class QUIC_EXPORT_PRIVATE TlsConnection {
 
   SSL* ssl() const { return ssl_.get(); }
 
+  const QuicSSLConfig& ssl_config() const { return ssl_config_; }
+
  protected:
-  // TlsConnection does not take ownership of any of its arguments; they must
+  // TlsConnection does not take ownership of |ssl_ctx| or |delegate|; they must
   // outlive the TlsConnection object.
-  TlsConnection(SSL_CTX* ssl_ctx, Delegate* delegate);
+  TlsConnection(SSL_CTX* ssl_ctx, Delegate* delegate, QuicSSLConfig ssl_config);
 
   // Creates an SSL_CTX and configures it with the options that are appropriate
   // for both client and server. The caller is responsible for ownership of the
   // newly created struct.
-  //
-  // The provided |cert_verify_mode| is passed in as the |mode| argument for
-  // |SSL_CTX_set_verify|. See
-  // https://commondatastorage.googleapis.com/chromium-boringssl-docs/ssl.h.html#SSL_VERIFY_NONE
-  // for a description of possible values.
-  static bssl::UniquePtr<SSL_CTX> CreateSslCtx(int cert_verify_mode);
+  static bssl::UniquePtr<SSL_CTX> CreateSslCtx();
 
   // From a given SSL* |ssl|, returns a pointer to the TlsConnection that it
   // belongs to. This helper method allows the callbacks set in BoringSSL to be
@@ -110,11 +116,13 @@ class QUIC_EXPORT_PRIVATE TlsConnection {
   // callback.
   static TlsConnection* ConnectionFromSsl(const SSL* ssl);
 
- private:
-  // Registered as the callback for SSL_CTX_set_custom_verify. The
+  // Registered as the callback for SSL(_CTX)_set_custom_verify. The
   // implementation is delegated to Delegate::VerifyCert.
   static enum ssl_verify_result_t VerifyCallback(SSL* ssl, uint8_t* out_alert);
 
+  QuicSSLConfig& mutable_ssl_config() { return ssl_config_; }
+
+ private:
   // TlsConnection implements SSL_QUIC_METHOD, which provides the interface
   // between BoringSSL's TLS stack and a QUIC implementation.
   static const SSL_QUIC_METHOD kSslQuicMethod;
@@ -141,6 +149,7 @@ class QUIC_EXPORT_PRIVATE TlsConnection {
 
   Delegate* delegate_;
   bssl::UniquePtr<SSL> ssl_;
+  QuicSSLConfig ssl_config_;
 };
 
 }  // namespace quic

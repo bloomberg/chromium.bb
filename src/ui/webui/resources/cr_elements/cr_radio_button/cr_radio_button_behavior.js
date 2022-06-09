@@ -144,4 +144,19 @@ const CrRadioButtonBehaviorImpl = {
   Polymer.PaperRippleBehavior,
   CrRadioButtonBehaviorImpl,
 ];
+
+/** @interface */
+/* #export */ class CrRadioButtonBehaviorInterface {
+  constructor() {
+    /** @type {boolean} */
+    this.checked;
+
+    /** @type {boolean} */
+    this.disabled;
+  }
+
+  /** @return  {!PaperRippleElement} */
+  getRipple() {}
+}
+
 /* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');

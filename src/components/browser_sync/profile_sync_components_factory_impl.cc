@@ -25,7 +25,8 @@
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/history/core/common/pref_names.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -38,6 +39,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
+#include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
@@ -125,21 +127,19 @@ base::WeakPtr<syncer::SyncableService> SyncableServiceForPrefs(
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     browser_sync::BrowserSyncClient* sync_client,
     version_info::Channel channel,
-    const char* history_disabled_pref,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& db_thread,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_in_memory,
-    const scoped_refptr<password_manager::PasswordStore>&
+    const scoped_refptr<password_manager::PasswordStoreInterface>&
         profile_password_store,
-    const scoped_refptr<password_manager::PasswordStore>&
+    const scoped_refptr<password_manager::PasswordStoreInterface>&
         account_password_store,
     sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : sync_client_(sync_client),
       channel_(channel),
-      history_disabled_pref_(history_disabled_pref),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
       engines_and_directory_deletion_thread_(
@@ -262,7 +262,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
   // These features are enabled only if history is not disabled.
-  if (!sync_client_->GetPrefService()->GetBoolean(history_disabled_pref_)) {
+  if (!sync_client_->GetPrefService()->GetBoolean(
+          prefs::kSavingBrowserHistoryDisabled)) {
     // TypedUrl sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::TYPED_URLS)) {
@@ -270,8 +271,8 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       // provided by HistoryService.
       controllers.push_back(
           std::make_unique<history::TypedURLModelTypeController>(
-              sync_client_->GetHistoryService(), sync_client_->GetPrefService(),
-              history_disabled_pref_));
+              sync_client_->GetHistoryService(),
+              sync_client_->GetPrefService()));
     }
 
     // Delete directive sync is enabled by default.
@@ -298,8 +299,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
                   sync_client_->GetSessionSyncService()
                       ->GetControllerDelegate()
-                      .get()),
-              history_disabled_pref_));
+                      .get())));
     }
   }
 
@@ -315,8 +315,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                   ? account_password_store_->CreateSyncControllerDelegate()
                   : nullptr,
               account_password_store_, sync_client_->GetPrefService(),
-              sync_client_->GetIdentityManager(), sync_service,
-              sync_client_->GetPasswordStateChangedCallback()));
+              sync_client_->GetIdentityManager(), sync_service));
     }
   }
 
@@ -341,10 +340,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // When SplitSettingsSync is enabled the controller is created in
+  // When SyncSettingsCategorization is enabled the controller is created in
   // ChromeSyncClient.
   if (!disabled_types.Has(syncer::PRINTERS) &&
-      !chromeos::features::IsSplitSettingsSyncEnabled()) {
+      !chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     controllers.push_back(
         CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
   }
@@ -400,16 +399,15 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
 
 std::unique_ptr<DataTypeManager>
 ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
-    syncer::ModelTypeSet initial_types,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const syncer::DataTypeEncryptionHandler* encryption_handler,
     syncer::ModelTypeConfigurer* configurer,
     DataTypeManagerObserver* observer) {
-  return std::make_unique<DataTypeManagerImpl>(
-      initial_types, debug_info_listener, controllers, encryption_handler,
-      configurer, observer);
+  return std::make_unique<DataTypeManagerImpl>(debug_info_listener, controllers,
+                                               encryption_handler, configurer,
+                                               observer);
 }
 
 std::unique_ptr<syncer::SyncEngine>

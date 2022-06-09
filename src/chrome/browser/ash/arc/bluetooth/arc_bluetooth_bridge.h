@@ -15,6 +15,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ash/components/arc/mojom/bluetooth.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom-forward.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/callback_forward.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file.h"
@@ -22,9 +25,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/arc/bluetooth/arc_bluetooth_task_queue.h"
-#include "components/arc/mojom/bluetooth.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom-forward.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -38,6 +38,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -73,6 +74,10 @@ class ArcBluetoothBridge
 
   ArcBluetoothBridge(content::BrowserContext* context,
                      ArcBridgeService* bridge_service);
+
+  ArcBluetoothBridge(const ArcBluetoothBridge&) = delete;
+  ArcBluetoothBridge& operator=(const ArcBluetoothBridge&) = delete;
+
   ~ArcBluetoothBridge() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
@@ -394,11 +399,10 @@ class ArcBluetoothBridge
 
   void OnGattConnectStateChanged(mojom::BluetoothAddressPtr addr,
                                  bool connected) const;
-  void OnGattConnected(
+  void OnGattConnect(
       mojom::BluetoothAddressPtr addr,
-      std::unique_ptr<device::BluetoothGattConnection> connection);
-  void OnGattConnectError(mojom::BluetoothAddressPtr addr,
-                          device::BluetoothDevice::ConnectErrorCode error_code);
+      std::unique_ptr<device::BluetoothGattConnection> connection,
+      absl::optional<device::BluetoothDevice::ConnectErrorCode> error_code);
   void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
 
   void OnGattNotifyStartDone(
@@ -673,12 +677,13 @@ class ArcBluetoothBridge
                    std::unique_ptr<device::BluetoothGattConnection> connection,
                    bool need_hard_disconnect);
     GattConnection();
+    GattConnection(const GattConnection&) = delete;
+    GattConnection& operator=(const GattConnection&) = delete;
     ~GattConnection();
     GattConnection(GattConnection&&);
     GattConnection& operator=(GattConnection&&);
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(GattConnection);
   };
   std::unordered_map<std::string, GattConnection> gatt_connections_;
 
@@ -752,8 +757,6 @@ class ArcBluetoothBridge
 
   // WeakPtrFactory to use for callbacks.
   base::WeakPtrFactory<ArcBluetoothBridge> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcBluetoothBridge);
 };
 
 }  // namespace arc

@@ -15,12 +15,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -219,9 +218,6 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
   std::unique_ptr<leveldb::DB> db;
   leveldb::Status db_status =
       leveldb_env::OpenDB(options, path.AsUTF8Unsafe(), &db);
-  UMA_HISTOGRAM_ENUMERATION("SyncFileSystem.Database.Open",
-                            leveldb_env::GetLevelDBStatusUMAValue(db_status),
-                            leveldb_env::LEVELDB_STATUS_MAX);
   SyncStatusCode status = LevelDBStatusToSyncStatusCode(db_status);
   if (status != SYNC_STATUS_OK) {
     return status;
@@ -1151,11 +1147,12 @@ MetadataDatabase::ActivationStatus MetadataDatabase::TryActivateTracker(
       std::unique_ptr<FileTracker> tracker_to_be_deactivated(new FileTracker);
       if (index_->GetFileTracker(same_title_trackers.active_tracker(),
                                  tracker_to_be_deactivated.get())) {
-        const std::string file_id = tracker_to_be_deactivated->file_id();
+        const std::string tracker_file_id =
+            tracker_to_be_deactivated->file_id();
         tracker_to_be_deactivated->set_active(false);
         index_->StoreFileTracker(std::move(tracker_to_be_deactivated));
 
-        MarkTrackersDirtyByFileID(file_id, index_.get());
+        MarkTrackersDirtyByFileID(tracker_file_id, index_.get());
       } else {
         NOTREACHED();
       }

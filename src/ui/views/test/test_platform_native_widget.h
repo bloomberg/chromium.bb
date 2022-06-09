@@ -5,8 +5,7 @@
 #ifndef UI_VIEWS_TEST_TEST_PLATFORM_NATIVE_WIDGET_H_
 #define UI_VIEWS_TEST_TEST_PLATFORM_NATIVE_WIDGET_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -31,6 +30,9 @@ class TestPlatformNativeWidget : public PlatformNativeWidget {
         mouse_capture_(false),
         mock_capture_(mock_capture),
         destroyed_(destroyed) {}
+
+  TestPlatformNativeWidget(const TestPlatformNativeWidget&) = delete;
+  TestPlatformNativeWidget& operator=(const TestPlatformNativeWidget&) = delete;
 
   ~TestPlatformNativeWidget() override {
     if (destroyed_)
@@ -62,9 +64,7 @@ class TestPlatformNativeWidget : public PlatformNativeWidget {
  private:
   bool mouse_capture_;
   const bool mock_capture_;
-  bool* destroyed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformNativeWidget);
+  raw_ptr<bool> destroyed_;
 };
 
 }  // namespace test

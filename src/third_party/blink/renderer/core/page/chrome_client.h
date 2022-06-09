@@ -31,15 +31,14 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/paint/paint_image.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
+#include "cc/trees/paint_holding_reason.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/page/drag_operation.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/blame_context.h"
-#include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/battery_savings.h"
@@ -67,6 +66,11 @@ class Layer;
 struct OverscrollBehavior;
 }
 
+namespace display {
+struct ScreenInfo;
+struct ScreenInfos;
+}  // namespace display
+
 namespace ui {
 class Cursor;
 }
@@ -88,7 +92,6 @@ class HTMLInputElement;
 class HTMLSelectElement;
 class HitTestLocation;
 class HitTestResult;
-class IntRect;
 class KeyboardEvent;
 class LocalFrame;
 class LocalFrameView;
@@ -105,8 +108,6 @@ enum class FullscreenRequestType;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
 struct ViewportDescription;
-struct ScreenInfo;
-struct ScreenInfos;
 struct WebWindowFeatures;
 
 namespace mojom {
@@ -118,9 +119,9 @@ class TextAutosizerPageInfo;
 using CompositorElementId = cc::ElementId;
 
 class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
-  DISALLOW_COPY_AND_ASSIGN(ChromeClient);
-
  public:
+  ChromeClient(const ChromeClient&) = delete;
+  ChromeClient& operator=(const ChromeClient&) = delete;
   virtual ~ChromeClient() = default;
 
   virtual WebViewImpl* GetWebView() const = 0;
@@ -138,8 +139,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void InvalidateContainer() = 0;
 
   // Converts the rect from the viewport coordinates to screen coordinates.
-  virtual IntRect ViewportToScreen(const IntRect&,
-                                   const LocalFrameView*) const = 0;
+  virtual gfx::Rect ViewportToScreen(const gfx::Rect&,
+                                     const LocalFrameView*) const = 0;
 
   void ScheduleAnimation(const LocalFrameView* view) {
     ScheduleAnimation(view, base::TimeDelta());
@@ -153,17 +154,21 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // if the |requesting_frame| (i.e. the opener or |frame| itself) has
   // experimental window placement features enabled. The browser will check
   // permissions before actually supporting cross-screen placement requests.
-  IntRect CalculateWindowRectWithAdjustment(const IntRect& pending_rect,
-                                            LocalFrame& frame,
-                                            LocalFrame& requesting_frame);
+  gfx::Rect CalculateWindowRectWithAdjustment(const gfx::Rect& pending_rect,
+                                              LocalFrame& frame,
+                                              LocalFrame& requesting_frame);
 
   // Calls CalculateWindowRectWithAdjustment, then SetWindowRect.
-  void SetWindowRectWithAdjustment(const IntRect& pending_rect,
+  void SetWindowRectWithAdjustment(const gfx::Rect& pending_rect,
                                    LocalFrame& frame);
+
+  // Tells the browser that another page has accessed the DOM of the initial
+  // empty document of a main frame.
+  virtual void DidAccessInitialMainDocument() = 0;
 
   // This gives the rect of the top level window that the given LocalFrame is a
   // part of.
-  virtual IntRect RootWindowRect(LocalFrame&) = 0;
+  virtual gfx::Rect RootWindowRect(LocalFrame&) = 0;
 
   virtual void FocusPage() = 0;
   virtual void DidFocusPage() = 0;
@@ -195,8 +200,12 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // reference to make it clear that callers may only call this while a local
   // main frame is present and the state does not persist between instances of
   // local main frames.
-  virtual void StartDeferringCommits(LocalFrame& main_frame,
-                                     base::TimeDelta timeout) = 0;
+  //
+  // Returns false if commits were already deferred, indicating that the call
+  // was a no-op.
+  virtual bool StartDeferringCommits(LocalFrame& main_frame,
+                                     base::TimeDelta timeout,
+                                     cc::PaintHoldingReason reason) = 0;
   virtual void StopDeferringCommits(LocalFrame& main_frame,
                                     cc::PaintHoldingCommitTrigger) = 0;
 
@@ -229,7 +238,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // browser will discard the unnecessary show request.
   virtual void Show(const blink::LocalFrameToken& opener_frame_token,
                     NavigationPolicy navigation_policy,
-                    const IntRect& initial_rect,
+                    const gfx::Rect& initial_rect,
                     bool consumed_user_gesture) = 0;
 
   // All the parameters should be in viewport space. That is, if an event
@@ -293,8 +302,9 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                             String& result);
   virtual bool TabsToLinks() = 0;
 
-  virtual const ScreenInfo& GetScreenInfo(LocalFrame& frame) const = 0;
-  virtual const ScreenInfos& GetScreenInfos(LocalFrame& frame) const = 0;
+  virtual const display::ScreenInfo& GetScreenInfo(LocalFrame& frame) const = 0;
+  virtual const display::ScreenInfos& GetScreenInfos(
+      LocalFrame& frame) const = 0;
 
   virtual void SetCursor(const ui::Cursor&, LocalFrame* local_root) = 0;
   virtual void SetCursorOverridden(bool) = 0;
@@ -313,7 +323,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // Returns a custom visible rect if a viewport override is active. Requires
   // the |frame| being painted, but only supports being used for the main frame.
   virtual void OverrideVisibleRectForMainFrame(LocalFrame& frame,
-                                               IntRect* paint_rect) const {}
+                                               gfx::Rect* paint_rect) const {}
 
   // Returns the scale used to convert incoming input events while emulating
   // device metics.
@@ -328,7 +338,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void ZoomToFindInPageRect(const gfx::Rect&) {}
 
-  virtual void ContentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
+  virtual void ContentsSizeChanged(LocalFrame*, const gfx::Size&) const = 0;
   // Call during pinch gestures, or when page-scale changes on main-frame load.
   virtual void PageScaleFactorChanged() const {}
   virtual float ClampPageScaleFactorToLimits(float scale) const {
@@ -354,6 +364,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                                          const String&,
                                          TextDirection,
                                          const gfx::Rect&) = 0;
+  virtual void ClearKeyboardTriggeredTooltip(LocalFrame&) = 0;
   void ClearToolTip(LocalFrame&);
   String GetLastToolTipTextForTesting() {
     return current_tool_tip_text_for_test_;
@@ -423,9 +434,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual void SetEventListenerProperties(LocalFrame*,
                                           cc::EventListenerClass,
                                           cc::EventListenerProperties) = 0;
-  virtual cc::EventListenerProperties EventListenerProperties(
-      LocalFrame*,
-      cc::EventListenerClass) const = 0;
 
   virtual void SetHasScrollEventHandlers(LocalFrame*, bool) = 0;
   virtual void SetNeedsLowLatencyInput(LocalFrame*, bool) = 0;
@@ -465,7 +473,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual bool IsSVGImageChromeClient() const { return false; }
 
-  virtual IntSize MinimumWindowSize() const { return IntSize(100, 100); }
+  virtual gfx::Size MinimumWindowSize() const { return gfx::Size(100, 100); }
 
   virtual bool IsChromeClientImpl() const { return false; }
 
@@ -508,12 +516,12 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
     std::move(callback).Run(false);
   }
 
-  // The |callback| will be fired when the corresponding renderer frame for the
-  // |frame| is presented in the display compositor. The reported time could
-  // sometimes be the swap time, as is the case when the swap is aborted. In
-  // this case, WebSwapResult will be DidNotSwap.
+  // The `callback` will be fired when the corresponding renderer frame for the
+  // `frame` is presented in the display compositor. If there is no update in
+  // the frame to be presented, the `callback` will run with the time of the
+  // failure.
   using ReportTimeCallback =
-      WTF::CrossThreadOnceFunction<void(WebSwapResult, base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(base::TimeTicks)>;
   virtual void NotifyPresentationTime(LocalFrame& frame,
                                       ReportTimeCallback callback) {}
 
@@ -555,7 +563,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   ChromeClient() = default;
 
   virtual void ShowMouseOverURL(const HitTestResult&) = 0;
-  virtual void SetWindowRect(const IntRect&, LocalFrame&) = 0;
+  virtual void SetWindowRect(const gfx::Rect&, LocalFrame&) = 0;
   virtual bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
                                                     bool is_reload) = 0;
   virtual bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;

@@ -6,9 +6,8 @@
 
 #include "fxjs/cfx_v8.h"
 
-#include "core/fxcrt/fx_memory.h"
 #include "fxjs/fxv8.h"
-#include "third_party/base/allocator/partition_allocator/partition_alloc.h"
+#include "v8/include/v8-isolate.h"
 
 CFX_V8::CFX_V8(v8::Isolate* isolate) : m_pIsolate(isolate) {}
 
@@ -47,17 +46,17 @@ v8::Local<v8::Object> CFX_V8::NewObject() {
 }
 
 void CFX_V8::PutArrayElement(v8::Local<v8::Array> pArray,
-                             unsigned index,
+                             size_t index,
                              v8::Local<v8::Value> pValue) {
   fxv8::ReentrantPutArrayElementHelper(GetIsolate(), pArray, index, pValue);
 }
 
 v8::Local<v8::Value> CFX_V8::GetArrayElement(v8::Local<v8::Array> pArray,
-                                             unsigned index) {
+                                             size_t index) {
   return fxv8::ReentrantGetArrayElementHelper(GetIsolate(), pArray, index);
 }
 
-unsigned CFX_V8::GetArrayLength(v8::Local<v8::Array> pArray) {
+size_t CFX_V8::GetArrayLength(v8::Local<v8::Array> pArray) {
   return fxv8::GetArrayLengthHelper(pArray);
 }
 
@@ -78,8 +77,7 @@ v8::Local<v8::Boolean> CFX_V8::NewBoolean(bool b) {
 }
 
 v8::Local<v8::String> CFX_V8::NewString(ByteStringView str) {
-  v8::Isolate* pIsolate = m_pIsolate ? GetIsolate() : v8::Isolate::GetCurrent();
-  return fxv8::NewStringHelper(pIsolate, str);
+  return fxv8::NewStringHelper(GetIsolate(), str);
 }
 
 v8::Local<v8::String> CFX_V8::NewString(WideStringView str) {
@@ -129,20 +127,6 @@ v8::Local<v8::Array> CFX_V8::ToArray(v8::Local<v8::Value> pValue) {
   return fxv8::ReentrantToArrayHelper(GetIsolate(), pValue);
 }
 
-void* CFX_V8ArrayBufferAllocator::Allocate(size_t length) {
-  if (length > kMaxAllowedBytes)
-    return nullptr;
-  return GetArrayBufferPartitionAllocator().root()->AllocFlags(
-      pdfium::base::PartitionAllocZeroFill, length, "CFX_V8ArrayBuffer");
-}
-
-void* CFX_V8ArrayBufferAllocator::AllocateUninitialized(size_t length) {
-  if (length > kMaxAllowedBytes)
-    return nullptr;
-  return GetArrayBufferPartitionAllocator().root()->Alloc(length,
-                                                          "CFX_V8ArrayBuffer");
-}
-
-void CFX_V8ArrayBufferAllocator::Free(void* data, size_t length) {
-  GetArrayBufferPartitionAllocator().root()->Free(data);
+void CFX_V8IsolateDeleter::operator()(v8::Isolate* ptr) {
+  ptr->Dispose();
 }

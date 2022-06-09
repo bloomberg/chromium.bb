@@ -179,7 +179,7 @@ class Writer:
         # If an instruction has a parameter of these types, the instruction is ignored
         self.unsupported_kinds = set(['LiteralSpecConstantOpInteger'])
         # If an instruction requires a capability of these kinds, the instruction is ignored
-        self.unsupported_capabilities = set(['Kernel'])
+        self.unsupported_capabilities = set(['Kernel', 'Addresses'])
         # If an instruction requires an extension other than these, the instruction is ignored
         self.supported_extensions = set([])
         # List of bit masks.  These have 'Mask' added to their typename in SPIR-V headers.
@@ -245,7 +245,9 @@ class Writer:
 
     def requires_unsupported_capability(self, item):
         depends = item.get('capabilities', [])
-        return any([dep in self.unsupported_capabilities for dep in depends])
+        if len(depends) == 0:
+            return False
+        return all([dep in self.unsupported_capabilities for dep in depends])
 
     def requires_unsupported_extension(self, item):
         extensions = item.get('extensions', [])
@@ -289,16 +291,21 @@ class Writer:
 
         # First, a number of special-cases for optional lists
         if quantifier == '*':
+            suffix = 'List'
+
             # For IdRefs, change 'Xyz 1', +\n'Xyz 2', +\n...' to xyzList
             if kind == 'IdRef':
                 if name.find(' ') != -1:
                     name = name[0:name.find(' ')]
-                return make_camel_case(name) + 'List'
 
-            # Otherwise, it's a pair in the form of 'Xyz, Abc, ...', which is changed to
-            # xyzAbcPairList
+            # Otherwise, if it's a pair in the form of 'Xyz, Abc, ...', change it to xyzAbcPairList
+            elif kind.startswith('Pair'):
+                suffix = 'PairList'
+
+            # Otherwise, it's just a list, so change `xyz abc` to `xyzAbcList
+
             name = remove_chars(name, " ,.")
-            return make_camel_case(name) + 'PairList'
+            return make_camel_case(name) + suffix
 
         # Otherwise, remove invalid characters and make the first letter lower case.
         name = remove_chars(name, " .,+\n~")
@@ -495,6 +502,19 @@ class Writer:
                     'quantifier': '*'
                 }
                 self.process_operand(decoration_operands, cpp_operands_in, cpp_operands_out,
+                                     cpp_in_parse_lines, cpp_out_push_back_lines)
+
+            elif operand['kind'] == 'ExecutionMode':
+                # Special handling of OpExecutionMode instruction with an ExecutionMode operand.
+                # That operand always comes last, and implies a number of LiteralIntegers to follow.
+                assert (len(cpp_in_parse_lines) == len(operands))
+
+                execution_mode_operands = {
+                    'name': 'operands',
+                    'kind': 'LiteralInteger',
+                    'quantifier': '*'
+                }
+                self.process_operand(execution_mode_operands, cpp_operands_in, cpp_operands_out,
                                      cpp_in_parse_lines, cpp_out_push_back_lines)
 
             elif operand['kind'] == 'ImageOperands':

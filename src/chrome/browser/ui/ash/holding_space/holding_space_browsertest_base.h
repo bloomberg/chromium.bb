@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_progress.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"
 
@@ -20,7 +21,6 @@ class Window;
 
 namespace ash {
 
-class HoldingSpaceItem;
 class HoldingSpaceTestApi;
 
 // Base class for holding space browser tests. Subclasses
@@ -58,10 +58,12 @@ class HoldingSpaceBrowserTestBase
   HoldingSpaceItem* AddScreenRecordingFile();
 
   // Adds and returns a holding space item of the specified `type` backed by the
-  // file at the specified `file_path`.
-  HoldingSpaceItem* AddItem(Profile* profile,
-                            HoldingSpaceItem::Type type,
-                            const base::FilePath& file_path);
+  // file at the specified `file_path` with optional `progress`.
+  HoldingSpaceItem* AddItem(
+      Profile* profile,
+      HoldingSpaceItem::Type type,
+      const base::FilePath& file_path,
+      const HoldingSpaceProgress& progress = HoldingSpaceProgress());
 
   // Removes the specified holding space `item`.
   void RemoveItem(const HoldingSpaceItem* item);

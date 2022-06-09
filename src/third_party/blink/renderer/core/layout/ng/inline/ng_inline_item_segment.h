@@ -89,6 +89,10 @@ class CORE_EXPORT NGInlineItemSegments {
     segments_.emplace_back(std::forward<Args>(args)...);
   }
 
+  // Compute segments from the given |RunSegmenter|.
+  void ComputeSegments(RunSegmenter* segmenter,
+                       RunSegmenter::RunSegmenterRange* range);
+
   // Append mixed-vertical font orientation segments for the specified range.
   // This is separated from |ComputeSegments| because this result depends on
   // fonts.
@@ -98,7 +102,7 @@ class CORE_EXPORT NGInlineItemSegments {
                                       unsigned segment_index);
 
   // Compute an internal items-to-segments index for faster access.
-  void ComputeItemIndex(const Vector<NGInlineItem>& items);
+  void ComputeItemIndex(const HeapVector<NGInlineItem>& items);
 
   // Iterates |RunSegmenterRange| for the given offsets.
   class Iterator {

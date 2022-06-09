@@ -12,7 +12,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/target_process.h"
@@ -45,6 +44,10 @@ SANDBOX_INTERCEPT HandleCloserInfo* g_handle_closer_info;
 class HandleCloser {
  public:
   HandleCloser();
+
+  HandleCloser(const HandleCloser&) = delete;
+  HandleCloser& operator=(const HandleCloser&) = delete;
+
   ~HandleCloser();
 
   // Adds a handle that will be closed in the target process after lockdown.
@@ -67,8 +70,6 @@ class HandleCloser {
   bool SetupHandleList(void* buffer, size_t buffer_bytes);
 
   HandleMap handles_to_close_;
-
-  DISALLOW_COPY_AND_ASSIGN(HandleCloser);
 };
 
 // Returns the object manager's name associated with a handle

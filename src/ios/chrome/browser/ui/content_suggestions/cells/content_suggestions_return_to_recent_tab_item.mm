@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -75,6 +74,7 @@ const CGFloat kIconWidth = 32.0f;
     UIView* contentView = self.contentView;
     [contentView.layer
         setBorderColor:[UIColor colorNamed:kTertiaryBackgroundColor].CGColor];
+    contentView.backgroundColor = [UIColor colorNamed:kGrey100Color];
     [contentView.layer setBorderWidth:kContentViewBorderWidth];
     contentView.layer.cornerRadius = kContentViewCornerRadius;
     contentView.layer.masksToBounds = YES;
@@ -82,7 +82,7 @@ const CGFloat kIconWidth = 32.0f;
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _titleLabel.adjustsFontForContentSizeCategory = YES;
-    _titleLabel.textColor = UIColor.cr_labelColor;
+    _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _titleLabel.backgroundColor = UIColor.clearColor;
 
     _subtitleLabel = [[UILabel alloc] init];
@@ -90,7 +90,7 @@ const CGFloat kIconWidth = 32.0f;
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _subtitleLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     _subtitleLabel.adjustsFontForContentSizeCategory = YES;
-    _subtitleLabel.textColor = UIColor.cr_secondaryLabelColor;
+    _subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
     _subtitleLabel.backgroundColor = UIColor.clearColor;
 
     UIStackView* textStackView = [[UIStackView alloc]

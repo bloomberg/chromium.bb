@@ -11,14 +11,22 @@
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace onc {
+
+namespace {
+// A valid but empty (no networks and no certificates) and unencrypted
+// configuration.
+const char kEmptyUnencryptedConfiguration[] =
+    "{\"Type\":\"UnencryptedConfiguration\",\"NetworkConfigurations\":[],"
+    "\"Certificates\":[]}";
+}  // namespace
 
 class ONCValidatorTest : public ::testing::Test {
  public:
@@ -166,6 +174,11 @@ INSTANTIATE_TEST_SUITE_P(
                   &kToplevelConfigurationSignature,
                   true,
                   ::onc::ONC_SOURCE_DEVICE_POLICY),
+        // AllowOnlyPolicyCellularNetworks is only allowed for device policies.
+        OncParams("managed_toplevel_with_only_managed_cellular.onc",
+                  &kToplevelConfigurationSignature,
+                  true,
+                  ::onc::ONC_SOURCE_DEVICE_POLICY),
         OncParams("managed_toplevel_l2tpipsec.onc",
                   &kToplevelConfigurationSignature,
                   true),
@@ -215,6 +228,10 @@ INSTANTIATE_TEST_SUITE_P(
         OncParams("ethernet_with_eap.onc",
                   &kNetworkConfigurationSignature,
                   true),
+        OncParams("cellular_with_smdp.onc",
+                  &kNetworkConfigurationSignature,
+                  true,
+                  ::onc::ONC_SOURCE_DEVICE_POLICY),
         OncParams("translation_of_shill_ethernet_with_ipconfig.onc",
                   &kNetworkWithStateSignature,
                   true),

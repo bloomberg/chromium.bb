@@ -596,13 +596,10 @@ SkCanvas
 void drawPaint(const SkPaint& paint);
 
 [Canvas_drawPatch]
-SkCanvas
-void drawPatch(const SkPoint cubics[12], const SkColor colors[4], const SkPoint texCoords[4], SkBlendMode mode, const SkPaint& paint);
-
 [Canvas_drawPatch_2_a]
 [Canvas_drawPatch_2_b]
 SkCanvas
-void drawPatch(const SkPoint cubics[12], const SkColor colors[4], const SkPoint texCoords[4], const SkPaint& paint);
+void drawPatch(const SkPoint cubics[12], const SkColor colors[4], const SkPoint texCoords[4], SkBlendMode mode, const SkPaint& paint);
 
 [Canvas_drawPath]
 SkCanvas
@@ -2002,10 +1999,6 @@ int countText(const void* text, size_t byteLength) const;
 SkPaint
 uint8_t getAlpha() const;
 
-[Paint_getBlendMode]
-SkPaint
-SkBlendMode getBlendMode() const;
-
 [Paint_getColor]
 SkPaint
 SkColor getColor() const;
@@ -2043,10 +2036,6 @@ SkScalar getFontMetrics(SkFontMetrics* metrics) const;
 [Paint_getFontSpacing]
 SkPaint
 SkScalar getFontSpacing() const;
-
-[Paint_getHash]
-SkPaint
-uint32_t getHash() const;
 
 [Paint_getHinting]
 SkPaint

@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/media_router/media_router_file_dialog.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -20,6 +23,7 @@ using testing::_;
 using testing::ContainsRegex;
 using testing::Field;
 using testing::InvokeWithoutArgs;
+using testing::NiceMock;
 using testing::Return;
 using testing::Test;
 
@@ -79,7 +83,7 @@ class MediaRouterFileDialogTest : public Test {
   void SetUp() override {
     mock_delegate_ = std::make_unique<MockDelegate>();
 
-    auto temp_mock = std::make_unique<MockFileSystemDelegate>();
+    auto temp_mock = std::make_unique<NiceMock<MockFileSystemDelegate>>();
     mock_file_system_delegate = temp_mock.get();
 
     dialog_ = std::make_unique<MediaRouterFileDialog>(
@@ -124,11 +128,11 @@ class MediaRouterFileDialogTest : public Test {
 
  protected:
   std::unique_ptr<MockDelegate> mock_delegate_;
-  MockFileSystemDelegate* mock_file_system_delegate = nullptr;
+  raw_ptr<MockFileSystemDelegate> mock_file_system_delegate = nullptr;
   std::unique_ptr<MediaRouterFileDialog> dialog_;
 
   // Used for simulating calls from a SelectFileDialog.
-  ui::SelectFileDialog::Listener* dialog_as_listener_ = nullptr;
+  raw_ptr<ui::SelectFileDialog::Listener> dialog_as_listener_ = nullptr;
 
   const base::FilePath fake_path_;
 

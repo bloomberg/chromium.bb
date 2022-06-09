@@ -20,6 +20,14 @@ imageset("close") {
   ]
 }
 
+imageset("copy") {
+  sources = [
+    "copy.imageset/Contents.json",
+    "copy.imageset/copy@2x.png",
+    "copy.imageset/copy@3x.png",
+  ]
+}
+
 imageset("copy_link_url") {
   sources = [
     "copy_link_url.imageset/Contents.json",
@@ -36,11 +44,43 @@ imageset("delete") {
   ]
 }
 
+imageset("download") {
+  sources = [
+    "download.imageset/Contents.json",
+    "download.imageset/download@2x.png",
+    "download.imageset/download@3x.png",
+  ]
+}
+
 imageset("edit") {
   sources = [
     "edit.imageset/Contents.json",
     "edit.imageset/edit@2x.png",
     "edit.imageset/edit@3x.png",
+  ]
+}
+
+imageset("hide_preview") {
+  sources = [
+    "hide_preview.imageset/Contents.json",
+    "hide_preview.imageset/hide_preview@2x.png",
+    "hide_preview.imageset/hide_preview@3x.png",
+  ]
+}
+
+imageset("lens_icon") {
+  sources = [
+    "lens_icon.imageset/Contents.json",
+    "lens_icon.imageset/lens_icon@2x.png",
+    "lens_icon.imageset/lens_icon@3x.png",
+  ]
+}
+
+imageset("open_image_in_new_tab") {
+  sources = [
+    "open_image_in_new_tab.imageset/Contents.json",
+    "open_image_in_new_tab.imageset/open_image_in_new_tab@2x.png",
+    "open_image_in_new_tab.imageset/open_image_in_new_tab@3x.png",
   ]
 }
 
@@ -84,11 +124,27 @@ imageset("remove") {
   ]
 }
 
+imageset("search_image") {
+  sources = [
+    "search_image.imageset/Contents.json",
+    "search_image.imageset/search_image@2x.png",
+    "search_image.imageset/search_image@3x.png",
+  ]
+}
+
 imageset("share") {
   sources = [
     "share.imageset/Contents.json",
     "share.imageset/share@2x.png",
     "share.imageset/share@3x.png",
+  ]
+}
+
+imageset("show_preview") {
+  sources = [
+    "show_preview.imageset/Contents.json",
+    "show_preview.imageset/show_preview@2x.png",
+    "show_preview.imageset/show_preview@3x.png",
   ]
 }
 
@@ -121,5 +177,13 @@ imageset("open") {
     "open.imageset/Contents.json",
     "open.imageset/open@2x.png",
     "open.imageset/open@3x.png",
+  ]
+}
+
+imageset("select") {
+  sources = [
+    "select.imageset/Contents.json",
+    "select.imageset/select@2x.png",
+    "select.imageset/select@3x.png",
   ]
 }

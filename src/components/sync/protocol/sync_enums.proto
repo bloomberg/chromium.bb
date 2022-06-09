@@ -43,8 +43,8 @@ message SyncEnums {
     ENCRYPTED_TYPES_CHANGED = 9;
     // The encryption passphrase state changed.
     PASSPHRASE_TYPE_CHANGED = 10;
-    // A new keystore encryption token was persisted.
-    KEYSTORE_TOKEN_UPDATED = 11;
+    // A new keystore encryption token was persisted. Deprecated 11/2021.
+    DEPRECATED_KEYSTORE_TOKEN_UPDATED = 11;
     // The datatype manager has finished an at least partially successful
     // configuration and is once again syncing with the server.
     CONFIGURE_COMPLETE = 12;
@@ -89,7 +89,9 @@ message SyncEnums {
   enum ErrorType {
     SUCCESS = 0;
     // DEPRECATED_ACCESS_DENIED = 1;
-    // Returned when the server and client disagree on the store birthday.
+    // Returned when the server and client disagree on the store birthday. This
+    // should be interpreted as all local sync metadata requiring cleanup,
+    // obviously including the locally-cached store birthday.
     NOT_MY_BIRTHDAY = 2;
     // Returned when the store has exceeded the allowed bandwidth utilization.
     THROTTLED = 3;
@@ -128,12 +130,12 @@ message SyncEnums {
   }
 
   enum Action {
-    UPGRADE_CLIENT = 0;              // Upgrade the client to latest version.
+    UPGRADE_CLIENT = 0;  // Upgrade the client to latest version.
     // DEPRECATED_CLEAR_USER_DATA_AND_RESYNC = 1;
     // DEPRECATED_ENABLE_SYNC_ON_ACCOUNT = 2;
     // DEPRECATED_STOP_AND_RESTART_SYNC = 3;
     // DEPRECATED_DISABLE_SYNC_ON_CLIENT = 4;
-    UNKNOWN_ACTION = 5;              // This is the default.
+    UNKNOWN_ACTION = 5;  // This is the default.
   }
 
   // Please keep in sync with chrome/android/java/.../ForeignSessionHelper.java

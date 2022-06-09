@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /** @fileoverview Common utilities for extension ui tests. */
-import {MockController, MockMethod} from '../mock_controller.m.js';
-import {isChildVisible} from '../test_util.m.js';
+import {MockController, MockMethod} from '../mock_controller.js';
+import {isChildVisible} from '../test_util.js';
 
 import {TestKioskBrowserProxy} from './test_kiosk_browser_proxy.js';
 
@@ -172,7 +172,7 @@ export function testVisible(
   const visible = isChildVisible(parentEl, selector);
   expectEquals(expectedVisible, visible, selector);
   if (expectedVisible && visible && opt_expectedText) {
-    const element = parentEl.$$(selector);
+    const element = parentEl.shadowRoot.querySelector(selector);
     expectEquals(opt_expectedText, element.textContent.trim(), selector);
   }
 }

@@ -5,7 +5,6 @@
 #ifndef SERVICES_DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_
 #define SERVICES_DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_MAC_H_
 
-#include "base/macros.h"
 #include "services/device/geolocation/wifi_data_provider_common.h"
 
 namespace device {
@@ -17,14 +16,15 @@ class WifiDataProviderMac : public WifiDataProviderCommon {
  public:
   WifiDataProviderMac();
 
+  WifiDataProviderMac(const WifiDataProviderMac&) = delete;
+  WifiDataProviderMac& operator=(const WifiDataProviderMac&) = delete;
+
  private:
   ~WifiDataProviderMac() override;
 
   // WifiDataProviderCommon implementation
   std::unique_ptr<WlanApiInterface> CreateWlanApi() override;
   std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy() override;
-
-  DISALLOW_COPY_AND_ASSIGN(WifiDataProviderMac);
 };
 
 }  // namespace device

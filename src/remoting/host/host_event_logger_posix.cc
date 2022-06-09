@@ -14,7 +14,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +30,9 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
  public:
   HostEventLoggerPosix(scoped_refptr<HostStatusMonitor> monitor,
                        const std::string& application_name);
+
+  HostEventLoggerPosix(const HostEventLoggerPosix&) = delete;
+  HostEventLoggerPosix& operator=(const HostEventLoggerPosix&) = delete;
 
   ~HostEventLoggerPosix() override;
 
@@ -50,8 +52,6 @@ class HostEventLoggerPosix : public HostEventLogger, public HostStatusObserver {
 
   scoped_refptr<HostStatusMonitor> monitor_;
   std::string application_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostEventLoggerPosix);
 };
 
 } //namespace

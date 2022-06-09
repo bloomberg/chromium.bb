@@ -15,11 +15,12 @@
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
@@ -96,6 +97,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   void JoinForTesting() override;
   size_t GetMaxConcurrentNonBlockedTasksDeprecated() const override;
   void DidUpdateCanRunPolicy() override;
+  void OnShutdownStarted() override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -247,7 +249,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
     scoped_refptr<SequencedTaskRunner> service_thread_task_runner;
 
     // Optional observer notified when a worker enters and exits its main.
-    WorkerThreadObserver* worker_thread_observer = nullptr;
+    raw_ptr<WorkerThreadObserver> worker_thread_observer = nullptr;
 
     WakeUpStrategy wakeup_strategy;
     bool wakeup_after_getwork;
@@ -280,6 +282,8 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // All workers owned by this thread group.
   std::vector<scoped_refptr<WorkerThread>> workers_ GUARDED_BY(lock_);
+
+  bool shutdown_started_ GUARDED_BY(lock_) = false;
 
   // Maximum number of tasks of any priority / BEST_EFFORT priority that can run
   // concurrently in this thread group.
@@ -347,7 +351,7 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // ThreadPool.NumTasksBeforeDetach.[thread group name] histogram.
   // Intentionally leaked.
-  HistogramBase* const num_tasks_before_detach_histogram_;
+  const raw_ptr<HistogramBase> num_tasks_before_detach_histogram_;
 
   // Ensures recently cleaned up workers (ref.
   // WorkerThreadDelegateImpl::CleanupLockRequired()) had time to exit as

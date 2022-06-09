@@ -12,7 +12,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -164,6 +164,13 @@ public class SendTabToSelfAndroidBridgeTest {
     public void testDeleteEntry() {
         SendTabToSelfAndroidBridge.deleteEntry(mProfile, GUID);
         verify(mNativeMock).deleteEntry(eq(mProfile), eq(GUID));
+    }
+
+    @Test
+    @SmallTest
+    public void testUpdateActiveWebContents() {
+        SendTabToSelfAndroidBridge.updateActiveWebContents(mWebContents);
+        verify(mNativeMock).updateActiveWebContents(eq(mWebContents));
     }
 
     @Test

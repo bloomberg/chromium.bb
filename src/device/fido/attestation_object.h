@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fido_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -31,6 +31,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
                     std::unique_ptr<AttestationStatement> statement);
   AttestationObject(AttestationObject&& other);
   AttestationObject& operator=(AttestationObject&& other);
+
+  AttestationObject(const AttestationObject&) = delete;
+  AttestationObject& operator=(const AttestationObject&) = delete;
+
   ~AttestationObject();
 
   std::vector<uint8_t> GetCredentialId() const;
@@ -74,8 +78,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
  private:
   AuthenticatorData authenticator_data_;
   std::unique_ptr<AttestationStatement> attestation_statement_;
-
-  DISALLOW_COPY_AND_ASSIGN(AttestationObject);
 };
 
 // Produces a WebAuthN style CBOR-encoded byte-array

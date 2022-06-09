@@ -7,9 +7,10 @@
 #include <limits>
 
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/util.h"
@@ -93,7 +94,7 @@ void XServerClipboard::SetClipboard(const std::string& mime_type,
   // Currently only UTF-8 is supported.
   if (mime_type != kMimeTypeTextUtf8)
     return;
-  if (!StringIsUtf8(data.c_str(), data.length())) {
+  if (!base::IsStringUTF8AllowingNoncharacters(data)) {
     LOG(ERROR) << "ClipboardEvent: data is not UTF-8 encoded.";
     return;
   }
@@ -133,8 +134,7 @@ void XServerClipboard::OnSetSelectionOwnerNotify(x11::Atom selection,
   // A reasonable timeout allows for misbehaving apps that don't respond
   // quickly to our requests.
   if (!get_selections_time_.is_null() &&
-      (base::TimeTicks::Now() - get_selections_time_) <
-          base::TimeDelta::FromSeconds(5)) {
+      (base::TimeTicks::Now() - get_selections_time_) < base::Seconds(5)) {
     // TODO(lambroslambrou): Instead of ignoring this notification, cancel any
     // pending request operations and ignore the resulting events, before
     // dispatching new requests here.
@@ -299,7 +299,7 @@ void XServerClipboard::SendStringResponse(x11::Window requestor,
         .property = property,
         .type = target,
         .format = 8,
-        .data_len = data_.size(),
+        .data_len = static_cast<uint32_t>(data_.size()),
         .data = base::MakeRefCounted<base::RefCountedStaticMemory>(
             data_.data(), data_.size()),
     });

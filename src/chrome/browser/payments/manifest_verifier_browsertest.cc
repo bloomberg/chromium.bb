@@ -12,11 +12,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
+#include "components/webdata_services/web_data_service_wrapper_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test.h"
@@ -32,6 +32,11 @@ namespace {
 class ManifestVerifierBrowserTest : public InProcessBrowserTest {
  public:
   ManifestVerifierBrowserTest() {}
+
+  ManifestVerifierBrowserTest(const ManifestVerifierBrowserTest&) = delete;
+  ManifestVerifierBrowserTest& operator=(const ManifestVerifierBrowserTest&) =
+      delete;
+
   ~ManifestVerifierBrowserTest() override {}
 
   // Starts the HTTPS test server on localhost.
@@ -56,9 +61,9 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
     downloader->AddTestServerURL("https://", https_server_->GetURL("/"));
     auto parser = std::make_unique<payments::PaymentManifestParser>(
         std::make_unique<ErrorLogger>());
-    auto cache = WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
-        Profile::FromBrowserContext(context),
-        ServiceAccessType::EXPLICIT_ACCESS);
+    auto cache = webdata_services::WebDataServiceWrapperFactory::
+        GetPaymentManifestWebDataServiceForBrowserContext(
+            context, ServiceAccessType::EXPLICIT_ACCESS);
 
     ManifestVerifier verifier(url::Origin::Create(GURL("https://chromium.org")),
                               web_contents, downloader.get(), parser.get(),
@@ -116,8 +121,6 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   content::InstalledPaymentAppsFinder::PaymentApps verified_apps_;
 
   std::string error_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestVerifierBrowserTest);
 };
 
 // Absence of payment handlers should result in absence of verified payment

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/search_engines/omnibox_focus_type.h"
 #include "components/search_engines/search_engine_type.h"
@@ -68,11 +68,11 @@ class TemplateURLRef {
   // the |post_data|. See http://tools.ietf.org/html/rfc2046 for the details.
   typedef std::pair<std::string, std::string> PostContent;
 
-  // Enumeration of the known search or suggest request sources.
+  // Enumeration of the known search or suggest request sources. These values
+  // are not persisted or used in histograms; thus can be freely changed.
   enum RequestSource {
     SEARCHBOX,          // Omnibox or the NTP realbox. The default.
     CROS_APP_LIST,      // Chrome OS app list search box.
-    NON_SEARCHBOX_NTP,  // Non-searchbox NTP surfaces.
   };
 
   // This struct encapsulates arguments passed to
@@ -253,6 +253,10 @@ class TemplateURLRef {
     bool is_prefetch = false;
 
     ContextualSearchParams contextual_search_params;
+
+    // The cache duration to be sent as a query string parameter in the zero
+    // suggest requests, if non-zero.
+    uint32_t zero_suggest_cache_duration_sec = 0;
   };
 
   TemplateURLRef(const TemplateURL* owner, Type type);
@@ -380,18 +384,19 @@ class TemplateURLRef {
   enum ReplacementType {
     ENCODING,
     GOOGLE_ASSISTED_QUERY_STATS,
-    GOOGLE_BASE_URL,
     GOOGLE_BASE_SEARCH_BY_IMAGE_URL,
     GOOGLE_BASE_SUGGEST_URL,
-    GOOGLE_CONTEXTUAL_SEARCH_VERSION,
+    GOOGLE_BASE_URL,
+    GOOGLE_CLIENT_CACHE_TIME_TO_LIVE,
     GOOGLE_CONTEXTUAL_SEARCH_CONTEXT_DATA,
+    GOOGLE_CONTEXTUAL_SEARCH_VERSION,
     GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
     GOOGLE_IMAGE_ORIGINAL_WIDTH,
     GOOGLE_IMAGE_SEARCH_SOURCE,
-    GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_THUMBNAIL_BASE64,
+    GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
     GOOGLE_INPUT_TYPE,
     GOOGLE_IOS_SEARCH_LANGUAGE,
@@ -518,7 +523,7 @@ class TemplateURLRef {
       PostContent* post_content) const;
 
   // The TemplateURL that contains us.  This should outlive us.
-  const TemplateURL* owner_;
+  raw_ptr<const TemplateURL> owner_;
 
   // What kind of URL we are.
   Type type_;
@@ -631,6 +636,9 @@ class TemplateURL {
               base::Time install_time,
               bool wants_to_be_default_engine);
 
+  TemplateURL(const TemplateURL&) = delete;
+  TemplateURL& operator=(const TemplateURL&) = delete;
+
   ~TemplateURL();
 
   // For two engines with the same keyword, |this| and |other|,
@@ -722,6 +730,8 @@ class TemplateURL {
   int prepopulate_id() const { return data_.prepopulate_id; }
 
   const std::string& sync_guid() const { return data_.sync_guid; }
+
+  TemplateURLData::ActiveStatus is_active() const { return data_.is_active; }
 
   const std::vector<TemplateURLRef>& url_refs() const { return url_refs_; }
   const TemplateURLRef& url_ref() const {
@@ -875,8 +885,6 @@ class TemplateURL {
   mutable SearchEngineType engine_type_;
 
   // TODO(sky): Add date last parsed OSD file.
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURL);
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_

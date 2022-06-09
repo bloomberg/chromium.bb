@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_CLIENT_LOGGING_H_
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "gpu/command_buffer/client/gles2_impl_export.h"
 
 // Macros to log information if --enable-gpu-client-logging is set and either:
@@ -60,14 +59,16 @@ namespace gpu {
 class GLES2_IMPL_EXPORT LogSettings {
  public:
   LogSettings();
+
+  LogSettings(const LogSettings&) = delete;
+  LogSettings& operator=(const LogSettings&) = delete;
+
   ~LogSettings();
 
   bool enabled() { return enabled_; }
 
  private:
   bool enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(LogSettings);
 };
 
 }  // namespace gpu

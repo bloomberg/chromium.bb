@@ -78,6 +78,10 @@ std::string GetLayerNames(const aura::Window* window) {
 class WorkspaceControllerTest : public AshTestBase {
  public:
   WorkspaceControllerTest() = default;
+
+  WorkspaceControllerTest(const WorkspaceControllerTest&) = delete;
+  WorkspaceControllerTest& operator=(const WorkspaceControllerTest&) = delete;
+
   ~WorkspaceControllerTest() override = default;
 
   aura::Window* CreateTestWindowUnparented() {
@@ -128,9 +132,6 @@ class WorkspaceControllerTest : public AshTestBase {
   ShelfLayoutManager* shelf_layout_manager() {
     return GetPrimaryShelf()->shelf_layout_manager();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTest);
 };
 
 // Assertions around adding a normal window.
@@ -585,6 +586,11 @@ class DontCrashOnChangeAndActivateDelegate
  public:
   DontCrashOnChangeAndActivateDelegate() : window_(NULL) {}
 
+  DontCrashOnChangeAndActivateDelegate(
+      const DontCrashOnChangeAndActivateDelegate&) = delete;
+  DontCrashOnChangeAndActivateDelegate& operator=(
+      const DontCrashOnChangeAndActivateDelegate&) = delete;
+
   void set_window(aura::Window* window) { window_ = window; }
 
   // WindowDelegate overrides:
@@ -598,8 +604,6 @@ class DontCrashOnChangeAndActivateDelegate
 
  private:
   aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DontCrashOnChangeAndActivateDelegate);
 };
 
 }  // namespace
@@ -1271,7 +1275,7 @@ TEST_F(WorkspaceControllerTest, RestoreMinimizedSnappedWindow) {
 
   // Left snap |window|.
   EXPECT_FALSE(window_state->bounds_changed_by_user());
-  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_left(WM_EVENT_SNAP_PRIMARY);
   window_state->OnWMEvent(&snap_left);
   const gfx::Rect work_area =
       display::Screen::GetScreen()

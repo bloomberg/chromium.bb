@@ -208,18 +208,18 @@ class PushableMediaStreamAudioSourceTest : public testing::Test {
 TEST_F(PushableMediaStreamAudioSourceTest, ConnectAndStop) {
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
             stream_source_->GetReadyState());
-  EXPECT_FALSE(pushable_audio_source_->running());
+  EXPECT_FALSE(pushable_audio_source_->IsRunning());
 
   EXPECT_TRUE(ConnectSourceToTrack());
   EXPECT_EQ(MediaStreamSource::kReadyStateLive,
             stream_source_->GetReadyState());
-  EXPECT_TRUE(pushable_audio_source_->running());
+  EXPECT_TRUE(pushable_audio_source_->IsRunning());
 
   // If the pushable source stops, the MediaStreamSource should stop.
   pushable_audio_source_->StopSource();
   EXPECT_EQ(MediaStreamSource::kReadyStateEnded,
             stream_source_->GetReadyState());
-  EXPECT_FALSE(pushable_audio_source_->running());
+  EXPECT_FALSE(pushable_audio_source_->IsRunning());
 }
 
 TEST_F(PushableMediaStreamAudioSourceTest, FramesPropagateToSink) {
@@ -262,8 +262,7 @@ TEST_F(PushableMediaStreamAudioSourceTest, ConvertsFormatInternally) {
   constexpr int kChannels = 2;
   constexpr int kSampleRate = 8000;
   constexpr int kFrames = 256;
-  constexpr base::TimeDelta kDefaultTimeStamp =
-      base::TimeDelta::FromMilliseconds(123);
+  constexpr base::TimeDelta kDefaultTimeStamp = base::Milliseconds(123);
 
   auto interleaved_buffer = media::AudioBuffer::CreateBuffer(
       media::SampleFormat::kSampleFormatF32, kChannelLayout, kChannels,

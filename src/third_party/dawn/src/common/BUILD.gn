@@ -94,6 +94,9 @@ config("dawn_internal") {
   visibility = [ "../*" ]
 
   cflags = []
+  if (is_clang) {
+    cflags += [ "-Wno-shadow" ]
+  }
 
   # Enable more warnings that were found when using Dawn in other projects.
   # Add them only when building in standalone because we control which clang
@@ -119,6 +122,8 @@ config("dawn_internal") {
       "-Wshadow-field",
       "-Wstrict-prototypes",
       "-Wtautological-unsigned-zero-compare",
+      "-Wunreachable-code-aggressive",
+      "-Wunused-but-set-variable",
     ]
 
     if (is_win) {
@@ -166,6 +171,7 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "Assert.h",
       "BitSetIterator.h",
       "Compiler.h",
+      "ConcurrentCache.h",
       "Constants.h",
       "CoreFoundationRef.h",
       "DynamicLib.cpp",
@@ -201,8 +207,6 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "TypeTraits.h",
       "TypedInteger.h",
       "UnderlyingType.h",
-      "VertexFormatUtils.cpp",
-      "VertexFormatUtils.h",
       "ityp_array.h",
       "ityp_bitset.h",
       "ityp_span.h",
@@ -211,6 +215,10 @@ if (is_win || is_linux || is_chromeos || is_mac || is_fuchsia || is_android) {
       "vulkan_platform.h",
       "xlib_with_undefs.h",
     ]
+
+    if (is_mac) {
+      sources += [ "SystemUtils_mac.mm" ]
+    }
 
     public_configs = [ ":dawn_internal" ]
     deps = [

@@ -29,6 +29,10 @@ class UnifiedSystemTrayModel::DBusObserver
     : public chromeos::PowerManagerClient::Observer {
  public:
   explicit DBusObserver(UnifiedSystemTrayModel* owner);
+
+  DBusObserver(const DBusObserver&) = delete;
+  DBusObserver& operator=(const DBusObserver&) = delete;
+
   ~DBusObserver() override;
 
  private:
@@ -43,8 +47,6 @@ class UnifiedSystemTrayModel::DBusObserver
   UnifiedSystemTrayModel* const owner_;
 
   base::WeakPtrFactory<DBusObserver> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DBusObserver);
 };
 
 class UnifiedSystemTrayModel::SizeObserver : public display::DisplayObserver,
@@ -67,6 +69,8 @@ class UnifiedSystemTrayModel::SizeObserver : public display::DisplayObserver,
   void Update();
 
   UnifiedSystemTrayModel* const owner_;
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   // Keep track of current system tray size.
   UnifiedSystemTrayModel::SystemTrayButtonSize system_tray_size_;
@@ -113,13 +117,11 @@ void UnifiedSystemTrayModel::DBusObserver::KeyboardBrightnessChanged(
 UnifiedSystemTrayModel::SizeObserver::SizeObserver(
     UnifiedSystemTrayModel* owner)
     : owner_(owner) {
-  display::Screen::GetScreen()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   system_tray_size_ = owner_->GetSystemTrayButtonSize();
 }
 
 UnifiedSystemTrayModel::SizeObserver::~SizeObserver() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -210,9 +212,10 @@ UnifiedSystemTrayModel::GetSystemTrayButtonSize() const {
   if (!shelf_)
     return SystemTrayButtonSize::kMedium;
 
-  int display_size = shelf_->IsHorizontalAlignment()
-                         ? GetDisplay().size().width()
-                         : GetDisplay().size().height();
+  // Handles the cases: the shelf is placed horizontally or vertically, or the
+  // screen is rotated.
+  const int display_size =
+      std::max(GetDisplay().size().width(), GetDisplay().size().height());
 
   if (display_size < kMinWidthMediumSystemTray)
     return SystemTrayButtonSize::kSmall;

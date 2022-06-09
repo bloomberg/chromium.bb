@@ -14,10 +14,6 @@
 # ==============================================================================
 """Operations for constructing RaggedTensors."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
 from tensorflow.python.framework import constant_op
@@ -281,7 +277,10 @@ def _default_inner_shape_for_pylist(pylist, ragged_rank):
     """Returns the inner shape for a python list `item`."""
     if not isinstance(item, (list, tuple)) and np.ndim(item) == 0:
       return ()
-    elif item:
+    # Note that we need this check here in case `item` is not a Python list but
+    # fakes as being one (pylist). For a scenario of this, see test added in
+    # https://github.com/tensorflow/tensorflow/pull/48945
+    elif len(item) > 0:  # pylint: disable=g-explicit-length-test
       return (len(item),) + get_inner_shape(item[0])
     return (0,)
 
@@ -346,5 +345,6 @@ def placeholder(dtype, ragged_rank, value_shape=None, name=None):
     for i in reversed(range(ragged_rank)):
       row_splits = array_ops.placeholder(dtypes.int64, [None],
                                          "row_splits_%d" % i)
-      result = ragged_tensor.RaggedTensor.from_row_splits(result, row_splits)
+      result = ragged_tensor.RaggedTensor.from_row_splits(result, row_splits,
+                                                          validate=False)
     return result

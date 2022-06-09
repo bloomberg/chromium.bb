@@ -105,6 +105,8 @@ bool IsAssign(const NodeDef& node) {
 
 bool IsAssert(const NodeDef& node) { return node.op() == "Assert"; }
 
+bool IsAsString(const NodeDef& node) { return node.op() == "AsString"; }
+
 bool IsAtan2(const NodeDef& node) { return node.op() == "Atan2"; }
 
 bool IsBetainc(const NodeDef& node) { return node.op() == "Betainc"; }
@@ -113,20 +115,24 @@ bool IsBiasAdd(const NodeDef& node) {
   return node.op() == "BiasAdd" || node.op() == "BiasAddV1";
 }
 
+bool IsBiasAddV2(const NodeDef& node) { return node.op() == "BiasAdd"; }
+
 bool IsBiasAddGrad(const NodeDef& node) { return node.op() == "BiasAddGrad"; }
 
 bool IsBitcast(const NodeDef& node) { return node.op() == "Bitcast"; }
+
+bool IsBroadcastTo(const NodeDef& node) { return node.op() == "BroadcastTo"; }
 
 bool IsCast(const NodeDef& node) { return node.op() == "Cast"; }
 
 bool IsCastLike(const NodeDef& node) {
   static const gtl::FlatSet<string>* const kCastLikeOps =
       CHECK_NOTNULL((new gtl::FlatSet<string>{
-          "Angle", "Bucketize", "Cast", "CompareAndBitpack", "Dequantize",
-          "HistogramFixedWidth", "Imag", "IsFinite", "IsInf", "IsNan",
-          "Quantize", "QuantizeDownAndShrinkRange", "QuantizeV2",
-          "QuantizedInstanceNorm", "QuantizedRelu", "QuantizedRelu6",
-          "QuantizedReluX", "Real", "Requantize"}));
+          "Angle", "Bucketize", "Cast", "Dequantize", "HistogramFixedWidth",
+          "Imag", "IsFinite", "IsInf", "IsNan", "Quantize",
+          "QuantizeDownAndShrinkRange", "QuantizeV2", "QuantizedInstanceNorm",
+          "QuantizedRelu", "QuantizedRelu6", "QuantizedReluX", "Real",
+          "Requantize"}));
   return kCastLikeOps->count(node.op()) > 0;
 }
 
@@ -184,6 +190,14 @@ bool IsConv2DBackpropInput(const NodeDef& node) {
 
 bool IsConv3D(const NodeDef& node) { return node.op() == "Conv3D"; }
 
+bool IsConv3DBackpropFilterV2(const NodeDef& node) {
+  return node.op() == "Conv3DBackpropFilterV2";
+}
+
+bool IsConv3DBackpropInputV2(const NodeDef& node) {
+  return node.op() == "Conv3DBackpropInputV2";
+}
+
 bool IsDepthwiseConv2dNative(const NodeDef& node) {
   return node.op() == "DepthwiseConv2dNative";
 }
@@ -239,6 +253,12 @@ bool IsElu(const NodeDef& node) { return node.op() == "Elu"; }
 
 bool IsEluGrad(const NodeDef& node) { return node.op() == "EluGrad"; }
 
+bool IsQuantizationEmulation(const NodeDef& node) {
+  const auto& op = node.op();
+  return absl::StartsWith(op, "QuantizeAndDequantize") ||
+         absl::StartsWith(op, "FakeQuantWithMinMax");
+}
+
 bool IsEnter(const NodeDef& node) {
   const auto& op = node.op();
   return op == "Enter" || op == "RefEnter";
@@ -279,7 +299,7 @@ bool IsFusedBatchNormGrad(const NodeDef& node) {
 
 bool IsGather(const NodeDef& node) {
   const auto& op = node.op();
-  return op == "Gather" || op == "GatherV2";
+  return op == "Gather" || op == "GatherV2" || op == "ResourceGather";
 }
 
 bool IsGreater(const NodeDef& node) { return node.op() == "Greater"; }
@@ -323,6 +343,12 @@ bool IsImmutableConst(const NodeDef& node) {
 }
 
 bool IsInvGrad(const NodeDef& node) { return node.op() == "InvGrad"; }
+
+bool IsLeakyRelu(const NodeDef& node) { return node.op() == "LeakyRelu"; }
+
+bool IsLeakyReluGrad(const NodeDef& node) {
+  return node.op() == "LeakyReluGrad";
+}
 
 bool IsLess(const NodeDef& node) { return node.op() == "Less"; }
 
@@ -427,6 +453,10 @@ bool IsReadVariableOp(const NodeDef& node) {
   return node.op() == "ReadVariableOp";
 }
 
+bool IsReadVariablesOp(const NodeDef& node) {
+  return node.op() == "_ReadVariablesOp";
+}
+
 bool IsReal(const NodeDef& node) { return node.op() == "Real"; }
 
 bool IsRealDiv(const NodeDef& node) { return node.op() == "RealDiv"; }
@@ -490,6 +520,8 @@ bool IsShapeN(const NodeDef& node) { return node.op() == "ShapeN"; }
 
 bool IsShuffle(const NodeDef& node) { return node.op() == "Shuffle"; }
 
+bool IsSigmoid(const NodeDef& node) { return node.op() == "Sigmoid"; }
+
 bool IsSigmoidGrad(const NodeDef& node) { return node.op() == "SigmoidGrad"; }
 
 bool IsSize(const NodeDef& node) { return node.op() == "Size"; }
@@ -548,6 +580,10 @@ bool IsStridedSliceGrad(const NodeDef& node) {
   return node.op() == "StridedSliceGrad";
 }
 
+bool IsStringToHashBucketFast(const NodeDef& node) {
+  return node.op() == "StringToHashBucketFast";
+}
+
 bool IsSub(const NodeDef& node) { return node.op() == "Sub"; }
 
 bool IsSum(const NodeDef& node) { return node.op() == "Sum"; }
@@ -560,6 +596,8 @@ bool IsSwitch(const NodeDef& node) {
 bool IsSymbolicGradient(const NodeDef& node) {
   return node.op() == "SymbolicGradient";
 }
+
+bool IsTanh(const NodeDef& node) { return node.op() == "Tanh"; }
 
 bool IsTanhGrad(const NodeDef& node) { return node.op() == "TanhGrad"; }
 
@@ -769,7 +807,7 @@ bool IsValueAndOrderAndShapePreserving(const NodeDef& node) {
       CHECK_NOTNULL((new const gtl::FlatSet<string>{
           "CheckNumerics",
           "DebugGradientIdentity",
-          "DeepCopy"
+          "DeepCopy",
           "Enter",
           "Exit",
           "PreventGradient",
@@ -817,51 +855,15 @@ bool IsValuePreserving(const NodeDef& node) {
 bool IsUnaryElementWise(const NodeDef& node) {
   static const gtl::FlatSet<string>* const kElementWiseOps =
       CHECK_NOTNULL((new gtl::FlatSet<string>{
-          "Abs",
-          "Acos",
-          "Acosh",
-          "Asin",
-          "Asinh",
-          "Atan",
-          "Atanh",
-          "Ceil",
-          "ComplexAbs",
-          "Conj",
-          "Cos",
-          "Cosh",
-          "Digamma",
-          "Elu"
-          "Erf",
-          "Erfc",
-          "Exp",
-          "Expm1",
-          "Floor",
-          "Inv",
-          "Invert",
-          "Isinf",
-          "Isnan",
-          "Isfinite",
-          "Lgamma",
-          "Log",
-          "Log1p",
-          "LogicalNot",
-          "Neg",
-          "Reciprocal",
-          "Relu",
-          "Relu6",
-          "Rint",
-          "Round",
-          "Selu",
-          "Rsqrt",
-          "Sigmoid",
-          "Sign",
-          "Sin",
-          "SinH",
-          "Softplus",
-          "Softsign",
-          "Sqrt",
-          "Square",
-          "Tan"
+          "Abs",      "Acos",     "Acosh",      "Asin",       "Asinh",
+          "Atan",     "Atanh",    "Ceil",       "ComplexAbs", "Conj",
+          "Cos",      "Cosh",     "Digamma",    "Elu",        "Erf",
+          "Erfc",     "Exp",      "Expm1",      "Floor",      "Inv",
+          "Invert",   "Isinf",    "Isnan",      "Isfinite",   "Lgamma",
+          "Log",      "Log1p",    "LogicalNot", "Neg",        "Reciprocal",
+          "Relu",     "Relu6",    "Rint",       "Round",      "Selu",
+          "Rsqrt",    "Sigmoid",  "Sign",       "Sin",        "SinH",
+          "Softplus", "Softsign", "Sqrt",       "Square",     "Tan",
           "Tanh",
       }));
   return kElementWiseOps->count(node.op()) > 0 ||

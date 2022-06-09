@@ -53,6 +53,7 @@ extern const char kAppsGalleryURL[];
 extern const char kAuthServerAllowlist[];
 extern const char kAutoOpenDevToolsForTabs[];
 extern const char kAutoSelectDesktopCaptureSource[];
+extern const char kAutoSelectTabCaptureSourceByTitle[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kCloudPrintFile[];
@@ -66,10 +67,6 @@ extern const char kCreateBrowserOnStartupForTests[];
 extern const char kCustomDevtoolsFrontend[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[];
-extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[];
 extern const char kDevToolsFlags[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
@@ -94,7 +91,6 @@ extern const char kEnableAudioDebugRecordingsFromExtension[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCriticalPersistedTabData[];
-extern const char kEnableDeviceDiscoveryNotifications[];
 extern const char kEnableDomainReliability[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
@@ -110,7 +106,6 @@ extern const char kExtensionsInstallVerification[];
 extern const char kExtensionsNotWebstore[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
-extern const char kForceStackedTabStripLayout[];
 extern const char kHideCrashRestoreBubble[];
 extern const char kHomePage[];
 extern const char kIncognito[];
@@ -122,7 +117,6 @@ extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
 extern const char kLaunchInProcessSimpleBrowserSwitch[];
 extern const char kLaunchSimpleBrowserSwitch[];
-extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kMonitoringDestinationID[];
 extern const char kNativeMessagingConnectHost[];
@@ -139,13 +133,12 @@ extern const char kOnTheFlyMhtmlHashComputation[];
 extern const char kOpenInNewWindow[];
 extern const char kPackExtension[];
 extern const char kPackExtensionKey[];
-extern const char kPermissionRequestApiScope[];
-extern const char kPermissionRequestApiUrl[];
 extern const char kPredictionServiceMockLikelihood[];
 extern const char kPreinstalledWebAppsDir[];
 extern const char kPrivetIPv6Only[];
 extern const char kProductVersion[];
 extern const char kProfileDirectory[];
+extern const char kProfileEmail[];
 extern const char kProxyAutoDetect[];
 extern const char kProxyBypassList[];
 extern const char kProxyPacUrl[];
@@ -176,6 +169,7 @@ extern const char kTrustedDownloadSources[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];
 extern const char kUserDataDir[];
+extern const char kUseSystemProxyResolver[];
 extern const char kValidateCrx[];
 extern const char kVersion[];
 extern const char kWebRtcRemoteEventLogProactivePruningDelta[];
@@ -195,6 +189,8 @@ extern const char kForceDeviceOwnership[];
 extern const char kForceEnableNightMode[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
+extern const char kForceEnableSigninFRE[];
+extern const char kForceDisableSigninFRE[];
 extern const char kForceUpdateMenuType[];
 extern const char kMarketUrlForTesting[];
 #endif  // defined(OS_ANDROID)
@@ -220,9 +216,7 @@ extern const char kWmClass[];
 
 #if defined(OS_MAC)
 extern const char kAppsKeepChromeAliveInTests[];
-extern const char kDisableHostedAppShimCreation[];
 extern const char kEnableUserMetrics[];
-extern const char kHostedAppQuitNotification[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];
 extern const char kRelauncherProcessDMGDevice[];
@@ -255,7 +249,7 @@ extern const char kAllowNaClSocketAPI[];
 #endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
-    defined(OS_WIN)
+    defined(OS_WIN) || defined(OS_FUCHSIA)
 extern const char kEnableNewAppMenuIcon[];
 extern const char kGuest[];
 #endif

@@ -723,9 +723,9 @@ class RawDevtoolsProtocolTest
     base::DictionaryValue message;
     message.SetInteger("id", devtools_client_->GetNextRawDevToolsMessageId());
     message.SetString("method", "Runtime.evaluate");
-    std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-    params->SetString("expression", "1+1");
-    message.Set("params", std::move(params));
+    base::DictionaryValue params;
+    params.SetString("expression", "1+1");
+    message.SetKey("params", std::move(params));
     std::string json_message;
     base::JSONWriter::Write(message, &json_message);
     devtools_client_->SendRawDevToolsMessage(json_message);
@@ -842,8 +842,9 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
         const std::unique_ptr<dom_snapshot::LayoutTreeNode>& layout_node =
             (*result->GetLayoutTreeNodes())[layout_node_index];
 
-        node_dict->Set("boundingBox",
-                       layout_node->GetBoundingBox()->Serialize());
+        node_dict->SetKey("boundingBox",
+                          base::Value::FromUniquePtrValue(
+                              layout_node->GetBoundingBox()->Serialize()));
 
         if (layout_node->HasLayoutText())
           node_dict->SetString("layoutText", layout_node->GetLayoutText());
@@ -852,14 +853,12 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
           node_dict->SetInteger("styleIndex", layout_node->GetStyleIndex());
 
         if (layout_node->HasInlineTextNodes()) {
-          std::unique_ptr<base::ListValue> inline_text_nodes(
-              new base::ListValue());
+          base::ListValue inline_text_nodes;
           for (const std::unique_ptr<dom_snapshot::InlineTextBox>&
                    inline_text_box : *layout_node->GetInlineTextNodes()) {
-            size_t index = inline_text_nodes->GetSize();
-            inline_text_nodes->Set(index, inline_text_box->Serialize());
+            inline_text_nodes.Append(inline_text_box->Serialize());
           }
-          node_dict->Set("inlineTextNodes", std::move(inline_text_nodes));
+          node_dict->SetKey("inlineTextNodes", std::move(inline_text_nodes));
         }
       }
     }
@@ -876,7 +875,7 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
       computed_styles[i] = std::move(style);
     }
 
-    base::ThreadRestrictions::SetIOAllowed(true);
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath source_root_dir;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
     base::FilePath expected_dom_nodes_path =
@@ -1029,31 +1028,6 @@ class BlockedByClient_NetworkObserver_Test
 };
 
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockedByClient_NetworkObserver_Test);
-
-class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
-                              public network::Observer {
- public:
-  void RunDevTooledTest() override {
-    EXPECT_TRUE(embedded_test_server()->Start());
-    devtools_client_->GetNetwork()->AddObserver(this);
-
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    run_loop.Run();
-
-    devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/set-cookie?cookie1").spec());
-  }
-
-  void OnResponseReceived(
-      const network::ResponseReceivedParams& params) override {
-    EXPECT_NE(std::string::npos, params.GetResponse()->GetHeadersText().find(
-                                     "Set-Cookie: cookie1"));
-    FinishAsynchronousTest();
-  }
-};
-
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsSetCookieTest);
 
 class DevtoolsInterceptionWithAuthProxyTest
     : public HeadlessAsyncDevTooledBrowserTest,

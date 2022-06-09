@@ -13,7 +13,6 @@
 #include <memory>
 
 #include "base/check_op.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -466,14 +465,17 @@ class ScopedSafeSPrintfSSizeMaxSetter {
     internal::SetSafeSPrintfSSizeMaxForTest(sz);
   }
 
+  ScopedSafeSPrintfSSizeMaxSetter(const ScopedSafeSPrintfSSizeMaxSetter&) =
+      delete;
+  ScopedSafeSPrintfSSizeMaxSetter& operator=(
+      const ScopedSafeSPrintfSSizeMaxSetter&) = delete;
+
   ~ScopedSafeSPrintfSSizeMaxSetter() {
     internal::SetSafeSPrintfSSizeMaxForTest(old_ssize_max_);
   }
 
  private:
   size_t old_ssize_max_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSafeSPrintfSSizeMaxSetter);
 };
 #endif
 

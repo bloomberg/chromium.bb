@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/text_input_test_utils.h"
+#include "base/memory/raw_ptr.h"
 
 #include <memory>
 #include <unordered_set>
@@ -52,6 +53,9 @@ class TextInputManagerTester::InternalObserver
     text_input_manager_->AddObserver(this);
   }
 
+  InternalObserver(const InternalObserver&) = delete;
+  InternalObserver& operator=(const InternalObserver&) = delete;
+
   ~InternalObserver() override {
     if (text_input_manager_)
       text_input_manager_->RemoveObserver(this);
@@ -99,7 +103,7 @@ class TextInputManagerTester::InternalObserver
   }
 
   void OnSelectionBoundsChanged(
-      TextInputManager* text_input_manager_,
+      TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override {
     updated_view_ = updated_view;
     if (!on_selection_bounds_changed_callback_.is_null())
@@ -134,16 +138,14 @@ class TextInputManagerTester::InternalObserver
   }
 
  private:
-  TextInputManager* text_input_manager_;
-  RenderWidgetHostViewBase* updated_view_;
+  raw_ptr<TextInputManager> text_input_manager_;
+  raw_ptr<RenderWidgetHostViewBase> updated_view_;
   bool text_input_state_changed_;
   std::unique_ptr<gfx::Range> last_composition_range_;
   base::RepeatingClosure update_text_input_state_callback_;
   base::RepeatingClosure on_selection_bounds_changed_callback_;
   base::RepeatingClosure on_ime_composition_range_changed_callback_;
   base::RepeatingClosure on_text_selection_changed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
 
 // This class observes the lifetime of a RenderWidgetHostView. An instance of
@@ -156,6 +158,9 @@ class TestRenderWidgetHostViewDestructionObserver::InternalObserver
       : view_(view), destroyed_(false) {
     view->AddObserver(this);
   }
+
+  InternalObserver(const InternalObserver&) = delete;
+  InternalObserver& operator=(const InternalObserver&) = delete;
 
   ~InternalObserver() override {
     if (view_)
@@ -180,11 +185,9 @@ class TestRenderWidgetHostViewDestructionObserver::InternalObserver
       message_loop_runner_->Quit();
   }
 
-  RenderWidgetHostViewBase* view_;
+  raw_ptr<RenderWidgetHostViewBase> view_;
   bool destroyed_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
 
 #if defined(USE_AURA)
@@ -195,6 +198,9 @@ class InputMethodObserverAura : public TestInputMethodObserver,
       : input_method_(input_method), text_input_client_(nullptr) {
     input_method_->AddObserver(this);
   }
+
+  InputMethodObserverAura(const InputMethodObserverAura&) = delete;
+  InputMethodObserverAura& operator=(const InputMethodObserverAura&) = delete;
 
   ~InputMethodObserverAura() override {
     if (input_method_)
@@ -209,9 +215,9 @@ class InputMethodObserverAura : public TestInputMethodObserver,
     return ui::TEXT_INPUT_TYPE_NONE;
   }
 
-  void SetOnShowVirtualKeyboardIfEnabledCallback(
-      const base::RepeatingClosure& callback) override {
-    on_show_ime_if_needed_callback_ = callback;
+  void SetOnVirtualKeyboardVisibilityChangedIfEnabledCallback(
+      const base::RepeatingCallback<void(bool)>& callback) override {
+    on_virtual_keyboard_visibility_changed_if_enabled_callback_ = callback;
   }
 
  private:
@@ -221,15 +227,15 @@ class InputMethodObserverAura : public TestInputMethodObserver,
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
 
-  void OnShowVirtualKeyboardIfEnabled() override {
-    on_show_ime_if_needed_callback_.Run();
+  void OnVirtualKeyboardVisibilityChangedIfEnabled(bool should_show) override {
+    on_virtual_keyboard_visibility_changed_if_enabled_callback_.Run(
+        should_show);
   }
 
-  ui::InputMethod* input_method_;
-  const ui::TextInputClient* text_input_client_;
-  base::RepeatingClosure on_show_ime_if_needed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodObserverAura);
+  raw_ptr<ui::InputMethod> input_method_;
+  raw_ptr<const ui::TextInputClient> text_input_client_;
+  base::RepeatingCallback<void(bool)>
+      on_virtual_keyboard_visibility_changed_if_enabled_callback_;
 };
 #endif
 
@@ -305,7 +311,7 @@ bool DestroyRenderWidgetHost(int32_t process_id,
     rfh = rfh->GetParent();
 
   FrameTreeNode* ftn = rfh->frame_tree_node();
-  if (ftn->IsMainFrame()) {
+  if (rfh->is_main_frame()) {
     WebContents::FromRenderFrameHost(rfh)->Close();
   } else {
     ftn->frame_tree()->RemoveFrame(ftn);

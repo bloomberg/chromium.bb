@@ -12,7 +12,7 @@
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/win32/cgdi_plus_ext.h"
 
-class CWin32Platform : public CFX_GEModule::PlatformIface {
+class CWin32Platform final : public CFX_GEModule::PlatformIface {
  public:
   CWin32Platform();
   ~CWin32Platform() override;
@@ -21,7 +21,6 @@ class CWin32Platform : public CFX_GEModule::PlatformIface {
   void Init() override;
   std::unique_ptr<SystemFontInfoIface> CreateDefaultSystemFontInfo() override;
 
-  bool m_bHalfTone = false;
   CGdiplusExt m_GdiplusExt;
 };
 

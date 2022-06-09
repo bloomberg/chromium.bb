@@ -41,10 +41,10 @@ SANDBOX_POLICY_EXPORT extern const char kVideoCaptureSandbox[];
 
 #if defined(OS_WIN)
 SANDBOX_POLICY_EXPORT extern const char kPdfConversionSandbox[];
-SANDBOX_POLICY_EXPORT extern const char kProxyResolverSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kXrCompositingSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kIconReaderSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kMediaFoundationCdmSandbox[];
+SANDBOX_POLICY_EXPORT extern const char kWindowsSystemProxyResolverSandbox[];
 #endif  // OS_WIN
 
 #if defined(OS_MAC)
@@ -52,11 +52,12 @@ SANDBOX_POLICY_EXPORT extern const char kMirroringSandbox[];
 #endif  // OS_MAC
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+SANDBOX_POLICY_EXPORT extern const char kHardwareVideoDecodingSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kImeSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kTtsSandbox[];
-#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 SANDBOX_POLICY_EXPORT extern const char kLibassistantSandbox[];
-#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Flags owned by the service manager sandbox.
@@ -75,7 +76,6 @@ SANDBOX_POLICY_EXPORT extern const char kNoZygoteSandbox[];
 #if defined(OS_WIN)
 SANDBOX_POLICY_EXPORT extern const char kAllowThirdPartyModules[];
 SANDBOX_POLICY_EXPORT extern const char kAddGpuAppContainerCaps[];
-SANDBOX_POLICY_EXPORT extern const char kNoSandboxAndElevatedPrivileges[];
 SANDBOX_POLICY_EXPORT extern const char kAddXrAppContainerCaps[];
 #endif
 #if defined(OS_MAC)

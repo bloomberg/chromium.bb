@@ -5,13 +5,13 @@
 #ifndef CC_PAINT_PAINT_FILTER_H_
 #define CC_PAINT_PAINT_FILTER_H_
 
+#include <string>
+
 #include "base/check_op.h"
 #include "base/containers/stack_container.h"
-#include "base/stl_util.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_shader.h"
-#include "cc/paint/scoped_raster_flags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -56,8 +56,9 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     kLightingDistant,
     kLightingPoint,
     kLightingSpot,
-    // Update the following if kLightingSpot is not the max anymore.
-    kMaxValue = kLightingSpot
+    kStretch,
+    // Update the following if kStretch is not the max anymore.
+    kMaxValue = kStretch
   };
   enum class LightingType {
     kDiffuse,
@@ -93,9 +94,7 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
       return 0;
     return cached_sk_filter_->countInputs();
   }
-  const CropRect* crop_rect() const {
-    return base::OptionalOrNullptr(crop_rect_);
-  }
+  const CropRect* GetCropRect() const;
 
   bool has_discardable_images() const { return has_discardable_images_; }
   ImageAnalysisState image_analysis_state() const {
@@ -474,13 +473,13 @@ class CC_PAINT_EXPORT ImagePaintFilter final : public PaintFilter {
   ImagePaintFilter(PaintImage image,
                    const SkRect& src_rect,
                    const SkRect& dst_rect,
-                   SkFilterQuality filter_quality);
+                   PaintFlags::FilterQuality filter_quality);
   ~ImagePaintFilter() override;
 
   const PaintImage& image() const { return image_; }
   const SkRect& src_rect() const { return src_rect_; }
   const SkRect& dst_rect() const { return dst_rect_; }
-  SkFilterQuality filter_quality() const { return filter_quality_; }
+  PaintFlags::FilterQuality filter_quality() const { return filter_quality_; }
 
   size_t SerializedSize() const override;
   bool operator==(const ImagePaintFilter& other) const;
@@ -493,17 +492,33 @@ class CC_PAINT_EXPORT ImagePaintFilter final : public PaintFilter {
   PaintImage image_;
   SkRect src_rect_;
   SkRect dst_rect_;
-  SkFilterQuality filter_quality_;
+  PaintFlags::FilterQuality filter_quality_;
 };
 
 class CC_PAINT_EXPORT RecordPaintFilter final : public PaintFilter {
  public:
   static constexpr Type kType = Type::kPaintRecord;
-  RecordPaintFilter(sk_sp<PaintRecord> record, const SkRect& record_bounds);
+
+  using ScalingBehavior = PaintShader::ScalingBehavior;
+
+  RecordPaintFilter(
+      sk_sp<PaintRecord> record,
+      const SkRect& record_bounds,
+      const gfx::SizeF& raster_scale = {1.f, 1.f},
+      ScalingBehavior scaling_behavior = ScalingBehavior::kRasterAtScale);
   ~RecordPaintFilter() override;
+
+  // Creates a fixed scale RecordPaintFilter for rasterization at the given
+  // |ctm|. |raster_scale| is set to the scale at which the underlying record
+  // should be rasterized when the paint filter is used.
+  // See PaintShader::CreateScaledPaintRecord.
+  sk_sp<RecordPaintFilter> CreateScaledPaintRecord(const SkMatrix& ctm,
+                                                   int max_texture_size) const;
 
   const sk_sp<PaintRecord>& record() const { return record_; }
   SkRect record_bounds() const { return record_bounds_; }
+  gfx::SizeF raster_scale() const { return raster_scale_; }
+  ScalingBehavior scaling_behavior() const { return scaling_behavior_; }
 
   size_t SerializedSize() const override;
   bool operator==(const RecordPaintFilter& other) const;
@@ -515,10 +530,14 @@ class CC_PAINT_EXPORT RecordPaintFilter final : public PaintFilter {
  private:
   RecordPaintFilter(sk_sp<PaintRecord> record,
                     const SkRect& record_bounds,
+                    const gfx::SizeF& raster_scale,
+                    ScalingBehavior scaling_behavior,
                     ImageProvider* image_provider);
 
   sk_sp<PaintRecord> record_;
   SkRect record_bounds_;
+  gfx::SizeF raster_scale_;  // ignored if scaling_behavior is kRasterAtScale
+  ScalingBehavior scaling_behavior_;
 };
 
 class CC_PAINT_EXPORT MergePaintFilter final : public PaintFilter {
@@ -679,7 +698,7 @@ class CC_PAINT_EXPORT ShaderPaintFilter final : public PaintFilter {
 
   ShaderPaintFilter(sk_sp<PaintShader> shader,
                     uint8_t alpha,
-                    SkFilterQuality filter_quality,
+                    PaintFlags::FilterQuality filter_quality,
                     SkImageFilters::Dither dither,
                     const CropRect* crop_rect = nullptr);
 
@@ -687,7 +706,7 @@ class CC_PAINT_EXPORT ShaderPaintFilter final : public PaintFilter {
 
   const PaintShader& shader() const { return *shader_; }
   uint8_t alpha() const { return alpha_; }
-  SkFilterQuality filter_quality() const { return filter_quality_; }
+  PaintFlags::FilterQuality filter_quality() const { return filter_quality_; }
   SkImageFilters::Dither dither() const { return dither_; }
 
   size_t SerializedSize() const override;
@@ -700,7 +719,7 @@ class CC_PAINT_EXPORT ShaderPaintFilter final : public PaintFilter {
  private:
   sk_sp<PaintShader> shader_;
   uint8_t alpha_;
-  SkFilterQuality filter_quality_;
+  PaintFlags::FilterQuality filter_quality_;
   SkImageFilters::Dither dither_;
 };
 
@@ -708,12 +727,12 @@ class CC_PAINT_EXPORT MatrixPaintFilter final : public PaintFilter {
  public:
   static constexpr Type kType = Type::kMatrix;
   MatrixPaintFilter(const SkMatrix& matrix,
-                    SkFilterQuality filter_quality,
+                    PaintFlags::FilterQuality filter_quality,
                     sk_sp<PaintFilter> input);
   ~MatrixPaintFilter() override;
 
   const SkMatrix& matrix() const { return matrix_; }
-  SkFilterQuality filter_quality() const { return filter_quality_; }
+  PaintFlags::FilterQuality filter_quality() const { return filter_quality_; }
   const sk_sp<PaintFilter>& input() const { return input_; }
 
   size_t SerializedSize() const override;
@@ -725,7 +744,7 @@ class CC_PAINT_EXPORT MatrixPaintFilter final : public PaintFilter {
 
  private:
   SkMatrix matrix_;
-  SkFilterQuality filter_quality_;
+  PaintFlags::FilterQuality filter_quality_;
   sk_sp<PaintFilter> input_;
 };
 
@@ -858,6 +877,39 @@ class CC_PAINT_EXPORT LightingSpotPaintFilter final : public PaintFilter {
   SkScalar surface_scale_;
   SkScalar kconstant_;
   SkScalar shininess_;
+  sk_sp<PaintFilter> input_;
+};
+
+class CC_PAINT_EXPORT StretchPaintFilter final : public PaintFilter {
+ public:
+  static constexpr Type kType = Type::kStretch;
+  StretchPaintFilter(SkScalar stretch_x,
+                     SkScalar stretch_y,
+                     SkScalar width,
+                     SkScalar height,
+                     sk_sp<PaintFilter> input,
+                     const CropRect* crop_rect = nullptr);
+  ~StretchPaintFilter() override;
+
+  const sk_sp<PaintFilter>& input() const { return input_; }
+
+  SkScalar stretch_x() const { return stretch_x_; }
+  SkScalar stretch_y() const { return stretch_y_; }
+  SkScalar width() const { return width_; }
+  SkScalar height() const { return height_; }
+
+  size_t SerializedSize() const override;
+  bool operator==(const StretchPaintFilter& other) const;
+
+ protected:
+  sk_sp<PaintFilter> SnapshotWithImagesInternal(
+      ImageProvider* image_provider) const override;
+
+ private:
+  SkScalar stretch_x_;
+  SkScalar stretch_y_;
+  SkScalar width_;
+  SkScalar height_;
   sk_sp<PaintFilter> input_;
 };
 

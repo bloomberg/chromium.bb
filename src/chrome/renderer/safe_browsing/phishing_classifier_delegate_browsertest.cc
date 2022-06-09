@@ -15,8 +15,8 @@
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/scorer.h"
-#include "components/safe_browsing/core/fbs/client_model_generated.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/fbs/client_model_generated.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -99,18 +99,22 @@ class MockPhishingClassifier : public PhishingClassifier {
   explicit MockPhishingClassifier(content::RenderFrame* render_frame)
       : PhishingClassifier(render_frame) {}
 
+  MockPhishingClassifier(const MockPhishingClassifier&) = delete;
+  MockPhishingClassifier& operator=(const MockPhishingClassifier&) = delete;
+
   ~MockPhishingClassifier() override {}
 
   MOCK_METHOD2(BeginClassification, void(const std::u16string*, DoneCallback));
   MOCK_METHOD0(CancelPendingClassification, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPhishingClassifier);
 };
 
 class MockScorer : public Scorer {
  public:
   MockScorer() : Scorer() {}
+
+  MockScorer(const MockScorer&) = delete;
+  MockScorer& operator=(const MockScorer&) = delete;
+
   ~MockScorer() override {}
 
   MOCK_CONST_METHOD1(ComputeScore, double(const FeatureMap&));
@@ -140,9 +144,6 @@ class MockScorer : public Scorer {
   MOCK_CONST_METHOD0(tflite_thresholds,
                      const google::protobuf::RepeatedPtrField<
                          TfLiteModelMetadata::Threshold>&());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockScorer);
 };
 }  // namespace
 
@@ -151,7 +152,7 @@ class PhishingClassifierDelegateTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
 
-    content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+    content::RenderFrame* render_frame = GetMainRenderFrame();
     classifier_ = new StrictMock<MockPhishingClassifier>(render_frame);
     delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
   }
@@ -363,7 +364,9 @@ TEST_F(PhishingClassifierDelegateTest, HasVisualTfLiteModel) {
   std::string file_contents = "visual model file";
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
-  delegate_->SetPhishingModel("", std::move(file));
+  ClientSideModel model;
+  model.set_max_words_per_term(1);
+  delegate_->SetPhishingModel(model.SerializeAsString(), std::move(file));
   ASSERT_TRUE(classifier_->is_ready());
 
   // The delegate will cancel pending classification on destruction.

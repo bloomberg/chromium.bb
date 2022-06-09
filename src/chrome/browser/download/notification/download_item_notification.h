@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
@@ -40,6 +39,10 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
 
   DownloadItemNotification(Profile* profile,
                            DownloadUIModel::DownloadUIModelPtr item);
+
+  DownloadItemNotification(const DownloadItemNotification&) = delete;
+  DownloadItemNotification& operator=(const DownloadItemNotification&) = delete;
+
   ~DownloadItemNotification() override;
 
   // Observer for this notification.
@@ -86,7 +89,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   SkColor GetNotificationIconColor();
 
   // Set preview image of the notification. Must be called on IO thread.
-  void OnImageLoaded(const std::string& image_data);
+  void OnImageLoaded(std::string image_data);
   void OnImageCropped(const SkBitmap& image);
 
   // ImageDecoder::ImageRequest overrides:
@@ -138,6 +141,13 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   // prevents updates after close.
   bool closed_ = false;
 
+  // Flag if the notification has been suppressed or not. A notification being
+  // suppressed means that there is some special restriction imposed which is
+  // preventing a notification that would otherwise display from doing so, e.g.
+  // holding space in-progress downloads integration causes suppression of most
+  // download in-progress notifications.
+  bool suppressed_ = false;
+
   download::DownloadItem::DownloadState previous_download_state_ =
       download::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
@@ -151,8 +161,6 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest,
   ImageDecodeStatus image_decode_status_ = NOT_STARTED;
 
   base::WeakPtrFactory<DownloadItemNotification> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemNotification);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_NOTIFICATION_DOWNLOAD_ITEM_NOTIFICATION_H_

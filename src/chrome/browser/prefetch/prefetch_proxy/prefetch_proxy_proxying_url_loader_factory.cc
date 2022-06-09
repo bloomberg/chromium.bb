@@ -25,6 +25,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/client_hints.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 
 namespace {
@@ -39,6 +42,9 @@ class SuccessCount : public base::RefCounted<SuccessCount> {
  public:
   SuccessCount() = default;
 
+  SuccessCount(const SuccessCount&) = delete;
+  SuccessCount& operator=(const SuccessCount&) = delete;
+
   void Increment() { count_++; }
   size_t count() const { return count_; }
 
@@ -47,8 +53,6 @@ class SuccessCount : public base::RefCounted<SuccessCount> {
   ~SuccessCount() = default;
 
   size_t count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SuccessCount);
 };
 
 // This is the eligibility callback for
@@ -71,8 +75,8 @@ void SingleURLEligibilityCheckResult(
   // Once no more callbacks reference the given arguments, they will all be
   // cleaned up and |callback| will be destroyed, never having been run,,
   if (success_count->count() == resources.size()) {
-    for (const GURL& url : resources) {
-      callback.Run(url);
+    for (const GURL& resource_url : resources) {
+      callback.Run(resource_url);
     }
   }
 }
@@ -94,6 +98,9 @@ void CheckRedirectsBeforeRunningResourceSuccessfulCallback(
   for (const GURL& url : resources) {
     PrefetchProxyTabHelper::CheckEligibilityOfURL(
         profile, url,
+        PrefetchType(/*use_isolated_network_context=*/true,
+                     /*use_prefetch_proxy=*/true,
+                     /*can_prefetch_subresources=*/true),
         base::BindOnce(&SingleURLEligibilityCheckResult, resources, callback,
                        success_count));
   }
@@ -375,10 +382,10 @@ void PrefetchProxyProxyingURLLoaderFactory::CreateLoaderAndStart(
     // Do not allow insecure resources to be fetched due to risk of privacy
     // leaks in an HSTS setting.
     if (!request.url.SchemeIs(url::kHttpsScheme)) {
-      std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
+      auto abort_request = std::make_unique<AbortRequest>(
           std::move(loader_receiver), std::move(client));
       // The request will manage its own lifecycle based on the mojo pipes.
-      request.release();
+      abort_request.release();
       return;
     }
 
@@ -386,10 +393,10 @@ void PrefetchProxyProxyingURLLoaderFactory::CreateLoaderAndStart(
     request_count_++;
     if (request_count_ > PrefetchProxyMaxSubresourcesPerPrerender()) {
       metrics_observer_->OnResourceThrottled(request.url);
-      std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
+      auto abort_request = std::make_unique<AbortRequest>(
           std::move(loader_receiver), std::move(client));
       // The request will manage its own lifecycle based on the mojo pipes.
-      request.release();
+      abort_request.release();
       return;
     }
 
@@ -399,10 +406,10 @@ void PrefetchProxyProxyingURLLoaderFactory::CreateLoaderAndStart(
     if (prefetch_proxy_service && !prefetch_proxy_service->proxy_configurator()
                                        ->IsPrefetchProxyAvailable()) {
       metrics_observer_->OnProxyUnavailableForResource(request.url);
-      std::unique_ptr<AbortRequest> request = std::make_unique<AbortRequest>(
+      auto abort_request = std::make_unique<AbortRequest>(
           std::move(loader_receiver), std::move(client));
       // The request will manage its own lifecycle based on the mojo pipes.
-      request.release();
+      abort_request.release();
       return;
     }
 
@@ -410,6 +417,9 @@ void PrefetchProxyProxyingURLLoaderFactory::CreateLoaderAndStart(
     // flag if so.
     PrefetchProxyTabHelper::CheckEligibilityOfURL(
         profile, request.url,
+        PrefetchType(/*use_isolated_network_context=*/true,
+                     /*use_prefetch_proxy=*/true,
+                     /*can_prefetch_subresources=*/true),
         base::BindOnce(
             &PrefetchProxyProxyingURLLoaderFactory::OnEligibilityResult,
             weak_factory_.GetWeakPtr(), profile, std::move(loader_receiver),
@@ -471,15 +481,14 @@ void PrefetchProxyProxyingURLLoaderFactory::OnEligibilityResult(
   isolated_request.headers.RemoveHeader("Accept-Language");
 
   // Strip out all Client Hints.
-  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& header = elem.second;
     // UA Client Hint and UA Mobile are ok to send.
-    if (std::string(blink::kClientHintsHeaderMapping[i]) ==
-            kAllowedUAClientHint ||
-        std::string(blink::kClientHintsHeaderMapping[i]) ==
-            kAllowedUAMobileClientHint) {
+    if (header == kAllowedUAClientHint ||
+        header == kAllowedUAMobileClientHint) {
       continue;
     }
-    isolated_request.headers.RemoveHeader(blink::kClientHintsHeaderMapping[i]);
+    isolated_request.headers.RemoveHeader(header);
   }
 
   ResourceLoadSuccessfulCallback resource_load_successful_callback =

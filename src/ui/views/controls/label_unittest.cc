@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/gtest_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -36,6 +37,7 @@
 #include "ui/views/controls/base_control_test_widget.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/view_metadata_test_utils.h"
 #include "ui/views/test/views_test_base.h"
@@ -62,6 +64,9 @@ class TestLabel : public Label {
  public:
   TestLabel() : Label(u"TestLabel") { SizeToPreferredSize(); }
 
+  TestLabel(const TestLabel&) = delete;
+  TestLabel& operator=(const TestLabel&) = delete;
+
   int schedule_paint_count() const { return schedule_paint_count_; }
 
   void SimulatePaint() {
@@ -81,8 +86,6 @@ class TestLabel : public Label {
 
  private:
   int schedule_paint_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLabel);
 };
 
 // A test utility function to set the application default text direction.
@@ -128,7 +131,7 @@ class LabelTest : public test::BaseControlTestWidget {
   Label* label() { return label_; }
 
  private:
-  Label* label_ = nullptr;
+  raw_ptr<Label> label_ = nullptr;
 };
 
 // Test fixture for text selection related tests.
@@ -143,6 +146,9 @@ class LabelSelectionTest : public LabelTest {
   enum { NW, NORTH, NE, SE, SOUTH, SW };
 
   LabelSelectionTest() = default;
+
+  LabelSelectionTest(const LabelSelectionTest&) = delete;
+  LabelSelectionTest& operator=(const LabelSelectionTest&) = delete;
 
   // LabelTest overrides:
   void SetUp() override {
@@ -187,7 +193,7 @@ class LabelSelectionTest : public LabelTest {
     label()->OnPaint(&canvas);
   }
 
-  gfx::Point GetCursorPoint(int index) {
+  gfx::Point GetCursorPoint(uint32_t index) {
     SimulatePaint();
     gfx::RenderText* render_text =
         label()->GetRenderTextForSelectionController();
@@ -233,8 +239,6 @@ class LabelSelectionTest : public LabelTest {
 
  private:
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
 };
 
 TEST_F(LabelTest, Metadata) {
@@ -640,6 +644,24 @@ TEST_F(LabelTest, Accessibility) {
   label()->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(label()->GetText(),
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(LabelTest, SetTextNotifiesAccessibilityEvent) {
+  test::AXEventCounter counter(views::AXEventManager::Get());
+
+  // Changing the text affects the accessible name, so it should notify.
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
+  label()->SetText(u"Example");
+  EXPECT_EQ(u"Example", label()->GetAccessibleName());
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged));
+
+  // Changing the text when it doesn't affect the accessible name should not
+  // notify.
+  label()->SetAccessibleName(u"Name");
+  EXPECT_EQ(2, counter.GetCount(ax::mojom::Event::kTextChanged));
+  label()->SetText(u"Example2");
+  EXPECT_EQ(u"Name", label()->GetAccessibleName());
+  EXPECT_EQ(2, counter.GetCount(ax::mojom::Event::kTextChanged));
 }
 
 TEST_F(LabelTest, TextChangeWithoutLayout) {
@@ -1106,9 +1128,15 @@ TEST_F(LabelTest, GetSubstringBounds) {
 }
 
 // TODO(crbug.com/1139395): Enable on ChromeOS along with the DCHECK in Label.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface \
+  DISABLED_ChecksSubpixelRenderingOntoOpaqueSurface
+#else
+#define MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface \
+  ChecksSubpixelRenderingOntoOpaqueSurface
+#endif
 // Ensures DCHECK for subpixel rendering on transparent layer is working.
-TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
+TEST_F(LabelTest, MAYBE_ChecksSubpixelRenderingOntoOpaqueSurface) {
   View view;
   Label* label = view.AddChildView(std::make_unique<TestLabel>());
   EXPECT_TRUE(label->GetSubpixelRenderingEnabled());
@@ -1138,7 +1166,6 @@ TEST_F(LabelTest, ChecksSubpixelRenderingOntoOpaqueSurface) {
   view.SetBackground(CreateSolidBackground(SK_ColorWHITE));
   label->OnPaint(&canvas);
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.

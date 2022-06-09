@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
+#include "base/notreached.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/browser/cast_web_view_default.h"
@@ -33,7 +33,6 @@ namespace chromecast {
 namespace {
 
 uint32_t remove_data_mask =
-    content::StoragePartition::REMOVE_DATA_MASK_APPCACHE |
     content::StoragePartition::REMOVE_DATA_MASK_COOKIES |
     content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
     content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
@@ -43,32 +42,56 @@ uint32_t remove_data_mask =
 }  // namespace
 
 CastWebService::CastWebService(content::BrowserContext* browser_context,
-                               CastWebViewFactory* web_view_factory,
                                CastWindowManager* window_manager)
     : browser_context_(browser_context),
-      web_view_factory_(web_view_factory),
       window_manager_(window_manager),
+      default_web_view_factory_(browser_context),
+      override_web_view_factory_(nullptr),
       overlay_renderer_cache_(
           std::make_unique<LRURendererCache>(browser_context_, 1)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   DCHECK(browser_context_);
-  DCHECK(web_view_factory_);
   DCHECK(task_runner_);
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 CastWebService::~CastWebService() = default;
 
-CastWebView::Scoped CastWebService::CreateWebView(
-    const CastWebView::CreateParams& params,
-    const GURL& initial_url) {
+void CastWebService::OverrideWebViewFactory(
+    CastWebViewFactory* web_view_factory) {
+  override_web_view_factory_ = web_view_factory;
+}
+
+CastWebView::Scoped CastWebService::CreateWebViewInternal(
+    mojom::CastWebViewParamsPtr params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto web_view = web_view_factory_->CreateWebView(params, this, initial_url);
+  CastWebViewFactory* web_view_factory = override_web_view_factory_;
+  if (!web_view_factory) {
+    web_view_factory = &default_web_view_factory_;
+  }
+  auto web_view = web_view_factory->CreateWebView(std::move(params), this);
   CastWebView::Scoped scoped(web_view.release(), [this](CastWebView* web_view) {
     OwnerDestroyed(web_view);
   });
+
   return scoped;
+}
+
+void CastWebService::CreateWebView(
+    mojom::CastWebViewParamsPtr params,
+    mojo::PendingReceiver<mojom::CastWebContents> web_contents,
+    mojo::PendingReceiver<mojom::CastContentWindow> window) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CastWebViewFactory* web_view_factory = override_web_view_factory_;
+  if (!web_view_factory) {
+    web_view_factory = &default_web_view_factory_;
+  }
+  auto web_view = web_view_factory->CreateWebView(std::move(params), this);
+  web_view->cast_web_contents()->SetDisconnectCallback(base::BindOnce(
+      &CastWebService::OwnerDestroyed, base::Unretained(this), web_view.get()));
+  web_view->BindReceivers(std::move(web_contents), std::move(window));
+  web_views_.insert(std::move(web_view));
 }
 
 void CastWebService::FlushDomLocalStorage() {
@@ -79,7 +102,7 @@ void CastWebService::FlushDomLocalStorage() {
       }));
 }
 
-void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
+void CastWebService::ClearLocalStorage(ClearLocalStorageCallback callback) {
   browser_context_->ForEachStoragePartition(
       base::BindRepeating(
           [](base::OnceClosure cb, content::StoragePartition* partition) {
@@ -97,22 +120,29 @@ void CastWebService::ClearLocalStorage(base::OnceClosure callback) {
           base::Passed(std::move(callback))));
 }
 
+bool CastWebService::IsCastWebUIOrigin(const url::Origin& origin) {
+  return std::find(cast_webui_hosts_.begin(), cast_webui_hosts_.end(),
+                   origin.host()) != cast_webui_hosts_.end();
+}
+
 void CastWebService::RegisterWebUiClient(
     mojo::PendingRemote<mojom::WebUiClient> client,
     const std::vector<std::string>& hosts) {
+  cast_webui_hosts_ = hosts;
   content::WebUIControllerFactory::RegisterFactory(
       new CastWebUiControllerFactory(std::move(client), hosts));
 }
 
-void CastWebService::DeleteExpiringWebViews() {
+void CastWebService::DeleteOwnedWebViews() {
   DCHECK(!immediately_delete_webviews_);
   // We don't want to delay webview deletion after this point.
   immediately_delete_webviews_ = true;
-  expiring_web_views_.clear();
+  web_views_.clear();
 }
 
 void CastWebService::OwnerDestroyed(CastWebView* web_view) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  web_view->OwnerDestroyed();
   content::WebContents* web_contents = web_view->web_contents();
   GURL url;
   if (web_contents) {
@@ -122,15 +152,20 @@ void CastWebService::OwnerDestroyed(CastWebView* web_view) {
     content::MediaSession::Get(web_contents)
         ->Suspend(content::MediaSession::SuspendType::kSystem);
   }
+  if (std::none_of(web_views_.begin(), web_views_.end(),
+                   [web_view](const std::unique_ptr<CastWebView>& ptr) {
+                     return ptr.get() == web_view;
+                   })) {
+    web_views_.emplace(web_view);
+  }
   auto delay = web_view->shutdown_delay();
   if (delay <= base::TimeDelta() || immediately_delete_webviews_) {
     LOG(INFO) << "Immediately deleting CastWebView for " << url;
-    delete web_view;
+    DeleteWebView(web_view);
     return;
   }
   LOG(INFO) << "Deleting CastWebView for " << url << " in "
             << delay.InMilliseconds() << " milliseconds.";
-  expiring_web_views_.emplace(web_view);
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastWebService::DeleteWebView, weak_ptr_, web_view),
@@ -139,7 +174,7 @@ void CastWebService::OwnerDestroyed(CastWebView* web_view) {
 
 void CastWebService::DeleteWebView(CastWebView* web_view) {
   LOG(INFO) << "Deleting CastWebView.";
-  base::EraseIf(expiring_web_views_,
+  base::EraseIf(web_views_,
                 [web_view](const std::unique_ptr<CastWebView>& ptr) {
                   return ptr.get() == web_view;
                 });
@@ -150,7 +185,7 @@ void CastWebService::CreateSessionWithSubstitutions(
     std::vector<mojom::SubstitutableParameterPtr> params) {
   DCHECK(settings_managers_.find(session_id) == settings_managers_.end());
   auto settings_manager_it = settings_managers_.insert_or_assign(
-      session_id, std::make_unique<IdentificationSettingsManager>());
+      session_id, base::MakeRefCounted<IdentificationSettingsManager>());
   settings_manager_it.first->second->SetSubstitutableParameters(
       std::move(params));
   LOG(INFO) << "Added session: " << session_id;
@@ -197,14 +232,14 @@ void CastWebService::OnSessionDestroyed(const std::string& session_id) {
   LOG(ERROR) << "Failed to erase session: " << session_id;
 }
 
-CastURLLoaderThrottle::Delegate*
+scoped_refptr<CastURLLoaderThrottle::Delegate>
 CastWebService::GetURLLoaderThrottleDelegateForSession(
     const std::string& session_id) {
   auto delegate_it = settings_managers_.find(session_id);
   if (delegate_it == settings_managers_.end()) {
     return nullptr;
   }
-  return delegate_it->second.get();
+  return delegate_it->second;
 }
 
 IdentificationSettingsManager* CastWebService::GetSessionManager(

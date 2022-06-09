@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -29,7 +30,6 @@ extern const char kDataToRemoveKey[];
 extern const char kOptionsKey[];
 
 // Type keys.
-extern const char kAppCacheKey[];
 extern const char kCacheKey[];
 extern const char kCookiesKey[];
 extern const char kDownloadsKey[];
@@ -84,7 +84,7 @@ class BrowsingDataSettingsFunction : public ExtensionFunction {
   bool isDataTypeSelected(browsing_data::BrowsingDataType data_type,
                           browsing_data::ClearBrowsingDataTab tab);
 
-  PrefService* prefs_ = nullptr;
+  raw_ptr<PrefService> prefs_ = nullptr;
 };
 
 // This serves as a base class from which the browsing data API removal
@@ -125,7 +125,8 @@ class BrowsingDataRemoverFunction
   // Parse the developer-provided |origin_types| object into |origin_type_mask|
   // that can be used with the BrowsingDataRemover.
   // Returns true if parsing was successful.
-  bool ParseOriginTypeMask(const base::DictionaryValue& options,
+  // Pre-condition: `options` is a dictionary.
+  bool ParseOriginTypeMask(const base::Value& options,
                            uint64_t* origin_type_mask);
 
   // Parses the developer-provided list of origins into |result|.

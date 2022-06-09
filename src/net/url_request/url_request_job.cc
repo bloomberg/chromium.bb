@@ -10,9 +10,10 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/auth.h"
@@ -23,11 +24,13 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/proxy_server.h"
+#include "net/cert/x509_certificate.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request_context.h"
 
@@ -55,6 +58,10 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
     DCHECK(job_);
   }
 
+  URLRequestJobSourceStream(const URLRequestJobSourceStream&) = delete;
+  URLRequestJobSourceStream& operator=(const URLRequestJobSourceStream&) =
+      delete;
+
   ~URLRequestJobSourceStream() override = default;
 
   // SourceStream implementation:
@@ -74,9 +81,7 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
   // It is safe to keep a raw pointer because |job_| owns the last stream which
   // indirectly owns |this|. Therefore, |job_| will not be destroyed when |this|
   // is alive.
-  URLRequestJob* const job_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestJobSourceStream);
+  const raw_ptr<URLRequestJob> job_;
 };
 
 URLRequestJob::URLRequestJob(URLRequest* request)
@@ -283,7 +288,7 @@ GURL MaybeStripToOrigin(GURL url, bool should_strip_to_origin) {
   if (!should_strip_to_origin)
     return url;
 
-  return url.GetOrigin();
+  return url.DeprecatedGetOriginAsURL();
 }
 
 }  // namespace
@@ -401,17 +406,16 @@ void URLRequestJob::NotifySSLCertificateError(int net_error,
   request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
 }
 
-bool URLRequestJob::CanGetCookies() const {
-  return request_->CanGetCookies();
+void URLRequestJob::AnnotateAndMoveUserBlockedCookies(
+    CookieAccessResultList& maybe_included_cookies,
+    CookieAccessResultList& excluded_cookies) const {
+  request_->AnnotateAndMoveUserBlockedCookies(maybe_included_cookies,
+                                              excluded_cookies);
 }
 
 bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,
                                  CookieOptions* options) const {
   return request_->CanSetCookie(cookie, options);
-}
-
-PrivacyMode URLRequestJob::privacy_mode() const {
-  return request_->privacy_mode();
 }
 
 void URLRequestJob::NotifyHeadersComplete() {

@@ -48,6 +48,11 @@ class QMTest
       encoder->Control(AV1E_SET_QM_MAX, qm_max_);
 
       encoder->Control(AOME_SET_MAX_INTRA_BITRATE_PCT, 100);
+      if (mode_ == ::libaom_test::kRealTime) {
+        encoder->Control(AV1E_SET_ALLOW_WARPED_MOTION, 0);
+        encoder->Control(AV1E_SET_ENABLE_GLOBAL_MOTION, 0);
+        encoder->Control(AV1E_SET_ENABLE_OBMC, 0);
+      }
     }
   }
 

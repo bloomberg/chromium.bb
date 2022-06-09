@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_
 #define CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -25,7 +26,7 @@ class SecureDnsConfig;
 class StubResolverConfigReader {
  public:
   static constexpr base::TimeDelta kParentalControlsCheckDelay =
-      base::TimeDelta::FromSeconds(2);
+      base::Seconds(2);
 
   // |local_state| must outlive the created reader.
   explicit StubResolverConfigReader(PrefService* local_state,
@@ -74,6 +75,10 @@ class StubResolverConfigReader {
                                         bool has_device_owner);
 #endif
 
+  void OverrideParentalControlsForTesting(bool parental_controls_override) {
+    parental_controls_testing_override_ = parental_controls_override;
+  }
+
  private:
   void OnParentalControlsDelayTimer();
 
@@ -84,7 +89,7 @@ class StubResolverConfigReader {
       bool record_metrics,
       bool update_network_service);
 
-  PrefService* const local_state_;
+  const raw_ptr<PrefService> local_state_;
 
   // Timer for deferred running of parental controls checks. Underling API calls
   // may be slow and run off-thread. Calling for the result is delayed to avoid
@@ -93,6 +98,8 @@ class StubResolverConfigReader {
   // Whether or not parental controls have already been checked, either due to
   // expiration of the delay timer or because of a forced check.
   bool parental_controls_checked_ = false;
+
+  absl::optional<bool> parental_controls_testing_override_;
 
   // This object lives on the UI thread, but it's possible for it to be created
   // before BrowserMainLoop::CreateThreads() is called which would cause a

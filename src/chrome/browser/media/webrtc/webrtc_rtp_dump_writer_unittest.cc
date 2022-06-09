@@ -12,11 +12,11 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -159,7 +159,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
 
     // Reads each packet dump.
     while (dump_pos < dump.size()) {
-      size_t packet_dump_length = 0;
+      uint16_t packet_dump_length = 0;
       if (!VerifyPacketDump(&dump[dump_pos],
                             dump.size() - dump_pos,
                             &packet_dump_length)) {
@@ -181,12 +181,11 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
   // the packet dump.
   bool VerifyPacketDump(const uint8_t* dump,
                         size_t dump_length,
-                        size_t* packet_dump_length) {
+                        uint16_t* packet_dump_length) {
     static const size_t kDumpHeaderLength = 8;
 
     size_t dump_pos = 0;
-    base::ReadBigEndian(reinterpret_cast<const char*>(dump + dump_pos),
-                        reinterpret_cast<uint16_t*>(packet_dump_length));
+    base::ReadBigEndian(dump + dump_pos, packet_dump_length);
     if (*packet_dump_length < kDumpHeaderLength + kMinimumRtpHeaderLength)
       return false;
 
@@ -194,8 +193,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
     dump_pos += sizeof(uint16_t);
 
     uint16_t rtp_packet_length = 0;
-    base::ReadBigEndian(reinterpret_cast<const char*>(dump + dump_pos),
-                        &rtp_packet_length);
+    base::ReadBigEndian(dump + dump_pos, &rtp_packet_length);
     if (rtp_packet_length < kMinimumRtpHeaderLength)
       return false;
 
@@ -220,9 +218,8 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
       return false;
 
     uint16_t extension_count = 0;
-    base::ReadBigEndian(
-        reinterpret_cast<const char*>(header + header_length_without_extn + 2),
-        &extension_count);
+    base::ReadBigEndian(header + header_length_without_extn + 2,
+                        &extension_count);
 
     if (length < (extension_count + 1) * 4 + header_length_without_extn)
       return false;

@@ -32,7 +32,7 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
-namespace chromeos {
+namespace ash {
 
 class RemoteAppsImpl;
 
@@ -41,11 +41,12 @@ class RemoteAppsImpl;
 // The IDs of the added apps and folders are GUIDs generated using
 // |base::GenerateGUID()|.
 // See crbug.com/1101208 for more details on Remote Apps.
-class RemoteAppsManager : public KeyedService,
-                          public apps::RemoteApps::Delegate,
-                          public app_list::AppListSyncableService::Observer,
-                          public AppListModelUpdaterObserver,
-                          public remote_apps::mojom::RemoteAppsFactory {
+class RemoteAppsManager
+    : public KeyedService,
+      public apps::RemoteApps::Delegate,
+      public app_list::AppListSyncableService::Observer,
+      public AppListModelUpdaterObserver,
+      public chromeos::remote_apps::mojom::RemoteAppsFactory {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -71,7 +72,7 @@ class RemoteAppsManager : public KeyedService,
   bool is_initialized() const { return is_initialized_; }
 
   void BindInterface(
-      mojo::PendingReceiver<remote_apps::mojom::RemoteAppsFactory>
+      mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteAppsFactory>
           pending_remote_apps_factory);
 
   using AddAppCallback =
@@ -92,6 +93,13 @@ class RemoteAppsManager : public KeyedService,
               const GURL& icon_url,
               bool add_to_front,
               AddAppCallback callback);
+
+  // Adds a folder if the specified folder is missing in `model_updater_`.
+  void MaybeAddFolder(const std::string& folder_id);
+
+  // Returns a const pointer to the info of the specified app. If the app does
+  // not exist, returns a nullptr.
+  const RemoteAppsModel::AppInfo* GetAppInfo(const std::string& app_id) const;
 
   // Deletes the app with id |id|.
   // Deleting a non-existent app will result in an error.
@@ -119,8 +127,9 @@ class RemoteAppsManager : public KeyedService,
 
   // remote_apps::mojom::RemoteAppsFactory:
   void Create(
-      mojo::PendingReceiver<remote_apps::mojom::RemoteApps> pending_remote_apps,
-      mojo::PendingRemote<remote_apps::mojom::RemoteAppLaunchObserver>
+      mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteApps>
+          pending_remote_apps,
+      mojo::PendingRemote<chromeos::remote_apps::mojom::RemoteAppLaunchObserver>
           pending_observer) override;
 
   // apps::RemoteApps::Delegate:
@@ -136,8 +145,6 @@ class RemoteAppsManager : public KeyedService,
 
   // AppListModelUpdaterObserver:
   void OnAppListItemAdded(ChromeAppListItem* item) override;
-
-  void SetRemoteAppsForTesting(std::unique_ptr<apps::RemoteApps> remote_apps);
 
   void SetImageDownloaderForTesting(
       std::unique_ptr<ImageDownloader> image_downloader);
@@ -166,7 +173,7 @@ class RemoteAppsManager : public KeyedService,
   std::unique_ptr<RemoteAppsModel> model_;
   std::unique_ptr<ImageDownloader> image_downloader_;
   base::ObserverList<Observer> observer_list_;
-  mojo::ReceiverSet<remote_apps::mojom::RemoteAppsFactory> receivers_;
+  mojo::ReceiverSet<chromeos::remote_apps::mojom::RemoteAppsFactory> receivers_;
   // Map from id to callback. The callback is run after |OnAppUpdate| for the
   // app has been observed.
   std::map<std::string, AddAppCallback> add_app_callback_map_;
@@ -180,6 +187,6 @@ class RemoteAppsManager : public KeyedService,
   base::WeakPtrFactory<RemoteAppsManager> weak_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_REMOTE_APPS_REMOTE_APPS_MANAGER_H_

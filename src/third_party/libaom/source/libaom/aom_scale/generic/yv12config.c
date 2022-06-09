@@ -185,7 +185,7 @@ static int calc_stride_and_planesize(const int ss_x, const int ss_y,
    * between planes, which would break the semantics of things like
    * aom_img_set_rect(). */
   if (border & 0x1f) return AOM_CODEC_MEM_ERROR;
-  *y_stride = ((aligned_width + 2 * border) + 31) & ~31;
+  *y_stride = aom_calc_y_stride(aligned_width, border);
   *yplane_size =
       (aligned_height + 2 * border) * (uint64_t)(*y_stride) + byte_alignment;
 

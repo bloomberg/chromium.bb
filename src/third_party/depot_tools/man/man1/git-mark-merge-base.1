@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-mark-merge-base
-.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 08/10/2020
+.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 07/01/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 8c3f7227
+.\"    Source: depot_tools 906b5026
 .\"  Language: English
 .\"
-.TH "GIT\-MARK\-MERGE\-BA" "1" "08/10/2020" "depot_tools 8c3f7227" "Chromium depot_tools Manual"
+.TH "GIT\-MARK\-MERGE\-BA" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,11 +39,11 @@ git-mark-merge-base \- Manually interact with depot_tools\*(Aq merge\-base marke
 .sp
 .SH "DESCRIPTION"
 .sp
-Inspect, set or delete the current merge\-base marker for the current branch\&. This should not be needed, but is useful if things get into a snarled state\&. Pass no arguments to view the current value\&. If you provide <commit hash>, then git mark\-merge\-base will attempt to set that as the merge\-base value\&.
+Inspect, set or delete the current merge\-base marker for the current branch\&. This should not be needed, but is useful if things get into a snarled state\&. Pass no arguments to view the current value\&. If you provide <commit hash>, then \fBgit mark\-merge\-base\fR will attempt to set that as the merge\-base value\&.
 .sp
 It is invalid to pick a commit which is not an ancestor of the current branch\&.
 .sp
-See \fBgit-rebase-update\fR(1)\*(Aqs description of the branch\&.<name>\&.base configuration variable for more info on what the merge base markers are for\&.
+See \fBgit-rebase-update\fR(1)\*(Aqs description of the \fBbranch\&.<name>\&.base\fR configuration variable for more info on what the merge base markers are for\&.
 .SH "OPTIONS"
 .PP
 \-d, \-\-delete

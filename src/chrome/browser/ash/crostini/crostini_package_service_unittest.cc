@@ -15,9 +15,9 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,7 +26,7 @@
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
-#include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
@@ -37,9 +37,9 @@
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace crostini {
 
@@ -209,7 +209,8 @@ class CrostiniPackageServiceTest : public testing::Test {
         storage::FileSystemMountOption(),
         file_manager::util::GetDownloadsFolderForProfile(profile_.get()));
     package_file_url_ = mount_points->CreateExternalFileSystemURL(
-        url::Origin(), mount_point_name, base::FilePath(kPackageFilePath));
+        blink::StorageKey(), mount_point_name,
+        base::FilePath(kPackageFilePath));
 
     auto* crostini_manager = CrostiniManager::GetForProfile(profile_.get());
     ASSERT_TRUE(crostini_manager);

@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
@@ -31,6 +32,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   MediaDevicesDispatcherHost(int render_process_id,
                              int render_frame_id,
                              MediaStreamManager* media_stream_manager);
+
+  MediaDevicesDispatcherHost(const MediaDevicesDispatcherHost&) = delete;
+  MediaDevicesDispatcherHost& operator=(const MediaDevicesDispatcherHost&) =
+      delete;
+
   ~MediaDevicesDispatcherHost() override;
 
   static void Create(
@@ -64,6 +70,10 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       override;
   void SetCaptureHandleConfig(
       blink::mojom::CaptureHandleConfigPtr config) override;
+#if !defined(OS_ANDROID)
+  void CloseFocusWindowOfOpportunity(const std::string& label) override;
+  void ProduceCropId(ProduceCropIdCallback callback) override;
+#endif
 
  private:
   friend class MediaDevicesDispatcherHostTest;
@@ -134,7 +144,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   const int render_frame_id_;
 
   // The following fields can only be accessed on the IO thread.
-  MediaStreamManager* media_stream_manager_;
+  const raw_ptr<MediaStreamManager> media_stream_manager_;
 
   struct AudioInputCapabilitiesRequest;
   // Queued requests for audio-input capabilities.
@@ -153,8 +163,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       capture_handle_config_callback_for_testing_;
 
   base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MediaDevicesDispatcherHost);
 };
 
 }  // namespace content

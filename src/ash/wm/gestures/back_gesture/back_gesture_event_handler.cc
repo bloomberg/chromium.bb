@@ -5,11 +5,11 @@
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/keyboard/keyboard_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
-#include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
@@ -139,10 +139,12 @@ void ActivateUnderneathWindowInSplitViewMode(
                              : split_view_controller->left_window();
   auto* right_window = is_rtl ? split_view_controller->left_window()
                               : split_view_controller->right_window();
-  const OrientationLockType current_orientation = GetCurrentScreenOrientation();
-  if (current_orientation == OrientationLockType::kLandscapePrimary) {
+  const chromeos::OrientationType current_orientation =
+      GetCurrentScreenOrientation();
+  if (current_orientation == chromeos::OrientationType::kLandscapePrimary) {
     ActivateWindow(dragged_from_splitview_divider ? right_window : left_window);
-  } else if (current_orientation == OrientationLockType::kLandscapeSecondary) {
+  } else if (current_orientation ==
+             chromeos::OrientationType::kLandscapeSecondary) {
     ActivateWindow(dragged_from_splitview_divider ? left_window : right_window);
   } else {
     if (left_window &&
@@ -171,19 +173,14 @@ void ActivateUnderneathWindowInSplitViewMode(
 
 }  // namespace
 
-BackGestureEventHandler::BackGestureEventHandler()
-    : gesture_provider_(this, this) {
+BackGestureEventHandler::BackGestureEventHandler() {
   if (features::AreContextualNudgesEnabled()) {
     nudge_controller_ =
         std::make_unique<BackGestureContextualNudgeControllerImpl>();
   }
-
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
-BackGestureEventHandler::~BackGestureEventHandler() {
-  display::Screen::GetScreen()->RemoveObserver(this);
-}
+BackGestureEventHandler::~BackGestureEventHandler() = default;
 
 void BackGestureEventHandler::OnDisplayMetricsChanged(
     const display::Display& display,
@@ -419,7 +416,7 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
       dragged_from_splitview_divider_ = false;
 
       return true;
-    } break;
+    }
     default:
       break;
   }

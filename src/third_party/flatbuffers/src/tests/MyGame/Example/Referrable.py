@@ -10,12 +10,16 @@ class Referrable(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsReferrable(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = Referrable()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsReferrable(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def ReferrableBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x4D\x4F\x4E\x53", size_prefixed=size_prefixed)
@@ -32,9 +36,14 @@ class Referrable(object):
         return 0
 
 def ReferrableStart(builder): builder.StartObject(1)
+def Start(builder):
+    return ReferrableStart(builder)
 def ReferrableAddId(builder, id): builder.PrependUint64Slot(0, id, 0)
+def AddId(builder, id):
+    return ReferrableAddId(builder, id)
 def ReferrableEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return ReferrableEnd(builder)
 
 class ReferrableT(object):
 

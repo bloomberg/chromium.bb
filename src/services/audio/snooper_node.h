@@ -8,7 +8,6 @@
 #include <limits>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/base/audio_parameters.h"
@@ -64,6 +63,9 @@ class SnooperNode final : public LoopbackGroupMember::Snooper {
   // in [possibly] another format.
   SnooperNode(const media::AudioParameters& input_params,
               const media::AudioParameters& output_params);
+
+  SnooperNode(const SnooperNode&) = delete;
+  SnooperNode& operator=(const SnooperNode&) = delete;
 
   ~SnooperNode() final;
 
@@ -170,8 +172,6 @@ class SnooperNode final : public LoopbackGroupMember::Snooper {
 
   // The frame position where recording into the delay buffer always starts.
   static constexpr FrameTicks kWriteStartPosition = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SnooperNode);
 };
 
 }  // namespace audio

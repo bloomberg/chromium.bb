@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -54,6 +53,10 @@ bool PreviousConnectAttemptHadError(const NetworkState* network) {
 class NetworkConnectImpl : public NetworkConnect {
  public:
   explicit NetworkConnectImpl(Delegate* delegate);
+
+  NetworkConnectImpl(const NetworkConnectImpl&) = delete;
+  NetworkConnectImpl& operator=(const NetworkConnectImpl&) = delete;
+
   ~NetworkConnectImpl() override;
 
   // NetworkConnect
@@ -105,8 +108,6 @@ class NetworkConnectImpl : public NetworkConnect {
 
   Delegate* delegate_;
   base::WeakPtrFactory<NetworkConnectImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkConnectImpl);
 };
 
 NetworkConnectImpl::NetworkConnectImpl(Delegate* delegate)
@@ -298,8 +299,8 @@ void NetworkConnectImpl::SetPropertiesToClear(
   // Move empty string properties to properties_to_clear.
   for (base::DictionaryValue::Iterator iter(*properties_to_set);
        !iter.IsAtEnd(); iter.Advance()) {
-    std::string value_str;
-    if (iter.value().GetAsString(&value_str) && value_str.empty())
+    const std::string* value_str = iter.value().GetIfString();
+    if (value_str && (*value_str).empty())
       properties_to_clear->push_back(iter.key());
   }
   // Remove cleared properties from properties_to_set.

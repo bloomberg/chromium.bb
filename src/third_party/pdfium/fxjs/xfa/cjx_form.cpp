@@ -12,6 +12,8 @@
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "v8/include/cppgc/allocation.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
@@ -140,7 +142,8 @@ void CJX_Form::checksumS(v8::Isolate* pIsolate,
     return;
   }
 
-  Optional<WideString> checksum = TryAttribute(XFA_Attribute::Checksum, false);
+  absl::optional<WideString> checksum =
+      TryAttribute(XFA_Attribute::Checksum, false);
   *pValue = fxv8::NewStringHelper(
       pIsolate,
       checksum.has_value() ? checksum.value().ToUTF8().AsStringView() : "");

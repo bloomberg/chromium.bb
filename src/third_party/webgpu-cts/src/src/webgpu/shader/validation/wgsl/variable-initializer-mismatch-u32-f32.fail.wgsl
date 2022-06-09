@@ -2,6 +2,6 @@
 
 var<private> f : u32  = 0.0;
 
-[[stage(vertex)]]
+[[stage(fragment)]]
 fn main() {
 }

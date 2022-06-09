@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "cast/standalone_receiver/avcodec_glue.h"
+#include "util/enum_name_table.h"
 #include "util/osp_logging.h"
 #include "util/trace_logging.h"
 
@@ -18,6 +19,13 @@ namespace {
 constexpr char kVideoMediaType[] = "video";
 }  // namespace
 
+constexpr EnumNameTable<VideoCodec, 6> kFfmpegCodecDescriptors{
+    {{"h264", VideoCodec::kH264},
+     {"vp8", VideoCodec::kVp8},
+     {"hevc", VideoCodec::kHevc},
+     {"vp9", VideoCodec::kVp9},
+     {"libaom-av1", VideoCodec::kAv1}}};
+
 SDLVideoPlayer::SDLVideoPlayer(ClockNowFunctionPtr now_function,
                                TaskRunner* task_runner,
                                Receiver* receiver,
@@ -27,7 +35,7 @@ SDLVideoPlayer::SDLVideoPlayer(ClockNowFunctionPtr now_function,
     : SDLPlayerBase(now_function,
                     task_runner,
                     receiver,
-                    CodecToString(codec),
+                    GetEnumName(kFfmpegCodecDescriptors, codec).value(),
                     std::move(error_callback),
                     kVideoMediaType),
       renderer_(renderer) {

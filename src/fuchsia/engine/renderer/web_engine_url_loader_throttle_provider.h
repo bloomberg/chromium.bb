@@ -5,7 +5,6 @@
 #ifndef FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_URL_LOADER_THROTTLE_PROVIDER_H_
 #define FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_URL_LOADER_THROTTLE_PROVIDER_H_
 
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 
@@ -19,6 +18,12 @@ class WebEngineURLLoaderThrottleProvider
  public:
   explicit WebEngineURLLoaderThrottleProvider(
       WebEngineContentRendererClient* content_renderer_client);
+
+  WebEngineURLLoaderThrottleProvider(
+      const WebEngineURLLoaderThrottleProvider&) = delete;
+  WebEngineURLLoaderThrottleProvider& operator=(
+      const WebEngineURLLoaderThrottleProvider&) = delete;
+
   ~WebEngineURLLoaderThrottleProvider() override;
 
   // blink::URLLoaderThrottleProvider implementation.
@@ -31,8 +36,6 @@ class WebEngineURLLoaderThrottleProvider
  private:
   const WebEngineContentRendererClient* const content_renderer_client_;
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(WebEngineURLLoaderThrottleProvider);
 };
 
 #endif  // FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_URL_LOADER_THROTTLE_PROVIDER_H_

@@ -31,6 +31,7 @@
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/features/feature_channel.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 using content::BrowserContext;
@@ -126,9 +127,8 @@ void CastExtensionsBrowserClient::LoadResourceFromResourceBundle(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
     const base::FilePath& resource_relative_path,
     int resource_id,
-    const std::string& content_security_policy,
-    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-    bool send_cors_header) {
+    scoped_refptr<net::HttpResponseHeaders> headers,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   NOTREACHED() << "Cannot load resource from bundle w/o path";
 }
 
@@ -237,7 +237,7 @@ void CastExtensionsBrowserClient::BroadcastEventToRenderers(
   // Currently ignoring the dispatch_to_off_the_record_profiles attribute
   // as it is not necessary at the time
   std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, args->TakeList()));
+      new Event(histogram_value, event_name, std::move(*args).TakeList()));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #import "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The implementation for the chrome://autofill-internals page.
@@ -15,10 +14,11 @@ class AutofillInternalsUIIOS : public web::WebUIIOSController {
  public:
   explicit AutofillInternalsUIIOS(web::WebUIIOS* web_ui,
                                   const std::string& host);
-  ~AutofillInternalsUIIOS() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutofillInternalsUIIOS);
+  AutofillInternalsUIIOS(const AutofillInternalsUIIOS&) = delete;
+  AutofillInternalsUIIOS& operator=(const AutofillInternalsUIIOS&) = delete;
+
+  ~AutofillInternalsUIIOS() override;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_WEBUI_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_AUTOFILL_INTERNALS_UI_IOS_H_

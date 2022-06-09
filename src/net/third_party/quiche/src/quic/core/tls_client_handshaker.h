@@ -50,6 +50,8 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   bool ReceivedInchoateReject() const override;
   int num_scup_messages_received() const override;
   std::string chlo_hash() const override;
+  bool ExportKeyingMaterial(absl::string_view label, absl::string_view context,
+                            size_t result_len, std::string* result) override;
 
   // From QuicCryptoClientStream::HandshakerInterface and TlsHandshaker
   bool encryption_established() const override;
@@ -81,8 +83,9 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
 
   void AllowEmptyAlpnForTests() { allow_empty_alpn_for_tests_ = true; }
   void AllowInvalidSNIForTests() { allow_invalid_sni_for_tests_ = true; }
-  SSL* GetSslForTests() { return tls_connection_.ssl(); }
-  const SSL* GetSslForTests() const { return tls_connection_.ssl(); }
+
+  // Make the SSL object from BoringSSL publicly accessible.
+  using TlsHandshaker::ssl;
 
  protected:
   const TlsConnection* tls_connection() const override {

@@ -16,6 +16,7 @@
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -122,6 +123,9 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // drawing a quad in the compositor.  However, for now, we use this flag to
   // refuse to promote so that the compositor will draw the quad.
   bool is_backed_by_surface_texture = false;
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_WIN)
   // Indicates that this resource would like a promotion hint.
   bool wants_promotion_hint = false;
 #endif
@@ -137,6 +141,8 @@ struct VIZ_COMMON_EXPORT TransferableResource {
            filter == o.filter &&
 #if defined(OS_ANDROID)
            is_backed_by_surface_texture == o.is_backed_by_surface_texture &&
+           wants_promotion_hint == o.wants_promotion_hint &&
+#elif defined(OS_WIN)
            wants_promotion_hint == o.wants_promotion_hint &&
 #endif
            read_lock_fences_enabled == o.read_lock_fences_enabled;

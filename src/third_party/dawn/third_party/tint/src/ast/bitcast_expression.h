@@ -33,36 +33,22 @@ class BitcastExpression : public Castable<BitcastExpression, Expression> {
   /// @param expr the expr
   BitcastExpression(ProgramID program_id,
                     const Source& source,
-                    ast::Type* type,
-                    Expression* expr);
+                    const Type* type,
+                    const Expression* expr);
   /// Move constructor
   BitcastExpression(BitcastExpression&&);
   ~BitcastExpression() override;
-
-  /// @returns the left side expression
-  ast::Type* type() const { return type_; }
-  /// @returns the expression
-  Expression* expr() const { return expr_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  BitcastExpression* Clone(CloneContext* ctx) const override;
+  const BitcastExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
-
- private:
-  BitcastExpression(const BitcastExpression&) = delete;
-
-  ast::Type* const type_;
-  Expression* const expr_;
+  /// the target cast type
+  const Type* const type;
+  /// the expression
+  const Expression* const expr;
 };
 
 }  // namespace ast

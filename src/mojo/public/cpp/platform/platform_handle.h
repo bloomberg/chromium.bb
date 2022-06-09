@@ -8,7 +8,6 @@
 #include "base/check_op.h"
 #include "base/component_export.h"
 #include "base/files/platform_file.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/platform_handle.h"
 
@@ -70,6 +69,9 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   explicit PlatformHandle(base::ScopedFD fd);
 #endif
+
+  PlatformHandle(const PlatformHandle&) = delete;
+  PlatformHandle& operator=(const PlatformHandle&) = delete;
 
   ~PlatformHandle();
 
@@ -228,8 +230,6 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   base::ScopedFD fd_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformHandle);
 };
 
 }  // namespace mojo

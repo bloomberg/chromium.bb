@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/mojom/print_common.mojom.h"
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
@@ -24,8 +25,8 @@
 #include "chrome/browser/ash/arc/print_spooler/arc_print_spooler_util.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printing_service.h"
+#include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #include "components/arc/intent_helper/custom_tab.h"
-#include "components/arc/mojom/print_common.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/c/system/types.h"
 #include "net/base/filename_util.h"
@@ -231,6 +232,7 @@ PrintSessionImpl::PrintSessionImpl(
     mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
     : ArcCustomTabModalDialogHost(std::make_unique<CustomTab>(arc_window),
                                   web_contents.get()),
+      content::WebContentsUserData<PrintSessionImpl>(*web_contents),
       instance_(std::move(instance)),
       session_receiver_(this, std::move(receiver)),
       web_contents_(std::move(web_contents)) {
@@ -364,7 +366,7 @@ void PrintSessionImpl::StartPrintAfterPluginIsLoaded() {
         FROM_HERE,
         base::BindOnce(&PrintSessionImpl::StartPrintAfterPluginIsLoaded,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
     LOG(WARNING) << "PDF plugin not ready yet.  Can't start print preview.";
     return;
   }
@@ -376,7 +378,7 @@ void PrintSessionImpl::StartPrintAfterPluginIsLoaded() {
       FROM_HERE,
       base::BindOnce(&PrintSessionImpl::StartPrintNow,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(500));
+      base::Milliseconds(500));
 }
 
 void PrintSessionImpl::StartPrintNow() {
@@ -385,6 +387,6 @@ void PrintSessionImpl::StartPrintNow() {
                        false, false);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintSessionImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintSessionImpl);
 
 }  // namespace arc

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -27,6 +28,7 @@ class MODULES_EXPORT AnimatorDefinition final
   explicit AnimatorDefinition(V8AnimatorConstructor* constructor,
                               V8AnimateCallback* animate,
                               V8StateCallback* state);
+  ~AnimatorDefinition() override = default;
   virtual void Trace(Visitor* visitor) const;
   const char* NameInHeapSnapshot() const override {
     return "AnimatorDefinition";

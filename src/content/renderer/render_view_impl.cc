@@ -4,13 +4,16 @@
 
 #include "content/renderer/render_view_impl.h"
 
+#include <map>
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/trees/ukm_manager.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/public/common/content_client.h"
@@ -21,8 +24,10 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/agent_scheduling_group.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -52,17 +57,6 @@ static base::LazyInstance<ViewMap>::Leaky g_view_map =
 typedef std::map<int32_t, RenderViewImpl*> RoutingIDViewMap;
 static base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
     LAZY_INSTANCE_INITIALIZER;
-
-// Time, in seconds, we delay before sending content state changes (such as form
-// state and scroll position) to the browser. We delay sending changes to avoid
-// spamming the browser.
-// To avoid having tab/session restore require sending a message to get the
-// current content state during tab closing we use a shorter timeout for the
-// foreground renderer. This means there is a small window of time from which
-// content state is modified and not sent to session restore, but this is
-// better than having to wake up all renderers during shutdown.
-const int kDelaySecondsForContentStateSyncHidden = 5;
-const int kDelaySecondsForContentStateSync = 1;
 
 // static
 WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
@@ -125,13 +119,14 @@ void RenderViewImpl::Initialize(
 
   // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(
-      this, params->hidden,
+      this, params->hidden, params->is_prerendering,
       params->type == mojom::ViewWidgetType::kPortal ? true : false,
+      params->type == mojom::ViewWidgetType::kFencedFrame ? true : false,
       /*compositing_enabled=*/true, params->never_composited,
       opener_frame ? opener_frame->View() : nullptr,
       std::move(params->blink_page_broadcast),
       agent_scheduling_group_.agent_group_scheduler(),
-      params->session_storage_namespace_id);
+      params->session_storage_namespace_id, params->base_background_color);
 
   g_view_map.Get().insert(std::make_pair(GetWebView(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -141,7 +136,7 @@ void RenderViewImpl::Initialize(
   webview_->SetWebPreferences(params->web_preferences);
 
   if (local_main_frame) {
-    main_render_frame_ = RenderFrameImpl::CreateMainFrame(
+    RenderFrameImpl::CreateMainFrame(
         agent_scheduling_group_, this, opener_frame,
         params->type != mojom::ViewWidgetType::kTopLevel,
         std::move(params->replication_state), params->devtools_main_frame_token,
@@ -151,20 +146,19 @@ void RenderViewImpl::Initialize(
         agent_scheduling_group_, params->main_frame->get_remote_params()->token,
         params->main_frame->get_remote_params()->routing_id,
         params->opener_frame_token, GetRoutingID(), MSG_ROUTING_NONE,
+        blink::mojom::TreeScopeType::kDocument /* ignored for main frames */,
         std::move(params->replication_state), params->devtools_main_frame_token,
         std::move(
             params->main_frame->get_remote_params()->main_frame_interfaces));
   }
 
   // TODO(davidben): Move this state from Blink into content.
-  if (params->window_was_created_with_opener)
+  if (params->window_was_opened_by_another_window)
     GetWebView()->SetOpenedByDOM();
 
   webview_->SetRendererPreferences(params->renderer_preferences);
 
-  GetContentClient()->renderer()->RenderViewCreated(this);
-
-  nav_state_sync_timer_.SetTaskRunner(task_runner);
+  GetContentClient()->renderer()->WebViewCreated(webview_);
 
 #if defined(OS_ANDROID)
   // TODO(sgurun): crbug.com/325351 Needed only for android webview's deprecated
@@ -206,11 +200,6 @@ RenderViewImpl* RenderViewImpl::FromRoutingID(int32_t routing_id) {
   return it == views->end() ? NULL : it->second;
 }
 
-/* static */
-size_t RenderView::GetRenderViewCount() {
-  return g_view_map.Get().size();
-}
-
 /*static*/
 void RenderView::ForEach(RenderViewVisitor* visitor) {
   DCHECK(RenderThread::IsMainThread());
@@ -248,17 +237,6 @@ void RenderViewImpl::Destroy() {
   webview_ = nullptr;
 
   delete this;
-}
-
-void RenderViewImpl::SendFrameStateUpdates() {
-  // Tell each frame with pending state to send its UpdateState message.
-  for (int render_frame_routing_id : frames_with_pending_state_) {
-    RenderFrameImpl* frame =
-        RenderFrameImpl::FromRoutingID(render_frame_routing_id);
-    if (frame)
-      frame->SendUpdateState();
-  }
-  frames_with_pending_state_.clear();
 }
 
 // blink::WebViewClient ------------------------------------------------------
@@ -312,6 +290,13 @@ WebView* RenderViewImpl::CreateView(
     params->impression = blink::ConvertWebImpressionToImpression(*impression);
   }
 
+  params->download_policy.ApplyDownloadFramePolicy(
+      /*is_opener_navigation=*/false, request.HasUserGesture(),
+      // `openee_can_access_opener_origin` only matters for opener navigations,
+      // so its value here is irrelevant.
+      /*openee_can_access_opener_origin=*/true, !creator->IsAllowedToDownload(),
+      creator->IsAdSubframe());
+
   // We preserve this information before sending the message since |params| is
   // moved on send.
   bool is_background_tab =
@@ -362,7 +347,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->opener_frame_token = creator->GetFrameToken();
   DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
-  view_params->window_was_created_with_opener = true;
+  view_params->window_was_opened_by_another_window = true;
   view_params->renderer_preferences = webview_->GetRendererPreferences();
   view_params->web_preferences = webview_->GetWebPreferences();
   view_params->view_id = reply->route_id;
@@ -400,72 +385,18 @@ WebView* RenderViewImpl::CreateView(
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   if (reply->wait_for_debugger) {
-    blink::WebFrameWidget* frame_widget =
-        view->GetMainRenderFrame()->GetLocalRootWebFrameWidget();
+    blink::WebFrameWidget* frame_widget = view->GetWebView()
+                                              ->MainFrame()
+                                              ->ToWebLocalFrame()
+                                              ->LocalRoot()
+                                              ->FrameWidget();
     frame_widget->WaitForDebuggerWhenShown();
   }
 
   return view->GetWebView();
 }
 
-void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
-  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
-  blink::WebFrameWidget* frame_widget =
-      render_frame->GetLocalRootWebFrameWidget();
-
-  render_frame->ScriptedPrint(frame_widget->HandlingInputEvent());
-}
-
-void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
-    bool use_zoom_for_dsf,
-    float device_scale_factor) {
-  if (use_zoom_for_dsf)
-    GetWebView()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    GetWebView()->SetZoomLevel(GetWebView()->ZoomLevel());
-}
-
-void RenderViewImpl::StartNavStateSyncTimerIfNecessary(RenderFrameImpl* frame) {
-  // Keep track of which frames have pending updates.
-  frames_with_pending_state_.insert(frame->GetRoutingID());
-
-  int delay;
-  if (send_content_state_immediately_)
-    delay = 0;
-  else if (GetWebView()->GetVisibilityState() != PageVisibilityState::kVisible)
-    delay = kDelaySecondsForContentStateSyncHidden;
-  else
-    delay = kDelaySecondsForContentStateSync;
-
-  if (nav_state_sync_timer_.IsRunning()) {
-    // The timer is already running. If the delay of the timer maches the amount
-    // we want to delay by, then return. Otherwise stop the timer so that it
-    // gets started with the right delay.
-    if (nav_state_sync_timer_.GetCurrentDelay().InSeconds() == delay)
-      return;
-    nav_state_sync_timer_.Stop();
-  }
-
-  // Tell each frame with pending state to inform the browser.
-  nav_state_sync_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(delay),
-                              this, &RenderViewImpl::SendFrameStateUpdates);
-}
-
-void RenderViewImpl::OnPageFrozenChanged(bool frozen) {
-  if (frozen) {
-    // Make sure browser has the latest info before the page is frozen. If the
-    // page goes into the back-forward cache it could be evicted and some of the
-    // updates lost.
-    nav_state_sync_timer_.Stop();
-    SendFrameStateUpdates();
-  }
-}
-
 // RenderView implementation ---------------------------------------------------
-
-RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
-  return main_render_frame_;
-}
 
 int RenderViewImpl::GetRoutingID() {
   return routing_id_;

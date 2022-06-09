@@ -108,9 +108,9 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
     return mark->startTime();
   }
 
-  PerformanceTiming::PerformanceTimingGetter timing_function =
-      PerformanceTiming::GetAttributeMapping().at(mark_name);
-  if (!timing_function) {
+  // Although there was no mark with the given name in UserTiming, we need to
+  // support measuring with respect to |PerformanceTiming| attributes.
+  if (!PerformanceTiming::IsAttributeName(mark_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "The mark '" + mark_name + "' does not exist.");
@@ -129,7 +129,9 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
     return 0.0;
   }
 
-  double value = static_cast<double>((timing->*timing_function)());
+  // Because we know |PerformanceTiming::IsAttributeName(mark_name)| is true
+  // (from above), we know calling |GetNamedAttribute| won't fail.
+  double value = static_cast<double>(timing->GetNamedAttribute(mark_name));
   if (!value) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "'" + mark_name +
@@ -176,15 +178,7 @@ base::TimeTicks UserTiming::GetPerformanceMarkUnsafeTimeForTraces(
       return mark->UnsafeTimeForTraces();
     }
   }
-
-  // User timing events are stored as integer milliseconds from the start of
-  // navigation.
-  // GetTimeOrigin() returns seconds from the monotonic clock's origin..
-  // Trace events timestamps accept seconds (as a double) based on
-  // CurrentTime::monotonicallyIncreasingTime().
-  double start_time_in_seconds = start_time / 1000.0;
-  return trace_event::ToTraceTimestamp(performance_->GetTimeOrigin() +
-                                       start_time_in_seconds);
+  return performance_->GetTimeOriginInternal() + base::Milliseconds(start_time);
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,

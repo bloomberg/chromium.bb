@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -103,7 +103,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
   std::unique_ptr<base::DictionaryValue> MeasureWebRtcInternalsData(
       int duration_msec) {
     chrome::AddTabAt(browser(), GURL(url::kAboutBlankURL), -1, true);
-    ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), GURL("chrome://webrtc-internals")));
     content::WebContents* webrtc_internals_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
 

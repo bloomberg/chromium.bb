@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
@@ -139,6 +140,8 @@ class CONTENT_EXPORT ContentClient {
     // Registers a URL scheme as strictly empty documents, allowing them to
     // commit synchronously.
     std::vector<std::string> empty_document_schemes;
+    // Registers a URL scheme as extension scheme.
+    std::vector<std::string> extension_schemes;
 #if defined(OS_ANDROID)
     // Normally, non-standard schemes canonicalize to opaque origins. However,
     // Android WebView requires non-standard schemes to still be preserved.
@@ -157,8 +160,9 @@ class CONTENT_EXPORT ContentClient {
                                             const std::u16string& replacement);
 
   // Return the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(int resource_id,
-                                            ui::ScaleFactor scale_factor);
+  virtual base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ResourceScaleFactor scale_factor);
 
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id);
@@ -201,18 +205,20 @@ class CONTENT_EXPORT ContentClient {
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojo::BinderMap* binders);
 
+  virtual std::u16string GetLocalizedProtocolName(const std::string&);
+
  private:
   friend class ContentClientInitializer;  // To set these pointers.
   friend class InternalTestInitializer;
 
   // The embedder API for participating in browser logic.
-  ContentBrowserClient* browser_;
+  raw_ptr<ContentBrowserClient> browser_;
   // The embedder API for participating in gpu logic.
-  ContentGpuClient* gpu_;
+  raw_ptr<ContentGpuClient> gpu_;
   // The embedder API for participating in renderer logic.
-  ContentRendererClient* renderer_;
+  raw_ptr<ContentRendererClient> renderer_;
   // The embedder API for participating in utility logic.
-  ContentUtilityClient* utility_;
+  raw_ptr<ContentUtilityClient> utility_;
 };
 
 }  // namespace content

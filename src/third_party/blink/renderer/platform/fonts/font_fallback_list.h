@@ -51,6 +51,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
     return base::AdoptRef(new FontFallbackList(font_fallback_map));
   }
 
+  FontFallbackList(const FontFallbackList&) = delete;
+  FontFallbackList& operator=(const FontFallbackList&) = delete;
   ~FontFallbackList();
 
   // Returns whether the cached data is valid. We can use a FontFallbackList
@@ -106,7 +108,6 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
   bool HasLoadingFallback() const { return has_loading_fallback_; }
   bool HasCustomFont() const { return has_custom_font_; }
-  bool HasAdvanceOverride() const { return has_advance_override_; }
 
  private:
   explicit FontFallbackList(FontFallbackMap& font_fallback_map);
@@ -114,6 +115,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   scoped_refptr<FontData> GetFontData(const FontDescription&);
 
   const SimpleFontData* DeterminePrimarySimpleFontData(const FontDescription&);
+  const SimpleFontData* DeterminePrimarySimpleFontDataCore(
+      const FontDescription&);
 
   FallbackListCompositeKey CompositeKey(const FontDescription&) const;
 
@@ -127,14 +130,11 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   uint16_t generation_;
   bool has_loading_fallback_ : 1;
   bool has_custom_font_ : 1;
-  bool has_advance_override_ : 1;
   bool can_shape_word_by_word_ : 1;
   bool can_shape_word_by_word_computed_ : 1;
   bool is_invalid_ : 1;
 
   base::WeakPtr<ShapeCache> shape_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(FontFallbackList);
 };
 
 }  // namespace blink

@@ -26,10 +26,10 @@ devtools_module("main") {
     "../../models/issues_manager:bundle",
     "../../models/logs:bundle",
     "../../models/persistence:bundle",
-    "../../models/recorder:bundle",
     "../../models/workspace:bundle",
     "../../panels/snippets:bundle",
     "../../panels/timeline:bundle",
+    "../../ui/components/icon_button:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/legacy/theme_support:bundle",
@@ -44,6 +44,11 @@ devtools_entrypoint("bundle") {
   visibility = [
     ":*",
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../devtools_app:*",
+    "../js_app:*",
+    "../ndb_app:*",
+    "../node_app:*",
+    "../worker_app:*",
   ]
 
   visibility += devtools_entrypoints_visibility

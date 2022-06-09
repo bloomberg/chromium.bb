@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -27,6 +28,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_override_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -47,8 +49,6 @@ UsageListInitializer initializers[] = {
     {Storage::StorageTypeEnum::File_systems,
      &blink::mojom::UsageBreakdown::fileSystem},
     {Storage::StorageTypeEnum::Websql, &blink::mojom::UsageBreakdown::webSql},
-    {Storage::StorageTypeEnum::Appcache,
-     &blink::mojom::UsageBreakdown::appcache},
     {Storage::StorageTypeEnum::Indexeddb,
      &blink::mojom::UsageBreakdown::indexedDatabase},
     {Storage::StorageTypeEnum::Cache_storage,
@@ -105,11 +105,11 @@ void GotUsageAndQuotaDataCallback(
 
 void GetUsageAndQuotaOnIOThread(
     storage::QuotaManager* manager,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   manager->GetUsageAndQuotaForDevtools(
-      origin, blink::mojom::StorageType::kTemporary,
+      storage_key, blink::mojom::StorageType::kTemporary,
       base::BindOnce(&GotUsageAndQuotaDataCallback, std::move(callback)));
 }
 
@@ -128,50 +128,56 @@ class StorageHandler::CacheStorageObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
+  CacheStorageObserver(const CacheStorageObserver&) = delete;
+  CacheStorageObserver& operator=(const CacheStorageObserver&) = delete;
+
   ~CacheStorageObserver() override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
-  void TrackOrigin(const url::Origin& origin) {
+  void TrackStorageKey(const blink::StorageKey& storage_key) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (origins_.find(origin) != origins_.end())
+    if (storage_keys_.find(storage_key) != storage_keys_.end())
       return;
-    origins_.insert(origin);
+    storage_keys_.insert(storage_key);
   }
 
-  void UntrackOrigin(const url::Origin& origin) {
+  void UntrackStorageKey(const blink::StorageKey& storage_key) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    origins_.erase(origin);
+    storage_keys_.erase(storage_key);
   }
 
-  void OnCacheListChanged(const url::Origin& origin) override {
+  void OnCacheListChanged(const blink::StorageKey& storage_key) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto found = origins_.find(origin);
-    if (found == origins_.end())
+    auto found = storage_keys_.find(storage_key);
+    if (found == storage_keys_.end())
       return;
-    owner_->NotifyCacheStorageListChanged(origin.Serialize());
+    // TODO(https://crbug.com/1199077): NotifyCacheStorageListChanged should be
+    // updated to accept `storage_key`'s serialization.
+    owner_->NotifyCacheStorageListChanged(storage_key.origin().Serialize());
   }
 
-  void OnCacheContentChanged(const url::Origin& origin,
+  void OnCacheContentChanged(const blink::StorageKey& storage_key,
                              const std::string& cache_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (origins_.find(origin) == origins_.end())
+    if (storage_keys_.find(storage_key) == storage_keys_.end())
       return;
-    owner_->NotifyCacheStorageContentChanged(origin.Serialize(), cache_name);
+    // TODO(https://crbug.com/1199077): NotifyCacheStorageListChanged should be
+    // updated to accept `storage_key`'s serialization.
+    owner_->NotifyCacheStorageContentChanged(storage_key.origin().Serialize(),
+                                             cache_name);
   }
 
  private:
   // Maintained on the IO thread to avoid thread contention.
-  base::flat_set<url::Origin> origins_;
+  base::flat_set<blink::StorageKey> storage_keys_;
 
   base::WeakPtr<StorageHandler> owner_;
   mojo::Receiver<storage::mojom::CacheStorageObserver> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheStorageObserver);
 };
 
 // Observer that listens on the IDB thread for IndexedDB notifications and
-// informs the StorageHandler on the UI thread for origins of interest.
+// informs the StorageHandler on the UI thread for storage_keys of interest.
 // Created on the UI thread but predominantly used and deleted on the IDB
 // thread.
 class StorageHandler::IndexedDBObserver
@@ -185,42 +191,49 @@ class StorageHandler::IndexedDBObserver
     ReconnectObserver();
   }
 
+  IndexedDBObserver(const IndexedDBObserver&) = delete;
+  IndexedDBObserver& operator=(const IndexedDBObserver&) = delete;
+
   ~IndexedDBObserver() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
 
-  void TrackOrigin(const url::Origin& origin) {
+  void TrackOrigin(const blink::StorageKey& storage_key) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (origins_.find(origin) != origins_.end())
+    if (storage_keys_.find(storage_key) != storage_keys_.end())
       return;
-    origins_.insert(origin);
+    storage_keys_.insert(storage_key);
   }
 
-  void UntrackOrigin(const url::Origin& origin) {
+  void UntrackOrigin(const blink::StorageKey& storage_key) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    origins_.erase(origin);
+    storage_keys_.erase(storage_key);
   }
 
-  void OnIndexedDBListChanged(const url::Origin& origin) override {
+  void OnIndexedDBListChanged(const blink::StorageKey& storage_key) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!owner_)
       return;
-    auto found = origins_.find(origin);
-    if (found == origins_.end())
+    auto found = storage_keys_.find(storage_key);
+    if (found == storage_keys_.end())
       return;
-    owner_->NotifyIndexedDBListChanged(origin.Serialize());
+    // TODO(https://crbug.com/1199077): Pass storage key instead once
+    // Chrome DevTools Protocol (CDP) supports it.
+    owner_->NotifyIndexedDBListChanged(storage_key.origin().Serialize());
   }
 
   void OnIndexedDBContentChanged(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const std::u16string& database_name,
       const std::u16string& object_store_name) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!owner_)
       return;
-    auto found = origins_.find(origin);
-    if (found == origins_.end())
+    auto found = storage_keys_.find(storage_key);
+    if (found == storage_keys_.end())
       return;
-    owner_->NotifyIndexedDBContentChanged(origin.Serialize(), database_name,
-                                          object_store_name);
+    // TODO(https://crbug.com/1199077): Pass storage key instead once
+    // Chrome DevTools Protocol (CDP) supports it.
+    owner_->NotifyIndexedDBContentChanged(storage_key.origin().Serialize(),
+                                          database_name, object_store_name);
   }
 
  private:
@@ -242,11 +255,9 @@ class StorageHandler::IndexedDBObserver
     control.AddObserver(std::move(remote));
   }
 
-  base::flat_set<url::Origin> origins_;
+  base::flat_set<blink::StorageKey> storage_keys_;
   base::WeakPtr<StorageHandler> owner_;
   mojo::Receiver<storage::mojom::IndexedDBObserver> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBObserver);
 };
 
 StorageHandler::StorageHandler()
@@ -350,8 +361,6 @@ void StorageHandler::ClearDataForOrigin(
       storage_types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::unordered_set<std::string> set(types.begin(), types.end());
   uint32_t remove_mask = 0;
-  if (set.count(Storage::StorageTypeEnum::Appcache))
-    remove_mask |= StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   if (set.count(Storage::StorageTypeEnum::Cookies)) {
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
     // Interest groups should be cleared with cookies for its origin trial as
@@ -403,7 +412,8 @@ void StorageHandler::GetUsageAndQuota(
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
-                     url::Origin::Create(origin_url), std::move(callback)));
+                     blink::StorageKey(url::Origin::Create(origin_url)),
+                     std::move(callback)));
 }
 
 void StorageHandler::OverrideQuotaForOrigin(
@@ -429,14 +439,16 @@ void StorageHandler::OverrideQuotaForOrigin(
     quota_override_handle_ = manager_proxy->GetQuotaOverrideHandle();
   }
 
-  quota_override_handle_->OverrideQuotaForOrigin(
-      origin,
+  quota_override_handle_->OverrideQuotaForStorageKey(
+      blink::StorageKey(origin),
       quota_size.isJust() ? absl::make_optional(quota_size.fromJust())
                           : absl::nullopt,
       base::BindOnce(&OverrideQuotaForOriginCallback::sendSuccess,
                      std::move(callback)));
 }
 
+// TODO(https://crbug.com/1199077): We should think about how this function
+// should be exposed when migrating to storage keys.
 Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
   if (!storage_partition_)
     return Response::InternalError();
@@ -445,10 +457,13 @@ Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetCacheStorageObserver()->TrackOrigin(url::Origin::Create(origin_url));
+  GetCacheStorageObserver()->TrackStorageKey(
+      blink::StorageKey(url::Origin::Create(origin_url)));
   return Response::Success();
 }
 
+// TODO(https://crbug.com/1199077): We should think about how this function
+// should be exposed when migrating to storage keys.
 Response StorageHandler::UntrackCacheStorageForOrigin(
     const std::string& origin) {
   if (!storage_partition_)
@@ -458,7 +473,8 @@ Response StorageHandler::UntrackCacheStorageForOrigin(
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetCacheStorageObserver()->UntrackOrigin(url::Origin::Create(origin_url));
+  GetCacheStorageObserver()->UntrackStorageKey(
+      blink::StorageKey(url::Origin::Create(origin_url)));
   return Response::Success();
 }
 
@@ -470,7 +486,10 @@ Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetIndexedDBObserver()->TrackOrigin(url::Origin::Create(origin_url));
+  // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+  // function once the Chrome DevTools Protocol (CDP) supports StorageKey.
+  GetIndexedDBObserver()->TrackOrigin(
+      blink::StorageKey(url::Origin::Create(origin_url)));
   return Response::Success();
 }
 
@@ -482,7 +501,10 @@ Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
   if (!origin_url.is_valid())
     return Response::InvalidParams(origin + " is not a valid URL");
 
-  GetIndexedDBObserver()->UntrackOrigin(url::Origin::Create(origin_url));
+  // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
+  // function once the Chrome DevTools Protocol (CDP) supports StorageKey.
+  GetIndexedDBObserver()->UntrackOrigin(
+      blink::StorageKey(url::Origin::Create(origin_url)));
   return Response::Success();
 }
 

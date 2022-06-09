@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_ICC_CODEC_COMMON_H_
 #define LIB_JXL_ICC_CODEC_COMMON_H_
@@ -31,36 +22,36 @@ static constexpr size_t kICCHeaderSize = 128;
 
 typedef std::array<uint8_t, 4> Tag;
 
-static const Tag kAcspTag = {'a', 'c', 's', 'p'};
-static const Tag kBkptTag = {'b', 'k', 'p', 't'};
-static const Tag kBtrcTag = {'b', 'T', 'R', 'C'};
-static const Tag kBxyzTag = {'b', 'X', 'Y', 'Z'};
-static const Tag kChadTag = {'c', 'h', 'a', 'd'};
-static const Tag kChrmTag = {'c', 'h', 'r', 'm'};
-static const Tag kCprtTag = {'c', 'p', 'r', 't'};
-static const Tag kCurvTag = {'c', 'u', 'r', 'v'};
-static const Tag kDescTag = {'d', 'e', 's', 'c'};
-static const Tag kDmddTag = {'d', 'm', 'd', 'd'};
-static const Tag kDmndTag = {'d', 'm', 'n', 'd'};
-static const Tag kGbd_Tag = {'g', 'b', 'd', ' '};
-static const Tag kGtrcTag = {'g', 'T', 'R', 'C'};
-static const Tag kGxyzTag = {'g', 'X', 'Y', 'Z'};
-static const Tag kKtrcTag = {'k', 'T', 'R', 'C'};
-static const Tag kKxyzTag = {'k', 'X', 'Y', 'Z'};
-static const Tag kLumiTag = {'l', 'u', 'm', 'i'};
-static const Tag kMab_Tag = {'m', 'A', 'B', ' '};
-static const Tag kMba_Tag = {'m', 'B', 'A', ' '};
-static const Tag kMlucTag = {'m', 'l', 'u', 'c'};
-static const Tag kMntrTag = {'m', 'n', 't', 'r'};
-static const Tag kParaTag = {'p', 'a', 'r', 'a'};
-static const Tag kRgb_Tag = {'R', 'G', 'B', ' '};
-static const Tag kRtrcTag = {'r', 'T', 'R', 'C'};
-static const Tag kRxyzTag = {'r', 'X', 'Y', 'Z'};
-static const Tag kSf32Tag = {'s', 'f', '3', '2'};
-static const Tag kTextTag = {'t', 'e', 'x', 't'};
-static const Tag kVcgtTag = {'v', 'c', 'g', 't'};
-static const Tag kWtptTag = {'w', 't', 'p', 't'};
-static const Tag kXyz_Tag = {'X', 'Y', 'Z', ' '};
+static const Tag kAcspTag = {{'a', 'c', 's', 'p'}};
+static const Tag kBkptTag = {{'b', 'k', 'p', 't'}};
+static const Tag kBtrcTag = {{'b', 'T', 'R', 'C'}};
+static const Tag kBxyzTag = {{'b', 'X', 'Y', 'Z'}};
+static const Tag kChadTag = {{'c', 'h', 'a', 'd'}};
+static const Tag kChrmTag = {{'c', 'h', 'r', 'm'}};
+static const Tag kCprtTag = {{'c', 'p', 'r', 't'}};
+static const Tag kCurvTag = {{'c', 'u', 'r', 'v'}};
+static const Tag kDescTag = {{'d', 'e', 's', 'c'}};
+static const Tag kDmddTag = {{'d', 'm', 'd', 'd'}};
+static const Tag kDmndTag = {{'d', 'm', 'n', 'd'}};
+static const Tag kGbd_Tag = {{'g', 'b', 'd', ' '}};
+static const Tag kGtrcTag = {{'g', 'T', 'R', 'C'}};
+static const Tag kGxyzTag = {{'g', 'X', 'Y', 'Z'}};
+static const Tag kKtrcTag = {{'k', 'T', 'R', 'C'}};
+static const Tag kKxyzTag = {{'k', 'X', 'Y', 'Z'}};
+static const Tag kLumiTag = {{'l', 'u', 'm', 'i'}};
+static const Tag kMab_Tag = {{'m', 'A', 'B', ' '}};
+static const Tag kMba_Tag = {{'m', 'B', 'A', ' '}};
+static const Tag kMlucTag = {{'m', 'l', 'u', 'c'}};
+static const Tag kMntrTag = {{'m', 'n', 't', 'r'}};
+static const Tag kParaTag = {{'p', 'a', 'r', 'a'}};
+static const Tag kRgb_Tag = {{'R', 'G', 'B', ' '}};
+static const Tag kRtrcTag = {{'r', 'T', 'R', 'C'}};
+static const Tag kRxyzTag = {{'r', 'X', 'Y', 'Z'}};
+static const Tag kSf32Tag = {{'s', 'f', '3', '2'}};
+static const Tag kTextTag = {{'t', 'e', 'x', 't'}};
+static const Tag kVcgtTag = {{'v', 'c', 'g', 't'}};
+static const Tag kWtptTag = {{'w', 't', 'p', 't'}};
+static const Tag kXyz_Tag = {{'X', 'Y', 'Z', ' '}};
 
 // Tag names focused on RGB and GRAY monitor profiles
 static constexpr size_t kNumTagStrings = 17;

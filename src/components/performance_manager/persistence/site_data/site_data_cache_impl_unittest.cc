@@ -6,8 +6,8 @@
 
 #include <set>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_inspector.h"
@@ -23,18 +23,19 @@ namespace performance_manager {
 
 namespace {
 
-constexpr base::TimeDelta kDelay = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kDelay = base::Minutes(1);
 
 class MockSiteCache : public testing::NoopSiteDataStore {
  public:
   MockSiteCache() = default;
+
+  MockSiteCache(const MockSiteCache&) = delete;
+  MockSiteCache& operator=(const MockSiteCache&) = delete;
+
   ~MockSiteCache() = default;
 
   MOCK_METHOD1(RemoveSiteDataFromStore, void(const std::vector<url::Origin>&));
   MOCK_METHOD0(ClearStore, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSiteCache);
 };
 
 }  // namespace
@@ -46,7 +47,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
     data_cache_ = std::make_unique<SiteDataCacheImpl>(
         browser_context_.UniqueId(), browser_context_.GetPath());
     mock_db_ = new ::testing::StrictMock<MockSiteCache>();
-    data_cache_->SetDataStoreForTesting(base::WrapUnique(mock_db_));
+    data_cache_->SetDataStoreForTesting(base::WrapUnique(mock_db_.get()));
     WaitForAsyncOperationsToComplete();
   }
 
@@ -112,18 +113,18 @@ class SiteDataCacheImplTest : public ::testing::Test {
   content::TestBrowserContext browser_context_;
 
   // Owned by |data_cache_|.
-  ::testing::StrictMock<MockSiteCache>* mock_db_ = nullptr;
+  raw_ptr<::testing::StrictMock<MockSiteCache>> mock_db_ = nullptr;
   std::unique_ptr<SiteDataCacheFactory> data_cache_factory_;
   std::unique_ptr<SiteDataCacheImpl> data_cache_;
 
   std::unique_ptr<SiteDataReader> reader_;
   std::unique_ptr<SiteDataWriter> writer_;
-  internal::SiteDataImpl* data_ = nullptr;
+  raw_ptr<internal::SiteDataImpl> data_ = nullptr;
   url::Origin origin_ = url::Origin::Create(GURL("http://www.foo.com"));
 
   std::unique_ptr<SiteDataReader> reader2_;
   std::unique_ptr<SiteDataWriter> writer2_;
-  internal::SiteDataImpl* data2_ = nullptr;
+  raw_ptr<internal::SiteDataImpl> data2_ = nullptr;
   url::Origin origin2_ = url::Origin::Create(GURL("http://www.bar.com"));
 };
 
@@ -258,6 +259,21 @@ TEST_F(SiteDataCacheImplTest, InspectorWorks) {
   EXPECT_EQ(nullptr,
             SiteDataCacheFactory::GetInstance()->GetInspectorForBrowserContext(
                 browser_context_.UniqueId()));
+}
+
+// TODO(https://crbug.com/1231933): Turn this into a death test to verify that
+//     the data cache asserts that no readers outlive the cache.
+TEST_F(SiteDataCacheImplTest, NoUAFWhenReaderHeldAfterTeardown) {
+  {
+    // Hold on to this reader while destroying the data cache.
+    // This is a violation of the data cache contract. For the purpose
+    // of quick-fixing https://crbug.com/1231933, allow and survive this
+    // for now.
+    auto reader = data_cache_->GetReaderForOrigin(origin_);
+
+    // This should not UAF under ASAN.
+    data_cache_.reset();
+  }
 }
 
 }  // namespace performance_manager

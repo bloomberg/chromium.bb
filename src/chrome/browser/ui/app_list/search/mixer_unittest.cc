@@ -14,12 +14,12 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_controller_impl.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,6 +44,10 @@ class TestSearchResult : public ChromeSearchResult {
     SetTitle(base::UTF8ToUTF16(id));
     set_relevance(relevance);
   }
+
+  TestSearchResult(const TestSearchResult&) = delete;
+  TestSearchResult& operator=(const TestSearchResult&) = delete;
+
   ~TestSearchResult() override {}
 
   // ChromeSearchResult overrides:
@@ -60,8 +64,6 @@ class TestSearchResult : public ChromeSearchResult {
   static int instantiation_count;
 
   int instance_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSearchResult);
 };
 int TestSearchResult::instantiation_count = 0;
 
@@ -75,6 +77,10 @@ class TestSearchProvider : public SearchProvider {
         last_result_has_display_index_(false),
         display_type_(ash::SearchResultDisplayType::kList),
         result_type_(result_type) {}
+
+  TestSearchProvider(const TestSearchProvider&) = delete;
+  TestSearchProvider& operator=(const TestSearchProvider&) = delete;
+
   ~TestSearchProvider() override {}
 
   // SearchProvider overrides:
@@ -126,18 +132,23 @@ class TestSearchProvider : public SearchProvider {
   bool last_result_has_display_index_;
   ChromeSearchResult::DisplayType display_type_;
   SearchResultType result_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
 
 class MixerTest : public testing::Test {
  public:
   MixerTest() {}
+
+  MixerTest(const MixerTest&) = delete;
+  MixerTest& operator=(const MixerTest&) = delete;
+
   ~MixerTest() override {}
 
   // testing::Test overrides:
   void SetUp() override {
-    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>(
+        /*profile=*/nullptr, /*reorder_delegate=*/nullptr);
+    search_controller_ = std::make_unique<SearchControllerImpl>(
+        nullptr, nullptr, nullptr, nullptr);
 
     providers_.push_back(std::make_unique<TestSearchProvider>(
         "app", SearchResultType::kInternalApp));
@@ -148,7 +159,8 @@ class MixerTest : public testing::Test {
   }
 
   void CreateMixer() {
-    mixer_ = std::make_unique<Mixer>(model_updater_.get());
+    mixer_ =
+        std::make_unique<Mixer>(model_updater_.get(), search_controller_.get());
 
     size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults);
     size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults);
@@ -197,10 +209,9 @@ class MixerTest : public testing::Test {
 
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
+  std::unique_ptr<SearchControllerImpl> search_controller_;
 
   std::vector<std::unique_ptr<TestSearchProvider>> providers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerTest);
 };
 
 // Tests that results with display index defined, will be shown in the final

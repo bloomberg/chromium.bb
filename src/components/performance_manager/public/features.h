@@ -16,28 +16,6 @@
 namespace performance_manager {
 namespace features {
 
-// The feature that gates the TabLoadingFrameNavigationPolicy, and its
-// mechanism counterpart the TabLoadingFrameNavigationScheduler.
-extern const base::Feature kTabLoadingFrameNavigationThrottles;
-
-// Parameters controlling the TabLoadingFrameNavigationThrottles feature.
-struct TabLoadingFrameNavigationThrottlesParams {
-  TabLoadingFrameNavigationThrottlesParams();
-  ~TabLoadingFrameNavigationThrottlesParams();
-
-  static TabLoadingFrameNavigationThrottlesParams GetParams();
-
-  // The minimum and maximum amount of time throttles will be applied to
-  // non-primary content frames.
-  base::TimeDelta minimum_throttle_timeout;
-  base::TimeDelta maximum_throttle_timeout;
-
-  // The multiple of elapsed time from navigation start until
-  // FirstContentfulPaint (FCP) that is used in calculating the timeout to apply
-  // to the throttles.
-  double fcp_multiple;
-};
-
 // The feature that gates whether or not the PM runs on the main (UI) thread.
 extern const base::Feature kRunOnMainThread;
 
@@ -84,6 +62,55 @@ extern const base::Feature kHighPMFDiscardPolicy;
 // directly from Performance Manager rather than via TabLoader.
 extern const base::Feature kBackgroundTabLoadingFromPerformanceManager;
 #endif
+
+// Policy that evicts the BFCache of pages that become non visible or the
+// BFCache of all pages when the system is under memory pressure.
+extern const base::Feature kBFCachePerformanceManagerPolicy;
+
+// Parameters allowing to control some aspects of the
+// |kBFCachePerformanceManagerPolicy|.
+class BFCachePerformanceManagerPolicyParams {
+ public:
+  BFCachePerformanceManagerPolicyParams(
+      BFCachePerformanceManagerPolicyParams&&) = default;
+  BFCachePerformanceManagerPolicyParams& operator=(
+      BFCachePerformanceManagerPolicyParams&&) = default;
+  BFCachePerformanceManagerPolicyParams(
+      const BFCachePerformanceManagerPolicyParams&) = delete;
+  BFCachePerformanceManagerPolicyParams& operator=(
+      const BFCachePerformanceManagerPolicyParams&) = delete;
+  ~BFCachePerformanceManagerPolicyParams() = default;
+
+  static BFCachePerformanceManagerPolicyParams GetParams();
+
+  // Whether or not the BFCache of all pages should be flushed when the system
+  // is under *moderate* memory pressure. The policy always flushes the bfcache
+  // under critical pressure.
+  bool flush_on_moderate_pressure() const {
+    return flush_on_moderate_pressure_;
+  }
+
+  base::TimeDelta delay_to_flush_background_tab() const {
+    return delay_to_flush_background_tab_;
+  }
+
+  static constexpr base::FeatureParam<bool> kFlushOnModeratePressure{
+      &features::kBFCachePerformanceManagerPolicy, "flush_on_moderate_pressure",
+      false};
+
+  // The back forward cache should be flushed after the tab goes to background
+  // and elapses this delay. If the value is negative (such as -1), the back
+  // forward cache in the background tabs will not be flushed.
+  static constexpr base::FeatureParam<int> kDelayToFlushBackgroundTabInSeconds{
+      &features::kBFCachePerformanceManagerPolicy,
+      "delay_to_flush_background_tab_in_seconds", -1};
+
+ private:
+  BFCachePerformanceManagerPolicyParams() = default;
+
+  bool flush_on_moderate_pressure_;
+  base::TimeDelta delay_to_flush_background_tab_;
+};
 
 }  // namespace features
 }  // namespace performance_manager

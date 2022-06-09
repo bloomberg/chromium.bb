@@ -7,6 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/fake_arc_session.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/values.h"
@@ -22,10 +26,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -43,6 +43,11 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
  protected:
   ArcProvisionNotificationServiceTest()
       : user_manager_enabler_(std::make_unique<ash::FakeChromeUserManager>()) {}
+
+  ArcProvisionNotificationServiceTest(
+      const ArcProvisionNotificationServiceTest&) = delete;
+  ArcProvisionNotificationServiceTest& operator=(
+      const ArcProvisionNotificationServiceTest&) = delete;
 
   void SetUp() override {
     SetUpInternal(/*should_create_session_manager=*/true);
@@ -109,8 +114,6 @@ class ArcProvisionNotificationServiceTest : public BrowserWithTestWindowTest {
 
  private:
   user_manager::ScopedUserManager user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcProvisionNotificationServiceTest);
 };
 
 }  // namespace
@@ -323,13 +326,18 @@ class ArcProvisionNotificationServiceOobeTest
     : public ArcProvisionNotificationServiceTest {
  protected:
   ArcProvisionNotificationServiceOobeTest() = default;
+
+  ArcProvisionNotificationServiceOobeTest(
+      const ArcProvisionNotificationServiceOobeTest&) = delete;
+  ArcProvisionNotificationServiceOobeTest& operator=(
+      const ArcProvisionNotificationServiceOobeTest&) = delete;
+
   void SetUp() override {
     // SessionManager is created in FakeLoginDisplayHost. We should not create
     // another one here.
     ArcProvisionNotificationServiceTest::SetUpInternal(
         /*should_create_session_manager=*/false);
 
-    GetFakeUserManager()->set_current_user_new(true);
     CreateLoginDisplayHost();
   }
 
@@ -339,14 +347,11 @@ class ArcProvisionNotificationServiceOobeTest
   }
 
   void CreateLoginDisplayHost() {
-    fake_login_display_host_ =
-        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_ = std::make_unique<ash::FakeLoginDisplayHost>();
   }
 
  private:
-  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcProvisionNotificationServiceOobeTest);
+  std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
 };
 
 // For mananged user whose B&R or GLS is not managed, Arc Tos is shown during

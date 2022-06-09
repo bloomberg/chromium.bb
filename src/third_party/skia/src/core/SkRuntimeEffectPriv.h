@@ -9,6 +9,31 @@
 #define SkRuntimeEffectPriv_DEFINED
 
 #include "include/effects/SkRuntimeEffect.h"
+#include "include/private/SkColorData.h"
+#include "src/core/SkVM.h"
+
+#include <functional>
+
+#ifdef SK_ENABLE_SKSL
+
+class SkRuntimeEffectPriv {
+public:
+    // Helper function when creating an effect for a GrSkSLFP that verifies an effect will
+    // implement the constant output for constant input optimization flag.
+    static bool SupportsConstantOutputForConstantInput(sk_sp<SkRuntimeEffect> effect) {
+        return effect->getFilterColorProgram();
+    }
+
+    static SkRuntimeEffect::Options ES3Options() {
+        SkRuntimeEffect::Options options;
+        options.enforceES2Restrictions = false;
+        return options;
+    }
+
+    static void EnableFragCoord(SkRuntimeEffect::Options* options) {
+        options->allowFragCoord = true;
+    }
+};
 
 // These internal APIs for creating runtime effects vary from the public API in two ways:
 //
@@ -26,9 +51,21 @@ inline sk_sp<SkRuntimeEffect> SkMakeCachedRuntimeEffect(SkRuntimeEffect::Result 
     return SkMakeCachedRuntimeEffect(make, SkString{sksl});
 }
 
+// Internal API that assumes (and asserts) that the shader code is valid, but does no internal
+// caching. Used when the caller will cache the result in a static variable.
+inline sk_sp<SkRuntimeEffect> SkMakeRuntimeEffect(
+        SkRuntimeEffect::Result (*make)(SkString, const SkRuntimeEffect::Options&),
+        const char* sksl,
+        SkRuntimeEffect::Options options = SkRuntimeEffect::Options{}) {
+    SkRuntimeEffectPriv::EnableFragCoord(&options);
+    auto result = make(SkString{sksl}, options);
+    SkASSERTF(result.effect, "%s", result.errorText.c_str());
+    return result.effect;
+}
+
 // This is mostly from skvm's rgb->hsl code, with some GPU-related finesse pulled from
 // GrHighContrastFilterEffect.fp, see next comment.
-constexpr char kRGB_to_HSL_sksl[] =
+inline constexpr char kRGB_to_HSL_sksl[] =
     "half3 rgb_to_hsl(half3 c) {"
         "half mx = max(max(c.r,c.g),c.b),"
         "     mn = min(min(c.r,c.g),c.b),"
@@ -51,7 +88,7 @@ constexpr char kRGB_to_HSL_sksl[] =
     "}";
 
 //This is straight out of GrHSLToRGBFilterEffect.fp.
-constexpr char kHSL_to_RGB_sksl[] =
+inline constexpr char kHSL_to_RGB_sksl[] =
     "half3 hsl_to_rgb(half3 hsl) {"
         "half  C = (1 - abs(2 * hsl.z - 1)) * hsl.y;"
         "half3 p = hsl.xxx + half3(0, 2/3.0, 1/3.0);"
@@ -59,4 +96,53 @@ constexpr char kHSL_to_RGB_sksl[] =
         "return (q - 0.5) * C + hsl.z;"
     "}";
 
-#endif
+/**
+ * Runtime effects are often long lived & cached. Individual color filters or FPs created from them
+ * and are often short-lived. However, color filters and FPs may need to operate on a single color
+ * (on the CPU). This may be done at the paint level (eg, filter the paint color), or as part of
+ * FP tree analysis.
+ *
+ * SkFilterColorProgram is an skvm program representing a (color filter) SkRuntimeEffect. It can
+ * process a single color, without knowing the details of a particular instance (uniform values or
+ * children).
+ */
+class SkFilterColorProgram {
+public:
+    static std::unique_ptr<SkFilterColorProgram> Make(const SkRuntimeEffect* effect);
+
+    SkPMColor4f eval(const SkPMColor4f& inColor,
+                     const void* uniformData,
+                     std::function<SkPMColor4f(int, SkPMColor4f)> evalChild) const;
+
+    bool isAlphaUnchanged() const { return fAlphaUnchanged; }
+
+private:
+    struct SampleCall {
+        enum class Kind {
+            kInputColor,  // eg child.eval(inputColor)
+            kImmediate,   // eg child.eval(half4(1))
+            kPrevious,    // eg child1.eval(child2.eval(...))
+            kUniform,     // eg uniform half4 color; ... child.eval(color)
+        };
+
+        int  fChild;
+        Kind fKind;
+        union {
+            SkPMColor4f fImm;       // for kImmediate
+            int         fPrevious;  // for kPrevious
+            int         fOffset;    // for kUniform
+        };
+    };
+
+    SkFilterColorProgram(skvm::Program program,
+                         std::vector<SampleCall> sampleCalls,
+                         bool alphaUnchanged);
+
+    skvm::Program           fProgram;
+    std::vector<SampleCall> fSampleCalls;
+    bool                    fAlphaUnchanged;
+};
+
+#endif  // SK_ENABLE_SKSL
+
+#endif  // SkRuntimeEffectPriv_DEFINED

@@ -27,17 +27,18 @@
 #include "vulkan/vulkan.h"
 #include "vk_layer_data.h"
 #include "vk_format_utils.h"
+#include "vk_layer_utils.h"
 
 struct VULKAN_FORMAT_INFO {
     uint32_t size;
-    uint32_t channel_count;
+    uint32_t component_count;
     VkFormatCompatibilityClass format_class;
 };
 
 // Disable auto-formatting for this large table
 // clang-format off
 
-// Set up data structure with size(bytes) and number of channels for each Vulkan format
+// Set up data structure with size(bytes) and number of components for each Vulkan format
 // For compressed and multi-plane formats, size is bytes per compressed or shared block
 const std::map<VkFormat, VULKAN_FORMAT_INFO> kVkFormatTable = {
     {VK_FORMAT_UNDEFINED,                   {0, 0, VK_FORMAT_COMPATIBILITY_CLASS_NONE_BIT }},
@@ -255,7 +256,7 @@ const std::map<VkFormat, VULKAN_FORMAT_INFO> kVkFormatTable = {
     {VK_FORMAT_R10X6G10X6_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_32_BIT}},
     {VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16,          {8, 4, VK_FORMAT_COMPATIBILITY_CLASS_64BIT_R10G10B10A10}},
     {VK_FORMAT_R12X4_UNORM_PACK16,                          {2, 1, VK_FORMAT_COMPATIBILITY_CLASS_16_BIT}},
-    {VK_FORMAT_R12X4G12X4_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_16_BIT}},
+    {VK_FORMAT_R12X4G12X4_UNORM_2PACK16,                    {4, 2, VK_FORMAT_COMPATIBILITY_CLASS_32_BIT}},
     {VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16,          {8, 4, VK_FORMAT_COMPATIBILITY_CLASS_64BIT_R12G12B12A12}},
     // _422 formats encode 2 texels per entry with B, R components shared - treated as compressed w/ 2x1 block size
     {VK_FORMAT_G8B8G8R8_422_UNORM,                          {4, 4, VK_FORMAT_COMPATIBILITY_CLASS_32BIT_G8B8G8R8}},
@@ -290,7 +291,11 @@ const std::map<VkFormat, VULKAN_FORMAT_INFO> kVkFormatTable = {
     {VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM,                   {3, 3, VK_FORMAT_COMPATIBILITY_CLASS_8BIT_3PLANE_444}},
     {VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16,  {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_10BIT_3PLANE_444}},
     {VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16,  {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_12BIT_3PLANE_444}},
-    {VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,                {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_444}}
+    {VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,                {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_16BIT_3PLANE_444}},
+    {VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT,                {3, 3, VK_FORMAT_COMPATIBILITY_CLASS_8BIT_2PLANE_444}},
+    {VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT, {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_10BIT_2PLANE_444}},
+    {VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT, {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_12BIT_2PLANE_444}},
+    {VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT,             {6, 3, VK_FORMAT_COMPATIBILITY_CLASS_16BIT_2PLANE_444}}
 };
 
 // Renable formatting
@@ -317,11 +322,6 @@ VK_LAYER_EXPORT bool FormatIsCompressed_ETC2_EAC(VkFormat format) {
             break;
     }
     return found;
-}
-
-// Return true if format is either a LDR or HDR ASTC compressed textyre format
-VK_LAYER_EXPORT bool FormatIsCompressed_ASTC(VkFormat format) {
-    return (FormatIsCompressed_ASTC_LDR(format) || FormatIsCompressed_ASTC_HDR(format));
 }
 
 // Return true if format is an LDR ASTC compressed texture format
@@ -465,9 +465,15 @@ VK_LAYER_EXPORT bool FormatIsSinglePlane_422(VkFormat format) {
 
 // Return true if format is compressed
 VK_LAYER_EXPORT bool FormatIsCompressed(VkFormat format) {
-    return (FormatIsCompressed_ASTC(format) || FormatIsCompressed_BC(format) || FormatIsCompressed_ETC2_EAC(format) ||
-            FormatIsCompressed_PVRTC(format));
+    return (FormatIsCompressed_ASTC_HDR(format) || FormatIsCompressed_ASTC_LDR(format) || FormatIsCompressed_BC(format) ||
+            FormatIsCompressed_ETC2_EAC(format) || FormatIsCompressed_PVRTC(format));
 }
+
+// "blocked image" are defined in the spec (vkspec.html#blocked-image)
+VK_LAYER_EXPORT bool FormatIsBlockedImage(VkFormat format) {
+    return (FormatIsCompressed(format) || FormatIsSinglePlane_422(format));
+}
+
 // Return true if format is packed
 VK_LAYER_EXPORT bool FormatIsPacked(VkFormat format) {
     bool found = false;
@@ -525,6 +531,8 @@ VK_LAYER_EXPORT bool FormatIsPacked(VkFormat format) {
         case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
         case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
         case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+        case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT:
+        case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT:
             found = true;
             break;
         default:
@@ -583,11 +591,8 @@ VK_LAYER_EXPORT bool FormatIsDepthOnly(VkFormat format) {
     return is_depth;
 }
 
-// Return true if format is of type NORM
-VK_LAYER_EXPORT bool FormatIsNorm(VkFormat format) { return (FormatIsUNorm(format) || FormatIsSNorm(format)); }
-
 // Return true if format is of type UNORM
-VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsUNORM(VkFormat format) {
     bool is_unorm = false;
 
     switch (format) {
@@ -678,6 +683,10 @@ VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format) {
         case VK_FORMAT_R10X6G10X6_UNORM_2PACK16:
         case VK_FORMAT_R12X4_UNORM_PACK16:
         case VK_FORMAT_R12X4G12X4_UNORM_2PACK16:
+        case VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT:
+        case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT:
+        case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT:
+        case VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT:
             is_unorm = true;
             break;
         default:
@@ -688,7 +697,7 @@ VK_LAYER_EXPORT bool FormatIsUNorm(VkFormat format) {
 }
 
 // Return true if format is of type SNORM
-VK_LAYER_EXPORT bool FormatIsSNorm(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsSNORM(VkFormat format) {
     bool is_snorm = false;
 
     switch (format) {
@@ -718,11 +727,8 @@ VK_LAYER_EXPORT bool FormatIsSNorm(VkFormat format) {
     return is_snorm;
 }
 
-// Return true if format is an integer format
-VK_LAYER_EXPORT bool FormatIsInt(VkFormat format) { return (FormatIsSInt(format) || FormatIsUInt(format)); }
-
 // Return true if format is an unsigned integer format
-VK_LAYER_EXPORT bool FormatIsUInt(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsUINT(VkFormat format) {
     bool is_uint = false;
 
     switch (format) {
@@ -758,7 +764,7 @@ VK_LAYER_EXPORT bool FormatIsUInt(VkFormat format) {
 }
 
 // Return true if format is a signed integer format
-VK_LAYER_EXPORT bool FormatIsSInt(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsSINT(VkFormat format) {
     bool is_sint = false;
 
     switch (format) {
@@ -792,10 +798,9 @@ VK_LAYER_EXPORT bool FormatIsSInt(VkFormat format) {
     return is_sint;
 }
 
-// Return true if format is a floating-point format
-VK_LAYER_EXPORT bool FormatIsFloat(VkFormat format) {
-    bool is_float = false;
-
+// Return true if all components in the format are an SFLOAT
+VK_LAYER_EXPORT bool FormatIsSFLOAT(VkFormat format) {
+    bool found = false;
     switch (format) {
         case VK_FORMAT_R16_SFLOAT:
         case VK_FORMAT_R16G16_SFLOAT:
@@ -809,17 +814,43 @@ VK_LAYER_EXPORT bool FormatIsFloat(VkFormat format) {
         case VK_FORMAT_R64G64_SFLOAT:
         case VK_FORMAT_R64G64B64_SFLOAT:
         case VK_FORMAT_R64G64B64A64_SFLOAT:
-        case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-        case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
-        case VK_FORMAT_BC6H_UFLOAT_BLOCK:
+        case VK_FORMAT_D32_SFLOAT:
         case VK_FORMAT_BC6H_SFLOAT_BLOCK:
-            is_float = true;
+        case VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK_EXT:
+        case VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK_EXT:
+            found = true;
             break;
         default:
             break;
     }
+    return found;
+}
 
-    return is_float;
+// Return true if all components in the format are an UFLOAT
+VK_LAYER_EXPORT bool FormatIsUFLOAT(VkFormat format) {
+    bool found = false;
+    switch (format) {
+        case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+        case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+        case VK_FORMAT_BC6H_UFLOAT_BLOCK:
+            found = true;
+            break;
+        default:
+            break;
+    }
+    return found;
 }
 
 // Return true if format is in the SRGB colorspace
@@ -865,7 +896,7 @@ VK_LAYER_EXPORT bool FormatIsSRGB(VkFormat format) {
 }
 
 // Return true if format is a USCALED format
-VK_LAYER_EXPORT bool FormatIsUScaled(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsUSCALED(VkFormat format) {
     bool is_uscaled = false;
 
     switch (format) {
@@ -892,7 +923,7 @@ VK_LAYER_EXPORT bool FormatIsUScaled(VkFormat format) {
 }
 
 // Return true if format is a SSCALED format
-VK_LAYER_EXPORT bool FormatIsSScaled(VkFormat format) {
+VK_LAYER_EXPORT bool FormatIsSSCALED(VkFormat format) {
     bool is_sscaled = false;
 
     switch (format) {
@@ -919,16 +950,16 @@ VK_LAYER_EXPORT bool FormatIsSScaled(VkFormat format) {
 }
 
 // Types from "Interpretation of Numeric Format" table
-VK_LAYER_EXPORT bool FormatIsSampledInt(VkFormat format) { return FormatIsInt(format); }
+VK_LAYER_EXPORT bool FormatIsSampledInt(VkFormat format) { return (FormatIsSINT(format) || FormatIsUINT(format)); }
 VK_LAYER_EXPORT bool FormatIsSampledFloat(VkFormat format) {
-    return (FormatIsUNorm(format) || FormatIsSNorm(format) || FormatIsUScaled(format) || FormatIsSScaled(format) ||
-            FormatIsFloat(format) || FormatIsSRGB(format));
+    return (FormatIsUNORM(format) || FormatIsSNORM(format) || FormatIsUSCALED(format) || FormatIsSSCALED(format) ||
+            FormatIsUFLOAT(format) || FormatIsSFLOAT(format) || FormatIsSRGB(format));
 }
 
 // Return texel block sizes for all formats
 // Uncompressed formats return {1, 1, 1}
 // Compressed formats return the compression block extents
-// Multiplane formats return the 'shared' extent of their low-res channel(s)
+// Multiplane formats return the 'shared' extent of their low-res component(s)
 VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
     VkExtent3D block_size = {1, 1, 1};
     switch (format) {
@@ -1051,7 +1082,9 @@ VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
         case VK_FORMAT_B16G16R16G16_422_UNORM:
             block_size = {2, 1, 1};
             break;
-        // _422 multi-plane formats are not considered compressed, but shared components form a logical 2x1 block
+        // Other YCbCr formats (for copies) are not considered compressed and should be 1x1x1
+        // yes, some formats are "logically" 2x1 and 2x2 block, but it was discussed here
+        // https://gitlab.khronos.org/vulkan/vulkan/-/merge_requests/4787#note_333809
         case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
         case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
         case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
@@ -1060,9 +1093,6 @@ VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
         case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
         case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
         case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
-            block_size = {2, 1, 1};
-            break;
-        // _420 formats are not considered compressed, but shared components form a logical 2x2 block
         case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
         case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
         case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
@@ -1071,9 +1101,6 @@ VK_LAYER_EXPORT VkExtent3D FormatTexelBlockExtent(VkFormat format) {
         case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
         case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
         case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
-            block_size = {2, 2, 1};
-            break;
-        // _444 multi-plane formats do not share components, default to 1x1
         case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
         case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
         case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
@@ -1182,6 +1209,10 @@ VK_LAYER_EXPORT uint32_t FormatPlaneCount(VkFormat format) {
         case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
         case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
         case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
+        case VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT:
+        case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT:
+        case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT:
+        case VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT:
             return 2;
             break;
         default:
@@ -1242,30 +1273,13 @@ VK_LAYER_EXPORT double FormatTexelSize(VkFormat format, VkImageAspectFlags aspec
     return texel_size;
 }
 
-// Return the number of channels for a given format
-uint32_t FormatChannelCount(VkFormat format) {
+// Return the number of components for a given format
+uint32_t FormatComponentCount(VkFormat format) {
     auto item = kVkFormatTable.find(format);
     if (item != kVkFormatTable.end()) {
-        return item->second.channel_count;
+        return item->second.component_count;
     }
     return 0;
-}
-
-// Perform a zero-tolerant modulo operation
-VK_LAYER_EXPORT VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divisor) {
-    VkDeviceSize result = 0;
-    if (divisor != 0) {
-        result = dividend % divisor;
-    }
-    return result;
-}
-
-VK_LAYER_EXPORT VkDeviceSize SafeDivision(VkDeviceSize dividend, VkDeviceSize divisor) {
-    VkDeviceSize result = 0;
-    if (divisor != 0) {
-        result = dividend / divisor;
-    }
-    return result;
 }
 
 struct VULKAN_PER_PLANE_COMPATIBILITY {
@@ -1275,7 +1289,7 @@ struct VULKAN_PER_PLANE_COMPATIBILITY {
 };
 
 struct VULKAN_MULTIPLANE_COMPATIBILITY {
-    VULKAN_PER_PLANE_COMPATIBILITY per_plane[VK_MULTIPLANE_FORMAT_MAX_PLANES];
+    VULKAN_PER_PLANE_COMPATIBILITY per_plane[FORMAT_MAX_PLANES];
 };
 
 // Source: Vulkan spec Table 47. Plane Format Compatibility Table
@@ -1340,33 +1354,26 @@ static const std::map<VkFormat, VULKAN_MULTIPLANE_COMPATIBILITY>kVkMultiplaneCom
                                                                 { 1, 1, VK_FORMAT_UNDEFINED } } } },
     { VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,               { { { 1, 1, VK_FORMAT_R16_UNORM },
                                                                 { 1, 1, VK_FORMAT_R16_UNORM },
-                                                                { 1, 1, VK_FORMAT_R16_UNORM } } } }
+                                                                { 1, 1, VK_FORMAT_R16_UNORM } } } },
+    { VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT,               { { { 1, 1, VK_FORMAT_R8_UNORM },
+                                                                { 2, 1, VK_FORMAT_R8G8_UNORM },
+                                                                { 1, 1, VK_FORMAT_UNDEFINED } } } },
+    { VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT, { { { 1, 1, VK_FORMAT_R10X6_UNORM_PACK16 },
+                                                                   { 2, 1, VK_FORMAT_R10X6G10X6_UNORM_2PACK16 },
+                                                                   { 1, 1, VK_FORMAT_UNDEFINED } } } },
+    { VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT, { { { 1, 1, VK_FORMAT_R12X4_UNORM_PACK16 },
+                                                                   { 2, 1, VK_FORMAT_R12X4G12X4_UNORM_2PACK16 },
+                                                                   { 1, 1, VK_FORMAT_UNDEFINED } } } },
+    { VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT,            { { { 1, 1, VK_FORMAT_R16_UNORM },
+                                                                { 2, 1, VK_FORMAT_R16G16_UNORM },
+                                                                { 1, 1, VK_FORMAT_UNDEFINED } } } }
 };
 // clang-format on
-
-uint32_t GetPlaneIndex(VkImageAspectFlags aspect) {
-    // Returns an out of bounds index on error
-    switch (aspect) {
-        case VK_IMAGE_ASPECT_PLANE_0_BIT:
-            return 0;
-            break;
-        case VK_IMAGE_ASPECT_PLANE_1_BIT:
-            return 1;
-            break;
-        case VK_IMAGE_ASPECT_PLANE_2_BIT:
-            return 2;
-            break;
-        default:
-            // If more than one plane bit is set, return error condition
-            return VK_MULTIPLANE_FORMAT_MAX_PLANES;
-            break;
-    }
-}
 
 VK_LAYER_EXPORT VkFormat FindMultiplaneCompatibleFormat(VkFormat mp_fmt, VkImageAspectFlags plane_aspect) {
     uint32_t plane_idx = GetPlaneIndex(plane_aspect);
     auto it = kVkMultiplaneCompatibilityMap.find(mp_fmt);
-    if ((it == kVkMultiplaneCompatibilityMap.end()) || (plane_idx >= VK_MULTIPLANE_FORMAT_MAX_PLANES)) {
+    if ((it == kVkMultiplaneCompatibilityMap.end()) || (plane_idx >= FORMAT_MAX_PLANES)) {
         return VK_FORMAT_UNDEFINED;
     }
 
@@ -1377,41 +1384,13 @@ VK_LAYER_EXPORT VkExtent2D FindMultiplaneExtentDivisors(VkFormat mp_fmt, VkImage
     VkExtent2D divisors = {1, 1};
     uint32_t plane_idx = GetPlaneIndex(plane_aspect);
     auto it = kVkMultiplaneCompatibilityMap.find(mp_fmt);
-    if ((it == kVkMultiplaneCompatibilityMap.end()) || (plane_idx >= VK_MULTIPLANE_FORMAT_MAX_PLANES)) {
+    if ((it == kVkMultiplaneCompatibilityMap.end()) || (plane_idx >= FORMAT_MAX_PLANES)) {
         return divisors;
     }
 
     divisors.width = it->second.per_plane[plane_idx].width_divisor;
     divisors.height = it->second.per_plane[plane_idx].height_divisor;
     return divisors;
-}
-
-VK_LAYER_EXPORT bool FormatSizesAreEqual(VkFormat srcFormat, VkFormat dstFormat, uint32_t region_count,
-                                         const VkImageCopy *regions) {
-    size_t src_size = 0, dst_size = 0;
-
-    if (FormatIsMultiplane(srcFormat) || FormatIsMultiplane(dstFormat)) {
-        for (uint32_t i = 0; i < region_count; i++) {
-            if (FormatIsMultiplane(srcFormat)) {
-                VkFormat plane_format = FindMultiplaneCompatibleFormat(srcFormat, regions[i].srcSubresource.aspectMask);
-                src_size = FormatElementSize(plane_format);
-            } else {
-                src_size = FormatElementSize(srcFormat);
-            }
-            if (FormatIsMultiplane(dstFormat)) {
-                VkFormat plane_format = FindMultiplaneCompatibleFormat(dstFormat, regions[i].dstSubresource.aspectMask);
-                dst_size = FormatElementSize(plane_format);
-            } else {
-                dst_size = FormatElementSize(dstFormat);
-            }
-            if (dst_size != src_size) return false;
-        }
-        return true;
-    } else {
-        src_size = FormatElementSize(srcFormat);
-        dst_size = FormatElementSize(dstFormat);
-        return (dst_size == src_size);
-    }
 }
 
 // Source: Vulkan spec Table 69. Formats requiring sampler YCBCR conversion for VK_IMAGE_ASPECT_COLOR_BIT image views
@@ -1444,7 +1423,11 @@ const std::set<VkFormat> kVkFormatsRequiringYcbcrConversion{VK_FORMAT_G8B8G8R8_4
                                                             VK_FORMAT_G16_B16R16_2PLANE_420_UNORM,
                                                             VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
                                                             VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
-                                                            VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM};
+                                                            VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
+                                                            VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT,
+                                                            VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16_EXT,
+                                                            VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16_EXT,
+                                                            VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT};
 
 VK_LAYER_EXPORT bool FormatRequiresYcbcrConversion(VkFormat format) {
     auto it = kVkFormatsRequiringYcbcrConversion.find(format);
@@ -1508,19 +1491,4 @@ VK_LAYER_EXPORT bool FormatIsYChromaSubsampled(VkFormat format) {
     }
 
     return is_y_chroma_subsampled;
-}
-
-VK_LAYER_EXPORT VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
-    switch (indexType) {
-        case VK_INDEX_TYPE_UINT16:
-            return 2;
-        case VK_INDEX_TYPE_UINT32:
-            return 4;
-        case VK_INDEX_TYPE_UINT8_EXT:
-            return 1;
-        default:
-            // Not a real index type. Express no alignment requirement here; we expect upper layer
-            // to have already picked up on the enum being nonsense.
-            return 1;
-    }
 }

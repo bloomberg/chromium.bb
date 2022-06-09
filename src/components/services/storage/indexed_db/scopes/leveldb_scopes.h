@@ -15,12 +15,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock_range.h"
@@ -54,6 +54,10 @@ class LevelDBScopes {
                 scoped_refptr<LevelDBState> level_db,
                 ScopesLockManager* lock_manager,
                 TearDownCallback tear_down_callback);
+
+  LevelDBScopes(const LevelDBScopes&) = delete;
+  LevelDBScopes& operator=(const LevelDBScopes&) = delete;
+
   ~LevelDBScopes();
 
   // This method needs to be called before any other method on this class. If
@@ -139,7 +143,7 @@ class LevelDBScopes {
   int next_scope_id_ = 0;
   scoped_refptr<LevelDBState> level_db_;
   // The |lock_manager_| is expected to outlive this class.
-  ScopesLockManager* lock_manager_;
+  raw_ptr<ScopesLockManager> lock_manager_;
   TearDownCallback tear_down_callback_;
 
 #if DCHECK_IS_ON()
@@ -147,7 +151,6 @@ class LevelDBScopes {
 #endif
 
   base::WeakPtrFactory<LevelDBScopes> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(LevelDBScopes);
 };
 
 }  // namespace content

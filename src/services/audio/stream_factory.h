@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
@@ -20,7 +19,13 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "media/mojo/mojom/audio_stream_factory.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/audio/buildflags.h"
+#include "services/audio/concurrent_stream_metric_reporter.h"
 #include "services/audio/loopback_coordinator.h"
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+#include "services/audio/output_device_mixer_manager.h"
+#endif
 
 namespace base {
 class UnguessableToken;
@@ -45,6 +50,10 @@ class OutputStream;
 class StreamFactory final : public media::mojom::AudioStreamFactory {
  public:
   explicit StreamFactory(media::AudioManager* audio_manager);
+
+  StreamFactory(const StreamFactory&) = delete;
+  StreamFactory& operator=(const StreamFactory&) = delete;
+
   ~StreamFactory() final;
 
   void Bind(mojo::PendingReceiver<media::mojom::AudioStreamFactory> receiver);
@@ -104,7 +113,12 @@ class StreamFactory final : public media::mojom::AudioStreamFactory {
 
   mojo::ReceiverSet<media::mojom::AudioStreamFactory> receivers_;
 
+  ConcurrentStreamMetricReporter stream_count_metric_reporter_;
+
   // Order of the following members is important for a clean shutdown.
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  const std::unique_ptr<OutputDeviceMixerManager> output_device_mixer_manager_;
+#endif
   LoopbackCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
   base::Thread loopback_worker_thread_;
@@ -113,7 +127,6 @@ class StreamFactory final : public media::mojom::AudioStreamFactory {
   OutputStreamSet output_streams_;
 
   base::WeakPtrFactory<StreamFactory> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(StreamFactory);
 };
 
 }  // namespace audio

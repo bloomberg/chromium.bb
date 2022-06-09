@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_TEST_ECHO_EXTENSION_H_
 #define REMOTING_HOST_TEST_ECHO_EXTENSION_H_
 
-#include "base/macros.h"
 #include "remoting/host/host_extension.h"
 
 namespace remoting {
@@ -13,6 +12,10 @@ namespace remoting {
 class TestEchoExtension : public HostExtension {
  public:
   TestEchoExtension();
+
+  TestEchoExtension(const TestEchoExtension&) = delete;
+  TestEchoExtension& operator=(const TestEchoExtension&) = delete;
+
   ~TestEchoExtension() override;
 
   // HostExtension interface.
@@ -20,9 +23,6 @@ class TestEchoExtension : public HostExtension {
   std::unique_ptr<HostExtensionSession> CreateExtensionSession(
       ClientSessionDetails* client_session_details,
       protocol::ClientStub* client_stub) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestEchoExtension);
 };
 
 }  // namespace remoting

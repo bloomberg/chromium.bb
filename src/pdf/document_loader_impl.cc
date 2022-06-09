@@ -14,12 +14,11 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
 #include "pdf/pdf_features.h"
+#include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/url_loader_wrapper.h"
-#include "ppapi/c/pp_errors.h"
 #include "ui/gfx/range/range.h"
 
 namespace chrome_pdf {
@@ -182,10 +181,7 @@ void DocumentLoaderImpl::RequestData(uint32_t position, uint32_t size) {
 
   RangeSet requested_chunks(chunk_stream_.GetChunksRange(position, size));
   requested_chunks.Subtract(chunk_stream_.filled_chunks());
-  if (requested_chunks.IsEmpty()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(!requested_chunks.IsEmpty());
   pending_requests_.Union(requested_chunks);
 }
 
@@ -260,9 +256,8 @@ void DocumentLoaderImpl::ContinueDownload() {
 }
 
 void DocumentLoaderImpl::DidOpenPartial(int32_t result) {
-  if (result != PP_OK) {
+  if (result != Result::kSuccess)
     return ReadComplete();
-  }
 
   if (!ResponseStatusSuccess(loader_.get()))
     return ReadComplete();

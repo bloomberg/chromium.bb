@@ -47,6 +47,17 @@ namespace blink {
 namespace {
 constexpr double kScrollVelocityZeroingTimeout = 0.10f;
 constexpr double kRubberbandMinimumRequiredDeltaBeforeStretch = 10;
+
+#if defined(OS_ANDROID)
+// On android, overscroll should not occur if the scroller is not scrollable in
+// the overscrolled direction.
+constexpr bool kOverscrollNonScrollableDirection = false;
+#else   // defined(OS_ANDROID)
+// On other platforms, overscroll can occur even if the scroller is not
+// scrollable.
+constexpr bool kOverscrollNonScrollableDirection = true;
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 
 ElasticOverscrollController::ElasticOverscrollController(
@@ -58,11 +69,12 @@ ElasticOverscrollController::ElasticOverscrollController(
 std::unique_ptr<ElasticOverscrollController>
 ElasticOverscrollController::Create(cc::ScrollElasticityHelper* helper) {
 #if defined(OS_WIN)
-  return base::FeatureList::IsEnabled(features::kElasticOverscrollWin)
+  return base::FeatureList::IsEnabled(features::kElasticOverscroll)
              ? std::make_unique<ElasticOverscrollControllerBezier>(helper)
              : nullptr;
-#endif
+#else
   return std::make_unique<ElasticOverscrollControllerExponential>(helper);
+#endif
 }
 
 void ElasticOverscrollController::ObserveRealScrollBegin(bool enter_momentum,
@@ -187,6 +199,15 @@ void ElasticOverscrollController::Overscroll(
   else
     adjusted_overscroll_delta.set_y(0);
 
+  if (!kOverscrollNonScrollableDirection) {
+    // Check whether each direction is scrollable and 0 out the overscroll if it
+    // is not.
+    if (!CanScrollHorizontally())
+      adjusted_overscroll_delta.set_x(0);
+    if (!CanScrollVertically())
+      adjusted_overscroll_delta.set_y(0);
+  }
+
   // Don't allow overscrolling in a direction where scrolling is possible.
   if (!PinnedHorizontally(adjusted_overscroll_delta.x()))
     adjusted_overscroll_delta.set_x(0);
@@ -294,8 +315,8 @@ void ElasticOverscrollController::Animate(base::TimeTicks time) {
 }
 
 bool ElasticOverscrollController::PinnedHorizontally(float direction) const {
-  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
-  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+  gfx::PointF scroll_offset = helper_->ScrollOffset();
+  gfx::PointF max_scroll_offset = helper_->MaxScrollOffset();
   if (direction < 0)
     return scroll_offset.x() <= 0;
   if (direction > 0)
@@ -304,8 +325,8 @@ bool ElasticOverscrollController::PinnedHorizontally(float direction) const {
 }
 
 bool ElasticOverscrollController::PinnedVertically(float direction) const {
-  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
-  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+  gfx::PointF scroll_offset = helper_->ScrollOffset();
+  gfx::PointF max_scroll_offset = helper_->MaxScrollOffset();
   if (direction < 0)
     return scroll_offset.y() <= 0;
   if (direction > 0)
@@ -326,8 +347,8 @@ void ElasticOverscrollController::ReconcileStretchAndScroll() {
   if (stretch.IsZero())
     return;
 
-  gfx::ScrollOffset scroll_offset = helper_->ScrollOffset();
-  gfx::ScrollOffset max_scroll_offset = helper_->MaxScrollOffset();
+  gfx::PointF scroll_offset = helper_->ScrollOffset();
+  gfx::PointF max_scroll_offset = helper_->MaxScrollOffset();
 
   // Compute stretch_adjustment which will be added to |stretch| and subtracted
   // from the |scroll_offset|.

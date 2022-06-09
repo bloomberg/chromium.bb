@@ -36,8 +36,13 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           std::make_unique<MockRenderProcessHost>(browser_context_.get())),
       new_render_process_host_(
           std::make_unique<MockRenderProcessHost>(browser_context_.get())),
+      quota_manager_(base::MakeRefCounted<storage::MockQuotaManager>(
+          /*is_cognito=*/false,
+          user_data_directory,
+          base::ThreadTaskRunnerHandle::Get(),
+          special_storage_policy)),
       quota_manager_proxy_(base::MakeRefCounted<storage::MockQuotaManagerProxy>(
-          nullptr,
+          quota_manager_.get(),
           base::SequencedTaskRunnerHandle::Get())),
       wrapper_(base::MakeRefCounted<ServiceWorkerContextWrapper>(
           browser_context_.get())),
@@ -56,7 +61,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       &EmbeddedWorkerTestHelper::BindStorageControl, base::Unretained(this)));
   wrapper_->InitInternal(quota_manager_proxy_.get(), special_storage_policy,
                          /*blob_context=*/nullptr,
-                         url_loader_factory_getter_.get(),
                          browser_context_.get());
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
@@ -155,7 +159,6 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
   fake_loader_factory_wrapper_->Detach();
   if (wrapper_.get())
     wrapper_->Shutdown();
-  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
 }
 
 ServiceWorkerContextCore* EmbeddedWorkerTestHelper::context() {

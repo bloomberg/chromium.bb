@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
@@ -35,6 +34,10 @@ namespace mojo {
 class MOJO_CPP_SYSTEM_EXPORT WaitSet {
  public:
   WaitSet();
+
+  WaitSet(const WaitSet&) = delete;
+  WaitSet& operator=(const WaitSet&) = delete;
+
   ~WaitSet();
 
   // Adds |event| to the set of events to wait on. If successful, any future
@@ -116,8 +119,6 @@ class MOJO_CPP_SYSTEM_EXPORT WaitSet {
   // Thread-safe state associated with this WaitSet. Used to aggregate
   // notifications from watched handles.
   scoped_refptr<State> state_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaitSet);
 };
 
 }  // namespace mojo

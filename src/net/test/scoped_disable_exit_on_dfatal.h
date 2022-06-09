@@ -6,7 +6,6 @@
 #define NET_TEST_SCOPED_DISABLE_EXIT_ON_DFATAL_H_
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,6 +19,11 @@ namespace test {
 class ScopedDisableExitOnDFatal {
  public:
   ScopedDisableExitOnDFatal();
+
+  ScopedDisableExitOnDFatal(const ScopedDisableExitOnDFatal&) = delete;
+  ScopedDisableExitOnDFatal& operator=(const ScopedDisableExitOnDFatal&) =
+      delete;
+
   ~ScopedDisableExitOnDFatal();
 
  private:
@@ -31,8 +35,6 @@ class ScopedDisableExitOnDFatal {
                                const base::StringPiece stack_trace);
 
   logging::ScopedLogAssertHandler assert_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDisableExitOnDFatal);
 };
 
 }  // namespace test

@@ -9,6 +9,8 @@
 #define SkComposeShader_DEFINED
 
 #include "include/core/SkBlendMode.h"
+#include "src/core/SkBlendModePriv.h"
+#include "src/core/SkBlenderBase.h"
 #include "src/shaders/SkShaderBase.h"
 
 class SkShader_Blend final : public SkShaderBase {
@@ -16,8 +18,11 @@ public:
     SkShader_Blend(SkBlendMode mode, sk_sp<SkShader> dst, sk_sp<SkShader> src)
         : fDst(std::move(dst))
         , fSrc(std::move(src))
+        , fBlender(nullptr)
         , fMode(mode)
     {}
+
+    SkShader_Blend(sk_sp<SkBlender> blender, sk_sp<SkShader> dst, sk_sp<SkShader> src);
 
 #if SK_SUPPORT_GPU
     std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(const GrFPArgs&) const override;
@@ -36,7 +41,8 @@ private:
 
     sk_sp<SkShader>     fDst;
     sk_sp<SkShader>     fSrc;
-    const SkBlendMode   fMode;
+    sk_sp<SkBlender>    fBlender;   // if null, use fMode
+    SkBlendMode         fMode;      // only use if fBlender is null
 
     using INHERITED = SkShaderBase;
 };

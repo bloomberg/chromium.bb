@@ -15,11 +15,11 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "net/cert/x509_util.h"
@@ -94,6 +94,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     RegistrationData(RegistrationData&& data);
     RegistrationData& operator=(RegistrationData&& other);
 
+    RegistrationData(const RegistrationData&) = delete;
+    RegistrationData& operator=(const RegistrationData&) = delete;
+
     ~RegistrationData();
 
     std::unique_ptr<PrivateKey> private_key = PrivateKey::FreshP256Key();
@@ -117,8 +120,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     absl::optional<std::array<uint8_t, 32>> large_blob_key;
     absl::optional<std::vector<uint8_t>> cred_blob;
-
-    DISALLOW_COPY_AND_ASSIGN(RegistrationData);
   };
 
   // Stores the state of the device. Since |U2fDevice| objects only persist for
@@ -133,6 +134,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
         base::RepeatingCallback<bool(VirtualFidoDevice*)>;
 
     State();
+
+    State(const State&) = delete;
+    State& operator=(const State&) = delete;
 
     // The common name in the attestation certificate.
     std::string attestation_cert_common_name;
@@ -222,16 +226,34 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // upon returning the error.
     bool bio_enrollment_next_sample_timeout = false;
 
-    // allow_list_sizes contains the lengths of the allow_lists that have been
-    // seen in assertion requests. This is for tests to confirm that the
-    // expected sequence of requests was sent.
-    std::vector<size_t> allow_list_sizes;
+    // allow_list_history contains the allow_list values that have been seen in
+    // assertion requests. This is for tests to confirm that the expected
+    // sequence of requests was sent.
+    std::vector<std::vector<PublicKeyCredentialDescriptor>> allow_list_history;
+
+    // exclude_list_history contains the exclude_list values that have been seen
+    // in registration requests. This is for tests to confirm that the expected
+    // sequence of requests was sent.
+    std::vector<std::vector<PublicKeyCredentialDescriptor>>
+        exclude_list_history;
+
+    // |cancel_response_code| is the response code the authenticator will return
+    // when cancelling a pending request. Normally authenticators return
+    // CTAP2_ERR_KEEP_ALIVE_CANCEL, but some authenticators incorrectly return
+    // other codes.
+    CtapDeviceResponseCode cancel_response_code =
+        CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel;
 
     // The large-blob array.
     std::vector<uint8_t> large_blob;
 
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
+
+    // transact_callback contains the outstanding callback in the event that
+    // |simulate_press_callback| returned false. This can be used to inject a
+    // response after simulating an unsatisfied touch for CTAP2 authenticators.
+    FidoDevice::DeviceCallback transact_callback;
 
     // Adds a new credential to the authenticator. Returns true on success,
     // false if there already exists a credential with the given ID.
@@ -290,8 +312,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
    private:
     friend class base::RefCounted<State>;
     ~State();
-
-    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   // Constructs an object with ephemeral state. In order to have the state of
@@ -301,6 +321,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   // Constructs an object that will read from, and write to, |state|.
   explicit VirtualFidoDevice(scoped_refptr<State> state);
+
+  VirtualFidoDevice(const VirtualFidoDevice&) = delete;
+  VirtualFidoDevice& operator=(const VirtualFidoDevice&) = delete;
 
   ~VirtualFidoDevice() override;
 
@@ -345,8 +368,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   const std::string id_ = MakeVirtualFidoDeviceId();
   scoped_refptr<State> state_ = base::MakeRefCounted<State>();
-
-  DISALLOW_COPY_AND_ASSIGN(VirtualFidoDevice);
 };
 
 }  // namespace device

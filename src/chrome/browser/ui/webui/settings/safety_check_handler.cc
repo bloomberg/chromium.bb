@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -18,7 +17,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
-#include "chrome/browser/extensions/blocklist_extension_prefs.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version/version_ui.h"
@@ -34,6 +32,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_id.h"
@@ -203,8 +202,8 @@ base::Time TimestampDelegate::FetchChromeCleanerScanCompletionTimestamp() {
   // TODO(crbug.com/1139806): Part of the above workaround. If the timestamp in
   // prefs is null or older than the one from the registry, then return the one
   // from the registry. Otherwise return the one from prefs.
-  base::Time end_time_from_registry = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(end_time));
+  base::Time end_time_from_registry =
+      base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(end_time));
   if (end_time_from_prefs.is_null() ||
       end_time_from_prefs < end_time_from_registry) {
     return end_time_from_registry;
@@ -368,13 +367,12 @@ void SafetyCheckHandler::HandlePerformSafetyCheck(const base::ListValue* args) {
       FROM_HERE,
       base::BindOnce(&SafetyCheckHandler::PerformSafetyCheck,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(1));
+      base::Seconds(1));
 }
 
 void SafetyCheckHandler::HandleGetParentRanDisplayString(
     const base::ListValue* args) {
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  const base::Value& callback_id = args->GetList()[0];
 
   // Send updated timestamp-based display strings to all SC children who have
   // such strings.
@@ -393,7 +391,7 @@ void SafetyCheckHandler::HandleGetParentRanDisplayString(
 
   // String update for the parent.
   ResolveJavascriptCallback(
-      *callback_id,
+      callback_id,
       base::Value(GetStringForParentRan(safety_check_completion_time_)));
 }
 
@@ -413,10 +411,11 @@ void SafetyCheckHandler::CheckPasswords() {
   // on the same page. Normally this should not happen, but if it does, the
   // browser should not crash.
   observed_leak_check_.Reset();
-  observed_leak_check_.Observe(leak_service_);
+  observed_leak_check_.Observe(leak_service_.get());
   // Start observing the InsecureCredentialsManager.
   observed_insecure_credentials_manager_.Reset();
-  observed_insecure_credentials_manager_.Observe(insecure_credentials_manager_);
+  observed_insecure_credentials_manager_.Observe(
+      insecure_credentials_manager_.get());
   passwords_delegate_->StartPasswordCheck(base::BindOnce(
       &SafetyCheckHandler::OnStateChanged, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -661,11 +660,6 @@ std::u16string SafetyCheckHandler::GetStringForPasswords(
       return l10n_util::GetPluralStringFUTF16(
           IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, 0);
     case PasswordsStatus::kCompromisedExist:
-      // TODO(crbug.com/1128904): Clean up the old code path.
-      if (!base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords)) {
-        return l10n_util::GetPluralStringFUTF16(
-            IDS_SETTINGS_COMPROMISED_PASSWORDS_COUNT, compromised.value());
-      }
       if (weak.value() == 0) {
         // Only compromised passwords, no weak passwords.
         return l10n_util::GetPluralStringFUTF16(
@@ -793,7 +787,7 @@ std::u16string SafetyCheckHandler::GetStringForTimePassed(
   base::Time::Exploded system_time_exploded;
   system_time.LocalExplode(&system_time_exploded);
 
-  const base::Time time_yesterday = system_time - base::TimeDelta::FromDays(1);
+  const base::Time time_yesterday = system_time - base::Days(1);
   base::Time::Exploded time_yesterday_exploded;
   time_yesterday.LocalExplode(&time_yesterday_exploded);
 
@@ -883,10 +877,7 @@ void SafetyCheckHandler::UpdatePasswordsResultOnCheckIdle() {
   size_t num_compromised =
       passwords_delegate_->GetCompromisedCredentials().size();
   size_t num_weak = passwords_delegate_->GetWeakCredentials().size();
-  // TODO(crbug.com/1128904): Clean up the old code path.
-  if (num_compromised == 0 &&
-      (num_weak == 0 ||
-       !base::FeatureList::IsEnabled(features::kSafetyCheckWeakPasswords))) {
+  if (num_compromised == 0 && num_weak == 0) {
     // If there are no |OnCredentialDone| callbacks with is_leaked = true, no
     // need to wait for InsecureCredentialsManager callbacks any longer, since
     // there should be none for the current password check.
@@ -1063,11 +1054,11 @@ void SafetyCheckHandler::OnJavascriptDisallowed() {
 void SafetyCheckHandler::RegisterMessages() {
   // Usage of base::Unretained(this) is safe, because web_ui() owns `this` and
   // won't release ownership until destruction.
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kPerformSafetyCheck,
       base::BindRepeating(&SafetyCheckHandler::HandlePerformSafetyCheck,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kGetParentRanDisplayString,
       base::BindRepeating(&SafetyCheckHandler::HandleGetParentRanDisplayString,
                           base::Unretained(this)));

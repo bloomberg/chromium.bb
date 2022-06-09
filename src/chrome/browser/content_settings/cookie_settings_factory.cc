@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -68,13 +67,7 @@ CookieSettingsFactory::BuildServiceInstanceFor(
       cookie_controls_mode == CookieControlsMode::kBlockThirdParty);
   base::UmaHistogramEnumeration("Privacy.CookieControlsSetting",
                                 cookie_controls_mode);
-  // The DNT setting is only vaguely cookie-related. However, there is currently
-  // no DNT-related code that is executed once per Profile lifetime, and
-  // creating a new BrowserContextKeyedService to record this metric would be
-  // an overkill. Hence, we put it here.
-  // TODO(msramek): Find a better place for this metric.
-  base::UmaHistogramBoolean("Privacy.DoNotTrackSetting",
-                            prefs->GetBoolean(prefs::kEnableDoNotTrack));
+
   return new content_settings::CookieSettings(
       HostContentSettingsMapFactory::GetForProfile(profile), prefs,
       profile->IsIncognitoProfile(), extensions::kExtensionScheme);

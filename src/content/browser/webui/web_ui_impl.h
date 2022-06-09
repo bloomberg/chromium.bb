@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/web_ui.mojom.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -32,12 +32,14 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   explicit WebUIImpl(WebContentsImpl* contents,
                      RenderFrameHostImpl* frame_host);
   ~WebUIImpl() override;
+  WebUIImpl(const WebUIImpl&) = delete;
+  WebUIImpl& operator=(const WebUIImpl&) = delete;
 
   // Called when a RenderFrame is created for a WebUI (reload after a renderer
   // crash) or when a WebUI is created for a RenderFrame (i.e. navigating from
   // chrome://downloads to chrome://bookmarks) or when both are new (i.e.
   // opening a new tab).
-  void RenderFrameCreated(RenderFrameHost* render_frame_host);
+  void WebUIRenderFrameCreated(RenderFrameHost* render_frame_host);
 
   // Called when a RenderFrame is reused for the same WebUI type (i.e. reload).
   void RenderFrameReused(RenderFrameHost* render_frame_host);
@@ -51,10 +53,10 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void RenderFrameDeleted();
 
   // Called right after AllowBindings is notified to a RenderFrame.
-  void SetupMojoConnection();
+  void SetUpMojoConnection();
 
   // Called when a RenderFrame is deleted for a WebUI (i.e. a renderer crash).
-  void InvalidateMojoConnection();
+  void TearDownMojoConnection();
 
   // Add a property to the WebUI binding object.
   void SetProperty(const std::string& name, const std::string& value);
@@ -72,7 +74,10 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void AddRequestableScheme(const char* scheme) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
-                               const MessageCallback& callback) override;
+                               MessageCallback callback) override;
+  void RegisterDeprecatedMessageCallback(
+      base::StringPiece message,
+      const DeprecatedMessageCallback& callback) override;
   void ProcessWebUIMessage(const GURL& source_url,
                            const std::string& message,
                            const base::ListValue& args) override;
@@ -122,6 +127,10 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // A map of message name -> message handling callback.
   std::map<std::string, MessageCallback> message_callbacks_;
 
+  // A map of message name -> message handling callback.
+  std::map<std::string, DeprecatedMessageCallback>
+      deprecated_message_callbacks_;
+
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   std::u16string overridden_title_;  // Defaults to empty string.
@@ -132,10 +141,10 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   std::vector<std::string> requestable_schemes_;
 
   // RenderFrameHost associated with |this|.
-  RenderFrameHostImpl* frame_host_;
+  raw_ptr<RenderFrameHostImpl> frame_host_;
 
   // Non-owning pointer to the WebContentsImpl this WebUI is associated with.
-  WebContentsImpl* web_contents_;
+  raw_ptr<WebContentsImpl> web_contents_;
 
   // The WebUIMessageHandlers we own.
   std::vector<std::unique_ptr<WebUIMessageHandler>> handlers_;
@@ -147,8 +156,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   mojo::AssociatedRemote<mojom::WebUI> remote_;
   mojo::AssociatedReceiver<mojom::WebUIHost> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIImpl);
 };
 
 }  // namespace content

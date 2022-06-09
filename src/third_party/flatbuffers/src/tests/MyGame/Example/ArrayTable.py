@@ -10,12 +10,16 @@ class ArrayTable(object):
     __slots__ = ['_tab']
 
     @classmethod
-    def GetRootAsArrayTable(cls, buf, offset):
+    def GetRootAs(cls, buf, offset=0):
         n = flatbuffers.encode.Get(flatbuffers.packer.uoffset, buf, offset)
         x = ArrayTable()
         x.Init(buf, n + offset)
         return x
 
+    @classmethod
+    def GetRootAsArrayTable(cls, buf, offset=0):
+        """This method is deprecated. Please switch to GetRootAs."""
+        return cls.GetRootAs(buf, offset)
     @classmethod
     def ArrayTableBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
         return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x41\x52\x52\x54", size_prefixed=size_prefixed)
@@ -36,9 +40,14 @@ class ArrayTable(object):
         return None
 
 def ArrayTableStart(builder): builder.StartObject(1)
+def Start(builder):
+    return ArrayTableStart(builder)
 def ArrayTableAddA(builder, a): builder.PrependStructSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(a), 0)
+def AddA(builder, a):
+    return ArrayTableAddA(builder, a)
 def ArrayTableEnd(builder): return builder.EndObject()
-
+def End(builder):
+    return ArrayTableEnd(builder)
 import MyGame.Example.ArrayStruct
 try:
     from typing import Optional

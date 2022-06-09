@@ -23,10 +23,31 @@ enum class RelroSharingStatus {
   NOT_ATTEMPTED = 0,
   SHARED = 1,
   NOT_IDENTICAL = 2,
-  COUNT = 3,
+  EXTERNAL_RELRO_FD_NOT_PROVIDED = 3,
+  EXTERNAL_RELRO_NOT_FOUND = 4,
+  NO_SHMEM_FUNCTIONS = 5,
+  REMAP_FAILED = 6,
+  CORRUPTED_IN_JAVA = 7,
+  COUNT = 8,
 };
 
 struct SharedMemoryFunctions;
+
+// Abstract class for NativeLibInfo to use for miscellaneous time measurements.
+// Best to be provided with values from the same clock as
+// SystemClock.uptimeMillis().
+//
+// *Not* threadsafe.
+class LoadTimeReporter {
+ public:
+  virtual ~LoadTimeReporter() = default;
+
+  // Report the time it took to run android_dlopen_ext().
+  virtual void reportDlopenExtTime(int64_t milliseconds_since_boot) const = 0;
+
+  // Report the time it took to find the RELRO region using dl_iterate_phdr().
+  virtual void reportIteratePhdrTime(int64_t milliseconds_since_boot) const = 0;
+};
 
 // Holds address ranges of the loaded native library, its RELRO region, along
 // with the RELRO FD identifying the shared memory region. Carries the same
@@ -53,12 +74,6 @@ class NativeLibInfo {
 
   void set_load_address(uintptr_t a) { load_address_ = a; }
 
-  // Whether to use memfd_create(2) when creating shared memory regions.
-  void set_use_memfd(bool use_memfd) {
-    use_memfd_initialized_ = true;
-    use_memfd_ = use_memfd;
-  }
-
   uintptr_t load_address() const { return load_address_; }
 
   // Loads the native library using android_dlopen_ext and invokes JNI_OnLoad().
@@ -76,7 +91,9 @@ class NativeLibInfo {
   // provide RELRO FD before it starts processing arbitrary input. For example,
   // an App Zygote can create a RELRO FD in a sufficiently trustworthy way to
   // make the Browser/Privileged processes share the region with it.
-  bool LoadLibrary(const String& library_path, bool spawn_relro_region);
+  bool LoadLibrary(const String& library_path,
+                   bool spawn_relro_region,
+                   const LoadTimeReporter& reporter);
 
   // Finds the RELRO region in the native library identified by
   // |this->load_address()| and replaces it with the shared memory region
@@ -133,7 +150,9 @@ class NativeLibInfo {
 
   // Loads and initializes the load address ranges: |load_address_|,
   // |load_size_|. Assumes that the memory range is reserved (in Linker.java).
-  bool LoadWithDlopenExt(const String& path, void** handle);
+  bool LoadWithDlopenExt(const String& path,
+                         const LoadTimeReporter& reporter,
+                         void** handle);
 
   // Initializes |relro_fd_| with a newly created read-only shared memory region
   // sized as the library's RELRO and with identical data.
@@ -156,8 +175,6 @@ class NativeLibInfo {
   int relro_fd_ = kInvalidFd;
   JNIEnv* const env_;
   const jobject java_object_;
-  bool use_memfd_initialized_ = false;
-  bool use_memfd_;
 };
 
 // JNI_OnLoad() initialization hook for the modern linker.

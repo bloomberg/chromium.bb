@@ -21,6 +21,7 @@ won't be properly maintained. See http://crbug.com/323300.
 from __future__ import print_function
 
 import argparse
+from contextlib import closing
 import hashlib
 import filecmp
 import json
@@ -31,6 +32,13 @@ import subprocess
 import sys
 import tempfile
 import time
+if sys.version_info[0] < 3:
+  from urllib2 import urlopen, URLError
+  from urlparse import urljoin
+else:
+  from urllib.request import urlopen
+  from urllib.parse import urljoin
+  from urllib.error import URLError
 import zipfile
 
 # Environment variable that, if set, specifies the default Visual Studio
@@ -310,19 +318,16 @@ def DelayBeforeRemoving(target_dir):
 def DownloadUsingHttp(filename):
   """Downloads the given file from a url defined in
      DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL environment variable."""
-  import urlparse
-  import urllib2
-  from contextlib import closing
   temp_dir = tempfile.mkdtemp()
   assert os.path.basename(filename) == filename
   target_path = os.path.join(temp_dir, filename)
   base_url = ToolchainBaseURL()
-  src_url = urlparse.urljoin(base_url, filename)
+  src_url = urljoin(base_url, filename)
   try:
-    with closing(urllib2.urlopen(src_url)) as fsrc, \
+    with closing(urlopen(src_url)) as fsrc, \
          open(target_path, 'wb') as fdst:
       shutil.copyfileobj(fsrc, fdst)
-  except urllib2.URLError as e:
+  except URLError as e:
     RmDir(temp_dir)
     sys.exit('Failed to retrieve file: %s' % e)
   return temp_dir, target_path

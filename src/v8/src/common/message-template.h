@@ -37,7 +37,9 @@ namespace internal {
   T(AwaitNotInAsyncContext,                                                    \
     "await is only valid in async functions and the top level bodies of "      \
     "modules")                                                                 \
-  T(AwaitNotInAsyncFunction, "await is only valid in async function")          \
+  T(AwaitNotInDebugEvaluate,                                                   \
+    "await can not be used when evaluating code "                              \
+    "while paused in the debugger")                                            \
   T(AtomicsWaitNotAllowed, "Atomics.wait cannot be called in this context")    \
   T(BadSortComparisonFunction,                                                 \
     "The comparison function must be either a function or undefined")          \
@@ -129,8 +131,12 @@ namespace internal {
   T(NonObjectAssertOption, "The 'assert' option must be an object")            \
   T(NonObjectInInstanceOfCheck,                                                \
     "Right-hand side of 'instanceof' is not an object")                        \
-  T(NonObjectPropertyLoad, "Cannot read property '%' of %")                    \
-  T(NonObjectPropertyStore, "Cannot set property '%' of %")                    \
+  T(NonObjectPropertyLoad, "Cannot read properties of %")                      \
+  T(NonObjectPropertyLoadWithProperty,                                         \
+    "Cannot read properties of % (reading '%')")                               \
+  T(NonObjectPropertyStore, "Cannot set properties of %")                      \
+  T(NonObjectPropertyStoreWithProperty,                                        \
+    "Cannot set properties of % (setting '%')")                                \
   T(NonObjectImportArgument,                                                   \
     "The second argument to import() must be an object")                       \
   T(NonStringImportAssertionValue, "Import assertion value must be a string")  \
@@ -314,6 +320,9 @@ namespace internal {
     "Invalid property descriptor. Cannot both specify accessors and a value "  \
     "or writable attribute, %")                                                \
   T(VarRedeclaration, "Identifier '%' has already been declared")              \
+  T(VarNotAllowedInEvalScope,                                                  \
+    "Identifier '%' cannot be declared with 'var' in current evaluation "      \
+    "scope, consider trying 'let' instead")                                    \
   T(WrongArgs, "%: Arguments list has wrong type")                             \
   /* ReferenceError */                                                         \
   T(NotDefined, "% is not defined")                                            \
@@ -340,7 +349,7 @@ namespace internal {
   T(InvalidCountValue, "Invalid count value")                                  \
   T(InvalidDataViewAccessorOffset,                                             \
     "Offset is outside the bounds of the DataView")                            \
-  T(InvalidDataViewLength, "Invalid DataView length %")                        \
+  T(InvalidDataViewLength, "Invalid DataView length")                          \
   T(InvalidOffset, "Start offset % is outside the bounds of the buffer")       \
   T(InvalidHint, "Invalid hint: %")                                            \
   T(InvalidIndex, "Invalid value: not (convertible to) a safe integer")        \
@@ -376,6 +385,7 @@ namespace internal {
   T(TypedArrayTooLargeToSort,                                                  \
     "Custom comparefn not supported for huge TypedArrays")                     \
   T(ValueOutOfRange, "Value % out of range for % options property %")          \
+  T(CollectionGrowFailed, "% maximum size exceeded")                           \
   /* SyntaxError */                                                            \
   T(AmbiguousExport,                                                           \
     "The requested module '%' contains conflicting star exports for name '%'") \
@@ -434,7 +444,12 @@ namespace internal {
     "Invalid module export name: contains unpaired surrogate")                 \
   T(InvalidRegExpFlags, "Invalid flags supplied to RegExp constructor '%'")    \
   T(InvalidOrUnexpectedToken, "Invalid or unexpected token")                   \
-  T(InvalidPrivateBrand, "Object must be an instance of class %")              \
+  T(InvalidPrivateBrandInstance, "Receiver must be an instance of class %")    \
+  T(InvalidPrivateBrandStatic, "Receiver must be class %")                     \
+  T(InvalidPrivateBrandReinitialization,                                       \
+    "Cannot initialize private methods of class % twice on the same object")   \
+  T(InvalidPrivateFieldReinitialization,                                       \
+    "Cannot initialize % twice on the same object")                            \
   T(InvalidPrivateFieldResolution,                                             \
     "Private field '%' must be declared in an enclosing class")                \
   T(InvalidPrivateMemberRead,                                                  \
@@ -576,6 +591,7 @@ namespace internal {
   T(WasmTrapNullDereference, "dereferencing a null pointer")                   \
   T(WasmTrapIllegalCast, "illegal cast")                                       \
   T(WasmTrapArrayOutOfBounds, "array element access out of bounds")            \
+  T(WasmTrapArrayTooLarge, "requested new array is too large")                 \
   T(WasmExceptionError, "wasm exception")                                      \
   /* Asm.js validation related */                                              \
   T(AsmJsInvalid, "Invalid asm.js: %")                                         \
@@ -619,7 +635,9 @@ namespace internal {
   T(OptionalChainingNoSuper, "Invalid optional chain from super property")     \
   T(OptionalChainingNoTemplate, "Invalid tagged template on optional chain")   \
   /* AggregateError */                                                         \
-  T(AllPromisesRejected, "All promises were rejected")
+  T(AllPromisesRejected, "All promises were rejected")                         \
+  /* Web snapshots */                                                          \
+  T(WebSnapshotError, "Web snapshot failed: %")
 
 enum class MessageTemplate {
 #define TEMPLATE(NAME, STRING) k##NAME,

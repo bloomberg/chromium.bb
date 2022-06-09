@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_UTIL_H_
 #define ASH_SYSTEM_HOLDING_SPACE_HOLDING_SPACE_UTIL_H_
 
-#include <string>
+#include <memory>
 
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -17,7 +17,6 @@ class LayerAnimationObserver;
 
 namespace views {
 class Background;
-class Label;
 class View;
 }  // namespace views
 
@@ -36,23 +35,6 @@ void AnimateIn(views::View* view,
 void AnimateOut(views::View* view,
                 base::TimeDelta duration,
                 ui::LayerAnimationObserver* observer);
-
-// TODO(crbug.com/1199925): Move to ash typography.
-// Enumeration of supported label styles.
-enum class LabelStyle {
-  kBadge,
-  kBody,
-  kChip,
-  kHeader,
-};
-
-// Applies the specified `style` to the given `label`.
-void ApplyStyle(views::Label* label, LabelStyle style);
-
-// Creates a label with optional `text` matching the specified `style`.
-std::unique_ptr<views::Label> CreateLabel(
-    LabelStyle style,
-    const std::u16string& text = std::u16string());
 
 // Creates a circular background of the specified `color` and `fixed_size`.
 std::unique_ptr<views::Background> CreateCircleBackground(SkColor color,

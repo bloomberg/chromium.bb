@@ -8,10 +8,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
@@ -45,6 +44,9 @@ class PopularSitesImpl : public PopularSites {
       variations::VariationsService* variations_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
+  PopularSitesImpl(const PopularSitesImpl&) = delete;
+  PopularSitesImpl& operator=(const PopularSitesImpl&) = delete;
+
   ~PopularSitesImpl() override;
 
   // PopularSites implementation.
@@ -73,9 +75,9 @@ class PopularSitesImpl : public PopularSites {
   void OnDownloadFailed();
 
   // Parameters set from constructor.
-  PrefService* const prefs_;
-  const TemplateURLService* const template_url_service_;
-  variations::VariationsService* const variations_;
+  const raw_ptr<PrefService> prefs_;
+  const raw_ptr<const TemplateURLService> template_url_service_;
+  const raw_ptr<variations::VariationsService> variations_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Set by MaybeStartFetch() and called after fetch completes.
@@ -88,8 +90,6 @@ class PopularSitesImpl : public PopularSites {
   int version_in_pending_url_;
 
   base::WeakPtrFactory<PopularSitesImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PopularSitesImpl);
 };
 
 }  // namespace ntp_tiles

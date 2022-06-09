@@ -70,8 +70,9 @@ const ModuleCache::Module* AddNativeModule(
 
 ArmCFITable::FrameEntry MakeFrameEntry(uint16_t cfa_offset,
                                        uint16_t ra_offset) {
-  return ArmCFITable::FrameEntry{cfa_offset * sizeof(uintptr_t),
-                                 ra_offset * sizeof(uintptr_t)};
+  return ArmCFITable::FrameEntry{
+      static_cast<uint16_t>(cfa_offset * sizeof(uintptr_t)),
+      static_cast<uint16_t>(ra_offset * sizeof(uintptr_t))};
 }
 
 }  // namespace
@@ -252,7 +253,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwind) {
       reinterpret_cast<uintptr_t>(stack_buffer.data());
   context.arm_lr = 0x11AA;
 
-  EXPECT_EQ(UnwindResult::UNRECOGNIZED_FRAME,
+  EXPECT_EQ(UnwindResult::kUnrecognizedFrame,
             unwinder.TryUnwind(&context, stack_top, &stack));
   EXPECT_EQ(std::vector<Frame>({{0x1100, chrome_module},
                                 {0x11AA, chrome_module},
@@ -289,7 +290,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindAbort) {
   context.arm_lr = 0x1100;
 
   // Aborted because ra == pc.
-  EXPECT_EQ(UnwindResult::ABORTED,
+  EXPECT_EQ(UnwindResult::kAborted,
             unwinder.TryUnwind(&context, stack_top, &stack));
   EXPECT_EQ(std::vector<Frame>({{0x1100, chrome_module}}), stack);
 }
@@ -322,7 +323,7 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindNoData) {
 
   // Unwinding will first use arm_lr as fallback because there's no unwind info
   // for the instruction pointer, and then abort.
-  EXPECT_EQ(UnwindResult::ABORTED,
+  EXPECT_EQ(UnwindResult::kAborted,
             unwinder.TryUnwind(&context, stack_top, &stack));
   EXPECT_EQ(
       std::vector<Frame>({{0x1200, chrome_module}, {0x12AA, chrome_module}}),

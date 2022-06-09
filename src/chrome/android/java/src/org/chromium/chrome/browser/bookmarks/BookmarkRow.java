@@ -63,6 +63,9 @@ public abstract class BookmarkRow
      */
     public BookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
+        if (BookmarkFeatures.isBookmarksVisualRefreshEnabled()) {
+            enableVisualRefresh();
+        }
     }
 
     /**
@@ -108,7 +111,7 @@ public abstract class BookmarkRow
         mMoreIcon.setVisibility(GONE);
 
         if (mDelegate.getDragStateDelegate().getDragActive()) {
-            mDragHandle.setVisibility(bookmarkItem.isMovable() ? VISIBLE : GONE);
+            mDragHandle.setVisibility(bookmarkItem.isReorderable() ? VISIBLE : GONE);
             mDragHandle.setEnabled(isItemSelected());
         } else {
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
@@ -149,15 +152,24 @@ public abstract class BookmarkRow
         BookmarkItem bookmarkItem = null;
         if (mDelegate != null && mDelegate.getModel() != null) {
             bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
-            if (bookmarkItem != null) canMove = bookmarkItem.isMovable();
+            if (bookmarkItem != null) {
+                // Reading list items can sometimes be movable (for type swapping purposes), but for
+                // UI purposes they shouldn't be movable.
+                canMove = bookmarkItem.isMovable()
+                        && mBookmarkId.getType() != BookmarkType.READING_LIST;
+            }
         }
         ModelList listItems = new ModelList();
         if (mBookmarkId.getType() == BookmarkType.READING_LIST) {
+            // TODO(crbug.com/1269434): Add ability to mark an item as unread.
             if (bookmarkItem != null && !bookmarkItem.isRead()) {
                 listItems.add(buildMenuListItem(R.string.reading_list_mark_as_read, 0, 0));
             }
             listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
             listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
+            if (ReadingListFeatures.shouldAllowBookmarkTypeSwapping()) {
+                listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
+            }
         } else {
             listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
             listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));

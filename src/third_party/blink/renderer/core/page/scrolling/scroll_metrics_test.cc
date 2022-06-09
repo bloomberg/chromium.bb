@@ -54,8 +54,8 @@ class NonCompositedMainThreadScrollingReasonRecordTest
 
 class ScrollBeginEventBuilder : public WebGestureEvent {
  public:
-  ScrollBeginEventBuilder(FloatPoint position,
-                          FloatPoint delta,
+  ScrollBeginEventBuilder(gfx::PointF position,
+                          gfx::PointF delta,
                           WebGestureDevice device)
       : WebGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
@@ -63,7 +63,7 @@ class ScrollBeginEventBuilder : public WebGestureEvent {
                         device) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);
-    data.scroll_begin.delta_y_hint = delta.Y();
+    data.scroll_begin.delta_y_hint = delta.y();
     frame_scale_ = 1;
   }
 };
@@ -103,9 +103,9 @@ void ScrollMetricsTest::Scroll(Element* element,
   DCHECK(element->getBoundingClientRect());
   DOMRect* rect = element->getBoundingClientRect();
   ScrollBeginEventBuilder scroll_begin(
-      FloatPoint(rect->left() + rect->width() / 2,
-                 rect->top() + rect->height() / 2),
-      FloatPoint(0.f, 1.f), device);
+      gfx::PointF(rect->left() + rect->width() / 2,
+                  rect->top() + rect->height() / 2),
+      gfx::PointF(0.f, 1.f), device);
   ScrollUpdateEventBuilder scroll_update;
   ScrollEndEventBuilder scroll_end;
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(scroll_begin);

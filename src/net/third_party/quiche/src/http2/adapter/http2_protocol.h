@@ -5,10 +5,10 @@
 #include <string>
 #include <utility>
 
-#include "base/integral_types.h"
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace adapter {
@@ -34,10 +34,13 @@ std::pair<absl::string_view, bool> GetStringView(const HeaderRep& rep);
 using Header = std::pair<HeaderRep, HeaderRep>;
 
 // Represents an HTTP/2 SETTINGS key-value parameter.
-struct Http2Setting {
+struct QUICHE_EXPORT_PRIVATE Http2Setting {
   Http2SettingsId id;
   uint32_t value;
 };
+
+QUICHE_EXPORT_PRIVATE bool operator==(const Http2Setting& a,
+                                      const Http2Setting& b);
 
 // The maximum possible stream ID.
 const Http2StreamId kMaxStreamId = 0x7FFFFFFF;
@@ -50,21 +53,44 @@ const Http2StreamId kConnectionStreamId = 0;
 // 7540 Section 6.5.2 (SETTINGS_MAX_FRAME_SIZE).
 const int kDefaultFramePayloadSizeLimit = 16 * 1024;
 
-// The default value for the initial stream flow control window size, according
-// to RFC 7540 Section 6.9.2.
-const int kDefaultInitialStreamWindowSize = 64 * 1024 - 1;
+// The default value for the initial stream and connection flow control window
+// size, according to RFC 7540 Section 6.9.2.
+const int kInitialFlowControlWindowSize = 64 * 1024 - 1;
 
 // The pseudo-header fields as specified in RFC 7540 Section 8.1.2.3 (request)
 // and Section 8.1.2.4 (response).
-ABSL_CONST_INIT extern const char kHttp2MethodPseudoHeader[];
-ABSL_CONST_INIT extern const char kHttp2SchemePseudoHeader[];
-ABSL_CONST_INIT extern const char kHttp2AuthorityPseudoHeader[];
-ABSL_CONST_INIT extern const char kHttp2PathPseudoHeader[];
-ABSL_CONST_INIT extern const char kHttp2StatusPseudoHeader[];
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const char
+    kHttp2MethodPseudoHeader[];
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const char
+    kHttp2SchemePseudoHeader[];
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const char
+    kHttp2AuthorityPseudoHeader[];
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const char
+    kHttp2PathPseudoHeader[];
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const char
+    kHttp2StatusPseudoHeader[];
+
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const uint8_t kMetadataFrameType;
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const uint8_t kMetadataEndFlag;
+ABSL_CONST_INIT QUICHE_EXPORT_PRIVATE extern const uint16_t
+    kMetadataExtensionId;
+
+enum class FrameType : uint8_t {
+  DATA = 0x0,
+  HEADERS,
+  PRIORITY,
+  RST_STREAM,
+  SETTINGS,
+  PUSH_PROMISE,
+  PING,
+  GOAWAY,
+  WINDOW_UPDATE,
+  CONTINUATION,
+};
 
 // HTTP/2 error codes as specified in RFC 7540 Section 7.
 enum class Http2ErrorCode {
-  NO_ERROR = 0x0,
+  HTTP2_NO_ERROR = 0x0,
   PROTOCOL_ERROR = 0x1,
   INTERNAL_ERROR = 0x2,
   FLOW_CONTROL_ERROR = 0x3,
@@ -94,7 +120,8 @@ enum Http2KnownSettingsId : Http2SettingsId {
   INITIAL_WINDOW_SIZE = 0x4,
   MAX_FRAME_SIZE = 0x5,
   MAX_HEADER_LIST_SIZE = 0x6,
-  MAX_SETTING = MAX_HEADER_LIST_SIZE
+  ENABLE_CONNECT_PROTOCOL = 0x8,  // See RFC 8441
+  MAX_SETTING = ENABLE_CONNECT_PROTOCOL
 };
 
 // Returns a human-readable string representation of the given SETTINGS |id| for

@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -19,44 +18,34 @@
 namespace blink {
 
 ClientHintsPreferences::ClientHintsPreferences() {
-  DCHECK_EQ(
-      static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1,
-      kClientHintsMappingsCount);
+  DCHECK_LE(
+      network::GetClientHintToNameMap().size(),
+      static_cast<size_t>(network::mojom::WebClientHintsType::kMaxValue) + 1);
 }
 
 void ClientHintsPreferences::UpdateFrom(
     const ClientHintsPreferences& preferences) {
-  for (size_t i = 0;
-       i < static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
-       ++i) {
-    network::mojom::WebClientHintsType type =
-        static_cast<network::mojom::WebClientHintsType>(i);
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& type = elem.first;
     enabled_hints_.SetIsEnabled(type, preferences.ShouldSend(type));
   }
 }
 
 void ClientHintsPreferences::CombineWith(
     const ClientHintsPreferences& preferences) {
-  for (size_t i = 0;
-       i < static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
-       ++i) {
-    network::mojom::WebClientHintsType type =
-        static_cast<network::mojom::WebClientHintsType>(i);
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& type = elem.first;
     if (preferences.ShouldSend(type))
       SetShouldSend(type);
   }
 }
 
-bool ClientHintsPreferences::UserAgentClientHintEnabled() {
-  return RuntimeEnabledFeatures::UserAgentClientHintEnabled() &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUserAgentClientHintDisable);
-}
-
-void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
+void ClientHintsPreferences::UpdateFromMetaTagAcceptCH(
     const String& header_value,
     const KURL& url,
-    Context* context) {
+    Context* context,
+    bool is_http_equiv,
+    bool is_preload_or_sync_parser) {
   // Client hints should be allowed only on secure URLs.
   if (!IsClientHintsAllowed(url))
     return;
@@ -70,25 +59,25 @@ void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
 
   // Note: .Ascii() would convert tab to ?, which is undesirable.
   absl::optional<std::vector<network::mojom::WebClientHintsType>> parsed_ch =
-      FilterAcceptCH(
-          network::ParseClientHintsHeader(header_value.Latin1()),
-          RuntimeEnabledFeatures::LangClientHintHeaderEnabled(),
-          UserAgentClientHintEnabled(),
-          RuntimeEnabledFeatures::PrefersColorSchemeClientHintHeaderEnabled());
+      network::ParseClientHintsHeader(header_value.Latin1());
+
   if (!parsed_ch.has_value())
     return;
 
-  // The renderer only handles http-equiv, so this merges.
-  for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
-    enabled_hints_.SetIsEnabled(newly_enabled, true);
+  // The renderer only handles meta tags, so this merges.
+  for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value()) {
+    if (!is_http_equiv && !is_preload_or_sync_parser) {
+      // TODO(https://crbug.com/1219359): Alert if javascript is injecting
+      // client hint meta tags the pre-load scanner missed. For now, just log
+      // the hint as before and move on.
+    } else {
+      enabled_hints_.SetIsEnabled(newly_enabled, true);
+    }
+  }
 
   if (context) {
-    for (size_t i = 0;
-         i <
-         static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1;
-         ++i) {
-      network::mojom::WebClientHintsType type =
-          static_cast<network::mojom::WebClientHintsType>(i);
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& type = elem.first;
       if (enabled_hints_.IsEnabled(type))
         context->CountClientHints(type);
     }
@@ -101,8 +90,18 @@ bool ClientHintsPreferences::IsClientHintsAllowed(const KURL& url) {
          network::IsOriginPotentiallyTrustworthy(url::Origin::Create(url));
 }
 
-WebEnabledClientHints ClientHintsPreferences::GetWebEnabledClientHints() const {
+EnabledClientHints ClientHintsPreferences::GetEnabledClientHints() const {
   return enabled_hints_;
+}
+
+bool ClientHintsPreferences::ShouldSend(
+    network::mojom::WebClientHintsType type) const {
+  return enabled_hints_.IsEnabled(type);
+}
+
+void ClientHintsPreferences::SetShouldSend(
+    network::mojom::WebClientHintsType type) {
+  enabled_hints_.SetIsEnabled(type, true);
 }
 
 }  // namespace blink

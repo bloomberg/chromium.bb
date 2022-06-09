@@ -142,6 +142,17 @@ void TestSessionControllerClient::AddUserSession(
   auto account_id = AccountId::FromUserEmail(
       use_lower_case_user_id_ ? GetUserIdFromEmail(display_email)
                               : display_email);
+  AddUserSession(account_id, display_email, user_type, provide_pref_service,
+                 is_new_profile, given_name);
+}
+
+void TestSessionControllerClient::AddUserSession(
+    const AccountId& account_id,
+    const std::string& display_email,
+    user_manager::UserType user_type,
+    bool provide_pref_service,
+    bool is_new_profile,
+    const std::string& given_name) {
   UserSession session;
   session.session_id = ++fake_session_id_;
   session.user_info.type = user_type;
@@ -291,6 +302,10 @@ PrefService* TestSessionControllerClient::GetSigninScreenPrefService() {
 PrefService* TestSessionControllerClient::GetUserPrefService(
     const AccountId& account_id) {
   return prefs_provider_ ? prefs_provider_->GetUserPrefs(account_id) : nullptr;
+}
+
+bool TestSessionControllerClient::IsEnterpriseManaged() const {
+  return is_enterprise_managed_;
 }
 
 void TestSessionControllerClient::DoSwitchUser(const AccountId& account_id,

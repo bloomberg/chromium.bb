@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -18,8 +19,6 @@
 #include "chrome/browser/ash/arc/print_spooler/arc_print_spooler_util.h"
 #include "chrome/browser/ash/arc/print_spooler/print_session_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
@@ -105,7 +104,8 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
     return;
   }
 
-  GURL url = net::FilePathToFileURL(base::MakeAbsoluteFilePath(file_path));
+  DCHECK(file_path.IsAbsolute()) << file_path;
+  GURL url = net::FilePathToFileURL(file_path);
 
   aura::Window* arc_window = GetArcWindow(task_id);
   if (!arc_window) {

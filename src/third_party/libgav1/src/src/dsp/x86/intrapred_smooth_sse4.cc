@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/dsp/intrapred.h"
+#include "src/dsp/intrapred_smooth.h"
 #include "src/utils/cpu.h"
 
 #if LIBGAV1_TARGETING_SSE4_1
@@ -38,23 +38,12 @@ namespace {
 // to have visibility of the values. This helps reduce loads and in the
 // creation of the inverse weights.
 constexpr uint8_t kSmoothWeights[] = {
-    // block dimension = 4
-    255, 149, 85, 64,
-    // block dimension = 8
-    255, 197, 146, 105, 73, 50, 37, 32,
-    // block dimension = 16
-    255, 225, 196, 170, 145, 123, 102, 84, 68, 54, 43, 33, 26, 20, 17, 16,
-    // block dimension = 32
-    255, 240, 225, 210, 196, 182, 169, 157, 145, 133, 122, 111, 101, 92, 83, 74,
-    66, 59, 52, 45, 39, 34, 29, 25, 21, 17, 14, 12, 10, 9, 8, 8,
-    // block dimension = 64
-    255, 248, 240, 233, 225, 218, 210, 203, 196, 189, 182, 176, 169, 163, 156,
-    150, 144, 138, 133, 127, 121, 116, 111, 106, 101, 96, 91, 86, 82, 77, 73,
-    69, 65, 61, 57, 54, 50, 47, 44, 41, 38, 35, 32, 29, 27, 25, 22, 20, 18, 16,
-    15, 13, 12, 10, 9, 8, 7, 6, 6, 5, 5, 4, 4, 4};
+#include "src/dsp/smooth_weights.inc"
+};
 
 template <int y_mask>
-inline void WriteSmoothHorizontalSum4(void* const dest, const __m128i& left,
+inline void WriteSmoothHorizontalSum4(void* LIBGAV1_RESTRICT const dest,
+                                      const __m128i& left,
                                       const __m128i& weights,
                                       const __m128i& scaled_top_right,
                                       const __m128i& round) {
@@ -77,7 +66,8 @@ inline __m128i SmoothDirectionalSum8(const __m128i& pixels,
   return _mm_add_epi16(scaled_corner, weighted_px);
 }
 
-inline void WriteSmoothDirectionalSum8(uint8_t* dest, const __m128i& pixels,
+inline void WriteSmoothDirectionalSum8(uint8_t* LIBGAV1_RESTRICT dest,
+                                       const __m128i& pixels,
                                        const __m128i& weights,
                                        const __m128i& scaled_corner,
                                        const __m128i& round) {
@@ -91,13 +81,11 @@ inline void WriteSmoothDirectionalSum8(uint8_t* dest, const __m128i& pixels,
 // For Horizontal, pixels1 and pixels2 are the same repeated value. For
 // Vertical, weights1 and weights2 are the same, and scaled_corner1 and
 // scaled_corner2 are the same.
-inline void WriteSmoothDirectionalSum16(uint8_t* dest, const __m128i& pixels1,
-                                        const __m128i& pixels2,
-                                        const __m128i& weights1,
-                                        const __m128i& weights2,
-                                        const __m128i& scaled_corner1,
-                                        const __m128i& scaled_corner2,
-                                        const __m128i& round) {
+inline void WriteSmoothDirectionalSum16(
+    uint8_t* LIBGAV1_RESTRICT dest, const __m128i& pixels1,
+    const __m128i& pixels2, const __m128i& weights1, const __m128i& weights2,
+    const __m128i& scaled_corner1, const __m128i& scaled_corner2,
+    const __m128i& round) {
   const __m128i weighted_px1 = _mm_mullo_epi16(pixels1, weights1);
   const __m128i weighted_px2 = _mm_mullo_epi16(pixels2, weights2);
   const __m128i pred_sum1 = _mm_add_epi16(scaled_corner1, weighted_px1);
@@ -109,8 +97,9 @@ inline void WriteSmoothDirectionalSum16(uint8_t* dest, const __m128i& pixels1,
 }
 
 template <int y_mask>
-inline void WriteSmoothPredSum4(uint8_t* const dest, const __m128i& top,
-                                const __m128i& left, const __m128i& weights_x,
+inline void WriteSmoothPredSum4(uint8_t* LIBGAV1_RESTRICT const dest,
+                                const __m128i& top, const __m128i& left,
+                                const __m128i& weights_x,
                                 const __m128i& weights_y,
                                 const __m128i& scaled_bottom_left,
                                 const __m128i& scaled_top_right,
@@ -135,7 +124,8 @@ inline void WriteSmoothPredSum4(uint8_t* const dest, const __m128i& top,
 // pixels[0]: above and below_pred interleave vector
 // pixels[1]: left vector
 // pixels[2]: right_pred vector
-inline void LoadSmoothPixels4(const uint8_t* above, const uint8_t* left,
+inline void LoadSmoothPixels4(const uint8_t* LIBGAV1_RESTRICT above,
+                              const uint8_t* LIBGAV1_RESTRICT left,
                               const int height, __m128i* pixels) {
   if (height == 4) {
     pixels[1] = Load4(left);
@@ -156,8 +146,9 @@ inline void LoadSmoothPixels4(const uint8_t* above, const uint8_t* left,
 // weight_h[2]: same as [0], second half for height = 16 only
 // weight_h[3]: same as [1], second half for height = 16 only
 // weight_w[0]: weights_w and scale - weights_w interleave vector
-inline void LoadSmoothWeights4(const uint8_t* weight_array, const int height,
-                               __m128i* weight_h, __m128i* weight_w) {
+inline void LoadSmoothWeights4(const uint8_t* LIBGAV1_RESTRICT weight_array,
+                               const int height, __m128i* weight_h,
+                               __m128i* weight_w) {
   const __m128i scale = _mm_set1_epi16(256);
   const __m128i x_weights = Load4(weight_array);
   weight_h[0] = _mm_cvtepu8_epi16(x_weights);
@@ -179,7 +170,8 @@ inline void LoadSmoothWeights4(const uint8_t* weight_array, const int height,
 }
 
 inline void WriteSmoothPred4x8(const __m128i* pixel, const __m128i* weights_y,
-                               const __m128i* weight_x, uint8_t* dst,
+                               const __m128i* weight_x,
+                               uint8_t* LIBGAV1_RESTRICT dst,
                                const ptrdiff_t stride,
                                const bool use_second_half) {
   const __m128i round = _mm_set1_epi32(256);
@@ -215,8 +207,9 @@ inline void WriteSmoothPred4x8(const __m128i* pixel, const __m128i* weights_y,
 
 // The interleaving approach has some overhead that causes it to underperform in
 // the 4x4 case.
-void Smooth4x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                      const void* top_row, const void* left_column) {
+void Smooth4x4_SSE4_1(void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT top_row,
+                      const void* LIBGAV1_RESTRICT left_column) {
   const __m128i top = _mm_cvtepu8_epi32(Load4(top_row));
   const __m128i left = _mm_cvtepu8_epi32(Load4(left_column));
   const __m128i weights = _mm_cvtepu8_epi32(Load4(kSmoothWeights));
@@ -247,8 +240,9 @@ void Smooth4x4_SSE4_1(void* const dest, const ptrdiff_t stride,
                             scaled_bottom_left, scaled_top_right, scale);
 }
 
-void Smooth4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                      const void* top_row, const void* left_column) {
+void Smooth4x8_SSE4_1(void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT top_row,
+                      const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   __m128i weights_x[1];
@@ -260,8 +254,10 @@ void Smooth4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothPred4x8(pixels, weights_y, weights_x, dst, stride, false);
 }
 
-void Smooth4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                       const void* top_row, const void* left_column) {
+void Smooth4x16_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                       const ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT top_row,
+                       const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   __m128i weights_x[1];
@@ -283,7 +279,8 @@ void Smooth4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
 // pixels[5]: above and below_pred interleave vector, second half
 // pixels[6]: left vector + 16
 // pixels[7]: right_pred vector
-inline void LoadSmoothPixels8(const uint8_t* above, const uint8_t* left,
+inline void LoadSmoothPixels8(const uint8_t* LIBGAV1_RESTRICT above,
+                              const uint8_t* LIBGAV1_RESTRICT left,
                               const int height, __m128i* pixels) {
   const __m128i bottom_left = _mm_set1_epi16(left[height - 1]);
   __m128i top_row = _mm_cvtepu8_epi16(LoadLo8(above));
@@ -317,8 +314,9 @@ inline void LoadSmoothPixels8(const uint8_t* above, const uint8_t* left,
 // weight_h[7]: same as [1], offset 24
 // weight_w[0]: weights_w and scale - weights_w interleave vector, first half
 // weight_w[1]: weights_w and scale - weights_w interleave vector, second half
-inline void LoadSmoothWeights8(const uint8_t* weight_array, const int height,
-                               __m128i* weight_w, __m128i* weight_h) {
+inline void LoadSmoothWeights8(const uint8_t* LIBGAV1_RESTRICT weight_array,
+                               const int height, __m128i* weight_w,
+                               __m128i* weight_h) {
   const int offset = (height < 8) ? 0 : 4;
   __m128i loaded_weights = LoadUnaligned16(&weight_array[offset]);
   weight_h[0] = _mm_cvtepu8_epi16(loaded_weights);
@@ -360,7 +358,8 @@ inline void LoadSmoothWeights8(const uint8_t* weight_array, const int height,
 
 inline void WriteSmoothPred8xH(const __m128i* pixels, const __m128i* weights_x,
                                const __m128i* weights_y, const int height,
-                               uint8_t* dst, const ptrdiff_t stride,
+                               uint8_t* LIBGAV1_RESTRICT dst,
+                               const ptrdiff_t stride,
                                const bool use_second_half) {
   const __m128i round = _mm_set1_epi32(256);
   const __m128i mask_increment = _mm_set1_epi16(0x0202);
@@ -405,8 +404,9 @@ inline void WriteSmoothPred8xH(const __m128i* pixels, const __m128i* weights_x,
   }
 }
 
-void Smooth8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                      const void* top_row, const void* left_column) {
+void Smooth8x4_SSE4_1(void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT top_row,
+                      const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   __m128i pixels[4];
@@ -419,8 +419,9 @@ void Smooth8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothPred8xH(pixels, weights_x, weights_y, 4, dst, stride, false);
 }
 
-void Smooth8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                      const void* top_row, const void* left_column) {
+void Smooth8x8_SSE4_1(void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+                      const void* LIBGAV1_RESTRICT top_row,
+                      const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
 
@@ -434,8 +435,10 @@ void Smooth8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothPred8xH(pixels, weights_x, weights_y, 8, dst, stride, false);
 }
 
-void Smooth8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                       const void* top_row, const void* left_column) {
+void Smooth8x16_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                       const ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT top_row,
+                       const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   __m128i pixels[4];
@@ -450,8 +453,10 @@ void Smooth8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothPred8xH(pixels, weights_x, &weights_y[2], 8, dst, stride, true);
 }
 
-void Smooth8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                       const void* top_row, const void* left_column) {
+void Smooth8x32_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                       const ptrdiff_t stride,
+                       const void* LIBGAV1_RESTRICT top_row,
+                       const void* LIBGAV1_RESTRICT left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   __m128i pixels[8];
@@ -473,8 +478,9 @@ void Smooth8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
 }
 
 template <int width, int height>
-void SmoothWxH(void* const dest, const ptrdiff_t stride,
-               const void* const top_row, const void* const left_column) {
+void SmoothWxH(void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+               const void* LIBGAV1_RESTRICT const top_row,
+               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   const uint8_t* const sm_weights_h = kSmoothWeights + height - 4;
@@ -532,8 +538,10 @@ void SmoothWxH(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal4x4_SSE4_1(void* dest, const ptrdiff_t stride,
-                                const void* top_row, const void* left_column) {
+void SmoothHorizontal4x4_SSE4_1(void* LIBGAV1_RESTRICT dest,
+                                const ptrdiff_t stride,
+                                const void* LIBGAV1_RESTRICT top_row,
+                                const void* LIBGAV1_RESTRICT left_column) {
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi32(top_ptr[3]);
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
@@ -553,9 +561,10 @@ void SmoothHorizontal4x4_SSE4_1(void* dest, const ptrdiff_t stride,
   WriteSmoothHorizontalSum4<0xFF>(dst, left, weights, scaled_top_right, scale);
 }
 
-void SmoothHorizontal4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothHorizontal4x8_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi32(top[3]);
   const __m128i weights = _mm_cvtepu8_epi32(Load4(kSmoothWeights));
@@ -585,9 +594,10 @@ void SmoothHorizontal4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothHorizontalSum4<0xFF>(dst, left, weights, scaled_top_right, scale);
 }
 
-void SmoothHorizontal4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal4x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi32(top[3]);
   const __m128i weights = _mm_cvtepu8_epi32(Load4(kSmoothWeights));
@@ -637,9 +647,10 @@ void SmoothHorizontal4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothHorizontalSum4<0xFF>(dst, left, weights, scaled_top_right, scale);
 }
 
-void SmoothHorizontal8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothHorizontal8x4_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[7]);
   const __m128i left = _mm_cvtepu8_epi16(Load4(left_column));
@@ -666,9 +677,10 @@ void SmoothHorizontal8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothDirectionalSum8(dst, left_y, weights, scaled_top_right, scale);
 }
 
-void SmoothHorizontal8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothHorizontal8x8_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[7]);
   const __m128i left = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -686,9 +698,10 @@ void SmoothHorizontal8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal8x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[7]);
   const __m128i weights = _mm_cvtepu8_epi16(LoadLo8(kSmoothWeights + 4));
@@ -714,9 +727,10 @@ void SmoothHorizontal8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal8x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[7]);
   const __m128i weights = _mm_cvtepu8_epi16(LoadLo8(kSmoothWeights + 4));
@@ -756,9 +770,10 @@ void SmoothHorizontal8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal16x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal16x4_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[15]);
   const __m128i left = _mm_cvtepu8_epi16(Load4(left_column));
@@ -795,9 +810,10 @@ void SmoothHorizontal16x4_SSE4_1(void* const dest, const ptrdiff_t stride,
                               scaled_top_right1, scaled_top_right2, scale);
 }
 
-void SmoothHorizontal16x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal16x8_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[15]);
   const __m128i left = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -822,9 +838,10 @@ void SmoothHorizontal16x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal16x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal16x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[15]);
   const __m128i weights = LoadUnaligned16(kSmoothWeights + 12);
@@ -858,9 +875,10 @@ void SmoothHorizontal16x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal16x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal16x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[15]);
   const __m128i weights = LoadUnaligned16(kSmoothWeights + 12);
@@ -910,9 +928,10 @@ void SmoothHorizontal16x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal16x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal16x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[15]);
   const __m128i weights = LoadUnaligned16(kSmoothWeights + 12);
@@ -940,9 +959,10 @@ void SmoothHorizontal16x64_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal32x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                 const void* const top_row,
-                                 const void* const left_column) {
+void SmoothHorizontal32x8_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[31]);
   const __m128i left = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -978,9 +998,10 @@ void SmoothHorizontal32x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal32x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal32x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[31]);
   const __m128i left1 = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -1027,9 +1048,10 @@ void SmoothHorizontal32x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal32x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal32x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[31]);
   const __m128i weights_lo = LoadUnaligned16(kSmoothWeights + 28);
@@ -1096,9 +1118,10 @@ void SmoothHorizontal32x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal32x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal32x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[31]);
   const __m128i weights_lo = LoadUnaligned16(kSmoothWeights + 28);
@@ -1137,9 +1160,10 @@ void SmoothHorizontal32x64_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal64x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal64x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[63]);
   const __m128i left1 = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -1212,9 +1236,10 @@ void SmoothHorizontal64x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal64x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal64x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[63]);
   const __m128i left1 = _mm_cvtepu8_epi16(LoadLo8(left_column));
@@ -1315,9 +1340,10 @@ void SmoothHorizontal64x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothHorizontal64x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                  const void* const top_row,
-                                  const void* const left_column) {
+void SmoothHorizontal64x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const __m128i top_right = _mm_set1_epi16(top[63]);
   const __m128i weights_lolo = LoadUnaligned16(kSmoothWeights + 60);
@@ -1378,7 +1404,8 @@ void SmoothHorizontal64x64_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-inline void LoadSmoothVerticalPixels4(const uint8_t* above, const uint8_t* left,
+inline void LoadSmoothVerticalPixels4(const uint8_t* LIBGAV1_RESTRICT above,
+                                      const uint8_t* LIBGAV1_RESTRICT left,
                                       const int height, __m128i* pixels) {
   __m128i top = Load4(above);
   const __m128i bottom_left = _mm_set1_epi16(left[height - 1]);
@@ -1390,7 +1417,8 @@ inline void LoadSmoothVerticalPixels4(const uint8_t* above, const uint8_t* left,
 // (256-w) counterparts. This is precomputed by the compiler when the weights
 // table is visible to this module. Removing this visibility can cut speed by up
 // to half in both 4xH and 8xH transforms.
-inline void LoadSmoothVerticalWeights4(const uint8_t* weight_array,
+inline void LoadSmoothVerticalWeights4(const uint8_t* LIBGAV1_RESTRICT
+                                           weight_array,
                                        const int height, __m128i* weights) {
   const __m128i inverter = _mm_set1_epi16(256);
 
@@ -1413,7 +1441,8 @@ inline void LoadSmoothVerticalWeights4(const uint8_t* weight_array,
 }
 
 inline void WriteSmoothVertical4xH(const __m128i* pixel, const __m128i* weight,
-                                   const int height, uint8_t* dst,
+                                   const int height,
+                                   uint8_t* LIBGAV1_RESTRICT dst,
                                    const ptrdiff_t stride) {
   const __m128i pred_round = _mm_set1_epi32(128);
   const __m128i mask_increment = _mm_set1_epi16(0x0202);
@@ -1438,9 +1467,10 @@ inline void WriteSmoothVertical4xH(const __m128i* pixel, const __m128i* weight,
   }
 }
 
-void SmoothVertical4x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                              const void* const top_row,
-                              const void* const left_column) {
+void SmoothVertical4x4_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                              const ptrdiff_t stride,
+                              const void* LIBGAV1_RESTRICT const top_row,
+                              const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left = static_cast<const uint8_t*>(left_column);
   const auto* const above = static_cast<const uint8_t*>(top_row);
   auto* dst = static_cast<uint8_t*>(dest);
@@ -1453,9 +1483,10 @@ void SmoothVertical4x4_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothVertical4xH(&pixels, weights, 4, dst, stride);
 }
 
-void SmoothVertical4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                              const void* const top_row,
-                              const void* const left_column) {
+void SmoothVertical4x8_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                              const ptrdiff_t stride,
+                              const void* LIBGAV1_RESTRICT const top_row,
+                              const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left = static_cast<const uint8_t*>(left_column);
   const auto* const above = static_cast<const uint8_t*>(top_row);
   auto* dst = static_cast<uint8_t*>(dest);
@@ -1468,9 +1499,10 @@ void SmoothVertical4x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothVertical4xH(&pixels, weights, 8, dst, stride);
 }
 
-void SmoothVertical4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical4x16_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left = static_cast<const uint8_t*>(left_column);
   const auto* const above = static_cast<const uint8_t*>(top_row);
   auto* dst = static_cast<uint8_t*>(dest);
@@ -1485,9 +1517,10 @@ void SmoothVertical4x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothVertical4xH(&pixels, &weights[2], 8, dst, stride);
 }
 
-void SmoothVertical8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                              const void* const top_row,
-                              const void* const left_column) {
+void SmoothVertical8x4_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                              const ptrdiff_t stride,
+                              const void* LIBGAV1_RESTRICT const top_row,
+                              const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[3]);
   const __m128i weights = _mm_cvtepu8_epi16(Load4(kSmoothWeights));
@@ -1520,9 +1553,10 @@ void SmoothVertical8x4_SSE4_1(void* const dest, const ptrdiff_t stride,
   WriteSmoothDirectionalSum8(dst, top, weights_y, scaled_bottom_left_y, scale);
 }
 
-void SmoothVertical8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                              const void* const top_row,
-                              const void* const left_column) {
+void SmoothVertical8x8_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                              const ptrdiff_t stride,
+                              const void* LIBGAV1_RESTRICT const top_row,
+                              const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[7]);
   const __m128i weights = _mm_cvtepu8_epi16(LoadLo8(kSmoothWeights + 4));
@@ -1544,9 +1578,10 @@ void SmoothVertical8x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical8x16_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[15]);
   const __m128i weights = LoadUnaligned16(kSmoothWeights + 12);
@@ -1583,9 +1618,10 @@ void SmoothVertical8x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical8x32_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const __m128i zero = _mm_setzero_si128();
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[31]);
@@ -1649,9 +1685,10 @@ void SmoothVertical8x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical16x4_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical16x4_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[3]);
@@ -1694,9 +1731,10 @@ void SmoothVertical16x4_SSE4_1(void* const dest, const ptrdiff_t stride,
                               scale);
 }
 
-void SmoothVertical16x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical16x8_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[7]);
@@ -1722,9 +1760,10 @@ void SmoothVertical16x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical16x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical16x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[15]);
@@ -1766,9 +1805,10 @@ void SmoothVertical16x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical16x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical16x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[31]);
@@ -1839,9 +1879,10 @@ void SmoothVertical16x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical16x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical16x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const __m128i bottom_left = _mm_set1_epi16(left_ptr[63]);
@@ -1887,9 +1928,10 @@ void SmoothVertical16x64_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical32x8_SSE4_1(void* const dest, const ptrdiff_t stride,
-                               const void* const top_row,
-                               const void* const left_column) {
+void SmoothVertical32x8_SSE4_1(void* LIBGAV1_RESTRICT const dest,
+                               const ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   auto* dst = static_cast<uint8_t*>(dest);
@@ -1922,9 +1964,10 @@ void SmoothVertical32x8_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical32x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical32x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   auto* dst = static_cast<uint8_t*>(dest);
@@ -1975,9 +2018,10 @@ void SmoothVertical32x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical32x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical32x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
@@ -2063,9 +2107,10 @@ void SmoothVertical32x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical32x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical32x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
@@ -2120,9 +2165,10 @@ void SmoothVertical32x64_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical64x16_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical64x16_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
@@ -2192,9 +2238,10 @@ void SmoothVertical64x16_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical64x32_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical64x32_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
@@ -2311,9 +2358,10 @@ void SmoothVertical64x32_SSE4_1(void* const dest, const ptrdiff_t stride,
   }
 }
 
-void SmoothVertical64x64_SSE4_1(void* const dest, const ptrdiff_t stride,
-                                const void* const top_row,
-                                const void* const left_column) {
+void SmoothVertical64x64_SSE4_1(
+    void* LIBGAV1_RESTRICT const dest, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_row,
+    const void* LIBGAV1_RESTRICT const left_column) {
   const auto* const left_ptr = static_cast<const uint8_t*>(left_column);
   auto* dst = static_cast<uint8_t*>(dest);
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);

@@ -11,7 +11,6 @@
 #include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
@@ -186,14 +185,10 @@ void ArcForceInstalledAppsObserver::OnPolicyUpdated(
     auto required_packages =
         arc::policy_util::GetRequestedPackagesFromArcPolicy(
             arc_policy->GetString());
-    std::vector<std::pair<std::string, bool>> required_packages_vector;
     // Mark all required packages not yet installed in |tracking_packages_|.
-    std::transform(
-        required_packages.begin(), required_packages.end(),
-        std::back_inserter(required_packages_vector),
+    tracking_packages_ = base::MakeFlatMap<std::string, bool>(
+        required_packages, {},
         [](const std::string& v) { return std::make_pair(v, false); });
-    tracking_packages_ =
-        base::flat_map<std::string, bool>(std::move(required_packages_vector));
   }
   UpdateInstalledPackages();
 }

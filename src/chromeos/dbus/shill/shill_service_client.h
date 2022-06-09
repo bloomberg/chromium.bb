@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
 
 namespace base {
@@ -116,6 +115,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual void SetRequireServiceToGetProperties(
         bool require_service_to_get_properties) = 0;
 
+    // Sets a fake traffic counters that can be used in tests.
+    virtual void SetFakeTrafficCounters(base::Value fake_traffic_counters) = 0;
+
    protected:
     virtual ~TestInterface() {}
   };
@@ -131,6 +133,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
 
   // Returns the global instance if initialized. May return null.
   static ShillServiceClient* Get();
+
+  ShillServiceClient(const ShillServiceClient&) = delete;
+  ShillServiceClient& operator=(const ShillServiceClient&) = delete;
 
   // Adds a property changed |observer| to the service at |service_path|.
   virtual void AddPropertyChangedObserver(
@@ -208,10 +213,27 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
       const dbus::ObjectPath& service_path,
       DBusMethodCallback<base::Value> callback) = 0;
 
-  // Retrieves the saved passphrase for the given network.
+  // Retrieves the saved WiFi passphrase for the given network.
   virtual void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
                                  StringCallback callback,
                                  ErrorCallback error_callback) = 0;
+
+  // Retrieves the saved EAP passphrase for the given network.
+  virtual void GetEapPassphrase(const dbus::ObjectPath& service_path,
+                                StringCallback callback,
+                                ErrorCallback error_callback) = 0;
+
+  // Calls the RequestTrafficCounters method.
+  // |callback| is called after the method call succeeds.
+  virtual void RequestTrafficCounters(
+      const dbus::ObjectPath& service_path,
+      DBusMethodCallback<base::Value> callback) = 0;
+
+  // Calls the ResetTrafficCounters method.
+  // |callback| is called after the method call succeeds.
+  virtual void ResetTrafficCounters(const dbus::ObjectPath& service_path,
+                                    base::OnceClosure callback,
+                                    ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;
@@ -222,9 +244,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
   // Initialize/Shutdown should be used instead.
   ShillServiceClient();
   virtual ~ShillServiceClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShillServiceClient);
 };
 
 }  // namespace chromeos

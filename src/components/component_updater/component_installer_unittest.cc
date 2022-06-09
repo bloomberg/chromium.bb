@@ -13,7 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -27,6 +27,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/component_updater_service_internal.h"
 #include "components/crx_file/crx_verifier.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/patcher.h"
@@ -90,18 +91,16 @@ class MockUpdateClient : public UpdateClient {
     std::move(callback).Run(update_client::Error::NONE);
   }
 
-  void SendUninstallPing(const std::string& id,
-                         const base::Version& version,
+  void SendUninstallPing(const CrxComponent& crx_component,
                          int reason,
                          Callback callback) override {
-    DoSendUninstallPing(id, version, reason);
+    DoSendUninstallPing(crx_component, reason);
     std::move(callback).Run(update_client::Error::NONE);
   }
 
-  void SendRegistrationPing(const std::string& id,
-                            const base::Version& version,
+  void SendRegistrationPing(const CrxComponent& crx_component,
                             Callback callback) override {
-    DoSendRegistrationPing(id, version);
+    DoSendRegistrationPing(crx_component);
     std::move(callback).Run(update_client::Error::NONE);
   }
 
@@ -117,12 +116,9 @@ class MockUpdateClient : public UpdateClient {
                      bool(const std::string& id, CrxUpdateItem* update_item));
   MOCK_CONST_METHOD1(IsUpdating, bool(const std::string& id));
   MOCK_METHOD0(Stop, void());
-  MOCK_METHOD3(DoSendUninstallPing,
-               void(const std::string& id,
-                    const base::Version& version,
-                    int reason));
-  MOCK_METHOD2(DoSendRegistrationPing,
-               void(const std::string& id, const base::Version& version));
+  MOCK_METHOD2(DoSendUninstallPing,
+               void(const CrxComponent& crx_component, int reason));
+  MOCK_METHOD1(DoSendRegistrationPing, void(const CrxComponent& crx_component));
 
  private:
   ~MockUpdateClient() override = default;
@@ -133,7 +129,7 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
   MockInstallerPolicy() = default;
   ~MockInstallerPolicy() override = default;
 
-  bool VerifyInstallation(const base::DictionaryValue& manifest,
+  bool VerifyInstallation(const base::Value& manifest,
                           const base::FilePath& dir) const override {
     return true;
   }
@@ -145,17 +141,16 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
   bool RequiresNetworkEncryption() const override { return true; }
 
   update_client::CrxInstaller::Result OnCustomInstall(
-      const base::DictionaryValue& manifest,
+      const base::Value& manifest,
       const base::FilePath& install_dir) override {
     return update_client::CrxInstaller::Result(0);
   }
 
   void OnCustomUninstall() override {}
 
-  void ComponentReady(
-      const base::Version& version,
-      const base::FilePath& install_dir,
-      std::unique_ptr<base::DictionaryValue> manifest) override {}
+  void ComponentReady(const base::Version& version,
+                      const base::FilePath& install_dir,
+                      base::Value manifest) override {}
 
   base::FilePath GetRelativeInstallDir() const override {
     return base::FilePath(relative_install_dir);
@@ -219,9 +214,11 @@ class ComponentInstallerTest : public testing::Test {
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop runloop_;
 
+  std::unique_ptr<TestingPrefServiceSimple> pref_ =
+      std::make_unique<TestingPrefServiceSimple>();
   scoped_refptr<TestConfigurator> config_ =
-      base::MakeRefCounted<TestConfigurator>();
-  MockUpdateScheduler* scheduler_ = nullptr;
+      base::MakeRefCounted<TestConfigurator>(pref_.get());
+  raw_ptr<MockUpdateScheduler> scheduler_ = nullptr;
   scoped_refptr<MockUpdateClient> update_client_ =
       base::MakeRefCounted<MockUpdateClient>();
   std::unique_ptr<ComponentUpdateService> component_updater_;
@@ -235,7 +232,8 @@ ComponentInstallerTest::ComponentInstallerTest() {
   ON_CALL(*scheduler_, Schedule(_, _, _, _))
       .WillByDefault(Invoke(this, &ComponentInstallerTest::Schedule));
   component_updater_ = std::make_unique<CrxUpdateService>(
-      config_, std::move(scheduler), update_client_);
+      config_, std::move(scheduler), update_client_, "");
+  RegisterComponentUpdateServicePrefs(pref_->registry());
 }
 
 ComponentInstallerTest::~ComponentInstallerTest() {
@@ -337,7 +335,6 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
   EXPECT_STREQ("fake name", component.name.c_str());
   EXPECT_EQ(expected_attrs, component.installer_attributes);
   EXPECT_TRUE(component.requires_network_encryption);
-  EXPECT_TRUE(component.supports_group_policy_enable_component_updates);
 }
 
 // Tests that the unpack path is removed when the install succeeded.

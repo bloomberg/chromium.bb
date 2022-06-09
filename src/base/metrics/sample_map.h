@@ -14,7 +14,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 
@@ -26,6 +25,10 @@ class BASE_EXPORT SampleMap : public HistogramSamples {
  public:
   SampleMap();
   explicit SampleMap(uint64_t id);
+
+  SampleMap(const SampleMap&) = delete;
+  SampleMap& operator=(const SampleMap&) = delete;
+
   ~SampleMap() override;
 
   // HistogramSamples:
@@ -41,8 +44,6 @@ class BASE_EXPORT SampleMap : public HistogramSamples {
 
  private:
   std::map<HistogramBase::Sample, HistogramBase::Count> sample_counts_;
-
-  DISALLOW_COPY_AND_ASSIGN(SampleMap);
 };
 
 }  // namespace base

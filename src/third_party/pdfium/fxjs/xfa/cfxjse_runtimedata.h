@@ -10,9 +10,10 @@
 #include <memory>
 
 #include "fxjs/cfxjs_engine.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
-class CFXJSE_RuntimeData : public FXJS_PerIsolateData::ExtensionIface {
+class CFXJSE_RuntimeData final : public FXJS_PerIsolateData::ExtensionIface {
  public:
   ~CFXJSE_RuntimeData() override;
 
@@ -21,12 +22,11 @@ class CFXJSE_RuntimeData : public FXJS_PerIsolateData::ExtensionIface {
   v8::Global<v8::FunctionTemplate> m_hRootContextGlobalTemplate;
   v8::Global<v8::Context> m_hRootContext;
 
- protected:
-  CFXJSE_RuntimeData();
-
+ private:
   static std::unique_ptr<CFXJSE_RuntimeData> Create(v8::Isolate* pIsolate);
 
- private:
+  CFXJSE_RuntimeData();
+
   CFXJSE_RuntimeData(const CFXJSE_RuntimeData&) = delete;
   CFXJSE_RuntimeData& operator=(const CFXJSE_RuntimeData&) = delete;
 };

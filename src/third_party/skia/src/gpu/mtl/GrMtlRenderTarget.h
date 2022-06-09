@@ -12,6 +12,8 @@
 
 #include "include/gpu/GrBackendSurface.h"
 #include "src/gpu/GrGpu.h"
+#include "src/gpu/mtl/GrMtlAttachment.h"
+#include "src/gpu/mtl/GrMtlFramebuffer.h"
 
 #import <Metal/Metal.h>
 
@@ -33,55 +35,64 @@ public:
         return true;
     }
 
-    id<MTLTexture> mtlColorTexture() const { return fColorTexture; }
-    id<MTLTexture> mtlResolveTexture() const { return fResolveTexture; }
+    GrMtlAttachment* colorAttachment() const { return fColorAttachment.get(); }
+    id<MTLTexture> colorMTLTexture() const { return fColorAttachment->mtlTexture(); }
+    GrMtlAttachment* resolveAttachment() const { return fResolveAttachment.get(); }
+    id<MTLTexture> resolveMTLTexture() const { return fResolveAttachment->mtlTexture(); }
+
+    // Returns the GrMtlAttachment of the non-msaa attachment. If the color attachment has 1 sample,
+    // then the color attachment will be returned. Otherwise, the resolve attachment is returned.
+    GrMtlAttachment* nonMSAAAttachment() const {
+        if (fColorAttachment->numSamples() == 1) {
+            return fColorAttachment.get();
+        } else {
+            return fResolveAttachment.get();
+        }
+    }
 
     GrBackendRenderTarget getBackendRenderTarget() const override;
 
     GrBackendFormat backendFormat() const override;
 
+    const GrMtlFramebuffer* getFramebuffer(bool withResolve,
+                                           bool withStencil);
+
 protected:
     GrMtlRenderTarget(GrMtlGpu* gpu,
                       SkISize,
-                      int sampleCnt,
-                      id<MTLTexture> colorTexture,
-                      id<MTLTexture> resolveTexture);
-
-    GrMtlRenderTarget(GrMtlGpu* gpu, SkISize, id<MTLTexture> colorTexture);
+                      sk_sp<GrMtlAttachment> colorAttachment,
+                      sk_sp<GrMtlAttachment> resolveAttachment);
 
     GrMtlGpu* getMtlGpu() const;
 
     void onAbandon() override;
     void onRelease() override;
 
-    // This accounts for the texture's memory and any MSAA renderbuffer's memory.
-    size_t onGpuMemorySize() const override {
-        int numColorSamples = this->numSamples();
-        // TODO: When used as render targets certain formats may actually have a larger size than
-        // the base format size. Check to make sure we are reporting the correct value here.
-        // The plus 1 is to account for the resolve texture or if not using msaa the RT itself
-        if (numColorSamples > 1) {
-            ++numColorSamples;
-        }
-        return GrSurface::ComputeSize(this->backendFormat(), this->dimensions(),
-                                      numColorSamples, GrMipmapped::kNo);
-    }
+    // This returns zero since the memory should all be handled by the attachments
+    size_t onGpuMemorySize() const override { return 0; }
 
-    id<MTLTexture> fColorTexture;
-    id<MTLTexture> fResolveTexture;
+    sk_sp<GrMtlAttachment> fColorAttachment;
+    sk_sp<GrMtlAttachment> fResolveAttachment;
 
 private:
     // Extra param to disambiguate from constructor used by subclasses.
     enum Wrapped { kWrapped };
     GrMtlRenderTarget(GrMtlGpu* gpu,
                       SkISize,
-                      int sampleCnt,
-                      id<MTLTexture> colorTexture,
-                      id<MTLTexture> resolveTexture,
+                      sk_sp<GrMtlAttachment> colorAttachment,
+                      sk_sp<GrMtlAttachment> resolveAttachment,
                       Wrapped);
-    GrMtlRenderTarget(GrMtlGpu* gpu, SkISize, id<MTLTexture> colorTexture, Wrapped);
 
     bool completeStencilAttachment(GrAttachment* stencil, bool useMSAASurface) override;
+
+    // We can have a renderpass with and without resolve attachment or stencil attachment,
+    // both of these being completely orthogonal. Thus we have a total of 4 types of render passes.
+    // We then cache a framebuffer for each type of these render passes.
+    // TODO: add support for other flags if needed
+    inline static constexpr int kNumCachedFramebuffers = 4;
+
+    sk_sp<const GrMtlFramebuffer> fCachedFramebuffers[kNumCachedFramebuffers];
+
 
     using INHERITED = GrRenderTarget;
 };

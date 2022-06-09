@@ -37,11 +37,11 @@ syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
   return TransportState::DISABLED;
 }
 
-CoreAccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
+CoreAccountInfo FakeSyncService::GetAccountInfo() const {
   return CoreAccountInfo();
 }
 
-bool FakeSyncService::IsAuthenticatedAccountPrimary() const {
+bool FakeSyncService::HasSyncConsent() const {
   return true;
 }
 
@@ -142,10 +142,6 @@ void FakeSyncService::AddProtocolEventObserver(
 
 void FakeSyncService::RemoveProtocolEventObserver(
     ProtocolEventObserver* observer) {}
-
-base::WeakPtr<JsController> FakeSyncService::GetJsController() {
-  return base::WeakPtr<JsController>();
-}
 
 void FakeSyncService::GetAllNodesForDebugging(
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {}

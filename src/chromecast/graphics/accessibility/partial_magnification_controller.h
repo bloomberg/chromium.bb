@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chromecast/graphics/accessibility/magnification_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -30,6 +29,12 @@ class PartialMagnificationController : public MagnificationController,
                                        public views::WidgetObserver {
  public:
   explicit PartialMagnificationController(aura::Window* root_window);
+
+  PartialMagnificationController(const PartialMagnificationController&) =
+      delete;
+  PartialMagnificationController& operator=(
+      const PartialMagnificationController&) = delete;
+
   ~PartialMagnificationController() override;
 
   // Turns the partial screen magnifier feature on or off.
@@ -98,8 +103,6 @@ class PartialMagnificationController : public MagnificationController,
   // Masks the content of |border_layer_| so that only a circle outline is
   // drawn.
   std::unique_ptr<ContentMask> border_mask_;
-
-  DISALLOW_COPY_AND_ASSIGN(PartialMagnificationController);
 };
 
 }  // namespace chromecast

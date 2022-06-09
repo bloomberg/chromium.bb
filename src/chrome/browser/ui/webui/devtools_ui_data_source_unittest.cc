@@ -65,6 +65,10 @@ class TestDevToolsDataSource : public DevToolsDataSource {
 };
 
 class DevToolsUIDataSourceTest : public testing::Test {
+ public:
+  DevToolsUIDataSourceTest(const DevToolsUIDataSourceTest&) = delete;
+  DevToolsUIDataSourceTest& operator=(const DevToolsUIDataSourceTest&) = delete;
+
  protected:
   DevToolsUIDataSourceTest() {}
   ~DevToolsUIDataSourceTest() override = default;
@@ -107,8 +111,6 @@ class DevToolsUIDataSourceTest : public testing::Test {
   std::unique_ptr<TestDevToolsDataSource> devtools_data_source_;
   bool data_received_ = false;
   std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsUIDataSourceTest);
 };
 
 // devtools/bundled path.
@@ -190,6 +192,32 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBlankURLWithQueryParam) {
 }
 
 // devtools/remote path
+
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURLWithSwitch) {
+  const char* flag_value = "http://example.com/example/path/";
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, flag_value);
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsRemotePath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "url: http://example.com/example/path/devtools_app.html");
+}
+
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteFileURLWithSwitch) {
+#if defined(OS_WIN)
+  const char* flag_value = "file://C:/tmp/";
+#else
+  const char* flag_value = "file://tmp/";
+#endif
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, flag_value);
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsRemotePath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "file: devtools_app.html");
+}
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURL) {
   const GURL path =

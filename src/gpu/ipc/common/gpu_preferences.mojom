@@ -69,7 +69,6 @@ struct GpuPreferences {
   bool disable_gpu_shader_disk_cache;
   bool enable_threaded_texture_mailboxes;
   bool gl_shader_interm_output;
-  bool emulate_shader_precision;
   bool enable_android_surface_control;
   bool enable_gpu_service_logging;
   bool enable_gpu_service_tracing;
@@ -92,6 +91,8 @@ struct GpuPreferences {
   bool enable_metal;
   bool enable_gpu_benchmarking_extension;
   bool enable_webgpu;
+  bool enable_webgpu_spirv;
+  bool force_webgpu_compat;
   DawnBackendValidationLevel enable_dawn_backend_validation;
   array<string> enabled_dawn_features_list;
   array<string> disabled_dawn_features_list;

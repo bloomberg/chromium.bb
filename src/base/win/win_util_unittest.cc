@@ -6,10 +6,10 @@
 
 #include <objbase.h>
 
+#include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/scoped_native_library.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_co_mem.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,12 +24,14 @@ namespace {
 class ThreadLocaleSaver {
  public:
   ThreadLocaleSaver() : original_locale_id_(GetThreadLocale()) {}
+
+  ThreadLocaleSaver(const ThreadLocaleSaver&) = delete;
+  ThreadLocaleSaver& operator=(const ThreadLocaleSaver&) = delete;
+
   ~ThreadLocaleSaver() { SetThreadLocale(original_locale_id_); }
 
  private:
   LCID original_locale_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadLocaleSaver);
 };
 
 }  // namespace

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for vectorization of array kernels."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.eager import backprop
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
@@ -59,6 +55,11 @@ class ArrayTest(PForTestCase):
         outputs.append(array_ops.gather(y, [i, 1, 2], axis=2, batch_dims=1))
         outputs.append(array_ops.gather(y, [[2, i], [i, 1], [2, 1]],
                                         axis=-1, batch_dims=1))
+        outputs.append(
+            array_ops.gather(y, [[0, 1, 2]] * 3, axis=2, batch_dims=2))
+        outputs.append(array_ops.gather(y, [0, 1, 2], axis=1, batch_dims=-1))
+        outputs.append(
+            array_ops.gather(y, [[0, 1, 2]] * 3, axis=2, batch_dims=-2))
 
       return outputs
 
@@ -76,6 +77,15 @@ class ArrayTest(PForTestCase):
       return outputs
 
     self._test_loop_fn(loop_fn, 3)
+
+  @test_util.run_v2_only
+  def test_gather_pfor_grad(self):
+    x = array_ops.zeros([1, 2])
+    with backprop.GradientTape() as tape:
+      tape.watch(x)
+      r = pfor_control_flow_ops.vectorized_map(
+          lambda t: array_ops.gather(x, t, axis=-1), math_ops.range(2))
+    self.assertAllClose([[1., 1.]], tape.gradient(r, x))
 
   def test_shape(self):
     x = random_ops.random_uniform([3, 2, 3])
@@ -148,9 +158,12 @@ class ArrayTest(PForTestCase):
 
     def loop_fn(i):
       x1 = array_ops.gather(x, i)
-      return array_ops.expand_dims(
-          x1, axis=-1), array_ops.expand_dims(
-              x1, axis=1)
+      return [
+          array_ops.expand_dims(x1, axis=-1),
+          array_ops.expand_dims(x1, axis=1),
+          array_ops.expand_dims(
+              x1, axis=constant_op.constant(1, dtype=dtypes.int64))
+      ]
 
     self._test_loop_fn(loop_fn, 3)
 
@@ -193,6 +206,15 @@ class ArrayTest(PForTestCase):
 
     self._test_loop_fn(loop_fn, 3)
 
+  def test_slice_loop_variant_begin(self):
+    x = random_ops.random_uniform([3, 2, 5, 3])
+
+    def loop_fn(i):
+      x1 = array_ops.gather(x, i)
+      return array_ops.slice(x1, begin=(0, 2 - i, i), size=(-1, 2, 1))
+
+    self._test_loop_fn(loop_fn, 3)
+
   def test_tile(self):
     x = random_ops.random_uniform([3, 2, 3])
 
@@ -209,7 +231,7 @@ class ArrayTest(PForTestCase):
       x1 = array_ops.gather(x, i)
       return array_ops.tile(x1, [i, 1])
 
-    with self.assertRaisesRegexp(ValueError, "expected to be loop invariant"):
+    with self.assertRaisesRegex(ValueError, "expected to be loop invariant"):
       pfor_control_flow_ops.pfor(loop_fn, 2, fallback_to_while_loop=False)
 
   def test_pack(self):
@@ -319,8 +341,12 @@ class ArrayTest(PForTestCase):
 
     def loop_fn(i):
       x1 = array_ops.gather(x, i)
-      return array_ops.concat([x1, x1, y],
-                              axis=0), array_ops.concat([x1, x1, y], axis=-1)
+      return [
+          array_ops.concat([x1, x1, y], axis=0),
+          array_ops.concat([x1, x1, y], axis=-1),
+          array_ops.concat([x1, x1, y],
+                           axis=constant_op.constant(0, dtype=dtypes.int64))
+      ]
 
     self._test_loop_fn(loop_fn, 3)
 
@@ -458,7 +484,7 @@ class ArrayTest(PForTestCase):
     # handled.
     self._test_loop_fn(loop_fn, 3, fallback_to_while_loop=True)
     # Without fallback, ValueError is thrown.
-    with self.assertRaisesRegexp(ValueError, "expected to be loop invariant"):
+    with self.assertRaisesRegex(ValueError, "expected to be loop invariant"):
       self._test_loop_fn(loop_fn, 3, fallback_to_while_loop=False)
 
   def test_depth_to_space(self):

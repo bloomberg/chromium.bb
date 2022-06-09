@@ -10,13 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/file_system.mojom-forward.h"
+#include "ash/components/arc/session/connection_observer.h"
+#include "ash/components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/arc/mojom/file_system.mojom-forward.h"
-#include "components/arc/session/connection_observer.h"
-#include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -46,6 +45,10 @@ class ArcFileSystemWatcherService
 
   ArcFileSystemWatcherService(content::BrowserContext* context,
                               ArcBridgeService* bridge_service);
+
+  ArcFileSystemWatcherService(const ArcFileSystemWatcherService&) = delete;
+  ArcFileSystemWatcherService& operator=(const ArcFileSystemWatcherService&) =
+      delete;
 
   ~ArcFileSystemWatcherService() override;
 
@@ -77,7 +80,6 @@ class ArcFileSystemWatcherService
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  std::unique_ptr<FileSystemWatcher> downloads_watcher_;
   std::unique_ptr<FileSystemWatcher> myfiles_watcher_;
   // A map from mount path to watcher.
   std::map<std::string, std::unique_ptr<FileSystemWatcher>>
@@ -88,8 +90,6 @@ class ArcFileSystemWatcherService
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<ArcFileSystemWatcherService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemWatcherService);
 };
 
 }  // namespace arc

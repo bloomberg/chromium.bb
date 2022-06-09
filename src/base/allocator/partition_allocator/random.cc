@@ -4,63 +4,65 @@
 
 #include "base/allocator/partition_allocator/random.h"
 
+#include <type_traits>
+
 #include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/rand_util.h"
 
 namespace base {
-namespace {
 
-internal::PartitionLock g_lock = {};
+namespace partition_alloc {
+class RandomGenerator {
+ public:
+  constexpr RandomGenerator() {}
 
-// Using XorShift128+, which is simple and widely used. See
-// https://en.wikipedia.org/wiki/Xorshift#xorshift+ for details.
-struct RandomContext {
-  bool initialized;
-
-  uint64_t a;
-  uint64_t b;
-};
-
-RandomContext g_context GUARDED_BY(g_lock);
-
-RandomContext& GetRandomContext() EXCLUSIVE_LOCKS_REQUIRED(g_lock) {
-  if (UNLIKELY(!g_context.initialized)) {
-    g_context.a = RandUint64();
-    g_context.b = RandUint64();
-    g_context.initialized = true;
+  uint32_t RandomValue() {
+    internal::ScopedGuard<true> guard(lock_);
+    return GetGenerator()->RandUint32();
   }
 
-  return g_context;
-}
+  void SeedForTesting(uint64_t seed) {
+    internal::ScopedGuard<true> guard(lock_);
+    GetGenerator()->ReseedForTesting(seed);
+  }
+
+ private:
+  internal::PartitionLock lock_ = {};
+  bool initialized_ GUARDED_BY(lock_) = false;
+  union {
+    base::InsecureRandomGenerator instance_ GUARDED_BY(lock_);
+    uint8_t instance_buffer_[sizeof(base::InsecureRandomGenerator)] GUARDED_BY(
+        lock_) = {};
+  };
+
+  base::InsecureRandomGenerator* GetGenerator()
+      EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+    if (!initialized_) {
+      new (instance_buffer_) base::InsecureRandomGenerator();
+      initialized_ = true;
+    }
+    return &instance_;
+  }
+};
+
+// Note: this is redundant, since the anonymous union is incompatible with a
+// non-trivial default destructor. Not meant to be destructed anyway.
+static_assert(std::is_trivially_destructible<RandomGenerator>::value, "");
+
+}  // namespace partition_alloc
+
+namespace {
+
+partition_alloc::RandomGenerator g_generator = {};
 
 }  // namespace
 
 uint32_t RandomValue() {
-  internal::ScopedGuard<true> guard(g_lock);
-  RandomContext& x = GetRandomContext();
-
-  uint64_t t = x.a;
-  const uint64_t s = x.b;
-
-  x.a = s;
-  t ^= t << 23;
-  t ^= t >> 17;
-  t ^= s ^ (s >> 26);
-  x.b = t;
-
-  // The generator usually returns an uint64_t, truncate it.
-  //
-  // It is noted in this paper (https://arxiv.org/abs/1810.05313) that the
-  // lowest 32 bits fail some statistical tests from the Big Crush
-  // suite. Use the higher ones instead.
-  return (t + s) >> 32;
+  return g_generator.RandomValue();
 }
 
 void SetMmapSeedForTesting(uint64_t seed) {
-  internal::ScopedGuard<true> guard(g_lock);
-  RandomContext& x = GetRandomContext();
-  x.a = x.b = static_cast<uint32_t>(seed);
-  x.initialized = true;
+  return g_generator.SeedForTesting(seed);
 }
 
 }  // namespace base

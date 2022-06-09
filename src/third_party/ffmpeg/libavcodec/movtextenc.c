@@ -22,7 +22,6 @@
 #include <stdarg.h>
 #include "avcodec.h"
 #include "libavutil/opt.h"
-#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mem.h"
@@ -655,25 +654,12 @@ static int mov_text_encode_frame(AVCodecContext *avctx, unsigned char *buf,
             return AVERROR(EINVAL);
         }
 
-#if FF_API_ASS_TIMING
-        if (!strncmp(ass, "Dialogue: ", 10)) {
-            int num;
-            dialog = ff_ass_split_dialog(s->ass_ctx, ass, 0, &num);
-            for (; dialog && num--; dialog++) {
-                mov_text_dialog(s, dialog);
-                ff_ass_split_override_codes(&mov_text_callbacks, s, dialog->text);
-            }
-        } else {
-#endif
-            dialog = ff_ass_split_dialog2(s->ass_ctx, ass);
-            if (!dialog)
-                return AVERROR(ENOMEM);
-            mov_text_dialog(s, dialog);
-            ff_ass_split_override_codes(&mov_text_callbacks, s, dialog->text);
-            ff_ass_free_dialog(&dialog);
-#if FF_API_ASS_TIMING
-        }
-#endif
+        dialog = ff_ass_split_dialog(s->ass_ctx, ass);
+        if (!dialog)
+            return AVERROR(ENOMEM);
+        mov_text_dialog(s, dialog);
+        ff_ass_split_override_codes(&mov_text_callbacks, s, dialog->text);
+        ff_ass_free_dialog(&dialog);
 
         for (j = 0; j < box_count; j++) {
             box_types[j].encode(s);
@@ -721,7 +707,7 @@ static const AVClass mov_text_encoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_movtext_encoder = {
+const AVCodec ff_movtext_encoder = {
     .name           = "mov_text",
     .long_name      = NULL_IF_CONFIG_SMALL("3GPP Timed Text subtitle"),
     .type           = AVMEDIA_TYPE_SUBTITLE,
@@ -731,5 +717,5 @@ AVCodec ff_movtext_encoder = {
     .init           = mov_text_encode_init,
     .encode_sub     = mov_text_encode_frame,
     .close          = mov_text_encode_close,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

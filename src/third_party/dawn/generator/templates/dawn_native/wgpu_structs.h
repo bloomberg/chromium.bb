@@ -21,7 +21,7 @@
 namespace dawn_native {
 
 {% macro render_cpp_default_value(member) -%}
-    {%- if member.annotation in ["*", "const*", "const*const*"] and member.optional -%}
+    {%- if member.annotation in ["*", "const*"] and member.optional -%}
         {{" "}}= nullptr
     {%- elif member.type.category == "object" and member.optional -%}
         {{" "}}= nullptr
@@ -60,11 +60,15 @@ namespace dawn_native {
                     {{member_declaration}};
                 {% endif %}
             {% endfor %}
+
+            // Equality operators, mostly for testing. Note that this tests
+            // strict pointer-pointer equality if the struct contains member pointers.
+            bool operator==(const {{as_cppType(type.name)}}& rhs) const;
         };
 
     {% endfor %}
 
-    {% for typeDef in by_category["typedef"] %}
+    {% for typeDef in by_category["typedef"] if typeDef.type.category == "structure" %}
         using {{as_cppType(typeDef.name)}} = {{as_cppType(typeDef.type.name)}};
     {% endfor %}
 

@@ -15,18 +15,20 @@ limitations under the License.
 
 #include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.h"
 
-namespace mlir {
-namespace tfjs {
+// Generated dialect defs.
+#include "tensorflow/compiler/mlir/tfjs/ir/tfjs_dialect.cc.inc"
 
 #define GET_OP_CLASSES
 #include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.cc.inc"
+
+namespace mlir {
+namespace tfjs {
 
 //===----------------------------------------------------------------------===//
 // TFJSDialect
 //===----------------------------------------------------------------------===//
 
-TFJSDialect::TFJSDialect(MLIRContext *context)
-    : Dialect(getDialectNamespace(), context) {
+void TFJSDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
 #include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.cc.inc"

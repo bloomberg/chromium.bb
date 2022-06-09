@@ -29,7 +29,8 @@ std::string Preamble() {
   return R"(
   OpCapability Shader
   OpMemoryModel Logical Simple
-  OpEntryPoint Vertex %100 "main"
+  OpEntryPoint Fragment %100 "main"
+  OpExecutionMode %100 OriginUpperLeft
 
   %void = OpTypeVoid
   %voidfn = OpTypeFunction %void
@@ -82,17 +83,9 @@ TEST_F(SpvUnaryConversionTest, Bitcast_Scalar) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
-  VariableConst{
-    x_1
-    none
-    __u32
-    {
-      Bitcast[not set]<__u32>{
-        ScalarConstructor[not set]{50.000000}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : u32 = bitcast<u32>(50.0);"));
 }
 
 TEST_F(SpvUnaryConversionTest, Bitcast_Vector) {
@@ -107,21 +100,11 @@ TEST_F(SpvUnaryConversionTest, Bitcast_Vector) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(
-  VariableConst{
-    x_1
-    none
-    __vec_2__f32
-    {
-      Bitcast[not set]<__vec_2__f32>{
-        TypeConstructor[not set]{
-          __vec_2__u32
-          ScalarConstructor[not set]{10u}
-          ScalarConstructor[not set]{20u}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(
+      test::ToString(p->program(), ast_body),
+      HasSubstr(
+          "let x_1 : vec2<f32> = bitcast<vec2<f32>>(vec2<u32>(10u, 20u));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertSToF_BadArg) {
@@ -236,17 +219,9 @@ TEST_F(SpvUnaryConversionTest, ConvertSToF_Scalar_FromSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __f32
-    {
-      TypeConstructor[not set]{
-        __f32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : f32 = f32(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertSToF_Scalar_FromUnsigned) {
@@ -262,19 +237,9 @@ TEST_F(SpvUnaryConversionTest, ConvertSToF_Scalar_FromUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __f32
-    {
-      TypeConstructor[not set]{
-        __f32
-        Bitcast[not set]<__i32>{
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : f32 = f32(bitcast<i32>(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertSToF_Vector_FromSigned) {
@@ -290,17 +255,9 @@ TEST_F(SpvUnaryConversionTest, ConvertSToF_Vector_FromSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : vec2<f32> = vec2<f32>(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertSToF_Vector_FromUnsigned) {
@@ -316,19 +273,10 @@ TEST_F(SpvUnaryConversionTest, ConvertSToF_Vector_FromUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        Bitcast[not set]<__vec_2__i32>{
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(
+      test::ToString(p->program(), ast_body),
+      HasSubstr("let x_1 : vec2<f32> = vec2<f32>(bitcast<vec2<i32>>(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_BadArgType) {
@@ -343,8 +291,9 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(), Eq("operand for conversion to floating point must be "
-                             "integral scalar or vector"));
+  EXPECT_THAT(p->error(),
+              HasSubstr("operand for conversion to floating point must be "
+                        "integral scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_BadArgType) {
@@ -359,9 +308,10 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(),
-              Eq("operand for conversion to floating point must be integral "
-                 "scalar or vector"));
+  EXPECT_THAT(
+      p->error(),
+      HasSubstr("operand for conversion to floating point must be integral "
+                "scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_FromSigned) {
@@ -377,19 +327,9 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_FromSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __f32
-    {
-      TypeConstructor[not set]{
-        __f32
-        Bitcast[not set]<__u32>{
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : f32 = f32(bitcast<u32>(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_FromUnsigned) {
@@ -405,17 +345,9 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Scalar_FromUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __f32
-    {
-      TypeConstructor[not set]{
-        __f32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : f32 = f32(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_FromSigned) {
@@ -431,19 +363,10 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_FromSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        Bitcast[not set]<__vec_2__u32>{
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(
+      test::ToString(p->program(), ast_body),
+      HasSubstr("let x_1 : vec2<f32> = vec2<f32>(bitcast<vec2<u32>>(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_FromUnsigned) {
@@ -459,17 +382,9 @@ TEST_F(SpvUnaryConversionTest, ConvertUToF_Vector_FromUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__f32
-    {
-      TypeConstructor[not set]{
-        __vec_2__f32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : vec2<f32> = vec2<f32>(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_BadArgType) {
@@ -484,9 +399,10 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(),
-              Eq("operand for conversion to signed integer must be floating "
-                 "point scalar or vector"));
+  EXPECT_THAT(
+      p->error(),
+      HasSubstr("operand for conversion to signed integer must be floating "
+                "point scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_BadArgType) {
@@ -501,9 +417,10 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(),
-              Eq("operand for conversion to signed integer must be floating "
-                 "point scalar or vector"));
+  EXPECT_THAT(
+      p->error(),
+      HasSubstr("operand for conversion to signed integer must be floating "
+                "point scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_ToSigned) {
@@ -519,17 +436,9 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_ToSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __i32
-    {
-      TypeConstructor[not set]{
-        __i32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : i32 = i32(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_ToUnsigned) {
@@ -545,19 +454,9 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Scalar_ToUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __u32
-    {
-      Bitcast[not set]<__u32>{
-        TypeConstructor[not set]{
-          __i32
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : u32 = bitcast<u32>(i32(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_ToSigned) {
@@ -573,17 +472,9 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_ToSigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__i32
-    {
-      TypeConstructor[not set]{
-        __vec_2__i32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : vec2<i32> = vec2<i32>(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_ToUnsigned) {
@@ -599,19 +490,10 @@ TEST_F(SpvUnaryConversionTest, ConvertFToS_Vector_ToUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__u32
-    {
-      Bitcast[not set]<__vec_2__u32>{
-        TypeConstructor[not set]{
-          __vec_2__i32
-          Identifier[not set]{x_30}
-        }
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(
+      test::ToString(p->program(), ast_body),
+      HasSubstr("let x_1 : vec2<u32> = bitcast<vec2<u32>>(vec2<i32>(x_30));"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToU_Scalar_BadArgType) {
@@ -626,9 +508,10 @@ TEST_F(SpvUnaryConversionTest, ConvertFToU_Scalar_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(),
-              Eq("operand for conversion to unsigned integer must be floating "
-                 "point scalar or vector"));
+  EXPECT_THAT(
+      p->error(),
+      HasSubstr("operand for conversion to unsigned integer must be floating "
+                "point scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToU_Vector_BadArgType) {
@@ -643,9 +526,10 @@ TEST_F(SpvUnaryConversionTest, ConvertFToU_Vector_BadArgType) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_FALSE(fe.EmitBody());
-  EXPECT_THAT(p->error(),
-              Eq("operand for conversion to unsigned integer must be floating "
-                 "point scalar or vector"));
+  EXPECT_THAT(
+      p->error(),
+      HasSubstr("operand for conversion to unsigned integer must be floating "
+                "point scalar or vector"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToU_Scalar_ToSigned_IsError) {
@@ -677,17 +561,9 @@ TEST_F(SpvUnaryConversionTest, ConvertFToU_Scalar_ToUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __u32
-    {
-      TypeConstructor[not set]{
-        __u32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : u32 = u32(x_30);"));
 }
 
 TEST_F(SpvUnaryConversionTest, ConvertFToU_Vector_ToSigned_IsError) {
@@ -719,17 +595,51 @@ TEST_F(SpvUnaryConversionTest, ConvertFToU_Vector_ToUnsigned) {
   ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
   auto fe = p->function_emitter(100);
   EXPECT_TRUE(fe.EmitBody()) << p->error();
-  EXPECT_THAT(ToString(p->builder(), fe.ast_body()), HasSubstr(R"(VariableConst{
-    x_1
-    none
-    __vec_2__u32
-    {
-      TypeConstructor[not set]{
-        __vec_2__u32
-        Identifier[not set]{x_30}
-      }
-    }
-  })"));
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_1 : vec2<u32> = vec2<u32>(x_30);"));
+}
+
+TEST_F(SpvUnaryConversionTest, ConvertFToU_HoistedValue) {
+  // From crbug.com/tint/804
+  const auto assembly = Preamble() + R"(
+
+%100 = OpFunction %void None %voidfn
+%10 = OpLabel
+OpBranch %30
+
+%30 = OpLabel
+OpLoopMerge %90 %80 None
+OpBranchConditional %true %90 %40
+
+%40 = OpLabel
+OpSelectionMerge %50 None
+OpBranchConditional %true %45 %50
+
+%45 = OpLabel
+; This value is hoisted
+%600 = OpCopyObject %float %float_50
+OpBranch %50
+
+%50 = OpLabel
+OpBranch %90
+
+%80 = OpLabel ; unreachable continue target
+%82 = OpConvertFToU %uint %600
+OpBranch %30 ; backedge
+
+%90 = OpLabel
+OpReturn
+OpFunctionEnd
+
+  )";
+  auto p = parser(test::Assemble(assembly));
+  ASSERT_TRUE(p->BuildAndParseInternalModuleExceptFunctions());
+  auto fe = p->function_emitter(100);
+  EXPECT_TRUE(fe.EmitBody()) << p->error();
+  auto ast_body = fe.ast_body();
+  EXPECT_THAT(test::ToString(p->program(), ast_body),
+              HasSubstr("let x_82 : u32 = u32(x_600);"));
 }
 
 // TODO(dneto): OpSConvert // only if multiple widths

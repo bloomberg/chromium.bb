@@ -24,7 +24,7 @@
 #include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
 #include "third_party/blink/renderer/modules/webusb/usb_device.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -200,15 +200,17 @@ void USB::ContextDestroyed() {
 }
 
 USBDevice* USB::GetOrCreateDevice(UsbDeviceInfoPtr device_info) {
-  USBDevice* device = device_cache_.at(device_info->guid);
-  if (!device) {
-    String guid = device_info->guid;
-    mojo::PendingRemote<UsbDevice> pipe;
-    service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
-    device = MakeGarbageCollected<USBDevice>(
-        std::move(device_info), std::move(pipe), GetExecutionContext());
-    device_cache_.insert(guid, device);
+  auto it = device_cache_.find(device_info->guid);
+  if (it != device_cache_.end()) {
+    return it->value;
   }
+
+  String guid = device_info->guid;
+  mojo::PendingRemote<UsbDevice> pipe;
+  service_->GetDevice(guid, pipe.InitWithNewPipeAndPassReceiver());
+  USBDevice* device = MakeGarbageCollected<USBDevice>(
+      std::move(device_info), std::move(pipe), GetExecutionContext());
+  device_cache_.insert(guid, device);
   return device;
 }
 
@@ -248,8 +250,11 @@ void USB::OnDeviceAdded(UsbDeviceInfoPtr device_info) {
 
 void USB::OnDeviceRemoved(UsbDeviceInfoPtr device_info) {
   String guid = device_info->guid;
-  USBDevice* device = device_cache_.at(guid);
-  if (!device) {
+  USBDevice* device = nullptr;
+  const auto it = device_cache_.find(guid);
+  if (it != device_cache_.end()) {
+    device = it->value;
+  } else {
     device = MakeGarbageCollected<USBDevice>(
         std::move(device_info), mojo::NullRemote(), GetExecutionContext());
   }

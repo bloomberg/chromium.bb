@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +40,9 @@ class TextfieldModelTest : public ViewsTestBase,
                            public TextfieldModel::Delegate {
  public:
   TextfieldModelTest() = default;
+
+  TextfieldModelTest(const TextfieldModelTest&) = delete;
+  TextfieldModelTest& operator=(const TextfieldModelTest&) = delete;
 
   // ::testing::Test:
   void TearDown() override {
@@ -77,9 +80,6 @@ class TextfieldModelTest : public ViewsTestBase,
   }
 
   bool composition_text_confirmed_or_cleared_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TextfieldModelTest);
 };
 
 TEST_F(TextfieldModelTest, EditString) {

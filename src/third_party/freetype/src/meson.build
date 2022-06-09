@@ -11,6 +11,17 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
+#
+# Say
+#
+#   meson configure
+#
+# to see all configuration options and their default values.  For example,
+# to build only a shared version of FreeType, override the default value
+# with
+#
+#   meson setup -Ddefault_library=shared
+#
 
 project('freetype2', 'c',
   meson_version: '>= 0.55.0',
@@ -19,13 +30,10 @@ project('freetype2', 'c',
                        'include/freetype/freetype.h').stdout().strip(),
 )
 
-#
-# Rules to compile the FreeType 2 library itself
-#
 
-
-# Apparently meson doesn't provide a read_file() function, so instead
-# running an external command is required.
+# Only meson >= 0.57 can read a file and assign its contents to a
+# variable; we thus use an external command to have this functionality
+# with older versions, too.
 
 python = import('python')
 python_exe = python.find_installation(required: true)
@@ -41,6 +49,7 @@ ft2_pkgconfig_version = run_command(python_exe,
 
 ft2_includes = include_directories('include')
 
+freetype_includedir = join_paths(get_option('includedir'), 'freetype2')
 
 # Generate a custom `ftmodule.h` version based on the content of
 # `modules.cfg`.
@@ -51,7 +60,7 @@ ftmodule_h = custom_target('ftmodule.h',
   command: [python_exe, files('builds/meson/parse_modules_cfg.py'),
             '--format=ftmodule.h', '@INPUT@', '--output', '@OUTPUT@'],
   install: true,
-  install_dir: 'include/freetype2/freetype/config',
+  install_dir: join_paths(freetype_includedir, 'freetype/config'),
 )
 ft2_sources = [ftmodule_h]
 
@@ -78,7 +87,7 @@ foreach mod: ft_main_modules
   ft2_sources += 'src/@0@/@1@.c'.format(mod, source)
 endforeach
 
-# NOTE: The `gzip` and `bzip2` aux modules are handled through options.
+# NOTE: The `bzip2` aux module is handled through options.
 ft_aux_modules = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
   '--format=aux-modules',
@@ -92,7 +101,9 @@ foreach auxmod: ft_aux_modules
     source = 'ftcache'
   elif auxmod == 'lzw'
     source = 'ftlzw'
-  elif auxmod == 'gzip' or auxmod == 'bzip2'
+  elif auxmod == 'gzip'
+    source = 'ftgzip'
+  elif auxmod == 'bzip2'
     # Handled through options instead, see below.
     continue
   endif
@@ -101,7 +112,7 @@ endforeach
 
 
 # FreeType 2 base extensions.
-# Normally configured through `modules.cfg`.
+# To be configured in `modules.cfg`.
 
 base_extensions = run_command(python_exe,
   files('builds/meson/parse_modules_cfg.py'),
@@ -124,6 +135,7 @@ ft2_public_headers = files([
   'include/freetype/ftbzip2.h',
   'include/freetype/ftcache.h',
   'include/freetype/ftchapters.h',
+  'include/freetype/ftcid.h',
   'include/freetype/ftcolor.h',
   'include/freetype/ftdriver.h',
   'include/freetype/fterrdef.h',
@@ -184,14 +196,16 @@ has_sys_mman_h = cc.has_header('sys/mman.h')
 
 mmap_option = get_option('mmap')
 
+use_unix_ftsystem_c = false
 if mmap_option.disabled()
   ft2_sources += files(['src/base/ftsystem.c',])
 elif host_machine.system() == 'windows'
   ft2_sources += files(['builds/windows/ftsystem.c',])
 else
   if has_unistd_h and has_fcntl_h and has_sys_mman_h
-    # This version of ftsystem.c uses mmap() to read input font files.
+    # This version of `ftsystem.c` uses `mmap` to read input font files.
     ft2_sources += files(['builds/unix/ftsystem.c',])
+    use_unix_ftsystem_c = true
   elif mmap_option.enabled()
     error('mmap was enabled via options but is not available,'
           + ' required headers were not found!')
@@ -205,7 +219,7 @@ endif
 #
 # NOTE: Some specialized versions exist for other platforms not supported by
 # Meson.  Most implementation differences are extremely minor, i.e., in the
-# implementation of FT_Message() and FT_Panic(), and getting the `FT2_DEBUG`
+# implementation of `FT_Message` and `FT_Panic`, and getting the `FT2_DEBUG`
 # value from the environment, when this is supported.  A smaller refactor
 # might make these platform-specific files much smaller, and could be moved
 # into `ftsystem.c` as well.
@@ -220,7 +234,23 @@ else
   ft2_sources += 'src/base/ftdebug.c'
 endif
 
+
 ft2_deps = []
+common_ldflags = []
+
+
+# Correct compatibility version for OS x.
+#
+# OSX sets the compatibility_version (aka libtools version) differently from
+# the library name.
+#
+if host_machine.system() == 'darwin'
+  # maintain compatibility with autotools on macOS
+  common_ldflags = [
+    '-compatibility_version', ft2_pkgconfig_version.split('.')[0],
+    '-current_version', ft2_pkgconfig_version
+  ]
+endif
 
 
 # Generate `ftoption.h` based on available dependencies.
@@ -231,20 +261,16 @@ process_header_command = [python_exe,
 ftoption_command = process_header_command
 
 
-# GZip support
+# external GZip support
 zlib_dep = dependency('zlib',
   required: get_option('zlib'),
   fallback: 'zlib')
 
 if zlib_dep.found()
-  ftoption_command += [
-    '--enable=FT_CONFIG_OPTION_USE_ZLIB',
-    '--enable=FT_CONFIG_OPTION_SYSTEM_ZLIB',
-  ]
-  ft2_sources += files(['src/gzip/ftgzip.c',])
+  ftoption_command += ['--enable=FT_CONFIG_OPTION_SYSTEM_ZLIB']
   ft2_deps += [zlib_dep]
 else
-  ftoption_command += ['--disable=FT_CONFIG_OPTION_USE_ZLIB']
+  ftoption_command += ['--disable=FT_CONFIG_OPTION_SYSTEM_ZLIB']
 endif
 
 # BZip2 support
@@ -292,7 +318,7 @@ ftoption_h = custom_target('ftoption.h',
   output: 'ftoption.h',
   command: ftoption_command,
   install: true,
-  install_dir: 'include/freetype2/freetype/config',
+  install_dir: join_paths(freetype_includedir, 'freetype/config'),
 )
 ft2_sources += ftoption_h
 ft2_defines += ['-DFT_CONFIG_OPTIONS_H=<ftoption.h>']
@@ -302,7 +328,7 @@ if host_machine.system() == 'windows'
 endif
 
 
-# Generate `ftconfig.h`
+# Generate `ftconfig.h`.
 
 ftconfig_command = process_header_command
 if has_unistd_h
@@ -312,14 +338,14 @@ if has_fcntl_h
   ftconfig_command += '--enable=HAVE_FCNTL_H'
 endif
 
-if host_machine.system() in ['linux', 'darwin', 'cygwin']
+if use_unix_ftsystem_c
   ftconfig_h_in = files('builds/unix/ftconfig.h.in')
   ftconfig_h = custom_target('ftconfig.h',
     input: ftconfig_h_in,
     output: 'ftconfig.h',
     command: ftconfig_command,
     install: true,
-    install_dir: 'include/freetype2/freetype/config',
+    install_dir: join_paths(freetype_includedir, 'freetype/config'),
   )
   ft2_sources += ftconfig_h
   ft2_defines += ['-DFT_CONFIG_CONFIG_H=<ftconfig.h>']
@@ -334,10 +360,11 @@ ft2_lib = library('freetype',
   dependencies: ft2_deps,
   install: true,
   version: ft2_so_version,
+  link_args: common_ldflags,
 )
 
 
-# To be used by other projects including this one through subproject().
+# To be used by other projects including this one through `subproject`.
 freetype_dep = declare_dependency(
   include_directories: ft2_includes,
   link_with: ft2_lib,
@@ -350,11 +377,11 @@ meson.override_dependency('freetype2', freetype_dep)
 # i.e., the subdir value seems to be ignored, contrary to examples in the
 # Meson documentation.
 install_headers('include/ft2build.h',
-  install_dir: 'include/freetype2')
+  install_dir: freetype_includedir)
 install_headers(ft2_public_headers,
-  install_dir: 'include/freetype2/freetype')
+  install_dir: join_paths(freetype_includedir, 'freetype'))
 install_headers(ft2_config_headers,
-  install_dir: 'include/freetype2/freetype/config')
+  install_dir: join_paths(freetype_includedir, 'freetype/config'))
 
 
 pkgconfig = import('pkgconfig')
@@ -368,6 +395,9 @@ pkgconfig.generate(ft2_lib,
   version: ft2_pkgconfig_version,
 )
 
+if get_option('tests').enabled()
+  subdir('tests')
+endif
 
 # NOTE: Unlike the old `make refdoc` command, this generates the
 # documentation under `$BUILD/docs/` since Meson doesn't support modifying
@@ -378,18 +408,20 @@ gen_docs = custom_target('freetype2 reference documentation',
   command: [python_exe,
     files('builds/meson/generate_reference_docs.py'),
     '--version=' + meson.project_version(),
-    '--input-dir=' + meson.source_root(),
+    '--input-dir=' + meson.current_source_dir(),
     '--output-dir=@OUTPUT@'
   ],
 )
 
 
 summary({'OS': host_machine.system(),
-         'Zlib': zlib_dep.found() ? 'yes' : 'no',
+        }, section: 'Operating System')
+
+summary({'Zlib': zlib_dep.found() ? 'external' : 'internal',
          'Bzip2': bzip2_dep.found() ? 'yes' : 'no',
          'Png': libpng_dep.found() ? 'yes' : 'no',
          'Harfbuzz': harfbuzz_dep.found() ? 'yes' : 'no',
          'Brotli': brotli_dep.found() ? 'yes' : 'no',
-        }, section: 'Configuration Options Summary:')
+        }, section: 'Used Libraries')
 
 # EOF

@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "core/fxcrt/fx_safe_types.h"
-#include "third_party/base/stl_util.h"
+#include "core/fxcrt/stl_util.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 
 const float CFGAS_Break::kConversionFactor = 20000.0f;
 const int CFGAS_Break::kMinimumTabWidth = 160000;
 
-CFGAS_Break::CFGAS_Break(uint32_t dwLayoutStyles)
+CFGAS_Break::CFGAS_Break(Mask<LayoutStyle> dwLayoutStyles)
     : m_dwLayoutStyles(dwLayoutStyles), m_pCurLine(&m_Lines[0]) {}
 
 CFGAS_Break::~CFGAS_Break() = default;
@@ -27,10 +27,10 @@ void CFGAS_Break::Reset() {
     line.Clear();
 }
 
-void CFGAS_Break::SetLayoutStyles(uint32_t dwLayoutStyles) {
+void CFGAS_Break::SetLayoutStyles(Mask<LayoutStyle> dwLayoutStyles) {
   m_dwLayoutStyles = dwLayoutStyles;
-  m_bSingleLine = (m_dwLayoutStyles & FX_LAYOUTSTYLE_SingleLine) != 0;
-  m_bCombText = (m_dwLayoutStyles & FX_LAYOUTSTYLE_CombText) != 0;
+  m_bSingleLine = !!(m_dwLayoutStyles & LayoutStyle::kSingleLine);
+  m_bCombText = !!(m_dwLayoutStyles & LayoutStyle::kCombText);
 }
 
 void CFGAS_Break::SetHorizontalScale(int32_t iScale) {
@@ -125,10 +125,10 @@ CFGAS_Char* CFGAS_Break::GetLastChar(int32_t index,
                                      bool bOmitChar,
                                      bool bRichText) const {
   std::vector<CFGAS_Char>& tca = m_pCurLine->m_LineChars;
-  if (!pdfium::IndexInBounds(tca, index))
+  if (!fxcrt::IndexInBounds(tca, index))
     return nullptr;
 
-  int32_t iStart = pdfium::CollectionSize<int32_t>(tca) - 1;
+  int32_t iStart = fxcrt::CollectionSize<int32_t>(tca) - 1;
   while (iStart > -1) {
     CFGAS_Char* pTC = &tca[iStart--];
     if (((bRichText && pTC->m_iCharWidth < 0) || bOmitChar) &&
@@ -142,7 +142,7 @@ CFGAS_Char* CFGAS_Break::GetLastChar(int32_t index,
 }
 
 int32_t CFGAS_Break::CountBreakPieces() const {
-  return HasLine() ? pdfium::CollectionSize<int32_t>(
+  return HasLine() ? fxcrt::CollectionSize<int32_t>(
                          m_Lines[m_iReadyLineIndex].m_LinePieces)
                    : 0;
 }
@@ -151,7 +151,7 @@ const CFGAS_BreakPiece* CFGAS_Break::GetBreakPieceUnstable(
     int32_t index) const {
   if (!HasLine())
     return nullptr;
-  if (!pdfium::IndexInBounds(m_Lines[m_iReadyLineIndex].m_LinePieces, index))
+  if (!fxcrt::IndexInBounds(m_Lines[m_iReadyLineIndex].m_LinePieces, index))
     return nullptr;
   return &m_Lines[m_iReadyLineIndex].m_LinePieces[index];
 }

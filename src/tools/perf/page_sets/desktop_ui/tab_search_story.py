@@ -2,11 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+import py_utils
+
+from page_sets.desktop_ui.browser_element_identifiers import \
+    kTabSearchButtonElementId
+from page_sets.desktop_ui.custom_metric_utils import SetMetricNames
 from page_sets.desktop_ui.js_utils import MEASURE_JS_MEMORY
 from page_sets.desktop_ui.multitab_story import MultiTabStory
 from page_sets.desktop_ui.ui_devtools_utils import ClickOn
 from page_sets.desktop_ui.url_list import TOP_URL
 from page_sets.desktop_ui.webui_utils import Inspect
+from page_sets.desktop_ui import story_tags
 
 TAB_SEARCH_BENCHMARK_UMA = [
     'Tabs.TabSearch.CloseAction',
@@ -18,11 +25,17 @@ TAB_SEARCH_BENCHMARK_UMA = [
     'Tabs.TabSearch.WebUI.InitialTabsRenderTime',
     'Tabs.TabSearch.WebUI.LoadCompletedTime',
     'Tabs.TabSearch.WebUI.LoadDocumentTime',
+    'Tabs.TabSearch.WebUI.SearchAlgorithmDuration',
     'Tabs.TabSearch.WebUI.TabListDataReceived',
     'Tabs.TabSearch.WebUI.TabSwitchAction',
     'Tabs.TabSearch.WindowDisplayedDuration2',
     'Tabs.TabSearch.WindowTimeToShowCachedWebView',
     'Tabs.TabSearch.WindowTimeToShowUncachedWebView',
+]
+
+TAB_SEARCH_CUSTOM_METRIC_NAMES = [
+    'TabSearchPageHandler:GetProfileTabs',
+    'TabSearchPageHandler:TabChangedAt',
 ]
 
 TAB_SEARCH_URL = 'chrome://tab-search.top-chrome/'
@@ -32,15 +45,17 @@ class TabSearchStory(MultiTabStory):
   """Base class for tab search stories"""
 
   def RunPageInteractions(self, action_runner):
+    SetMetricNames(action_runner, TAB_SEARCH_CUSTOM_METRIC_NAMES)
     self.ToggleTabSearch()
     action_runner = Inspect(action_runner.tab.browser, TAB_SEARCH_URL)
     action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
-                                    'used_js_heap_size_begin')
+                                    'tab_search:used_js_heap_size_begin')
     self.InteractWithPage(action_runner)
-    action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY % 'used_js_heap_size_end')
+    action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
+                                    'tab_search:used_js_heap_size_end')
 
   def ToggleTabSearch(self, index=0):
-    ClickOn(self._devtools, 'TabSearchButton', index)
+    ClickOn(self._devtools, element_id=kTabSearchButtonElementId, index=index)
 
   def InteractWithPage(self, action_runner):
     self.ScrollTabs(action_runner)
@@ -69,7 +84,8 @@ class TabSearchStory(MultiTabStory):
 
   def ScrollTabs(self, action_runner):
     action_runner.Wait(1)
-    self.StartMeasuringFrameTime(action_runner, 'frame_time_on_scroll')
+    self.StartMeasuringFrameTime(action_runner,
+                                 'tab_search:frame_time_on_scroll')
     action_runner.ScrollElement(element_function=SCROLL_ELEMENT_FUNCTION)
     self.StopMeasuringFrameTime(action_runner)
     action_runner.Wait(1)
@@ -96,13 +112,14 @@ class TabSearchStory(MultiTabStory):
   def ScrollUpAndDown(self, action_runner):
     action_runner.Wait(1)
     self.StartMeasuringFrameTime(action_runner,
-                                 'frame_time_on_first_scroll_down')
+                                 'tab_search:frame_time_on_first_scroll_down')
     action_runner.ScrollElement(element_function=SCROLL_ELEMENT_FUNCTION)
-    self.StartMeasuringFrameTime(action_runner, 'frame_time_on_first_scroll_up')
+    self.StartMeasuringFrameTime(action_runner,
+                                 'tab_search:frame_time_on_first_scroll_up')
     action_runner.ScrollElement(element_function=SCROLL_ELEMENT_FUNCTION,
                                 direction='up')
     self.StartMeasuringFrameTime(action_runner,
-                                 'frame_time_on_second_scroll_down')
+                                 'tab_search:frame_time_on_second_scroll_down')
     action_runner.ScrollElement(element_function=SCROLL_ELEMENT_FUNCTION)
     self.StopMeasuringFrameTime(action_runner)
     action_runner.Wait(1)
@@ -110,6 +127,56 @@ class TabSearchStory(MultiTabStory):
   def WillStartTracing(self, chrome_trace_config):
     super(TabSearchStory, self).WillStartTracing(chrome_trace_config)
     chrome_trace_config.EnableUMAHistograms(*TAB_SEARCH_BENCHMARK_UMA)
+
+
+class TabSearchRecentlyClosedStory(TabSearchStory):
+  """Base class for tab search recently closed stories"""
+
+  def RunNavigateSteps(self, action_runner):
+    url_list = self.URL_LIST
+    tabs = action_runner.tab.browser.tabs
+    if len(url_list) > 0:
+      tabs[0].Navigate(url_list[0])
+    for url in url_list[1:]:
+      new_tab = tabs.New()
+      new_tab.Navigate(url)
+      if self.WAIT_FOR_NETWORK_QUIESCENCE:
+        try:
+          new_tab.action_runner.WaitForNetworkQuiescence()
+        except py_utils.TimeoutException:
+          logging.warning('WaitForNetworkQuiescence() timeout: %s' % (url))
+      new_tab.Close()
+    self._devtools = action_runner.tab.browser.GetUIDevtools()
+
+  def InteractWithPage(self, action_runner):
+    self.SearchTabs(action_runner)
+    self.ScrollTabs(action_runner)
+
+  def SearchTabs(self, action_runner):
+    action_runner.Wait(1)
+    action_runner.EnterText('o')
+    action_runner.Wait(2)
+
+
+class TabSearchStoryRecentlyClosed10(TabSearchRecentlyClosedStory):
+  NAME = 'tab_search:10_recently_closed'
+  URL_LIST = ['chrome://version?q={}'.format(i) for i in range(10)]
+  URL = URL_LIST[0]
+  WAIT_FOR_NETWORK_QUIESCENCE = True
+
+
+class TabSearchStoryRecentlyClosed50(TabSearchRecentlyClosedStory):
+  NAME = 'tab_search:50_recently_closed'
+  URL_LIST = ['chrome://version?q={}'.format(i) for i in range(50)]
+  URL = URL_LIST[0]
+  WAIT_FOR_NETWORK_QUIESCENCE = True
+
+
+class TabSearchStoryRecentlyClosed100(TabSearchRecentlyClosedStory):
+  NAME = 'tab_search:100_recently_closed'
+  URL_LIST = ['chrome://version?q={}'.format(i) for i in range(100)]
+  URL = URL_LIST[0]
+  WAIT_FOR_NETWORK_QUIESCENCE = True
 
 
 class TabSearchStoryTop10(TabSearchStory):
@@ -176,6 +243,7 @@ class TabSearchStoryCleanSlate(TabSearchStory):
   URL_LIST = []
   URL = 'about:blank'
   WAIT_FOR_NETWORK_QUIESCENCE = False
+  TAGS = [story_tags.SMOKE_TEST]
 
   def InteractWithPage(self, action_runner):
     action_runner.Wait(1)
@@ -242,7 +310,7 @@ class TabSearchStoryMeasureMemory2TabSearch(TabSearchStoryMeasureMemory):
     new_tab.Navigate(TAB_SEARCH_URL)
     new_tab.WaitForDocumentReadyStateToBeComplete()
     new_tab.action_runner.ExecuteJavaScript(MEASURE_JS_MEMORY %
-                                            'used_js_heap_size2')
+                                            'tab_search:used_js_heap_size2')
 
   def InteractWithPage(self, action_runner):
     action_runner.MeasureMemory(deterministic_mode=True)
@@ -260,7 +328,7 @@ class TabSearchStoryMeasureMemory3TabSearch(TabSearchStoryMeasureMemory):
       new_tab.Navigate(TAB_SEARCH_URL)
       new_tab.WaitForDocumentReadyStateToBeComplete()
       new_tab.action_runner.ExecuteJavaScript(
-          MEASURE_JS_MEMORY % ('used_js_heap_size' + str(i + 2)))
+          MEASURE_JS_MEMORY % ('tab_search:used_js_heap_size' + str(i + 2)))
 
   def InteractWithPage(self, action_runner):
     action_runner.MeasureMemory(deterministic_mode=True)

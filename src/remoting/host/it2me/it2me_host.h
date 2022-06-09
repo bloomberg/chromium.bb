@@ -10,17 +10,18 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
+#include "remoting/host/it2me/it2me_constants.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/validating_authenticator.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class DictionaryValue;
@@ -31,28 +32,17 @@ namespace remoting {
 class ChromotingHost;
 class ChromotingHostContext;
 class DesktopEnvironmentFactory;
+class FtlSignalingConnector;
 class HostEventLogger;
 class HostStatusLogger;
 class LogToServer;
+class OAuthTokenGetter;
 class RegisterSupportHostRequest;
 class RsaKeyPair;
 
 namespace protocol {
 struct IceConfig;
 }  // namespace protocol
-
-// These state values are duplicated in host_session.js.  Remember to update
-// both copies when making changes.
-enum It2MeHostState {
-  kDisconnected,
-  kStarting,
-  kRequestedAccessCode,
-  kReceivedAccessCode,
-  kConnecting,
-  kConnected,
-  kError,
-  kInvalidDomainError,
-};
 
 // Internal implementation of the plugin's It2Me host function.
 class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
@@ -65,6 +55,15 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
     std::unique_ptr<LogToServer> log_to_server;
     std::unique_ptr<RegisterSupportHostRequest> register_request;
     std::unique_ptr<SignalStrategy> signal_strategy;
+    std::unique_ptr<OAuthTokenGetter> oauth_token_getter;
+
+    // Since the deferred context only provides an interface* for the signal
+    // strategy, we use this boolean to indicate whether the host process should
+    // own things like reconnecting signaling if there is a transient network
+    // error.
+    // TODO(joedow): Remove this field once delegated signaling has been
+    // deprecated and removed.
+    bool use_ftl_signaling = false;
   };
 
   using CreateDeferredConnectContext =
@@ -84,6 +83,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost();
 
+  It2MeHost(const It2MeHost&) = delete;
+  It2MeHost& operator=(const It2MeHost&) = delete;
+
   // Enable, disable, or query whether or not the confirm, continue, and
   // disconnect dialogs are shown.
   void set_enable_dialogs(bool enable);
@@ -98,12 +100,11 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // input is detected.
   void set_terminate_upon_input(bool terminate_upon_input);
 
-  // Methods called by the script object, from the plugin thread.
+  // Indicates whether the session was initiated through the remote command
+  // infrastructure for a managed device.
+  void set_is_enterprise_session(bool is_enterprise_session);
 
   // Creates It2Me host structures and starts the host.
-  //
-  // XmppLogToServer cannot be created and used in different sequence, so pass
-  // in a factory callback instead.
   virtual void Connect(
       std::unique_ptr<ChromotingHostContext> context,
       std::unique_ptr<base::DictionaryValue> policies,
@@ -174,7 +175,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       std::vector<std::string> client_domain_list);
   void UpdateHostUdpPortRangePolicy(const std::string& port_range_string);
 
-  void DisconnectOnNetworkThread();
+  void DisconnectOnNetworkThread(
+      protocol::ErrorCode error_code = protocol::ErrorCode::OK);
 
   // Uses details of the connection and current policies to determine if the
   // connection should be accepted or rejected.
@@ -186,9 +188,11 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   std::unique_ptr<ChromotingHostContext> host_context_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   std::unique_ptr<SignalStrategy> signal_strategy_;
+  std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
   std::unique_ptr<LogToServer> log_to_server_;
+  std::unique_ptr<OAuthTokenGetter> oauth_token_getter_;
 
-  It2MeHostState state_ = kDisconnected;
+  It2MeHostState state_ = It2MeHostState::kDisconnected;
 
   scoped_refptr<RsaKeyPair> host_key_pair_;
   std::unique_ptr<RegisterSupportHostRequest> register_request_;
@@ -208,6 +212,10 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // Stores the current relay connections allowed policy value.
   bool relay_connections_allowed_ = false;
 
+  // Indicates whether the session was initiated via the RemoteCommand infra.
+  // This is by administrators to connect to managed enterprise devices.
+  bool is_enterprise_session_ = false;
+
   // The client and host domain policy setting.
   std::vector<std::string> required_client_domain_list_;
   std::vector<std::string> required_host_domain_list_;
@@ -215,14 +223,18 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // The host port range policy setting.
   PortRange udp_port_range_;
 
+  // Stores the clipboard size policy value.
+  absl::optional<size_t> max_clipboard_size_;
+
+  // Stores the remote support connections allowed policy value.
+  bool remote_support_connections_allowed_ = true;
+
   // Tracks the JID of the remote user when in a connecting state.
   std::string connecting_jid_;
 
   bool enable_dialogs_ = true;
   bool enable_notifications_ = true;
   bool terminate_upon_input_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };
 
 // Having a factory interface makes it possible for the test to provide a mock
@@ -230,12 +242,13 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 class It2MeHostFactory {
  public:
   It2MeHostFactory();
+
+  It2MeHostFactory(const It2MeHostFactory&) = delete;
+  It2MeHostFactory& operator=(const It2MeHostFactory&) = delete;
+
   virtual ~It2MeHostFactory();
 
   virtual scoped_refptr<It2MeHost> CreateIt2MeHost();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
 };
 
 }  // namespace remoting

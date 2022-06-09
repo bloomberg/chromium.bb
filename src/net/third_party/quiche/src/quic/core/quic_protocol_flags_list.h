@@ -44,6 +44,26 @@ QUIC_PROTOCOL_FLAG(int64_t,
                    "Time period for which a given connection_id should live in "
                    "the time-wait state.")
 
+// This number is relatively conservative. For example, there are at most 1K
+// queued stateless resets, which consume 1K * 21B = 21KB.
+QUIC_PROTOCOL_FLAG(
+    uint64_t, quic_time_wait_list_max_pending_packets, 1024,
+    "Upper limit of pending packets in time wait list when writer is blocked.")
+
+// Stop sending a reset if the recorded number of addresses that server has
+// recently sent stateless reset to exceeds this limit.
+QUIC_PROTOCOL_FLAG(uint64_t, quic_max_recent_stateless_reset_addresses, 1024,
+                   "Max number of recorded recent reset addresses.")
+
+// After this timeout, recent reset addresses will be cleared.
+// FLAGS_quic_max_recent_stateless_reset_addresses * (1000ms /
+// FLAGS_quic_recent_stateless_reset_addresses_lifetime_ms) is roughly the max
+// reset per second. For example, 1024 * (1000ms / 1000ms) = 1K reset per
+// second.
+QUIC_PROTOCOL_FLAG(
+    uint64_t, quic_recent_stateless_reset_addresses_lifetime_ms, 1000,
+    "Max time that a client address lives in recent reset addresses set.")
+
 QUIC_PROTOCOL_FLAG(double,
                    quic_bbr_cwnd_gain,
                    2.0f,
@@ -77,6 +97,11 @@ QUIC_PROTOCOL_FLAG(
     "Congestion window fraction that the pacing sender allows in bursts "
     "during pacing.")
 
+QUIC_PROTOCOL_FLAG(
+    int32_t, quic_lumpy_pacing_min_bandwidth_kbps, 1200,
+    "The minimum estimated client bandwidth below which the pacing sender will "
+    "not allow bursts.")
+
 QUIC_PROTOCOL_FLAG(int32_t,
                    quic_max_pace_time_into_future_ms,
                    10,
@@ -102,6 +127,10 @@ QUIC_PROTOCOL_FLAG(bool,
                    quic_enable_http3_grease_randomness,
                    true,
                    "If true, use random greased settings and frames.")
+
+QUIC_PROTOCOL_FLAG(
+    bool, quic_enable_chaos_protection, true,
+    "If true, use chaos protection to randomize client initials.")
 
 QUIC_PROTOCOL_FLAG(int64_t,
                    quic_max_tracked_packet_count,
@@ -256,4 +285,6 @@ QUIC_PROTOCOL_FLAG(
     false,
     "If true, always reject retry_token received in INITIAL packets")
 
+QUIC_PROTOCOL_FLAG(bool, quic_use_lower_server_response_mtu_for_test, false,
+                   "If true, cap server response packet size at 1250.")
 #endif

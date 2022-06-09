@@ -24,10 +24,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
-constexpr base::TimeDelta kURLLookupTimeout = base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kURLLookupTimeout = base::Seconds(2);
 
 constexpr float kRoundToMultiplesOf = 0.1f;
 
@@ -50,35 +51,22 @@ permissions::ClientFeatures_Gesture ConvertToProtoGesture(
   return permissions::ClientFeatures_Gesture_GESTURE_UNSPECIFIED;
 }
 
-inline float GetRoundedRatio(int numerator, int denominator) {
-  if (denominator == 0)
-    return 0;
-  return roundf(numerator / kRoundToMultiplesOf / denominator) *
-         kRoundToMultiplesOf;
-}
-
 void FillInStatsFeatures(
     const permissions::PredictionRequestFeatures::ActionCounts& counts,
     permissions::StatsFeatures* features) {
+  using PredictionService = permissions::PredictionService;
   int total_counts = counts.total();
 
   // Round to only 2 decimal places to help prevent fingerprinting.
-  features->set_avg_deny_rate(GetRoundedRatio(counts.denies, total_counts));
+  features->set_avg_deny_rate(
+      PredictionService::GetRoundedRatio(counts.denies, total_counts));
   features->set_avg_dismiss_rate(
-      GetRoundedRatio(counts.dismissals, total_counts));
-  features->set_avg_grant_rate(GetRoundedRatio(counts.grants, total_counts));
-  features->set_avg_ignore_rate(GetRoundedRatio(counts.ignores, total_counts));
-
-  // Put the total prompts count into the appropriate bucket to prevent
-  // fingerprinting. Since the buckets are in descending order, the correct
-  // bucket is the first one that is smaller or equal to the prompt count.
-  features->set_prompts_count(0);
-  for (const auto& bucket : kCountBuckets) {
-    if (total_counts >= bucket) {
-      features->set_prompts_count(bucket);
-      break;
-    }
-  }
+      PredictionService::GetRoundedRatio(counts.dismissals, total_counts));
+  features->set_avg_grant_rate(
+      PredictionService::GetRoundedRatio(counts.grants, total_counts));
+  features->set_avg_ignore_rate(
+      PredictionService::GetRoundedRatio(counts.ignores, total_counts));
+  features->set_prompts_count(PredictionService::BucketizeValue(total_counts));
 }
 
 net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() {
@@ -92,7 +80,7 @@ net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() {
         "the user with a different UI; a less intrusive one."
       trigger:
         "A permission prompt is about to be shown to the user, and the user "
-        "has opted into Safe Browsing's Enhanced Protection."
+        "has opted into Safe Browsing."
       data:
         "User stats helpful for attempting to predict the user's likelihood "
         "of granting the permission: the permission type, the presence of a "
@@ -104,11 +92,11 @@ net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() {
     policy {
       cookies_allowed: NO
       setting:
-        "This can be disabled by disabling Enhanced Protection by going to "
+        "This can be disabled by disabling Safe Browsing by going to "
         "Settings and then to the Security sub-menu."
       chrome_policy {
         SafeBrowsingProtectionLevel {
-          SafeBrowsingProtectionLevel: 1
+          SafeBrowsingProtectionLevel: 0
         }
       }
     })");
@@ -210,11 +198,14 @@ PredictionService::GetPredictionRequestProto(
 
   switch (entity.type) {
     case RequestType::kNotifications:
-      permission_features->mutable_notification_permission()
-          ->Clear();
+      permission_features->mutable_notification_permission()->Clear();
+      break;
+    case RequestType::kGeolocation:
+      permission_features->mutable_geolocation_permission()->Clear();
       break;
     default:
-      NOTREACHED() << "CPSS only supports notifications at the moment.";
+      NOTREACHED()
+          << "CPSS only supports notifications and geolocation at the moment.";
   }
 
   return proto_request;
@@ -288,6 +279,28 @@ PredictionService::CreatePredictionsResponse(network::SimpleURLLoader* loader,
   }
 
   return predictions_response;
+}
+
+// static
+float PredictionService::GetRoundedRatio(int numerator, int denominator) {
+  if (denominator == 0)
+    return 0;
+  return roundf(numerator / kRoundToMultiplesOf / denominator) *
+         kRoundToMultiplesOf;
+}
+
+// static
+int PredictionService::GetRoundedRatioForUkm(int numerator, int denominator) {
+  return GetRoundedRatio(numerator, denominator) * 100;
+}
+
+// static
+int PredictionService::BucketizeValue(int count) {
+  for (const int bucket : kCountBuckets) {
+    if (count >= bucket)
+      return bucket;
+  }
+  return 0;
 }
 
 }  // namespace permissions

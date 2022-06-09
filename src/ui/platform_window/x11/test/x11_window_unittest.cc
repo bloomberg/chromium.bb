@@ -5,6 +5,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,8 +18,8 @@
 #include "ui/events/event.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -61,7 +62,8 @@ class TestPlatformWindowDelegate : public PlatformWindowDelegate {
   void DispatchEvent(Event* event) override {}
   void OnCloseRequest() override {}
   void OnClosed() override {}
-  void OnWindowStateChanged(PlatformWindowState new_state) override {
+  void OnWindowStateChanged(PlatformWindowState old_state,
+                            PlatformWindowState new_state) override {
     state_ = new_state;
   }
   void OnLostCapture() override {}
@@ -104,6 +106,10 @@ class ShapedX11ExtensionDelegate : public X11ExtensionDelegate {
   ShapedX11ExtensionDelegate() = default;
   ~ShapedX11ExtensionDelegate() override = default;
 
+  void set_guessed_bounds(const gfx::Rect& guessed_bounds_px) {
+    guessed_bounds_px_ = guessed_bounds_px;
+  }
+
   void OnLostMouseGrab() override {}
 #if BUILDFLAG(USE_ATK)
   bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event,
@@ -111,7 +117,13 @@ class ShapedX11ExtensionDelegate : public X11ExtensionDelegate {
     return false;
   }
 #endif
-  bool IsOverrideRedirect(bool is_tiling_wm) const override { return false; }
+  bool IsOverrideRedirect() const override { return false; }
+  gfx::Rect GetGuessedFullScreenSizeInPx() const override {
+    return guessed_bounds_px_;
+  }
+
+ private:
+  gfx::Rect guessed_bounds_px_;
 };
 
 // Blocks till the window state hint, |hint|, is set or unset.
@@ -143,7 +155,9 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 
 class TestScreen : public display::ScreenBase {
  public:
-  TestScreen() { ProcessDisplayChanged({}, true); }
+  TestScreen() {
+    ProcessDisplayChanged(display::Display(display::kDefaultDisplayId), true);
+  }
   ~TestScreen() override = default;
   TestScreen(const TestScreen& screen) = delete;
   TestScreen& operator=(const TestScreen& screen) = delete;
@@ -307,15 +321,13 @@ TEST_F(X11WindowTest, DISABLED_Shape) {
 
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
-    gfx::Rect maximized_bounds;
-    GetOuterWindowBounds(x11_window, &maximized_bounds);
+    auto geometry = connection->GetGeometry(x11_window).Sync();
+    auto maximized_width = geometry ? geometry->width : 0;
 
     shape_rects = GetShapeRects(x11_window);
     ASSERT_FALSE(shape_rects.empty());
-    EXPECT_TRUE(
-        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 5));
-    EXPECT_TRUE(
-        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 15));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, maximized_width - 1, 5));
+    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, maximized_width - 1, 15));
   }
 
   // 2) Test setting the window shape via PlatformWindow::SetShape().
@@ -377,6 +389,7 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
   TestPlatformWindowDelegate delegate;
   ShapedX11ExtensionDelegate x11_extension_delegate;
   constexpr gfx::Rect bounds(100, 100, 100, 100);
+  x11_extension_delegate.set_guessed_bounds(bounds);
   auto window = CreateX11Window(&delegate, bounds, &x11_extension_delegate);
   x11::Window x11_window = window->window();
   window->Show(false);

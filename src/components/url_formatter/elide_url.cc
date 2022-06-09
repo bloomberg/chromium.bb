@@ -8,7 +8,6 @@
 
 #include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -386,7 +385,7 @@ std::u16string FormatUrlForSecurityDisplay(const GURL& url,
            FormatUrlForSecurityDisplay(*inner_url);
   }
 
-  const GURL origin = url.GetOrigin();
+  const GURL origin = url.DeprecatedGetOriginAsURL();
   base::StringPiece scheme = origin.scheme_piece();
   base::StringPiece host = origin.host_piece();
 

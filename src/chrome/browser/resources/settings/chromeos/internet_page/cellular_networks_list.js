@@ -7,7 +7,34 @@
  * states
  */
 
+import '//resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.m.js';
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import '//resources/cr_elements/cr_icons_css.m.js';
+import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '../os_settings_icons_css.m.js';
+import './esim_install_error_dialog.js';
+
+import {Button, ButtonBarState, ButtonState, CellularSetupPageName} from '//resources/cr_components/chromeos/cellular_setup/cellular_types.m.js';
+import {ESimManagerListenerBehavior} from '//resources/cr_components/chromeos/cellular_setup/esim_manager_listener_behavior.m.js';
+import {getESimProfile, getESimProfileProperties, getEuicc, getNonPendingESimProfiles, getNumESimProfiles, getPendingESimProfiles} from '//resources/cr_components/chromeos/cellular_setup/esim_manager_utils.m.js';
+import {getCellularSetupRemote, getESimManagerRemote, observeESimManager, setCellularSetupRemoteForTesting, setESimManagerRemoteForTesting} from '//resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js';
+import {getSimSlotCount, hasActiveCellularNetwork, isActiveSim, isConnectedToNonCellularNetwork} from '//resources/cr_components/chromeos/network/cellular_utils.m.js';
+import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from '//resources/cr_components/chromeos/network/mojo_interface_provider.m.js';
+import {NetworkList} from '//resources/cr_components/chromeos/network/network_list_types.m.js';
+import {OncMojo} from '//resources/cr_components/chromeos/network/onc_mojo.m.js';
+import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from '../multidevice_page/multidevice_browser_proxy.m.js';
+import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubNotificationAccessStatus, SmartLockSignInEnabledState} from '../multidevice_page/multidevice_constants.m.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'cellular-networks-list',
 
   behaviors: [
@@ -168,7 +195,7 @@ Polymer({
     /**
      * Multi-device page data used to determine if the tether section should be
      * shown or not.
-     * @type {?settings.MultiDevicePageContentData}
+     * @type {?MultiDevicePageContentData}
      * @private
      */
     multiDevicePageContentData_: {
@@ -182,6 +209,15 @@ Polymer({
       computed: 'computeIsDeviceInhibited_(cellularDeviceState,' +
           'cellularDeviceState.inhibitReason)',
     },
+
+    /** @private {boolean} */
+    isESimPolicyEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('esimPolicyEnabled') &&
+            loadTimeData.getBoolean('esimPolicyEnabled');
+      }
+    },
   },
 
   listeners: {
@@ -193,8 +229,8 @@ Polymer({
 
   /** @override */
   created() {
-    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
-                              .getMojoServiceRemote();
+    this.networkConfig_ =
+        MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
     this.fetchESimPendingProfileList_();
   },
 
@@ -204,7 +240,7 @@ Polymer({
         'settings.updateMultidevicePageContentData',
         this.onMultiDevicePageContentDataChanged_.bind(this));
 
-    const browserProxy = settings.MultiDeviceBrowserProxyImpl.getInstance();
+    const browserProxy = MultiDeviceBrowserProxyImpl.getInstance();
     browserProxy.getPageContentData().then(
         this.onMultiDevicePageContentDataChanged_.bind(this));
   },
@@ -246,7 +282,7 @@ Polymer({
 
   /** @private */
   fetchESimPendingProfileList_() {
-    cellular_setup.getEuicc().then(euicc => {
+    getEuicc().then(euicc => {
       if (!euicc) {
         return;
       }
@@ -276,7 +312,7 @@ Polymer({
    * @private
    */
   fetchESimPendingProfileListForEuicc_(euicc) {
-    cellular_setup.getPendingESimProfiles(euicc).then(
+    getPendingESimProfiles(euicc).then(
         this.processESimPendingProfiles_.bind(this));
   },
 
@@ -376,7 +412,7 @@ Polymer({
   },
 
   /**
-   * @param {!settings.MultiDevicePageContentData} newData
+   * @param {!MultiDevicePageContentData} newData
    * @private
    */
   onMultiDevicePageContentDataChanged_(newData) {
@@ -384,7 +420,7 @@ Polymer({
   },
 
   /**
-   * @param {?settings.MultiDevicePageContentData} pageContentData
+   * @param {?MultiDevicePageContentData} pageContentData
    * @returns {boolean}
    * @private
    */
@@ -393,7 +429,7 @@ Polymer({
       return false;
     }
     return pageContentData.instantTetheringState ===
-        settings.MultiDeviceFeatureState.ENABLED_BY_USER;
+        MultiDeviceFeatureState.ENABLED_BY_USER;
   },
 
   /**
@@ -405,8 +441,7 @@ Polymer({
     event.stopPropagation();
 
     this.fire(
-        'show-cellular-setup',
-        {pageName: cellularSetup.CellularSetupPageName.ESIM_FLOW_UI});
+        'show-cellular-setup', {pageName: CellularSetupPageName.ESIM_FLOW_UI});
   },
 
   /**
@@ -474,7 +509,10 @@ Polymer({
     if (!this.deviceIsEnabled_(cellularDeviceState)) {
       return false;
     }
-    return globalPolicy && !globalPolicy.allowOnlyPolicyNetworksToConnect;
+    if (!this.isESimPolicyEnabled_ || !globalPolicy) {
+      return true;
+    }
+    return !globalPolicy.allowOnlyPolicyCellularNetworks;
   },
 
   /**
@@ -502,8 +540,7 @@ Polymer({
   /** @private */
   onAddEsimButtonTap_() {
     this.fire(
-        'show-cellular-setup',
-        {pageName: cellularSetup.CellularSetupPageName.ESIM_FLOW_UI});
+        'show-cellular-setup', {pageName: CellularSetupPageName.ESIM_FLOW_UI});
   },
 
   /*
@@ -538,6 +575,9 @@ Polymer({
         return this.i18n('cellularNetworkConnectingToProfile');
       case mojom.kRefreshingProfileList:
         return this.i18n('cellularNetworRefreshingProfileListProfile');
+      case mojom.kResettingEuiccMemory:
+        // TODO(crbug.com/1231305) Fix string when finalized.
+        return this.i18n('cellularNetworkRemovingProfile');
     }
 
     return '';

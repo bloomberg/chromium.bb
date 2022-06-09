@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
 #include "url/gurl.h"
@@ -20,6 +19,10 @@ class ExtensionOptionsGuest
     : public guest_view::GuestView<ExtensionOptionsGuest> {
  public:
   static const char Type[];
+
+  ExtensionOptionsGuest(const ExtensionOptionsGuest&) = delete;
+  ExtensionOptionsGuest& operator=(const ExtensionOptionsGuest&) = delete;
+
   static guest_view::GuestViewBase* Create(
       content::WebContents* owner_web_contents);
 
@@ -49,7 +52,7 @@ class ExtensionOptionsGuest
       content::WebContents* source,
       const content::OpenURLParams& params) final;
   void CloseContents(content::WebContents* source) final;
-  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+  bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) final;
   bool IsWebContentsCreationOverridden(
       content::SiteInstance* source_site_instance,
@@ -73,8 +76,6 @@ class ExtensionOptionsGuest
   std::unique_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
   GURL options_page_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionOptionsGuest);
 };
 
 }  // namespace extensions

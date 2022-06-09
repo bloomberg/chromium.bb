@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace vr {
 
@@ -21,6 +20,10 @@ class VectorElementBinding : public BindingBase {
  public:
   VectorElementBinding(std::vector<M>* models, size_t index)
       : models_(models), index_(index) {}
+
+  VectorElementBinding(const VectorElementBinding&) = delete;
+  VectorElementBinding& operator=(const VectorElementBinding&) = delete;
+
   ~VectorElementBinding() override {}
 
   // This function will check if the getter is producing a different value than
@@ -51,12 +54,10 @@ class VectorElementBinding : public BindingBase {
   }
 
  private:
-  std::vector<M>* models_ = nullptr;
+  raw_ptr<std::vector<M>> models_ = nullptr;
   size_t index_ = 0;
-  V* view_;
+  raw_ptr<V> view_;
   std::vector<std::unique_ptr<BindingBase>> bindings_;
-
-  DISALLOW_COPY_AND_ASSIGN(VectorElementBinding);
 };
 
 }  // namespace vr

@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
 
-#include "base/macros.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 
@@ -17,6 +16,12 @@ class ShellSpeechRecognitionManagerDelegate
       public content::SpeechRecognitionEventListener {
  public:
   ShellSpeechRecognitionManagerDelegate();
+
+  ShellSpeechRecognitionManagerDelegate(
+      const ShellSpeechRecognitionManagerDelegate&) = delete;
+  ShellSpeechRecognitionManagerDelegate& operator=(
+      const ShellSpeechRecognitionManagerDelegate&) = delete;
+
   ~ShellSpeechRecognitionManagerDelegate() override;
 
  private:
@@ -51,8 +56,6 @@ class ShellSpeechRecognitionManagerDelegate
       base::OnceCallback<void(bool ask_user, bool is_allowed)> callback,
       int render_process_id,
       int render_frame_id);
-
-  DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionManagerDelegate);
 };
 
 }  // namespace speech

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/session/arc_session_runner.h"
+#include "ash/components/arc/test/fake_arc_session.h"
+#include "ash/components/disks/disk_mount_manager.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -14,13 +18,13 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
@@ -35,11 +39,7 @@
 #include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
-#include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_session_runner.h"
-#include "components/arc/test/fake_arc_session.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -58,7 +58,7 @@ std::unique_ptr<KeyedService> BuildVolumeManager(
       Profile::FromBrowserContext(context),
       nullptr /* drive_integration_service */,
       nullptr /* power_manager_client */,
-      chromeos::disks::DiskMountManager::GetInstance(),
+      ash::disks::DiskMountManager::GetInstance(),
       nullptr /* file_system_provider_service */,
       file_manager::VolumeManager::GetMtpStorageInfoCallback());
 }
@@ -224,6 +224,9 @@ class GuestOsSharePathTest : public testing::Test {
     fake_seneschal_client_ = chromeos::FakeSeneschalClient::Get();
   }
 
+  GuestOsSharePathTest(const GuestOsSharePathTest&) = delete;
+  GuestOsSharePathTest& operator=(const GuestOsSharePathTest&) = delete;
+
   ~GuestOsSharePathTest() override {
     chromeos::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
@@ -234,7 +237,7 @@ class GuestOsSharePathTest : public testing::Test {
   void SetUpVolume() {
     // Setup Downloads and path to share, which depend on MyFilesVolume flag,
     // thus can't be on SetUp.
-    chromeos::disks::DiskMountManager::InitializeForTesting(
+    ash::disks::DiskMountManager::InitializeForTesting(
         new file_manager::FakeDiskMountManager);
     file_manager::VolumeManagerFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildVolumeManager));
@@ -306,6 +309,7 @@ class GuestOsSharePathTest : public testing::Test {
     run_loop_.reset();
     scoped_user_manager_.reset();
     profile_.reset();
+    ash::disks::DiskMountManager::Shutdown();
     chromeos::DlcserviceClient::Shutdown();
     browser_part_.ShutdownCrosComponentManager();
     component_manager_.reset();
@@ -341,8 +345,6 @@ class GuestOsSharePathTest : public testing::Test {
   std::unique_ptr<ScopedTestingLocalState> local_state_;
   scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
   BrowserProcessPlatformPartTestApi browser_part_;
-
-  DISALLOW_COPY_AND_ASSIGN(GuestOsSharePathTest);
 };
 
 TEST_F(GuestOsSharePathTest, SuccessMyFilesRoot) {
@@ -528,10 +530,36 @@ TEST_F(GuestOsSharePathTest, SuccessDriveFsComputersLevel3) {
   run_loop()->Run();
 }
 
+TEST_F(GuestOsSharePathTest, SuccessDriveFsFilesById) {
+  SetUpVolume();
+  guest_os_share_path_->SharePath(
+      "vm-running", drivefs_.Append(".files-by-id/1234/shared"), PERSIST_NO,
+      base::BindOnce(
+          &GuestOsSharePathTest::SharePathCallback, base::Unretained(this),
+          "vm-running", Persist::NO, SeneschalClientCalled::YES,
+          &vm_tools::seneschal::SharePathRequest::DRIVEFS_FILES_BY_ID,
+          "1234/shared", Success::YES, ""));
+  run_loop()->Run();
+}
+
+TEST_F(GuestOsSharePathTest, SuccessDriveFsShortcutTargetsById) {
+  SetUpVolume();
+  guest_os_share_path_->SharePath(
+      "vm-running",
+      drivefs_.Append(".shortcut-targets-by-id/1-abc-xyz/shortcut"), PERSIST_NO,
+      base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
+                     base::Unretained(this), "vm-running", Persist::NO,
+                     SeneschalClientCalled::YES,
+                     &vm_tools::seneschal::SharePathRequest::
+                         DRIVEFS_SHORTCUT_TARGETS_BY_ID,
+                     "1-abc-xyz/shortcut", Success::YES, ""));
+  run_loop()->Run();
+}
+
 TEST_F(GuestOsSharePathTest, FailDriveFsTrash) {
   SetUpVolume();
   guest_os_share_path_->SharePath(
-      "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),
+      "vm-running", drivefs_.Append(".Trash-1000").Append("in-the-trash"),
       PERSIST_NO,
       base::BindOnce(&GuestOsSharePathTest::SharePathCallback,
                      base::Unretained(this), "vm-running", Persist::NO,

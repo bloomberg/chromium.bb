@@ -7,15 +7,17 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
+#include "v8/include/v8-function-callback.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-primitive.h"
 
 namespace extensions {
 
@@ -27,6 +29,9 @@ class LoadWatcher : public content::RenderFrameObserver {
   LoadWatcher(content::RenderFrame* frame,
               base::OnceCallback<void(bool)> callback)
       : content::RenderFrameObserver(frame), callback_(std::move(callback)) {}
+
+  LoadWatcher(const LoadWatcher&) = delete;
+  LoadWatcher& operator=(const LoadWatcher&) = delete;
 
   void DidCreateDocumentElement() override {
     // Defer the callback instead of running it now to avoid re-entrancy caused
@@ -48,8 +53,6 @@ class LoadWatcher : public content::RenderFrameObserver {
 
  private:
   base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoadWatcher);
 };
 
 }  // namespace

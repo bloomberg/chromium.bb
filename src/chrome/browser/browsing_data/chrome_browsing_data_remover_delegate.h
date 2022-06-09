@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event_watcher.h"
@@ -25,7 +27,6 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 class ScopedProfileKeepAlive;
@@ -48,6 +49,12 @@ class ChromeBrowsingDataRemoverDelegate
  public:
   explicit ChromeBrowsingDataRemoverDelegate(
       content::BrowserContext* browser_context);
+
+  ChromeBrowsingDataRemoverDelegate(const ChromeBrowsingDataRemoverDelegate&) =
+      delete;
+  ChromeBrowsingDataRemoverDelegate& operator=(
+      const ChromeBrowsingDataRemoverDelegate&) = delete;
+
   ~ChromeBrowsingDataRemoverDelegate() override;
 
   // KeyedService:
@@ -112,11 +119,11 @@ class ChromeBrowsingDataRemoverDelegate
     kNetworkErrorLogging = 21,
     kFlashDeauthorization = 22,
     kOfflinePages = 23,
-    kPrecache = 24,
+    kPrecache = 24,  // deprecated
     kExploreSites = 25,
     kLegacyStrikes = 26,
     kWebrtcEventLogs = 27,
-    kDrmLicenses = 28,
+    kCdmLicenses = 28,
     kHostCache = 29,
     kTpmAttestationKeys = 30,
     kStrikes = 31,
@@ -129,7 +136,8 @@ class ChromeBrowsingDataRemoverDelegate
     kAccountPasswordsSynced = 38,
     kAccountCompromisedCredentials = 39,
     kFaviconCacheExpiration = 40,
-    kMaxValue = kFaviconCacheExpiration,
+    kSecurePaymentConfirmationCredentials = 41,
+    kMaxValue = kSecurePaymentConfirmationCredentials,
   };
 
   // Called by CreateTaskCompletionClosure().
@@ -175,7 +183,7 @@ class ChromeBrowsingDataRemoverDelegate
 #endif
 
   // The profile for which the data will be deleted.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Prevents |profile_| from getting deleted. Only active between
   // OnStartRemoving() and OnDoneRemoving(), i.e. while there are tasks in
@@ -215,8 +223,6 @@ class ChromeBrowsingDataRemoverDelegate
 
   base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegate);
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_CHROME_BROWSING_DATA_REMOVER_DELEGATE_H_

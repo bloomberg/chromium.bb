@@ -7,7 +7,6 @@
 #include "base/check.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
-#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -37,12 +36,19 @@
   return self;
 }
 
-- (void)configureCell:(ContentSuggestionsMostVisitedCell*)cell {
+- (void)configureCell:(MDCCollectionViewCell*)cell {
   [super configureCell:cell];
-  cell.titleLabel.text = self.title;
-  cell.accessibilityLabel = self.title;
-  [cell.faviconView configureWithAttributes:self.attributes];
-  cell.accessibilityCustomActions = [self customActions];
+  if (![cell isKindOfClass:[ContentSuggestionsMostVisitedCell class]]) {
+    // Do not attempt to configure cell if it is not the correct class
+    // (crbug.com/1276562).
+    return;
+  }
+  ContentSuggestionsMostVisitedCell* mostVisitedCell =
+      static_cast<ContentSuggestionsMostVisitedCell*>(cell);
+  mostVisitedCell.titleLabel.text = self.title;
+  mostVisitedCell.accessibilityLabel = self.title;
+  [mostVisitedCell.faviconView configureWithAttributes:self.attributes];
+  mostVisitedCell.accessibilityCustomActions = [self customActions];
 }
 
 - (CGFloat)cellHeightForWidth:(CGFloat)width {

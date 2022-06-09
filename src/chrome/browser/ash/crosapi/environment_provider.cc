@@ -6,8 +6,9 @@
 
 #include "base/files/file_util.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
@@ -17,6 +18,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "crypto/nss_util_internal.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace crosapi {
@@ -34,6 +36,9 @@ mojom::SessionType EnvironmentProvider::GetSessionType() {
   }
   if (profiles::IsPublicSession()) {
     return mojom::SessionType::kPublicSession;
+  }
+  if (user->GetType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
+    return mojom::SessionType::kWebKioskSession;
   }
   return mojom::SessionType::kRegularSession;
 }
@@ -69,6 +74,10 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetPrimaryUser();
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  default_paths->user_nss_database =
+      crypto::GetSoftwareNSSDBPath(profile->GetPath());
+
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Typically /home/chronos/u-<hash>/MyFiles.
     default_paths->documents =
@@ -76,6 +85,12 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
     // Typically /home/chronos/u-<hash>/MyFiles/Downloads.
     default_paths->downloads =
         file_manager::util::GetDownloadsFolderForProfile(profile);
+    auto* integration_service =
+        drive::DriveIntegrationServiceFactory::FindForProfile(profile);
+    if (integration_service && integration_service->is_enabled() &&
+        integration_service->IsMounted()) {
+      default_paths->drivefs = integration_service->GetMountPointPath();
+    }
   } else {
     // On developer linux workstations the above functions do path mangling to
     // support multi-signin which gets undone later in ash-specific code. This
@@ -83,7 +98,9 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
     base::FilePath home = base::GetHomeDir();
     default_paths->documents = home.Append("Documents");
     default_paths->downloads = home.Append("Downloads");
+    default_paths->drivefs = home.Append("Drive");
   }
+
   return default_paths;
 }
 

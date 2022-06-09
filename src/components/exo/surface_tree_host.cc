@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
@@ -31,11 +30,14 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace exo {
@@ -46,6 +48,10 @@ class CustomWindowTargeter : public aura::WindowTargeter {
  public:
   explicit CustomWindowTargeter(SurfaceTreeHost* surface_tree_host)
       : surface_tree_host_(surface_tree_host) {}
+
+  CustomWindowTargeter(const CustomWindowTargeter&) = delete;
+  CustomWindowTargeter& operator=(const CustomWindowTargeter&) = delete;
+
   ~CustomWindowTargeter() override = default;
 
   // Overridden from aura::WindowTargeter:
@@ -58,11 +64,9 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (!surface)
       return false;
 
-    gfx::Point local_point = event.location();
+    gfx::Point local_point =
+        ConvertEventLocationToWindowCoordinates(window, event);
 
-    if (window->parent())
-      aura::Window::ConvertPointToTarget(window->parent(), window,
-                                         &local_point);
     aura::Window::ConvertPointToTarget(window, surface->window(), &local_point);
     return surface->HitTest(local_point);
   }
@@ -80,8 +84,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
  private:
   SurfaceTreeHost* const surface_tree_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
 }  // namespace
@@ -108,11 +110,9 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
                           ->SharedMainThreadContextProvider();
   DCHECK(context_provider_);
   context_provider_->AddObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
-  display::Screen::GetScreen()->RemoveObserver(this);
   context_provider_->RemoveObserver(this);
 
   SetRootSurface(nullptr);
@@ -243,8 +243,8 @@ void SurfaceTreeHost::UpdateDisplayOnTree() {
       display::Screen::GetScreen()->GetDisplayNearestWindow(host_window());
   if (display_id_ != display.id()) {
     if (root_surface_) {
-      root_surface_->UpdateDisplay(display_id_, display.id());
-      display_id_ = display.id();
+      if (root_surface_->UpdateDisplay(display_id_, display.id()))
+        display_id_ = display.id();
     }
   }
 }
@@ -278,7 +278,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   }
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      root_surface_origin_, host_window()->layer()->device_scale_factor(),
+      gfx::PointF(root_surface_origin_),
+      host_window()->layer()->device_scale_factor(),
       layer_tree_frame_sink_holder_->resource_manager(), &frame);
 
   std::vector<GLbyte*> sync_tokens;
@@ -321,8 +322,17 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   gfx::Rect bounds = root_surface_->surface_hierarchy_content_bounds();
   host_window_->SetBounds(
       gfx::Rect(host_window_->bounds().origin(), bounds.size()));
+  // TODO(yjliu): a) consolidate with ClientControlledShellSurface. b) use the
+  // scale factor the buffer is created for to set the transform for
+  // synchronization.
+  if (client_submits_surfaces_in_pixel_coordinates_) {
+    gfx::Transform tr;
+    float scale = host_window_->layer()->device_scale_factor();
+    tr.Scale(1.0f / scale, 1.0f / scale);
+    host_window_->SetTransform(tr);
+  }
   const bool fills_bounds_opaquely =
-      bounds.size() == root_surface_->content_size() &&
+      gfx::SizeF(bounds.size()) == root_surface_->content_size() &&
       root_surface_->FillsBoundsOpaquely();
   host_window_->SetTransparent(!fills_bounds_opaquely);
 

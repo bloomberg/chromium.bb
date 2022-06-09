@@ -158,8 +158,8 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
       break;
     }
 
-    unwindstack::Elf* elf =
-        map_info->GetElf({process_memory_, [](unwindstack::Memory*) {}}, arch);
+    unwindstack::Elf* elf = map_info->GetElf(
+        {process_memory_.get(), [](unwindstack::Memory*) {}}, arch);
     if (!elf->valid())
       break;
 
@@ -170,13 +170,13 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
         elf->StepIfSignalHandler(rel_pc, regs.get(), &stack_memory) ||
         elf->Step(rel_pc, regs.get(), &stack_memory, &finished);
     if (stepped && finished)
-      return UnwindResult::COMPLETED;
+      return UnwindResult::kCompleted;
 
     if (!stepped) {
       // Stepping failed. Try unwinding using return address.
       if (stack->size() == 1) {
         if (!regs->SetPcFromReturnAddress(&stack_memory))
-          return UnwindResult::ABORTED;
+          return UnwindResult::kAborted;
       } else {
         break;
       }
@@ -184,16 +184,17 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
 
     // If the pc and sp didn't change, then consider everything stopped.
     if (cur_pc == regs->pc() && cur_sp == regs->sp())
-      return UnwindResult::ABORTED;
+      return UnwindResult::kAborted;
 
     // Exclusive range of expected stack pointer values after the unwind.
     struct {
       uintptr_t start;
       uintptr_t end;
-    } expected_stack_pointer_range = {cur_sp, stack_top};
+    } expected_stack_pointer_range = {static_cast<uintptr_t>(cur_sp),
+                                      stack_top};
     if (regs->sp() < expected_stack_pointer_range.start ||
         regs->sp() >= expected_stack_pointer_range.end) {
-      return UnwindResult::ABORTED;
+      return UnwindResult::kAborted;
     }
 
     if (regs->dex_pc() != 0) {
@@ -214,7 +215,7 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
 
   // Restore registers necessary for further unwinding in |thread_context|.
   CopyToRegisterContext(regs.get(), thread_context);
-  return UnwindResult::UNRECOGNIZED_FRAME;
+  return UnwindResult::kUnrecognizedFrame;
 }
 
 std::unique_ptr<const ModuleCache::Module>

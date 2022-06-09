@@ -73,7 +73,7 @@ class UpsampleTest8B : public UpsampleTest<UP8B, uint8_t> {
  protected:
   void Execute(uint8_t *edge_tst) {
     params_.ref_func(edge_ref_, size_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_));
   }
 };
 
@@ -117,7 +117,7 @@ class UpsampleTestHB : public UpsampleTest<UPHB, uint16_t> {
  protected:
   void Execute(uint16_t *edge_tst) {
     params_.ref_func(edge_ref_, size_, bit_depth_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, bit_depth_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, bit_depth_));
   }
   int bit_depth_;
 };
@@ -202,7 +202,7 @@ class FilterEdgeTest8B : public FilterEdgeTest<FE8B, uint8_t> {
  protected:
   void Execute(uint8_t *edge_tst) {
     params_.ref_func(edge_ref_, size_, strength_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, strength_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, strength_));
   }
 };
 
@@ -240,7 +240,7 @@ class FilterEdgeTestHB : public FilterEdgeTest<FEHB, uint16_t> {
  protected:
   void Execute(uint16_t *edge_tst) {
     params_.ref_func(edge_ref_, size_, strength_);
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, strength_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst, size_, strength_));
   }
   int bit_depth_;
 };
@@ -284,7 +284,7 @@ TEST_P(UpsampleTest8B, DISABLED_Speed) {
   }
   edge_tst_ = &edge_tst_data_[kOffset];
   for (int iter = 0; iter < test_count; ++iter) {
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_));
   }
 }
 
@@ -298,7 +298,7 @@ TEST_P(UpsampleTestHB, DISABLED_Speed) {
   }
   edge_tst_ = &edge_tst_data_[kOffset];
   for (int iter = 0; iter < test_count; ++iter) {
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, bit_depth_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, bit_depth_));
   }
 }
 
@@ -311,7 +311,7 @@ TEST_P(FilterEdgeTest8B, DISABLED_Speed) {
   }
   edge_tst_ = &edge_tst_data_[kOffset];
   for (int iter = 0; iter < test_count; ++iter) {
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, strength_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, strength_));
     // iterate over filter strengths (1,2,3)
     strength_ = (strength_ == 3) ? 1 : strength_ + 1;
   }
@@ -328,7 +328,7 @@ TEST_P(FilterEdgeTestHB, DISABLED_Speed) {
   }
   edge_tst_ = &edge_tst_data_[kOffset];
   for (int iter = 0; iter < test_count; ++iter) {
-    ASM_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, strength_));
+    API_REGISTER_STATE_CHECK(params_.tst_func(edge_tst_, size_, strength_));
     // iterate over filter strengths (1,2,3)
     strength_ = (strength_ == 3) ? 1 : strength_ + 1;
   }

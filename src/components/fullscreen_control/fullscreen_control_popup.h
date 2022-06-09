@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
@@ -28,6 +28,10 @@ class FullscreenControlPopup : public views::AnimationDelegateViews {
   FullscreenControlPopup(gfx::NativeView parent_view,
                          const base::RepeatingClosure& on_button_pressed,
                          const base::RepeatingClosure& on_visibility_changed);
+
+  FullscreenControlPopup(const FullscreenControlPopup&) = delete;
+  FullscreenControlPopup& operator=(const FullscreenControlPopup&) = delete;
+
   ~FullscreenControlPopup() override;
 
   // Returns the final bottom of the button as a y offset to its parent view.
@@ -67,7 +71,7 @@ class FullscreenControlPopup : public views::AnimationDelegateViews {
 
   void OnVisibilityChanged();
 
-  FullscreenControlView* const control_view_;
+  const raw_ptr<FullscreenControlView> control_view_;
   const std::unique_ptr<views::Widget> popup_;
   const std::unique_ptr<gfx::SlideAnimation> animation_;
 
@@ -75,8 +79,6 @@ class FullscreenControlPopup : public views::AnimationDelegateViews {
   gfx::Rect parent_bounds_in_screen_;
 
   const base::RepeatingClosure on_visibility_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenControlPopup);
 };
 
 #endif  // COMPONENTS_FULLSCREEN_CONTROL_FULLSCREEN_CONTROL_POPUP_H_

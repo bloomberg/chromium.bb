@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+from __future__ import absolute_import
 import functools
 import os
 import sys
@@ -40,7 +41,7 @@ def _Update(moves, module):
         print('Error updating %s: %s' % (module.file_path, e), file=sys.stderr)
 
 
-class _Move(object):
+class _Move():
 
   def __init__(self, source, target):
     self._source_path = os.path.realpath(source)

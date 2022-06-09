@@ -27,7 +27,6 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_avx2.h"
-#include "src/dsp/x86/common_sse4.h"
 #include "src/utils/common.h"
 #include "src/utils/constants.h"
 
@@ -270,8 +269,8 @@ LIBGAV1_ALWAYS_INLINE void AddPartial_D7_D5(__m256i* v_src, __m256i* partial_lo,
       _mm256_add_epi16(*partial_hi, _mm256_srli_si256(v_pair_add[3], 10));
 }
 
-LIBGAV1_ALWAYS_INLINE void AddPartial(const uint8_t* src, ptrdiff_t stride,
-                                      __m256i* partial) {
+LIBGAV1_ALWAYS_INLINE void AddPartial(const uint8_t* LIBGAV1_RESTRICT src,
+                                      ptrdiff_t stride, __m256i* partial) {
   // 8x8 input
   // 00 01 02 03 04 05 06 07
   // 10 11 12 13 14 15 16 17
@@ -452,8 +451,10 @@ inline void Cost2And6_Pair(uint32_t* cost, const __m256i partial_a,
   cost[6] = _mm_cvtsi128_si32(_mm_srli_si128(sums, 8));
 }
 
-void CdefDirection_AVX2(const void* const source, ptrdiff_t stride,
-                        uint8_t* const direction, int* const variance) {
+void CdefDirection_AVX2(const void* LIBGAV1_RESTRICT const source,
+                        ptrdiff_t stride,
+                        uint8_t* LIBGAV1_RESTRICT const direction,
+                        int* LIBGAV1_RESTRICT const variance) {
   assert(direction != nullptr);
   assert(variance != nullptr);
   const auto* src = static_cast<const uint8_t*>(source);
@@ -501,8 +502,9 @@ void CdefDirection_AVX2(const void* const source, ptrdiff_t stride,
 // CdefFilter
 
 // Load 4 vectors based on the given |direction|.
-inline void LoadDirection(const uint16_t* const src, const ptrdiff_t stride,
-                          __m128i* output, const int direction) {
+inline void LoadDirection(const uint16_t* LIBGAV1_RESTRICT const src,
+                          const ptrdiff_t stride, __m128i* output,
+                          const int direction) {
   // Each |direction| describes a different set of source values. Expand this
   // set by negating each set. For |direction| == 0 this gives a diagonal line
   // from top right to bottom left. The first value is y, the second x. Negative
@@ -526,8 +528,9 @@ inline void LoadDirection(const uint16_t* const src, const ptrdiff_t stride,
 
 // Load 4 vectors based on the given |direction|. Use when |block_width| == 4 to
 // do 2 rows at a time.
-void LoadDirection4(const uint16_t* const src, const ptrdiff_t stride,
-                    __m128i* output, const int direction) {
+void LoadDirection4(const uint16_t* LIBGAV1_RESTRICT const src,
+                    const ptrdiff_t stride, __m128i* output,
+                    const int direction) {
   const int y_0 = kCdefDirections[direction][0][0];
   const int x_0 = kCdefDirections[direction][0][1];
   const int y_1 = kCdefDirections[direction][1][0];
@@ -570,11 +573,11 @@ inline __m256i ApplyConstrainAndTap(const __m256i& pixel, const __m256i& val,
 }
 
 template <int width, bool enable_primary = true, bool enable_secondary = true>
-void CdefFilter_AVX2(const uint16_t* src, const ptrdiff_t src_stride,
-                     const int height, const int primary_strength,
-                     const int secondary_strength, const int damping,
-                     const int direction, void* dest,
-                     const ptrdiff_t dst_stride) {
+void CdefFilter_AVX2(const uint16_t* LIBGAV1_RESTRICT src,
+                     const ptrdiff_t src_stride, const int height,
+                     const int primary_strength, const int secondary_strength,
+                     const int damping, const int direction,
+                     void* LIBGAV1_RESTRICT dest, const ptrdiff_t dst_stride) {
   static_assert(width == 8 || width == 4, "Invalid CDEF width.");
   static_assert(enable_primary || enable_secondary, "");
   constexpr bool clipping_required = enable_primary && enable_secondary;

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for tf.layers.pooling."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.framework import test_util
 from tensorflow.python.keras.legacy_tf_layers import pooling as pooling_layers
 from tensorflow.python.ops import array_ops
@@ -30,25 +26,25 @@ class PoolingTest(test.TestCase):
   def testInvalidDataFormat(self):
     height, width = 7, 9
     images = random_ops.random_uniform((5, height, width, 3), seed=1)
-    with self.assertRaisesRegexp(ValueError, 'data_format'):
+    with self.assertRaisesRegex(ValueError, 'data_format'):
       pooling_layers.max_pooling2d(images, 3, strides=2, data_format='invalid')
 
   def testInvalidStrides(self):
     height, width = 7, 9
     images = random_ops.random_uniform((5, height, width, 3), seed=1)
-    with self.assertRaisesRegexp(ValueError, 'strides'):
+    with self.assertRaisesRegex(ValueError, 'strides'):
       pooling_layers.max_pooling2d(images, 3, strides=(1, 2, 3))
 
-    with self.assertRaisesRegexp(ValueError, 'strides'):
+    with self.assertRaisesRegex(ValueError, 'strides'):
       pooling_layers.max_pooling2d(images, 3, strides=None)
 
   def testInvalidPoolSize(self):
     height, width = 7, 9
     images = random_ops.random_uniform((5, height, width, 3), seed=1)
-    with self.assertRaisesRegexp(ValueError, 'pool_size'):
+    with self.assertRaisesRegex(ValueError, 'pool_size'):
       pooling_layers.max_pooling2d(images, (1, 2, 3), strides=2)
 
-    with self.assertRaisesRegexp(ValueError, 'pool_size'):
+    with self.assertRaisesRegex(ValueError, 'pool_size'):
       pooling_layers.max_pooling2d(images, None, strides=2)
 
   def testCreateMaxPooling2D(self):

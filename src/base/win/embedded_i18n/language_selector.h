@@ -14,7 +14,6 @@
 
 #include "base/base_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 
 namespace base {
@@ -48,6 +47,9 @@ class BASE_EXPORT LanguageSelector {
   LanguageSelector(const std::vector<std::wstring>& candidates,
                    span<const LangToOffset> languages_to_offset);
 
+  LanguageSelector(const LanguageSelector&) = delete;
+  LanguageSelector& operator=(const LanguageSelector&) = delete;
+
   ~LanguageSelector();
 
   // The offset of the matched language (i.e., IDS_L10N_OFFSET_*).
@@ -65,8 +67,6 @@ class BASE_EXPORT LanguageSelector {
   std::wstring matched_candidate_;
   std::wstring selected_language_;
   int selected_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanguageSelector);
 };
 
 }  // namespace i18n

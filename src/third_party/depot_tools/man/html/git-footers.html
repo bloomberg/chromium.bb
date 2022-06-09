@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.9" />
+<meta name="generator" content="AsciiDoc 9.1.0" />
 <title>git-footers(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -435,7 +436,7 @@ thead, p.table.header {
 p.table {
   margin-top: 0;
 }
-/* Because the table frame attribute is overriden by CSS in most browsers. */
+/* Because the table frame attribute is overridden by CSS in most browsers. */
 div.tableblock > table[frame="void"] {
   border-style: none;
 }
@@ -773,7 +774,7 @@ commit might look like:</p></div>
 </div></div>
 <div class="literalblock">
 <div class="content">
-<pre><code>Cr-Commit-Position: refs/heads/master@{#292272}
+<pre><code>Cr-Commit-Position: refs/heads/main@{#292272}
 Tech-Debt-Introduced: 17 nanoMSOffices</code></pre>
 </div></div>
 <div class="paragraph"><p><code>git footers</code> knows how to extract this information.</p></div>
@@ -809,7 +810,7 @@ case-normalized.</p></div>
 </p>
 <div class="literalblock">
 <div class="content">
-<pre><code>refs/heads/master@{#292272}
+<pre><code>refs/heads/main@{#292272}
 refs/branch-heads/branchname</code></pre>
 </div></div>
 </dd>
@@ -828,7 +829,7 @@ refs/branch-heads/branchname</code></pre>
 <dd>
 <p>
   Extracts and prints the Chrome commit position ref name only
-  (<code>ref/heads/master</code> or <code>refs/branch-heads/branchname</code> in the example above).
+  (<code>ref/heads/main</code> or <code>refs/branch-heads/branchname</code> in the example above).
 </p>
 </dd>
 </dl></div>
@@ -840,16 +841,16 @@ refs/branch-heads/branchname</code></pre>
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git footers HEAD</span>
 Tech-Debt-Introduced: -4 microMSOffices
 Tech-Debt-Introduced: 17 microMSOffices
-Cr-Commit-Position: refs/heads/master@{#292272}
+Cr-Commit-Position: refs/heads/main@{#292272}
 <span style="font-weight: bold; color: #ffffff">$ git footers --key Tech-Debt-Introduced HEAD</span>
 -4 microMSOffices
 17 microMSOffices
 <span style="font-weight: bold; color: #ffffff">$ git footers --position HEAD</span>
-refs/heads/master@{#292272}
+refs/heads/main@{#292272}
 <span style="font-weight: bold; color: #ffffff">$ git footers --position-num HEAD</span>
 292272
 <span style="font-weight: bold; color: #ffffff">$ git footers --position-ref HEAD</span>
-refs/heads/master
+refs/heads/main
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
@@ -871,7 +872,8 @@ by checking out the <a href="https://chromium.googlesource.com/chromium/tools/de
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-10 17:51:13 CEST
+Last updated
+ 2021-10-05 09:49:24 PDT
 </div>
 </div>
 </body>

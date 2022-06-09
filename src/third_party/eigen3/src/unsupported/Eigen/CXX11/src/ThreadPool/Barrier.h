@@ -13,6 +13,8 @@
 #ifndef EIGEN_CXX11_THREADPOOL_BARRIER_H
 #define EIGEN_CXX11_THREADPOOL_BARRIER_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 class Barrier {

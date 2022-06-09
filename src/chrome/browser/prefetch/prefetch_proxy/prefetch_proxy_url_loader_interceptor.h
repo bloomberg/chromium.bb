@@ -8,11 +8,9 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_prefetch_status.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_probe_result.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -31,6 +29,12 @@ class PrefetchProxyURLLoaderInterceptor
     : public content::URLLoaderRequestInterceptor {
  public:
   explicit PrefetchProxyURLLoaderInterceptor(int frame_tree_node_id);
+
+  PrefetchProxyURLLoaderInterceptor(const PrefetchProxyURLLoaderInterceptor&) =
+      delete;
+  PrefetchProxyURLLoaderInterceptor& operator=(
+      const PrefetchProxyURLLoaderInterceptor&) = delete;
+
   ~PrefetchProxyURLLoaderInterceptor() override;
 
   // content::URLLaoderRequestInterceptor:
@@ -88,8 +92,6 @@ class PrefetchProxyURLLoaderInterceptor
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PrefetchProxyURLLoaderInterceptor> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrefetchProxyURLLoaderInterceptor);
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_URL_LOADER_INTERCEPTOR_H_

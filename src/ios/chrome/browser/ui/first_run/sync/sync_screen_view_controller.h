@@ -7,21 +7,34 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/first_run/first_run_screen_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/first_run/sync/sync_screen_consumer.h"
+#import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 
 // Delegate of sync screen view controller.
-@protocol
-    SyncScreenViewControllerDelegate <FirstRunScreenViewControllerDelegate>
+@protocol SyncScreenViewControllerDelegate <PromoStyleViewControllerDelegate>
 
 // Called when the user taps to see sync settings.
 - (void)showSyncSettings;
 
+- (void)addConsentStringID:(const int)stringID;
+
 @end
 
 // View controller of sync screen.
-@interface SyncScreenViewController : FirstRunScreenViewController
+@interface SyncScreenViewController
+    : PromoStyleViewController <AuthenticationFlowDelegate, SyncScreenConsumer>
 
 @property(nonatomic, weak) id<SyncScreenViewControllerDelegate> delegate;
+
+// True if any data type is managed by policies.
+@property(nonatomic, assign) BOOL syncTypesRestricted;
+
+// The ID of the string used to open the settings screen.
+@property(nonatomic, assign) int openSettingsStringID;
+
+// The ID of the main button activating sync.
+@property(nonatomic, assign) int activateSyncButtonID;
 
 @end
 

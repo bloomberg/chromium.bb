@@ -14,10 +14,6 @@
 # ==============================================================================
 """Definition of XLA test case."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import contextlib
 import os
 import random
@@ -78,15 +74,52 @@ def parse_disabled_manifest(manifest_content):
   return disabled_regex, method_types_filter
 
 
+class TPURewriteSession(session.Session):
+  """Tensorflow session that runs tpu.rewrite() on ops on run()."""
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.topology = None
+
+  def run(self, fetches, feed_dict=None, options=None, run_metadata=None):
+    from tensorflow.python.tpu import tpu  # pylint: disable=g-import-not-at-top
+    if self.topology is None:
+      self.topology = super().run(tpu.initialize_system())
+      assert self.topology is not None
+    fetch_mapper = session._FetchMapper.for_fetch(fetches)
+    new_fetches = []
+    for fetch in fetch_mapper.unique_fetches():
+      if isinstance(fetch, ops.Operation):
+        fetch = tpu.rewrite(lambda fetch=fetch: fetch)
+      new_fetches.append(fetch)
+    rewritten_fetches = fetch_mapper.build_results(new_fetches)
+    return super().run(rewritten_fetches, feed_dict, options, run_metadata)
+
+
 class XLATestCase(test.TestCase):
   """XLA test cases are parameterized test cases."""
 
   def __init__(self, method_name='runTest'):
     super(XLATestCase, self).__init__(method_name)
-    context.context().enable_mlir_bridge = test_util.is_mlir_bridge_enabled()
+    if 'XLA' in FLAGS.test_device:
+      context.context().enable_xla_devices()
+
+    # Check if the mlir bridge has been explicitly enabled or disabled. If
+    # is_mlir_bridge_enabled() returns None, the user did not explictly enable
+    # or disable the bridge so do not update enable_mlir_bridge.
+    if test_util.is_mlir_bridge_enabled():
+      context.context().enable_mlir_bridge = True
+    elif test_util.is_mlir_bridge_enabled() is not None:
+      context.context().enable_mlir_bridge = False
 
     self.device = FLAGS.test_device
     self.has_custom_call = (self.device == 'XLA_CPU')
+
+    # Some tests (e.g. ftrl_ops) only work if the program goes through the
+    # _TPUCompileMLIR op. They will set this flag to True.
+    # TODO(kramm): Flip to true (and enable MLIR bridge) for more tests.
+    self.rewrite_ops_for_tpu = False
+
     self._all_tf_types = set([
         dtypes.as_dtype(types_pb2.DataType.Value(name))
         for name in FLAGS.types.split(',')
@@ -222,8 +255,13 @@ class XLATestCase(test.TestCase):
     # these tests.
     config.graph_options.rewrite_options.constant_folding = (
         rewriter_config_pb2.RewriterConfig.OFF)
-    with session.Session(
-        graph=graph, config=config) as sess, graph.as_default():
+
+    if self.rewrite_ops_for_tpu:
+      session_type = TPURewriteSession
+    else:
+      session_type = session.Session
+
+    with session_type(graph=graph, config=config) as sess, graph.as_default():
       yield sess
 
   def cached_session(self):
@@ -235,16 +273,23 @@ class XLATestCase(test.TestCase):
         'test_session not supported on XLATestCase, please use session')
 
   @contextlib.contextmanager
-  def test_scope(self):
-    """Test scope that runs tests on a Tensorflow/XLA device.
-
-    Uses a compilation_scope() to mark operators to compile.
+  def device_scope(self):
+    """Scope that runs tests on `self.device`.
 
     Yields:
       A scope to apply to the operators under test.
     """
     with ops.device('device:{}:0'.format(self.device)):
       yield
+
+  def test_scope(self):
+    """Deprecated alias of `device_scope`.
+
+    This should be avoided as the name starts with `test`, so test runners
+    treat it as a test. This interferes with class decorators that operate on
+    each test method.
+    """
+    return self.device_scope()
 
 
 def Benchmark(tf_bench,

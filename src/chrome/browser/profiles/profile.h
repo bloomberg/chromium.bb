@@ -21,10 +21,7 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
-#if !defined(OS_ANDROID)
 class ChromeZoomLevelPrefs;
-#endif
-
 class ExtensionSpecialStoragePolicy;
 class GURL;
 class PrefService;
@@ -51,7 +48,7 @@ class UserCloudPolicyManager;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class ActiveDirectoryPolicyManager;
-class UserCloudPolicyManagerChromeOS;
+class UserCloudPolicyManagerAsh;
 #endif
 }  // namespace policy
 
@@ -73,17 +70,10 @@ class Profile : public content::BrowserContext {
   enum CreateStatus {
     // Profile services were not created due to a local error (e.g., disk full).
     CREATE_STATUS_LOCAL_FAIL,
-    // Profile services were not created due to a remote error (e.g., network
-    // down during limited-user registration).
-    CREATE_STATUS_REMOTE_FAIL,
     // Profile created but before initializing extensions and promo resources.
     CREATE_STATUS_CREATED,
     // Profile is created, extensions and promo resources are initialized.
     CREATE_STATUS_INITIALIZED,
-    // Profile creation (supervised-user registration, generally) was canceled
-    // by the user.
-    CREATE_STATUS_CANCELED,
-    MAX_CREATE_STATUS  // For histogram display.
   };
 
   enum CreateMode {
@@ -91,23 +81,12 @@ class Profile : public content::BrowserContext {
     CREATE_MODE_ASYNCHRONOUS
   };
 
-  enum ExitType {
-    // A normal shutdown. The user clicked exit/closed last window of the
-    // profile.
-    EXIT_NORMAL,
-
-    // The exit was the result of the system shutting down.
-    EXIT_SESSION_ENDED,
-
-    EXIT_CRASHED,
-  };
-
   // Defines an ID to distinguish different off-the-record profiles of a regular
   // profile.
   class OTRProfileID {
    public:
     // ID used by the Incognito and Guest profiles.
-    // TODO(https://crbug.com/1125474): To be replaced with |IncognitoID| when
+    // TODO(https://crbug.com/1225171): To be replaced with |IncognitoID| if
     // OTR Guest profiles are deprecated.
     static const OTRProfileID PrimaryID();
 
@@ -186,10 +165,15 @@ class Profile : public content::BrowserContext {
    public:
     virtual ~Delegate();
 
+    // Called when creation of the profile is started.
+    virtual void OnProfileCreationStarted(Profile* profile,
+                                          CreateMode create_mode) = 0;
+
     // Called when creation of the profile is finished.
-    virtual void OnProfileCreated(Profile* profile,
-                                  bool success,
-                                  bool is_new_profile) = 0;
+    virtual void OnProfileCreationFinished(Profile* profile,
+                                           CreateMode create_mode,
+                                           bool success,
+                                           bool is_new_profile) = 0;
   };
 
   // Key used to bind profile to the widget with which it is associated.
@@ -303,9 +287,6 @@ class Profile : public content::BrowserContext {
   // profile is not OffTheRecord.
   virtual const Profile* GetOriginalProfile() const = 0;
 
-  // Returns whether the profile is supervised (either a legacy supervised
-  // user or a child account; see SupervisedUserService).
-  virtual bool IsSupervised() const = 0;
   // Returns whether the profile is associated with a child account.
   virtual bool IsChild() const = 0;
 
@@ -322,12 +303,10 @@ class Profile : public content::BrowserContext {
   virtual PrefService* GetPrefs() = 0;
   virtual const PrefService* GetPrefs() const = 0;
 
-#if !defined(OS_ANDROID)
   // Retrieves a pointer to the PrefService that manages the default zoom
   // level and the per-host zoom levels for this user profile.
   // TODO(wjmaclean): Remove this when HostZoomMap migrates to StoragePartition.
   virtual ChromeZoomLevelPrefs* GetZoomLevelPrefs();
-#endif
 
   // Gives a read-only view of prefs that can be used even if there's no OTR
   // profile at the moment (i.e. HasOffTheRecordProfile is false).
@@ -355,9 +334,8 @@ class Profile : public content::BrowserContext {
   virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService() = 0;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Returns the UserCloudPolicyManagerChromeOS.
-  virtual policy::UserCloudPolicyManagerChromeOS*
-  GetUserCloudPolicyManagerChromeOS() = 0;
+  // Returns the UserCloudPolicyManagerAsh.
+  virtual policy::UserCloudPolicyManagerAsh* GetUserCloudPolicyManagerAsh() = 0;
 
   // Returns the ActiveDirectoryPolicyManager.
   virtual policy::ActiveDirectoryPolicyManager*
@@ -413,8 +391,8 @@ class Profile : public content::BrowserContext {
   // more recent (or equal to) the one specified.
   virtual bool WasCreatedByVersionOrLater(const std::string& version) = 0;
 
-  // IsRegularProfile(), IsSystemProfile(), IsIncognitoProfile(),
-  // IsGuestSession(), and IsEphemeralGuestProfile are mutually exclusive.
+  // IsRegularProfile(), IsSystemProfile(), IsIncognitoProfile(), and
+  // IsGuestSession() are mutually exclusive.
   //
   // IsSystemProfile() returns true for both regular and off-the-record profile
   //   of the system profile.
@@ -432,33 +410,22 @@ class Profile : public content::BrowserContext {
   // OffTheRecord profile used for incognito mode and guest sessions.
   bool IsPrimaryOTRProfile() const;
 
-  // Returns whether ephemeral Guest profiles are enabled.
-  static bool IsEphemeralGuestProfileEnabled();
-
   // Returns whether it is a Guest session. This covers both regular and
   // off-the-record profiles of a Guest session.
-  // This function only returns true for non-ephemeral Guest sessions.
-  // TODO(https://crbug.com/1125474): Audit all use cases and consider adding
-  // |IsEphemeralGuestProfile|. Remove after audit is done on all relevant
-  // platforms and non-ephemeral Guest profiles are deprecated.
   virtual bool IsGuestSession() const;
-
-  // Returns whether it is an ephemeral Guest profile. This covers both regular
-  // and off-the-record profiles of a Guest session.
-  // TODO(https://crbug.com/1125474): After auditing all use cases of
-  // |IsGuestSession| on all platforms and removal of all calls to
-  // |IsGuestSession|, rename to |IsGuestProfile|.
-  bool IsEphemeralGuestProfile() const;
 
   // Returns whether it is a system profile.
   bool IsSystemProfile() const;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Returns `true` if this is the first/initial Profile in Lacros, and - for
-  // regular sessions, if this Profile has the Device Account logged in.
+  // Returns `true` if this is the first/initial Profile path in Lacros, and -
+  // for regular sessions, if this Profile has the Device Account logged in.
   // For non-regular sessions (Guest Sessions, Managed Guest Sessions) which do
   // not have the concept of a Device Account, the latter condition is not
   // checked.
+  static bool IsMainProfilePath(base::FilePath profile_path);
+
+  // Returns true if this is the main profile as defined above.
   virtual bool IsMainProfile() const = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -472,22 +439,9 @@ class Profile : public content::BrowserContext {
     return restored_last_session_;
   }
 
-  // Sets the ExitType for the profile. This may be invoked multiple times
-  // during shutdown; only the first such change (the transition from
-  // EXIT_CRASHED to one of the other values) is written to prefs, any
-  // later calls are ignored.
-  //
-  // NOTE: this is invoked internally on a normal shutdown, but is public so
-  // that it can be invoked when the user logs out/powers down (WM_ENDSESSION),
-  // or to handle backgrounding/foregrounding on mobile.
-  virtual void SetExitType(ExitType exit_type) = 0;
-
-  // Returns how the last session was shutdown.
-  virtual ExitType GetLastSessionExitType() const = 0;
-
   // Returns whether session cookies are restored and saved. The value is
   // ignored for in-memory profiles.
-  virtual bool ShouldRestoreOldSessionCookies() const;
+  virtual bool ShouldRestoreOldSessionCookies();
   virtual bool ShouldPersistSessionCookies() const;
 
   // Stop sending accessibility events until ResumeAccessibilityEvents().
@@ -515,18 +469,16 @@ class Profile : public content::BrowserContext {
   // destroyed by ProfileDestroyer, but in tests, some are not.
   void MaybeSendDestroyedNotification();
 
-#if !defined(OS_ANDROID)
   // Convenience method to retrieve the default zoom level for the default
   // storage partition.
   double GetDefaultZoomLevelForProfile();
-#endif
 
   // Wipes all data for this profile.
   void Wipe();
 
   virtual void SetCreationTimeForTesting(base::Time creation_time) = 0;
 
-  virtual void RecordMainFrameNavigation() = 0;
+  virtual void RecordPrimaryMainFrameNavigation() = 0;
 
  protected:
   // Creates an OffTheRecordProfile which points to this Profile.

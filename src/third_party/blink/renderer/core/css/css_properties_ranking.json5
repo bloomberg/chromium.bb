@@ -735,6 +735,19 @@
         "math-superscript-shift-style",
         "start"
         "accent-color",
+
+
+
+        // patch section: composited-lcd-text
+
+
+        // patch section: simple-overflow-clip
+
+
+        // patch section: suppress-needs-compositing-input-update
+
+
+
     ],
     "properties": {}
 }

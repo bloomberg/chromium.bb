@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_LOGIN_AUTH_RECORDER_H_
 #define CHROME_BROWSER_ASH_LOGIN_LOGIN_AUTH_RECORDER_H_
 
-#include "base/macros.h"
 #include "components/session_manager/core/session_manager_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 
 // A metrics recorder that records login authentication related metrics.
 // This keeps track of the last authentication method we used and records
@@ -68,6 +66,10 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
   };
 
   LoginAuthRecorder();
+
+  LoginAuthRecorder(const LoginAuthRecorder&) = delete;
+  LoginAuthRecorder& operator=(const LoginAuthRecorder&) = delete;
+
   ~LoginAuthRecorder() override;
 
   // Called when user attempts authentication using AuthMethod `type`.
@@ -78,10 +80,8 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
 
  private:
   AuthMethod last_auth_method_ = AuthMethod::kNothing;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginAuthRecorder);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_LOGIN_AUTH_RECORDER_H_

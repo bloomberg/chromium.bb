@@ -9,12 +9,13 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
+#include "android_webview/browser/aw_dark_mode.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser_jni_headers/AwSettings_jni.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/navigation_controller.h"
@@ -24,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_util.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom.h"
 
@@ -60,11 +62,11 @@ class AwSettingsUserData : public base::SupportsUserData::Data {
       return NULL;
     AwSettingsUserData* data = static_cast<AwSettingsUserData*>(
         web_contents->GetUserData(kAwSettingsUserDataKey));
-    return data ? data->settings_ : NULL;
+    return data ? data->settings_.get() : NULL;
   }
 
  private:
-  AwSettings* settings_;
+  raw_ptr<AwSettings> settings_;
 };
 
 AwSettings::AwSettings(JNIEnv* env,
@@ -75,7 +77,6 @@ AwSettings::AwSettings(JNIEnv* env,
       javascript_can_open_windows_automatically_(false),
       allow_third_party_cookies_(false),
       allow_file_access_(false),
-      is_dark_mode_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -404,10 +405,6 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
 
   web_prefs->plugins_enabled = false;
 
-  web_prefs->application_cache_enabled =
-      Java_AwSettings_getAppCacheEnabledLocked(env, obj) &&
-      content::StoragePartition::IsAppCacheEnabled();
-
   web_prefs->local_storage_enabled =
       Java_AwSettings_getDomStorageEnabledLocked(env, obj);
 
@@ -508,59 +505,18 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->allow_mixed_content_upgrades =
       Java_AwSettings_getAllowMixedContentAutoupgradesLocked(env, obj);
 
-  switch (Java_AwSettings_getForceDarkModeLocked(env, obj)) {
-    case ForceDarkMode::FORCE_DARK_OFF:
-      is_dark_mode_ = false;
-      break;
-    case ForceDarkMode::FORCE_DARK_ON:
-      is_dark_mode_ = true;
-      break;
-    case ForceDarkMode::FORCE_DARK_AUTO: {
-      AwContents* contents = AwContents::FromWebContents(web_contents());
-      is_dark_mode_ = contents && contents->GetViewTreeForceDarkState();
-      break;
-    }
-  }
-  web_prefs->preferred_color_scheme =
-      is_dark_mode_ ? blink::mojom::PreferredColorScheme::kDark
-                    : blink::mojom::PreferredColorScheme::kLight;
-  if (is_dark_mode_) {
-    switch (Java_AwSettings_getForceDarkBehaviorLocked(env, obj)) {
-      case ForceDarkBehavior::FORCE_DARK_ONLY: {
-        web_prefs->preferred_color_scheme =
-            blink::mojom::PreferredColorScheme::kLight;
-        web_prefs->force_dark_mode_enabled = true;
-        break;
-      }
-      case ForceDarkBehavior::MEDIA_QUERY_ONLY: {
-        web_prefs->preferred_color_scheme =
-            blink::mojom::PreferredColorScheme::kDark;
-        web_prefs->force_dark_mode_enabled = false;
-        break;
-      }
-      // Blink's behavior is that if the preferred color scheme matches the
-      // supported color scheme, then force dark will be disabled, otherwise
-      // the preferred color scheme will be reset to 'light'. Therefore
-      // when enabling force dark, we also set the preferred color scheme to
-      // dark so that dark themed content will be preferred over force
-      // darkening.
-      case ForceDarkBehavior::PREFER_MEDIA_QUERY_OVER_FORCE_DARK: {
-        web_prefs->preferred_color_scheme =
-            blink::mojom::PreferredColorScheme::kDark;
-        web_prefs->force_dark_mode_enabled = true;
-        break;
-      }
-    }
-  } else {
-    web_prefs->preferred_color_scheme =
-        blink::mojom::PreferredColorScheme::kLight;
-    web_prefs->force_dark_mode_enabled = false;
+  if (AwDarkMode* aw_dark_mode = AwDarkMode::FromWebContents(web_contents())) {
+    aw_dark_mode->PopulateWebPreferences(
+        web_prefs, Java_AwSettings_getForceDarkModeLocked(env, obj),
+        Java_AwSettings_getForceDarkBehaviorLocked(env, obj));
   }
 }
 
-bool AwSettings::IsDarkMode(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {
-  return is_dark_mode_;
+bool AwSettings::IsDarkMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  if (AwDarkMode* aw_dark_mode = AwDarkMode::FromWebContents(web_contents())) {
+    return aw_dark_mode->is_dark_mode();
+  }
+  return false;
 }
 
 bool AwSettings::GetAllowFileAccess() {

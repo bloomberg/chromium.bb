@@ -15,8 +15,10 @@
 namespace blink {
 
 class GPUAdapter;
+class GPUCanvasConfiguration;
 class GPUSwapChain;
-class GPUSwapChainDescriptor;
+class GPUTexture;
+class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 
 // A GPUCanvasContext does little by itself and basically just binds a canvas
 // and a GPUSwapChain together and forwards calls from one to the other.
@@ -25,43 +27,45 @@ class GPUCanvasContext : public CanvasRenderingContext {
 
  public:
   class Factory : public CanvasRenderingContextFactory {
-    DISALLOW_COPY_AND_ASSIGN(Factory);
 
    public:
     Factory();
+
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+
     ~Factory() override;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
         const CanvasContextCreationAttributesCore&) override;
-    CanvasRenderingContext::ContextType GetContextType() const override;
+    CanvasRenderingContext::CanvasRenderingAPI GetRenderingAPI() const override;
   };
 
   GPUCanvasContext(CanvasRenderingContextHost*,
                    const CanvasContextCreationAttributesCore&);
+
+  GPUCanvasContext(const GPUCanvasContext&) = delete;
+  GPUCanvasContext& operator=(const GPUCanvasContext&) = delete;
+
   ~GPUCanvasContext() override;
 
   void Trace(Visitor*) const override;
-  const IntSize& CanvasSize() const;
 
   // CanvasRenderingContext implementation
-  ContextType GetContextType() const override;
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetCanvasGetContextResult(RenderingContext&) final;
-  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  scoped_refptr<StaticBitmapImage> GetImage() final { return nullptr; }
+  scoped_refptr<StaticBitmapImage> GetImage() final;
+  bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) final;
+  bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
+                                             SourceDrawingBuffer) final;
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final { return true; }
   bool IsOriginTopLeft() const final { return true; }
-  bool Is3d() const final { return true; }
-  void SetFilterQuality(SkFilterQuality) override;
+  void SetFilterQuality(cc::PaintFlags::FilterQuality) override;
   bool IsPaintable() const final { return true; }
   int ExternallyAllocatedBufferCountPerPixel() final { return 1; }
   void Stop() final;
@@ -77,15 +81,19 @@ class GPUCanvasContext : public CanvasRenderingContext {
     return false;
   }
 
-  // gpu_canvas_context.idl
-  GPUSwapChain* configureSwapChain(const GPUSwapChainDescriptor* descriptor,
-                                   ExceptionState&);
-  String getSwapChainPreferredFormat(const GPUAdapter* adapter);
+  // gpu_presentation_context.idl
+  V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+
+  void configure(const GPUCanvasConfiguration* descriptor, ExceptionState&);
+  void unconfigure();
+  String getPreferredFormat(const GPUAdapter* adapter);
+  GPUTexture* getCurrentTexture(ExceptionState&);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GPUCanvasContext);
-  SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
+  cc::PaintFlags::FilterQuality filter_quality_ =
+      cc::PaintFlags::FilterQuality::kLow;
   Member<GPUSwapChain> swapchain_;
+  Member<GPUDevice> configured_device_;
   bool stopped_ = false;
 };
 

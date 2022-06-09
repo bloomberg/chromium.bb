@@ -107,7 +107,6 @@ class SafeModeAppStateAgentTest : public BlockCleanupTest {
           [[AppState alloc] initWithBrowserLauncher:browser_launcher_mock_
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
-      app_state_.mainSceneState = main_scene_state_;
 
       main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
       main_scene_state_.window = getWindowMock();
@@ -143,17 +142,13 @@ TEST_F(SafeModeAppStateAgentTest, startSafeMode) {
   [[windowMock stub] setRootViewController:[OCMArg any]];
 
   AppState* appState = getAppStateWithMock();
-  id appStateMock = OCMPartialMock(appState);
-  [[appStateMock expect] queueTransitionToNextInitStage];
-  [[appStateMock expect] appState:appState
-       didTransitionFromInitStage:InitStageSafeMode];
 
   swizzleSafeModeShouldStart(YES);
 
   SafeModeAppAgent* agent = [[SafeModeAppAgent alloc] init];
-  [agent setAppState:appStateMock];
+  [agent setAppState:appState];
 
-  IterateToStage(InitStageStart, InitStageSafeMode, agent, appStateMock);
+  IterateToStage(InitStageStart, InitStageSafeMode, agent, appState);
 
   SceneState* sceneState = GetSceneState();
 
@@ -168,9 +163,6 @@ TEST_F(SafeModeAppStateAgentTest, startSafeMode) {
   // Exit safe mode.
   [agent coordinatorDidExitSafeMode:agent.safeModeCoordinator];
 
-  IterateToStage(InitStageFinal, InitStageFinal, agent, appStateMock);
-
-  EXPECT_OCMOCK_VERIFY(appStateMock);
   EXPECT_EQ(nil, agent.safeModeCoordinator);
 }
 

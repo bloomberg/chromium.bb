@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/protobuf_http_status.h"
@@ -82,8 +83,6 @@ class FakeMessagingClient : public MessagingClient {
       const MessageCallback& callback) override {
     return callback_list_.Add(callback);
   }
-
-  void PullMessages(DoneCallback on_done) override { NOTREACHED(); }
 
   void StartReceivingMessages(base::OnceClosure on_started,
                               DoneCallback on_closed) override {
@@ -238,9 +237,9 @@ class FtlSignalStrategyTest : public testing::Test,
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
-  MockOAuthTokenGetter* token_getter_ = nullptr;
-  FakeRegistrationManager* registration_manager_ = nullptr;
-  FakeMessagingClient* messaging_client_ = nullptr;
+  raw_ptr<MockOAuthTokenGetter> token_getter_ = nullptr;
+  raw_ptr<FakeRegistrationManager> registration_manager_ = nullptr;
+  raw_ptr<FakeMessagingClient> messaging_client_ = nullptr;
   std::unique_ptr<FtlSignalStrategy> signal_strategy_;
 
   std::vector<SignalStrategy::State> state_history_;

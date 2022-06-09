@@ -17,31 +17,33 @@
 
 #include "dawn_native/MetalBackend.h"
 
-#include "dawn_native/Texture.h"
 #include "dawn_native/metal/DeviceMTL.h"
+#include "dawn_native/metal/TextureMTL.h"
 
 namespace dawn_native { namespace metal {
 
-    id<MTLDevice> GetMetalDevice(WGPUDevice cDevice) {
-        Device* device = reinterpret_cast<Device*>(cDevice);
-        return device->GetMTLDevice();
+    id<MTLDevice> GetMetalDevice(WGPUDevice device) {
+        return ToBackend(FromAPI(device))->GetMTLDevice();
+    }
+
+    AdapterDiscoveryOptions::AdapterDiscoveryOptions()
+        : AdapterDiscoveryOptionsBase(WGPUBackendType_Metal) {
     }
 
     ExternalImageDescriptorIOSurface::ExternalImageDescriptorIOSurface()
         : ExternalImageDescriptor(ExternalImageType::IOSurface) {
     }
 
-    WGPUTexture WrapIOSurface(WGPUDevice cDevice,
+    WGPUTexture WrapIOSurface(WGPUDevice device,
                               const ExternalImageDescriptorIOSurface* cDescriptor) {
-        Device* device = reinterpret_cast<Device*>(cDevice);
-        TextureBase* texture = device->CreateTextureWrappingIOSurface(
+        Device* backendDevice = ToBackend(FromAPI(device));
+        Ref<TextureBase> texture = backendDevice->CreateTextureWrappingIOSurface(
             cDescriptor, cDescriptor->ioSurface, cDescriptor->plane);
-        return reinterpret_cast<WGPUTexture>(texture);
+        return ToAPI(texture.Detach());
     }
 
-    void WaitForCommandsToBeScheduled(WGPUDevice cDevice) {
-        Device* device = reinterpret_cast<Device*>(cDevice);
-        device->WaitForCommandsToBeScheduled();
+    void WaitForCommandsToBeScheduled(WGPUDevice device) {
+        ToBackend(FromAPI(device))->WaitForCommandsToBeScheduled();
     }
 
 }}  // namespace dawn_native::metal

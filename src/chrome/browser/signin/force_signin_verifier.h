@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -35,6 +35,10 @@ class ForceSigninVerifier
  public:
   explicit ForceSigninVerifier(Profile* profile,
                                signin::IdentityManager* identity_manager);
+
+  ForceSigninVerifier(const ForceSigninVerifier&) = delete;
+  ForceSigninVerifier& operator=(const ForceSigninVerifier&) = delete;
+
   ~ForceSigninVerifier() override;
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
@@ -82,12 +86,10 @@ class ForceSigninVerifier
   base::OneShotTimer backoff_request_timer_;
   base::TimeTicks creation_time_;
 
-  Profile* profile_ = nullptr;
-  signin::IdentityManager* identity_manager_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
+  raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
 
   base::WeakPtrFactory<ForceSigninVerifier> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ForceSigninVerifier);
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_FORCE_SIGNIN_VERIFIER_H_

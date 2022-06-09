@@ -76,7 +76,7 @@ class LevelTest
 };
 
 TEST_P(LevelTest, TestTargetLevelApi) {
-  static aom_codec_iface_t *codec = &aom_codec_av1_cx_algo;
+  static aom_codec_iface_t *codec = aom_codec_av1_cx();
   aom_codec_ctx_t enc;
   aom_codec_enc_cfg_t cfg;
   EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(codec, &cfg, 0));

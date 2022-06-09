@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "include/cppgc/allocation.h"
+#include "include/cppgc/cross-thread-persistent.h"
 #include "include/cppgc/persistent.h"
 #include "src/heap/cppgc/globals.h"
 #include "src/heap/cppgc/heap-object-header.h"
@@ -87,7 +88,7 @@ TEST_F(SweeperTest, DontSweepMarkedNormalObject) {
   auto* object = MakeGarbageCollected<Type>(GetAllocationHandle());
   MarkObject(object);
   BasePage* page = BasePage::FromPayload(object);
-  BaseSpace* space = page->space();
+  BaseSpace& space = page->space();
 
   EXPECT_EQ(0u, g_destructor_callcount);
 
@@ -95,7 +96,7 @@ TEST_F(SweeperTest, DontSweepMarkedNormalObject) {
 
   EXPECT_EQ(0u, g_destructor_callcount);
   // Check that page is returned back to the space.
-  EXPECT_NE(space->end(), std::find(space->begin(), space->end(), page));
+  EXPECT_NE(space.end(), std::find(space.begin(), space.end(), page));
   EXPECT_NE(nullptr, GetBackend()->Lookup(reinterpret_cast<Address>(object)));
 }
 
@@ -105,7 +106,7 @@ TEST_F(SweeperTest, SweepUnmarkedLargeObject) {
 
   auto* object = MakeGarbageCollected<Type>(GetAllocationHandle());
   BasePage* page = BasePage::FromPayload(object);
-  BaseSpace* space = page->space();
+  BaseSpace& space = page->space();
 
   EXPECT_EQ(0u, g_destructor_callcount);
 
@@ -113,7 +114,7 @@ TEST_F(SweeperTest, SweepUnmarkedLargeObject) {
 
   EXPECT_EQ(1u, g_destructor_callcount);
   // Check that page is gone.
-  EXPECT_EQ(space->end(), std::find(space->begin(), space->end(), page));
+  EXPECT_EQ(space.end(), std::find(space.begin(), space.end(), page));
   EXPECT_EQ(nullptr, GetBackend()->Lookup(reinterpret_cast<Address>(object)));
 }
 
@@ -124,7 +125,7 @@ TEST_F(SweeperTest, DontSweepMarkedLargeObject) {
   auto* object = MakeGarbageCollected<Type>(GetAllocationHandle());
   MarkObject(object);
   BasePage* page = BasePage::FromPayload(object);
-  BaseSpace* space = page->space();
+  BaseSpace& space = page->space();
 
   EXPECT_EQ(0u, g_destructor_callcount);
 
@@ -132,7 +133,7 @@ TEST_F(SweeperTest, DontSweepMarkedLargeObject) {
 
   EXPECT_EQ(0u, g_destructor_callcount);
   // Check that page is returned back to the space.
-  EXPECT_NE(space->end(), std::find(space->begin(), space->end(), page));
+  EXPECT_NE(space.end(), std::find(space.begin(), space.end(), page));
   EXPECT_NE(nullptr, GetBackend()->Lookup(reinterpret_cast<Address>(object)));
 }
 
@@ -202,7 +203,7 @@ TEST_F(SweeperTest, CoalesceFreeListEntries) {
       HeapObjectHeader::FromObject(object3).AllocatedSize();
 
   const BasePage* page = BasePage::FromPayload(object2);
-  const FreeList& freelist = NormalPageSpace::From(page->space())->free_list();
+  const FreeList& freelist = NormalPageSpace::From(page->space()).free_list();
 
   const FreeList::Block coalesced_block = {
       object2_start, static_cast<size_t>(object3_end - object2_start)};
@@ -303,7 +304,7 @@ TEST_F(SweeperTest, LazySweepingDuringAllocation) {
       Heap::Config::MarkingType::kAtomic,
       Heap::Config::SweepingType::kIncrementalAndConcurrent};
   Heap::From(GetHeap())->CollectGarbage(config);
-  // Incremetal sweeping is active and the space should have two pages with
+  // Incremental sweeping is active and the space should have two pages with
   // no room for an additional GCedObject. Allocating a new GCedObject should
   // trigger sweeping. All objects other than the 2nd object on each page are
   // marked. Lazy sweeping on allocation should reclaim the object on one of
@@ -371,6 +372,122 @@ TEST_F(SweeperTest, AllocationDuringFinalizationIsNotSwept) {
   PreciseGC();
   EXPECT_LT(0u, AllocatingFinalizer::destructor_callcount_);
   EXPECT_EQ(0u, g_destructor_callcount);
+}
+
+TEST_F(SweeperTest, DiscardingNormalPageMemory) {
+  if (!Sweeper::CanDiscardMemory()) return;
+
+  // Test ensures that free list payload is discarded and accounted for on page
+  // level.
+  auto* holder = MakeGarbageCollected<GCed<1>>(GetAllocationHandle());
+  ConservativeMemoryDiscardingGC();
+  auto* page = NormalPage::FromPayload(holder);
+  // Assume the `holder` object is the first on the page for simplifying exact
+  // discarded count.
+  ASSERT_EQ(static_cast<void*>(page->PayloadStart() + sizeof(HeapObjectHeader)),
+            holder);
+  // No other object on the page is live.
+  Address free_list_payload_start =
+      page->PayloadStart() +
+      HeapObjectHeader::FromObject(holder).AllocatedSize() +
+      sizeof(kFreeListEntrySize);
+  uintptr_t start =
+      RoundUp(reinterpret_cast<uintptr_t>(free_list_payload_start),
+              GetPlatform().GetPageAllocator()->CommitPageSize());
+  uintptr_t end = RoundDown(reinterpret_cast<uintptr_t>(page->PayloadEnd()),
+                            GetPlatform().GetPageAllocator()->CommitPageSize());
+  EXPECT_GT(end, start);
+  EXPECT_EQ(page->discarded_memory(), end - start);
+  USE(holder);
+}
+
+namespace {
+
+class Holder final : public GarbageCollected<Holder> {
+ public:
+  static size_t destructor_callcount;
+
+  void Trace(Visitor*) const {}
+
+  ~Holder() {
+    EXPECT_FALSE(ref);
+    EXPECT_FALSE(weak_ref);
+    destructor_callcount++;
+  }
+
+  cppgc::subtle::CrossThreadPersistent<GCed<1>> ref;
+  cppgc::subtle::WeakCrossThreadPersistent<GCed<1>> weak_ref;
+};
+
+// static
+size_t Holder::destructor_callcount;
+
+}  // namespace
+
+TEST_F(SweeperTest, CrossThreadPersistentCanBeClearedFromOtherThread) {
+  Holder::destructor_callcount = 0;
+  auto* holder = MakeGarbageCollected<Holder>(GetAllocationHandle());
+
+  auto remote_heap = cppgc::Heap::Create(GetPlatformHandle());
+  // The case below must be able to clear both, the CTP and WCTP.
+  holder->ref =
+      MakeGarbageCollected<GCed<1>>(remote_heap->GetAllocationHandle());
+  holder->weak_ref =
+      MakeGarbageCollected<GCed<1>>(remote_heap->GetAllocationHandle());
+
+  testing::TestPlatform::DisableBackgroundTasksScope no_concurrent_sweep_scope(
+      GetPlatformHandle().get());
+  Heap::From(GetHeap())->CollectGarbage(
+      {Heap::Config::CollectionType::kMajor,
+       Heap::Config::StackState::kNoHeapPointers,
+       Heap::Config::MarkingType::kAtomic,
+       Heap::Config::SweepingType::kIncrementalAndConcurrent});
+  // `holder` is unreachable (as the stack is not scanned) and will be
+  // reclaimed. Its payload memory is generally poisoned at this point. The
+  // CrossThreadPersistent slot should be unpoisoned.
+
+  // Terminate the remote heap which should also clear `holder->ref`. The slot
+  // for `ref` should have been unpoisoned by the GC.
+  Heap::From(remote_heap.get())->Terminate();
+
+  // Finish the sweeper which will find the CrossThreadPersistent in cleared
+  // state.
+  Heap::From(GetHeap())->sweeper().FinishIfRunning();
+  EXPECT_EQ(1u, Holder::destructor_callcount);
+}
+
+TEST_F(SweeperTest, WeakCrossThreadPersistentCanBeClearedFromOtherThread) {
+  Holder::destructor_callcount = 0;
+  auto* holder = MakeGarbageCollected<Holder>(GetAllocationHandle());
+
+  auto remote_heap = cppgc::Heap::Create(GetPlatformHandle());
+  holder->weak_ref =
+      MakeGarbageCollected<GCed<1>>(remote_heap->GetAllocationHandle());
+
+  testing::TestPlatform::DisableBackgroundTasksScope no_concurrent_sweep_scope(
+      GetPlatformHandle().get());
+  static constexpr Heap::Config config = {
+      Heap::Config::CollectionType::kMajor,
+      Heap::Config::StackState::kNoHeapPointers,
+      Heap::Config::MarkingType::kAtomic,
+      Heap::Config::SweepingType::kIncrementalAndConcurrent};
+  Heap::From(GetHeap())->CollectGarbage(config);
+  // `holder` is unreachable (as the stack is not scanned) and will be
+  // reclaimed. Its payload memory is generally poisoned at this point. The
+  // WeakCrossThreadPersistent slot should be unpoisoned during clearing.
+
+  // GC in the remote heap should also clear `holder->weak_ref`. The slot for
+  // `weak_ref` should be unpoisoned by the GC.
+  Heap::From(remote_heap.get())
+      ->CollectGarbage({Heap::Config::CollectionType::kMajor,
+                        Heap::Config::StackState::kNoHeapPointers,
+                        Heap::Config::MarkingType::kAtomic,
+                        Heap::Config::SweepingType::kAtomic});
+
+  // Finish the sweeper which will find the CrossThreadPersistent in cleared
+  // state.
+  Heap::From(GetHeap())->sweeper().FinishIfRunning();
+  EXPECT_EQ(1u, Holder::destructor_callcount);
 }
 
 }  // namespace internal

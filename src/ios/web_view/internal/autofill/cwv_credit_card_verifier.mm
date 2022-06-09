@@ -28,15 +28,20 @@ namespace {
 CWVCreditCardVerificationError CWVConvertPaymentsRPCResult(
     autofill::AutofillClient::PaymentsRpcResult result) {
   switch (result) {
-    case autofill::AutofillClient::NONE:
-    case autofill::AutofillClient::SUCCESS:
+    case autofill::AutofillClient::PaymentsRpcResult::kNone:
+    case autofill::AutofillClient::PaymentsRpcResult::kSuccess:
+    // The following two errors are not expected on iOS.
+    case autofill::AutofillClient::PaymentsRpcResult::
+        kVcnRetrievalTryAgainFailure:
+    case autofill::AutofillClient::PaymentsRpcResult::
+        kVcnRetrievalPermanentFailure:
       NOTREACHED();
       return CWVCreditCardVerificationErrorNone;
-    case autofill::AutofillClient::TRY_AGAIN_FAILURE:
+    case autofill::AutofillClient::PaymentsRpcResult::kTryAgainFailure:
       return CWVCreditCardVerificationErrorTryAgainFailure;
-    case autofill::AutofillClient::PERMANENT_FAILURE:
+    case autofill::AutofillClient::PaymentsRpcResult::kPermanentFailure:
       return CWVCreditCardVerificationErrorPermanentFailure;
-    case autofill::AutofillClient::NETWORK_ERROR:
+    case autofill::AutofillClient::PaymentsRpcResult::kNetworkError:
       return CWVCreditCardVerificationErrorNetworkFailure;
   }
 }
@@ -182,8 +187,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
   _unmaskingController->OnUnmaskPromptAccepted(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
-      base::SysNSStringToUTF16(expirationYear), /*should_store_pan=*/false,
-      /*enable_fido_auth=*/false);
+      base::SysNSStringToUTF16(expirationYear), /*enable_fido_auth=*/false);
 }
 
 - (BOOL)isCVCValid:(NSString*)CVC {
@@ -207,8 +211,9 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
     NSError* error;
     autofill::AutofillClient::PaymentsRpcResult result =
         _unmaskingController->GetVerificationResult();
-    if (errorMessage.length > 0 && result != autofill::AutofillClient::NONE &&
-        result != autofill::AutofillClient::SUCCESS) {
+    if (errorMessage.length > 0 &&
+        result != autofill::AutofillClient::PaymentsRpcResult::kNone &&
+        result != autofill::AutofillClient::PaymentsRpcResult::kSuccess) {
       NSDictionary* userInfo = @{
         NSLocalizedDescriptionKey : errorMessage,
         CWVCreditCardVerifierRetryAllowedKey : @(retryAllowed),

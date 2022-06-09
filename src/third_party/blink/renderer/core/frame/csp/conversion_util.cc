@@ -32,10 +32,10 @@ WebCSPHashSource ConvertToPublic(
 WebCSPSourceList ConvertToPublic(
     network::mojom::blink::CSPSourceListPtr source_list) {
   WebVector<WebCSPSource> sources(source_list->sources.size());
-  for (size_t i = 0; i < sources.size(); ++i)
+  for (wtf_size_t i = 0; i < source_list->sources.size(); ++i)
     sources[i] = ConvertToPublic(std::move(source_list->sources[i]));
   WebVector<WebCSPHashSource> hashes(source_list->hashes.size());
-  for (size_t i = 0; i < hashes.size(); ++i)
+  for (wtf_size_t i = 0; i < source_list->hashes.size(); ++i)
     hashes[i] = ConvertToPublic(std::move(source_list->hashes[i]));
   return {std::move(sources),
           std::move(source_list->nonces),
@@ -46,6 +46,7 @@ WebCSPSourceList ConvertToPublic(
           source_list->allow_inline,
           source_list->allow_eval,
           source_list->allow_wasm_eval,
+          source_list->allow_wasm_unsafe_eval,
           source_list->allow_dynamic,
           source_list->allow_unsafe_hashes,
           source_list->report_sample};
@@ -107,8 +108,8 @@ network::mojom::blink::CSPSourceListPtr ConvertToMojoBlink(
       source_list.allow_self, source_list.allow_star,
       source_list.allow_response_redirects, source_list.allow_inline,
       source_list.allow_eval, source_list.allow_wasm_eval,
-      source_list.allow_dynamic, source_list.allow_unsafe_hashes,
-      source_list.report_sample);
+      source_list.allow_wasm_unsafe_eval, source_list.allow_dynamic,
+      source_list.allow_unsafe_hashes, source_list.report_sample);
 }
 
 }  // namespace

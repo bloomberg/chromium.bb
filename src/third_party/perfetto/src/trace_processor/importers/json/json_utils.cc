@@ -28,15 +28,6 @@
 namespace perfetto {
 namespace trace_processor {
 namespace json {
-namespace {
-
-#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
-int64_t TimeUnitToNs(TimeUnit unit) {
-  return static_cast<int64_t>(unit);
-}
-#endif
-
-}  // namespace
 
 bool IsJsonSupported() {
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
@@ -46,39 +37,44 @@ bool IsJsonSupported() {
 #endif
 }
 
-base::Optional<int64_t> CoerceToTs(TimeUnit unit, const Json::Value& value) {
+base::Optional<int64_t> CoerceToTs(const Json::Value& value) {
   PERFETTO_DCHECK(IsJsonSupported());
 
 #if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
   switch (static_cast<size_t>(value.type())) {
     case Json::realValue:
-      return static_cast<int64_t>(value.asDouble() *
-                                  static_cast<double>(TimeUnitToNs(unit)));
+      return static_cast<int64_t>(value.asDouble() * 1000.0);
     case Json::uintValue:
     case Json::intValue:
-      return value.asInt64() * TimeUnitToNs(unit);
-    case Json::stringValue: {
-      std::string s = value.asString();
-      size_t lhs_end = std::min<size_t>(s.find('.'), s.size());
-      size_t rhs_start = std::min<size_t>(lhs_end + 1, s.size());
-      base::Optional<int64_t> lhs = base::StringToInt64(s.substr(0, lhs_end));
-      base::Optional<double> rhs =
-          base::StringToDouble("0." + s.substr(rhs_start, std::string::npos));
-      if ((!lhs.has_value() && lhs_end > 0) ||
-          (!rhs.has_value() && rhs_start < s.size())) {
-        return base::nullopt;
-      }
-      int64_t factor = TimeUnitToNs(unit);
-      return lhs.value_or(0) * factor +
-             static_cast<int64_t>(rhs.value_or(0) *
-                                  static_cast<double>(factor));
-    }
+      return value.asInt64() * 1000;
+    case Json::stringValue:
+      return CoerceToTs(value.asString());
     default:
       return base::nullopt;
   }
 #else
-  perfetto::base::ignore_result(unit);
   perfetto::base::ignore_result(value);
+  return base::nullopt;
+#endif
+}
+
+base::Optional<int64_t> CoerceToTs(const std::string& s) {
+  PERFETTO_DCHECK(IsJsonSupported());
+
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_JSON)
+  size_t lhs_end = std::min<size_t>(s.find('.'), s.size());
+  size_t rhs_start = std::min<size_t>(lhs_end + 1, s.size());
+  base::Optional<int64_t> lhs = base::StringToInt64(s.substr(0, lhs_end));
+  base::Optional<double> rhs =
+      base::StringToDouble("0." + s.substr(rhs_start, std::string::npos));
+  if ((!lhs.has_value() && lhs_end > 0) ||
+      (!rhs.has_value() && rhs_start < s.size())) {
+    return base::nullopt;
+  }
+  return lhs.value_or(0) * 1000 +
+         static_cast<int64_t>(rhs.value_or(0) * 1000.0);
+#else
+  perfetto::base::ignore_result(s);
   return base::nullopt;
 #endif
 }

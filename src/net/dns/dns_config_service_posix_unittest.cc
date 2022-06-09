@@ -7,15 +7,16 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_service_posix.h"
@@ -116,7 +117,7 @@ void CloseResState(res_state res) {
 
 void InitializeExpectedConfig(DnsConfig* config) {
   config->ndots = 2;
-  config->fallback_period = base::TimeDelta::FromSeconds(4);
+  config->fallback_period = base::Seconds(4);
   config->attempts = 7;
   config->rotate = true;
   config->append_to_multi_label_name = true;

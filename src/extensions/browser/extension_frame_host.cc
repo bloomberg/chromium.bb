@@ -17,6 +17,12 @@ ExtensionFrameHost::ExtensionFrameHost(content::WebContents* web_contents)
 
 ExtensionFrameHost::~ExtensionFrameHost() = default;
 
+void ExtensionFrameHost::BindLocalFrameHost(
+    mojo::PendingAssociatedReceiver<mojom::LocalFrameHost> receiver,
+    content::RenderFrameHost* rfh) {
+  receivers_.Bind(rfh, std::move(receiver));
+}
+
 void ExtensionFrameHost::RequestScriptInjectionPermission(
     const std::string& extension_id,
     mojom::InjectionType script_type,

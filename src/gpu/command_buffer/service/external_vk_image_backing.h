@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/types/pass_key.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
@@ -72,6 +73,9 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
                          std::unique_ptr<VulkanImage> image,
                          VulkanCommandPool* command_pool,
                          bool use_separate_gl_texture);
+
+  ExternalVkImageBacking(const ExternalVkImageBacking&) = delete;
+  ExternalVkImageBacking& operator=(const ExternalVkImageBacking&) = delete;
 
   ~ExternalVkImageBacking() override;
 
@@ -151,7 +155,8 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice dawnDevice) override;
+      WGPUDevice dawnDevice,
+      WGPUBackendType backend_type) override;
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
@@ -172,21 +177,26 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
   GLuint ProduceGLTextureInternal();
 
-  using FillBufferCallback = base::OnceCallback<void(void* buffer)>;
+  using WriteBufferCallback = base::OnceCallback<void(void* buffer)>;
   // TODO(penghuang): Remove it when GrContext::updateBackendTexture() supports
   // compressed texture and callback.
   bool WritePixelsWithCallback(size_t data_size,
                                size_t stride,
-                               FillBufferCallback callback);
+                               WriteBufferCallback callback);
+  using ReadBufferCallback = base::OnceCallback<void(const void* buffer)>;
+  bool ReadPixelsWithCallback(size_t data_size,
+                              size_t stride,
+                              ReadBufferCallback callback);
   bool WritePixelsWithData(base::span<const uint8_t> pixel_data, size_t stride);
   bool WritePixels();
   void CopyPixelsFromGLTextureToVkImage();
   void CopyPixelsFromShmToGLTexture();
+  void CopyPixelsFromVkImageToGLTexture();
 
   scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<VulkanImage> image_;
   GrBackendTexture backend_texture_;
-  VulkanCommandPool* const command_pool_;
+  const raw_ptr<VulkanCommandPool> command_pool_;
   const bool use_separate_gl_texture_;
 
   ExternalSemaphore write_semaphore_;
@@ -195,7 +205,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
   uint32_t gl_reads_in_progress_ = 0;
-  gles2::Texture* texture_ = nullptr;
+  raw_ptr<gles2::Texture> texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
   // GMB related stuff.
@@ -212,8 +222,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   // When the backing is accessed by the vulkan device for GrContext, they can
   // be returned to ExternalSemaphorePool through VulkanFenceHelper.
   std::vector<ExternalSemaphore> pending_semaphores_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalVkImageBacking);
 };
 
 }  // namespace gpu

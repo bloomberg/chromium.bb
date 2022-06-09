@@ -9,7 +9,8 @@
 namespace autofill {
 
 OfferNotificationHelper::OfferNotificationHelper(content::WebContents* contents)
-    : content::WebContentsObserver(contents) {}
+    : content::WebContentsObserver(contents),
+      content::WebContentsUserData<OfferNotificationHelper>(*contents) {}
 
 OfferNotificationHelper::~OfferNotificationHelper() = default;
 
@@ -22,25 +23,20 @@ void OfferNotificationHelper::OnDisplayOfferNotification(
   origins_to_display_notification_ = origins;
 }
 
-void OfferNotificationHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted()) {
-    return;
-  }
-  // Don't react to same-document (fragment) navigations.
-  if (navigation_handle->IsSameDocument())
-    return;
+void OfferNotificationHelper::PrimaryPageChanged(content::Page& page) {
   // Don't do anything if user is still on an eligible origin for this offer.
   if (base::ranges::count(origins_to_display_notification_,
-                          navigation_handle->GetURL().GetOrigin())) {
+                          page.GetMainDocument()
+                              .GetLastCommittedURL()
+                              .DeprecatedGetOriginAsURL())) {
     return;
   }
+
   // TODO(crbug.com/1093057): Introduce a callback and hide the offer
   // notification.
   origins_to_display_notification_.clear();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(OfferNotificationHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OfferNotificationHelper);
 
 }  // namespace autofill

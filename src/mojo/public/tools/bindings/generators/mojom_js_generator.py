@@ -130,7 +130,7 @@ _kind_to_lite_js_type = {
 _js_reserved_keywords = [
     'arguments',
     'await',
-    'break'
+    'break',
     'case',
     'catch',
     'class',
@@ -367,12 +367,10 @@ class Generator(generator.Generator):
         "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
         "namespace_declarations": self._NamespaceDeclarations,
         "closure_type_with_nullability": self._ClosureTypeWithNullability,
-        "lite_closure_param_type": self._LiteClosureParamType,
         "lite_closure_type": self._LiteClosureType,
         "lite_closure_type_with_nullability":
         self._LiteClosureTypeWithNullability,
         "lite_closure_field_type": self._LiteClosureFieldType,
-        "param_type_in_js_module": self._GetParamTypeInJsModule,
         "payload_size": JavaScriptPayloadSize,
         "spec_type_in_js_module": self._GetSpecTypeInJsModule,
         "to_camel": generator.ToCamel,
@@ -398,10 +396,6 @@ class Generator(generator.Generator):
 
   @UseJinja("module.amd.tmpl")
   def _GenerateAMDModule(self):
-    return self._GetParameters()
-
-  @UseJinja("externs/module.externs.tmpl")
-  def _GenerateExterns(self):
     return self._GetParameters()
 
   @UseJinja("lite/mojom.html.tmpl")
@@ -436,8 +430,6 @@ class Generator(generator.Generator):
     self._SetUniqueNameForImports()
 
     self.WriteWithComment(self._GenerateAMDModule(), "%s.js" % self.module.path)
-    self.WriteWithComment(self._GenerateExterns(),
-                          "%s.externs.js" % self.module.path)
     if self.js_bindings_mode == "new":
       self.WriteWithComment(self._GenerateLiteHtml(),
                             "%s.html" % self.module.path)
@@ -460,7 +452,7 @@ class Generator(generator.Generator):
 
   def _GetBindingsLibraryPath(self, for_webui_module=False):
     if for_webui_module:
-      return "chrome://resources/mojo/mojo/public/js/bindings.js"
+      return "//resources/mojo/mojo/public/js/bindings.js"
     return self._GetRelativePath('mojo/public/js/bindings.js')
 
   def _SetUniqueNameForImports(self):
@@ -607,32 +599,6 @@ class Generator(generator.Generator):
 
   def _ClosureTypeWithNullability(self, kind):
     return ("" if mojom.IsNullableKind(kind) else "!") + self._ClosureType(kind)
-
-  def _GetParamTypeNameForNewBindings(self, kind, for_module=False):
-    def get_type_name(kind):
-      if mojom.IsEnumKind(kind):
-        return "number"
-      prefix = "" if mojom.IsNullableKind(kind) else "!"
-      if mojom.IsArrayKind(kind):
-        return prefix + ("Array<%s>" % get_type_name(kind.kind))
-      if mojom.IsMapKind(kind) and self._IsStringableKind(kind.key_kind):
-        return "(%sMap<%s, %s>|%sObject<%s, %s>)" % (
-            prefix, get_type_name(kind.key_kind), get_type_name(
-                kind.value_kind), prefix, get_type_name(
-                    kind.key_kind), get_type_name(kind.value_kind))
-      if mojom.IsMapKind(kind):
-        return "{}Map<{}, {}>".format(prefix, get_type_name(kind.key_kind),
-                                      get_type_name(kind.value_kind))
-      return prefix + self._GetTypeNameForNewBindings(kind,
-                                                      for_module=for_module)
-
-    return get_type_name(kind)
-
-  def _LiteClosureParamType(self, kind):
-    return self._GetParamTypeNameForNewBindings(kind, for_module=False)
-
-  def _GetParamTypeInJsModule(self, kind):
-    return self._GetParamTypeNameForNewBindings(kind, for_module=True)
 
   def _LiteClosureTypeWithNullability(self, kind):
     return self._GetTypeNameForNewBindings(kind,

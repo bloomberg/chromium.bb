@@ -8,7 +8,8 @@
 #include <list>
 #include <set>
 
-#include "base/containers/mru_cache.h"
+#include "base/containers/lru_cache.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -47,11 +48,11 @@ typedef std::list<std::pair<BrokenAlternativeService, base::TimeTicks>>
 
 // Stores how many times an alternative service has been marked broken.
 class RecentlyBrokenAlternativeServices
-    : public base::MRUCache<BrokenAlternativeService, int> {
+    : public base::LRUCache<BrokenAlternativeService, int> {
  public:
   RecentlyBrokenAlternativeServices(
       int max_recently_broken_alternative_service_entries)
-      : base::MRUCache<BrokenAlternativeService, int>(
+      : base::LRUCache<BrokenAlternativeService, int>(
             max_recently_broken_alternative_service_entries) {}
 };
 
@@ -193,8 +194,8 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
 
-  Delegate* delegate_;            // Unowned
-  const base::TickClock* clock_;  // Unowned
+  raw_ptr<Delegate> delegate_;            // Unowned
+  raw_ptr<const base::TickClock> clock_;  // Unowned
 
   // List of <broken alt svc, expiration time> pairs sorted by expiration time.
   BrokenAlternativeServiceList broken_alternative_service_list_;

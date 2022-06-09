@@ -482,26 +482,23 @@ base::Value AccessibilityTreeFormatterUia::BuildTree(
   return std::move(tree);
 }
 
-base::Value AccessibilityTreeFormatterUia::BuildTreeForWindow(
-    gfx::AcceleratedWidget hwnd) const {
-  CHECK(hwnd);
-
-  Microsoft::WRL::ComPtr<IUIAutomationElement> root;
-  uia_->ElementFromHandle(hwnd, &root);
-  CHECK(root.Get());
-
-  RECT root_bounds = {0};
-  root->get_CurrentBoundingRectangle(&root_bounds);
-
-  base::DictionaryValue tree;
-  RecursiveBuildTree(root.Get(), root_bounds.left, root_bounds.top, &tree);
-  return std::move(tree);
-}
-
 base::Value AccessibilityTreeFormatterUia::BuildTreeForSelector(
     const AXTreeSelector& selector) const {
+  if (selector.widget) {
+    Microsoft::WRL::ComPtr<IUIAutomationElement> root;
+    uia_->ElementFromHandle(selector.widget, &root);
+    CHECK(root.Get());
+
+    RECT root_bounds = {0};
+    root->get_CurrentBoundingRectangle(&root_bounds);
+
+    base::DictionaryValue tree;
+    RecursiveBuildTree(root.Get(), root_bounds.left, root_bounds.top, &tree);
+    return std::move(tree);
+  }
+
   LOG(ERROR) << "Windows does not yet support building accessibility trees for "
-                "tree selectors";
+                "tree selectors other than hwnd";
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
@@ -953,7 +950,6 @@ void AccessibilityTreeFormatterUia::WriteProperty(
     case VT_UI4:
       dict->SetInteger(GetPropertyName(propertyId), var.ptr()->ulVal);
       break;
-      break;
     case VT_BSTR:
       dict->SetString(GetPropertyName(propertyId),
                       BstrToUTF8(var.ptr()->bstrVal));
@@ -1230,8 +1226,7 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
       break;
     }
     case base::Value::Type::DOUBLE: {
-      double double_value = 0.0;
-      value->GetAsDouble(&double_value);
+      const double double_value = value->GetIfDouble().value_or(0.0);
       WriteAttribute(false,
                      base::StringPrintf("%s=%.2f", name.c_str(), double_value),
                      &line);

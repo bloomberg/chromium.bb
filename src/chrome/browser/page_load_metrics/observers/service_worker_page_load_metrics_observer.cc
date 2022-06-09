@@ -8,15 +8,13 @@
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 namespace internal {
-
-const char kHistogramServiceWorkerPageTransition[] =
-    "PageLoad.Clients.ServiceWorker2.PageTransition";
 
 const char kHistogramServiceWorkerParseStart[] =
     "PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart";
@@ -256,24 +254,13 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstInputInPage(
   UMA_HISTOGRAM_CUSTOM_TIMES(
       internal::kHistogramServiceWorkerFirstInputDelay,
       timing.interactive_timing->first_input_delay.value(),
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-      50);
+      base::Milliseconds(1), base::Seconds(60), 50);
 }
 
 void ServiceWorkerPageLoadMetricsObserver::OnParseStart(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (!IsServiceWorkerControlled())
     return;
-
-  // TODO(falken): It may be cleaner to record page transition in OnCommit() but
-  // at that point we don't yet know if the page is controlled by a service
-  // worker. It should be possible to plumb the information there since the
-  // browser process already sends the controller service worker in the
-  // navigation commit IPC.
-  UMA_HISTOGRAM_ENUMERATION(
-      internal::kHistogramServiceWorkerPageTransition,
-      static_cast<int>(ui::PageTransitionStripQualifier(transition_)),
-      static_cast<int>(ui::PAGE_TRANSITION_LAST_CORE) + 1);
 
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_start, GetDelegate())) {

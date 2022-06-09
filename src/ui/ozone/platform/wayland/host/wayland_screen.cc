@@ -8,23 +8,57 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/linux/linux_desktop.h"
 #include "ui/display/display.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_list.h"
+#include "ui/display/util/gpu_info_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/wayland/host/org_kde_kwin_idle.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.h"
+
+#if defined(USE_DBUS)
+#include "ui/ozone/platform/wayland/host/org_gnome_mutter_idle_monitor.h"
+#endif
 
 namespace ui {
+namespace {
+
+display::Display::Rotation WaylandTransformToRotation(int32_t transform) {
+  switch (transform) {
+    case WL_OUTPUT_TRANSFORM_NORMAL:
+      return display::Display::ROTATE_0;
+    case WL_OUTPUT_TRANSFORM_90:
+      return display::Display::ROTATE_90;
+    case WL_OUTPUT_TRANSFORM_180:
+      return display::Display::ROTATE_180;
+    case WL_OUTPUT_TRANSFORM_270:
+      return display::Display::ROTATE_270;
+    // ui::display::Display does not support flipped rotation.
+    // see ui::display::Display::Rotation comment.
+    case WL_OUTPUT_TRANSFORM_FLIPPED:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+      NOTIMPLEMENTED_LOG_ONCE();
+      return display::Display::ROTATE_0;
+  }
+  NOTREACHED();
+  return display::Display::ROTATE_0;
+}
+
+}  // namespace
 
 WaylandScreen::WaylandScreen(WaylandConnection* connection)
     : connection_(connection), weak_factory_(this) {
@@ -74,8 +108,9 @@ WaylandScreen::~WaylandScreen() = default;
 
 void WaylandScreen::OnOutputAddedOrUpdated(uint32_t output_id,
                                            const gfx::Rect& bounds,
-                                           int32_t scale) {
-  AddOrUpdateDisplay(output_id, bounds, scale);
+                                           float scale,
+                                           int32_t transform) {
+  AddOrUpdateDisplay(output_id, bounds, scale, transform);
 }
 
 void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
@@ -98,7 +133,8 @@ void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
 
 void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
                                        const gfx::Rect& new_bounds,
-                                       int32_t scale_factor) {
+                                       float scale_factor,
+                                       int32_t transform) {
   display::Display changed_display(output_id);
   if (!display::Display::HasForceDeviceScaleFactor()) {
     changed_display.SetScaleAndBounds(scale_factor, new_bounds);
@@ -106,6 +142,12 @@ void WaylandScreen::AddOrUpdateDisplay(uint32_t output_id,
     changed_display.set_bounds(new_bounds);
     changed_display.set_work_area(new_bounds);
   }
+
+  DCHECK_GE(transform, WL_OUTPUT_TRANSFORM_NORMAL);
+  DCHECK_LE(transform, WL_OUTPUT_TRANSFORM_FLIPPED_270);
+  display::Display::Rotation rotation = WaylandTransformToRotation(transform);
+  changed_display.set_rotation(rotation);
+  changed_display.set_panel_rotation(rotation);
 
   gfx::DisplayColorSpaces color_spaces;
   color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
@@ -166,7 +208,7 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
   // has not received enter surface events yet. Another case is when a user
   // switches between displays in a single output mode - Wayland may not send
   // enter events immediately, which can result in empty container of entered
-  // ids (check comments in WaylandWindow::RemoveEnteredOutputId). In this
+  // ids (check comments in WaylandWindow::OnEnteredOutputIdRemoved). In this
   // case, it's also safe to return the primary display.
   if (entered_output_id == 0)
     return GetPrimaryDisplay();
@@ -192,7 +234,8 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // the last known cursor position. Otherwise, return such a point, which is
   // not contained by any of the windows.
   auto* cursor_position = connection_->wayland_cursor_position();
-  if (connection_->wayland_window_manager()->GetCurrentFocusedWindow() &&
+  if (connection_->wayland_window_manager()
+          ->GetCurrentPointerOrTouchFocusedWindow() &&
       cursor_position)
     return cursor_position->GetCursorSurfacePoint();
 
@@ -207,9 +250,9 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
   // It is safe to check only for focused windows and test if they contain the
   // point or not.
-  auto* window =
-      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-  if (window && window->GetBounds().Contains(point))
+  auto* window = connection_->wayland_window_manager()
+                     ->GetCurrentPointerOrTouchFocusedWindow();
+  if (window && window->GetBoundsInDIP().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
 }
@@ -241,6 +284,62 @@ display::Display WaylandScreen::GetDisplayMatching(
   return display_matching ? *display_matching : GetPrimaryDisplay();
 }
 
+bool WaylandScreen::SetScreenSaverSuspended(bool suspend) {
+  if (!connection_->zwp_idle_inhibit_manager())
+    return false;
+
+  if (suspend) {
+    // Wayland inhibits idle behaviour on certain output, and implies that a
+    // surface bound to that output should obtain the inhibitor and hold it
+    // until it no longer needs to prevent the output to go idle.
+    // We assume that the idle lock is initiated by the user, and therefore the
+    // surface that we should use is the one owned by the window that is focused
+    // currently.
+    const auto* window_manager = connection_->wayland_window_manager();
+    DCHECK(window_manager);
+    const auto* current_window = window_manager->GetCurrentFocusedWindow();
+    if (!current_window) {
+      LOG(WARNING) << "Cannot inhibit going idle when no window is focused";
+      return false;
+    }
+    DCHECK(current_window->root_surface());
+    idle_inhibitor_ = connection_->zwp_idle_inhibit_manager()->CreateInhibitor(
+        current_window->root_surface()->surface());
+  } else {
+    idle_inhibitor_.reset();
+  }
+
+  return true;
+}
+
+bool WaylandScreen::IsScreenSaverActive() const {
+  return idle_inhibitor_ != nullptr;
+}
+
+base::TimeDelta WaylandScreen::CalculateIdleTime() const {
+  // Try the org_kde_kwin_idle Wayland protocol extension (KWin).
+  if (const auto* kde_idle = connection_->org_kde_kwin_idle()) {
+    const auto idle_time = kde_idle->GetIdleTime();
+    if (idle_time)
+      return *idle_time;
+  }
+
+#if defined(USE_DBUS)
+  // Try the org.gnome.Mutter.IdleMonitor D-Bus service (Mutter).
+  if (!org_gnome_mutter_idle_monitor_)
+    org_gnome_mutter_idle_monitor_ =
+        std::make_unique<OrgGnomeMutterIdleMonitor>();
+  const auto idle_time = org_gnome_mutter_idle_monitor_->GetIdleTime();
+  if (idle_time)
+    return *idle_time;
+#endif  // defined(USE_DBUS)
+
+  NOTIMPLEMENTED_LOG_ONCE();
+
+  // No providers.  Return 0 which means the system never gets idle.
+  return base::Seconds(0);
+}
+
 void WaylandScreen::AddObserver(display::DisplayObserver* observer) {
   display_list_.AddObserver(observer);
 }
@@ -249,13 +348,20 @@ void WaylandScreen::RemoveObserver(display::DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
 }
 
-base::Value WaylandScreen::GetGpuExtraInfoAsListValue(
+std::vector<base::Value> WaylandScreen::GetGpuExtraInfo(
     const gfx::GpuExtraInfo& gpu_extra_info) {
-  // TODO(https://crbug.com/1138740): it'd be good to have the compositor name
-  // in the about://gpu as well.
-  auto list_value = GetDesktopEnvironmentInfoAsListValue();
-  StorePlatformNameIntoListValue(list_value, "wayland");
-  return list_value;
+  auto values = GetDesktopEnvironmentInfo();
+  std::vector<std::string> protocols;
+  for (const auto& protocol_and_version : connection_->available_globals()) {
+    protocols.push_back(base::StringPrintf("%s:%u",
+                                           protocol_and_version.first.c_str(),
+                                           protocol_and_version.second));
+  }
+  values.push_back(
+      display::BuildGpuInfoEntry("Interfaces exposed by the Wayland compositor",
+                                 base::JoinString(protocols, " ")));
+  StorePlatformNameIntoListOfValues(values, "wayland");
+  return values;
 }
 
 }  // namespace ui

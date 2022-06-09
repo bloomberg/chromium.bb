@@ -20,7 +20,7 @@
 #include "include/encode/SkWebpEncoder.h"
 #include "include/private/SkImageInfoPriv.h"
 
-#include "png.h"
+#include <png.h>
 
 #include <algorithm>
 #include <string>
@@ -167,8 +167,8 @@ DEF_TEST(Encode_JPG, r) {
                                       SkJpegEncoder::AlphaOption::kBlendOnBlack }) {
                 SkJpegEncoder::Options opts;
                 opts.fAlphaOption = alphaOption;
-                SkNullWStream dummy;
-                if (!SkJpegEncoder::Encode(&dummy, bm.pixmap(), opts)) {
+                SkNullWStream ignored;
+                if (!SkJpegEncoder::Encode(&ignored, bm.pixmap(), opts)) {
                     REPORTER_ASSERT(r, ct == kARGB_4444_SkColorType
                                     && alphaOption == SkJpegEncoder::AlphaOption::kBlendOnBlack);
                 }

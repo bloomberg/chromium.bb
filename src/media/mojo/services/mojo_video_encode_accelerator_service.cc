@@ -47,7 +47,7 @@ MojoVideoEncodeAcceleratorService::~MojoVideoEncodeAcceleratorService() {
 
 void MojoVideoEncodeAcceleratorService::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,
+    mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient> client,
     InitializeCallback success_callback) {
   DVLOG(1) << __func__ << " " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -59,6 +59,22 @@ void MojoVideoEncodeAcceleratorService::Initialize(
   if (gpu_workarounds_.disable_accelerated_vp8_encode &&
       config.output_profile == VP8PROFILE_ANY) {
     LOG(ERROR) << __func__ << " VP8 encoding disabled by GPU policy";
+    std::move(success_callback).Run(false);
+    return;
+  }
+
+  if (gpu_workarounds_.disable_accelerated_vp9_encode &&
+      config.output_profile >= VP9PROFILE_PROFILE0 &&
+      config.output_profile <= VP9PROFILE_PROFILE3) {
+    LOG(ERROR) << __func__ << " VP9 encoding disabled by GPU policy";
+    std::move(success_callback).Run(false);
+    return;
+  }
+
+  if (gpu_workarounds_.disable_accelerated_h264_encode &&
+      config.output_profile >= H264PROFILE_MIN &&
+      config.output_profile <= H264PROFILE_MAX) {
+    LOG(ERROR) << __func__ << " H.264 encoding disabled by GPU policy";
     std::move(success_callback).Run(false);
     return;
   }
@@ -159,9 +175,10 @@ void MojoVideoEncodeAcceleratorService::UseOutputBitstreamBuffer(
       BitstreamBuffer(bitstream_buffer_id, std::move(region), memory_size));
 }
 
-void MojoVideoEncodeAcceleratorService::RequestEncodingParametersChange(
-    const media::VideoBitrateAllocation& bitrate_allocation,
-    uint32_t framerate) {
+void MojoVideoEncodeAcceleratorService::
+    RequestEncodingParametersChangeWithLayers(
+        const media::VideoBitrateAllocation& bitrate_allocation,
+        uint32_t framerate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!encoder_)
@@ -171,6 +188,20 @@ void MojoVideoEncodeAcceleratorService::RequestEncodingParametersChange(
            << " framerate=" << framerate;
 
   encoder_->RequestEncodingParametersChange(bitrate_allocation, framerate);
+}
+
+void MojoVideoEncodeAcceleratorService::
+    RequestEncodingParametersChangeWithBitrate(const media::Bitrate& bitrate,
+                                               uint32_t framerate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!encoder_)
+    return;
+
+  DVLOG(2) << __func__ << " bitrate=" << bitrate.target()
+           << " framerate=" << framerate;
+
+  encoder_->RequestEncodingParametersChange(bitrate, framerate);
 }
 
 void MojoVideoEncodeAcceleratorService::IsFlushSupported(

@@ -248,7 +248,8 @@ void IntraEdgeUpsampler_NEON(void* buffer, const int size) {
 
     vst1_u8(pixel_buffer - 1, InterleaveLow8(result, src21));
     return;
-  } else if (size == 8) {
+  }
+  if (size == 8) {
     // Likewise, one load + multiple vtbls seems preferred to multiple loads.
     const uint8x16_t src = vld1q_u8(pixel_buffer - 1);
     const uint8x8_t src0 = VQTbl1U8(src, vcreate_u8(0x0605040302010000));

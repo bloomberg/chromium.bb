@@ -6,7 +6,6 @@
 
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
@@ -51,10 +50,11 @@ class TestBubbleDialogDelegate : public views::BubbleDialogDelegateView {
  public:
   explicit TestBubbleDialogDelegate(views::View* anchor)
       : BubbleDialogDelegateView(anchor, views::BubbleBorder::NONE) {}
-  ~TestBubbleDialogDelegate() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegate);
+  TestBubbleDialogDelegate(const TestBubbleDialogDelegate&) = delete;
+  TestBubbleDialogDelegate& operator=(const TestBubbleDialogDelegate&) = delete;
+
+  ~TestBubbleDialogDelegate() override = default;
 };
 
 class MockImmersiveFullscreenControllerDelegate
@@ -64,6 +64,12 @@ class MockImmersiveFullscreenControllerDelegate
       : top_container_view_(top_container_view),
         enabled_(false),
         visible_fraction_(1) {}
+
+  MockImmersiveFullscreenControllerDelegate(
+      const MockImmersiveFullscreenControllerDelegate&) = delete;
+  MockImmersiveFullscreenControllerDelegate& operator=(
+      const MockImmersiveFullscreenControllerDelegate&) = delete;
+
   ~MockImmersiveFullscreenControllerDelegate() override = default;
 
   // ImmersiveFullscreenControllerDelegate overrides:
@@ -94,13 +100,15 @@ class MockImmersiveFullscreenControllerDelegate
   views::View* top_container_view_;
   bool enabled_;
   double visible_fraction_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockImmersiveFullscreenControllerDelegate);
 };
 
 class ConsumeEventHandler : public ui::test::TestEventHandler {
  public:
   ConsumeEventHandler() = default;
+
+  ConsumeEventHandler(const ConsumeEventHandler&) = delete;
+  ConsumeEventHandler& operator=(const ConsumeEventHandler&) = delete;
+
   ~ConsumeEventHandler() override = default;
 
  private:
@@ -109,8 +117,6 @@ class ConsumeEventHandler : public ui::test::TestEventHandler {
     if (event->cancelable())
       event->SetHandled();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ConsumeEventHandler);
 };
 
 }  // namespace
@@ -123,6 +129,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
     SetCanMaximize(true);
     SetCanResize(true);
   }
+
+  TestWidgetDelegate(const TestWidgetDelegate&) = delete;
+  TestWidgetDelegate& operator=(const TestWidgetDelegate&) = delete;
+
   ~TestWidgetDelegate() override = default;
 
   // views::WidgetDelegateView:
@@ -131,9 +141,6 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       views::Widget* widget) override {
     return std::make_unique<NonClientFrameViewAsh>(widget);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
 class ImmersiveFullscreenControllerTest : public AshTestBase {
@@ -145,6 +152,12 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
   };
 
   ImmersiveFullscreenControllerTest() = default;
+
+  ImmersiveFullscreenControllerTest(const ImmersiveFullscreenControllerTest&) =
+      delete;
+  ImmersiveFullscreenControllerTest& operator=(
+      const ImmersiveFullscreenControllerTest&) = delete;
+
   ~ImmersiveFullscreenControllerTest() override = default;
 
   ImmersiveFullscreenController* controller() {
@@ -279,8 +292,8 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
         views::View::ConvertPointToScreen(top_container(), &start);
         views::View::ConvertPointToScreen(top_container(), &end);
         ui::test::EventGenerator* event_generator = GetEventGenerator();
-        event_generator->GestureScrollSequence(
-            start, end, base::TimeDelta::FromMilliseconds(30), 1);
+        event_generator->GestureScrollSequence(start, end,
+                                               base::Milliseconds(30), 1);
         break;
       }
     }
@@ -294,8 +307,6 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
   std::unique_ptr<ImmersiveFullscreenControllerTestApi> test_api_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenControllerTest);
 };
 
 // Test the initial state and that the delegate gets notified of the
@@ -1118,7 +1129,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
       shelf->shelf_widget()->GetWindowBoundsInScreen().top_center();
   GetEventGenerator()->GestureScrollSequence(
       start, start + gfx::Vector2d(0, -ShelfConfig::Get()->shelf_size()),
-      base::TimeDelta::FromMilliseconds(200), /*steps=*/5);
+      base::Milliseconds(200), /*steps=*/5);
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());

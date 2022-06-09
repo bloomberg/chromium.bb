@@ -15,6 +15,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.Batch;
@@ -83,8 +84,12 @@ public class TabUmaTest {
                 /* ChromeActivityNativeDelegate */ cta, /* isCustomTab= */ false,
                 rootUiCoordinator.getBrowserControlsManager(),
                 cta.getFullscreenManager(), /* TabCreatorManager */ cta,
-                cta::getTabModelSelector, cta::getCompositorViewHolder,
-                cta.getModalDialogManagerSupplier());
+                cta::getTabModelSelector, cta.getCompositorViewHolderSupplier(),
+                cta.getModalDialogManagerSupplier(), cta::getSnackbarManager,
+                cta.getBrowserControlsManager(), cta.getActivityTabProvider(),
+                cta.getLifecycleDispatcher(), cta.getWindowAndroid(),
+                cta::getLastUserInteractionTime, cta::hadWarmStart, new DummyJankTracker(),
+                rootUiCoordinator.getToolbarManager()::getToolbar);
         // clang-format on
     }
 

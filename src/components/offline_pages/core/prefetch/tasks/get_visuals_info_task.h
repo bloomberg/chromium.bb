@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_VISUALS_INFO_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TASKS_GET_VISUALS_INFO_TASK_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/task/task.h"
 #include "url/gurl.h"
@@ -28,19 +29,21 @@ class GetVisualsInfoTask : public Task {
   GetVisualsInfoTask(PrefetchStore* store,
                      int64_t offline_id,
                      ResultCallback callback);
+
+  GetVisualsInfoTask(const GetVisualsInfoTask&) = delete;
+  GetVisualsInfoTask& operator=(const GetVisualsInfoTask&) = delete;
+
   ~GetVisualsInfoTask() override;
 
  private:
   // Task implementation.
   void Run() override;
   void CompleteTaskAndForwardResult(Result result);
-  PrefetchStore* prefetch_store_;
+  raw_ptr<PrefetchStore> prefetch_store_;
   int64_t offline_id_;
   ResultCallback callback_;
 
   base::WeakPtrFactory<GetVisualsInfoTask> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GetVisualsInfoTask);
 };
 
 }  // namespace offline_pages

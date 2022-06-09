@@ -27,21 +27,21 @@ EnumNameTable<ReceiverMessage::Type, 5> kMessageTypeNames{
      {"CAPABILITIES_RESPONSE", ReceiverMessage::Type::kCapabilitiesResponse},
      {"RPC", ReceiverMessage::Type::kRpc}}};
 
-EnumNameTable<MediaCapability, 9> kMediaCapabilityNames{{
-    {"audio", MediaCapability::kAudio},
-    {"aac", MediaCapability::kAac},
-    {"opus", MediaCapability::kOpus},
-    {"video", MediaCapability::kVideo},
-    {"4k", MediaCapability::k4k},
-    {"h264", MediaCapability::kH264},
-    {"vp8", MediaCapability::kVp8},
-    {"vp9", MediaCapability::kVp9},
-    {"hevc", MediaCapability::kHevc},
-}};
+EnumNameTable<MediaCapability, 10> kMediaCapabilityNames{
+    {{"audio", MediaCapability::kAudio},
+     {"aac", MediaCapability::kAac},
+     {"opus", MediaCapability::kOpus},
+     {"video", MediaCapability::kVideo},
+     {"4k", MediaCapability::k4k},
+     {"h264", MediaCapability::kH264},
+     {"vp8", MediaCapability::kVp8},
+     {"vp9", MediaCapability::kVp9},
+     {"hevc", MediaCapability::kHevc},
+     {"av1", MediaCapability::kAv1}}};
 
 ReceiverMessage::Type GetMessageType(const Json::Value& root) {
   std::string type;
-  if (!json::ParseAndValidateString(root[kMessageType], &type)) {
+  if (!json::TryParseString(root[kMessageType], &type)) {
     return ReceiverMessage::Type::kUnknown;
   }
 
@@ -51,10 +51,9 @@ ReceiverMessage::Type GetMessageType(const Json::Value& root) {
   return parsed.value(ReceiverMessage::Type::kUnknown);
 }
 
-bool ParseAndValidateCapability(const Json::Value& value,
-                                MediaCapability* out) {
+bool TryParseCapability(const Json::Value& value, MediaCapability* out) {
   std::string c;
-  if (!json::ParseAndValidateString(value, &c)) {
+  if (!json::TryParseString(value, &c)) {
     return false;
   }
 
@@ -78,8 +77,8 @@ ErrorOr<ReceiverError> ReceiverError::Parse(const Json::Value& value) {
 
   int code;
   std::string description;
-  if (!json::ParseAndValidateInt(value[kErrorCode], &code) ||
-      !json::ParseAndValidateString(value[kErrorDescription], &description)) {
+  if (!json::TryParseInt(value[kErrorCode], &code) ||
+      !json::TryParseString(value[kErrorDescription], &description)) {
     return Error::Code::kJsonParseError;
   }
   return ReceiverError{code, description};
@@ -101,13 +100,13 @@ ErrorOr<ReceiverCapability> ReceiverCapability::Parse(
   }
 
   int remoting_version;
-  if (!json::ParseAndValidateInt(value["remoting"], &remoting_version)) {
+  if (!json::TryParseInt(value["remoting"], &remoting_version)) {
     remoting_version = ReceiverCapability::kRemotingVersionUnknown;
   }
 
   std::vector<MediaCapability> capabilities;
-  if (!json::ParseAndValidateArray<MediaCapability>(
-          value["mediaCaps"], ParseAndValidateCapability, &capabilities)) {
+  if (!json::TryParseArray<MediaCapability>(
+          value["mediaCaps"], TryParseCapability, &capabilities)) {
     return Error(Error::Code::kJsonParseError,
                  "Failed to parse media capabilities");
   }
@@ -129,14 +128,12 @@ Json::Value ReceiverCapability::ToJson() const {
 // static
 ErrorOr<ReceiverMessage> ReceiverMessage::Parse(const Json::Value& value) {
   ReceiverMessage message;
-  if (!value || !json::ParseAndValidateInt(value[kSequenceNumber],
-                                           &(message.sequence_number))) {
-    return Error(Error::Code::kJsonParseError,
-                 "Failed to parse sequence number");
+  if (!value) {
+    return Error(Error::Code::kJsonParseError, "Invalid message body");
   }
 
   std::string result;
-  if (!json::ParseAndValidateString(value[kResult], &result)) {
+  if (!json::TryParseString(value[kResult], &result)) {
     result = kResultError;
   }
 
@@ -155,8 +152,8 @@ ErrorOr<ReceiverMessage> ReceiverMessage::Parse(const Json::Value& value) {
   switch (message.type) {
     case Type::kAnswer: {
       Answer answer;
-      if (openscreen::cast::Answer::ParseAndValidate(value[kAnswerMessageBody],
-                                                     &answer)) {
+      if (openscreen::cast::Answer::TryParse(value[kAnswerMessageBody],
+                                             &answer)) {
         message.body = std::move(answer);
         message.valid = true;
       }
@@ -174,7 +171,7 @@ ErrorOr<ReceiverMessage> ReceiverMessage::Parse(const Json::Value& value) {
     case Type::kRpc: {
       std::string encoded_rpc;
       std::vector<uint8_t> rpc;
-      if (json::ParseAndValidateString(value[kRpcMessageBody], &encoded_rpc) &&
+      if (json::TryParseString(value[kRpcMessageBody], &encoded_rpc) &&
           base64::Decode(encoded_rpc, &rpc)) {
         message.body = std::move(rpc);
         message.valid = true;
@@ -183,6 +180,12 @@ ErrorOr<ReceiverMessage> ReceiverMessage::Parse(const Json::Value& value) {
 
     default:
       break;
+  }
+
+  if (message.type != ReceiverMessage::Type::kRpc &&
+      !json::TryParseInt(value[kSequenceNumber], &(message.sequence_number))) {
+    message.sequence_number = -1;
+    message.valid = false;
   }
 
   return message;

@@ -5,7 +5,6 @@
 #include "content/public/browser/permission_type.h"
 
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
@@ -22,7 +21,8 @@ const std::vector<PermissionType>& GetAllPermissionTypes() {
         std::vector<PermissionType> all_types;
         all_types.reserve(NUM_TYPES - 4);
         for (int i = 1; i < NUM_TYPES; ++i) {
-          if (i == 2 || i == 11 || i == 14 || i == 15)  // Skip removed entries.
+          // Skip removed entries.
+          if (i == 2 || i == 11 || i == 14 || i == 15 || i == 32)
             continue;
           all_types.push_back(static_cast<PermissionType>(i));
         }
@@ -101,8 +101,6 @@ absl::optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::FONT_ACCESS;
     case PermissionName::DISPLAY_CAPTURE:
       return PermissionType::DISPLAY_CAPTURE;
-    case PermissionName::FILE_HANDLING:
-      return PermissionType::FILE_HANDLING;
   }
 
   NOTREACHED();

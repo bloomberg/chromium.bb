@@ -5,6 +5,7 @@
 module crosapi.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "chromeos/crosapi/mojom/app_service_types.mojom";
 
 [Stable, Extensible]
 enum TouchEventType {
@@ -27,23 +28,38 @@ enum OptionalBoolean {
   kTrue,
 };
 
+// Implemented in lacros-chrome.
+// Lets the Ash browser tests that require Lacros to send commands to this
+// lacros-chrome instance.
+[Stable, Uuid="20e7f031-f4e1-4ad9-bd91-ad59eb8b1504"]
+interface StandaloneBrowserTestController {
+  // Installs a test web app in lacros-chrome given a start URL and mode (open
+  // in a tab or window) and returns the ID of the installed app (see
+  // |web_app::GenerateAppId|).
+  InstallWebApp@0(string start_url, WindowMode mode) => (string app_id);
+};
+
 // This interface is implemented by Ash-Chrome.
 // This interface provides tests a mechanism to mutate or query ash.
 // In the future, this interface may merge with an automation or a11y interface.
-// Next version: 5
-// Next method id: 9
+// Next version: 10
+// Next method id: 17
 [Stable, Uuid="1f93f9d7-e466-466c-a675-c21b48cf30d3"]
 interface TestController {
-  // Queries whether a window with the given |window_id| exists. |window_id|
-  // should be obtained from PlatformWindow::GetWindowUniqueId(). A typical
-  // format might be: "org.chromium.lacros.9A82A161B2A0B9BADF75E9BB958B9FCB"
-  DoesWindowExist@0(string window_id) => (bool exist);
-
   // Clicks the middle of the window. Assumes that the window exists and is
   // visible on screen. |window_id| should be obtained from
   // PlatformWindow::GetWindowUniqueId(). A typical format might be:
   // "org.chromium.lacros.9A82A161B2A0B9BADF75E9BB958B9FCB"
   ClickWindow@1(string window_id);
+
+  // Checks whether an item with a given ID exists in the shelf.
+  [MinVersion=5]
+  DoesItemExistInShelf@9(string item_id) => (bool exists);
+
+  // Queries whether a window with the given |window_id| exists. |window_id|
+  // should be obtained from PlatformWindow::GetWindowUniqueId(). A typical
+  // format might be: "org.chromium.lacros.9A82A161B2A0B9BADF75E9BB958B9FCB"
+  DoesWindowExist@0(string window_id) => (bool exist);
 
   // Causes ash to enter or exit overview mode. The callback is invoked after
   // overview mode is entered (and the animation is finished).
@@ -63,6 +79,41 @@ interface TestController {
   [MinVersion=2]
   ExitTabletMode@5() => ();
 
+  // Gets the context menu for a shelf item. This assumes the item is already in
+  // the shelf.
+  [MinVersion=7]
+  GetContextMenuForShelfItem@13(string item_id) => (array<string> items);
+
+  // Returns the value of the ash::kMinimizeOnBackKey property for the given
+  // window.
+  // This allows the client (eg lacros) to verify assumptions eg whether
+  // the current active tab should react to a system wide back gesture.
+  //
+  // Note: For simplicity, the return callback is called with `true` in case
+  // the property is not set, of the window is not found.
+  [MinVersion=4]
+  GetMinimizeOnBackKeyWindowProperty@10(string window_id)
+      => (OptionalBoolean value);
+
+  // Returns the position of a window's top-left corner in global "screen"
+  // coordinates in DIPs. By design, Wayland clients do not know the global
+  // position of their windows on the display. However, for window manager
+  // integration testing, some tests may need to assert a window is in a certain
+  // position (e.g. at the top of the display). Returns null if the window does
+  // not exist.
+  [MinVersion=3]
+  GetWindowPositionInScreen@8(string window_id) => (gfx.mojom.Point? position);
+
+  // Pins or unpins an item to the shelf. This assumes the item is already in
+  // the shelf. Returns |false| on any error.
+  [MinVersion=6]
+  PinOrUnpinItemInShelf@11(string item_id, bool pin) => (bool success);
+
+  // Simulates a user left-clicking an item in the shelf. This assumes the item
+  // is already in the shelf. Returns |false| on any error.
+  [MinVersion=6]
+  SelectItemInShelf@12(string item_id) => (bool success);
+
   // Creates a touch event and dispatches it to the window with |window_id|.
   // Returns immediately if the window does not exist. The |pointer_id|
   // specifies which touch-point is involved in a multi-touch gesture.
@@ -75,23 +126,18 @@ interface TestController {
   SendTouchEvent@7(string window_id, TouchEventType type, uint8 pointer_id,
                    gfx.mojom.PointF location_in_window) => ();
 
-  // Returns the position of a window's top-left corner in global "screen"
-  // coordinates in DIPs. By design, Wayland clients do not know the global
-  // position of their windows on the display. However, for window manager
-  // integration testing, some tests may need to assert a window is in a certain
-  // position (e.g. at the top of the display). Returns null if the window does
-  // not exist.
-  [MinVersion=3]
-  GetWindowPositionInScreen@8(string window_id) => (gfx.mojom.Point? position);
+  // Get the number of open Ash browser windows.
+  [MinVersion=8]
+  GetOpenAshBrowserWindows@14() => (uint32 number);
 
-  // Returns the value of the ash::kMinimizeOnBackKey property for the given
-  // window.
-  // This allows the client (eg lacros) to verify assumptions eg whether
-  // the current active tab should react to a system wide back gesture.
-  //
-  // Note: For simplicity, the return callback is called with `true` in case
-  // the property is not set, of the window is not found.
-  [MinVersion=4]
-  GetMinimizeOnBackKeyWindowProperty@10(string windiow_id)
-      => (OptionalBoolean value);
+  // Close all browser windows.
+  // Note: Usually there should be no Ash window open unless the test opened
+  // one.
+  [MinVersion=8]
+  CloseAllBrowserWindows@15() => (bool success);
+
+  // Register a lacros-chrome test controller with ash-chrome to let ash-chrome
+  // send commands to lacros-chrome.
+  [MinVersion=9] RegisterStandaloneBrowserTestController@16(
+      pending_remote<StandaloneBrowserTestController> controller);
 };

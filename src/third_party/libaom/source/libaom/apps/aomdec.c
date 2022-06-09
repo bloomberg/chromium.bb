@@ -187,20 +187,22 @@ static int raw_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   size_t frame_size = 0;
 
   if (fread(raw_hdr, RAW_FRAME_HDR_SZ, 1, infile) != 1) {
-    if (!feof(infile)) warn("Failed to read RAW frame size\n");
+    if (!feof(infile)) aom_tools_warn("Failed to read RAW frame size\n");
   } else {
     const size_t kCorruptFrameThreshold = 256 * 1024 * 1024;
     const size_t kFrameTooSmallThreshold = 256 * 1024;
     frame_size = mem_get_le32(raw_hdr);
 
     if (frame_size > kCorruptFrameThreshold) {
-      warn("Read invalid frame size (%u)\n", (unsigned int)frame_size);
+      aom_tools_warn("Read invalid frame size (%u)\n",
+                     (unsigned int)frame_size);
       frame_size = 0;
     }
 
     if (frame_size < kFrameTooSmallThreshold) {
-      warn("Warning: Read invalid frame size (%u) - not a raw file?\n",
-           (unsigned int)frame_size);
+      aom_tools_warn(
+          "Warning: Read invalid frame size (%u) - not a raw file?\n",
+          (unsigned int)frame_size);
     }
 
     if (frame_size > *buffer_size) {
@@ -209,7 +211,7 @@ static int raw_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
         *buffer = new_buf;
         *buffer_size = 2 * frame_size;
       } else {
-        warn("Failed to allocate compressed data buffer\n");
+        aom_tools_warn("Failed to allocate compressed data buffer\n");
         frame_size = 0;
       }
     }
@@ -217,7 +219,7 @@ static int raw_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
 
   if (!feof(infile)) {
     if (fread(*buffer, 1, frame_size, infile) != frame_size) {
-      warn("Failed to read full frame\n");
+      aom_tools_warn("Failed to read full frame\n");
       return 1;
     }
     *bytes_read = frame_size;
@@ -671,8 +673,8 @@ static int main_loop(int argc, const char **argv_) {
     fatal("Unsupported fourcc: %x\n", aom_input_ctx.fourcc);
 
   if (interface && fourcc_interface && interface != fourcc_interface)
-    warn("Header indicates codec: %s\n",
-         aom_codec_iface_name(fourcc_interface));
+    aom_tools_warn("Header indicates codec: %s\n",
+                   aom_codec_iface_name(fourcc_interface));
   else
     interface = fourcc_interface;
 
@@ -760,10 +762,10 @@ static int main_loop(int argc, const char **argv_) {
 
         if (aom_codec_decode(&decoder, buf, bytes_in_buffer, NULL)) {
           const char *detail = aom_codec_error_detail(&decoder);
-          warn("Failed to decode frame %d: %s", frame_in,
-               aom_codec_error(&decoder));
+          aom_tools_warn("Failed to decode frame %d: %s", frame_in,
+                         aom_codec_error(&decoder));
 
-          if (detail) warn("Additional information: %s", detail);
+          if (detail) aom_tools_warn("Additional information: %s", detail);
           if (!keep_going) goto fail;
         }
 
@@ -771,8 +773,8 @@ static int main_loop(int argc, const char **argv_) {
           int qp;
           if (AOM_CODEC_CONTROL_TYPECHECKED(&decoder, AOMD_GET_LAST_QUANTIZER,
                                             &qp)) {
-            warn("Failed AOMD_GET_LAST_QUANTIZER: %s",
-                 aom_codec_error(&decoder));
+            aom_tools_warn("Failed AOMD_GET_LAST_QUANTIZER: %s",
+                           aom_codec_error(&decoder));
             if (!keep_going) goto fail;
           }
           fprintf(framestats_file, "%d,%d\r\n", (int)bytes_in_buffer, qp);
@@ -792,7 +794,8 @@ static int main_loop(int argc, const char **argv_) {
     if (flush_decoder) {
       // Flush the decoder.
       if (aom_codec_decode(&decoder, NULL, 0, NULL)) {
-        warn("Failed to flush decoder: %s", aom_codec_error(&decoder));
+        aom_tools_warn("Failed to flush decoder: %s",
+                       aom_codec_error(&decoder));
       }
     }
 
@@ -806,7 +809,8 @@ static int main_loop(int argc, const char **argv_) {
 
       if (AOM_CODEC_CONTROL_TYPECHECKED(&decoder, AOMD_GET_FRAME_CORRUPTED,
                                         &corrupted)) {
-        warn("Failed AOM_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));
+        aom_tools_warn("Failed AOM_GET_FRAME_CORRUPTED: %s",
+                       aom_codec_error(&decoder));
         if (!keep_going) goto fail;
       }
       frames_corrupted += corrupted;

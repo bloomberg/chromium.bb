@@ -52,7 +52,7 @@ using std::vector;
 struct Options {
   Options()
       : srcPath(), dsymPath(), arch(), header_only(false),
-        cfi(true), handle_inter_cu_refs(true) {}
+        cfi(true), handle_inter_cu_refs(true), handle_inlines(false) {}
 
   string srcPath;
   string dsymPath;
@@ -60,6 +60,7 @@ struct Options {
   bool header_only;
   bool cfi;
   bool handle_inter_cu_refs;
+  bool handle_inlines;
 };
 
 static bool StackFrameEntryComparator(const Module::StackFrameEntry* a,
@@ -107,7 +108,9 @@ static void CopyCFIDataBetweenModules(Module* to_module,
 }
 
 static bool Start(const Options& options) {
-  SymbolData symbol_data = options.cfi ? ALL_SYMBOL_DATA : NO_CFI;
+  SymbolData symbol_data =
+      (options.handle_inlines ? INLINES : NO_DATA) |
+      (options.cfi ? CFI : NO_DATA) | SYMBOLS_AND_FILES;
   DumpSymbols dump_symbols(symbol_data, options.handle_inter_cu_refs);
 
   // For x86_64 binaries, the CFI data is in the __TEXT,__eh_frame of the
@@ -201,6 +204,7 @@ static void Usage(int argc, const char *argv[]) {
                   "Mach-o file\n");
   fprintf(stderr, "\t-c: Do not generate CFI section\n");
   fprintf(stderr, "\t-r: Do not handle inter-compilation unit references\n");
+  fprintf(stderr, "\t-d: Generate INLINE and INLINE_ORIGIN records\n");
   fprintf(stderr, "\t-h: Usage\n");
   fprintf(stderr, "\t-?: Usage\n");
 }
@@ -210,7 +214,7 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   signed char ch;
 
-  while ((ch = getopt(argc, (char * const*)argv, "ia:g:chr?")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "ia:g:crd?h")) != -1) {
     switch (ch) {
       case 'i':
         options->header_only = true;
@@ -234,6 +238,9 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
         break;
       case 'r':
         options->handle_inter_cu_refs = false;
+        break;
+      case 'd':
+        options->handle_inlines = true;
         break;
       case '?':
       case 'h':

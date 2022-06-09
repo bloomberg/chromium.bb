@@ -17,7 +17,7 @@ luci.bucket(
         ),
         acl.entry(
             roles = acl.BUILDBUCKET_OWNER,
-            groups = "google/luci-task-force@google.com",
+            groups = "project-chromium-admins",
         ),
         acl.entry(
             roles = acl.SCHEDULER_OWNER,
@@ -35,7 +35,6 @@ defaults.executable.set("recipe:chromium")
 defaults.execution_timeout.set(2 * time.hour)
 defaults.os.set(os.LINUX_XENIAL_OR_BIONIC_REMOVE)
 defaults.service_account.set("chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com")
-defaults.swarming_tags.set(["vpython:native-python-wrapper"])
 defaults.triggered_by.set(["chromium-gitiles-trigger"])
 
 defaults.properties.set({

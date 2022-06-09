@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/profiler/profiler_buildflags.h"
 #include "base/profiler/stack_buffer.h"
@@ -136,7 +136,8 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     const int collection_id;
 
     const SamplingParams params;    // Information about how to sample.
-    WaitableEvent* const finished;  // Signaled when all sampling complete.
+    const raw_ptr<WaitableEvent>
+        finished;  // Signaled when all sampling complete.
 
     // Receives the sampling data and builds a CallStackProfile.
     std::unique_ptr<ProfileBuilder> profile_builder;
@@ -159,6 +160,9 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 
   // Gets the single instance of this class.
   static SamplingThread* GetInstance();
+
+  SamplingThread(const SamplingThread&) = delete;
+  SamplingThread& operator=(const SamplingThread&) = delete;
 
   // Adds a new CollectionContext to the thread. This can be called externally
   // from any thread. This returns a collection id that can later be used to
@@ -271,8 +275,6 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // vars, this must be accessed while holding |thread_execution_state_lock_|.
   int thread_execution_state_add_events_
       GUARDED_BY(thread_execution_state_lock_) = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SamplingThread);
 };
 
 // static
@@ -548,7 +550,7 @@ void StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle() {
   GetTaskRunnerOnSamplingThread()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&SamplingThread::ShutdownTask, Unretained(this), add_events),
-      TimeDelta::FromSeconds(60));
+      Seconds(60));
 }
 
 void StackSamplingProfiler::SamplingThread::AddAuxUnwinderTask(
@@ -749,8 +751,9 @@ TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
 // The profiler is currently supported for Windows x64, MacOSX x64, and Android
 // ARM32.
 bool StackSamplingProfiler::IsSupportedForCurrentPlatform() {
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
-    (defined(OS_MAC) && defined(ARCH_CPU_X86_64)) || \
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) ||  \
+    (defined(OS_MAC) && defined(ARCH_CPU_X86_64)) ||  \
+    (defined(OS_IOS) && defined(ARCH_CPU_64_BITS)) || \
     (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
 #if defined(OS_MAC)
   // TODO(https://crbug.com/1098119): Fix unwinding on macOS 11. The OS has

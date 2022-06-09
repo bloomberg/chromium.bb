@@ -154,22 +154,18 @@ static INLINE int16_t accumulate_eob(__m128i eob) {
   return _mm_extract_epi16(eob, 1);
 }
 
-static INLINE void store_zero_tran_low(int16_t *a) {
-  const __m256i zero = _mm256_setzero_si256();
-  _mm256_storeu_si256((__m256i *)(a), zero);
-}
-
 void av1_quantize_lp_avx2(const int16_t *coeff_ptr, intptr_t n_coeffs,
                           const int16_t *round_ptr, const int16_t *quant_ptr,
                           int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr,
                           const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                          const int16_t *scan) {
+                          const int16_t *scan, const int16_t *iscan) {
+  (void)scan;
   __m128i eob;
   __m256i round256, quant256, dequant256;
-  __m256i eob256, thr256;
+  __m256i eob256;
 
   coeff_ptr += n_coeffs;
-  scan += n_coeffs;
+  iscan += n_coeffs;
   qcoeff_ptr += n_coeffs;
   dqcoeff_ptr += n_coeffs;
   n_coeffs = -n_coeffs;
@@ -205,7 +201,7 @@ void av1_quantize_lp_avx2(const int16_t *coeff_ptr, intptr_t n_coeffs,
       _mm256_storeu_si256((__m256i *)(dqcoeff_ptr + n_coeffs), coeff256);
     }
 
-    eob256 = scan_eob_256((const __m256i *)(scan + n_coeffs), &coeff256);
+    eob256 = scan_eob_256((const __m256i *)(iscan + n_coeffs), &coeff256);
     n_coeffs += 8 * 2;
   }
 
@@ -214,30 +210,22 @@ void av1_quantize_lp_avx2(const int16_t *coeff_ptr, intptr_t n_coeffs,
   quant256 = _mm256_permute2x128_si256(quant256, quant256, 0x31);
   round256 = _mm256_permute2x128_si256(round256, round256, 0x31);
 
-  thr256 = _mm256_srai_epi16(dequant256, 1);
-
   // AC only loop
   while (n_coeffs < 0) {
     __m256i coeff256 =
         _mm256_loadu_si256((const __m256i *)(coeff_ptr + n_coeffs));
     __m256i qcoeff256 = _mm256_abs_epi16(coeff256);
-    int32_t nzflag =
-        _mm256_movemask_epi8(_mm256_cmpgt_epi16(qcoeff256, thr256));
 
-    if (nzflag) {
-      __m256i qtmp256;
-      qcoeff256 = _mm256_adds_epi16(qcoeff256, round256);
-      qtmp256 = _mm256_mulhi_epi16(qcoeff256, quant256);
-      qcoeff256 = _mm256_sign_epi16(qtmp256, coeff256);
-      _mm256_storeu_si256((__m256i *)(qcoeff_ptr + n_coeffs), qcoeff256);
-      coeff256 = _mm256_mullo_epi16(qcoeff256, dequant256);
-      _mm256_storeu_si256((__m256i *)(dqcoeff_ptr + n_coeffs), coeff256);
-      eob256 = _mm256_max_epi16(
-          eob256, scan_eob_256((const __m256i *)(scan + n_coeffs), &coeff256));
-    } else {
-      store_zero_tran_low(qcoeff_ptr + n_coeffs);
-      store_zero_tran_low(dqcoeff_ptr + n_coeffs);
-    }
+    __m256i qtmp256;
+    qcoeff256 = _mm256_adds_epi16(qcoeff256, round256);
+    qtmp256 = _mm256_mulhi_epi16(qcoeff256, quant256);
+    qcoeff256 = _mm256_sign_epi16(qtmp256, coeff256);
+    _mm256_storeu_si256((__m256i *)(qcoeff_ptr + n_coeffs), qcoeff256);
+    coeff256 = _mm256_mullo_epi16(qcoeff256, dequant256);
+    _mm256_storeu_si256((__m256i *)(dqcoeff_ptr + n_coeffs), coeff256);
+    eob256 = _mm256_max_epi16(
+        eob256, scan_eob_256((const __m256i *)(iscan + n_coeffs), &coeff256));
+
     n_coeffs += 8 * 2;
   }
 

@@ -139,7 +139,7 @@ Status PreprocessDataEdgesBetweenOutsideCompilations(
   // Remove the edge from host to outside compilation. Add a placeholder as
   // outside compilation node input.
   std::map<std::pair<string, int>, Node*> placeholders;
-  for (int i = 0; i < edges.size(); i++) {
+  for (int i = 0, end = edges.size(); i < end; i++) {
     Node* dst = g->FindNodeId(edges[i].dst_node_id);
     const Edge* e;
     TF_RETURN_IF_ERROR(dst->input_edge(edges[i].dst_input, &e));
@@ -168,9 +168,7 @@ Status PreprocessDataEdgesBetweenOutsideCompilations(
                                src_output);
       NodeDef placeholder_def;
       TF_RETURN_IF_ERROR(placeholder_builder.Finalize(&placeholder_def));
-      Status s;
-      placeholder_node = g->AddNode(placeholder_def, &s);
-      TF_RETURN_IF_ERROR(s);
+      TF_ASSIGN_OR_RETURN(placeholder_node, g->AddNode(placeholder_def));
       placeholders[placeholder_index] = placeholder_node;
     } else {
       placeholder_node = iter->second;
@@ -185,7 +183,7 @@ Status PreprocessDataEdgesBetweenOutsideCompilations(
     // Other edge in `edges` might have `e->dst()` as src or dst
     // node. Before removing `e->dst()`, replace those edges with
     // corresponding edges for `dst_replace_node`.
-    for (int j = i + 1; j < edges.size(); j++) {
+    for (int j = i + 1, end = edges.size(); j < end; j++) {
       if (edges[j].dst_node_id == edges[i].dst_node_id) {
         edges[j].dst_node_id = dst_replace_node->id();
       }
@@ -238,7 +236,7 @@ Status PostprocessDataEdgesBetweenOutsideCompilations(
       g->AddControlEdge(original_node, e->dst());
       g->RemoveEdge(e);
     }
-    for (int i = 0; i < data_edges.size(); i++) {
+    for (int i = 0, end = data_edges.size(); i < end; i++) {
       Node* dst = data_edges[i].dst;
       NodeDef new_def = dst->def();
       int dst_input = data_edges[i].dst_input;
@@ -253,7 +251,7 @@ Status PostprocessDataEdgesBetweenOutsideCompilations(
 
       // Other edges might have `dst` as dst node. Update those edges with
       // `replace_node`.
-      for (int j = i + 1; j < data_edges.size(); j++) {
+      for (int j = i + 1, end = data_edges.size(); j < end; j++) {
         if (data_edges[j].dst == dst) {
           data_edges[j].dst = replace_node;
         }

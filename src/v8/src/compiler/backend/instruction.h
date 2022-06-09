@@ -11,6 +11,7 @@
 #include <set>
 
 #include "src/base/compiler-specific.h"
+#include "src/base/numbers/double.h"
 #include "src/codegen/external-reference.h"
 #include "src/codegen/register-arch.h"
 #include "src/codegen/source-position.h"
@@ -20,7 +21,6 @@
 #include "src/compiler/feedback-source.h"
 #include "src/compiler/frame.h"
 #include "src/compiler/opcodes.h"
-#include "src/numbers/double.h"
 #include "src/zone/zone-allocator.h"
 
 namespace v8 {
@@ -553,6 +553,7 @@ class LocationOperand : public InstructionOperand {
       case MachineRepresentation::kTagged:
       case MachineRepresentation::kCompressedPointer:
       case MachineRepresentation::kCompressed:
+      case MachineRepresentation::kCagedPointer:
         return true;
       case MachineRepresentation::kBit:
       case MachineRepresentation::kWord8:
@@ -882,6 +883,13 @@ class V8_EXPORT_PRIVATE Instruction final {
     return FlagsConditionField::decode(opcode());
   }
   int misc() const { return MiscField::decode(opcode()); }
+  bool HasMemoryAccessMode() const {
+    return compiler::HasMemoryAccessMode(arch_opcode());
+  }
+  MemoryAccessMode memory_access_mode() const {
+    DCHECK(HasMemoryAccessMode());
+    return AccessModeField::decode(opcode());
+  }
 
   static Instruction* New(Zone* zone, InstructionCode opcode) {
     return New(zone, opcode, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -935,8 +943,7 @@ class V8_EXPORT_PRIVATE Instruction final {
 
   bool IsDeoptimizeCall() const {
     return arch_opcode() == ArchOpcode::kArchDeoptimize ||
-           FlagsModeField::decode(opcode()) == kFlags_deoptimize ||
-           FlagsModeField::decode(opcode()) == kFlags_deoptimize_and_poison;
+           FlagsModeField::decode(opcode()) == kFlags_deoptimize;
   }
 
   bool IsTrap() const {
@@ -1147,9 +1154,9 @@ class V8_EXPORT_PRIVATE Constant final {
     return bit_cast<uint32_t>(static_cast<int32_t>(value_));
   }
 
-  Double ToFloat64() const {
+  base::Double ToFloat64() const {
     DCHECK_EQ(kFloat64, type());
-    return Double(bit_cast<uint64_t>(value_));
+    return base::Double(bit_cast<uint64_t>(value_));
   }
 
   ExternalReference ToExternalReference() const {
@@ -1168,7 +1175,7 @@ class V8_EXPORT_PRIVATE Constant final {
 
  private:
   Type type_;
-  RelocInfo::Mode rmode_ = RelocInfo::NONE;
+  RelocInfo::Mode rmode_ = RelocInfo::NO_INFO;
   int64_t value_;
 };
 
@@ -1449,24 +1456,35 @@ class JSToWasmFrameStateDescriptor : public FrameStateDescriptor {
 // frame state descriptor that we have to go back to.
 class DeoptimizationEntry final {
  public:
-  DeoptimizationEntry() = default;
   DeoptimizationEntry(FrameStateDescriptor* descriptor, DeoptimizeKind kind,
-                      DeoptimizeReason reason, FeedbackSource const& feedback)
+                      DeoptimizeReason reason, NodeId node_id,
+                      FeedbackSource const& feedback)
       : descriptor_(descriptor),
         kind_(kind),
         reason_(reason),
-        feedback_(feedback) {}
+#ifdef DEBUG
+        node_id_(node_id),
+#endif  // DEBUG
+        feedback_(feedback) {
+    USE(node_id);
+  }
 
   FrameStateDescriptor* descriptor() const { return descriptor_; }
   DeoptimizeKind kind() const { return kind_; }
   DeoptimizeReason reason() const { return reason_; }
+#ifdef DEBUG
+  NodeId node_id() const { return node_id_; }
+#endif  // DEBUG
   FeedbackSource const& feedback() const { return feedback_; }
 
  private:
-  FrameStateDescriptor* descriptor_ = nullptr;
-  DeoptimizeKind kind_ = DeoptimizeKind::kEager;
-  DeoptimizeReason reason_ = DeoptimizeReason::kUnknown;
-  FeedbackSource feedback_ = FeedbackSource();
+  FrameStateDescriptor* const descriptor_;
+  const DeoptimizeKind kind_;
+  const DeoptimizeReason reason_;
+#ifdef DEBUG
+  const NodeId node_id_;
+#endif  // DEBUG
+  const FeedbackSource feedback_;
 };
 
 using DeoptimizationVector = ZoneVector<DeoptimizationEntry>;
@@ -1537,7 +1555,8 @@ class V8_EXPORT_PRIVATE InstructionBlock final
   }
   inline bool IsLoopHeader() const { return loop_end_.IsValid(); }
   inline bool IsSwitchTarget() const { return switch_target_; }
-  inline bool ShouldAlign() const { return alignment_; }
+  inline bool ShouldAlignCodeTarget() const { return code_target_alignment_; }
+  inline bool ShouldAlignLoopHeader() const { return loop_header_alignment_; }
 
   using Predecessors = ZoneVector<RpoNumber>;
   Predecessors& predecessors() { return predecessors_; }
@@ -1560,7 +1579,8 @@ class V8_EXPORT_PRIVATE InstructionBlock final
 
   void set_ao_number(RpoNumber ao_number) { ao_number_ = ao_number; }
 
-  void set_alignment(bool val) { alignment_ = val; }
+  void set_code_target_alignment(bool val) { code_target_alignment_ = val; }
+  void set_loop_header_alignment(bool val) { loop_header_alignment_ = val; }
 
   void set_switch_target(bool val) { switch_target_ = val; }
 
@@ -1585,13 +1605,16 @@ class V8_EXPORT_PRIVATE InstructionBlock final
   RpoNumber dominator_;
   int32_t code_start_;   // start index of arch-specific code.
   int32_t code_end_ = -1;     // end index of arch-specific code.
-  const bool deferred_;       // Block contains deferred code.
-  bool handler_;              // Block is a handler entry point.
-  bool switch_target_ = false;
-  bool alignment_ = false;  // insert alignment before this block
-  bool needs_frame_ = false;
-  bool must_construct_frame_ = false;
-  bool must_deconstruct_frame_ = false;
+  const bool deferred_ : 1;   // Block contains deferred code.
+  bool handler_ : 1;          // Block is a handler entry point.
+  bool switch_target_ : 1;
+  bool code_target_alignment_ : 1;  // insert code target alignment before this
+                                    // block
+  bool loop_header_alignment_ : 1;  // insert loop header alignment before this
+                                    // block
+  bool needs_frame_ : 1;
+  bool must_construct_frame_ : 1;
+  bool must_deconstruct_frame_ : 1;
 };
 
 class InstructionSequence;
@@ -1719,7 +1742,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
   RpoImmediates& rpo_immediates() { return rpo_immediates_; }
 
   ImmediateOperand AddImmediate(const Constant& constant) {
-    if (RelocInfo::IsNone(constant.rmode())) {
+    if (RelocInfo::IsNoInfo(constant.rmode())) {
       if (constant.type() == Constant::kRpoNumber) {
         // Ideally we would inline RPO numbers into the operand, however jump-
         // threading modifies RPO values and so we indirect through a vector
@@ -1770,7 +1793,7 @@ class V8_EXPORT_PRIVATE InstructionSequence final
 
   int AddDeoptimizationEntry(FrameStateDescriptor* descriptor,
                              DeoptimizeKind kind, DeoptimizeReason reason,
-                             FeedbackSource const& feedback);
+                             NodeId node_id, FeedbackSource const& feedback);
   DeoptimizationEntry const& GetDeoptimizationEntry(int deoptimization_id);
   int GetDeoptimizationEntryCount() const {
     return static_cast<int>(deoptimization_entries_.size());

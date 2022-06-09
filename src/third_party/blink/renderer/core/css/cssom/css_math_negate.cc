@@ -11,15 +11,13 @@
 
 namespace blink {
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 V8CSSNumberish* CSSMathNegate::value() {
   return MakeGarbageCollected<V8CSSNumberish>(value_);
 }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 absl::optional<CSSNumericSumValue> CSSMathNegate::SumValue() const {
   auto maybe_sum = value_->SumValue();
-  if (!maybe_sum)
+  if (!maybe_sum.has_value())
     return absl::nullopt;
 
   std::for_each(maybe_sum->terms.begin(), maybe_sum->terms.end(),
@@ -46,7 +44,7 @@ CSSMathExpressionNode* CSSMathNegate::ToCalcExpressionNode() const {
     return nullptr;
   return CSSMathExpressionBinaryOperation::CreateSimplified(
       CSSMathExpressionNumericLiteral::Create(
-          -1, CSSPrimitiveValue::UnitType::kNumber, false),
+          -1, CSSPrimitiveValue::UnitType::kNumber),
       right_side, CSSMathOperator::kMultiply);
 }
 

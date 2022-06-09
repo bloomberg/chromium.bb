@@ -11,6 +11,7 @@
 namespace blink {
 
 class StyleRuleContainer;
+class ContainerQuery;
 
 class CSSContainerRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
@@ -21,8 +22,12 @@ class CSSContainerRule final : public CSSConditionRule {
 
   String cssText() const override;
 
+  const AtomicString& Name() const;
+  void SetConditionText(const ExecutionContext*, String);
+
  private:
   CSSRule::Type GetType() const override { return kContainerRule; }
+  const class ContainerQuery& ContainerQuery() const;
 };
 
 template <>

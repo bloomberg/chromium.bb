@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_NET_FAKE_CONNECTIVITY_CHECKER_H_
 #define CHROMECAST_NET_FAKE_CONNECTIVITY_CHECKER_H_
 
-#include "base/macros.h"
 #include "chromecast/net/connectivity_checker.h"
 
 namespace chromecast {
@@ -15,6 +14,9 @@ namespace chromecast {
 class FakeConnectivityChecker : public ConnectivityChecker {
  public:
   FakeConnectivityChecker();
+
+  FakeConnectivityChecker(const FakeConnectivityChecker&) = delete;
+  FakeConnectivityChecker& operator=(const FakeConnectivityChecker&) = delete;
 
   // ConnectivityChecker implementation:
   bool Connected() const override;
@@ -29,8 +31,6 @@ class FakeConnectivityChecker : public ConnectivityChecker {
  private:
   friend class base::RefCountedThreadSafe<FakeConnectivityChecker>;
   bool connected_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConnectivityChecker);
 };
 
 }  // namespace chromecast

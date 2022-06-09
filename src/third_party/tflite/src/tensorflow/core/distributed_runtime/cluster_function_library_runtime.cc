@@ -102,9 +102,8 @@ Status ClusterFunctionLibraryRuntime::ConstructFunctionGraph(
   for (const auto& p : attrs) {
     (*function_node_def.mutable_attr())[p.first] = p.second;
   }
-  Status status;
-  Node* function_node = g.AddNode(std::move(function_node_def), &status);
-  TF_RETURN_IF_ERROR(status);
+  TF_ASSIGN_OR_RETURN(Node * function_node,
+                      g.AddNode(std::move(function_node_def)));
   for (size_t i = 0; i < input_nodes.size(); ++i) {
     g.AddEdge(input_nodes[i], 0, function_node, i);
   }
@@ -333,7 +332,7 @@ void ClusterFunctionLibraryRuntime::Run(
 void ClusterFunctionLibraryRuntime::Run(
     const FunctionLibraryRuntime::Options& opts,
     FunctionLibraryRuntime::LocalHandle handle,
-    gtl::ArraySlice<FunctionArg> args, std::vector<Tensor>* rets,
+    gtl::ArraySlice<FunctionArg> args, std::vector<FunctionRet>* rets,
     FunctionLibraryRuntime::DoneCallback done) {
   std::vector<Tensor> tensors;
   for (const auto& arg : args) {
@@ -346,7 +345,17 @@ void ClusterFunctionLibraryRuntime::Run(
       return;
     }
   }
-  return Run(opts, handle, tensors, rets, std::move(done));
+  std::vector<Tensor>* ret_tensors = new std::vector<Tensor>;
+  return Run(opts, handle, tensors, ret_tensors,
+             [rets, ret_tensors, done = std::move(done)](const Status& s) {
+               if (s.ok()) {
+                 for (const auto& t : *ret_tensors) {
+                   rets->push_back(t);
+                 }
+               }
+               delete ret_tensors;
+               done(s);
+             });
 }
 
 void ClusterFunctionLibraryRuntime::CleanUp(

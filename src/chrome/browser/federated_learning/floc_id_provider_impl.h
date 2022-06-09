@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_FEDERATED_LEARNING_FLOC_ID_PROVIDER_IMPL_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
@@ -59,7 +60,8 @@ class FlocIdProviderImpl : public FlocIdProvider,
                            public history::HistoryServiceObserver {
  public:
   struct ComputeFlocResult {
-    ComputeFlocResult() = default;
+    explicit ComputeFlocResult(FlocId::Status status)
+        : floc_id(FlocId::CreateInvalid(status)) {}
 
     ComputeFlocResult(uint64_t sim_hash, const FlocId& floc_id)
         : sim_hash_computed(true), sim_hash(sim_hash), floc_id(floc_id) {}
@@ -93,6 +95,8 @@ class FlocIdProviderImpl : public FlocIdProvider,
   blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
       const GURL& url,
       const absl::optional<url::Origin>& top_frame_origin) const override;
+
+  mojom::WebUIFlocStatusPtr GetFlocStatusForWebUi() const override;
 
   void MaybeRecordFlocToUkm(ukm::SourceId source_id) override;
 
@@ -160,9 +164,9 @@ class FlocIdProviderImpl : public FlocIdProvider,
   // profile-keyed service factories, and the dependency declared in
   // FlocIdProviderFactory::FlocIdProviderFactory() guarantees that this object
   // will be destroyed first among those services.
-  PrefService* prefs_;
-  PrivacySandboxSettings* privacy_sandbox_settings_;
-  history::HistoryService* history_service_;
+  raw_ptr<PrefService> prefs_;
+  raw_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
+  raw_ptr<history::HistoryService> history_service_;
 
   std::unique_ptr<FlocEventLogger> floc_event_logger_;
 
