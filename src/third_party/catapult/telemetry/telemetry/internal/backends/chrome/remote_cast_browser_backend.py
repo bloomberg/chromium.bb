@@ -29,6 +29,9 @@ class RemoteCastBrowserBackend(cast_browser_backend.CastBrowserBackend):
         casting_tab=casting_tab)
     self._ip_addr = cast_platform_backend.ip_addr
 
+  def _ReadReceiverName(self):
+    return self._receiver_name
+
   def _SendCommand(self, ssh, command, prompt=None):
     """Uses ssh session to send command.
 
@@ -187,11 +190,9 @@ class RemoteCastBrowserBackend(cast_browser_backend.CastBrowserBackend):
     self._browser_process = self._GetCastDirSSHSession()
     runtime_command = env_var + ['./run_cast.sh', 'rt']
     self._browser_process.sendline(' '.join(runtime_command))
+    self._discovery_mode = True
     self._SetReceiverName(env_var)
     self._WaitForSink()
-    self._casting_tab.action_runner.Navigate('about:blank')
-    self._casting_tab.action_runner.tab.StartTabMirroring(self._receiver_name)
-    self.BindDevToolsClient()
 
   def GetPid(self):
     return self._browser_process.pid
@@ -201,3 +202,4 @@ class RemoteCastBrowserBackend(cast_browser_backend.CastBrowserBackend):
 
   def Close(self):
     self._StopSDKCast()
+    super(RemoteCastBrowserBackend, self).Close()

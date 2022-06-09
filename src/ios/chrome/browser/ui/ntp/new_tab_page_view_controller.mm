@@ -345,16 +345,19 @@
   UIViewController* parentViewController =
       self.isFeedVisible ? self.discoverFeedWrapperViewController.discoverFeed
                          : self.discoverFeedWrapperViewController;
+  // Configures the feed header in the view hierarchy if it is visible.
+  if (self.feedHeaderViewController) {
+    // Ensure that sticky header is not covered by omnibox.
+    if ([self.ntpContentDelegate isContentHeaderSticky]) {
+      self.feedHeaderViewController.view.layer.zPosition = FLT_MAX;
+    }
+    [self addViewController:self.feedHeaderViewController
+        toParentViewController:parentViewController];
+  }
   [self addViewController:[self contentSuggestionsViewController]
       toParentViewController:parentViewController];
   if (!IsContentSuggestionsUIViewControllerMigrationEnabled()) {
     self.contentSuggestionsLayout.parentCollectionView = self.collectionView;
-  }
-
-  // Configures the feed header in the view hierarchy if it is visible.
-  if (self.feedHeaderViewController) {
-    [self addViewController:self.feedHeaderViewController
-        toParentViewController:parentViewController];
   }
 
   if (IsContentSuggestionsHeaderMigrationEnabled()) {
@@ -880,6 +883,8 @@
                self.fakeOmniboxPinnedToTop) {
       [self resetFakeOmniboxConstraints];
     }
+  } else if (self.fakeOmniboxPinnedToTop) {
+    [self resetFakeOmniboxConstraints];
   }
 
   // Handles the sticky feed header.
