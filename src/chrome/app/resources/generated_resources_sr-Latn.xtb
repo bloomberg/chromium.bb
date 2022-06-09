@@ -1472,7 +1472,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2359071692152028734">Linux aplikacije mogu da prestanu da reaguju.</translation>
 <translation id="2359345697448000899">Upravljajte dodacima klikom na stavku Dodaci u meniju Alatke.</translation>
 <translation id="2359556993567737338">Povežite Bluetooth uređaj</translation>
-<translation id="2359808026110333948">Nastavite</translation>
+<translation id="2359808026110333948">Nastavi</translation>
 <translation id="2361100938102002520">Dodajete profil kojim se upravlja u ovaj pregledač. Administrator ima kontrolu nad profilom i može da pristupa njegovim podacima.</translation>
 <translation id="236117173274098341">Optimizuj</translation>
 <translation id="2361340419970998028">Povratne informacije se šalju...</translation>
@@ -3884,7 +3884,7 @@ a Ctrl+Alt+taster za smanjivanje osvetljenosti da biste umanjili prikaz.</transl
 <translation id="4742970037960872810">Ukloni isticanje</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saznajte kako da ažurirate aplikacije<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Uključi zvuk sajta}one{Uključi zvuk sajtova}few{Uključi zvuk sajtova}other{Uključi zvuk sajtova}}</translation>
-<translation id="474609389162964566">Pristupajte Pomoćniku pomoću fraze „Hej Google“</translation>
+<translation id="474609389162964566">Pristupajte Pomoćniku frazom „Hej Google“</translation>
 <translation id="4746351372139058112">Poruke</translation>
 <translation id="4748783296226936791">Sajtovi se obično povezuju sa HID uređajima za potrebe funkcija koje koriste neuobičajene tastature, kontrolere za igre i druge uređaje</translation>
 <translation id="4750185073185658673">Idite na telefon da biste pregledali još nekoliko dozvola. Uverite se da su Bluetooth i WiFi telefona uključeni.</translation>
