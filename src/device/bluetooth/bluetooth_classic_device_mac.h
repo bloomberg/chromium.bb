@@ -11,8 +11,6 @@
 #include <string>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,6 +26,11 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
  public:
   explicit BluetoothClassicDeviceMac(BluetoothAdapterMac* adapter,
                                      IOBluetoothDevice* device);
+
+  BluetoothClassicDeviceMac(const BluetoothClassicDeviceMac&) = delete;
+  BluetoothClassicDeviceMac& operator=(const BluetoothClassicDeviceMac&) =
+      delete;
+
   ~BluetoothClassicDeviceMac() override;
 
   // BluetoothDevice override
@@ -56,8 +59,7 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
                             base::OnceClosure callback,
                             ErrorCallback error_callback) override;
   void Connect(PairingDelegate* pairing_delegate,
-               base::OnceClosure callback,
-               ConnectErrorCallback error_callback) override;
+               ConnectCallback callback) override;
   void SetPinCode(const std::string& pincode) override;
   void SetPasskey(uint32_t passkey) override;
   void ConfirmPairing() override;
@@ -96,8 +98,6 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
       BluetoothHCITransmitPowerLevelType power_level_type) const;
 
   base::scoped_nsobject<IOBluetoothDevice> device_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothClassicDeviceMac);
 };
 
 }  // namespace device

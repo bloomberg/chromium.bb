@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
@@ -72,6 +71,9 @@ class ConnectivityCheckerImpl
           pending_url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       TimeSyncTracker* time_sync_tracker);
+
+  ConnectivityCheckerImpl(const ConnectivityCheckerImpl&) = delete;
+  ConnectivityCheckerImpl& operator=(const ConnectivityCheckerImpl&) = delete;
 
   // ConnectivityChecker implementation:
   bool Connected() const override;
@@ -147,8 +149,6 @@ class ConnectivityCheckerImpl
 
   base::WeakPtr<ConnectivityCheckerImpl> weak_this_;
   base::WeakPtrFactory<ConnectivityCheckerImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectivityCheckerImpl);
 };
 
 }  // namespace chromecast

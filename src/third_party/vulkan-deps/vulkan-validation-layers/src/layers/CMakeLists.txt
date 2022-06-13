@@ -85,6 +85,12 @@ macro(AddVkLayer target LAYER_COMPILE_DEFINITIONS)
     target_compile_definitions(VkLayer_${target} PUBLIC ${LAYER_COMPILE_DEFINITIONS})
     target_link_libraries(VkLayer_${target} PRIVATE VkLayer_utils)
 
+    if (VVL_ENABLE_ASAN)
+        target_compile_options(VkLayer_${target} PRIVATE -fsanitize=address)
+        # NOTE: Use target_link_options when cmake 3.13 is available on CI
+        target_link_libraries(VkLayer_${target} PRIVATE "-fsanitize=address")
+    endif()
+
     if(WIN32)
         target_sources(VkLayer_${target} PRIVATE VkLayer_${target}.def)
         target_compile_definitions(VkLayer_${target} PUBLIC NOMINMAX)
@@ -129,7 +135,7 @@ endif()
 
 # Clang warns about unused const variables. Generated files may purposely contain unused consts, so silence this warning in Clang
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
+    set_source_files_properties(generated/parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
 endif()
 
 set(CHASSIS_LIBRARY_FILES
@@ -155,8 +161,24 @@ set(CORE_VALIDATION_LIBRARY_FILES
     core_validation_error_enums.h
     core_error_location.h
     core_error_location.cpp
-    core_validation_types.h
     base_node.h
+    device_memory_state.h
+    device_memory_state.cpp
+    buffer_state.h
+    buffer_state.cpp
+    cmd_buffer_state.h
+    cmd_buffer_state.cpp
+    image_state.h
+    image_state.cpp
+    pipeline_state.h
+    pipeline_state.cpp
+    queue_state.h
+    queue_state.cpp
+    query_state.h
+    ray_tracing_state.h
+    render_pass_state.h
+    render_pass_state.cpp
+    sampler_state.h
     drawdispatch.cpp
     convert_to_renderpass2.cpp
     descriptor_sets.cpp
@@ -170,6 +192,7 @@ set(CORE_VALIDATION_LIBRARY_FILES
     sync_vuid_maps.cpp
     sync_vuid_maps.h
     generated/spirv_validation_helper.cpp
+    generated/spirv_grammar_helper.cpp
     generated/command_validation.cpp
     generated/synchronization_validation_types.cpp
     gpu_validation.cpp
@@ -246,6 +269,8 @@ if(INSTRUMENT_OPTICK)
 endif()
 
 if(BUILD_LAYERS)
+    find_package(SPIRV-Tools REQUIRED CONFIG)
+    find_package(SPIRV-Tools-opt REQUIRED CONFIG)
     AddVkLayer(khronos_validation "${KHRONOS_LAYER_COMPILE_DEFINITIONS}"
         ${CHASSIS_LIBRARY_FILES}
         ${CORE_VALIDATION_LIBRARY_FILES}
@@ -272,16 +297,15 @@ if(BUILD_LAYERS)
     endif()
 
     # Khronos validation additional dependencies
-    target_include_directories(VkLayer_khronos_validation PRIVATE ${GLSLANG_SPIRV_INCLUDE_DIR})
-    target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_INCLUDE_DIR})
-    target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_HEADERS_INCLUDE_DIR})
+    target_include_directories(VkLayer_khronos_validation PRIVATE ${GLSLANG_INCLUDE_DIR})
     if(INSTRUMENT_OPTICK)
         target_include_directories(VkLayer_khronos_validation PRIVATE ${OPTICK_SOURCE_DIR})
     endif()
     if (USE_ROBIN_HOOD_HASHING)
         target_include_directories(VkLayer_khronos_validation PRIVATE ${ROBIN_HOOD_HASHING_INCLUDE_DIR})
     endif()
-    target_link_libraries(VkLayer_khronos_validation PRIVATE ${SPIRV_TOOLS_LIBRARIES})
+    target_link_libraries(VkLayer_khronos_validation PRIVATE SPIRV-Headers::SPIRV-Headers SPIRV-Tools-static SPIRV-Tools-opt)
+
 
     # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
     # because the json format uses backslash escapes

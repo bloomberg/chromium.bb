@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_IMAGE_H_
 #define LIB_JXL_IMAGE_H_
@@ -231,6 +222,12 @@ class Rect {
     return Rect(x0_, y0_, xsize_, ysize_, image.xsize(), image.ysize());
   }
 
+  // Construct a subrect that resides in the [0, ysize) x [0, xsize) region of
+  // the current rect.
+  Rect Crop(size_t area_xsize, size_t area_ysize) const {
+    return Rect(x0_, y0_, xsize_, ysize_, area_xsize, area_ysize);
+  }
+
   // Returns a rect that only contains `num` lines with offset `y` from `y0()`.
   Rect Lines(size_t y, size_t num) const {
     JXL_DASSERT(y + num <= ysize_);
@@ -243,6 +240,10 @@ class Rect {
     return Rect(std::max(x0_, other.x0_), std::max(y0_, other.y0_), xsize_,
                 ysize_, std::min(x0_ + xsize_, other.x0_ + other.xsize_),
                 std::min(y0_ + ysize_, other.y0_ + other.ysize_));
+  }
+
+  JXL_MUST_USE_RESULT Rect Translate(int64_t x_offset, int64_t y_offset) const {
+    return Rect(x0_ + x_offset, y0_ + y_offset, xsize_, ysize_);
   }
 
   template <typename T>

@@ -21,9 +21,9 @@
 #include <cassert>
 #include "subresource_adapter.h"
 #include "vk_format_utils.h"
-#include "state_tracker.h"
-#include "core_validation_types.h"
 #include <cmath>
+#include "image_state.h"
+#include "layer_chassis_dispatch.h"
 
 namespace subresource_adapter {
 Subresource::Subresource(const RangeEncoder& encoder, const VkImageSubresource& subres)
@@ -193,9 +193,9 @@ static bool IsValid(const RangeEncoder& encoder, const VkImageSubresourceRange& 
 // the encoder) will span the levelCount mip levels as weill.
 RangeGenerator::RangeGenerator(const RangeEncoder& encoder, const VkImageSubresourceRange& subres_range)
     : encoder_(&encoder), isr_pos_(encoder, subres_range), pos_(), aspect_base_() {
-    assert((((isr_pos_.Limits()).aspectMask & (encoder.Limits()).aspectMask) == (isr_pos_.Limits()).aspectMask) &&
-           ((isr_pos_.Limits()).baseMipLevel + (isr_pos_.Limits()).levelCount <= (encoder.Limits()).mipLevel) &&
-           ((isr_pos_.Limits()).baseArrayLayer + (isr_pos_.Limits()).layerCount <= (encoder.Limits()).arrayLayer));
+    assert((((isr_pos_.Limits()).aspectMask & (encoder.Limits()).aspectMask) == (isr_pos_.Limits()).aspectMask));
+    assert((isr_pos_.Limits()).baseMipLevel + (isr_pos_.Limits()).levelCount <= (encoder.Limits()).mipLevel);
+    assert((isr_pos_.Limits()).baseArrayLayer + (isr_pos_.Limits()).layerCount <= (encoder.Limits()).arrayLayer);
 
     // To see if we have a full range special case, need to compare the subres_range against the *encoders* limits
     const auto& limits = encoder.Limits();
@@ -304,7 +304,7 @@ ImageRangeEncoder::ImageRangeEncoder(const IMAGE_STATE& image, const AspectParam
         for (uint32_t mip_index = 0; mip_index < limits_.mipLevel; ++mip_index) {
             subres_layers.mipLevel = mip_index;
             subres.mipLevel = mip_index;
-            auto subres_extent = GetImageSubresourceExtent(image_, &subres_layers);
+            auto subres_extent = image_->GetSubresourceExtent(subres_layers);
 
             if (linear_image_) {
                 DispatchGetImageSubresourceLayout(image_->store_device_as_workaround, image_->image(), &subres, &layout);

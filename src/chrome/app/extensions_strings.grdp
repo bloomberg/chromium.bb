@@ -115,14 +115,26 @@
   <message name="IDS_EXTENSIONS_ITEM_HOST_PERMISSIONS_HEADING" desc="The heading above the details of which websites an extension is allowed to run on.">
     Allow this extension to read and change all your data on websites you visit:
   </message>
+  <message name="IDS_EXTENSIONS_NEW_ITEM_HOST_PERMISSIONS_HEADING" desc="The heading above the details of which websites an extension is allowed to run on, for the new site access settings.">
+    Choose when this extension can read and change your site data
+  </message>
   <message name="IDS_EXTENSIONS_HOST_ACCESS_ON_CLICK" desc="The text for the option to only allow an extension to read and change data when the user clicks on the extension.">
     On click
+  </message>
+  <message name="IDS_EXTENSIONS_NEW_HOST_ACCESS_ON_CLICK" desc="The text for the option to only allow an extension to read and change data when the user clicks on the extension, for the new site access settings.">
+    When I click the extension
   </message>
   <message name="IDS_EXTENSIONS_HOST_ACCESS_ON_SPECIFIC_SITES" desc="The text for the option to allow an extension to read and change data on a select set of sites.">
     On specific sites
   </message>
+  <message name="IDS_EXTENSIONS_HOST_CUSTOMIZE_FOR_EACH_SITE" desc="The text for the option to customize which sites an extension is allowed to read and change data, for the new site access settings.">
+    Customize for each site
+  </message>
   <message name="IDS_EXTENSIONS_HOST_ACCESS_ON_ALL_SITES" desc="The text for the option to allow an extension to read and change data on all websites.">
     On all sites
+  </message>
+  <message name="IDS_EXTENSIONS_NEW_HOST_ACCESS_ON_ALL_SITES" desc="The text for the option to allow an extension to read and change data on all websites, for the new site access settings.">
+    Always on all sites
   </message>
   <message name="IDS_EXTENSIONS_ITEM_ALLOWED_HOSTS" desc="The heading above the section listing any sites the extension is allowed to run on.">
     Allowed sites
@@ -214,6 +226,12 @@
   <message name="IDS_EXTENSIONS_ITEM_DETAILS" desc="The text on the button to show more details for a given extension.">
     Details
   </message>
+  <message name="IDS_EXTENSIONS_DETAILS_BACK_BUTTON_ARIA_LABEL" desc="Text read by screen readers when focusing on the back button on details page. If the back button is activated, it will navigate to the previous page. This text will only be announced by screen readers and will not be visible in the UI." is_accessibility_with_no_ui="true">
+    <ph name="SUBPAGE_TITLE">$1<ex>Google Docs</ex></ph> details page back button
+  </message>
+  <message name="IDS_EXTENSIONS_DETAILS_BACK_BUTTON_ARIA_ROLE_DESCRIPTION" desc="Description read by screen readers when focusing on the back button. Indicates to the user that activating the back button will cause the Extensions page to navigate away from the currently displaying details page to the previous visited page. This text will only be announced by screen readers and will not be visible in the UI." is_accessibility_with_no_ui="true">
+    Click to navigate away from <ph name="SUBPAGE_TITLE">$1<ex>Google Docs</ex> details page</ph>.
+  </message>
   <message name="IDS_EXTENSIONS_EXTENSION_A11Y_ASSOCIATION" desc="Label used to associate an app or extension with actions a user can take. This label is for screen readers and will only be read out lout. Ex: a button labeled 'Delete' would have the description 'Related to AdBlock'. Without the added description a user on a screen reader would not have context of the extension they want to delete. Note that the action can be 'view details', 'enable', 'delete', 'errors', or something else.">
     Related to <ph name="NAME_PH">$1<ex>AdBlock</ex></ph>
   </message>
@@ -251,7 +269,7 @@
     Permissions
   </message>
   <message name="IDS_EXTENSIONS_ITEM_PERMISSIONS_EMPTY" desc="The text to indicate that an extension does not have any special permissions.">
-    This extension requires no special permissions
+    This extension requires no special permissions.
   </message>
   <message name="IDS_EXTENSIONS_ITEM_REMOVE_EXTENSION" desc="The label on the button to remove an extension.">
     Remove extension
@@ -259,11 +277,17 @@
   <message name="IDS_EXTENSIONS_ITEM_SITE_ACCESS" desc="The label above the list of the websites that the extension can access.">
     Site access
   </message>
+  <message name="IDS_EXTENSIONS_ITEM_SITE_ACCESS_NEW" desc="The label of the button to click to view the list of websites that the extension can access.">
+    Site permissions
+  </message>
   <message name="IDS_EXTENSIONS_ITEM_SITE_ACCESS_ADD_HOST" desc="The label of the option to add a new site that the extension should be allowed to access.">
     Add a new page
   </message>
   <message name="IDS_EXTENSIONS_ITEM_SITE_ACCESS_EMPTY" desc="The text to indicate that an extension does not have any site access.">
     This extension has no additional site access.
+  </message>
+  <message name="IDS_EXTENSIONS_ITEM_SITE_ACCESS_SUBLABEL" desc="The sublabel of the button to click to view the list of websites that the extension can access.">
+    Choose when this extension can read and change your site data
   </message>
   <message name="IDS_EXTENSIONS_ITEM_SOURCE" desc="The label above an extension's source, which indicates where the extension came from (webstore, third-party, local disk, etc).">
     Source
@@ -440,35 +464,6 @@
 </if>
 <message name="IDS_EXTENSIONS_NEED_CHARACTER" desc="Error message explaining that a shortcut needs a character. This is only shown if a valid modifier is already entered.">
   Type a letter
-</message>
-
-<!-- Extensions Checkup Banner -->
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_TITLE" desc="Title of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a performance focus.">
-  A healthier, happier Chrome
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_BODY1" desc="First pargagraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a performance focus.">
-  Some extensions can slow you down - especially ones you didn't mean to install.
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PERFORMANCE_BODY2" desc="Second paragraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a performance focus.">
-  If you don’t recognize an extension, or if your browser isn’t working as expected, you can turn off or customize extensions here.
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_TITLE" desc="Title of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a privacy focus.">
-  Check your extensions
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_BODY1" desc="First pargagraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a privacy focus.">
-  Some extensions can see your browsing activity - including personal information.
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_PRIVACY_BODY2" desc="Second paragraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a privacy focus.">
-  If you don’t recognize an extension, or if your browser isn’t working as expected, you can turn off or customize extensions here.
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_TITLE" desc="Title of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a neutral focus.">
-  Manage your extensions
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_BODY1" desc="First paragraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a neutral focus.">
-  On this page you can see all the extensions installed in Chrome.
-</message>
-<message name="IDS_EXTENSIONS_CHECKUP_BANNER_NEUTRAL_BODY2" desc="Second paragraph of the extensions checkup flow shown in the chrome://extensions page, encouraging the user to audit their installed extensions with a neutral focus.">
-  If you don't recognize an extension, or if your browser isn't working as expected, you can turn off or customize extensions here.
 </message>
 
 <if expr="chromeos">

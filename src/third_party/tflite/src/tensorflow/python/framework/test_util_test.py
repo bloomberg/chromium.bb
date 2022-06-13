@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for tensorflow.ops.test_util."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import copy
 import random
@@ -32,37 +28,42 @@ from google.protobuf import text_format
 
 from tensorflow.core.framework import graph_pb2
 from tensorflow.core.protobuf import meta_graph_pb2
+from tensorflow.python import pywrap_sanitizers
 from tensorflow.python.compat import compat
 from tensorflow.python.eager import context
+from tensorflow.python.eager import def_function
 from tensorflow.python.framework import combinations
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
 from tensorflow.python.framework import ops
+from tensorflow.python.framework import random_seed
 from tensorflow.python.framework import test_ops  # pylint: disable=unused-import
 from tensorflow.python.framework import test_util
+from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import lookup_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
+from tensorflow.python.ops.ragged import ragged_tensor
 from tensorflow.python.platform import googletest
 
 
 class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
-  @test_util.run_deprecated_v1
   def test_assert_ops_in_graph(self):
-    with self.test_session():
+    with ops.Graph().as_default():
       constant_op.constant(["hello", "taffy"], name="hello")
       test_util.assert_ops_in_graph({"hello": "Const"}, ops.get_default_graph())
 
-    self.assertRaises(ValueError, test_util.assert_ops_in_graph,
-                      {"bye": "Const"}, ops.get_default_graph())
+      self.assertRaises(ValueError, test_util.assert_ops_in_graph,
+                        {"bye": "Const"}, ops.get_default_graph())
 
-    self.assertRaises(ValueError, test_util.assert_ops_in_graph,
-                      {"hello": "Variable"}, ops.get_default_graph())
+      self.assertRaises(ValueError, test_util.assert_ops_in_graph,
+                        {"hello": "Variable"}, ops.get_default_graph())
 
   @test_util.run_deprecated_v1
   def test_session_functions(self):
@@ -104,9 +105,30 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     # assert_equal_graph_def doesn't care about order
     test_util.assert_equal_graph_def(def_57, def_75)
     # Compare two unequal graphs
-    with self.assertRaisesRegexp(AssertionError,
-                                 r"^Found unexpected node '{{node seven}}"):
+    with self.assertRaisesRegex(AssertionError,
+                                r"^Found unexpected node '{{node seven}}"):
       test_util.assert_equal_graph_def(def_57, def_empty)
+
+  def test_assert_equal_graph_def_hash_table(self):
+    def get_graph_def():
+      with ops.Graph().as_default() as g:
+        x = constant_op.constant([2, 9], name="x")
+        keys = constant_op.constant([1, 2], name="keys")
+        values = constant_op.constant([3, 4], name="values")
+        default = constant_op.constant(-1, name="default")
+        table = lookup_ops.StaticHashTable(
+            lookup_ops.KeyValueTensorInitializer(keys, values), default)
+        _ = table.lookup(x)
+      return g.as_graph_def()
+    def_1 = get_graph_def()
+    def_2 = get_graph_def()
+    # The unique shared_name of each table makes the graph unequal.
+    with self.assertRaisesRegex(AssertionError, "hash_table_"):
+      test_util.assert_equal_graph_def(def_1, def_2,
+                                       hash_table_shared_name=False)
+    # That can be ignored. (NOTE: modifies GraphDefs in-place.)
+    test_util.assert_equal_graph_def(def_1, def_2,
+                                     hash_table_shared_name=True)
 
   def testIsGoogleCudaEnabled(self):
     # The test doesn't assert anything. It ensures the py wrapper
@@ -123,6 +145,22 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       print("MKL is enabled")
     else:
       print("MKL is disabled")
+
+  @test_util.disable_asan("Skip test if ASAN is enabled.")
+  def testDisableAsan(self):
+    self.assertFalse(pywrap_sanitizers.is_asan_enabled())
+
+  @test_util.disable_msan("Skip test if MSAN is enabled.")
+  def testDisableMsan(self):
+    self.assertFalse(pywrap_sanitizers.is_msan_enabled())
+
+  @test_util.disable_tsan("Skip test if TSAN is enabled.")
+  def testDisableTsan(self):
+    self.assertFalse(pywrap_sanitizers.is_tsan_enabled())
+
+  @test_util.disable_ubsan("Skip test if UBSAN is enabled.")
+  def testDisableUbsan(self):
+    self.assertFalse(pywrap_sanitizers.is_ubsan_enabled())
 
   @test_util.run_in_graph_and_eager_modes
   def testAssertProtoEqualsStr(self):
@@ -162,8 +200,7 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
     # Check if the assertion failure message contains the content of
     # the inner proto.
-    with self.assertRaisesRegexp(AssertionError,
-                                 r'meta_graph_version: "inner"'):
+    with self.assertRaisesRegex(AssertionError, r'meta_graph_version: "inner"'):
       self.assertProtoEquals("", meta_graph_def_outer)
 
   @test_util.run_in_graph_and_eager_modes
@@ -251,11 +288,18 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     self._WeMustGoDeeper("name")
     self._WeMustGoDeeper("orig")
 
+  @parameterized.named_parameters(
+      dict(testcase_name="tensors", ragged_tensors=False),
+      dict(testcase_name="ragged_tensors", ragged_tensors=True))
   @test_util.run_in_graph_and_eager_modes
-  def testAllCloseTensors(self):
+  def testAllCloseTensors(self, ragged_tensors: bool):
     a_raw_data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     a = constant_op.constant(a_raw_data)
     b = math_ops.add(1, constant_op.constant([[0, 1, 2], [3, 4, 5], [6, 7, 8]]))
+    if ragged_tensors:
+      a = ragged_tensor.RaggedTensor.from_tensor(a)
+      b = ragged_tensor.RaggedTensor.from_tensor(b)
+
     self.assertAllClose(a, b)
     self.assertAllClose(a, a_raw_data)
 
@@ -270,19 +314,19 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
   @test_util.run_in_graph_and_eager_modes
   def testAllCloseScalars(self):
     self.assertAllClose(7, 7 + 1e-8)
-    with self.assertRaisesRegexp(AssertionError, r"Not equal to tolerance"):
+    with self.assertRaisesRegex(AssertionError, r"Not equal to tolerance"):
       self.assertAllClose(7, 7 + 1e-5)
 
   @test_util.run_in_graph_and_eager_modes
   def testAllCloseList(self):
-    with self.assertRaisesRegexp(AssertionError, r"not close dif"):
+    with self.assertRaisesRegex(AssertionError, r"not close dif"):
       self.assertAllClose([0], [1])
 
   @test_util.run_in_graph_and_eager_modes
   def testAllCloseDictToNonDict(self):
-    with self.assertRaisesRegexp(ValueError, r"Can't compare dict to non-dict"):
+    with self.assertRaisesRegex(ValueError, r"Can't compare dict to non-dict"):
       self.assertAllClose(1, {"a": 1})
-    with self.assertRaisesRegexp(ValueError, r"Can't compare dict to non-dict"):
+    with self.assertRaisesRegex(ValueError, r"Can't compare dict to non-dict"):
       self.assertAllClose({"a": 1}, 1)
 
   @test_util.run_in_graph_and_eager_modes
@@ -313,17 +357,17 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     for k in expected:
       actual = dict(expected)
       del actual[k]
-      with self.assertRaisesRegexp(AssertionError, r"mismatched keys"):
+      with self.assertRaisesRegex(AssertionError, r"mismatched keys"):
         self.assertAllClose(expected, actual)
 
     # With each item changed.
-    with self.assertRaisesRegexp(AssertionError, r"Not equal to tolerance"):
+    with self.assertRaisesRegex(AssertionError, r"Not equal to tolerance"):
       self.assertAllClose(expected, {"a": a + 1e-5, "b": b, "c": c})
-    with self.assertRaisesRegexp(AssertionError, r"Shape mismatch"):
+    with self.assertRaisesRegex(AssertionError, r"Shape mismatch"):
       self.assertAllClose(expected, {"a": a, "b": b + (4.,), "c": c})
     c_copy = np.array(c)
     c_copy[1, 1, 1] += 1e-5
-    with self.assertRaisesRegexp(AssertionError, r"Not equal to tolerance"):
+    with self.assertRaisesRegex(AssertionError, r"Not equal to tolerance"):
       self.assertAllClose(expected, {"a": a, "b": b, "c": c_copy})
 
   @test_util.run_in_graph_and_eager_modes
@@ -349,9 +393,21 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
     # Test mismatched values
     b["y"][1][0]["nested"]["n"] = 4.2
-    with self.assertRaisesRegexp(AssertionError,
-                                 r"\[y\]\[1\]\[0\]\[nested\]\[n\]"):
+    with self.assertRaisesRegex(AssertionError,
+                                r"\[y\]\[1\]\[0\]\[nested\]\[n\]"):
       self.assertAllClose(a, b)
+
+  @test_util.run_in_graph_and_eager_modes
+  def testAssertDictEqual(self):
+    a = 7
+    b = (2., 3.)
+    c = np.ones((3, 2, 4)) * 7.
+    d = "testing123"
+    expected = {"a": a, "b": b, "c": c, "d": d}
+    actual = {"a": a, "b": b, "c": constant_op.constant(c), "d": d}
+
+    self.assertDictEqual(expected, expected)
+    self.assertDictEqual(expected, actual)
 
   @test_util.run_in_graph_and_eager_modes
   def testArrayNear(self):
@@ -465,7 +521,7 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     self.assertAllEqual([120] * 3, k)
     self.assertAllEqual([20] * 3, j)
 
-    with self.assertRaisesRegexp(AssertionError, r"not equal lhs"):
+    with self.assertRaisesRegex(AssertionError, r"not equal lhs"):
       self.assertAllEqual([0] * 3, k)
 
   @test_util.run_in_graph_and_eager_modes
@@ -479,7 +535,7 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     self.assertNotAllEqual([120] * 3, k)
     self.assertNotAllEqual([20] * 3, j)
 
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         AssertionError, r"two values are equal at all elements.*extra message"):
       self.assertNotAllEqual([120], k, msg="extra message")
 
@@ -572,7 +628,6 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     with self.assertRaises(AssertionError):
       self.assertAllLessEqual(x, 95.0)
 
-  @test_util.run_deprecated_v1
   def testAssertAllInRangeWithNonNumericValuesFails(self):
     s1 = constant_op.constant("Hello, ", name="s1")
     c = constant_op.constant([1 + 2j, -3 + 5j], name="c")
@@ -597,6 +652,19 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     with self.assertRaises(AssertionError):
       self.assertAllInRange(
           x, 10, 15, open_lower_bound=True, open_upper_bound=True)
+
+  @test_util.run_in_graph_and_eager_modes
+  def testAssertAllInRangeScalar(self):
+    x = constant_op.constant(10.0, name="x")
+    nan = constant_op.constant(np.nan, name="nan")
+    self.assertAllInRange(x, 5, 15)
+    with self.assertRaises(AssertionError):
+      self.assertAllInRange(nan, 5, 15)
+
+    with self.assertRaises(AssertionError):
+      self.assertAllInRange(x, 10, 15, open_lower_bound=True)
+    with self.assertRaises(AssertionError):
+      self.assertAllInRange(x, 1, 2)
 
   @test_util.run_in_graph_and_eager_modes
   def testAssertAllInRangeErrorMessageEllipses(self):
@@ -636,25 +704,82 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     with self.assertRaises(AssertionError):
       self.assertAllInSet(x, (42,))
 
-  @test_util.run_deprecated_v1
+  @test_util.run_in_graph_and_eager_modes
+  def testAssertShapeEqualSameInputTypes(self):
+    # Test with arrays
+    array_a = np.random.rand(3, 1)
+    array_b = np.random.rand(3, 1)
+    array_c = np.random.rand(4, 2)
+
+    self.assertShapeEqual(array_a, array_b)
+    with self.assertRaises(AssertionError):
+      self.assertShapeEqual(array_a, array_c)
+
+    # Test with tensors
+    tensor_x = random_ops.random_uniform((5, 2, 1))
+    tensor_y = random_ops.random_uniform((5, 2, 1))
+    tensor_z = random_ops.random_uniform((2, 4))
+
+    self.assertShapeEqual(tensor_x, tensor_y)
+    with self.assertRaises(AssertionError):
+      self.assertShapeEqual(tensor_x, tensor_z)
+
+  @test_util.run_in_graph_and_eager_modes
+  def testAssertShapeEqualMixedInputTypes(self):
+
+    # Test mixed multi-dimensional inputs
+    array_input = np.random.rand(4, 3, 2)
+    tensor_input = random_ops.random_uniform((4, 3, 2))
+    tensor_input_2 = random_ops.random_uniform((10, 5))
+
+    self.assertShapeEqual(array_input, tensor_input)
+    self.assertShapeEqual(tensor_input, array_input)
+    with self.assertRaises(AssertionError):
+      self.assertShapeEqual(array_input, tensor_input_2)
+
+    # Test with scalar inputs
+    array_input = np.random.rand(1)
+    tensor_input = random_ops.random_uniform((1,))
+    tensor_input_2 = random_ops.random_uniform((3, 1))
+
+    self.assertShapeEqual(array_input, tensor_input)
+    self.assertShapeEqual(tensor_input, array_input)
+    with self.assertRaises(AssertionError):
+      self.assertShapeEqual(array_input, tensor_input_2)
+
+  def testAssertShapeEqualDynamicShapes(self):
+
+    array_a = np.random.rand(4)
+    values = [1, 1, 2, 3, 4, 4]
+
+    # Dynamic shape should be resolved in eager execution.
+    with context.eager_mode():
+      tensor_b = array_ops.unique(values)[0]
+      self.assertShapeEqual(array_a, tensor_b)
+
+    # Shape comparison should fail when a graph is traced but not evaluated.
+    with context.graph_mode():
+      tensor_c = array_ops.unique(values)[0]
+      with self.assertRaises(AssertionError):
+        self.assertShapeEqual(array_a, tensor_c)
+
   def testRandomSeed(self):
     # Call setUp again for WithCApi case (since it makes a new default graph
     # after setup).
     # TODO(skyewm): remove this when C API is permanently enabled.
-    self.setUp()
-    a = random.randint(1, 1000)
-    a_np_rand = np.random.rand(1)
-    with self.test_session():
-      a_rand = random_ops.random_normal([1]).eval()
-    # ensure that randomness in multiple testCases is deterministic.
-    self.setUp()
-    b = random.randint(1, 1000)
-    b_np_rand = np.random.rand(1)
-    with self.test_session():
-      b_rand = random_ops.random_normal([1]).eval()
-    self.assertEqual(a, b)
-    self.assertEqual(a_np_rand, b_np_rand)
-    self.assertEqual(a_rand, b_rand)
+    with context.eager_mode():
+      self.setUp()
+      a = random.randint(1, 1000)
+      a_np_rand = np.random.rand(1)
+      a_rand = random_ops.random_normal([1])
+      # ensure that randomness in multiple testCases is deterministic.
+      self.setUp()
+      b = random.randint(1, 1000)
+      b_np_rand = np.random.rand(1)
+      b_rand = random_ops.random_normal([1])
+      self.assertEqual(a, b)
+      self.assertEqual(a_np_rand, b_np_rand)
+      self.assertAllEqual(a_rand, b_rand)
 
   @test_util.run_in_graph_and_eager_modes
   def test_callable_evaluate(self):
@@ -685,7 +810,7 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
     f = test_util.run_in_graph_and_eager_modes(inc)
     f(self, with_brackets=False)
-    f = test_util.run_in_graph_and_eager_modes()(inc)
+    f = test_util.run_in_graph_and_eager_modes()(inc)  # pylint: disable=assignment-from-no-return
     f(self, with_brackets=True)
 
     self.assertEqual(len(l), 4)
@@ -705,7 +830,8 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   def test_run_in_eager_and_graph_modes_test_class(self):
     msg = "`run_in_graph_and_eager_modes` only supports test methods.*"
-    with self.assertRaisesRegexp(ValueError, msg):
+    with self.assertRaisesRegex(ValueError, msg):
+
       @test_util.run_in_graph_and_eager_modes()
       class Foo(object):
         pass
@@ -729,7 +855,6 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     test_util.run_in_graph_and_eager_modes(_test)(self)
     self.assertEqual(modes, ["graph"])
 
-  @test_util.run_deprecated_v1
   def test_run_in_graph_and_eager_modes_setup_in_same_mode(self):
     modes = []
     mode_name = lambda: "eager" if context.executing_eagerly() else "graph"
@@ -750,7 +875,7 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     e.setUp()
     e.testBody()
 
-    self.assertEqual(modes[0:2], ["setup_graph", "run_graph"])
+    self.assertEqual(modes[1:2], ["run_graph"])
     self.assertEqual(modes[2:], ["setup_eager", "run_eager"])
 
   @parameterized.named_parameters(dict(testcase_name="argument",
@@ -791,6 +916,13 @@ class TestUtilTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     self.assertTrue(test_object.graph_mode_tested)
     self.assertTrue(test_object.inside_function_tested)
 
+  @test_util.run_in_graph_and_eager_modes
+  def test_consistent_random_seed_in_assert_all_equal(self):
+    random_seed.set_seed(1066)
+    index = random_ops.random_shuffle([0, 1, 2, 3, 4], seed=2021)
+    # This failed when `a` and `b` were evaluated in separate sessions.
+    self.assertAllEqual(index, index)
+
   def test_with_forward_compatibility_horizons(self):
 
     tested_codepaths = set()
@@ -817,7 +949,7 @@ class SkipTestTest(test_util.TensorFlowTestCase):
                                    ["foo bar", "test message"]):
         raise ValueError("test message")
     try:
-      with self.assertRaisesRegexp(ValueError, "foo bar"):
+      with self.assertRaisesRegex(ValueError, "foo bar"):
         with test_util.skip_if_error(self, ValueError, "test message"):
           raise ValueError("foo bar")
     except unittest.SkipTest:
@@ -854,7 +986,7 @@ class SkipTestTest(test_util.TensorFlowTestCase):
 
   def test_skip_if_error_should_raise_message_mismatch(self):
     try:
-      with self.assertRaisesRegexp(ValueError, "foo bar"):
+      with self.assertRaisesRegex(ValueError, "foo bar"):
         with test_util.skip_if_error(self, ValueError, "test message"):
           raise ValueError("foo bar")
     except unittest.SkipTest:
@@ -862,7 +994,7 @@ class SkipTestTest(test_util.TensorFlowTestCase):
 
   def test_skip_if_error_should_raise_no_message(self):
     try:
-      with self.assertRaisesRegexp(ValueError, ""):
+      with self.assertRaisesRegex(ValueError, ""):
         with test_util.skip_if_error(self, ValueError, "test message"):
           raise ValueError()
     except unittest.SkipTest:
@@ -924,19 +1056,20 @@ class GarbageCollectionTest(test_util.TensorFlowTestCase):
       def test_has_no_leak(self):
         constant_op.constant([3.], name="no-leak")
 
-    with self.assertRaisesRegexp(AssertionError, "Tensors not deallocated"):
+    with self.assertRaisesRegex(AssertionError, "Tensors not deallocated"):
       LeakedTensorTest().test_has_leak()
 
     LeakedTensorTest().test_has_no_leak()
 
   def test_no_new_objects_decorator(self):
 
-    class LeakedObjectTest(object):
+    class LeakedObjectTest(unittest.TestCase):
 
-      def __init__(inner_self):  # pylint: disable=no-self-argument
-        inner_self.assertEqual = self.assertEqual  # pylint: disable=invalid-name
-        inner_self.accumulation = []
+      def __init__(self, *args, **kwargs):
+        super(LeakedObjectTest, self).__init__(*args, **kwargs)
+        self.accumulation = []
 
+      @unittest.expectedFailure
       @test_util.assert_no_new_pyobjects_executing_eagerly
       def test_has_leak(self):
         self.accumulation.append([1.])
@@ -945,10 +1078,33 @@ class GarbageCollectionTest(test_util.TensorFlowTestCase):
       def test_has_no_leak(self):
         self.not_accumulating = [1.]
 
-    with self.assertRaises(AssertionError):
-      LeakedObjectTest().test_has_leak()
+    self.assertTrue(LeakedObjectTest("test_has_leak").run().wasSuccessful())
+    self.assertTrue(LeakedObjectTest("test_has_no_leak").run().wasSuccessful())
 
-    LeakedObjectTest().test_has_no_leak()
+
+class RunFunctionsEagerlyInV2Test(test_util.TensorFlowTestCase,
+                                  parameterized.TestCase):
+  @parameterized.named_parameters(
+      [("_RunEagerly", True), ("_RunGraph", False)])
+  def test_run_functions_eagerly(self, run_eagerly):  # pylint: disable=g-wrong-blank-lines
+    results = []
+
+    @def_function.function
+    def add_two(x):
+      for _ in range(5):
+        x += 2
+        results.append(x)
+      return x
+
+    with test_util.run_functions_eagerly(run_eagerly):
+      add_two(constant_op.constant(2.))
+      if context.executing_eagerly():
+        if run_eagerly:
+          self.assertTrue(isinstance(t, ops.EagerTensor) for t in results)
+        else:
+          self.assertTrue(isinstance(t, ops.Tensor) for t in results)
+      else:
+        self.assertTrue(isinstance(t, ops.Tensor) for t in results)
 
 
 if __name__ == "__main__":

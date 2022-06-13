@@ -9,7 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
@@ -114,7 +114,7 @@ struct InternalMessage {
 };
 
 // Default timeout amount for requests waiting for a response.
-constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kRequestTimeout = base::Seconds(5);
 
 // Handles messages that are sent between this browser instance and the Cast
 // devices connected to it. This class also manages virtual connections (VCs)
@@ -142,6 +142,10 @@ class CastMessageHandler : public CastSocket::Observer {
                      const std::string& user_agent,
                      const std::string& browser_version,
                      const std::string& locale);
+
+  CastMessageHandler(const CastMessageHandler&) = delete;
+  CastMessageHandler& operator=(const CastMessageHandler&) = delete;
+
   ~CastMessageHandler() override;
 
   // Ensures a virtual connection exists for (|source_id|, |destination_id|) on
@@ -340,15 +344,13 @@ class CastMessageHandler : public CastSocket::Observer {
   // Set of virtual connections opened to receivers.
   base::flat_set<VirtualConnection> virtual_connections_;
 
-  CastSocketService* const socket_service_;
+  const raw_ptr<CastSocketService> socket_service_;
 
   // Non-owned pointer to TickClock used for request timeouts.
-  const base::TickClock* const clock_;
+  const raw_ptr<const base::TickClock> clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastMessageHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
 };
 
 }  // namespace cast_channel

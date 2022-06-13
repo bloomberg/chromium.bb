@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -152,6 +152,7 @@ void HTMLImageFallbackHelper::CustomStyleForAltText(Element& element,
   if (!fallback.HasContentElements())
     return;
 
+  // TODO(crbug.com/953707):
   // This method is called during style recalc, and it is generally not allowed
   // to mark nodes style dirty during recalc. The code below modifies inline
   // style in the UA shadow tree below based on the computed style for the image

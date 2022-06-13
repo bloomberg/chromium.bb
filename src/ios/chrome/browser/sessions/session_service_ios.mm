@@ -16,9 +16,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -252,9 +252,12 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   @try {
     NSError* error = nil;
     size_t previous_cert_policy_bytes = web::GetCertPolicyBytesEncoded();
+    base::TimeTicks start_time = base::TimeTicks::Now();
     NSData* sessionData = [NSKeyedArchiver archivedDataWithRootObject:session
                                                 requiringSecureCoding:NO
                                                                 error:&error];
+    UmaHistogramTimes("Session.WebStates.ArchivedDataWithRootObjectTime",
+                      base::TimeTicks::Now() - start_time);
     if (!sessionData || error) {
       DLOG(WARNING) << "Error serializing session for path: "
                     << base::SysNSStringToUTF8(sessionPath) << ": "

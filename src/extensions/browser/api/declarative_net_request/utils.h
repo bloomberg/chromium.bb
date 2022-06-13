@@ -12,7 +12,6 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/common/api/declarative_net_request.h"
@@ -54,6 +53,11 @@ int GetChecksum(base::span<const uint8_t> data);
 // Override the result of any calls to GetChecksum() above, so that it returns
 // |checksum|. Note: If |checksum| is -1, no such override is performed.
 void OverrideGetChecksumForTest(int checksum);
+
+// Returns the indexed ruleset data to be persisted to disk. The ruleset is
+// composed of a version header corresponding to the current ruleset format
+// version, followed by the actual ruleset data.
+std::string GetIndexedRulesetData(base::span<const uint8_t> data);
 
 // Helper function to persist the indexed ruleset |data| at the given |path|.
 // The ruleset is composed of a version header corresponding to the current
@@ -138,6 +142,9 @@ size_t GetEnabledStaticRuleCount(const CompositeMatcher* composite_matcher);
 // permissions are checked.
 bool HasDNRFeedbackPermission(const Extension* extension,
                               const absl::optional<int>& tab_id);
+
+// Returns the appropriate error string for an unsuccessful rule parsing result.
+std::string GetParseError(ParseResult error_reason, int rule_id);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

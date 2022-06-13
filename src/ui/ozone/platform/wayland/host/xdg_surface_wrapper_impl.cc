@@ -16,7 +16,11 @@ XDGSurfaceWrapperImpl::XDGSurfaceWrapperImpl(WaylandWindow* wayland_window,
                                              WaylandConnection* connection)
     : wayland_window_(wayland_window), connection_(connection) {}
 
-XDGSurfaceWrapperImpl::~XDGSurfaceWrapperImpl() = default;
+XDGSurfaceWrapperImpl::~XDGSurfaceWrapperImpl() {
+  is_configured_ = false;
+  connection_->wayland_window_manager()->NotifyWindowConfigured(
+      wayland_window_);
+}
 
 bool XDGSurfaceWrapperImpl::Initialize() {
   if (!connection_->shell()) {
@@ -24,8 +28,8 @@ bool XDGSurfaceWrapperImpl::Initialize() {
     return false;
   }
 
-  static const xdg_surface_listener xdg_surface_listener = {
-      &XDGSurfaceWrapperImpl::Configure,
+  static constexpr xdg_surface_listener xdg_surface_listener = {
+      &Configure,
   };
 
   xdg_surface_.reset(xdg_wm_base_get_xdg_surface(
@@ -43,8 +47,14 @@ bool XDGSurfaceWrapperImpl::Initialize() {
 void XDGSurfaceWrapperImpl::AckConfigure(uint32_t serial) {
   DCHECK(xdg_surface_);
   xdg_surface_ack_configure(xdg_surface_.get(), serial);
+
+  is_configured_ = true;
   connection_->wayland_window_manager()->NotifyWindowConfigured(
       wayland_window_);
+}
+
+bool XDGSurfaceWrapperImpl::IsConfigured() {
+  return is_configured_;
 }
 
 void XDGSurfaceWrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {
@@ -61,6 +71,7 @@ void XDGSurfaceWrapperImpl::Configure(void* data,
   DCHECK(surface);
 
   surface->wayland_window_->HandleSurfaceConfigure(serial);
+  surface->wayland_window_->OnSurfaceConfigureEvent();
 }
 
 xdg_surface* XDGSurfaceWrapperImpl::xdg_surface() const {

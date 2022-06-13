@@ -127,6 +127,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kCompositingInputs,
     kImplCompositorCommit,
     kIntersectionObservation,
+    kIntersectionObservationInternalCount,
+    kIntersectionObservationJavascriptCount,
     kPaint,
     kPrePaint,
     kStyle,
@@ -152,6 +154,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kMainFrame
   };
 
+  // For metrics that require it, this converts the input value to use
+  // exponential bucketing.
+  static int64_t ApplyBucketIfNecessary(int64_t value, unsigned metric_id);
+
   typedef struct MetricInitializationData {
     const char* const name;
     bool has_uma;
@@ -159,6 +165,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
  private:
   friend class LocalFrameUkmAggregatorTest;
+  friend class LocalFrameUkmAggregatorSimTest;
 
   // Primary metric name
   static const char* primary_metric_name() { return "MainFrame"; }
@@ -171,6 +178,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
         {"CompositingInputs", true},
         {"ImplCompositorCommit", true},
         {"IntersectionObservation", true},
+        {"IntersectionObservationInternalCount", true},
+        {"IntersectionObservationJavascriptCount", true},
         {"Paint", true},
         {"PrePaint", true},
         {"Style", true},
@@ -206,6 +215,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
    public:
     ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&);
+    ScopedUkmHierarchicalTimer(const ScopedUkmHierarchicalTimer&) = delete;
+    ScopedUkmHierarchicalTimer& operator=(const ScopedUkmHierarchicalTimer&) =
+        delete;
     ~ScopedUkmHierarchicalTimer();
 
    private:
@@ -219,12 +231,37 @@ class CORE_EXPORT LocalFrameUkmAggregator
     const size_t metric_index_;
     const base::TickClock* clock_;
     const base::TimeTicks start_time_;
+  };
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedUkmHierarchicalTimer);
+  // This is an optimization for the case where we would otherwise instantiate a
+  // ScopedUkmHierarchicalTimer in the body of a loop. On some platforms,
+  // TickClock::NowTicks() is weirdly expensive. Compared to
+  // ScopedUkmHierarchicalTimer, this class makes fewer calls to NowTicks() by
+  // reusing a single timestamp as the end of one measurement and the beginning
+  // of the next.
+  class CORE_EXPORT IterativeTimer {
+    STACK_ALLOCATED();
+
+   public:
+    IterativeTimer(LocalFrameUkmAggregator&);
+    ~IterativeTimer();
+    // Start a time interval measurement for the given metric, completing the
+    // prior interval measurement if necessary.
+    void StartInterval(int64_t metric_index);
+
+   private:
+    void Record();
+    scoped_refptr<LocalFrameUkmAggregator> aggregator_;
+    base::TimeTicks start_time_;
+    int64_t metric_index_ = -1;
   };
 
   LocalFrameUkmAggregator(int64_t source_id, ukm::UkmRecorder*);
+  LocalFrameUkmAggregator(const LocalFrameUkmAggregator&) = delete;
+  LocalFrameUkmAggregator& operator=(const LocalFrameUkmAggregator&) = delete;
   ~LocalFrameUkmAggregator();
+
+  const base::TickClock* GetClock() const { return clock_; }
 
   // Create a scoped timer with the index of the metric. Note the index must
   // correspond to the matching index in metric_names.
@@ -242,9 +279,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Record a sample for a sub-metric. This should only be used when
   // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
   // interval does not fall inside a single calling function).
-  void RecordSample(size_t metric_index,
-                    base::TimeTicks start,
-                    base::TimeTicks end);
+  void RecordTimerSample(size_t metric_index,
+                         base::TimeTicks start,
+                         base::TimeTicks end);
+
+  // Record a sample for a count-based sub-metric.
+  void RecordCountSample(size_t metric_index, int64_t count);
 
   // Record a ForcedLayout sample. The reason will determine which, if any,
   // additional metrics are reported in order to diagnose the cause of
@@ -287,22 +327,22 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
     // Accumulated at each sample, then reset with a call to
     // RecordEndOfFrameMetrics.
-    base::TimeDelta interval_duration;
+    int64_t interval_count = 0;
 
     // Accumulated at each sample when within a BeginMainFrame,
     // reset with a call to RecordEndOfFrameMetrics.
-    base::TimeDelta main_frame_duration;
+    int64_t main_frame_count = 0;
 
     // Accumulated at each sample up to the time of First Contentful Paint.
-    base::TimeDelta pre_fcp_aggregate;
+    int64_t pre_fcp_aggregate = 0;
 
     void reset();
   };
 
   struct SampleToRecord {
-    base::TimeDelta primary_metric_duration;
-    std::array<base::TimeDelta, kCount> sub_metrics_durations;
-    std::array<base::TimeDelta, kCount> sub_main_frame_durations;
+    int64_t primary_metric_count;
+    std::array<int64_t, kCount> sub_metrics_counts;
+    std::array<int64_t, kCount> sub_main_frame_counts;
     cc::ActiveFrameSequenceTrackers trackers;
   };
 
@@ -372,8 +412,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kMustNotChooseNextFrame
   };
   SampleControlForTest next_frame_sample_control_for_test_ = kNoPreference;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalFrameUkmAggregator);
 };
 
 }  // namespace blink

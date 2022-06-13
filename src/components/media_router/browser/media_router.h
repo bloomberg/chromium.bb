@@ -50,10 +50,10 @@ class MediaSinksObserver;
 class PresentationConnectionStateObserver;
 class RouteRequestResult;
 
-// Type of callback used in |CreateRoute()|, |JoinRoute()|, and
-// |ConnectRouteByRouteId()|. Callback is invoked when the route request either
-// succeeded or failed.  |connection| is set depending on whether the MRP
-// chooses to setup the PresentationConnections itself.
+// Type of callback used in |CreateRoute()| and |JoinRoute()|.  Callback is
+// invoked when the route request either succeeded or failed.  |connection| is
+// set depending on whether the MRP chooses to setup the PresentationConnections
+// itself.
 using MediaRouteResponseCallback =
     base::OnceCallback<void(mojom::RoutePresentationConnectionPtr connection,
                             const RouteRequestResult& result)>;
@@ -88,27 +88,6 @@ class MediaRouter : public KeyedService {
                            base::TimeDelta timeout,
                            bool incognito) = 0;
 
-  // Creates a route and connects it to an existing route identified by
-  // |route_id|. |route_id| must refer to a non-local route, unnassociated with
-  // a Presentation ID, because a new Presentation ID will be created.
-  // |source|: The source to route to the existing route.
-  // |route_id|: Route ID of the existing route.
-  // |origin|, |web_contents|: Origin and WebContents of the join route request.
-  // Used for validation when enforcing same-origin and/or same-tab scope.
-  // (See CreateRoute documentation).
-  // Each callback in |callbacks| is invoked with a response indicating
-  // success or failure, in the order they are listed.
-  // If |timeout| is positive, then any un-invoked |callbacks| will be invoked
-  // with a timeout error after the timeout expires.
-  // If |incognito| is true, the request was made by an incognito profile.
-  virtual void ConnectRouteByRouteId(const MediaSource::Id& source_id,
-                                     const MediaRoute::Id& route_id,
-                                     const url::Origin& origin,
-                                     content::WebContents* web_contents,
-                                     MediaRouteResponseCallback callback,
-                                     base::TimeDelta timeout,
-                                     bool incognito) = 0;
-
   // Joins an existing route identified by |presentation_id|.
   // |source|: The source to route to the existing route.
   // |presentation_id|: Presentation ID of the existing route.
@@ -133,7 +112,7 @@ class MediaRouter : public KeyedService {
 
   // Detaches the media route specified by |route_id|. The request might come
   // from the page or from an event like navigation or garbage collection.
-  virtual void DetachRoute(const MediaRoute::Id& route_id) = 0;
+  virtual void DetachRoute(MediaRoute::Id route_id) = 0;
 
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
   virtual void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -202,7 +181,7 @@ class MediaRouter : public KeyedService {
   // Includes details about routes/sessions owned by the MRP.
   // Used by chrome://media-router-internals.
   virtual void GetProviderState(
-      MediaRouteProviderId provider_id,
+      mojom::MediaRouteProviderId provider_id,
       mojom::MediaRouteProvider::GetStateCallback callback) const = 0;
 
  private:

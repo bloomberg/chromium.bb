@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_FACTORY_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_EXTENSION_SYSTEM_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "extensions/browser/extension_system_provider.h"
 
@@ -14,6 +13,10 @@ namespace extensions {
 // A factory that provides ShellExtensionSystem for app_shell.
 class ShellExtensionSystemFactory : public ExtensionSystemProvider {
  public:
+  ShellExtensionSystemFactory(const ShellExtensionSystemFactory&) = delete;
+  ShellExtensionSystemFactory& operator=(const ShellExtensionSystemFactory&) =
+      delete;
+
   // ExtensionSystemProvider implementation:
   ExtensionSystem* GetForBrowserContext(
       content::BrowserContext* context) override;
@@ -32,8 +35,6 @@ class ShellExtensionSystemFactory : public ExtensionSystemProvider {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellExtensionSystemFactory);
 };
 
 }  // namespace extensions

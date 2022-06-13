@@ -15,7 +15,6 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace base {
@@ -65,6 +64,10 @@ class DedupingFactory {
   // that instance instead of creating a new one. The cache size should not be
   // too large because we probe linearly whether an element is in the cache.
   explicit DedupingFactory(size_t max_number_prototypes);
+
+  DedupingFactory(const DedupingFactory&) = delete;
+  DedupingFactory& operator=(const DedupingFactory&) = delete;
+
   ~DedupingFactory();
 
   void RegisterFactoryMethod(const std::string& instance_type,
@@ -91,8 +94,6 @@ class DedupingFactory {
   ExistingPrototypes prototypes_;
   FactoryMethods factory_methods_;
   ParameterizedTypes parameterized_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(DedupingFactory);
 };
 
 template<typename BaseClassT>

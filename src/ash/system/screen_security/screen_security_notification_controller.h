@@ -5,10 +5,12 @@
 #ifndef ASH_SYSTEM_SCREEN_SECURITY_SCREEN_SECURITY_NOTIFICATION_CONTROLLER_H_
 #define ASH_SYSTEM_SCREEN_SECURITY_SCREEN_SECURITY_NOTIFICATION_CONTROLLER_H_
 
+#include <string>
+#include <vector>
+
 #include "ash/shell_observer.h"
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace ash {
@@ -25,6 +27,12 @@ class ASH_EXPORT ScreenSecurityNotificationController
       public ShellObserver {
  public:
   ScreenSecurityNotificationController();
+
+  ScreenSecurityNotificationController(
+      const ScreenSecurityNotificationController&) = delete;
+  ScreenSecurityNotificationController& operator=(
+      const ScreenSecurityNotificationController&) = delete;
+
   ~ScreenSecurityNotificationController() override;
 
  private:
@@ -63,8 +71,6 @@ class ASH_EXPORT ScreenSecurityNotificationController
 
   base::WeakPtrFactory<ScreenSecurityNotificationController> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenSecurityNotificationController);
 };
 
 }  // namespace ash

@@ -33,13 +33,14 @@ class FrameSinkId;
 namespace blink {
 
 class AssociatedInterfaceProvider;
+class ChildFrameCompositingHelper;
 class InterfaceRegistry;
 class LocalFrame;
-class MessageEvent;
 class RemoteFrameClient;
-struct FrameLoadRequest;
-class ChildFrameCompositingHelper;
 class WebFrameWidget;
+
+struct BlinkTransferableMessage;
+struct FrameLoadRequest;
 
 // A RemoteFrame is a frame that is possibly hosted outside this process.
 class CORE_EXPORT RemoteFrame final : public Frame,
@@ -85,6 +86,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void DidFocus() override;
   void AddResourceTimingFromChild(
       mojom::blink::ResourceTimingInfoPtr timing) override;
+  bool IsAdSubframe() const override;
 
   // ChildFrameCompositor:
   const scoped_refptr<cc::Layer>& GetCcLayer() override;
@@ -95,10 +97,10 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void CreateView();
 
   void ForwardPostMessage(
-      MessageEvent* message_event,
-      absl::optional<base::UnguessableToken> cluster_id,
-      scoped_refptr<const SecurityOrigin> target_security_origin,
-      LocalFrame* source_frame);
+      BlinkTransferableMessage,
+      LocalFrame* source_frame,
+      scoped_refptr<const SecurityOrigin> source_security_origin,
+      scoped_refptr<const SecurityOrigin> target_security_origin);
 
   mojom::blink::RemoteFrameHost& GetRemoteFrameHostRemote();
 
@@ -116,17 +118,18 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedSandboxFlags(network::mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(mojom::blink::InsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
-  void FrameRectsChanged(const IntRect& local_frame_rect,
-                         const IntRect& screen_space_rect);
+  void FrameRectsChanged(const gfx::Rect& local_frame_rect,
+                         const gfx::Rect& screen_space_rect);
   void InitializeFrameVisualProperties(const FrameVisualProperties& properties);
   // If 'propagate' is true, updated properties will be sent to the browser.
   // Returns true if visual properties have changed.
   bool SynchronizeVisualProperties(bool propagate = true);
   void ResendVisualProperties();
   void SetViewportIntersection(const mojom::blink::ViewportIntersectionState&);
+  void UpdateCompositedLayerBounds();
 
-  // Called when the local root's screen info changes.
-  void DidChangeScreenInfo(const ScreenInfo& screen_info);
+  // Called when the local root's screen infos change.
+  void DidChangeScreenInfos(const display::ScreenInfos& screen_info);
   // Called when the main frame's zoom level is changed and should be propagated
   // to the remote's associated view.
   void ZoomLevelChanged(double zoom_level);
@@ -156,8 +159,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetReplicatedOrigin(
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;
-  void SetReplicatedAdFrameType(
-      mojom::blink::AdFrameType ad_frame_type) override;
+  void SetReplicatedIsAdSubframe(bool is_ad_subframe) override;
   void SetReplicatedName(const String& name,
                          const String& unique_name) override;
   void DispatchLoadEventForFrameOwner() override;
@@ -205,8 +207,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void ChildProcessGone() override;
 
   // Called only when this frame has a local frame owner.
-  IntSize GetMainFrameViewportSize() const override;
-  IntPoint GetMainFrameScrollOffset() const override;
+  gfx::Size GetMainFrameViewportSize() const override;
+  gfx::Point GetMainFrameScrollOffset() const override;
 
   void SetOpener(Frame* opener) override;
 
@@ -229,6 +231,12 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
   viz::FrameSinkId GetFrameSinkId();
+
+  void SetCcLayerForTesting(scoped_refptr<cc::Layer>, bool is_surface_layer);
+
+  // Whether a navigation should replace the current history entry or not.
+  bool NavigationShouldReplaceCurrentHistoryEntry(
+      WebFrameLoadType frame_load_type) const;
 
  private:
   // Frame protected overrides:
@@ -279,6 +287,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Will be nullptr when this RemoteFrame's parent is not a LocalFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
+
+  // Whether the frame is considered to be an ad subframe by Ad Tagging.
+  bool is_ad_subframe_;
 
   mojo::AssociatedRemote<mojom::blink::RemoteFrameHost>
       remote_frame_host_remote_;

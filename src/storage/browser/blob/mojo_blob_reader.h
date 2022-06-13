@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "storage/browser/blob/blob_reader.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 class NetToMojoPendingBuffer;
@@ -74,6 +75,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MojoBlobReader {
                      std::unique_ptr<Delegate> delegate,
                      mojo::ScopedDataPipeProducerHandle response_body_stream);
 
+  MojoBlobReader(const MojoBlobReader&) = delete;
+  MojoBlobReader& operator=(const MojoBlobReader&) = delete;
+
  private:
   MojoBlobReader(const BlobDataHandle* handle,
                  const net::HttpByteRange& range,
@@ -129,8 +133,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) MojoBlobReader {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<MojoBlobReader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MojoBlobReader);
 };
 
 }  // namespace storage

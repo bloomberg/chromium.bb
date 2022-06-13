@@ -8,10 +8,15 @@
 #include <memory>
 #include <string>
 
+#include "content/common/content_export.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/parsed_headers.mojom-forward.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+
+namespace net {
+class HttpResponseHeaders;
+}  // namespace net
 
 namespace content {
 
@@ -79,16 +84,28 @@ CONTENT_EXPORT void AddPrefetchNavigationRequestClientHintsHeaders(
 
 // Parses incoming client hints and persists them as appropriate. Returns
 // hints that were accepted as enabled even if they are not going to be
-// persisted. The distinction is relevant in legacy case where permissions
-// policy is off and there is no valid Accept-CH-Lifetime, where the header
-// still applies locally within frame.
+// persisted.
+//
+// The ParsedHeaders are used to retrieve the already parsed Accept-CH header
+// values. The HttpResponseHeaders are not meant to be used by non-sandboxed
+// processes, but here, we just pass the HttpRequestHeaders to the
+// TrialTokenValidator library.  There is precedent for calling the
+// TrialTokenValidator from the browser process, see crrev.com/c/2142580.
 CONTENT_EXPORT absl::optional<std::vector<network::mojom::WebClientHintsType>>
-ParseAndPersistAcceptCHForNagivation(
+ParseAndPersistAcceptCHForNavigation(
     const GURL& url,
-    const ::network::mojom::ParsedHeadersPtr& headers,
+    const network::mojom::ParsedHeadersPtr& parsed_headers,
+    const net::HttpResponseHeaders* response_headers,
     BrowserContext* context,
     ClientHintsControllerDelegate* delegate,
     FrameTreeNode*);
+
+// Persists the `hints` in the Accept-CH storage for the Origin of `url`.
+// `delegate` cannot be nullptr.
+CONTENT_EXPORT void PersistAcceptCH(
+    const GURL& url,
+    ClientHintsControllerDelegate* delegate,
+    const std::vector<network::mojom::WebClientHintsType>& hints);
 
 // Looks up which client hints the renderer should be told to enable
 // (after subjecting them to permissions policy).

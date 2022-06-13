@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -17,13 +16,18 @@
 class IOSChromeURLRequestContextFactory {
  public:
   IOSChromeURLRequestContextFactory() {}
+
+  IOSChromeURLRequestContextFactory(const IOSChromeURLRequestContextFactory&) =
+      delete;
+  IOSChromeURLRequestContextFactory& operator=(
+      const IOSChromeURLRequestContextFactory&) = delete;
+
   virtual ~IOSChromeURLRequestContextFactory() {}
 
   // Called to create a new instance (will only be called once).
   virtual net::URLRequestContext* Create() = 0;
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeURLRequestContextFactory);
 };
 
 namespace {

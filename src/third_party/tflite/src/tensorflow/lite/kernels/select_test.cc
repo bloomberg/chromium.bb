@@ -25,6 +25,7 @@ limitations under the License.
 namespace tflite {
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
 class BaseSelectOpModel : public SingleOpModel {
@@ -171,6 +172,36 @@ TEST(SelectOpTest, RankOneSelectInt32) {
   model.Invoke();
 
   EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAreArray({5, 6, 3, 4}));
+  EXPECT_THAT(model.GetOutputShape(), ElementsAreArray({2, 1, 2, 1}));
+}
+
+TEST(SelectOpTest, ScalarFalseConditionInt32) {
+  if (SingleOpModel::GetForceUseNnapi()) {
+    return;
+  }
+  SelectOpModel model({}, {2, 1, 2, 1}, {2, 1, 2, 1}, TensorType_INT32);
+
+  model.PopulateTensor<bool>(model.input1(), {false});
+  model.PopulateTensor<int32_t>(model.input2(), {1, 2, 3, 4});
+  model.PopulateTensor<int32_t>(model.input3(), {5, 6, 7, 8});
+  model.Invoke();
+
+  EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAreArray({5, 6, 7, 8}));
+  EXPECT_THAT(model.GetOutputShape(), ElementsAreArray({2, 1, 2, 1}));
+}
+
+TEST(SelectOpTest, ScalarTrueConditionInt32) {
+  if (SingleOpModel::GetForceUseNnapi()) {
+    return;
+  }
+  SelectOpModel model({}, {2, 1, 2, 1}, {2, 1, 2, 1}, TensorType_INT32);
+
+  model.PopulateTensor<bool>(model.input1(), {true});
+  model.PopulateTensor<int32_t>(model.input2(), {1, 2, 3, 4});
+  model.PopulateTensor<int32_t>(model.input3(), {5, 6, 7, 8});
+  model.Invoke();
+
+  EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAreArray({1, 2, 3, 4}));
   EXPECT_THAT(model.GetOutputShape(), ElementsAreArray({2, 1, 2, 1}));
 }
 
@@ -324,6 +355,51 @@ TEST(SelectV2OpTest, BroadcastSelectInt32OneDimensionConditionWithTwoValues) {
   EXPECT_THAT(model.GetOutput<int32_t>(),
               ElementsAreArray({5, 1, 6, 2, 7, 3, 8, 4}));
   EXPECT_THAT(model.GetOutputShape(), ElementsAreArray({2, 1, 2, 2}));
+}
+
+TEST(SelectOpTest, MixedFlatSizeOneInputsWithScalarInputConditionTensor) {
+  if (SingleOpModel::GetForceUseNnapi()) {
+    return;
+  }
+  SelectOpModel model({}, {1}, {1}, TensorType_INT32);
+
+  model.PopulateTensor<bool>(model.input1(), {false});
+  model.PopulateTensor<int32_t>(model.input2(), {1});
+  model.PopulateTensor<int32_t>(model.input3(), {5});
+  model.Invoke();
+
+  EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAre(5));
+  EXPECT_EQ(model.GetOutputShape().size(), 0);
+}
+
+TEST(SelectOpTest, MixedFlatSizeOneInputsWithScalarInputXTensor) {
+  if (SingleOpModel::GetForceUseNnapi()) {
+    return;
+  }
+  SelectOpModel model({1}, {}, {1}, TensorType_INT32);
+
+  model.PopulateTensor<bool>(model.input1(), {true});
+  model.PopulateTensor<int32_t>(model.input2(), {1});
+  model.PopulateTensor<int32_t>(model.input3(), {5});
+  model.Invoke();
+
+  EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAre(1));
+  EXPECT_EQ(model.GetOutputShape().size(), 0);
+}
+
+TEST(SelectOpTest, MixedFlatSizeOneInputsWithScalarInputYTensor) {
+  if (SingleOpModel::GetForceUseNnapi()) {
+    return;
+  }
+  SelectOpModel model({1}, {1}, {}, TensorType_INT32);
+
+  model.PopulateTensor<bool>(model.input1(), {false});
+  model.PopulateTensor<int32_t>(model.input2(), {1});
+  model.PopulateTensor<int32_t>(model.input3(), {5});
+  model.Invoke();
+
+  EXPECT_THAT(model.GetOutput<int32_t>(), ElementsAre(5));
+  EXPECT_EQ(model.GetOutputShape().size(), 0);
 }
 
 }  // namespace

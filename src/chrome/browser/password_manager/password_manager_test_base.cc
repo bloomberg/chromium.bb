@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <map>
 #include <string>
@@ -10,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -19,7 +19,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -40,6 +40,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/switches.h"
@@ -56,6 +57,11 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
  public:
   explicit CustomManagePasswordsUIController(
       content::WebContents* web_contents);
+
+  CustomManagePasswordsUIController(const CustomManagePasswordsUIController&) =
+      delete;
+  CustomManagePasswordsUIController& operator=(
+      const CustomManagePasswordsUIController&) = delete;
 
   void WaitForState(password_manager::ui::State target_state);
 
@@ -110,7 +116,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   void QuitRunLoop();
 
   // The loop to be stopped when the target state or fallback is observed.
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
 
   // The state CustomManagePasswordsUIController is currently waiting for.
   absl::optional<password_manager::ui::State> target_state_;
@@ -120,8 +126,6 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
 
   // True iff a prompt was automatically shown.
   bool was_prompt_automatically_shown_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomManagePasswordsUIController);
 };
 
 CustomManagePasswordsUIController::CustomManagePasswordsUIController(
@@ -420,6 +424,11 @@ void PasswordStoreResultsObserver::OnGetPasswordStoreResults(
   run_loop_.Quit();
 }
 
+base::WeakPtr<password_manager::PasswordStoreConsumer>
+PasswordStoreResultsObserver::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 std::vector<std::unique_ptr<password_manager::PasswordForm>>
 PasswordStoreResultsObserver::WaitForResults() {
   run_loop_.Run();
@@ -507,21 +516,21 @@ void PasswordManagerBrowserTestBase::GetNewTab(
 
 // static
 void PasswordManagerBrowserTestBase::WaitForPasswordStore(Browser* browser) {
-  scoped_refptr<password_manager::PasswordStore> profile_password_store =
-      PasswordStoreFactory::GetForProfile(browser->profile(),
-                                          ServiceAccessType::IMPLICIT_ACCESS);
+  scoped_refptr<password_manager::PasswordStoreInterface>
+      profile_password_store = PasswordStoreFactory::GetForProfile(
+          browser->profile(), ServiceAccessType::IMPLICIT_ACCESS);
   PasswordStoreResultsObserver profile_syncer;
   profile_password_store->GetAllLoginsWithAffiliationAndBrandingInformation(
-      &profile_syncer);
+      profile_syncer.GetWeakPtr());
   profile_syncer.WaitForResults();
 
-  scoped_refptr<password_manager::PasswordStore> account_password_store =
-      AccountPasswordStoreFactory::GetForProfile(
+  scoped_refptr<password_manager::PasswordStoreInterface>
+      account_password_store = AccountPasswordStoreFactory::GetForProfile(
           browser->profile(), ServiceAccessType::IMPLICIT_ACCESS);
   if (account_password_store) {
     PasswordStoreResultsObserver account_syncer;
     account_password_store->GetAllLoginsWithAffiliationAndBrandingInformation(
-        &account_syncer);
+        account_syncer.GetWeakPtr());
     account_syncer.WaitForResults();
   }
 }
@@ -540,7 +549,7 @@ void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
             browser()->tab_strip_model()->GetActiveWebContents());
   NavigationObserver observer(WebContents());
   GURL url = embedded_test_server()->GetURL(path);
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   observer.Wait();
 }
 
@@ -703,7 +712,7 @@ void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
                 // Set up a TestSyncService which will happily return
                 // "everything is active" so that password generation is
                 // considered enabled.
-                ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+                SyncServiceFactory::GetInstance()->SetTestingFactory(
                     context, base::BindRepeating(&BuildTestSyncService));
 
                 PasswordStoreFactory::GetInstance()->SetTestingFactory(
@@ -738,7 +747,7 @@ void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
   network::mojom::NetworkContext* network_context =
       browser()->profile()->GetDefaultStoragePartition()->GetNetworkContext();
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  base::Time expiry = base::Time::Now() + base::Days(1000);
   bool include_subdomains = false;
   base::RunLoop run_loop;
   network_context->AddHSTS(host, expiry, include_subdomains,

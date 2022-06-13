@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -24,7 +25,7 @@ namespace metrics {
 
 namespace {
 
-constexpr base::TimeDelta kInterval = base::TimeDelta::FromMinutes(2);
+constexpr base::TimeDelta kInterval = base::Minutes(2);
 
 // Inherit from ChromeRenderViewHostTestHarness for access to test profile.
 class TabUsageScenarioTrackerTest : public ChromeRenderViewHostTestHarness {
@@ -76,12 +77,13 @@ class TabUsageScenarioTrackerTest : public ChromeRenderViewHostTestHarness {
 
   void NavigateAndCommitTab(content::WebContents* contents, const GURL& gurl) {
     content::NavigationSimulator::NavigateAndCommitFromBrowser(contents, gurl);
-    tab_usage_scenario_tracker_->OnMainFrameNavigationCommitted(contents);
+    tab_usage_scenario_tracker_->OnPrimaryMainFrameNavigationCommitted(
+        contents);
   }
 
  protected:
   display::test::TestScreen screen_;
-  display::Screen* previous_screen_;
+  raw_ptr<display::Screen> previous_screen_;
   UsageScenarioDataStoreImpl usage_scenario_data_store_;
   std::unique_ptr<TabUsageScenarioTracker> tab_usage_scenario_tracker_;
   ukm::TestAutoSetUkmRecorder ukm_recorder_;

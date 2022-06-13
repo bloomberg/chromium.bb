@@ -61,11 +61,11 @@ private:
                             std::shared_ptr<SymbolTable> symbols, ProgramUsage* usage,
                             InlineCandidateList* candidateList);
 
-    std::unique_ptr<Expression> inlineExpression(int offset,
+    std::unique_ptr<Expression> inlineExpression(int line,
                                                  VariableRewriteMap* varMap,
                                                  SymbolTable* symbolTableForExpression,
                                                  const Expression& expression);
-    std::unique_ptr<Statement> inlineStatement(int offset,
+    std::unique_ptr<Statement> inlineStatement(int line,
                                                VariableRewriteMap* varMap,
                                                SymbolTable* symbolTableForStatement,
                                                std::unique_ptr<Expression>* resultExpr,
@@ -73,11 +73,20 @@ private:
                                                const Statement& statement,
                                                bool isBuiltinCode);
 
+    /**
+     * Searches the rewrite map for an rewritten Variable* for the passed-in one. Asserts if the
+     * rewrite map doesn't contain the variable, or contains a different type of expression.
+     */
+    static const Variable* RemapVariable(const Variable* variable,
+                                         const VariableRewriteMap* varMap);
+
     /** Determines if a given function has multiple and/or early returns. */
     static ReturnComplexity GetReturnComplexity(const FunctionDefinition& funcDef);
 
     using InlinabilityCache = std::unordered_map<const FunctionDeclaration*, bool>;
-    bool candidateCanBeInlined(const InlineCandidate& candidate, InlinabilityCache* cache);
+    bool candidateCanBeInlined(const InlineCandidate& candidate,
+                               const ProgramUsage& usage,
+                               InlinabilityCache* cache);
 
     using FunctionSizeCache = std::unordered_map<const FunctionDeclaration*, int>;
     int getFunctionSize(const FunctionDeclaration& fnDecl, FunctionSizeCache* cache);
@@ -96,28 +105,13 @@ private:
                            const ProgramUsage&,
                            const FunctionDeclaration* caller);
 
-    /** Creates a scratch variable for the inliner to use. */
-    struct InlineVariable {
-        const Variable*             fVarSymbol;
-        std::unique_ptr<Statement>  fVarDecl;
-    };
-    InlineVariable makeInlineVariable(const String& baseName,
-                                      const Type* type,
-                                      SymbolTable* symbolTable,
-                                      Modifiers modifiers,
-                                      bool isBuiltinCode,
-                                      std::unique_ptr<Expression>* initialValue);
-
     /** Adds a scope to inlined bodies returned by `inlineCall`, if one is required. */
     void ensureScopedBlocks(Statement* inlinedBody, Statement* parentStmt);
 
     /** Checks whether inlining is viable for a FunctionCall, modulo recursion and function size. */
-    bool isSafeToInline(const FunctionDefinition* functionDef);
-
-    ModifiersPool& modifiersPool() const { return *fContext->fModifiersPool; }
+    bool isSafeToInline(const FunctionDefinition* functionDef, const ProgramUsage& usage);
 
     const Context* fContext = nullptr;
-    Mangler fMangler;
     int fInlinedStatementCounter = 0;
 };
 

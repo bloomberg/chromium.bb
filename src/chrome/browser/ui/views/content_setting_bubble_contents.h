@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -23,6 +23,7 @@ class Combobox;
 class ImageButton;
 class RadioButton;
 class LabelButton;
+class Widget;
 }  // namespace views
 
 // ContentSettingBubbleContents is used when the user turns on different kinds
@@ -58,10 +59,21 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void OnListItemRemovedAt(int index) override;
   int GetSelectedRadioOption() override;
 
+  void managed_button_clicked_for_test() {
+    content_setting_bubble_model_->is_UMA_for_test = true;
+    content_setting_bubble_model_->OnManageButtonClicked();
+  }
+
+  void learn_more_button_clicked_for_test() {
+    content_setting_bubble_model_->is_UMA_for_test = true;
+    content_setting_bubble_model_->OnLearnMoreClicked();
+  }
+
  protected:
   // views::WidgetDelegate:
   std::u16string GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -83,21 +95,20 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void OnPerformAction(views::Combobox* combobox);
 
   // content::WebContentsObserver:
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
   // Provides data for this bubble.
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
-  ListItemContainer* list_item_container_ = nullptr;
+  raw_ptr<ListItemContainer> list_item_container_ = nullptr;
 
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
-  views::LabelButton* manage_button_ = nullptr;
-  views::Checkbox* manage_checkbox_ = nullptr;
-  views::ImageButton* learn_more_button_ = nullptr;
+  raw_ptr<views::LabelButton> manage_button_ = nullptr;
+  raw_ptr<views::Checkbox> manage_checkbox_ = nullptr;
+  raw_ptr<views::ImageButton> learn_more_button_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_

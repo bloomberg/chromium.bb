@@ -44,6 +44,11 @@ class ScopedQRScannerVoiceSearchOverride {
                                                     isOn:YES];
   }
 
+  ScopedQRScannerVoiceSearchOverride(
+      const ScopedQRScannerVoiceSearchOverride&) = delete;
+  ScopedQRScannerVoiceSearchOverride& operator=(
+      const ScopedQRScannerVoiceSearchOverride&) = delete;
+
   ~ScopedQRScannerVoiceSearchOverride() {
     [QRScannerAppInterface overrideVoiceOverCheckForQRScannerViewController:
                                scanner_view_controller_
@@ -52,16 +57,7 @@ class ScopedQRScannerVoiceSearchOverride {
 
  private:
   UIViewController* scanner_view_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedQRScannerVoiceSearchOverride);
 };
-
-// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
-// without the trailing semicolon.  For now, disable the extra semi warning
-// so Xcode indexing works for the egtest.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(QRScannerAppInterface);
 
 namespace {
 
@@ -569,14 +565,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that a UIAlertController is presented by the QRScannerViewController if
 // the camera state changes after the QRScannerViewController is presented.
-// TODO(crbug.com/1019211): Re-enable test on iOS12.
 - (void)testDialogIsDisplayedIfCameraStateChanges {
-// TODO(crbug.com/1209348): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -650,12 +639,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that an error dialog is dismissed if the camera becomes available.
 - (void)testDialogDismissedIfCameraBecomesAvailable {
-// TODO(crbug.com/1209348): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
   id cameraControllerMock =
       [QRScannerAppInterface cameraControllerMockWithAuthorizationStatus:
                                  AVAuthorizationStatusAuthorized];
@@ -809,24 +792,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that the correct page is loaded if the scanner result is a search query.
 - (void)testReceivingQRScannerSearchQueryResult {
-// TODO(crbug.com/1209348): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
   [self doTestReceivingResult:kTestQuery response:kTestQueryResponse edit:nil];
 }
 
 // Test that the correct page is loaded if the scanner result is a search query
 // which is then manually edited.
 - (void)testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
-  // TODO(crbug.com/1209348): Re-enable this test on iPad once grey_typeText
-  // works.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
-  }
-
   [self doTestReceivingResult:kTestQuery
                      response:kTestQueryEditedResponse
                          edit:@"\bedited"];
@@ -835,12 +806,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Test that the correct page is loaded if the scanner result is a not supported
 // URL.
 - (void)testReceivingQRScannerLoadDataResult {
-// TODO(crbug.com/1209348): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
   [self doTestReceivingResult:kTestDataURL
               sanitizedResult:kTestSanitizedDataURL
                      response:kTestDataURLResponse

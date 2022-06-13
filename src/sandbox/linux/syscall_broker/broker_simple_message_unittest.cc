@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool.h"
@@ -61,7 +60,7 @@ class ExpectedResultDataValue : public ExpectedResultValue {
 
 class ExpectedResultIntValue : public ExpectedResultValue {
  public:
-  ExpectedResultIntValue(int value);
+  explicit ExpectedResultIntValue(int value);
 
   bool NextMessagePieceMatches(BrokerSimpleMessage* message) override;
   size_t Size() override;
@@ -466,8 +465,8 @@ TEST(BrokerSimpleMessage, SendAndRecvMsg) {
   // Mixed message 1
   {
     SCOPED_TRACE("Mixed message 1");
-    base::Thread message_thread("SendMessageThread");
-    ASSERT_TRUE(message_thread.Start());
+    base::Thread message_thread_2("SendMessageThread");
+    ASSERT_TRUE(message_thread_2.Start());
     BrokerChannel::EndPoint ipc_reader;
     BrokerChannel::EndPoint ipc_writer;
     BrokerChannel::CreatePair(&ipc_reader, &ipc_writer);
@@ -475,11 +474,11 @@ TEST(BrokerSimpleMessage, SendAndRecvMsg) {
     BrokerSimpleMessage send_message;
     send_message.AddDataToMessage(data1, strlen(data1) + 1);
     send_message.AddIntToMessage(int1);
-    message_thread.task_runner()->PostTask(
+    message_thread_2.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&BrokerSimpleMessageTestHelper::SendMsg,
                                   ipc_writer.get(), &send_message, -1));
 
-    PostWaitableEventToThread(&message_thread, &wait_event);
+    PostWaitableEventToThread(&message_thread_2, &wait_event);
 
     ExpectedResultDataValue data1_value(data1, strlen(data1) + 1);
     ExpectedResultIntValue int1_value(int1);
@@ -494,8 +493,8 @@ TEST(BrokerSimpleMessage, SendAndRecvMsg) {
   // Mixed message 2
   {
     SCOPED_TRACE("Mixed message 2");
-    base::Thread message_thread("SendMessageThread");
-    ASSERT_TRUE(message_thread.Start());
+    base::Thread message_thread_2("SendMessageThread");
+    ASSERT_TRUE(message_thread_2.Start());
     BrokerChannel::EndPoint ipc_reader;
     BrokerChannel::EndPoint ipc_writer;
     BrokerChannel::CreatePair(&ipc_reader, &ipc_writer);
@@ -505,11 +504,11 @@ TEST(BrokerSimpleMessage, SendAndRecvMsg) {
     send_message.AddDataToMessage(data1, strlen(data1) + 1);
     send_message.AddDataToMessage(data2, strlen(data2) + 1);
     send_message.AddIntToMessage(int2);
-    message_thread.task_runner()->PostTask(
+    message_thread_2.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&BrokerSimpleMessageTestHelper::SendMsg,
                                   ipc_writer.get(), &send_message, -1));
 
-    PostWaitableEventToThread(&message_thread, &wait_event);
+    PostWaitableEventToThread(&message_thread_2, &wait_event);
 
     ExpectedResultDataValue data1_value(data1, strlen(data1) + 1);
     ExpectedResultDataValue data2_value(data2, strlen(data2) + 1);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -51,8 +52,9 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     action_controller_ =
         MediaRouterUIService::Get(browser()->profile())->action_controller();
 
-    routes_ = {MediaRoute("routeId1", MediaSource("sourceId"), "sinkId1",
-                          "description", true, true)};
+    routes_ = {MediaRoute("routeId1",
+                          MediaSource("urn:x-org.chromium.media:source:tab:*"),
+                          "sinkId1", "description", true, true)};
   }
 
   // Returns the dialog controller for the active WebContents.
@@ -68,8 +70,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
   ui::SimpleMenuModel* GetIconContextMenu() {
-    return static_cast<ui::SimpleMenuModel*>(
-        GetCastIcon()->menu_model_for_test());
+    return static_cast<ui::SimpleMenuModel*>(GetCastIcon()->menu_model());
   }
 
   void PressToolbarIcon() {
@@ -95,7 +96,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   // A vector of MediaRoutes that includes a local route.
   std::vector<MediaRoute> routes_;
 
-  MediaRouterActionController* action_controller_ = nullptr;
+  raw_ptr<MediaRouterActionController> action_controller_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromContextMenu) {
@@ -108,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromContextMenu) {
   content::ContextMenuParams params;
   params.page_url =
       web_contents->GetController().GetLastCommittedEntry()->GetURL();
-  TestRenderViewContextMenu menu(web_contents->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*web_contents->GetMainFrame(), params);
   menu.Init();
 
   ASSERT_TRUE(menu.IsItemPresent(IDC_ROUTE_MEDIA));
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   EXPECT_TRUE(dialog_controller->IsShowingMediaRouterDialog());
 
   // Navigate away.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
 
   // The navigation should have closed the dialog.
   EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());

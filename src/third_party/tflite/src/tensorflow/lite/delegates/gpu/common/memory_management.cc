@@ -15,17 +15,21 @@ limitations under the License.
 
 #include "tensorflow/lite/delegates/gpu/common/memory_management.h"
 
-#include <algorithm>
-#include <limits>
+#include <cstddef>
 #include <numeric>
-#include <queue>
-#include <set>
-#include <type_traits>
+#include <utility>
 #include <vector>
 
+#include "tensorflow/lite/delegates/gpu/common/memory_management/equality_assignment.h"
 #include "tensorflow/lite/delegates/gpu/common/memory_management/greedy_by_breadth_assignment.h"
 #include "tensorflow/lite/delegates/gpu/common/memory_management/greedy_by_size_assignment.h"
+#include "tensorflow/lite/delegates/gpu/common/memory_management/greedy_in_order_assignment.h"
+#include "tensorflow/lite/delegates/gpu/common/memory_management/min_cost_flow_assignment.h"
+#include "tensorflow/lite/delegates/gpu/common/memory_management/naive_assignment.h"
+#include "tensorflow/lite/delegates/gpu/common/memory_management/types.h"
+#include "tensorflow/lite/delegates/gpu/common/shape.h"
 #include "tensorflow/lite/delegates/gpu/common/status.h"
+#include "tensorflow/lite/delegates/gpu/common/types.h"
 
 namespace tflite {
 namespace gpu {
@@ -154,9 +158,10 @@ absl::Status AssignObjectsToTensors(
 absl::Status AssignOffsetsToTensors(
     const std::vector<TensorUsageRecord<size_t>>& usage_records,
     const MemoryStrategy& strategy, OffsetsAssignment* assignment,
-    const UsageGraph* reallocation_graph) {
+    size_t base_addr_align_bytes, const UsageGraph* reallocation_graph) {
   if (strategy == MemoryStrategy::GREEDY_BY_SIZE) {
-    return GreedyBySizeAssignment(usage_records, assignment);
+    return GreedyBySizeAssignment(usage_records, base_addr_align_bytes,
+                                  assignment);
   }
   ObjectsAssignment<size_t> objects_assignment;
   RETURN_IF_ERROR(AssignObjectsToTensors(

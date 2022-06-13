@@ -37,14 +37,16 @@ static void testChopCubic(skiatest::Reporter* reporter) {
         REPORTER_ASSERT(reporter, count);
     }
     // Make sure src and dst can be the same pointer.
-    SkPoint pts[7];
-    for (int i = 0; i < 7; ++i) {
-        pts[i].set(i, i);
-    }
-    SkChopCubicAt(pts, pts, .5f);
-    for (int i = 0; i < 7; ++i) {
-        REPORTER_ASSERT(reporter, pts[i].fX == pts[i].fY);
-        REPORTER_ASSERT(reporter, pts[i].fX == i * .5f);
+    {
+        SkPoint pts[7];
+        for (int i = 0; i < 7; ++i) {
+            pts[i].set(i, i);
+        }
+        SkChopCubicAt(pts, pts, .5f);
+        for (int i = 0; i < 7; ++i) {
+            REPORTER_ASSERT(reporter, pts[i].fX == pts[i].fY);
+            REPORTER_ASSERT(reporter, pts[i].fX == i * .5f);
+        }
     }
 
     static const float chopTs[] = {
@@ -108,8 +110,8 @@ static void testChopCubic(skiatest::Reporter* reporter) {
         REPORTER_ASSERT(reporter, oneChops[0] == pts[0]);
         REPORTER_ASSERT(reporter, oneChops[1] == pts[1]);
         REPORTER_ASSERT(reporter, oneChops[2] == pts[2]);
-        for (size_t i = 3; i < SK_ARRAY_COUNT(oneChops); ++i) {
-            REPORTER_ASSERT(reporter, oneChops[i] == pts[3]);
+        for (size_t index = 3; index < SK_ARRAY_COUNT(oneChops); ++index) {
+            REPORTER_ASSERT(reporter, oneChops[index] == pts[3]);
         }
     }
 }

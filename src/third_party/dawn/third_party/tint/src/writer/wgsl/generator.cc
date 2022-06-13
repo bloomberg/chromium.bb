@@ -13,30 +13,26 @@
 // limitations under the License.
 
 #include "src/writer/wgsl/generator.h"
+#include "src/writer/wgsl/generator_impl.h"
 
 namespace tint {
 namespace writer {
 namespace wgsl {
 
-Generator::Generator(const Program* program)
-    : impl_(std::make_unique<GeneratorImpl>(program)) {}
+Result::Result() = default;
+Result::~Result() = default;
+Result::Result(const Result&) = default;
 
-Generator::~Generator() = default;
+Result Generate(const Program* program, const Options&) {
+  Result result;
 
-bool Generator::Generate() {
-  auto ret = impl_->Generate();
-  if (!ret) {
-    error_ = impl_->error();
-  }
-  return ret;
-}
+  // Generate the WGSL code.
+  auto impl = std::make_unique<GeneratorImpl>(program);
+  result.success = impl->Generate();
+  result.error = impl->error();
+  result.wgsl = impl->result();
 
-std::string Generator::result() const {
-  return impl_->result();
-}
-
-std::string Generator::error() const {
-  return impl_->error();
+  return result;
 }
 
 }  // namespace wgsl

@@ -8,13 +8,13 @@
 #include <atomic>
 #include <cstdint>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
-#include "base/partition_alloc_buildflags.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -22,6 +22,15 @@ namespace base {
 namespace internal {
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
+
+namespace {
+
+[[noreturn]] NOINLINE NOT_TAIL_CALLED void DoubleFreeOrCorruptionDetected() {
+  NO_CODE_FOLDING();
+  IMMEDIATE_CRASH();
+}
+
+}  // namespace
 
 // Special-purpose atomic reference count class used by BackupRefPtrImpl.
 // The least significant bit of the count is reserved for tracking the liveness
@@ -83,8 +92,11 @@ class BASE_EXPORT PartitionRefCount {
     CheckCookie();
 #endif
 
+    // TODO(bartekn): Make the double-free check more effective. Once freed, the
+    // ref-count is overwritten by an encoded freelist-next pointer.
     int32_t old_count = count_.fetch_sub(1, std::memory_order_release);
-    PA_CHECK(old_count & 1);  // double-free detection
+    if (UNLIKELY(!(old_count & 1)))
+      DoubleFreeOrCorruptionDetected();
     if (old_count == 1) {
       std::atomic_thread_fence(std::memory_order_acquire);
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
@@ -98,7 +110,7 @@ class BASE_EXPORT PartitionRefCount {
   }
 
   // "IsAlive" means is allocated and not freed. "KnownRefs" refers to
-  // CheckedPtr references. There may be other references from raw pointers or
+  // raw_ptr<T> references. There may be other references from raw pointers or
   // unique_ptr, but we have no way of tracking them, so we hope for the best.
   // To summarize, the function returns whether we believe the allocation can be
   // safely freed.
@@ -132,12 +144,19 @@ class BASE_EXPORT PartitionRefCount {
     return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)) ^
            kCookieSalt;
   }
+#endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 
+  // Note that in free slots, this is overwritten by encoded freelist
+  // pointer(s). The way the pointers are encoded on 64-bit little-endian
+  // architectures, count_ happens stay even, which works well with the
+  // double-free-detection in ReleaseFromAllocator(). Don't change the layout of
+  // this class, to preserve this functionality.
+  std::atomic<int32_t> count_{1};
+
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
   static constexpr uint32_t kCookieSalt = 0xc01dbeef;
   volatile uint32_t brp_cookie_;
 #endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-
-  std::atomic<int32_t> count_{1};
 };
 
 ALWAYS_INLINE PartitionRefCount::PartitionRefCount()
@@ -169,25 +188,27 @@ static_assert((sizeof(PartitionRefCount) * (kSuperPageSize / SystemPageSize()) *
               "<= SystemPageSize().");
 
 ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
-  DCheckGetSlotOffsetIsZero(slot_start);
+  PA_DCHECK(slot_start == memory::RemaskPtr(slot_start));
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+  CheckThatSlotOffsetIsZero(slot_start);
+#endif
   uintptr_t slot_start_as_uintptr = reinterpret_cast<uintptr_t>(slot_start);
   if (LIKELY(slot_start_as_uintptr & SystemPageOffsetMask())) {
     uintptr_t refcount_ptr_as_uintptr =
         slot_start_as_uintptr - sizeof(PartitionRefCount);
-    PA_DCHECK(refcount_ptr_as_uintptr % alignof(PartitionRefCount) == 0);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    PA_CHECK(refcount_ptr_as_uintptr % alignof(PartitionRefCount) == 0);
+#endif
     return reinterpret_cast<PartitionRefCount*>(refcount_ptr_as_uintptr);
   } else {
     PartitionRefCount* bitmap_base = reinterpret_cast<PartitionRefCount*>(
         (slot_start_as_uintptr & kSuperPageBaseMask) + SystemPageSize() * 2);
-    size_t index = ((slot_start_as_uintptr & kSuperPageOffsetMask)
-#if !defined(OS_APPLE)
-                    >> SystemPageShift()
-#else
-                    / SystemPageSize()
+    size_t index =
+        ((slot_start_as_uintptr & kSuperPageOffsetMask) >> SystemPageShift()) *
+        kPartitionRefCountIndexMultiplier;
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+    PA_CHECK(sizeof(PartitionRefCount) * index <= SystemPageSize());
 #endif
-                        ) *
-                   kPartitionRefCountIndexMultiplier;
-    PA_DCHECK(sizeof(PartitionRefCount) * index <= SystemPageSize());
     return bitmap_base + index;
   }
 }
@@ -205,7 +226,9 @@ constexpr size_t kPartitionRefCountOffsetAdjustment = kInSlotRefCountBufferSize;
 constexpr size_t kPartitionPastAllocationAdjustment = 1;
 
 ALWAYS_INLINE PartitionRefCount* PartitionRefCountPointer(void* slot_start) {
-  DCheckGetSlotOffsetIsZero(slot_start);
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
+  CheckThatSlotOffsetIsZero(slot_start);
+#endif
   return reinterpret_cast<PartitionRefCount*>(slot_start);
 }
 

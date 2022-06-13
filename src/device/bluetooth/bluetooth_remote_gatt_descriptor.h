@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
@@ -30,6 +29,10 @@ class BluetoothRemoteGattCharacteristic;
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
     : public virtual BluetoothGattDescriptor {
  public:
+  BluetoothRemoteGattDescriptor(const BluetoothRemoteGattDescriptor&) = delete;
+  BluetoothRemoteGattDescriptor& operator=(
+      const BluetoothRemoteGattDescriptor&) = delete;
+
   ~BluetoothRemoteGattDescriptor() override;
 
   // The ValueCallback is used to return the value of a remote characteristic
@@ -67,9 +70,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
 
  protected:
   BluetoothRemoteGattDescriptor();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptor);
 };
 
 }  // namespace device

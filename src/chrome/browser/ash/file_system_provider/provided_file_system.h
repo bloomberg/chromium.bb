@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -39,7 +38,7 @@ namespace extensions {
 class EventRouter;
 }  // namespace extensions
 
-namespace chromeos {
+namespace ash {
 namespace file_system_provider {
 
 class NotificationManagerInterface;
@@ -81,6 +80,10 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
  public:
   ProvidedFileSystem(Profile* profile,
                      const ProvidedFileSystemInfo& file_system_info);
+
+  ProvidedFileSystem(const ProvidedFileSystem&) = delete;
+  ProvidedFileSystem& operator=(const ProvidedFileSystem&) = delete;
+
   ~ProvidedFileSystem() override;
 
   // Sets a custom event router. Used in unit tests to mock out the real
@@ -252,10 +255,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   base::ObserverList<ProvidedFileSystemObserver>::Unchecked observers_;
 
   base::WeakPtrFactory<ProvidedFileSystem> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ProvidedFileSystem);
 };
 
 }  // namespace file_system_provider
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_H_

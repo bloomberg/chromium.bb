@@ -133,7 +133,7 @@ bool LoopRestorationInfo::PopulateUnitInfoForSuperBlock(
 }
 
 void LoopRestorationInfo::ReadUnitCoefficients(
-    DaalaBitReader* const reader,
+    EntropyDecoder* const reader,
     SymbolDecoderContext* const symbol_decoder_context, Plane plane,
     int unit_id,
     std::array<RestorationUnitInfo, kMaxPlanes>* const reference_unit_info) {
@@ -161,7 +161,7 @@ void LoopRestorationInfo::ReadUnitCoefficients(
 }
 
 void LoopRestorationInfo::ReadWienerInfo(
-    DaalaBitReader* const reader, Plane plane, int unit_id,
+    EntropyDecoder* const reader, Plane plane, int unit_id,
     std::array<RestorationUnitInfo, kMaxPlanes>* const reference_unit_info) {
   for (int i = WienerInfo::kVertical; i <= WienerInfo::kHorizontal; ++i) {
     if (plane != kPlaneY) {
@@ -198,7 +198,7 @@ void LoopRestorationInfo::ReadWienerInfo(
 }
 
 void LoopRestorationInfo::ReadSgrProjInfo(
-    DaalaBitReader* const reader, Plane plane, int unit_id,
+    EntropyDecoder* const reader, Plane plane, int unit_id,
     std::array<RestorationUnitInfo, kMaxPlanes>* const reference_unit_info) {
   const int sgr_proj_index =
       static_cast<int>(reader->ReadLiteral(kSgrProjParamsBits));

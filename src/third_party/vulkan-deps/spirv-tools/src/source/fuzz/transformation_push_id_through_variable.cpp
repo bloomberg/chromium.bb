@@ -61,7 +61,7 @@ bool TransformationPushIdThroughVariable::IsApplicable(
 
   // The instruction to insert before must belong to a reachable block.
   auto basic_block = ir_context->get_instr_block(instruction_to_insert_before);
-  if (!fuzzerutil::BlockIsReachableInItsFunction(ir_context, basic_block)) {
+  if (!ir_context->IsReachable(*basic_block)) {
     return false;
   }
 
@@ -155,7 +155,7 @@ void TransformationPushIdThroughVariable::Apply(
 
   // We should be able to create a synonym of |value_id| if it's not irrelevant.
   if (fuzzerutil::CanMakeSynonymOf(ir_context, *transformation_context,
-                                   value_instruction) &&
+                                   *value_instruction) &&
       !transformation_context->GetFactManager()->IdIsIrrelevant(
           message_.value_synonym_id())) {
     // Adds the fact that |message_.value_synonym_id|

@@ -3,27 +3,33 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view.h"
+
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs_utils.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
-#include "components/version_info/channel.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout.h"
@@ -31,14 +37,9 @@
 #include "ui/views/layout/layout_provider.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/ash/settings/owner_flags_storage.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/account_id/account_id.h"
-#include "components/user_manager/user.h"
+#include "chrome/browser/ash/settings/about_flags.h"
 #endif
 
 namespace {
@@ -47,9 +48,13 @@ namespace {
 // numeric values should never be reused.
 enum class ChromeLabsSelectedLab {
   kUnspecifiedSelected = 0,
-  kReadLaterSelected = 1,
+  // kReadLaterSelected = 1,
+  // kTabSearchSelected = 2,
   kTabScrollingSelected = 3,
-  kMaxValue = kTabScrollingSelected,
+  kSidePanelSelected = 4,
+  kLensRegionSearchSelected = 5,
+  kWebUITabStripSelected = 6,
+  kMaxValue = kWebUITabStripSelected,
 };
 
 void EmitToHistogram(const std::u16string& selected_lab_state,
@@ -72,10 +77,18 @@ void EmitToHistogram(const std::u16string& selected_lab_state,
   };
 
   const auto get_enum = [](const std::string& internal_name) {
-    if (internal_name == flag_descriptions::kReadLaterFlagId) {
-      return ChromeLabsSelectedLab::kReadLaterSelected;
-    } else if (internal_name == flag_descriptions::kScrollableTabStripFlagId) {
+    if (internal_name == flag_descriptions::kScrollableTabStripFlagId) {
       return ChromeLabsSelectedLab::kTabScrollingSelected;
+    } else if (internal_name == flag_descriptions::kSidePanelFlagId) {
+      return ChromeLabsSelectedLab::kSidePanelSelected;
+    } else if (internal_name ==
+               flag_descriptions::kEnableLensRegionSearchFlagId) {
+      return ChromeLabsSelectedLab::kLensRegionSearchSelected;
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP) && \
+    (defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH))
+    } else if (internal_name == flag_descriptions::kWebUITabStripFlagId) {
+      return ChromeLabsSelectedLab::kWebUITabStripSelected;
+#endif
     } else {
       return ChromeLabsSelectedLab::kUnspecifiedSelected;
     }
@@ -124,7 +137,7 @@ class ChromeLabsFooter : public views::View {
                      .SetProminent(true)
                      .Build());
     SetBackground(views::CreateThemedSolidBackground(
-        this, ui::NativeTheme::kColorId_BubbleFooterBackground));
+        this, ui::kColorBubbleFooterBackground));
     SetBorder(views::CreateEmptyBorder(
         views::LayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG)));
     SetProperty(
@@ -144,10 +157,16 @@ END_METADATA
 }  // namespace
 
 // static
-void ChromeLabsBubbleView::Show(views::View* anchor_view,
+void ChromeLabsBubbleView::Show(ChromeLabsButton* anchor_view,
                                 Browser* browser,
                                 const ChromeLabsBubbleViewModel* model,
                                 bool user_is_chromeos_owner) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (anchor_view->GetAshOwnerCheckTimer()) {
+    UmaHistogramMediumTimes("Toolbar.ChromeLabs.AshOwnerCheckTime",
+                            anchor_view->GetAshOwnerCheckTimer()->Elapsed());
+  }
+#endif
   g_chrome_labs_bubble = new ChromeLabsBubbleView(anchor_view, browser, model,
                                                   user_is_chromeos_owner);
   views::Widget* const widget =
@@ -172,7 +191,7 @@ ChromeLabsBubbleView::~ChromeLabsBubbleView() {
 }
 
 ChromeLabsBubbleView::ChromeLabsBubbleView(
-    views::View* anchor_view,
+    ChromeLabsButton* anchor_view,
     Browser* browser,
     const ChromeLabsBubbleViewModel* model,
     bool user_is_chromeos_owner)
@@ -188,6 +207,11 @@ ChromeLabsBubbleView::ChromeLabsBubbleView(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   set_margins(gfx::Insets(0));
   SetEnableArrowKeyTraversal(true);
+  // Set `kDialog` to avoid the BubbleDialogDelegate returning a default of
+  // `kAlertDialog` which would tell screen readers to announce all contents of
+  // the bubble when it opens and previous accessibility feedback said that
+  // behavior was confusing.
+  SetAccessibleRole(ax::mojom::Role::kDialog);
 
 // TODO(elainechien): Take care of additional cases 1) kSafeMode switch is
 // present 2) user is secondary user.
@@ -225,10 +249,7 @@ ChromeLabsBubbleView::ChromeLabsBubbleView(
   for (const auto& lab : all_labs) {
     const flags_ui::FeatureEntry* entry =
         flags_state_->FindFeatureEntryByName(lab.internal_name);
-    if (IsFeatureSupportedOnChannel(lab) &&
-        IsFeatureSupportedOnPlatform(entry) &&
-        !about_flags::ShouldSkipConditionalFeatureEntry(flags_storage_.get(),
-                                                        *entry)) {
+    if (IsChromeLabsFeatureValid(lab, browser->profile())) {
       bool valid_entry_type =
           entry->type == flags_ui::FeatureEntry::FEATURE_VALUE ||
           entry->type == flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE;
@@ -241,6 +262,9 @@ ChromeLabsBubbleView::ChromeLabsBubbleView(
   // ChromeLabsButton should not appear in the toolbar if there are no
   // experiments to show. Therefore ChromeLabsBubble should not be created.
   DCHECK(menu_item_container_->children().size() >= 1);
+
+  // Hide dot indicator once bubble has been opened.
+  anchor_view->HideDotIndicator();
 
   restart_prompt_ = AddChildView(std::make_unique<ChromeLabsFooter>(this));
   restart_prompt_->SetVisible(about_flags::IsRestartNeededToCommitChanges());
@@ -292,33 +316,13 @@ int ChromeLabsBubbleView::GetIndexOfEnabledLabState(
   return 0;
 }
 
-bool ChromeLabsBubbleView::IsFeatureSupportedOnChannel(const LabInfo& lab) {
-  return chrome::GetChannel() <= lab.allowed_channel;
-}
-
-bool ChromeLabsBubbleView::IsFeatureSupportedOnPlatform(
-    const flags_ui::FeatureEntry* entry) {
-  return (entry && (entry->supported_platforms &
-                    flags_ui::FlagsState::GetCurrentPlatform()) != 0);
-}
-
 void ChromeLabsBubbleView::RestartToApplyFlags() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS be less intrusive and restart inside the user session after
   // we apply the newly selected flags.
   VLOG(1) << "Restarting to apply per-session flags...";
-
-  // On Chrome OS, Chrome asks session_manager to apply feature flags on
-  // restart. Adhere to policy-enforced command-line switch handling when
-  // applying modified flags.
-  auto flags = flags_storage_->GetFlags();
-  ash::UserSessionManager::ApplyUserPolicyToFlags(profile_->GetPrefs(), &flags);
-
-  AccountId account_id =
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  ash::SessionManagerClient::Get()->SetFeatureFlagsForUser(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-      {flags.begin(), flags.end()});
+  ash::about_flags::FeatureFlagsUpdate(*flags_storage_, profile_->GetPrefs())
+      .UpdateSessionManager();
 #endif
   chrome::AttemptRestart();
 }

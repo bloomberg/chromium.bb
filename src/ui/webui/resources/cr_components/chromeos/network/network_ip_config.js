@@ -95,15 +95,15 @@ Polymer({
   behaviors: [I18nBehavior, CrPolicyNetworkBehaviorMojo],
 
   properties: {
-    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
-    managedProperties: {
-      type: Object,
-      observer: 'managedPropertiesChanged_',
-    },
-
     disabled: {
       type: Boolean,
       value: false,
+    },
+
+    /** @type {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
+    managedProperties: {
+      type: Object,
+      observer: 'managedPropertiesChanged_',
     },
 
     /**
@@ -149,14 +149,6 @@ Polymer({
       type: Boolean,
       value: true,
       computed: 'computeShouldShowAutoIpConfigToggle_(managedProperties)',
-    },
-
-    /** @private */
-    isUpdatedCellularUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('updatedCellularActivationUi');
-      }
     },
   },
 
@@ -409,8 +401,7 @@ Polymer({
    */
   computeShouldShowAutoIpConfigToggle_() {
     if (this.managedProperties.type ===
-            chromeos.networkConfig.mojom.NetworkType.kCellular &&
-        this.isUpdatedCellularUiEnabled_) {
+        chromeos.networkConfig.mojom.NetworkType.kCellular) {
       return false;
     }
     return true;

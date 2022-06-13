@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -41,6 +41,10 @@ namespace test {
 class MenuRunnerTest : public ViewsTestBase {
  public:
   MenuRunnerTest() = default;
+
+  MenuRunnerTest(const MenuRunnerTest&) = delete;
+  MenuRunnerTest& operator=(const MenuRunnerTest&) = delete;
+
   ~MenuRunnerTest() override = default;
 
   // Initializes the delegates and views needed for a menu. It does not create
@@ -90,13 +94,11 @@ class MenuRunnerTest : public ViewsTestBase {
 
  private:
   // Owned by menu_runner_.
-  views::TestMenuItemView* menu_item_view_ = nullptr;
+  raw_ptr<views::TestMenuItemView> menu_item_view_ = nullptr;
 
   std::unique_ptr<TestMenuDelegate> menu_delegate_;
   std::unique_ptr<MenuRunner> menu_runner_;
   std::unique_ptr<Widget> owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuRunnerTest);
 };
 
 // Tests that MenuRunner is still running after the call to RunMenuAt when
@@ -252,7 +254,7 @@ TEST_F(MenuRunnerTest, PrefixSelect) {
   EXPECT_TRUE(IsItemSelected(3));
 
   // Wait out the PrefixSelector's timeout.
-  clock.Advance(base::TimeDelta::FromSeconds(10));
+  clock.Advance(base::Seconds(10));
 
   // Send Space to activate the selected menu item.
   generator.PressKey(ui::VKEY_SPACE, 0);
@@ -324,6 +326,10 @@ class MenuLauncherEventHandler : public ui::EventHandler {
  public:
   MenuLauncherEventHandler(MenuRunner* runner, Widget* owner)
       : runner_(runner), owner_(owner) {}
+
+  MenuLauncherEventHandler(const MenuLauncherEventHandler&) = delete;
+  MenuLauncherEventHandler& operator=(const MenuLauncherEventHandler&) = delete;
+
   ~MenuLauncherEventHandler() override = default;
 
  private:
@@ -337,10 +343,8 @@ class MenuLauncherEventHandler : public ui::EventHandler {
     }
   }
 
-  MenuRunner* runner_;
-  Widget* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuLauncherEventHandler);
+  raw_ptr<MenuRunner> runner_;
+  raw_ptr<Widget> owner_;
 };
 
 }  // namespace
@@ -349,6 +353,9 @@ class MenuLauncherEventHandler : public ui::EventHandler {
 class MenuRunnerWidgetTest : public MenuRunnerTest {
  public:
   MenuRunnerWidgetTest() = default;
+
+  MenuRunnerWidgetTest(const MenuRunnerWidgetTest&) = delete;
+  MenuRunnerWidgetTest& operator=(const MenuRunnerWidgetTest&) = delete;
 
   Widget* widget() { return widget_; }
   EventCountView* event_count_view() { return event_count_view_; }
@@ -376,7 +383,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
 
     event_count_view_ = new EventCountView();
     event_count_view_->SetBounds(0, 0, 300, 300);
-    widget_->GetRootView()->AddChildView(event_count_view_);
+    widget_->GetRootView()->AddChildView(event_count_view_.get());
 
     InitMenuRunner(0);
   }
@@ -387,11 +394,9 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
   }
 
  private:
-  Widget* widget_ = nullptr;
-  EventCountView* event_count_view_ = nullptr;
+  raw_ptr<Widget> widget_ = nullptr;
+  raw_ptr<EventCountView> event_count_view_ = nullptr;
   std::unique_ptr<MenuLauncherEventHandler> consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuRunnerWidgetTest);
 };
 
 // Tests that when a mouse press launches a menu, that the target widget does
@@ -459,12 +464,13 @@ TEST_F(MenuRunnerWidgetTest, ClearsMouseHandlerOnRun) {
 class MenuRunnerImplTest : public MenuRunnerTest {
  public:
   MenuRunnerImplTest() = default;
+
+  MenuRunnerImplTest(const MenuRunnerImplTest&) = delete;
+  MenuRunnerImplTest& operator=(const MenuRunnerImplTest&) = delete;
+
   ~MenuRunnerImplTest() override = default;
 
   void SetUp() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MenuRunnerImplTest);
 };
 
 void MenuRunnerImplTest::SetUp() {
@@ -550,6 +556,11 @@ TEST_F(MenuRunnerImplTest, MenuRunnerDestroyedWithNoActiveController) {
 class MenuRunnerDestructionTest : public MenuRunnerTest {
  public:
   MenuRunnerDestructionTest() = default;
+
+  MenuRunnerDestructionTest(const MenuRunnerDestructionTest&) = delete;
+  MenuRunnerDestructionTest& operator=(const MenuRunnerDestructionTest&) =
+      delete;
+
   ~MenuRunnerDestructionTest() override = default;
 
   ReleaseRefTestViewsDelegate* test_views_delegate() {
@@ -564,9 +575,7 @@ class MenuRunnerDestructionTest : public MenuRunnerTest {
 
  private:
   // Not owned
-  ReleaseRefTestViewsDelegate* test_views_delegate_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuRunnerDestructionTest);
+  raw_ptr<ReleaseRefTestViewsDelegate> test_views_delegate_ = nullptr;
 };
 
 base::WeakPtr<internal::MenuRunnerImpl>

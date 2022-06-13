@@ -17,6 +17,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -102,13 +103,13 @@ class SearchProvider : public BaseSearchProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, AnswersCache);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveExtraAnswers);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoesNotProvideOnFocus);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SendsWarmUpRequestOnFocus);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpScheme);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
                            DontTrimHttpSchemeIfInputHasScheme);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest,
                            DontTrimHttpsSchemeIfInputHasScheme);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, DoTrimHttpsScheme);
-  FRIEND_TEST_ALL_PREFIXES(SearchProviderWarmUpTest, SendsWarmUpRequestOnFocus);
 
   // Manages the providers (TemplateURLs) used by SearchProvider. Two providers
   // may be used:
@@ -148,7 +149,7 @@ class SearchProvider : public BaseSearchProvider,
     bool has_keyword_provider() const { return !keyword_provider_.empty(); }
 
    private:
-    TemplateURLService* template_url_service_;
+    raw_ptr<TemplateURLService> template_url_service_;
 
     // Cached across the life of a query so we behave consistently even if the
     // user changes their default while the query is running.
@@ -382,7 +383,7 @@ class SearchProvider : public BaseSearchProvider,
   // Finds image URLs in most relevant results and uses client to prefetch them.
   void PrefetchImages(SearchSuggestionParser::Results* results);
 
-  AutocompleteProviderListener* listener_;
+  raw_ptr<AutocompleteProviderListener> listener_;
 
   // Maintains the TemplateURLs used.
   Providers providers_;

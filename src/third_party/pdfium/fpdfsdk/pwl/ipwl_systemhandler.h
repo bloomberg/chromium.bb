@@ -9,10 +9,7 @@
 
 #include <memory>
 
-#include "core/fxcrt/fx_coordinates.h"
-#include "core/fxcrt/fx_system.h"
-
-class CFFL_FormFiller;
+class CFX_FloatRect;
 
 class IPWL_SystemHandler {
  public:
@@ -36,7 +33,7 @@ class IPWL_SystemHandler {
 
   virtual void InvalidateRect(PerWindowData* pWidgetData,
                               const CFX_FloatRect& rect) = 0;
-  virtual void OutputSelectedRect(CFFL_FormFiller* pFormFiller,
+  virtual void OutputSelectedRect(PerWindowData* pWidgetData,
                                   const CFX_FloatRect& rect) = 0;
   virtual bool IsSelectionImplemented() const = 0;
   virtual void SetCursor(CursorStyle nCursorStyle) = 0;

@@ -16,6 +16,8 @@ using ::cast::channel::CastMessage;
 namespace openscreen {
 namespace cast {
 
+SenderSocketFactory::Client::~Client() = default;
+
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
                int b) {
   return a && a->socket->socket_id() < b;
@@ -106,8 +108,6 @@ void SenderSocketFactory::OnConnectionFailed(TlsConnectionFactory* factory,
                                              const IPEndpoint& remote_address) {
   auto it = FindPendingConnection(remote_address);
   if (it == pending_connections_.end()) {
-    OSP_DVLOG << "OnConnectionFailed reported for untracked address: "
-              << remote_address;
     return;
   }
   pending_connections_.erase(it);

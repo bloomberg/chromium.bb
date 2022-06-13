@@ -8,6 +8,7 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
 
@@ -20,6 +21,9 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   USING_FAST_MALLOC(GeometryMapperTransformCache);
  public:
   GeometryMapperTransformCache() = default;
+  GeometryMapperTransformCache(const GeometryMapperTransformCache&) = delete;
+  GeometryMapperTransformCache& operator=(const GeometryMapperTransformCache&) =
+      delete;
 
   static void ClearCache();
   bool IsValid() const;
@@ -30,7 +34,7 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     DCHECK_EQ(cache_generation_, s_global_generation);
   }
 
-  const FloatSize& to_2d_translation_root() const {
+  const gfx::Vector2dF& to_2d_translation_root() const {
     return to_2d_translation_root_;
   }
   const TransformPaintPropertyNode* root_of_2d_translation() const {
@@ -91,16 +95,14 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     if (UNLIKELY(plane_root_transform_)) {
       m.Multiply(to_plane_root());
     } else {
-      m.Translate(to_2d_translation_root_.Width(),
-                  to_2d_translation_root_.Height());
+      m.Translate(to_2d_translation_root_.x(), to_2d_translation_root_.y());
     }
   }
   void ApplyFromPlaneRoot(TransformationMatrix& m) const {
     if (UNLIKELY(plane_root_transform_)) {
       m.Multiply(from_plane_root());
     } else {
-      m.Translate(-to_2d_translation_root_.Width(),
-                  -to_2d_translation_root_.Height());
+      m.Translate(-to_2d_translation_root_.x(), -to_2d_translation_root_.y());
     }
   }
   const TransformPaintPropertyNode* plane_root() const {
@@ -111,6 +113,8 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     return UNLIKELY(plane_root_transform_) &&
            plane_root_transform_->has_animation;
   }
+
+  bool has_fixed() const { return has_fixed_; }
 
  private:
   friend class GeometryMapperTransformCacheTest;
@@ -124,7 +128,7 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   static unsigned s_global_generation;
 
   // The accumulated 2d translation to root_of_2d_translation().
-  FloatSize to_2d_translation_root_;
+  gfx::Vector2dF to_2d_translation_root_;
 
   // The parent of the root of consecutive identity or 2d translations from the
   // transform node, or the root of the tree if the whole path from the
@@ -203,8 +207,10 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   };
   std::unique_ptr<ScreenTransform> screen_transform_;
 
+  // Whether or not there is a fixed position transform to the root.
+  bool has_fixed_ = false;
+
   unsigned cache_generation_ = s_global_generation - 1;
-  DISALLOW_COPY_AND_ASSIGN(GeometryMapperTransformCache);
 };
 
 }  // namespace blink

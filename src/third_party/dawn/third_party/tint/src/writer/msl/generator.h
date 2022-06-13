@@ -17,37 +17,101 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
-#include "src/writer/msl/generator_impl.h"
+#include "src/writer/array_length_from_uniform_options.h"
 #include "src/writer/text.h"
 
 namespace tint {
+
+// Forward declarations
+class Program;
+
 namespace writer {
 namespace msl {
 
-/// Class to generate MSL source
-class Generator : public Text {
- public:
+class GeneratorImpl;
+
+/// Configuration options used for generating MSL.
+struct Options {
   /// Constructor
-  /// @param program the program to convert
-  explicit Generator(const Program* program);
+  Options();
+  /// Destructor
+  ~Options();
+  /// Copy constructor
+  Options(const Options&);
+  /// Copy assignment
+  /// @returns this Options
+  Options& operator=(const Options&);
+
+  /// The index to use when generating a UBO to receive storage buffer sizes.
+  /// Defaults to 30, which is the last valid buffer slot.
+  uint32_t buffer_size_ubo_index = 30;
+
+  /// The fixed sample mask to combine with fragment shader outputs.
+  /// Defaults to 0xFFFFFFFF.
+  uint32_t fixed_sample_mask = 0xFFFFFFFF;
+
+  /// Set to `true` to generate a [[point_size]] attribute which is set to 1.0
+  /// for all vertex shaders in the module.
+  bool emit_vertex_point_size = false;
+
+  /// Set to `true` to disable workgroup memory zero initialization
+  bool disable_workgroup_init = false;
+
+  /// Options used to specify a mapping of binding points to indices into a UBO
+  /// from which to load buffer sizes.
+  ArrayLengthFromUniformOptions array_length_from_uniform = {};
+
+  // NOTE: Update fuzzers/data_builder.h when adding or changing any struct
+  // members.
+};
+
+/// The result produced when generating MSL.
+struct Result {
+  /// Constructor
+  Result();
 
   /// Destructor
-  ~Generator() override;
+  ~Result();
 
-  /// Generates the result data
-  /// @returns true on successful generation; false otherwise
-  bool Generate() override;
+  /// Copy constructor
+  Result(const Result&);
 
-  /// @returns the result data
-  std::string result() const override;
+  /// True if generation was successful.
+  bool success = false;
 
-  /// @returns the error
-  std::string error() const;
+  /// The errors generated during code generation, if any.
+  std::string error;
 
- private:
-  std::unique_ptr<GeneratorImpl> impl_;
+  /// The generated MSL.
+  std::string msl = "";
+
+  /// True if the shader needs a UBO of buffer sizes.
+  bool needs_storage_buffer_sizes = false;
+
+  /// True if the generated shader uses the invariant attribute.
+  bool has_invariant_attribute = false;
+
+  /// A map from entry point name to a list of dynamic workgroup allocations.
+  /// Each entry in the vector is the size of the workgroup allocation that
+  /// should be created for that index.
+  std::unordered_map<std::string, std::vector<uint32_t>> workgroup_allocations;
+
+  /// Indices into the array_length_from_uniform binding that are statically
+  /// used.
+  std::unordered_set<uint32_t> used_array_length_from_uniform_indices;
 };
+
+/// Generate MSL for a program, according to a set of configuration options. The
+/// result will contain the MSL, as well as success status and diagnostic
+/// information.
+/// @param program the program to translate to MSL
+/// @param options the configuration options to use when generating MSL
+/// @returns the resulting MSL and supplementary information
+Result Generate(const Program* program, const Options& options);
 
 }  // namespace msl
 }  // namespace writer

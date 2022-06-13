@@ -4,20 +4,21 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,8 +38,8 @@ namespace policy {
 namespace {
 const char kCanvasAppURL[] = "https://canvas.apps.chrome/";
 const char kCanvasAppTitle[] = "canvas.apps.chrome";
-const char kGoogleNewsAppURL[] = "https://news.google.com/?lfhs=2";
-const char kGoogleNewsAppTitle[] = "news.google.com";
+const char kWebStoreExtensionURL[] = "https://chrome.google.com/webstore/";
+const char kWebStoreExtensionTitle[] = "chrome.google.com";
 
 struct VisibilityFlags {
   apps::mojom::OptionalBool show_in_search;
@@ -50,14 +51,18 @@ struct VisibilityFlags {
 
 class SystemFeaturesPolicyTest : public PolicyTest {
  public:
-  SystemFeaturesPolicyTest() = default;
+  SystemFeaturesPolicyTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{chromeos::features::kEcheSWA},
+        /*disabled_features=*/{});
+  }
 
  protected:
   std::u16string GetWebUITitle(const GURL& url,
                                bool using_navigation_throttle) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     if (using_navigation_throttle) {
       content::WaitForLoadStopWithoutSuccessCheck(web_contents);
     } else {
@@ -132,7 +137,7 @@ class SystemFeaturesPolicyTest : public PolicyTest {
   }
 
   void InstallSWAs() {
-    web_app::WebAppProvider::Get(browser()->profile())
+    web_app::WebAppProvider::GetForTest(browser()->profile())
         ->system_web_app_manager()
         .InstallSystemAppsForTesting();
   }
@@ -213,6 +218,16 @@ class SystemFeaturesPolicyTest : public PolicyTest {
     UpdateSystemFeaturesDisableList(base::Value(), nullptr);
     EXPECT_EQ(base::UTF8ToUTF16(app_title), GetWebUITitle(app_url, true));
   }
+
+  void VerifyIsExtensionAppURLAccessible(const char* url,
+                                         const char* app_title) {
+    const GURL& app_url = GURL(url);
+    EXPECT_EQ(base::UTF8ToUTF16(app_title), GetWebUITitle(app_url, true));
+  }
+
+  // TODO(b/204827405): remove this when we resolve multidevice_handler check
+  // failed or Eche be enabled.
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableWebStoreBeforeInstall) {
@@ -225,11 +240,17 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableWebStoreBeforeInstall) {
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kDisabledByPolicy, true,
                           expected_visibility);
+  // The URL navigation should still be possible
+  // even if the app is disabled by policy.
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
 
   UpdateSystemFeaturesDisableList(base::Value(), nullptr);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kReady, false,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableWebStoreAfterInstall) {
@@ -243,11 +264,17 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableWebStoreAfterInstall) {
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kDisabledByPolicy, true,
                           expected_visibility);
+  // The URL navigation should still be possible
+  // even if the app is disabled by policy.
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
 
   UpdateSystemFeaturesDisableList(base::Value(), nullptr);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kReady, false,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest,
@@ -258,27 +285,37 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest,
   VisibilityFlags expected_visibility =
       GetVisibilityFlags(false /* is_hidden */);
   // Disable app with default mode (blocked).
+  // The URL navigation should still be possible
+  // even if the app is disabled by policy.
   UpdateSystemFeaturesDisableList(system_features.Clone(), nullptr);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kDisabledByPolicy, true,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
   // Disable and hide app.
   expected_visibility = GetVisibilityFlags(true /* is_hidden */);
   UpdateSystemFeaturesDisableList(system_features.Clone(), kHiddenDisableMode);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kDisabledByPolicy, true,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
   // Disable and block app.
   expected_visibility = GetVisibilityFlags(false /* is_hidden */);
   UpdateSystemFeaturesDisableList(system_features.Clone(), kBlockedDisableMode);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kDisabledByPolicy, true,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
   // Enable app
   UpdateSystemFeaturesDisableList(base::Value(), nullptr);
   VerifyExtensionAppState(extensions::kWebStoreAppId,
                           apps::mojom::Readiness::kReady, false,
                           expected_visibility);
+  VerifyIsExtensionAppURLAccessible(kWebStoreExtensionURL,
+                                    kWebStoreExtensionTitle);
 }
 
 IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisableSWAs) {
@@ -407,11 +444,6 @@ IN_PROC_BROWSER_TEST_F(SystemFeaturesPolicyTest, DisablePWAs) {
   VerifyIsAppURLDisabled(web_app::kCanvasAppId, kCanvasFeature, kCanvasAppURL,
                          kCanvasAppTitle);
   VerifyAppDisableMode(web_app::kCanvasAppId, kCanvasFeature);
-
-  // Disable Google News app.
-  VerifyIsAppURLDisabled(web_app::kGoogleNewsAppId, kGoogleNewsFeature,
-                         kGoogleNewsAppURL, kGoogleNewsAppTitle);
-  VerifyAppDisableMode(web_app::kGoogleNewsAppId, kGoogleNewsFeature);
 }
 
 }  // namespace policy

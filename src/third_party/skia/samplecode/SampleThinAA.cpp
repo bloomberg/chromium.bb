@@ -18,8 +18,8 @@ namespace skiagm {
 
 class ShapeRenderer : public SkRefCntBase {
 public:
-    static constexpr SkScalar kTileWidth = 20.f;
-    static constexpr SkScalar kTileHeight = 20.f;
+    inline static constexpr SkScalar kTileWidth = 20.f;
+    inline static constexpr SkScalar kTileHeight = 20.f;
 
     // Draw the shape, limited to kTileWidth x kTileHeight. It must apply the local subpixel (tx,
     // ty) translation and rotation by angle. Prior to these transform adjustments, the SkCanvas
@@ -220,14 +220,15 @@ public:
             blit.setColorFilter(SkColorFilters::Matrix(kFilter));
         }
 
+        auto sampling = scale > 1 ? SkSamplingOptions(SkFilterMode::kNearest)
+                                  : SkSamplingOptions(SkFilterMode::kLinear,
+                                                      SkMipmapMode::kLinear);
+
         canvas->scale(scale, scale);
         canvas->drawImageRect(fLastRendered.get(),
                               SkRect::MakeWH(kTileWidth, kTileHeight),
                               SkRect::MakeWH(kTileWidth, kTileHeight),
-                              SkSamplingOptions(scale > 1.f ? kNone_SkFilterQuality
-                                                            : kMedium_SkFilterQuality),
-                              &blit,
-                              SkCanvas::kFast_SrcRectConstraint);
+                              sampling, &blit, SkCanvas::kFast_SrcRectConstraint);
     }
 
 private:
@@ -483,8 +484,7 @@ private:
         SkFont font(nullptr, 12);
 
         if (gridX == 0) {
-            SkString name = shape->name();
-            SkScalar centering = name.size() * 4.f; // ad-hoc
+            SkScalar centering = shape->name().size() * 4.f; // ad-hoc
 
             canvas->save();
             canvas->translate(-10.f, 4 * ShapeRenderer::kTileHeight + centering);

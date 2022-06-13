@@ -15,6 +15,7 @@
 #include "SampleUtils.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
+#include "utils/ScopedAutoreleasePool.h"
 #include "utils/SystemUtils.h"
 #include "utils/WGPUHelpers.h"
 
@@ -59,7 +60,7 @@ void initTextures() {
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::Sampled;
+    descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::TextureBinding;
     texture = device.CreateTexture(&descriptor);
 
     sampler = device.CreateSampler();
@@ -120,7 +121,7 @@ void init() {
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    utils::ComboRenderPipelineDescriptor2 descriptor;
+    utils::ComboRenderPipelineDescriptor descriptor;
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
     descriptor.vertex.module = vsModule;
     descriptor.vertex.bufferCount = 1;
@@ -131,7 +132,7 @@ void init() {
     descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
     descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
 
-    pipeline = device.CreateRenderPipeline2(&descriptor);
+    pipeline = device.CreateRenderPipeline(&descriptor);
 
     wgpu::TextureView view = texture.CreateView();
 
@@ -176,6 +177,7 @@ int main(int argc, const char* argv[]) {
     init();
 
     while (!ShouldQuit()) {
+        utils::ScopedAutoreleasePool pool;
         frame();
         utils::USleep(16000);
     }

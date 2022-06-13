@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -32,6 +31,10 @@ class AudioDecodeScheduler : public AudioStub {
   AudioDecodeScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
       base::WeakPtr<AudioStub> audio_consumer);
+
+  AudioDecodeScheduler(const AudioDecodeScheduler&) = delete;
+  AudioDecodeScheduler& operator=(const AudioDecodeScheduler&) = delete;
+
   ~AudioDecodeScheduler() override;
 
   // Initializes decoder with the information from the protocol config.
@@ -54,8 +57,6 @@ class AudioDecodeScheduler : public AudioStub {
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<AudioDecodeScheduler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDecodeScheduler);
 };
 
 }  // namespace protocol

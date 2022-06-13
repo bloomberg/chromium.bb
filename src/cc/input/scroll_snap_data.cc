@@ -10,8 +10,8 @@
 #include <memory>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/notreached.h"
-#include "base/numerics/ranges.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -58,7 +58,7 @@ void SetOrUpdateResult(const SnapSearchResult& candidate,
 }
 
 const absl::optional<SnapSearchResult>& ClosestSearchResult(
-    const gfx::ScrollOffset reference_point,
+    const gfx::PointF reference_point,
     SearchAxis axis,
     const absl::optional<SnapSearchResult>& a,
     const absl::optional<SnapSearchResult>& b) {
@@ -94,10 +94,10 @@ void SnapSearchResult::set_visible_range(const gfx::RangeF& range) {
 }
 
 void SnapSearchResult::Clip(float max_snap, float max_visible) {
-  snap_offset_ = base::ClampToRange(snap_offset_, 0.0f, max_snap);
+  snap_offset_ = base::clamp(snap_offset_, 0.0f, max_snap);
   visible_range_ =
-      gfx::RangeF(base::ClampToRange(visible_range_.start(), 0.0f, max_visible),
-                  base::ClampToRange(visible_range_.end(), 0.0f, max_visible));
+      gfx::RangeF(base::clamp(visible_range_.start(), 0.0f, max_visible),
+                  base::clamp(visible_range_.end(), 0.0f, max_visible));
 }
 
 void SnapSearchResult::Union(const SnapSearchResult& other) {
@@ -108,22 +108,22 @@ void SnapSearchResult::Union(const SnapSearchResult& other) {
 }
 
 SnapContainerData::SnapContainerData()
-    : proximity_range_(gfx::ScrollOffset(std::numeric_limits<float>::max(),
-                                         std::numeric_limits<float>::max())) {}
+    : proximity_range_(gfx::PointF(std::numeric_limits<float>::max(),
+                                   std::numeric_limits<float>::max())) {}
 
 SnapContainerData::SnapContainerData(ScrollSnapType type)
     : scroll_snap_type_(type),
-      proximity_range_(gfx::ScrollOffset(std::numeric_limits<float>::max(),
-                                         std::numeric_limits<float>::max())) {}
+      proximity_range_(gfx::PointF(std::numeric_limits<float>::max(),
+                                   std::numeric_limits<float>::max())) {}
 
 SnapContainerData::SnapContainerData(ScrollSnapType type,
                                      const gfx::RectF& rect,
-                                     const gfx::ScrollOffset& max)
+                                     const gfx::PointF& max)
     : scroll_snap_type_(type),
       rect_(rect),
       max_position_(max),
-      proximity_range_(gfx::ScrollOffset(std::numeric_limits<float>::max(),
-                                         std::numeric_limits<float>::max())) {}
+      proximity_range_(gfx::PointF(std::numeric_limits<float>::max(),
+                                   std::numeric_limits<float>::max())) {}
 
 SnapContainerData::SnapContainerData(const SnapContainerData& other) = default;
 
@@ -143,14 +143,14 @@ void SnapContainerData::AddSnapAreaData(SnapAreaData snap_area_data) {
 
 bool SnapContainerData::FindSnapPosition(
     const SnapSelectionStrategy& strategy,
-    gfx::ScrollOffset* snap_position,
+    gfx::PointF* snap_position,
     TargetSnapAreaElementIds* target_element_ids,
     const ElementId& active_element_id) const {
   *target_element_ids = TargetSnapAreaElementIds();
   if (scroll_snap_type_.is_none)
     return false;
 
-  gfx::ScrollOffset base_position = strategy.base_position();
+  gfx::PointF base_position = strategy.base_position();
   SnapAxis axis = scroll_snap_type_.axis;
   bool should_snap_on_x = strategy.ShouldSnapOnX() &&
                           (axis == SnapAxis::kX || axis == SnapAxis::kBoth);
@@ -180,7 +180,7 @@ bool SnapContainerData::FindSnapPosition(
       // we cannot always assume that the incoming value fits this criteria we
       // clamp it to the bounds to ensure this variant.
       SnapSearchResult initial_snap_position_y = {
-          base::ClampToRange(base_position.y(), 0.f, max_position_.y()),
+          base::clamp(base_position.y(), 0.f, max_position_.y()),
           gfx::RangeF(0, max_position_.x())};
       selected_x = FindClosestValidArea(
           SearchAxis::kX, strategy, initial_snap_position_y, active_element_id);
@@ -192,7 +192,7 @@ bool SnapContainerData::FindSnapPosition(
       DCHECK(selected_y.has_value());
     } else {
       SnapSearchResult initial_snap_position_x = {
-          base::ClampToRange(base_position.x(), 0.f, max_position_.x()),
+          base::clamp(base_position.x(), 0.f, max_position_.x()),
           gfx::RangeF(0, max_position_.y())};
       selected_y = FindClosestValidArea(
           SearchAxis::kY, strategy, initial_snap_position_x, active_element_id);
@@ -262,7 +262,7 @@ bool SnapContainerData::FindSnapPosition(
 // of the corridors.
 bool SnapContainerData::FindSnapPositionForMutualSnap(
     const SnapSelectionStrategy& strategy,
-    gfx::ScrollOffset* snap_position) const {
+    gfx::PointF* snap_position) const {
   DCHECK(strategy.ShouldSnapOnX() && strategy.ShouldSnapOnY());
   bool found = false;
   gfx::Vector2dF smallest_distance(std::numeric_limits<float>::max(),

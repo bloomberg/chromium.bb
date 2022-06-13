@@ -8,7 +8,6 @@
 
 #include "base/check.h"
 #include "base/time/default_tick_clock.h"
-#include "build/chromeos_buildflags.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,6 +27,7 @@ void OutOfMemoryReporter::RemoveObserver(Observer* observer) {
 
 OutOfMemoryReporter::OutOfMemoryReporter(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<OutOfMemoryReporter>(*web_contents),
       tick_clock_(std::make_unique<base::DefaultTickClock>()) {
 #if defined(OS_ANDROID)
   // This adds N async observers for N WebContents, which isn't great but
@@ -60,8 +60,10 @@ void OutOfMemoryReporter::SetTickClockForTest(
 
 void OutOfMemoryReporter::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  // Only care about main frame navigations that commit to another document.
-  if (!handle->IsInMainFrame() || !handle->HasCommitted() ||
+  // Ignore navigations to documents not in the primary main frame, as they will
+  // never show up as a visible top document. In particular, prerendered pages
+  // will navigate again in the primary main frame when they are activated.
+  if (!handle->IsInPrimaryMainFrame() || !handle->HasCommitted() ||
       handle->IsSameDocument()) {
     return;
   }
@@ -74,7 +76,8 @@ void OutOfMemoryReporter::DidFinishNavigation(
       handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 }
 
-void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
+void OutOfMemoryReporter::PrimaryMainFrameRenderProcessGone(
+    base::TerminationStatus status) {
   // Don't record OOM metrics (especially not UKM) for unactivated portals
   // since the user didn't explicitly navigate to it.
   if (web_contents()->IsPortal())
@@ -84,6 +87,8 @@ void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
   if (web_contents()->GetVisibility() != content::Visibility::VISIBLE)
     return;
 
+  // RenderProcessGone is only called for when the current RenderFrameHost of
+  // the primary main frame exits, so it is ok to call GetMainFrame here.
   crashed_render_process_id_ =
       web_contents()->GetMainFrame()->GetProcess()->GetID();
 
@@ -92,7 +97,7 @@ void OutOfMemoryReporter::RenderProcessGone(base::TerminationStatus status) {
 // deterine OOM.
 #if !defined(OS_ANDROID)
   if (status == base::TERMINATION_STATUS_OOM
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
       || status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM
 #endif
   ) {
@@ -126,4 +131,4 @@ void OutOfMemoryReporter::OnCrashDumpProcessed(
 }
 #endif  // defined(OS_ANDROID)
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(OutOfMemoryReporter)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OutOfMemoryReporter);

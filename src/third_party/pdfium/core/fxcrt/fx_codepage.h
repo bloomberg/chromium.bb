@@ -9,97 +9,115 @@
 
 #include <stdint.h>
 
-#define FX_CODEPAGE_DefANSI 0
-#define FX_CODEPAGE_Symbol 42
-#define FX_CODEPAGE_MSDOS_US 437
-#define FX_CODEPAGE_Arabic_ASMO708 708
-#define FX_CODEPAGE_MSDOS_Greek1 737
-#define FX_CODEPAGE_MSDOS_Baltic 775
-#define FX_CODEPAGE_MSDOS_WesternEuropean 850
-#define FX_CODEPAGE_MSDOS_EasternEuropean 852
-#define FX_CODEPAGE_MSDOS_Cyrillic 855
-#define FX_CODEPAGE_MSDOS_Turkish 857
-#define FX_CODEPAGE_MSDOS_Portuguese 860
-#define FX_CODEPAGE_MSDOS_Icelandic 861
-#define FX_CODEPAGE_MSDOS_Hebrew 862
-#define FX_CODEPAGE_MSDOS_FrenchCanadian 863
-#define FX_CODEPAGE_MSDOS_Arabic 864
-#define FX_CODEPAGE_MSDOS_Norwegian 865
-#define FX_CODEPAGE_MSDOS_Russian 866
-#define FX_CODEPAGE_MSDOS_Greek2 869
-#define FX_CODEPAGE_MSDOS_Thai 874
-#define FX_CODEPAGE_ShiftJIS 932
-#define FX_CODEPAGE_ChineseSimplified 936
-#define FX_CODEPAGE_Hangul 949
-#define FX_CODEPAGE_ChineseTraditional 950
-#define FX_CODEPAGE_UTF16LE 1200
-#define FX_CODEPAGE_UTF16BE 1201
-#define FX_CODEPAGE_MSWin_EasternEuropean 1250
-#define FX_CODEPAGE_MSWin_Cyrillic 1251
-#define FX_CODEPAGE_MSWin_WesternEuropean 1252
-#define FX_CODEPAGE_MSWin_Greek 1253
-#define FX_CODEPAGE_MSWin_Turkish 1254
-#define FX_CODEPAGE_MSWin_Hebrew 1255
-#define FX_CODEPAGE_MSWin_Arabic 1256
-#define FX_CODEPAGE_MSWin_Baltic 1257
-#define FX_CODEPAGE_MSWin_Vietnamese 1258
-#define FX_CODEPAGE_Johab 1361
-#define FX_CODEPAGE_MAC_Roman 10000
-#define FX_CODEPAGE_MAC_ShiftJIS 10001
-#define FX_CODEPAGE_MAC_ChineseTraditional 10002
-#define FX_CODEPAGE_MAC_Korean 10003
-#define FX_CODEPAGE_MAC_Arabic 10004
-#define FX_CODEPAGE_MAC_Hebrew 10005
-#define FX_CODEPAGE_MAC_Greek 10006
-#define FX_CODEPAGE_MAC_Cyrillic 10007
-#define FX_CODEPAGE_MAC_ChineseSimplified 10008
-#define FX_CODEPAGE_MAC_Thai 10021
-#define FX_CODEPAGE_MAC_EasternEuropean 10029
-#define FX_CODEPAGE_MAC_Turkish 10081
-#define FX_CODEPAGE_UTF8 65001
+// Prove consistency with incomplete forward definitions.
+#include "core/fxcrt/fx_codepage_forward.h"
+#include "core/fxcrt/fx_string.h"
+#include "third_party/base/span.h"
 
-#define FX_CHARSET_ANSI 0
-#define FX_CHARSET_Default 1
-#define FX_CHARSET_Symbol 2
-#define FX_CHARSET_MAC_Roman 77
-#define FX_CHARSET_MAC_ShiftJIS 78
-#define FX_CHARSET_MAC_Korean 79
-#define FX_CHARSET_MAC_ChineseSimplified 80
-#define FX_CHARSET_MAC_ChineseTraditional 81
-#define FX_CHARSET_MAC_Hebrew 83
-#define FX_CHARSET_MAC_Arabic 84
-#define FX_CHARSET_MAC_Greek 85
-#define FX_CHARSET_MAC_Turkish 86
-#define FX_CHARSET_MAC_Thai 87
-#define FX_CHARSET_MAC_EasternEuropean 88
-#define FX_CHARSET_MAC_Cyrillic 89
-#define FX_CHARSET_ShiftJIS 128
-#define FX_CHARSET_Hangul 129
-#define FX_CHARSET_Johab 130
-#define FX_CHARSET_ChineseSimplified 134
-#define FX_CHARSET_ChineseTraditional 136
-#define FX_CHARSET_MSWin_Greek 161
-#define FX_CHARSET_MSWin_Turkish 162
-#define FX_CHARSET_MSWin_Vietnamese 163
-#define FX_CHARSET_MSWin_Hebrew 177
-#define FX_CHARSET_MSWin_Arabic 178
-#define FX_CHARSET_MSWin_Baltic 186
-#define FX_CHARSET_MSWin_Cyrillic 204
-#define FX_CHARSET_Thai 222
-#define FX_CHARSET_MSWin_EasternEuropean 238
-#define FX_CHARSET_US 254
-#define FX_CHARSET_OEM 255
+enum class FX_CodePage : uint16_t {
+  kDefANSI = 0,
+  kSymbol = 42,
+  kMSDOS_US = 437,
+  kArabic_ASMO708 = 708,
+  kMSDOS_Greek1 = 737,
+  kMSDOS_Baltic = 775,
+  kMSDOS_WesternEuropean = 850,
+  kMSDOS_EasternEuropean = 852,
+  kMSDOS_Cyrillic = 855,
+  kMSDOS_Turkish = 857,
+  kMSDOS_Portuguese = 860,
+  kMSDOS_Icelandic = 861,
+  kMSDOS_Hebrew = 862,
+  kMSDOS_FrenchCanadian = 863,
+  kMSDOS_Arabic = 864,
+  kMSDOS_Norwegian = 865,
+  kMSDOS_Russian = 866,
+  kMSDOS_Greek2 = 869,
+  kMSDOS_Thai = 874,
+  kShiftJIS = 932,
+  kChineseSimplified = 936,
+  kHangul = 949,
+  kChineseTraditional = 950,
+  kUTF16LE = 1200,
+  kUTF16BE = 1201,
+  kMSWin_EasternEuropean = 1250,
+  kMSWin_Cyrillic = 1251,
+  kMSWin_WesternEuropean = 1252,
+  kMSWin_Greek = 1253,
+  kMSWin_Turkish = 1254,
+  kMSWin_Hebrew = 1255,
+  kMSWin_Arabic = 1256,
+  kMSWin_Baltic = 1257,
+  kMSWin_Vietnamese = 1258,
+  kJohab = 1361,
+  kMAC_Roman = 10000,
+  kMAC_ShiftJIS = 10001,
+  kMAC_ChineseTraditional = 10002,
+  kMAC_Korean = 10003,
+  kMAC_Arabic = 10004,
+  kMAC_Hebrew = 10005,
+  kMAC_Greek = 10006,
+  kMAC_Cyrillic = 10007,
+  kMAC_ChineseSimplified = 10008,
+  kMAC_Thai = 10021,
+  kMAC_EasternEuropean = 10029,
+  kMAC_Turkish = 10081,
+  kUTF8 = 65001,
+  kFailure = 65535,
+};
+
+enum class FX_Charset : uint8_t {
+  kANSI = 0,
+  kDefault = 1,
+  kSymbol = 2,
+  kMAC_Roman = 77,
+  kMAC_ShiftJIS = 78,
+  kMAC_Korean = 79,
+  kMAC_ChineseSimplified = 80,
+  kMAC_ChineseTraditional = 81,
+  kMAC_Hebrew = 83,
+  kMAC_Arabic = 84,
+  kMAC_Greek = 85,
+  kMAC_Turkish = 86,
+  kMAC_Thai = 87,
+  kMAC_EasternEuropean = 88,
+  kMAC_Cyrillic = 89,
+  kShiftJIS = 128,
+  kHangul = 129,
+  kJohab = 130,
+  kChineseSimplified = 134,
+  kChineseTraditional = 136,
+  kMSWin_Greek = 161,
+  kMSWin_Turkish = 162,
+  kMSWin_Vietnamese = 163,
+  kMSWin_Hebrew = 177,
+  kMSWin_Arabic = 178,
+  kMSWin_Baltic = 186,
+  kMSWin_Cyrillic = 204,
+  kThai = 222,
+  kMSWin_EasternEuropean = 238,
+  kUS = 254,
+  kOEM = 255,
+};
 
 // Hi-bytes to unicode codepoint mapping for various code pages.
 struct FX_CharsetUnicodes {
-  uint8_t m_Charset;
+  FX_Charset m_Charset;
   const uint16_t* m_pUnicodes;  // Raw, POD struct.
 };
 
-extern const FX_CharsetUnicodes g_FX_CharsetUnicodes[8];
+extern const FX_CharsetUnicodes kFX_CharsetUnicodes[8];
 
-uint16_t FX_GetCodePageFromCharset(uint8_t charset);
-uint8_t FX_GetCharsetFromCodePage(uint16_t codepage);
-bool FX_CharSetIsCJK(uint8_t uCharset);
+FX_CodePage FX_GetACP();
+FX_CodePage FX_GetCodePageFromCharset(FX_Charset charset);
+FX_Charset FX_GetCharsetFromCodePage(FX_CodePage codepage);
+FX_Charset FX_GetCharsetFromInt(int value);
+bool FX_CharSetIsCJK(FX_Charset uCharset);
+size_t FX_WideCharToMultiByte(FX_CodePage codepage,
+                              WideStringView wstr,
+                              pdfium::span<char> buf);
+size_t FX_MultiByteToWideChar(FX_CodePage codepage,
+                              ByteStringView bstr,
+                              pdfium::span<wchar_t> buf);
 
 #endif  // CORE_FXCRT_FX_CODEPAGE_H_

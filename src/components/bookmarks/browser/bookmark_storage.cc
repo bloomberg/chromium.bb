@@ -16,7 +16,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
@@ -83,15 +83,15 @@ void BookmarkStorage::BookmarkModelDeleted() {
 base::ImportantFileWriter::BackgroundDataProducerCallback
 BookmarkStorage::GetSerializedDataProducerForBackgroundSequence() {
   BookmarkCodec codec;
-  std::unique_ptr<base::Value> value(
+  base::Value value(
       codec.Encode(model_, model_->client()->EncodeBookmarkSyncMetadata()));
 
   return base::BindOnce(
-      [](std::unique_ptr<base::Value> value, std::string* output) {
+      [](base::Value value, std::string* output) {
         // This runs on the background sequence.
         JSONStringValueSerializer serializer(output);
         serializer.set_pretty_print(true);
-        return serializer.Serialize(*value);
+        return serializer.Serialize(value);
       },
       std::move(value));
 }

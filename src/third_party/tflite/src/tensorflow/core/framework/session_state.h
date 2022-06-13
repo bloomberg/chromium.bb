@@ -31,15 +31,15 @@ namespace tensorflow {
 class SessionState {
  public:
   // Get a tensor from the session state.
-  Status GetTensor(const string& handle, Tensor* tensor);
+  Status GetTensor(const std::string& handle, Tensor* tensor);
 
   // Store a tensor in the session state.
-  Status AddTensor(const string& handle, const Tensor& tensor);
+  Status AddTensor(const std::string& handle, const Tensor& tensor);
 
   // Delete a tensor from the session state.
-  Status DeleteTensor(const string& handle);
+  Status DeleteTensor(const std::string& handle);
 
-  int64 GetNewId();
+  int64_t GetNewId();
 
   static const char* kTensorHandleResourceTypeName;
 
@@ -47,7 +47,7 @@ class SessionState {
   mutex state_lock_;
 
   // For generating unique ids for tensors stored in the session.
-  int64 tensor_id_ = 0;
+  int64_t tensor_id_ = 0;
 
   // The live tensors in the session. A map from tensor handle to tensor.
   std::unordered_map<string, Tensor> tensors_;
@@ -59,16 +59,16 @@ class TensorStore {
  public:
   struct TensorAndKey {
     Tensor tensor;
-    int64 id;
-    string device_name;
+    int64_t id;
+    std::string device_name;
 
-    string GetHandle(const string& tensor_name) {
+    std::string GetHandle(const std::string& tensor_name) {
       return strings::StrCat(tensor_name, ";", id, ";", device_name);
     }
   };
 
   // Add the named tensor to the tensor store for this run.
-  Status AddTensor(const string& name, const TensorAndKey& tk);
+  Status AddTensor(const std::string& name, const TensorAndKey& tk);
 
   // Save the tensors in the tensor store of this run to the session.
   Status SaveTensors(const std::vector<string>& output_names,

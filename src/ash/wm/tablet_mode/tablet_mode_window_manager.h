@@ -18,7 +18,6 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_observer.h"
-#include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display_observer.h"
@@ -47,6 +46,10 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // This should only be created or deleted by the creator
   // (TabletModeController).
   TabletModeWindowManager();
+
+  TabletModeWindowManager(const TabletModeWindowManager&) = delete;
+  TabletModeWindowManager& operator=(const TabletModeWindowManager&) = delete;
+
   ~TabletModeWindowManager() override;
 
   void Init();
@@ -188,10 +191,10 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   std::unique_ptr<TabletModeToggleFullscreenEventHandler> event_handler_;
 
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
+
   // True when tablet mode is about to end.
   bool is_exiting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };
 
 }  // namespace ash

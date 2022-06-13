@@ -33,9 +33,13 @@
 }
 
 - (void)dealloc {
-    demo.cleanup();
-    CVDisplayLinkRelease(_displayLink);
+    [self quit];
     [super dealloc];
+}
+
+- (void)quit {
+    CVDisplayLinkRelease(_displayLink);
+    demo.cleanup();
 }
 
 /** Since this is a single-view app, initialize Vulkan during view loading. */
@@ -84,7 +88,6 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
     demo->run();
     if (demo->quit) {
         CVDisplayLinkStop(displayLink);
-        CVDisplayLinkRelease(displayLink);
     }
     return kCVReturnSuccess;
 }

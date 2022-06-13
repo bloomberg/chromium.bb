@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -41,12 +42,19 @@ class UnitTest(unittest.TestCase):
         'status': 'PASS',
         'expected': True,
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     self.assertEqual(test_result, expected)
     short_log = 'Some logs.'
     # Tests a test result with log_path.
     test_result = result_sink_util._compose_test_result(
-        'TestCase/testSomething', 'PASS', True, short_log)
+        'TestCase/testSomething',
+        'PASS',
+        True,
+        short_log,
+        file_artifacts={'name': '/path/to/name'})
     expected = {
         'testId': 'TestCase/testSomething',
         'status': 'PASS',
@@ -54,10 +62,17 @@ class UnitTest(unittest.TestCase):
         'summaryHtml': '<text-artifact artifact-id="Test Log" />',
         'artifacts': {
             'Test Log': {
-                'contents': base64.b64encode(short_log)
+                'contents':
+                    base64.b64encode(short_log.encode('utf-8')).decode('utf-8')
+            },
+            'name': {
+                'filePath': '/path/to/name'
             },
         },
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     self.assertEqual(test_result, expected)
 
@@ -75,10 +90,15 @@ class UnitTest(unittest.TestCase):
         'summaryHtml': '<text-artifact artifact-id="Test Log" />',
         'artifacts': {
             'Test Log': {
-                'contents': base64.b64encode(len_4128_str)
+                'contents':
+                    base64.b64encode(len_4128_str.encode('utf-8')
+                                    ).decode('utf-8')
             },
         },
         'tags': [],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     test_result = result_sink_util._compose_test_result(
         'TestCase/testSomething', 'PASS', True, len_4128_str)
@@ -114,7 +134,10 @@ class UnitTest(unittest.TestCase):
         'tags': [{
             'key': 'disabled_test',
             'value': 'true',
-        }]
+        }],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     test_result = result_sink_util._compose_test_result(
         'TestCase/testSomething',
@@ -135,7 +158,10 @@ class UnitTest(unittest.TestCase):
         'tags': [{
             'key': 'disabled_test',
             'value': 'true',
-        }]
+        }],
+        'testMetadata': {
+            'name': 'TestCase/testSomething'
+        },
     }
     client = result_sink_util.ResultSinkClient()
 

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -122,7 +123,7 @@ class FakeWatcher : public Watcher {
 
  private:
   ~FakeWatcher() override {}
-  FakeCalculator* calculator_ = nullptr;
+  raw_ptr<FakeCalculator> calculator_ = nullptr;
   bool register_message_loop_observer_ = false;
 };
 
@@ -186,7 +187,7 @@ TEST_F(ResponsivenessWatcherTest, TaskNesting) {
   base::PendingTask task2(FROM_HERE, base::OnceClosure(),
                           /*queue_time=*/base::TimeTicks::Now(),
                           /*delayed_run_time=*/base::TimeTicks());
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   base::PendingTask task3(FROM_HERE, base::OnceClosure(),
                           /*queue_time=*/base::TimeTicks::Now(),
                           /*delayed_run_time=*/base::TimeTicks());
@@ -197,17 +198,17 @@ TEST_F(ResponsivenessWatcherTest, TaskNesting) {
   watcher_->WillRunTaskOnUIThread(&task2,
                                   /* was_blocked_or_low_priority= */ false);
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   const base::TimeTicks task_3_execution_start_time = base::TimeTicks::Now();
-  EXPECT_EQ(task_1_execution_start_time + base::TimeDelta::FromMilliseconds(1),
+  EXPECT_EQ(task_1_execution_start_time + base::Milliseconds(1),
             task_3_execution_start_time);
   watcher_->WillRunTaskOnUIThread(&task3,
                                   /* was_blocked_or_low_priority= */ false);
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   const base::TimeTicks task_3_execution_finish_time = base::TimeTicks::Now();
   watcher_->DidRunTaskOnUIThread(&task3);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   watcher_->DidRunTaskOnUIThread(&task2);
   watcher_->DidRunTaskOnUIThread(&task1);
 
@@ -230,7 +231,7 @@ TEST_F(ResponsivenessWatcherTest, NativeEvents) {
   void* opaque_identifier = reinterpret_cast<void*>(0x1234);
   watcher_->WillRunEventOnUIThread(opaque_identifier);
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   const base::TimeTicks finish_time = base::TimeTicks::Now();
   watcher_->DidRunEventOnUIThread(opaque_identifier);
 
@@ -248,12 +249,12 @@ TEST_F(ResponsivenessWatcherTest, BlockedOrLowPriorityTask) {
   base::PendingTask task(FROM_HERE, base::OnceClosure(),
                          /*queue_time=*/base::TimeTicks::Now(),
                          /*delayed_run_time=*/base::TimeTicks());
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
 
   const base::TimeTicks execution_start_time = base::TimeTicks::Now();
   watcher_->WillRunTaskOnUIThread(&task,
                                   /* was_blocked_or_low_priority= */ true);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   const base::TimeTicks execution_finish_time = base::TimeTicks::Now();
   watcher_->DidRunTaskOnUIThread(&task);
 
@@ -274,12 +275,12 @@ TEST_F(ResponsivenessWatcherTest, DelayedTask) {
   base::PendingTask task(FROM_HERE, base::OnceClosure(),
                          /*queue_time=*/base::TimeTicks(),
                          /*delayed_run_time=*/base::TimeTicks::Now());
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
 
   const base::TimeTicks execution_start_time = base::TimeTicks::Now();
   watcher_->WillRunTaskOnUIThread(&task,
                                   /* was_blocked_or_low_priority= */ false);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  task_environment_.FastForwardBy(base::Milliseconds(1));
   const base::TimeTicks execution_finish_time = base::TimeTicks::Now();
   watcher_->DidRunTaskOnUIThread(&task);
 

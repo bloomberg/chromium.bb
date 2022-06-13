@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_descriptor.h"
 
@@ -18,6 +17,10 @@ namespace bluez {
 class BluetoothGattDescriptorBlueZ
     : public virtual device::BluetoothGattDescriptor {
  public:
+  BluetoothGattDescriptorBlueZ(const BluetoothGattDescriptorBlueZ&) = delete;
+  BluetoothGattDescriptorBlueZ& operator=(const BluetoothGattDescriptorBlueZ&) =
+      delete;
+
   // device::BluetoothGattDescriptor overrides.
   std::string GetIdentifier() const override;
 
@@ -37,8 +40,6 @@ class BluetoothGattDescriptorBlueZ
 
   // Object path of the D-Bus descriptor object.
   dbus::ObjectPath object_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattDescriptorBlueZ);
 };
 
 }  // namespace bluez

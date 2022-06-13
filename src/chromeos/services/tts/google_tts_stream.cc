@@ -14,11 +14,6 @@
 namespace chromeos {
 namespace tts {
 
-namespace {
-constexpr int kDefaultSampleRate = 24000;
-constexpr int kDefaultBufferSize = 512;
-}  // namespace
-
 // Simple helper to bridge logging in the shared library to Chrome's logging.
 void HandleLibraryLogging(int severity, const char* message) {
   switch (severity) {
@@ -74,7 +69,9 @@ GoogleTtsStream::GoogleTtsStream(
       owner, &stream_receiver_));
 }
 
-GoogleTtsStream::~GoogleTtsStream() = default;
+GoogleTtsStream::~GoogleTtsStream() {
+  libchrometts_.GoogleTtsShutdown();
+}
 
 bool GoogleTtsStream::IsBound() const {
   return stream_receiver_.is_bound();
@@ -170,9 +167,8 @@ void GoogleTtsStream::ReadMoreFrames(bool is_first_buffer) {
        timepoint_index++) {
     tts_player_.AddExplicitTimepoint(
         libchrometts_.GoogleTtsGetTimepointsCharIndexAtIndex(timepoint_index),
-        base::TimeDelta::FromSecondsD(
-            libchrometts_.GoogleTtsGetTimepointsTimeInSecsAtIndex(
-                timepoint_index)));
+        base::Seconds(libchrometts_.GoogleTtsGetTimepointsTimeInSecsAtIndex(
+            timepoint_index)));
   }
 
   // Ensure we always clean up given status 0 (done) or -1 (error).

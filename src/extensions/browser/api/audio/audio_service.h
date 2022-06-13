@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "extensions/common/api/audio.h"
 
 namespace extensions {
@@ -45,6 +44,9 @@ class AudioService {
 
   // Creates a platform-specific AudioService instance.
   static AudioService* CreateInstance(AudioDeviceIdCalculator* id_calculator);
+
+  AudioService(const AudioService&) = delete;
+  AudioService& operator=(const AudioService&) = delete;
 
   virtual ~AudioService() {}
 
@@ -114,9 +116,6 @@ class AudioService {
 
  protected:
   AudioService() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AudioService);
 };
 
 }  // namespace extensions

@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_audio_source_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -117,7 +118,8 @@ void MediaStreamAudioSourceHandler::Process(uint32_t number_of_frames) {
       output_bus->Zero();
       return;
     }
-    audio_source_provider_.get()->ProvideInput(output_bus, number_of_frames);
+    audio_source_provider_.get()->ProvideInput(
+        output_bus, base::checked_cast<int>(number_of_frames));
     if (!is_processing_) {
       SendLogMessage(String::Format("%s({number_of_frames=%u})", __func__,
                                     number_of_frames));

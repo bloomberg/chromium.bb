@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_controller_base.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
@@ -19,8 +19,6 @@
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-
-class PrefService;
 
 namespace autofill {
 
@@ -42,6 +40,9 @@ class SaveCardBubbleControllerImpl
     virtual void OnIconShown() = 0;
   };
 
+  SaveCardBubbleControllerImpl(const SaveCardBubbleControllerImpl&) = delete;
+  SaveCardBubbleControllerImpl& operator=(const SaveCardBubbleControllerImpl&) =
+      delete;
   ~SaveCardBubbleControllerImpl() override;
 
   // Sets up the controller and offers to save the |card| locally.
@@ -165,7 +166,7 @@ class SaveCardBubbleControllerImpl
   }
 
   // Should outlive this object.
-  PersonalDataManager* personal_data_manager_;
+  raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // Is true only if the [Card saved] label animation should be shown.
   bool should_show_card_saved_label_animation_ = false;
@@ -173,9 +174,6 @@ class SaveCardBubbleControllerImpl
   // The type of bubble that is either currently being shown or would
   // be shown when the save card icon is clicked.
   BubbleType current_bubble_type_ = BubbleType::INACTIVE;
-
-  // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|.
-  PrefService* pref_service_;
 
   // Callback to run once the user makes a decision with respect to the credit
   // card upload offer-to-save prompt. Will return the cardholder name
@@ -220,11 +218,9 @@ class SaveCardBubbleControllerImpl
   security_state::SecurityLevel security_level_;
 
   // Observer for when a bubble is created. Initialized only during tests.
-  ObserverForTest* observer_for_testing_ = nullptr;
+  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImpl);
 };
 
 }  // namespace autofill

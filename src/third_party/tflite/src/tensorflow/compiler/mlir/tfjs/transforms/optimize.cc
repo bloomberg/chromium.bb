@@ -20,13 +20,15 @@ limitations under the License.
 
 #include "mlir/Dialect/StandardOps/IR/Ops.h"  // from @llvm-project
 #include "mlir/IR/Attributes.h"  // from @llvm-project
+#include "mlir/IR/BuiltinTypes.h"  // from @llvm-project
 #include "mlir/IR/Matchers.h"  // from @llvm-project
 #include "mlir/IR/PatternMatch.h"  // from @llvm-project
-#include "mlir/IR/StandardTypes.h"  // from @llvm-project
 #include "mlir/Pass/Pass.h"  // from @llvm-project
 #include "mlir/Support/LLVM.h"  // from @llvm-project
+#include "mlir/Transforms/GreedyPatternRewriteDriver.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/tensorflow/ir/tf_ops.h"
 #include "tensorflow/compiler/mlir/tfjs/ir/tfjs_ops.h"
+#include "tensorflow/compiler/mlir/tfjs/transforms/passes_detail.h"
 
 namespace mlir {
 namespace tfjs {
@@ -36,19 +38,21 @@ namespace tfjs {
 namespace {
 
 // Optimize TFJS operations in functions.
-struct Optimize : public PassWrapper<Optimize, FunctionPass> {
+struct Optimize : public tfjs::OptimizePassBase<Optimize> {
+  void getDependentDialects(DialectRegistry &registry) const final {
+    registry.insert<TFJSDialect>();
+  }
   void runOnFunction() override;
 };
 
 #include "tensorflow/compiler/mlir/tfjs/transforms/generated_optimize.inc"
 
 void Optimize::runOnFunction() {
-  OwningRewritePatternList patterns;
-  auto *ctx = &getContext();
+  OwningRewritePatternList patterns(&getContext());
   auto func = getFunction();
 
-  populateWithGenerated(ctx, &patterns);
-  applyPatternsAndFoldGreedily(func, patterns);
+  populateWithGenerated(patterns);
+  (void)applyPatternsAndFoldGreedily(func, std::move(patterns));
 }
 }  // namespace
 
@@ -56,9 +60,6 @@ void Optimize::runOnFunction() {
 std::unique_ptr<OperationPass<FuncOp>> CreateOptimizePass() {
   return std::make_unique<Optimize>();
 }
-
-static PassRegistration<Optimize> pass(
-    "tfjs-optimize", "Optimize within the TensorFlow.js dialect");
 
 }  // namespace tfjs
 }  // namespace mlir

@@ -12,6 +12,7 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -21,8 +22,8 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kOneMinute = base::TimeDelta::FromMinutes(1);
-constexpr base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kOneMinute = base::Minutes(1);
+constexpr base::TimeDelta kOneSecond = base::Seconds(1);
 
 std::u16string RemainingTimeString(base::TimeDelta remaining_time) {
   if (remaining_time > kOneMinute) {
@@ -124,8 +125,7 @@ void NearbyShareFeaturePodController::UpdateButton(bool enabled) {
 base::TimeDelta NearbyShareFeaturePodController::RemainingHighVisibilityTime()
     const {
   base::TimeTicks now = base::TimeTicks::Now();
-  return shutoff_time_ > now ? shutoff_time_ - now
-                             : base::TimeDelta::FromSeconds(0);
+  return shutoff_time_ > now ? shutoff_time_ - now : base::Seconds(0);
 }
 
 }  // namespace ash

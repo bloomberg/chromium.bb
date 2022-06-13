@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
@@ -20,6 +19,11 @@ class TestURLLoaderFactory;
 class TestingApplicationContext : public ApplicationContext {
  public:
   TestingApplicationContext();
+
+  TestingApplicationContext(const TestingApplicationContext&) = delete;
+  TestingApplicationContext& operator=(const TestingApplicationContext&) =
+      delete;
+
   ~TestingApplicationContext() override;
 
   // Convenience method to get the current application context as a
@@ -83,7 +87,6 @@ class TestingApplicationContext : public ApplicationContext {
   scoped_refptr<SafeBrowsingService> fake_safe_browsing_service_;
   std::unique_ptr<network::TestNetworkConnectionTracker>
       test_network_connection_tracker_;
-  DISALLOW_COPY_AND_ASSIGN(TestingApplicationContext);
 };
 
 #endif  // IOS_CHROME_TEST_TESTING_APPLICATION_CONTEXT_H_

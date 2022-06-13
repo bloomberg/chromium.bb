@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/cast_certificate/cast_cert_reader.h"
@@ -194,8 +193,8 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateSuccess) {
           "test_tls_cert.pem"));
 
   scoped_refptr<net::X509Certificate> tls_cert =
-      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
-                                            tls_cert_der[0].size());
+      net::X509Certificate::CreateFromBytes(
+          base::as_bytes(base::make_span(tls_cert_der[0])));
   std::string peer_cert_der;
   AuthResult result =
       VerifyTLSCertificate(*tls_cert, &peer_cert_der, tls_cert->valid_start());
@@ -208,12 +207,11 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooEarly) {
           "test_tls_cert.pem"));
 
   scoped_refptr<net::X509Certificate> tls_cert =
-      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
-                                            tls_cert_der[0].size());
+      net::X509Certificate::CreateFromBytes(
+          base::as_bytes(base::make_span(tls_cert_der[0])));
   std::string peer_cert_der;
   AuthResult result = VerifyTLSCertificate(
-      *tls_cert, &peer_cert_der,
-      tls_cert->valid_start() - base::TimeDelta::FromSeconds(1));
+      *tls_cert, &peer_cert_der, tls_cert->valid_start() - base::Seconds(1));
   EXPECT_FALSE(result.success());
   EXPECT_EQ(AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE,
             result.error_type);
@@ -225,12 +223,11 @@ TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooLate) {
           "test_tls_cert.pem"));
 
   scoped_refptr<net::X509Certificate> tls_cert =
-      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
-                                            tls_cert_der[0].size());
+      net::X509Certificate::CreateFromBytes(
+          base::as_bytes(base::make_span(tls_cert_der[0])));
   std::string peer_cert_der;
   AuthResult result = VerifyTLSCertificate(
-      *tls_cert, &peer_cert_der,
-      tls_cert->valid_expiry() + base::TimeDelta::FromSeconds(2));
+      *tls_cert, &peer_cert_der, tls_cert->valid_expiry() + base::Seconds(2));
   EXPECT_FALSE(result.success());
   EXPECT_EQ(AuthResult::ERROR_TLS_CERT_EXPIRED, result.error_type);
 }

@@ -7,6 +7,8 @@
 #include <map>
 #include <utility>
 
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
+
 namespace webapps {
 
 InstallableTask::InstallableTask() = default;
@@ -71,21 +73,21 @@ void InstallableTaskQueue::ResetWithError(InstallableStatusCode code) {
   // Some callbacks might be already invalidated on certain resets, so we must
   // check for that.
   // Manifest is assumed to be non-null, so we create an empty one here.
-  blink::Manifest manifest;
+  blink::mojom::Manifest manifest;
   for (InstallableTask& task : tasks) {
     if (task.callback) {
       std::move(task.callback)
           .Run(InstallableData({code}, GURL(), manifest, GURL(), nullptr, false,
-                               GURL(), nullptr, std::vector<SkBitmap>(), false,
-                               false));
+                               GURL(), nullptr, false, std::vector<SkBitmap>(),
+                               false, false));
     }
   }
   for (InstallableTask& task : paused_tasks) {
     if (task.callback) {
       std::move(task.callback)
           .Run(InstallableData({code}, GURL(), manifest, GURL(), nullptr, false,
-                               GURL(), nullptr, std::vector<SkBitmap>(), false,
-                               false));
+                               GURL(), nullptr, false, std::vector<SkBitmap>(),
+                               false, false));
     }
   }
 }

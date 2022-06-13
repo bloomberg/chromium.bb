@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_
 #define CHROMECAST_BROWSER_METRICS_CAST_STABILITY_METRICS_PROVIDER_H_
 
-#include "base/macros.h"
 #include "base/process/kill.h"
 #include "components/metrics/metrics_provider.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -38,6 +37,11 @@ class CastStabilityMetricsProvider
 
   CastStabilityMetricsProvider(::metrics::MetricsService* metrics_service,
                                PrefService* pref_service);
+
+  CastStabilityMetricsProvider(const CastStabilityMetricsProvider&) = delete;
+  CastStabilityMetricsProvider& operator=(const CastStabilityMetricsProvider&) =
+      delete;
+
   ~CastStabilityMetricsProvider() override;
 
   // metrics::MetricsDataProvider implementation:
@@ -80,8 +84,6 @@ class CastStabilityMetricsProvider
   ::metrics::MetricsService* metrics_service_;
 
   PrefService* const pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastStabilityMetricsProvider);
 };
 
 }  // namespace metrics

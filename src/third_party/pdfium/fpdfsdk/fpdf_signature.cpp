@@ -4,11 +4,13 @@
 
 #include "public/fpdf_signature.h"
 
+#include <vector>
+
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fxcrt/stl_util.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -42,7 +44,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetSignatureCount(FPDF_DOCUMENT document) {
   if (!doc)
     return -1;
 
-  return pdfium::CollectionSize<int>(CollectSignatures(doc));
+  return fxcrt::CollectionSize<int>(CollectSignatures(doc));
 }
 
 FPDF_EXPORT FPDF_SIGNATURE FPDF_CALLCONV
@@ -52,7 +54,7 @@ FPDF_GetSignatureObject(FPDF_DOCUMENT document, int index) {
     return nullptr;
 
   std::vector<CPDF_Dictionary*> signatures = CollectSignatures(doc);
-  if (!pdfium::IndexInBounds(signatures, index))
+  if (!fxcrt::IndexInBounds(signatures, index))
     return nullptr;
 
   return FPDFSignatureFromCPDFDictionary(signatures[index]);

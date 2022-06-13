@@ -27,10 +27,10 @@
 #include "media/base/scoped_async_trace.h"
 #include "media/base/status.h"
 #include "media/base/supported_video_decoder_config.h"
+#include "media/base/video_aspect_ratio.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_util.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/codec_allocator.h"
 #include "media/media_buildflags.h"
@@ -44,10 +44,10 @@ namespace {
 
 void OutputBufferReleased(bool using_async_api,
                           base::RepeatingClosure pump_cb,
-                          bool is_drained_or_draining) {
+                          bool has_work) {
   // The asynchronous API doesn't need pumping upon calls to ReleaseOutputBuffer
   // unless we're draining or drained.
-  if (using_async_api && !is_drained_or_draining)
+  if (using_async_api && !has_work)
     return;
   pump_cb.Run();
 }
@@ -64,7 +64,7 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
   if (device_info->IsVp8DecoderAvailable()) {
     // For unencrypted content, require that the size is at least 360p and that
     // the MediaCodec implementation is hardware; otherwise fall back to libvpx.
-    if (!device_info->IsDecoderKnownUnaccelerated(kCodecVP8)) {
+    if (!device_info->IsDecoderKnownUnaccelerated(VideoCodec::kVP8)) {
       supported_configs.emplace_back(VP8PROFILE_ANY, VP8PROFILE_ANY,
                                      gfx::Size(480, 360), gfx::Size(3840, 2160),
                                      false,   // allow_encrypted
@@ -81,7 +81,8 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
   // TODO(dalecurtis): This needs to actually check the profiles available. This
   // can be done by calling MediaCodecUtil::AddSupportedCodecProfileLevels.
   if (device_info->IsVp9DecoderAvailable()) {
-    const bool is_sw = device_info->IsDecoderKnownUnaccelerated(kCodecVP9);
+    const bool is_sw =
+        device_info->IsDecoderKnownUnaccelerated(VideoCodec::kVP9);
 
     std::vector<CodecProfileLevel> profiles;
 
@@ -92,10 +93,10 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
     // If we think a VP9 decoder is available, but we didn't get any profiles
     // returned, just assume support for vp9.0 only.
     if (profiles.empty())
-      profiles.push_back({kCodecVP9, VP9PROFILE_PROFILE0, 0});
+      profiles.push_back({VideoCodec::kVP9, VP9PROFILE_PROFILE0, 0});
 
     for (const auto& p : profiles) {
-      if (p.codec != kCodecVP9)
+      if (p.codec != VideoCodec::kVP9)
         continue;
 
       // We don't compile support into libvpx for these profiles, so allow them
@@ -194,7 +195,7 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
 // When re-initializing the codec changes the resolution to be more than
 // |kReallocateThreshold| times the old one, force a codec reallocation to
 // update the hints that we provide to MediaCodec.  crbug.com/989182 .
-constexpr static float kReallocateThreshold = 4;
+constexpr static float kReallocateThreshold = 3.9;
 
 // static
 PendingDecode PendingDecode::CreateEos() {
@@ -224,8 +225,10 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     AndroidOverlayMojoFactoryCB overlay_factory_cb,
     RequestOverlayInfoCB request_overlay_info_cb,
-    std::unique_ptr<VideoFrameFactory> video_frame_factory)
-    : media_log_(std::move(media_log)),
+    std::unique_ptr<VideoFrameFactory> video_frame_factory,
+    scoped_refptr<gpu::RefCountedLock> drdc_lock)
+    : gpu::RefCountedLockHelperDrDc(std::move(drdc_lock)),
+      media_log_(std::move(media_log)),
       codec_allocator_(codec_allocator),
       request_overlay_info_cb_(std::move(request_overlay_info_cb)),
       is_surface_control_enabled_(IsSurfaceControlEnabled(gpu_feature_info)),
@@ -233,7 +236,7 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
           std::move(surface_chooser),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kForceVideoOverlays),
-          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayForSecureOnly),
           is_surface_control_enabled_),
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
@@ -259,12 +262,13 @@ std::unique_ptr<VideoDecoder> MediaCodecVideoDecoder::Create(
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     AndroidOverlayMojoFactoryCB overlay_factory_cb,
     RequestOverlayInfoCB request_overlay_info_cb,
-    std::unique_ptr<VideoFrameFactory> video_frame_factory) {
+    std::unique_ptr<VideoFrameFactory> video_frame_factory,
+    scoped_refptr<gpu::RefCountedLock> drdc_lock) {
   auto* decoder = new MediaCodecVideoDecoder(
       gpu_preferences, gpu_feature_info, std::move(media_log), device_info,
       codec_allocator, std::move(surface_chooser),
       std::move(overlay_factory_cb), std::move(request_overlay_info_cb),
-      std::move(video_frame_factory));
+      std::move(video_frame_factory), std::move(drdc_lock));
   return std::make_unique<AsyncDestroyVideoDecoder<MediaCodecVideoDecoder>>(
       base::WrapUnique(decoder));
 }
@@ -370,7 +374,7 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   waiting_cb_ = waiting_cb;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  if (config.codec() == kCodecH264)
+  if (config.codec() == VideoCodec::kH264)
     ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
@@ -394,7 +398,7 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Do the rest of the initialization lazily on the first decode.
   BindToCurrentLoop(std::move(init_cb)).Run(OkStatus());
 
-  const int width = config.coded_size().width();
+  const int width = decoder_config_.coded_size().width();
   // On re-init, reallocate the codec if the size has changed too much.
   // Restrict this behavior to Q, where the behavior changed.
   if (first_init) {
@@ -526,7 +530,8 @@ void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
     EnterTerminalState(State::kError, "Could not allocated TextureOwner");
     return;
   }
-  texture_owner_bundle_ = new CodecSurfaceBundle(std::move(texture_owner));
+  texture_owner_bundle_ =
+      new CodecSurfaceBundle(std::move(texture_owner), GetDrDcLock());
 
   // This is for A/B power testing only.  Turn off Dialog-based overlays in
   // power testing mode, unless we need them for L1 content.
@@ -704,6 +709,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
     return;
   }
 
+  max_input_size_ = codec->GetMaxInputSize();
   codec_ = std::make_unique<CodecWrapper>(
       CodecSurfacePair(std::move(codec), std::move(surface_bundle)),
       base::BindRepeating(&OutputBufferReleased, using_async_api_,
@@ -815,7 +821,7 @@ void MediaCodecVideoDecoder::StartTimerOrPumpCodec() {
   // TODO: Experiment with this number to save power. Since we already pump the
   // codec in response to receiving a decode and output buffer release, polling
   // at this frequency is likely overkill in the steady state.
-  const auto kPollingPeriod = base::TimeDelta::FromMilliseconds(10);
+  const auto kPollingPeriod = base::Milliseconds(10);
   if (!pump_codec_timer_.IsRunning()) {
     pump_codec_timer_.Start(
         FROM_HERE, kPollingPeriod,
@@ -829,7 +835,7 @@ void MediaCodecVideoDecoder::StopTimerIfIdle() {
   DCHECK(!using_async_api_);
 
   // Stop the timer if we've been idle for one second. Chosen arbitrarily.
-  const auto kTimeout = base::TimeDelta::FromSeconds(1);
+  const auto kTimeout = base::Seconds(1);
   if (idle_timer_.Elapsed() > kTimeout) {
     DVLOG(2) << "Stopping timer; idle timeout hit";
     pump_codec_timer_.Stop();
@@ -864,6 +870,38 @@ bool MediaCodecVideoDecoder::QueueInput() {
     return false;
 
   PendingDecode& pending_decode = pending_decodes_.front();
+  if (!pending_decode.buffer->end_of_stream() &&
+      pending_decode.buffer->is_key_frame() &&
+      pending_decode.buffer->data_size() > max_input_size_) {
+    // If we we're already using the provided resolution, try to guess something
+    // larger based on the actual input size.
+    if (decoder_config_.coded_size().width() == last_width_) {
+      // See MediaFormatBuilder::addInputSizeInfoToFormat() for details.
+      const size_t compression_ratio =
+          (decoder_config_.codec() == VideoCodec::kH264 ||
+           decoder_config_.codec() == VideoCodec::kVP8)
+              ? 2
+              : 4;
+      const size_t max_pixels =
+          (pending_decode.buffer->data_size() * compression_ratio * 2) / 3;
+      if (max_pixels > 8294400)  // 4K
+        decoder_config_.set_coded_size(gfx::Size(7680, 4320));
+      else if (max_pixels > 2088960)  // 1080p
+        decoder_config_.set_coded_size(gfx::Size(3840, 2160));
+      else
+        decoder_config_.set_coded_size(gfx::Size(1920, 1080));
+    }
+
+    // Flush and reallocate on the next call to QueueInput() if we changed size;
+    // otherwise just try queuing the buffer and hoping for the best.
+    if (decoder_config_.coded_size().width() != last_width_) {
+      deferred_flush_pending_ = true;
+      deferred_reallocation_pending_ = true;
+      last_width_ = decoder_config_.coded_size().width();
+      return true;
+    }
+  }
+
   auto status = codec_->QueueInputBuffer(*pending_decode.buffer);
   DVLOG((status == CodecWrapper::QueueStatus::kTryAgainLater ||
                  status == CodecWrapper::QueueStatus::kOk
@@ -964,6 +1002,12 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
           SurfaceChooserHelper::FrameInformation::FRAME_INFORMATION_MAX) +
           1);  // PRESUBMIT_IGNORE_UMA_MAX
 
+  // If we're getting outputs larger than our configured size, we run the risk
+  // of exceeding MediaCodec's allowed input buffer size. Update the coded size
+  // as we go to ensure we can correctly reconfigure if needed later.
+  if (output_buffer->size().GetArea() > decoder_config_.coded_size().GetArea())
+    decoder_config_.set_coded_size(output_buffer->size());
+
   gfx::Rect visible_rect(output_buffer->size());
   std::unique_ptr<ScopedAsyncTrace> async_trace =
       ScopedAsyncTrace::CreateIfEnabled(
@@ -980,7 +1024,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   }
   video_frame_factory_->CreateVideoFrame(
       std::move(output_buffer), presentation_time,
-      GetNaturalSize(visible_rect, decoder_config_.GetPixelAspectRatio()),
+      decoder_config_.aspect_ratio().GetNaturalSize(visible_rect),
       CreatePromotionHintCB(),
       base::BindOnce(&MediaCodecVideoDecoder::ForwardVideoFrame,
                      weak_factory_.GetWeakPtr(), reset_generation_,
@@ -1009,8 +1053,8 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
   // Record how long this frame was pending.
   const base::TimeDelta duration = base::TimeTicks::Now() - started_at;
   UMA_HISTOGRAM_CUSTOM_TIMES("Media.MCVD.ForwardVideoFrameTiming", duration,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMilliseconds(100), 25);
+                             base::Milliseconds(1), base::Milliseconds(100),
+                             25);
 
   // No |frame| indicates an error creating it.
   if (!frame) {
@@ -1063,8 +1107,8 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // (http://crbug.com/598963).
   // TODO(watk): Strongly consider blocking VP8 (or specific MediaCodecs)
   // instead. Draining is responsible for a lot of complexity.
-  if (decoder_config_.codec() != kCodecVP8 || !codec_ || codec_->IsFlushed() ||
-      codec_->IsDrained() || using_async_api_) {
+  if (decoder_config_.codec() != VideoCodec::kVP8 || !codec_ ||
+      codec_->IsFlushed() || codec_->IsDrained() || using_async_api_) {
     // If the codec isn't already drained or flushed, then we have to remember
     // that we owe it a flush.  We also have to remember not to deliver any
     // output buffers that might still be in progress in the codec.

@@ -17,7 +17,6 @@ limitations under the License.
 #define TENSORFLOW_CORE_KERNELS_EIGEN_POOLING_H_
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
-#include "tensorflow/core/kernels/eigen_volume_patch.h"
 
 namespace Eigen {
 
@@ -131,8 +130,8 @@ SpatialMaxPooling(const Input& input, DenseIndex patchRows,
       .extract_image_patches(
           patchRows, patchCols, strideRows, strideCols, in_strideRows,
           in_strideCols, padding_type,
-          -Eigen::NumTraits<typename internal::remove_const<
-              typename internal::traits<Input>::Scalar>::type>::highest())
+          Eigen::NumTraits<typename internal::remove_const<
+              typename internal::traits<Input>::Scalar>::type>::lowest())
       .maximum(reduction_dims)
       .reshape(post_reduce_dims);
 }
@@ -285,7 +284,11 @@ struct AvgPoolMeanReducer {
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE AvgPoolMeanReducer() : scalarCount_(0) {
     typedef typename packet_traits<T>::type Packet;
+#if defined(__HIPCC__)
+    packetCount_ = 0;
+#else
     packetCount_ = pset1<Packet>(T(0.0));
+#endif
   }
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void reduce(const T t, T* accum) {
@@ -365,7 +368,11 @@ struct AvgPoolMeanReducer {
  protected:
   typedef typename packet_traits<T>::type Packet;
   int scalarCount_;
+#if defined(__HIPCC__)
+  int packetCount_;
+#else
   Packet packetCount_;
+#endif
 };
 
 template <typename Device>

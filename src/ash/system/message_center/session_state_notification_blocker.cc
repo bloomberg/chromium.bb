@@ -20,8 +20,7 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kLoginNotificationDelay =
-    base::TimeDelta::FromSeconds(6);
+constexpr base::TimeDelta kLoginNotificationDelay = base::Seconds(6);
 
 // Set to false for tests so notifications can be generated without a delay.
 bool g_use_login_delay_for_test = true;
@@ -111,6 +110,14 @@ bool SessionStateNotificationBlocker::ShouldShowNotificationAsPopup(
   // Never show notifications in kiosk mode.
   if (session_controller->IsRunningInAppMode())
     return false;
+
+  // Do not show non system notifications for `kLoginNotificationsDelay`
+  // duration.
+  if (notification.notifier_id().type !=
+          message_center::NotifierType::SYSTEM_COMPONENT &&
+      login_delay_timer_.IsRunning()) {
+    return false;
+  }
 
   if (notification.id() == BatteryNotification::kNotificationId)
     return true;

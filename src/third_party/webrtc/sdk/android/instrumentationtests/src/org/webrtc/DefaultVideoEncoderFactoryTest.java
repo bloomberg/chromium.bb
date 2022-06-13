@@ -12,8 +12,8 @@ package org.webrtc;
 
 import static org.junit.Assert.assertEquals;
 
-import android.support.annotation.Nullable;
-import android.support.test.filters.SmallTest;
+import androidx.annotation.Nullable;
+import androidx.test.filters.SmallTest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.chromium.base.test.BaseJUnit4ClassRunner;

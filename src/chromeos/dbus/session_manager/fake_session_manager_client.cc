@@ -8,19 +8,23 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
@@ -28,6 +32,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace chromeos {
 
@@ -333,6 +338,10 @@ void FakeSessionManagerClient::LoginScreenStorageDelete(
 void FakeSessionManagerClient::StartSession(
     const cryptohome::AccountIdentifier& cryptohome_id) {
   DCHECK_EQ(0UL, user_sessions_.count(cryptohome_id.account_id()));
+
+  if (!primary_user_id_.has_value())
+    primary_user_id_ = cryptohome_id.account_id();
+
   std::string user_id_hash =
       UserDataAuthClient::GetStubSanitizedUsername(cryptohome_id);
   user_sessions_[cryptohome_id.account_id()] = user_id_hash;
@@ -395,6 +404,11 @@ void FakeSessionManagerClient::NotifyLockScreenShown() {
 void FakeSessionManagerClient::NotifyLockScreenDismissed() {
   notify_lock_screen_dismissed_call_count_++;
   screen_is_locked_ = false;
+}
+
+bool FakeSessionManagerClient::RequestBrowserDataMigration(
+    const cryptohome::AccountIdentifier& cryptohome_id) {
+  return true;
 }
 
 void FakeSessionManagerClient::RetrieveActiveSessions(
@@ -599,23 +613,32 @@ bool FakeSessionManagerClient::SupportsBrowserRestart() const {
 void FakeSessionManagerClient::SetFlagsForUser(
     const cryptohome::AccountIdentifier& cryptohome_id,
     const std::vector<std::string>& flags) {
-  flags_for_user_[cryptohome_id] = flags;
+  flags_for_user_[cryptohome_id].flags = flags;
 }
 
 void FakeSessionManagerClient::SetFeatureFlagsForUser(
     const cryptohome::AccountIdentifier& cryptohome_id,
-    const std::vector<std::string>& feature_flags) {
+    const std::vector<std::string>& feature_flags,
+    const std::map<std::string, std::string>& origin_list_flags) {
   // session_manager's SetFeatureFlagsForUser implementation has the side effect
   // of clearing flags, match that behavior.
-  flags_for_user_[cryptohome_id] = {};
+  auto& state = flags_for_user_[cryptohome_id];
+  state.flags = {};
+  state.feature_flags = feature_flags;
+  state.origin_list_flags = origin_list_flags;
 }
 
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     StateKeysCallback callback) {
-  if (force_state_keys_missing_) {
+  if (state_keys_handling_ == ServerBackedStateKeysHandling::kNoResponse) {
+    return;
+  }
+  if (state_keys_handling_ ==
+      ServerBackedStateKeysHandling::kForceNotAvailable) {
     PostReply(FROM_HERE, std::move(callback), std::vector<std::string>());
     return;
   }
+  DCHECK_EQ(state_keys_handling_, ServerBackedStateKeysHandling::kRegular);
 
   if (policy_storage_ == PolicyStorageType::kOnDisk) {
     base::FilePath owner_key_path;
@@ -630,6 +653,11 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
   } else {
     PostReply(FROM_HERE, std::move(callback), server_backed_state_keys_);
   }
+}
+
+void FakeSessionManagerClient::GetPsmDeviceActiveSecret(
+    PsmDeviceActiveSecretCallback callback) {
+  PostReply(FROM_HERE, std::move(callback), psm_device_active_secret_);
 }
 
 void FakeSessionManagerClient::StartArcMiniContainer(
@@ -724,7 +752,35 @@ bool FakeSessionManagerClient::GetFlagsForUser(
   if (iter == flags_for_user_.end())
     return false;
 
-  *out_flags_for_user = iter->second;
+  // Raw flags.
+  *out_flags_for_user = iter->second.flags;
+
+  // Encode feature flags.
+  std::vector<base::Value> feature_flag_list;
+  for (const auto& feature_flag : iter->second.feature_flags) {
+    feature_flag_list.emplace_back(base::Value(feature_flag));
+  }
+  if (!feature_flag_list.empty()) {
+    std::string encoded;
+    base::JSONWriter::Write(base::Value(std::move(feature_flag_list)),
+                            &encoded);
+    out_flags_for_user->push_back(base::StringPrintf(
+        "--%s=%s", chromeos::switches::kFeatureFlags, encoded.c_str()));
+  }
+
+  // Encode origin list values.
+  base::Value origin_list_dict(base::Value::Type::DICTIONARY);
+  for (const auto& entry : iter->second.origin_list_flags) {
+    origin_list_dict.SetStringKey(entry.first, entry.second);
+  }
+  if (!origin_list_dict.DictEmpty()) {
+    std::string encoded;
+    base::JSONWriter::Write(origin_list_dict, &encoded);
+    out_flags_for_user->push_back(base::StringPrintf(
+        "--%s=%s", chromeos::switches::kFeatureFlagsOriginList,
+        encoded.c_str()));
+  }
+
   return true;
 }
 
@@ -796,6 +852,27 @@ void FakeSessionManagerClient::HandleOwnerKeySet(
 void FakeSessionManagerClient::set_on_start_device_wipe_callback(
     base::OnceClosure callback) {
   on_start_device_wipe_callback_ = std::move(callback);
+}
+
+FakeSessionManagerClient::FlagsState::FlagsState() = default;
+FakeSessionManagerClient::FlagsState::~FlagsState() = default;
+
+ScopedFakeSessionManagerClient::ScopedFakeSessionManagerClient() {
+  SessionManagerClient::InitializeFake();
+}
+
+ScopedFakeSessionManagerClient::~ScopedFakeSessionManagerClient() {
+  SessionManagerClient::Shutdown();
+}
+
+ScopedFakeInMemorySessionManagerClient::
+    ScopedFakeInMemorySessionManagerClient() {
+  SessionManagerClient::InitializeFakeInMemory();
+}
+
+ScopedFakeInMemorySessionManagerClient::
+    ~ScopedFakeInMemorySessionManagerClient() {
+  SessionManagerClient::Shutdown();
 }
 
 }  // namespace chromeos

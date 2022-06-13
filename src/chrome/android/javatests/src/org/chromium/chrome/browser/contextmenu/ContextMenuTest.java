@@ -38,6 +38,7 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
@@ -66,6 +67,7 @@ import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.MenuSourceType;
+import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
 import java.io.IOException;
@@ -127,6 +129,10 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
             return true;
         }
     };
+    // Test Lens chip delegate that always returns valid chip render params.
+    private void setupLensChipDelegate() {
+        LensChipDelegate.setShouldSkipIsEnabledCheckForTesting(true);
+    }
 
     private static final String[] TEST_FILES =
             new String[] {FILENAME_GIF, FILENAME_PNG, FILENAME_WEBM};
@@ -134,6 +140,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Before
     public void setUp() {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(true));
+        setupLensChipDelegate();
     }
 
     @Override
@@ -186,143 +193,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @MediumTest
     @Feature({"Browser"})
-    public void testSearchWithGoogleLensFiresIntent() throws Throwable {
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
-
-        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
-                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
-                "testImage", R.id.contextmenu_search_with_google_lens,
-                "com.google.android.googlequicksearchbox");
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image"));
-        Assert.assertEquals(0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain"));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Browser"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:lensShopVariation/ShopSimilarProducts"})
-    public void
-    testShopSimilarProductsFiresIntent() throws Throwable {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
-
-        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
-                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
-                "testImage", R.id.contextmenu_shop_similar_products,
-                "com.google.android.googlequicksearchbox");
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image"));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain"));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Browser"})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/ShopImageWithGoogleLens"})
-    public void
-    testShopImageWithGoogleLensFiresIntent() throws Throwable {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
-
-        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
-                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
-                "testImage", R.id.contextmenu_shop_image_with_google_lens,
-                "com.google.android.googlequicksearchbox");
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image"));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain"));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Browser"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/SearchSimilarProducts"})
-    public void
-    testSearchSimilarProductsFiresIntent() throws Throwable {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
-
-        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
-                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
-                "testImage", R.id.contextmenu_search_similar_products,
-                "com.google.android.googlequicksearchbox");
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image"));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain"));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Browser"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/SearchSimilarProducts/minAgsaVersionNameForShopping/11.21"})
-    public void
-    testSearchSimilarProductsBelowShoppingMinimumAgsaVersion() throws Throwable {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
-        hardcodeTestImageForSharing(TEST_JPG_IMAGE_FILE_EXTENSION);
-
-        // Fallback to search with google lens when Agsa below minimum shopping supported version.
-        ContextMenuUtils.selectContextMenuItemWithExpectedIntent(
-                InstrumentationRegistry.getInstrumentation(), mDownloadTestRule.getActivity(), tab,
-                "testImage", R.id.contextmenu_search_with_google_lens,
-                "com.google.android.googlequicksearchbox");
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image"));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        "ContextMenu.SelectedOptionAndroid.Image.ShoppingDomain"));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Browser"})
     @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
     @Features.DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testLensShoppingAllowlistWithLensFeaturesDisabled() throws Throwable {
@@ -370,20 +240,23 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
 
         final CallbackHelper newTabCallback = new CallbackHelper();
         final AtomicReference<Tab> newTab = new AtomicReference<>();
-        mDownloadTestRule.getActivity().getTabModelSelector().addObserver(
-                new TabModelSelectorObserver() {
-                    @Override
-                    public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
-                        if (CriticalPersistedTabData.from(tab).getParentId()
-                                != activityTab.getId()) {
-                            return;
-                        }
-                        newTab.set(tab);
-                        newTabCallback.notifyCalled();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDownloadTestRule.getActivity().getTabModelSelector().addObserver(
+                    new TabModelSelectorObserver() {
+                        @Override
+                        public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
+                            if (CriticalPersistedTabData.from(tab).getParentId()
+                                    != activityTab.getId()) {
+                                return;
+                            }
+                            newTab.set(tab);
+                            newTabCallback.notifyCalled();
 
-                        mDownloadTestRule.getActivity().getTabModelSelector().removeObserver(this);
-                    }
-                });
+                            mDownloadTestRule.getActivity().getTabModelSelector().removeObserver(
+                                    this);
+                        }
+                    });
+        });
 
         int callbackCount = newTabCallback.getCallCount();
 
@@ -443,7 +316,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_TRANSLATE_WITH_GOOGLE_LENS})
     public void testSelectLensTranslateChip() throws Throwable {
         // Required to avoid runtime error.
         Looper.prepare();
@@ -545,7 +417,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
     public void testSelectLensShoppingChip() throws Throwable {
         // Required to avoid runtime error.
         Looper.prepare();
@@ -574,7 +445,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     // context menu.
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
     public void testDismissContextMenuOnClickShoppingLensChipEnabled() throws TimeoutException {
         // Required to avoid runtime error.
         Looper.prepare();
@@ -679,15 +549,18 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 mDownloadTestRule.getActivity(), tab, "testLink", R.id.contextmenu_open_in_new_tab);
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         int indexOfLinkPage = numOpenedTabs;
-        numOpenedTabs += 1;
-        Assert.assertEquals(
-                "Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
+        final int expectedNumOpenedTabs = indexOfLinkPage + 1;
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Number of open tabs does not match", tabModel.getCount(),
+                    Matchers.is(expectedNumOpenedTabs));
+        });
+        numOpenedTabs = expectedNumOpenedTabs;
 
         // Wait for any new tab animation to finish if we're being driven by the compositor.
-        final LayoutManagerImpl layoutDriver =
-                mDownloadTestRule.getActivity().getCompositorViewHolder().getLayoutManager();
+        final LayoutManagerImpl layoutDriver = mDownloadTestRule.getActivity()
+                                                       .getCompositorViewHolderForTesting()
+                                                       .getLayoutManager();
         CriteriaHelper.pollUiThread(() -> {
             return layoutDriver.getActiveLayout().shouldDisplayContentOverlay();
         }, "Background tab animation not finished.");
@@ -695,11 +568,13 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 mDownloadTestRule.getActivity(), tab, "testLink2",
                 R.id.contextmenu_open_in_new_tab);
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         int indexOfLinkPage2 = numOpenedTabs;
-        numOpenedTabs += 1;
-        Assert.assertEquals(
-                "Number of open tabs does not match", numOpenedTabs, tabModel.getCount());
+        final int expectedNumOpenedTabs2 = indexOfLinkPage2 + 1;
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Number of open tabs does not match", tabModel.getCount(),
+                    Matchers.is(expectedNumOpenedTabs2));
+        });
+        numOpenedTabs = expectedNumOpenedTabs2;
 
         // Verify the Url is still the same of Parent page.
         Assert.assertEquals(mTestUrl,
@@ -775,6 +650,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testContextMenuRetrievesImageOptionsLensEnabled() throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
@@ -793,37 +669,10 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/ShopSimilarProducts"})
-    public void
-    testContextMenuLensEnabledShopSimilarProducts() throws TimeoutException {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImage");
-
-        Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_shop_similar_products, R.id.contextmenu_copy_image};
-        Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
-        assertMenuItemsAreEqual(menu, expectedItems);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "ContextMenu"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/ShopImageWithGoogleLens"})
+    @Features.DisableFeatures({ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP})
+    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST,
+            ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void
     testContextMenuLensEnabledShopImageWithGoogleLens() throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
@@ -843,37 +692,13 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:"
-                    + "lensShopVariation/SearchSimilarProducts"})
-    public void
-    testContextMenuLensEnabledSeachSimilarProducts() throws TimeoutException {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImage");
-
-        Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
-                R.id.contextmenu_search_similar_products, R.id.contextmenu_copy_image};
-        Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
-        assertMenuItemsAreEqual(menu, expectedItems);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "ContextMenu"})
     @Features.DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS})
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST
                     + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:shoppingUrlPatterns/^shopping-site.*"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void
     testContextMenuLensDisableShopWithGoogleLensForShoppingUrl() throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
@@ -883,32 +708,6 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
                 R.id.contextmenu_share_image, R.id.contextmenu_copy_image};
-        Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
-        expectedItems =
-                addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
-        assertMenuItemsAreEqual(menu, expectedItems);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "ContextMenu"})
-    @Features.EnableFeatures({ChromeFeatureList.CONTEXT_MENU_ENABLE_LENS_SHOPPING_ALLOWLIST,
-            ChromeFeatureList.CONTEXT_MENU_SEARCH_AND_SHOP_WITH_GOOGLE_LENS})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_SHOP_WITH_GOOGLE_LENS
-                    + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled",
-            "force-fieldtrial-params=FakeStudyName.Enabled:lensShopVariation/ShopSimilarProducts"})
-    public void
-    testContextMenuLensEnabledSearchAndShopSimilarProducts() throws TimeoutException {
-        LensUtils.setFakePassableLensEnvironmentForTesting(true);
-        LensUtils.setFakeImageUrlInShoppingAllowlistForTesting(true);
-        Tab tab = mDownloadTestRule.getActivity().getActivityTab();
-        ContextMenuCoordinator menu = ContextMenuUtils.openContextMenu(tab, "testImage");
-
-        Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image, R.id.contextmenu_shop_similar_products,
-                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -978,6 +777,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testContextMenuRetrievesImageLinkOptionsSearchLensEnabled()
             throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
@@ -1005,6 +805,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     Add({"enable-features=" + ChromeFeatureList.CONTEXT_MENU_GOOGLE_LENS_CHIP + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:orderShareImageBeforeLens/true"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void
     testContextMenuShareImageStillAddedWhenReordered() throws TimeoutException {
         LensUtils.setFakePassableLensEnvironmentForTesting(true);
@@ -1043,7 +844,9 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
     @Feature({"Browser", "ContextMenu"})
     @CommandLineFlags.Add({"enable-features="
                     + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
-            "force-fieldtrials=FakeStudyName/Enabled"})
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:useSearchImageWithGoogleLensItemName/false"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void
     testSearchWithGoogleLensMenuItemName() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -1071,6 +874,7 @@ public class ContextMenuTest implements DownloadTestRule.CustomMainActivityStart
                     + ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:useSearchImageWithGoogleLensItemName/true"})
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void
     testSearchImageWithGoogleLensMenuItemName() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();

@@ -29,6 +29,18 @@ constexpr int kSpacingDip = 8;
 constexpr int kDefaultFontSizeDip = 64;
 constexpr int kDetailsFontSizeDip = 13;
 
+views::Label* AddLabel(views::View* parent) {
+  auto* label = parent->AddChildView(std::make_unique<views::Label>());
+  label->SetAutoColorReadabilityEnabled(false);
+  label->SetEnabledColor(ambient::util::GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorSecondary));
+  label->SetFontList(ambient::util::GetDefaultFontlist().DeriveWithSizeDelta(
+      kDetailsFontSizeDip - kDefaultFontSizeDip));
+  label->SetPaintToLayer();
+  label->layer()->SetFillsBoundsOpaquely(false);
+
+  return label;
+}
 }  // namespace
 
 AmbientInfoView::AmbientInfoView(AmbientViewDelegate* delegate)
@@ -42,16 +54,25 @@ AmbientInfoView::~AmbientInfoView() = default;
 
 void AmbientInfoView::OnThemeChanged() {
   views::View::OnThemeChanged();
+  const auto* color_provider = GetColorProvider();
   details_label_->SetShadows(
-      ambient::util::GetTextShadowValues(GetNativeTheme()));
+      ambient::util::GetTextShadowValues(color_provider));
+  related_details_label_->SetShadows(
+      ambient::util::GetTextShadowValues(color_provider));
 }
 
-void AmbientInfoView::UpdateImageDetails(const std::u16string& details) {
+void AmbientInfoView::UpdateImageDetails(
+    const std::u16string& details,
+    const std::u16string& related_details) {
   details_label_->SetText(details);
+  related_details_label_->SetText(related_details);
+  related_details_label_->SetVisible(!related_details.empty() &&
+                                     details != related_details);
 }
 
 void AmbientInfoView::SetTextTransform(const gfx::Transform& transform) {
   details_label_->layer()->SetTransform(transform);
+  related_details_label_->layer()->SetTransform(transform);
   glanceable_info_view_->layer()->SetTransform(transform);
 }
 
@@ -78,15 +99,8 @@ void AmbientInfoView::InitLayout() {
       AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
   glanceable_info_view_->SetPaintToLayer();
 
-  details_label_ = AddChildView(std::make_unique<views::Label>());
-  details_label_->SetAutoColorReadabilityEnabled(false);
-  details_label_->SetEnabledColor(ambient::util::GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorSecondary));
-  details_label_->SetFontList(
-      ambient::util::GetDefaultFontlist().DeriveWithSizeDelta(
-          kDetailsFontSizeDip - kDefaultFontSizeDip));
-  details_label_->SetPaintToLayer();
-  details_label_->layer()->SetFillsBoundsOpaquely(false);
+  details_label_ = AddLabel(this);
+  related_details_label_ = AddLabel(this);
 }
 
 BEGIN_METADATA(AmbientInfoView, views::View)

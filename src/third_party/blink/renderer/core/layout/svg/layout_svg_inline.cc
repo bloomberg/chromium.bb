@@ -45,6 +45,12 @@ bool LayoutSVGInline::IsChildAllowed(LayoutObject* child,
     // Disallow direct descendant 'a'.
     if (child_node && IsA<SVGAElement>(*child_node))
       return false;
+    // https://svgwg.org/svg2-draft/linking.html#AElement
+    // any element or text allowed by its parent's content model, ...
+    if (Parent()) {
+      if (!Parent()->IsChildAllowed(child, style))
+        return false;
+    }
   }
 
   if (!child->IsSVGInline() && !child->IsSVGInlineText())
@@ -59,7 +65,8 @@ LayoutSVGInline::LayoutSVGInline(Element* element) : LayoutInline(element) {
 
 InlineFlowBox* LayoutSVGInline::CreateInlineFlowBox() {
   NOT_DESTROYED();
-  InlineFlowBox* box = new SVGInlineFlowBox(LineLayoutItem(this));
+  InlineFlowBox* box =
+      MakeGarbageCollected<SVGInlineFlowBox>(LineLayoutItem(this));
   box->SetHasVirtualLogicalHeight();
   return box;
 }
@@ -73,35 +80,48 @@ bool LayoutSVGInline::IsObjectBoundingBoxValid() const {
   return FirstLineBox();
 }
 
-FloatRect LayoutSVGInline::ObjectBoundingBox() const {
+// static
+void LayoutSVGInline::ObjectBoundingBoxForCursor(NGInlineCursor& cursor,
+                                                 gfx::RectF& bounds) {
+  for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+    const NGFragmentItem& item = *cursor.CurrentItem();
+    if (item.Type() == NGFragmentItem::kSvgText) {
+      bounds.Union(cursor.Current().ObjectBoundingBox(cursor));
+    } else if (NGInlineCursor descendants = cursor.CursorForDescendants()) {
+      for (; descendants; descendants.MoveToNext()) {
+        const NGFragmentItem& descendant_item = *descendants.CurrentItem();
+        if (descendant_item.Type() == NGFragmentItem::kSvgText)
+          bounds.Union(descendants.Current().ObjectBoundingBox(cursor));
+      }
+    }
+  }
+}
+
+gfx::RectF LayoutSVGInline::ObjectBoundingBox() const {
   NOT_DESTROYED();
-  FloatRect bounds;
+  gfx::RectF bounds;
   if (IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
-    for (cursor.MoveToIncludingCulledInline(*this); cursor;
-         cursor.MoveToNextForSameLayoutObject()) {
-      const NGFragmentItem& item = *cursor.CurrentItem();
-      if (item.Type() == NGFragmentItem::kSVGText)
-        bounds.Unite(item.ObjectBoundingBox());
-    }
+    cursor.MoveToIncludingCulledInline(*this);
+    ObjectBoundingBoxForCursor(cursor, bounds);
     return bounds;
   }
   for (InlineFlowBox* box : *LineBoxes())
-    bounds.Unite(FloatRect(box->FrameRect()));
+    bounds.Union(gfx::RectF(box->FrameRect()));
   return bounds;
 }
 
-FloatRect LayoutSVGInline::StrokeBoundingBox() const {
+gfx::RectF LayoutSVGInline::StrokeBoundingBox() const {
   NOT_DESTROYED();
   if (!IsObjectBoundingBoxValid())
-    return FloatRect();
+    return gfx::RectF();
   return SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, ObjectBoundingBox());
 }
 
-FloatRect LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
+gfx::RectF LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
   NOT_DESTROYED();
   if (!IsObjectBoundingBoxValid())
-    return FloatRect();
+    return gfx::RectF();
   return SVGLayoutSupport::ComputeVisualRectForText(*this, ObjectBoundingBox());
 }
 
@@ -126,20 +146,33 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
     for (cursor.MoveToIncludingCulledInline(*this); cursor;
          cursor.MoveToNextForSameLayoutObject()) {
       const NGFragmentItem& item = *cursor.CurrentItem();
-      if (item.Type() == NGFragmentItem::kSVGText) {
-        quads.push_back(
-            LocalToAbsoluteQuad(SVGLayoutSupport::ExtendTextBBoxWithStroke(
-                                    *this, item.ObjectBoundingBox()),
-                                mode));
+      if (item.Type() == NGFragmentItem::kSvgText) {
+        quads.push_back(LocalToAbsoluteQuad(
+            FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(
+                *this, cursor.Current().ObjectBoundingBox(cursor))),
+            mode));
       }
     }
     return;
   }
   for (InlineFlowBox* box : *LineBoxes()) {
-    FloatRect box_rect(box->FrameRect());
+    gfx::RectF box_rect(box->FrameRect());
     quads.push_back(LocalToAbsoluteQuad(
-        SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect), mode));
+        FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect)),
+        mode));
   }
+}
+
+void LayoutSVGInline::AddOutlineRects(Vector<PhysicalRect>& rect_list,
+                                      const PhysicalOffset& additional_offset,
+                                      NGOutlineType outline_type) const {
+  if (!IsInLayoutNGInlineFormattingContext()) {
+    LayoutInline::AddOutlineRects(rect_list, additional_offset, outline_type);
+    return;
+  }
+  auto rect = PhysicalRect::EnclosingRect(ObjectBoundingBox());
+  rect.Move(additional_offset);
+  rect_list.push_back(rect);
 }
 
 void LayoutSVGInline::WillBeDestroyed() {

@@ -9,10 +9,12 @@
 #include "base/check_op.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
@@ -99,7 +101,7 @@ std::string BuildBenchmarkName(ExecutorType executor,
 class UploadDataProvider : public cronet::test::TestUploadDataProvider {
  public:
   // |length| indicates how many bytes to upload.
-  UploadDataProvider(size_t length)
+  explicit UploadDataProvider(size_t length)
       : TestUploadDataProvider(cronet::test::TestUploadDataProvider::SYNC,
                                nullptr),
         length_(length),
@@ -226,8 +228,10 @@ class Callback : public cronet::test::TestUrlRequestCallback {
   void OnFailed(Cronet_UrlRequestPtr request,
                 Cronet_UrlResponseInfoPtr info,
                 Cronet_ErrorPtr error) override {
-    CHECK(false) << "Request failed with error "
-                 << Cronet_Error_error_code_get(error);
+    CHECK(false) << "Request failed with error code "
+                 << Cronet_Error_error_code_get(error) << ", QUIC error code "
+                 << Cronet_Error_quic_detailed_error_code_get(error)
+                 << ", message " << Cronet_Error_message_get(error);
   }
 
   // A simple executor that posts back to |task_runner_|.
@@ -242,13 +246,13 @@ class Callback : public cronet::test::TestUrlRequestCallback {
   int iterations_;
   int concurrency_;
   size_t length_;
-  const std::string* url_;
-  base::AtomicSequenceNumber* iterations_completed_;
+  raw_ptr<const std::string> url_;
+  raw_ptr<base::AtomicSequenceNumber> iterations_completed_;
   Cronet_EnginePtr engine_;
   Cronet_UrlRequestCallbackPtr callback_;
   Cronet_UploadDataProviderPtr cronet_upload_data_provider_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
   size_t buffer_size_;
   std::unique_ptr<UploadDataProvider> upload_data_provider_;
 };
@@ -394,13 +398,18 @@ class Benchmark {
   Cronet_EnginePtr engine_;
   const ExecutorType executor_;
   const Direction direction_;
-  base::DictionaryValue* const results_;
+  const raw_ptr<base::DictionaryValue> results_;
 };
 
 }  // namespace
 
 void PerfTest(const char* json_args) {
   base::AtExitManager exit_manager;
+
+  // Initialize the benchmark environment. See
+  // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/threading_and_tasks_testing.md#full-fledged-base_test_taskenvironment
+  // for more details.
+  base::test::TaskEnvironment task_environment;
 
   // Parse benchmark options into |g_options|.
   std::string benchmark_options = json_args;

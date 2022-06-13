@@ -10,6 +10,7 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrRenderTarget.h"
+#include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/dawn/GrDawnAttachment.h"
 #include "src/gpu/dawn/GrDawnBuffer.h"
@@ -61,19 +62,19 @@ wgpu::RenderPassEncoder GrDawnOpsRenderPass::beginRenderPass(wgpu::LoadOp colorO
 
     const float* c = fColorInfo.fClearColor.data();
 
-    wgpu::RenderPassColorAttachmentDescriptor colorAttachment;
-    colorAttachment.attachment = static_cast<GrDawnRenderTarget*>(fRenderTarget)->textureView();
+    wgpu::RenderPassColorAttachment colorAttachment;
+    colorAttachment.view = static_cast<GrDawnRenderTarget*>(fRenderTarget)->textureView();
     colorAttachment.resolveTarget = nullptr;
     colorAttachment.clearColor = { c[0], c[1], c[2], c[3] };
     colorAttachment.loadOp = colorOp;
     colorAttachment.storeOp = wgpu::StoreOp::Store;
-    wgpu::RenderPassColorAttachmentDescriptor* colorAttachments = { &colorAttachment };
+    wgpu::RenderPassColorAttachment* colorAttachments = { &colorAttachment };
     wgpu::RenderPassDescriptor renderPassDescriptor;
     renderPassDescriptor.colorAttachmentCount = 1;
     renderPassDescriptor.colorAttachments = colorAttachments;
     if (stencilAttachment) {
-        wgpu::RenderPassDepthStencilAttachmentDescriptor depthStencilAttachment;
-        depthStencilAttachment.attachment = stencilAttachment->view();
+        wgpu::RenderPassDepthStencilAttachment depthStencilAttachment;
+        depthStencilAttachment.view = stencilAttachment->view();
         depthStencilAttachment.depthLoadOp = stencilOp;
         depthStencilAttachment.stencilLoadOp = stencilOp;
         depthStencilAttachment.clearDepth = 1.0f;
@@ -119,18 +120,31 @@ void GrDawnOpsRenderPass::inlineUpload(GrOpFlushState* state,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Our caps require there to be a single reference value for both faces. However, our stencil
+// object asserts if the correct face getter is not queried.
+static uint16_t get_stencil_ref(const GrProgramInfo& info) {
+    GrStencilSettings stencilSettings = info.nonGLStencilSettings();
+    if (stencilSettings.isTwoSided()) {
+        SkASSERT(stencilSettings.postOriginCCWFace(info.origin()).fRef ==
+                 stencilSettings.postOriginCWFace(info.origin()).fRef);
+        return stencilSettings.postOriginCCWFace(info.origin()).fRef;
+    } else {
+        return stencilSettings.singleSidedFace().fRef;
+    }
+}
+
 void GrDawnOpsRenderPass::applyState(GrDawnProgram* program, const GrProgramInfo& programInfo) {
     auto bindGroup = program->setUniformData(fGpu, fRenderTarget, programInfo);
     fPassEncoder.SetPipeline(program->fRenderPipeline);
     fPassEncoder.SetBindGroup(0, bindGroup, 0, nullptr);
     if (programInfo.isStencilEnabled()) {
-        fPassEncoder.SetStencilReference(programInfo.userStencilSettings()->fCCWFace.fRef);
+        fPassEncoder.SetStencilReference(get_stencil_ref(programInfo));
     }
     const GrPipeline& pipeline = programInfo.pipeline();
     GrXferProcessor::BlendInfo blendInfo = pipeline.getXferProcessor().getBlendInfo();
     const float* c = blendInfo.fBlendConstant.vec();
     wgpu::Color color{c[0], c[1], c[2], c[3]};
-    fPassEncoder.SetBlendColor(&color);
+    fPassEncoder.SetBlendConstant(&color);
     if (!programInfo.pipeline().isScissorTestEnabled()) {
         // "Disable" scissor by setting it to the full pipeline bounds.
         SkIRect rect = SkIRect::MakeWH(fRenderTarget->width(), fRenderTarget->height());
@@ -153,8 +167,8 @@ bool GrDawnOpsRenderPass::onBindPipeline(const GrProgramInfo& programInfo,
 }
 
 void GrDawnOpsRenderPass::onSetScissorRect(const SkIRect& scissor) {
-    // Higher-level GrSurfaceDrawContext and clips should have already ensured draw bounds are
-    // restricted to the render target.
+    // Higher-level skgpu::v1::SurfaceDrawContext and clips should have already ensured draw
+    // bounds are restricted to the render target.
     SkASSERT(SkIRect::MakeSize(fRenderTarget->dimensions()).contains(scissor));
     auto nativeScissorRect =
             GrNativeRect::MakeRelativeTo(fOrigin, fRenderTarget->height(), scissor);

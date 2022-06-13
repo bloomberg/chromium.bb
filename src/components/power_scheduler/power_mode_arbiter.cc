@@ -11,9 +11,9 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/synchronization/lock.h"
+#include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
@@ -92,10 +92,13 @@ PowerModeArbiter::PowerModeArbiter()
           base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>()),
       charging_voter_(std::make_unique<ChargingPowerModeVoter>(this)) {
   base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->AddIncrementalStateObserver(this);
 }
 
 PowerModeArbiter::~PowerModeArbiter() {
   base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  base::trace_event::TraceLog::GetInstance()->RemoveIncrementalStateObserver(
+      this);
 }
 
 void PowerModeArbiter::OnThreadPoolAvailable() {
@@ -123,6 +126,16 @@ void PowerModeArbiter::OnThreadPoolAvailable() {
   OnTaskRunnerAvailable(task_runner, sequence_number);
 }
 
+void PowerModeArbiter::SetChargingModeEnabled(bool enabled) {
+  {
+    base::AutoLock lock(lock_);
+    if (charging_mode_enabled_ == enabled)
+      return;
+    charging_mode_enabled_ = enabled;
+  }
+  OnVotesUpdated();
+}
+
 void PowerModeArbiter::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   int sequence_number = 0;
@@ -140,6 +153,8 @@ void PowerModeArbiter::SetTaskRunnerForTesting(
 void PowerModeArbiter::OnTaskRunnerAvailable(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     int sequence_number) {
+  UpdateTraceObserver();
+
   // Check if there are any actionable resets and post another task to handle
   // future ones if necessary. If sequence_number is changed concurrently by
   // RemoveObserver() or ResetVoteAfterTimeout(), this has call has no effect,
@@ -330,17 +345,29 @@ void PowerModeArbiter::OnVotesUpdated() {
 
 PowerMode PowerModeArbiter::ComputeActiveModeLocked() {
   PowerMode mode = PowerMode::kIdle;
+  PowerMode max_animation_mode = PowerMode::kIdle;
   bool is_audible = false;
   bool is_loading = false;
 
   for (const auto& voter_and_vote : votes_) {
     PowerMode vote = voter_and_vote.second.mode();
+
+    if (!charging_mode_enabled_ && vote == PowerMode::kCharging)
+      continue;
+
     if (vote > mode)
       mode = vote;
     if (vote == PowerMode::kAudible)
       is_audible = true;
     if (vote == PowerMode::kLoading)
       is_loading = true;
+
+    if ((vote == PowerMode::kAnimation || vote == PowerMode::kNopAnimation ||
+         vote == PowerMode::kSmallAnimation ||
+         vote == PowerMode::kMediumAnimation) &&
+        vote > max_animation_mode) {
+      max_animation_mode = vote;
+    }
   }
 
   // In background, audible overrides.
@@ -348,8 +375,29 @@ PowerMode PowerModeArbiter::ComputeActiveModeLocked() {
     return PowerMode::kAudible;
 
   // Break out loading while concurrently animating into a separate mode.
-  if (mode == PowerMode::kAnimation && is_loading)
+  if ((mode == PowerMode::kAnimation && is_loading) ||
+      (mode == PowerMode::kLoading &&
+       max_animation_mode > PowerMode::kNopAnimation)) {
     return PowerMode::kLoadingAnimation;
+  }
+
+  // Break out specific animation modes for main thread animations, too.
+  if (mode == PowerMode::kMainThreadAnimation) {
+    if (max_animation_mode == PowerMode::kNopAnimation) {
+      // The main thread seems to be taking a long time to produce a frame. Fold
+      // this into no-op animation mode. Note that this depends on kLoading mode
+      // overriding kMainThreadAnimation mode - otherwise we may incorrectly
+      // classify loading work as no-op animations.
+      static_assert(PowerMode::kLoading > PowerMode::kMainThreadAnimation,
+                    "Can't fold kMainThreadAnimation into kNopAnimation if the "
+                    "former preempts kLoading");
+      mode = PowerMode::kNopAnimation;
+    } else if (max_animation_mode == PowerMode::kSmallAnimation) {
+      mode = PowerMode::kSmallMainThreadAnimation;
+    } else if (max_animation_mode == PowerMode::kMediumAnimation) {
+      mode = PowerMode::kMediumMainThreadAnimation;
+    }
+  }
 
   return mode;
 }
@@ -363,25 +411,52 @@ void PowerModeArbiter::SetOnBatteryPowerForTesting(bool on_battery_power) {
   charging_voter_->SetOnBatteryPowerForTesting(on_battery_power);  // IN-TEST
 }
 
+void PowerModeArbiter::UpdateTraceObserver() {
+  {
+    base::AutoLock lock(lock_);
+
+    // Can't add the observer yet if the task runner isn't available.
+    if (!task_runner_)
+      return;
+  }
+
+  // Lock while adding or removing the observer, because OnTaskRunnerAvailable()
+  // may run concurrently to OnTraceLogEnabled/Disabled(). We need a different
+  // lock than |lock_| since that one is acquired by Add/RemoveObserver().
+  base::AutoLock lock(trace_observer_lock_);
+  bool power_tracing_enabled =
+      *TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("power");
+  if (power_tracing_enabled && !trace_observer_added_) {
+    trace_observer_added_ = true;
+    // Add a no-op observer which ensures that reset tasks are executing while
+    // tracing is enabled.
+    AddObserver(trace_observer_.get());
+  } else if (!power_tracing_enabled && trace_observer_added_) {
+    trace_observer_added_ = false;
+    RemoveObserver(trace_observer_.get());
+  }
+}
+
 void PowerModeArbiter::OnTraceLogEnabled() {
   {
     base::AutoLock lock(lock_);
-    for (const auto& voter_and_vote : votes_)
+    for (auto& voter_and_vote : votes_)
       voter_and_vote.second.OnTraceLogEnabled();
     active_mode_.OnTraceLogEnabled();
   }
 
-  const auto* power_tracing_enabled =
-      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("power");
-  if (*power_tracing_enabled) {
-    // Add a no-op observer which ensures that reset tasks are executing while
-    // tracing is enabled.
-    AddObserver(trace_observer_.get());
-  }
+  UpdateTraceObserver();
 }
 
 void PowerModeArbiter::OnTraceLogDisabled() {
-  RemoveObserver(trace_observer_.get());
+  UpdateTraceObserver();
+}
+
+void PowerModeArbiter::OnIncrementalStateCleared() {
+  base::AutoLock lock(lock_);
+  for (auto& voter_and_vote : votes_)
+    voter_and_vote.second.OnIncrementalStateCleared();
+  active_mode_.OnIncrementalStateCleared();
 }
 
 }  // namespace power_scheduler

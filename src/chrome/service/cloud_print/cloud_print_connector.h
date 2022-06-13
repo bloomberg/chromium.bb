@@ -9,7 +9,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/service/cloud_print/connector_settings.h"
@@ -44,6 +44,9 @@ class CloudPrintConnector
                       const ConnectorSettings& settings,
                       const net::PartialNetworkTrafficAnnotationTag&
                           partial_traffic_annotation);
+
+  CloudPrintConnector(const CloudPrintConnector&) = delete;
+  CloudPrintConnector& operator=(const CloudPrintConnector&) = delete;
 
   bool Start();
   void Stop();
@@ -139,8 +142,7 @@ class CloudPrintConnector
   void StartGetRequest(const GURL& url,
                        int max_retries,
                        ResponseHandler handler);
-  void StartPostRequest(CloudPrintURLFetcher::RequestType type,
-                        const GURL& url,
+  void StartPostRequest(const GURL& url,
                         int max_retries,
                         const std::string& mime_type,
                         const std::string& post_data,
@@ -178,11 +180,10 @@ class CloudPrintConnector
   bool IsSamePrinter(const std::string& name1, const std::string& name2) const;
   bool InitPrintSystem();
 
-  void ScheduleStatsReport();
   void ReportStats();
 
   // CloudPrintConnector client.
-  Client* client_;
+  raw_ptr<Client> client_;
   // Connector settings.
   ConnectorSettings settings_;
   // Pointer to current print system.
@@ -205,8 +206,6 @@ class CloudPrintConnector
   const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
 
   base::WeakPtrFactory<CloudPrintConnector> stats_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintConnector);
 };
 
 }  // namespace cloud_print

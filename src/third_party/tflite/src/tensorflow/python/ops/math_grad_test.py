@@ -14,13 +14,8 @@
 # ==============================================================================
 """Tests for Python ops defined in math_grad.py."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 
-from tensorflow.python.debug.lib import check_numerics_callback
 from tensorflow.python.eager import backprop
 from tensorflow.python.eager import context
 from tensorflow.python.framework import constant_op
@@ -46,7 +41,7 @@ class SquaredDifferenceOpTest(test.TestCase):
     l = np.random.randn(*left_shape)
     r = np.random.randn(*right_shape)
 
-    with self.cached_session(use_gpu=True):
+    with self.cached_session():
       left_tensor = constant_op.constant(l, shape=left_shape)
       right_tensor = constant_op.constant(r, shape=right_shape)
       output = math_ops.squared_difference(left_tensor, right_tensor)
@@ -83,7 +78,7 @@ class AbsOpTest(test.TestCase):
           self._biasedRandN(
               shape, bias=bias), dtype=dtype)
 
-    with self.cached_session(use_gpu=True):
+    with self.cached_session():
       output = math_ops.abs(value)
       error = gradient_checker.compute_gradient_error(
           value, shape, output, output.get_shape().as_list())
@@ -374,6 +369,43 @@ class SegmentMinOrMaxGradientTest(test.TestCase):
       self.assertLess(error, 1e-4)
 
 
+@test_util.run_all_in_graph_and_eager_modes
+class SegmentProdGradientTest(test.TestCase):
+
+  def _run_gradient_check(self, data, segment_ids):
+
+    def _segment_prod(x):
+      return math_ops.segment_prod(x, segment_ids)
+
+    err = gradient_checker_v2.max_error(
+        *gradient_checker_v2.compute_gradient(_segment_prod, [data]))
+    self.assertLess(err, 2e-4)
+
+  def testSegmentProdGradientWithoutOverlap(self):
+    data = constant_op.constant([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]],
+                                dtype=dtypes.float32)
+    segment_ids = constant_op.constant([0, 1, 2], dtype=dtypes.int64)
+    self._run_gradient_check(data, segment_ids)
+
+  def testSegmentProdGradientWithoutZeros(self):
+    data = constant_op.constant([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]],
+                                dtype=dtypes.float32)
+    segment_ids = constant_op.constant([0, 0, 1], dtype=dtypes.int64)
+    self._run_gradient_check(data, segment_ids)
+
+  def testSegmentProdGradientWithZeros(self):
+    data = constant_op.constant([[0, 2, 3, 4], [0, 0, 2, 0], [5, 0, 7, 0]],
+                                dtype=dtypes.float32)
+    segment_ids = constant_op.constant([0, 0, 1], dtype=dtypes.int64)
+    self._run_gradient_check(data, segment_ids)
+
+  def testSegmentProdGradientWithEmptySegment(self):
+    data = constant_op.constant([[1, 2, 3, 4], [4, 3, 2, 1], [5, 6, 7, 8]],
+                                dtype=dtypes.float32)
+    segment_ids = constant_op.constant([0, 0, 2], dtype=dtypes.int64)
+    self._run_gradient_check(data, segment_ids)
+
+
 class FloorModGradientTest(test.TestCase):
 
   @test_util.run_deprecated_v1
@@ -412,8 +444,8 @@ class DivNoNanGradientTest(test.TestCase):
     outputs = math_ops.div_no_nan(x, y)
     with self.cached_session():
       dx, dy = gradients.gradients(outputs, [x, y])
-      self.assertAllClose(dx.eval(), np.zeros(x.shape.as_list()))
-      self.assertAllClose(dy.eval(), np.zeros(y.shape.as_list()))
+      self.assertAllClose(dx, np.zeros(x.shape.as_list()))
+      self.assertAllClose(dy, np.zeros(y.shape.as_list()))
 
 
 class MulNoNanGradientTest(test.TestCase):
@@ -437,8 +469,8 @@ class MulNoNanGradientTest(test.TestCase):
     outputs = math_ops.mul_no_nan(x, y)
     with self.cached_session():
       dx, dy = gradients.gradients(outputs, [x, y])
-      self.assertAllClose(dx.eval(), np.zeros(x.shape.as_list()))
-      self.assertAllClose(dy.eval(), x_vals)
+      self.assertAllClose(dx, np.zeros(x.shape.as_list()))
+      self.assertAllClose(dy, x_vals)
 
 
 class XlogyTest(test.TestCase):
@@ -599,16 +631,12 @@ class PowGradTest(test.TestCase):
     self.assertAllClose([-2., 0., 2.], g)
 
   def test_zero_grad_tape(self):
-    try:
-      check_numerics_callback.enable_check_numerics()
-      x = constant_op.constant([-1, 0., 1.])
-      with backprop.GradientTape() as tape:
-        tape.watch(x)
-        g = tape.gradient(math_ops.pow(x, 2), x)
-      g = self.evaluate(g)
-      self.assertAllClose([-2., 0., 2.], g)
-    finally:
-      check_numerics_callback.disable_check_numerics()
+    x = constant_op.constant([-1, 0., 1.])
+    with backprop.GradientTape() as tape:
+      tape.watch(x)
+      g = tape.gradient(math_ops.pow(x, 2), x)
+    g = self.evaluate(g)
+    self.assertAllClose([-2., 0., 2.], g)
 
 
 @test_util.run_all_in_graph_and_eager_modes

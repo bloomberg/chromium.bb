@@ -6,8 +6,10 @@
 
 #include "fxjs/js_define.h"
 
+#include <math.h>
+#include <stdarg.h>
+
 #include <algorithm>
-#include <cmath>
 #include <limits>
 #include <vector>
 
@@ -17,13 +19,15 @@
 #include "fxjs/fx_date_helpers.h"
 #include "fxjs/fxv8.h"
 #include "third_party/base/check.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-isolate.h"
 
 void JSDestructor(v8::Local<v8::Object> obj) {
   CFXJS_Engine::SetObjectPrivate(obj, nullptr);
 }
 
-double JS_DateParse(const WideString& str) {
-  v8::Isolate* pIsolate = v8::Isolate::GetCurrent();
+double JS_DateParse(v8::Isolate* pIsolate, const WideString& str) {
   v8::Isolate::Scope isolate_scope(pIsolate);
   v8::HandleScope scope(pIsolate);
 
@@ -52,7 +56,7 @@ double JS_DateParse(const WideString& str) {
     return 0;
 
   double date = value.As<v8::Number>()->Value();
-  return std::isfinite(date) ? FX_LocalTime(date) : date;
+  return isfinite(date) ? FX_LocalTime(date) : date;
 }
 
 std::vector<v8::Local<v8::Value>> ExpandKeywordParams(

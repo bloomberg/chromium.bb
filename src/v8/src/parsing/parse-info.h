@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "include/v8.h"
 #include "src/base/bit-field.h"
 #include "src/base/export-template.h"
 #include "src/base/logging.h"
@@ -31,7 +30,7 @@ class AccountingAllocator;
 class AstRawString;
 class AstStringConstants;
 class AstValueFactory;
-class CompilerDispatcher;
+class LazyCompileDispatcher;
 class DeclarationScope;
 class FunctionLiteral;
 class RuntimeCallStats;
@@ -41,36 +40,39 @@ class Utf16CharacterStream;
 class Zone;
 
 // The flags for a parse + unoptimized compile operation.
-#define FLAG_FIELDS(V, _)                                \
-  V(is_toplevel, bool, 1, _)                             \
-  V(is_eager, bool, 1, _)                                \
-  V(is_eval, bool, 1, _)                                 \
-  V(outer_language_mode, LanguageMode, 1, _)             \
-  V(parse_restriction, ParseRestriction, 1, _)           \
-  V(is_module, bool, 1, _)                               \
-  V(allow_lazy_parsing, bool, 1, _)                      \
-  V(is_lazy_compile, bool, 1, _)                         \
-  V(collect_type_profile, bool, 1, _)                    \
-  V(coverage_enabled, bool, 1, _)                        \
-  V(block_coverage_enabled, bool, 1, _)                  \
-  V(is_asm_wasm_broken, bool, 1, _)                      \
-  V(class_scope_has_private_brand, bool, 1, _)           \
-  V(requires_instance_members_initializer, bool, 1, _)   \
-  V(has_static_private_methods_or_accessors, bool, 1, _) \
-  V(might_always_opt, bool, 1, _)                        \
-  V(allow_natives_syntax, bool, 1, _)                    \
-  V(allow_lazy_compile, bool, 1, _)                      \
-  V(is_oneshot_iife, bool, 1, _)                         \
-  V(collect_source_positions, bool, 1, _)                \
-  V(allow_harmony_top_level_await, bool, 1, _)           \
+#define FLAG_FIELDS(V, _)                                       \
+  V(is_toplevel, bool, 1, _)                                    \
+  V(is_eager, bool, 1, _)                                       \
+  V(is_eval, bool, 1, _)                                        \
+  V(outer_language_mode, LanguageMode, 1, _)                    \
+  V(parse_restriction, ParseRestriction, 1, _)                  \
+  V(is_module, bool, 1, _)                                      \
+  V(allow_lazy_parsing, bool, 1, _)                             \
+  V(is_lazy_compile, bool, 1, _)                                \
+  V(collect_type_profile, bool, 1, _)                           \
+  V(coverage_enabled, bool, 1, _)                               \
+  V(block_coverage_enabled, bool, 1, _)                         \
+  V(is_asm_wasm_broken, bool, 1, _)                             \
+  V(class_scope_has_private_brand, bool, 1, _)                  \
+  V(private_name_lookup_skips_outer_class, bool, 1, _)          \
+  V(requires_instance_members_initializer, bool, 1, _)          \
+  V(has_static_private_methods_or_accessors, bool, 1, _)        \
+  V(might_always_opt, bool, 1, _)                               \
+  V(allow_natives_syntax, bool, 1, _)                           \
+  V(allow_lazy_compile, bool, 1, _)                             \
+  V(post_parallel_compile_tasks_for_eager_toplevel, bool, 1, _) \
+  V(post_parallel_compile_tasks_for_lazy, bool, 1, _)           \
+  V(collect_source_positions, bool, 1, _)                       \
   V(is_repl_mode, bool, 1, _)
 
 class V8_EXPORT_PRIVATE UnoptimizedCompileFlags {
  public:
   // Set-up flags for a toplevel compilation.
-  static UnoptimizedCompileFlags ForToplevelCompile(
-      Isolate* isolate, bool is_user_javascript, LanguageMode language_mode,
-      REPLMode repl_mode, ScriptType type = ScriptType::kClassic);
+  static UnoptimizedCompileFlags ForToplevelCompile(Isolate* isolate,
+                                                    bool is_user_javascript,
+                                                    LanguageMode language_mode,
+                                                    REPLMode repl_mode,
+                                                    ScriptType type, bool lazy);
 
   // Set-up flags for a compiling a particular function (either a lazy compile
   // or a recompile).
@@ -119,6 +121,15 @@ class V8_EXPORT_PRIVATE UnoptimizedCompileFlags {
     return *this;
   }
 
+  ParsingWhileDebugging parsing_while_debugging() const {
+    return parsing_while_debugging_;
+  }
+  UnoptimizedCompileFlags& set_parsing_while_debugging(
+      ParsingWhileDebugging value) {
+    parsing_while_debugging_ = value;
+    return *this;
+  }
+
  private:
   struct BitFields {
     DEFINE_BIT_FIELDS(FLAG_FIELDS)
@@ -133,13 +144,15 @@ class V8_EXPORT_PRIVATE UnoptimizedCompileFlags {
   void SetFlagsForToplevelCompile(bool is_collecting_type_profile,
                                   bool is_user_javascript,
                                   LanguageMode language_mode,
-                                  REPLMode repl_mode, ScriptType type);
+                                  REPLMode repl_mode, ScriptType type,
+                                  bool lazy);
   void SetFlagsForFunctionFromScript(Script script);
 
   uint32_t flags_;
   int script_id_;
   FunctionKind function_kind_;
   FunctionSyntaxKind function_syntax_kind_;
+  ParsingWhileDebugging parsing_while_debugging_;
 };
 
 #undef FLAG_FIELDS
@@ -148,67 +161,61 @@ class ParseInfo;
 // The mutable state for a parse + unoptimized compile operation.
 class V8_EXPORT_PRIVATE UnoptimizedCompileState {
  public:
-  explicit UnoptimizedCompileState(Isolate*);
-  UnoptimizedCompileState(const UnoptimizedCompileState& other) V8_NOEXCEPT;
+  const PendingCompilationErrorHandler* pending_error_handler() const {
+    return &pending_error_handler_;
+  }
+  PendingCompilationErrorHandler* pending_error_handler() {
+    return &pending_error_handler_;
+  }
 
-  class ParallelTasks {
-   public:
-    explicit ParallelTasks(CompilerDispatcher* compiler_dispatcher)
-        : dispatcher_(compiler_dispatcher) {
-      DCHECK_NOT_NULL(dispatcher_);
-    }
+ private:
+  PendingCompilationErrorHandler pending_error_handler_;
+};
 
-    void Enqueue(ParseInfo* outer_parse_info, const AstRawString* function_name,
-                 FunctionLiteral* literal);
+// A container for ParseInfo fields that are reusable across multiple parses and
+// unoptimized compiles.
+//
+// Note that this is different from UnoptimizedCompileState, which has mutable
+// state for a single compilation that is not reusable across multiple
+// compilations.
+class V8_EXPORT_PRIVATE ReusableUnoptimizedCompileState {
+ public:
+  explicit ReusableUnoptimizedCompileState(Isolate* isolate);
+  explicit ReusableUnoptimizedCompileState(LocalIsolate* isolate);
+  ~ReusableUnoptimizedCompileState();
 
-    using EnqueuedJobsIterator =
-        std::forward_list<std::pair<FunctionLiteral*, uintptr_t>>::iterator;
-
-    EnqueuedJobsIterator begin() { return enqueued_jobs_.begin(); }
-    EnqueuedJobsIterator end() { return enqueued_jobs_.end(); }
-
-    CompilerDispatcher* dispatcher() { return dispatcher_; }
-
-   private:
-    CompilerDispatcher* dispatcher_;
-    std::forward_list<std::pair<FunctionLiteral*, uintptr_t>> enqueued_jobs_;
-  };
-
+  Zone* zone() { return &zone_; }
+  AstValueFactory* ast_value_factory() const {
+    return ast_value_factory_.get();
+  }
   uint64_t hash_seed() const { return hash_seed_; }
   AccountingAllocator* allocator() const { return allocator_; }
   const AstStringConstants* ast_string_constants() const {
     return ast_string_constants_;
   }
   Logger* logger() const { return logger_; }
-  PendingCompilationErrorHandler* pending_error_handler() {
-    return &pending_error_handler_;
-  }
-  const PendingCompilationErrorHandler* pending_error_handler() const {
-    return &pending_error_handler_;
-  }
-  ParallelTasks* parallel_tasks() const { return parallel_tasks_.get(); }
+  LazyCompileDispatcher* dispatcher() const { return dispatcher_; }
 
  private:
   uint64_t hash_seed_;
   AccountingAllocator* allocator_;
-  const AstStringConstants* ast_string_constants_;
-  PendingCompilationErrorHandler pending_error_handler_;
   Logger* logger_;
-  std::unique_ptr<ParallelTasks> parallel_tasks_;
+  LazyCompileDispatcher* dispatcher_;
+  const AstStringConstants* ast_string_constants_;
+  Zone zone_;
+  std::unique_ptr<AstValueFactory> ast_value_factory_;
 };
 
 // A container for the inputs, configuration options, and outputs of parsing.
 class V8_EXPORT_PRIVATE ParseInfo {
  public:
   ParseInfo(Isolate* isolate, const UnoptimizedCompileFlags flags,
-            UnoptimizedCompileState* state);
-
-  // Creates a new parse info based on parent top-level |outer_parse_info| for
-  // function |literal|.
-  static std::unique_ptr<ParseInfo> ForToplevelFunction(
-      const UnoptimizedCompileFlags flags,
-      UnoptimizedCompileState* compile_state, const FunctionLiteral* literal,
-      const AstRawString* function_name);
+            UnoptimizedCompileState* state,
+            ReusableUnoptimizedCompileState* reusable_state);
+  ParseInfo(LocalIsolate* isolate, const UnoptimizedCompileFlags flags,
+            UnoptimizedCompileState* state,
+            ReusableUnoptimizedCompileState* reusable_state,
+            uintptr_t stack_limit);
 
   ~ParseInfo();
 
@@ -219,37 +226,32 @@ class V8_EXPORT_PRIVATE ParseInfo {
                               ScriptOriginOptions origin_options,
                               NativesFlag natives = NOT_NATIVES_CODE);
 
-  // Either returns the ast-value-factory associcated with this ParseInfo, or
-  // creates and returns a new factory if none exists.
-  AstValueFactory* GetOrCreateAstValueFactory();
-
-  Zone* zone() const { return zone_.get(); }
+  Zone* zone() const { return reusable_state_->zone(); }
 
   const UnoptimizedCompileFlags& flags() const { return flags_; }
 
-  // Getters for state.
-  uint64_t hash_seed() const { return state_->hash_seed(); }
-  AccountingAllocator* allocator() const { return state_->allocator(); }
-  const AstStringConstants* ast_string_constants() const {
-    return state_->ast_string_constants();
+  // Getters for reusable state.
+  uint64_t hash_seed() const { return reusable_state_->hash_seed(); }
+  AccountingAllocator* allocator() const {
+    return reusable_state_->allocator();
   }
-  Logger* logger() const { return state_->logger(); }
+  const AstStringConstants* ast_string_constants() const {
+    return reusable_state_->ast_string_constants();
+  }
+  Logger* logger() const { return reusable_state_->logger(); }
+  LazyCompileDispatcher* dispatcher() const {
+    return reusable_state_->dispatcher();
+  }
+  const UnoptimizedCompileState* state() const { return state_; }
+
+  // Getters for state.
   PendingCompilationErrorHandler* pending_error_handler() {
     return state_->pending_error_handler();
   }
-  UnoptimizedCompileState::ParallelTasks* parallel_tasks() const {
-    return state_->parallel_tasks();
-  }
-  const UnoptimizedCompileState* state() const { return state_; }
 
   // Accessors for per-thread state.
   uintptr_t stack_limit() const { return stack_limit_; }
   RuntimeCallStats* runtime_call_stats() const { return runtime_call_stats_; }
-  void SetPerThreadState(uintptr_t stack_limit,
-                         RuntimeCallStats* runtime_call_stats) {
-    stack_limit_ = stack_limit;
-    runtime_call_stats_ = runtime_call_stats;
-  }
 
   // Accessor methods for output flags.
   bool allow_eval_cache() const { return allow_eval_cache_; }
@@ -286,8 +288,7 @@ class V8_EXPORT_PRIVATE ParseInfo {
   }
 
   AstValueFactory* ast_value_factory() const {
-    DCHECK(ast_value_factory_.get());
-    return ast_value_factory_.get();
+    return reusable_state_->ast_value_factory();
   }
 
   const AstRawString* function_name() const { return function_name_; }
@@ -323,8 +324,9 @@ class V8_EXPORT_PRIVATE ParseInfo {
   void CheckFlagsForFunctionFromScript(Script script);
 
  private:
-  ParseInfo(const UnoptimizedCompileFlags flags,
-            UnoptimizedCompileState* state);
+  ParseInfo(const UnoptimizedCompileFlags flags, UnoptimizedCompileState* state,
+            ReusableUnoptimizedCompileState* reusable_state,
+            uintptr_t stack_limit, RuntimeCallStats* runtime_call_stats);
 
   void CheckFlagsForToplevelCompileFromScript(Script script,
                                               bool is_collecting_type_profile);
@@ -332,8 +334,8 @@ class V8_EXPORT_PRIVATE ParseInfo {
   //------------- Inputs to parsing and scope analysis -----------------------
   const UnoptimizedCompileFlags flags_;
   UnoptimizedCompileState* state_;
+  ReusableUnoptimizedCompileState* reusable_state_;
 
-  std::unique_ptr<Zone> zone_;
   v8::Extension* extension_;
   DeclarationScope* script_scope_;
   uintptr_t stack_limit_;
@@ -343,7 +345,6 @@ class V8_EXPORT_PRIVATE ParseInfo {
   //----------- Inputs+Outputs of parsing and scope analysis -----------------
   std::unique_ptr<Utf16CharacterStream> character_stream_;
   std::unique_ptr<ConsumedPreparseData> consumed_preparse_data_;
-  std::unique_ptr<AstValueFactory> ast_value_factory_;
   const AstRawString* function_name_;
   RuntimeCallStats* runtime_call_stats_;
   SourceRangeMap* source_range_map_;  // Used when block coverage is enabled.

@@ -27,49 +27,50 @@ namespace transform {
 
 /// Describes the format of data in a vertex buffer
 enum class VertexFormat {
-  kVec2U8,
-  kVec4U8,
-  kVec2I8,
-  kVec4I8,
-  kVec2U8Norm,
-  kVec4U8Norm,
-  kVec2I8Norm,
-  kVec4I8Norm,
-  kVec2U16,
-  kVec4U16,
-  kVec2I16,
-  kVec4I16,
-  kVec2U16Norm,
-  kVec4U16Norm,
-  kVec2I16Norm,
-  kVec4I16Norm,
-  kVec2F16,
-  kVec4F16,
-  kF32,
-  kVec2F32,
-  kVec3F32,
-  kVec4F32,
-  kU32,
-  kVec2U32,
-  kVec3U32,
-  kVec4U32,
-  kI32,
-  kVec2I32,
-  kVec3I32,
-  kVec4I32,
-  kLastEntry = kVec4I32
+  kUint8x2,    // uint8x2
+  kUint8x4,    // uint8x4
+  kSint8x2,    // sint8x2
+  kSint8x4,    // sint8x4
+  kUnorm8x2,   // unorm8x2
+  kUnorm8x4,   // unorm8x4
+  kSnorm8x2,   // snorm8x2
+  kSnorm8x4,   // snorm8x4
+  kUint16x2,   // uint16x2
+  kUint16x4,   // uint16x4
+  kSint16x2,   // sint16x2
+  kSint16x4,   // sint16x4
+  kUnorm16x2,  // unorm16x2
+  kUnorm16x4,  // unorm16x4
+  kSnorm16x2,  // snorm16x2
+  kSnorm16x4,  // snorm16x4
+  kFloat16x2,  // float16x2
+  kFloat16x4,  // float16x4
+  kFloat32,    // float32
+  kFloat32x2,  // float32x2
+  kFloat32x3,  // float32x3
+  kFloat32x4,  // float32x4
+  kUint32,     // uint32
+  kUint32x2,   // uint32x2
+  kUint32x3,   // uint32x3
+  kUint32x4,   // uint32x4
+  kSint32,     // sint32
+  kSint32x2,   // sint32x2
+  kSint32x3,   // sint32x3
+  kSint32x4,   // sint32x4
+
+  kLastEntry = kSint32x4,
 };
 
 /// Describes if a vertex attributes increments with vertex index or instance
 /// index
-enum class InputStepMode { kVertex, kInstance, kLastEntry = kInstance };
+enum class VertexStepMode { kVertex, kInstance, kLastEntry = kInstance };
 
 /// Describes a vertex attribute within a buffer
 struct VertexAttributeDescriptor {
   /// The format of the attribute
   VertexFormat format;
   /// The byte offset of the attribute in the buffer
-  uint64_t offset;
+  uint32_t offset;
   /// The shader location used for the attribute
   uint32_t shader_location;
 };
@@ -83,8 +84,8 @@ struct VertexBufferLayoutDescriptor {
   /// @param in_step_mode the step mode of the in buffer
   /// @param in_attributes the in attributes
   VertexBufferLayoutDescriptor(
-      uint64_t in_array_stride,
-      InputStepMode in_step_mode,
+      uint32_t in_array_stride,
+      VertexStepMode in_step_mode,
       std::vector<VertexAttributeDescriptor> in_attributes);
   /// Copy constructor
   /// @param other the struct to copy
@@ -99,9 +100,9 @@ struct VertexBufferLayoutDescriptor {
   ~VertexBufferLayoutDescriptor();
 
   /// The array stride used in the in buffer
-  uint64_t array_stride = 0u;
+  uint32_t array_stride = 0u;
   /// The input step mode used
-  InputStepMode step_mode = InputStepMode::kVertex;
+  VertexStepMode step_mode = VertexStepMode::kVertex;
   /// The vertex attributes
   std::vector<VertexAttributeDescriptor> attributes;
 };
@@ -130,7 +131,7 @@ using VertexStateDescriptor = std::vector<VertexBufferLayoutDescriptor>;
 /// code, but these are types that the data may arrive as. We need to convert
 /// these smaller types into the base types such as `f32` and `u32` for the
 /// shader to use.
-class VertexPulling : public Transform {
+class VertexPulling : public Castable<VertexPulling, Transform> {
  public:
   /// Configuration options for the transform
   struct Config : public Castable<Config, Data> {
@@ -164,11 +165,14 @@ class VertexPulling : public Transform {
   /// Destructor
   ~VertexPulling() override;
 
-  /// Runs the transform on `program`, returning the transformation result.
-  /// @param program the source program to transform
-  /// @param data optional extra transform-specific input data
-  /// @returns the transformation result
-  Output Run(const Program* program, const DataMap& data = {}) override;
+ protected:
+  /// Runs the transform using the CloneContext built for transforming a
+  /// program. Run() is responsible for calling Clone() on the CloneContext.
+  /// @param ctx the CloneContext primed with the input program and
+  /// ProgramBuilder
+  /// @param inputs optional extra transform-specific input data
+  /// @param outputs optional extra transform-specific output data
+  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
 
  private:
   Config cfg_;

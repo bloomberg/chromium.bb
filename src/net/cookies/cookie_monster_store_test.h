@@ -15,11 +15,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/log/net_log_with_source.h"
@@ -77,6 +75,10 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
 
   MockPersistentCookieStore();
 
+  MockPersistentCookieStore(const MockPersistentCookieStore&) = delete;
+  MockPersistentCookieStore& operator=(const MockPersistentCookieStore&) =
+      delete;
+
   // When set, Load() and LoadCookiesForKey() calls are store in the command
   // list, rather than being automatically executed. Defaults to false.
   void set_store_load_commands(bool store_load_commands) {
@@ -125,8 +127,6 @@ class MockPersistentCookieStore : public CookieMonster::PersistentCookieStore {
   // Indicates if the store has been fully loaded to avoid returning duplicate
   // cookies.
   bool loaded_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPersistentCookieStore);
 };
 
 // Helper to build a single CanonicalCookie.
@@ -170,8 +170,7 @@ class MockSimplePersistentCookieStore
   ~MockSimplePersistentCookieStore() override;
 
  private:
-  typedef std::map<std::tuple<std::string, std::string, std::string>,
-                   CanonicalCookie>
+  typedef std::map<CanonicalCookie::UniqueCookieKey, CanonicalCookie>
       CanonicalCookieMap;
 
   CanonicalCookieMap cookies_;

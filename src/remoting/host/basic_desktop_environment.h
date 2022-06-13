@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/host/desktop_environment.h"
 
@@ -30,6 +29,9 @@ namespace remoting {
 // the local console.
 class BasicDesktopEnvironment : public DesktopEnvironment {
  public:
+  BasicDesktopEnvironment(const BasicDesktopEnvironment&) = delete;
+  BasicDesktopEnvironment& operator=(const BasicDesktopEnvironment&) = delete;
+
   ~BasicDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.
@@ -44,6 +46,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback)
       override;
   std::unique_ptr<FileOperations> CreateFileOperations() override;
+  std::unique_ptr<UrlForwarderConfigurator> CreateUrlForwarderConfigurator()
+      override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
@@ -108,8 +112,6 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
   DesktopEnvironmentOptions options_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironment);
 };
 
 // Used to create |BasicDesktopEnvironment| instances.
@@ -120,6 +122,12 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+
+  BasicDesktopEnvironmentFactory(const BasicDesktopEnvironmentFactory&) =
+      delete;
+  BasicDesktopEnvironmentFactory& operator=(
+      const BasicDesktopEnvironmentFactory&) = delete;
+
   ~BasicDesktopEnvironmentFactory() override;
 
   // DesktopEnvironmentFactory implementation.
@@ -156,8 +164,6 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
 
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironmentFactory);
 };
 
 }  // namespace remoting

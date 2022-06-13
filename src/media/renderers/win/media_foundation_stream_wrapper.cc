@@ -122,6 +122,7 @@ HRESULT MediaFoundationStreamWrapper::Create(
     int stream_id,
     IMFMediaSource* parent_source,
     DemuxerStream* demuxer_stream,
+    std::unique_ptr<MediaLog> media_log,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     MediaFoundationStreamWrapper** stream_out) {
   DVLOG(1) << __func__ << ": stream_id=" << stream_id;
@@ -130,11 +131,13 @@ HRESULT MediaFoundationStreamWrapper::Create(
   switch (demuxer_stream->type()) {
     case DemuxerStream::Type::VIDEO:
       RETURN_IF_FAILED(MediaFoundationVideoStream::Create(
-          stream_id, parent_source, demuxer_stream, &stream));
+          stream_id, parent_source, demuxer_stream, std::move(media_log),
+          &stream));
       break;
     case DemuxerStream::Type::AUDIO:
       RETURN_IF_FAILED(MediaFoundationAudioStream::Create(
-          stream_id, parent_source, demuxer_stream, &stream));
+          stream_id, parent_source, demuxer_stream, std::move(media_log),
+          &stream));
       break;
     default:
       DLOG(ERROR) << "Unsupported demuxer stream type: "
@@ -149,9 +152,8 @@ HRESULT MediaFoundationStreamWrapper::Create(
 HRESULT MediaFoundationStreamWrapper::RuntimeClassInitialize(
     int stream_id,
     IMFMediaSource* parent_source,
-    DemuxerStream* demuxer_stream) {
-  DVLOG_FUNC(1);
-
+    DemuxerStream* demuxer_stream,
+    std::unique_ptr<MediaLog> media_log) {
   {
     base::AutoLock auto_lock(lock_);
     parent_source_ = parent_source;
@@ -159,6 +161,12 @@ HRESULT MediaFoundationStreamWrapper::RuntimeClassInitialize(
   demuxer_stream_ = demuxer_stream;
   stream_id_ = stream_id;
   stream_type_ = demuxer_stream_->type();
+
+  DVLOG_FUNC(1) << "stream_id=" << stream_id
+                << ", stream_type=" << DemuxerStream::GetTypeName(stream_type_);
+
+  media_log_ = std::move(media_log);
+
   RETURN_IF_FAILED(GenerateStreamDescriptor());
   RETURN_IF_FAILED(MFCreateEventQueue(&mf_media_event_queue_));
   return S_OK;
@@ -232,7 +240,7 @@ void MediaFoundationStreamWrapper::SetFlushed(bool flushed) {
 }
 
 bool MediaFoundationStreamWrapper::HasEnded() const {
-  DVLOG_FUNC(2);
+  DVLOG_FUNC(2) << "stream_ended_=" << stream_ended_;
 
   return stream_ended_;
 }
@@ -392,6 +400,11 @@ void MediaFoundationStreamWrapper::OnDemuxerStreamRead(
     HRESULT hr = S_OK;
 
     if (status == DemuxerStream::Status::kOk) {
+      if (!encryption_type_reported_) {
+        encryption_type_reported_ = true;
+        ReportEncryptionType(buffer);
+      }
+
       // Push |buffer| to process later if needed. Otherwise, process it
       // immediately.
       if (flushed_ || !post_flush_buffers_.empty()) {
@@ -597,6 +610,26 @@ bool MediaFoundationStreamWrapper::AreFormatChangesEnabled() {
 
 GUID MediaFoundationStreamWrapper::GetLastKeyId() const {
   return last_key_id_;
+}
+
+void MediaFoundationStreamWrapper::ReportEncryptionType(
+    const scoped_refptr<DecoderBuffer>& buffer) {
+  auto encryption_type = EncryptionType::kClear;
+  if (IsEncrypted()) {
+    bool is_buffer_encrypted = buffer->decrypt_config();
+    encryption_type = !is_buffer_encrypted
+                          ? EncryptionType::kEncryptedWithClearLead
+                          : EncryptionType::kEncrypted;
+  }
+
+  if (encryption_type == EncryptionType::kEncryptedWithClearLead) {
+    MEDIA_LOG(INFO, media_log_) << "MediaFoundationStreamWrapper: "
+                                << DemuxerStream::GetTypeName(stream_type_)
+                                << " stream is encrypted with clear lead";
+  }
+
+  // TODO(xhwang): Report `encryption_type` to `PipelineStatistics` so it's
+  // also reported to UKM.
 }
 
 }  // namespace media

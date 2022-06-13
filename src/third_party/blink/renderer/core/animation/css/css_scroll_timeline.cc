@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_id_selector_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -49,14 +50,15 @@ const cssvalue::CSSIdSelectorValue* GetIdSelectorValue(const CSSValue* value) {
   return nullptr;
 }
 
-Element* ComputeScrollSource(Document& document, const CSSValue* value) {
+absl::optional<Element*> ComputeScrollSource(Document& document,
+                                             const CSSValue* value) {
   if (const auto* id = GetIdSelectorValue(value))
     return document.getElementById(id->Id());
   if (IsNone(value))
     return nullptr;
   DCHECK(!value || IsAuto(value));
   // TODO(crbug.com/1189101): Respond when the scrolling element changes.
-  return document.ScrollingElementNoLayout();
+  return absl::nullopt;
 }
 
 Element* ComputeElementOffsetTarget(Document& document, const CSSValue* value) {
@@ -100,15 +102,15 @@ ScrollTimeline::ScrollDirection ComputeScrollDirection(const CSSValue* value) {
 
   switch (value_id) {
     case CSSValueID::kInline:
-      return ScrollTimeline::Inline;
+      return ScrollTimeline::kInline;
     case CSSValueID::kHorizontal:
-      return ScrollTimeline::Horizontal;
+      return ScrollTimeline::kHorizontal;
     case CSSValueID::kVertical:
-      return ScrollTimeline::Vertical;
+      return ScrollTimeline::kVertical;
     case CSSValueID::kAuto:
     case CSSValueID::kBlock:
     default:
-      return ScrollTimeline::Block;
+      return ScrollTimeline::kBlock;
   }
 }
 
@@ -144,31 +146,27 @@ HeapVector<Member<ScrollTimelineOffset>> ComputeScrollOffsets(
   return offsets;
 }
 
-absl::optional<double> ComputeTimeRange(const CSSValue* value) {
-  if (auto* primitive = DynamicTo<CSSPrimitiveValue>(value))
-    return primitive->ComputeSeconds() * 1000.0;
-  // TODO(crbug.com/1097041): Support 'auto' value.
-  return absl::nullopt;
-}
-
 class ElementReferenceObserver : public IdTargetObserver {
  public:
   ElementReferenceObserver(Document* document,
                            const AtomicString& id,
                            CSSScrollTimeline* timeline)
       : IdTargetObserver(document->GetIdTargetObserverRegistry(), id),
+        document_(document),
         timeline_(timeline) {}
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(timeline_);
+    visitor->Trace(document_);
     IdTargetObserver::Trace(visitor);
   }
 
  private:
   void IdTargetChanged() override {
     if (timeline_)
-      timeline_->InvalidateEffectTargetStyle();
+      document_->GetStyleEngine().ScrollTimelineInvalidated(*timeline_);
   }
+  Member<Document> document_;
   WeakMember<CSSScrollTimeline> timeline_;
 };
 
@@ -209,17 +207,14 @@ CSSScrollTimeline::Options::Options(Document& document,
     : source_(ComputeScrollSource(document, rule.GetSource())),
       direction_(ComputeScrollDirection(rule.GetOrientation())),
       offsets_(ComputeScrollOffsets(document, rule.GetStart(), rule.GetEnd())),
-      time_range_(ComputeTimeRange(rule.GetTimeRange())),
       rule_(&rule) {}
 
 CSSScrollTimeline::CSSScrollTimeline(Document* document, Options&& options)
     : ScrollTimeline(document,
                      options.source_,
                      options.direction_,
-                     std::move(options.offsets_),
-                     *options.time_range_),
+                     std::move(options.offsets_)),
       rule_(options.rule_) {
-  DCHECK(options.IsValid());
   DCHECK(rule_);
 }
 
@@ -228,10 +223,9 @@ const AtomicString& CSSScrollTimeline::Name() const {
 }
 
 bool CSSScrollTimeline::Matches(const Options& options) const {
-  return (scrollSource() == options.source_) &&
+  return (source() == options.source_) &&
          (GetOrientation() == options.direction_) &&
-         (ScrollOffsetsEqual(options.offsets_)) &&
-         (GetTimeRange() == options.time_range_) && (rule_ == options.rule_);
+         (ScrollOffsetsEqual(options.offsets_)) && (rule_ == options.rule_);
 }
 
 void CSSScrollTimeline::AnimationAttached(Animation* animation) {

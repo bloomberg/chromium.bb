@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -128,6 +127,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
         base::BindOnce(&CrasAudioClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+
+  CrasAudioClientImpl(const CrasAudioClientImpl&) = delete;
+  CrasAudioClientImpl& operator=(const CrasAudioClientImpl&) = delete;
 
   ~CrasAudioClientImpl() override = default;
 
@@ -281,6 +283,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
   }
 
   void SetNoiseCancellationEnabled(bool noise_cancellation_on) override {
+    VLOG(1) << "cras_audio_client: Setting noise cancellation state: "
+            << noise_cancellation_on;
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetNoiseCancellationEnabled);
     dbus::MessageWriter writer(&method_call);
@@ -292,6 +296,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   void GetNoiseCancellationSupported(
       DBusMethodCallback<bool> callback) override {
+    VLOG(1) << "cras_audio_client: Requesting noise cancellation support.";
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kIsNoiseCancellationSupported);
     cras_proxy_->CallMethod(
@@ -337,6 +342,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
   void SetFixA2dpPacketSize(bool enabled) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetFixA2dpPacketSize);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(enabled);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetFlossEnabled(bool enabled) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetFlossEnabled);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(enabled);
     cras_proxy_->CallMethod(&method_call,
@@ -941,6 +956,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
       return;
     }
     std::move(callback).Run(is_noise_cancellation_supported);
+    VLOG(1) << "cras_audio_client: Retrieved noise cancellation support: "
+            << is_noise_cancellation_supported;
   }
 
   bool GetAudioNode(dbus::Response* response,
@@ -1002,8 +1019,6 @@ class CrasAudioClientImpl : public CrasAudioClient {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CrasAudioClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrasAudioClientImpl);
 };
 
 }  // namespace

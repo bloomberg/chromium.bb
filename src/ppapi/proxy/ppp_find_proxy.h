@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -18,6 +17,10 @@ namespace proxy {
 class PPP_Find_Proxy : public InterfaceProxy {
  public:
   explicit PPP_Find_Proxy(Dispatcher* dispatcher);
+
+  PPP_Find_Proxy(const PPP_Find_Proxy&) = delete;
+  PPP_Find_Proxy& operator=(const PPP_Find_Proxy&) = delete;
+
   ~PPP_Find_Proxy() override;
 
   static const PPP_Find_Private* GetProxyInterface();
@@ -37,8 +40,6 @@ class PPP_Find_Proxy : public InterfaceProxy {
   // pointer so we don't have to retrieve it from the dispatcher each time.
   // In the host, this value is always NULL.
   const PPP_Find_Private* ppp_find_;
-
-  DISALLOW_COPY_AND_ASSIGN(PPP_Find_Proxy);
 };
 
 }  // namespace proxy

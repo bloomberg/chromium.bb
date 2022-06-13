@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "extensions/browser/content_script_tracker.h"
 
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -35,6 +35,12 @@ class ContentScriptMatchingBrowserTest : public ShellApiTest,
                                          public content::WebContentsDelegate {
  public:
   ContentScriptMatchingBrowserTest() = default;
+
+  ContentScriptMatchingBrowserTest(const ContentScriptMatchingBrowserTest&) =
+      delete;
+  ContentScriptMatchingBrowserTest& operator=(
+      const ContentScriptMatchingBrowserTest&) = delete;
+
   ~ContentScriptMatchingBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -201,37 +207,41 @@ class ContentScriptMatchingBrowserTest : public ShellApiTest,
   }
 
   content::RenderFrameHost* tab1_fooFrame() {
-    DCHECK(tab1_);
+    EXPECT_TRUE(tab1_);
     return tab1_->GetMainFrame();
   }
 
   content::RenderFrameHost* tab1_fooBlankFrame() {
-    DCHECK(tab1_);
-    DCHECK_LT(1u, tab1_->GetAllFrames().size());
-    return tab1_->GetAllFrames()[1];
+    EXPECT_TRUE(tab1_);
+    content::RenderFrameHost* child = ChildFrameAt(tab1_fooFrame(), 0);
+    EXPECT_TRUE(child);
+    return child;
   }
 
   content::RenderFrameHost* tab1_barFrame() {
-    DCHECK(tab1_);
-    DCHECK_LT(2u, tab1_->GetAllFrames().size());
-    return tab1_->GetAllFrames()[2];
+    EXPECT_TRUE(tab1_);
+    content::RenderFrameHost* child = ChildFrameAt(tab1_fooFrame(), 1);
+    EXPECT_TRUE(child);
+    return child;
   }
 
   content::RenderFrameHost* tab1_barBlankFrame() {
-    DCHECK(tab1_);
-    DCHECK_LT(3u, tab1_->GetAllFrames().size());
-    return tab1_->GetAllFrames()[3];
+    EXPECT_TRUE(tab1_);
+    content::RenderFrameHost* child = ChildFrameAt(tab1_barFrame(), 0);
+    EXPECT_TRUE(child);
+    return child;
   }
 
   content::RenderFrameHost* tab2_barBlankFrame1() {
-    DCHECK(tab2_);
+    EXPECT_TRUE(tab2_);
     return tab2_->GetMainFrame();
   }
 
   content::RenderFrameHost* tab2_barBlankFrame2() {
-    DCHECK(tab2_);
-    DCHECK_LT(1u, tab1_->GetAllFrames().size());
-    return tab2_->GetAllFrames()[1];
+    EXPECT_TRUE(tab2_);
+    content::RenderFrameHost* child = ChildFrameAt(tab2_barBlankFrame1(), 0);
+    EXPECT_TRUE(child);
+    return child;
   }
 
   // Populated by SetUpFrameTree (during test setup / in SetUpOnMainThread).
@@ -240,9 +250,7 @@ class ContentScriptMatchingBrowserTest : public ShellApiTest,
 
   // Populated by InstallContentScriptsExtension (called by individual tests).
   TestExtensionDir dir_;
-  const Extension* extension_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentScriptMatchingBrowserTest);
+  raw_ptr<const Extension> extension_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentScriptMatchingBrowserTest,
@@ -340,9 +348,11 @@ IN_PROC_BROWSER_TEST_F(ContentScriptMatchingBrowserTest,
   // Main frame should be matched.
   EXPECT_TRUE(DoContentScriptsMatch_Tab1_FooFrame());
 
-  // Subframe should not be matched (even though the patterns in the manifest do
-  // match bar.com).
-  EXPECT_FALSE(DoContentScriptsMatch_Tab1_BarFrame());
+  // Based on the `all_frames` from the manifest the subframe should not be
+  // matched (even though the patterns in the manifest do match bar.com).  OTOH,
+  // the URL Pattern matching in ContentScriptTracker ignroes `all_frames` and
+  // accepts additional false positives to solve extra corner cases.
+  EXPECT_TRUE(DoContentScriptsMatch_Tab1_BarFrame());
 }
 
 IN_PROC_BROWSER_TEST_F(ContentScriptMatchingBrowserTest,

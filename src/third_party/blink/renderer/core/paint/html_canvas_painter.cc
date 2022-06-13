@@ -57,15 +57,17 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
           layout_html_canvas_.ResolveColor(GetCSSPropertyBackgroundColor());
       layer->SetBackgroundColor(background_color.Rgb());
     }
+    // We do not take the CompositeAfterPaint code path when printing
+    // because it prevents painting canvas content as vector graphics.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        !flatten_composited_layers) {
-      IntRect pixel_snapped_rect = PixelSnappedIntRect(paint_rect);
-      layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
+        !flatten_composited_layers && !canvas->IsPrinting()) {
+      gfx::Rect pixel_snapped_rect = ToPixelSnappedRect(paint_rect);
+      layer->SetBounds(pixel_snapped_rect.size());
       layer->SetIsDrawable(true);
       layer->SetHitTestable(true);
       RecordForeignLayer(context, layout_html_canvas_,
                          DisplayItem::kForeignLayerCanvas, layer,
-                         pixel_snapped_rect.Location());
+                         pixel_snapped_rect.origin());
       return;
     }
   }

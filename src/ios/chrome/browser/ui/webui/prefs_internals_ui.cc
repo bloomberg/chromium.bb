@@ -12,7 +12,6 @@
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/webui/url_data_source_ios.h"
 
@@ -24,6 +23,10 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
  public:
   explicit PrefsInternalsSource(ChromeBrowserState* browser_state)
       : browser_state_(browser_state) {}
+
+  PrefsInternalsSource(const PrefsInternalsSource&) = delete;
+  PrefsInternalsSource& operator=(const PrefsInternalsSource&) = delete;
+
   ~PrefsInternalsSource() override = default;
 
   // content::URLDataSource:
@@ -54,8 +57,6 @@ class PrefsInternalsSource : public web::URLDataSourceIOS {
 
  private:
   ChromeBrowserState* browser_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefsInternalsSource);
 };
 
 }  // namespace

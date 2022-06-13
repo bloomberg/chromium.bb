@@ -88,6 +88,13 @@ class TextureUploadSubImageBenchmark : public TextureUploadBenchmarkBase
     TextureUploadSubImageBenchmark() : TextureUploadBenchmarkBase("TexSubImage")
     {
         addExtensionPrerequisite("GL_EXT_texture_storage");
+
+        // http://anglebug.com/6319
+        if (IsLinux() && IsIntel() &&
+            GetParam().eglParameters.renderer == EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE)
+        {
+            mSkipTest = true;
+        }
     }
 
     void initializeBenchmark() override
@@ -192,11 +199,6 @@ void TextureUploadBenchmarkBase::initializeBenchmark()
     initShaders();
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, getWindow()->getWidth(), getWindow()->getHeight());
-
-    if (mIsTimestampQueryAvailable && params.webgl)
-    {
-        glRequestExtensionANGLE("GL_EXT_disjoint_timer_query");
-    }
 
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &mTexture);

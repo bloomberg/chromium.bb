@@ -21,6 +21,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/work_area_insets.h"
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -37,8 +38,7 @@ namespace ash {
 namespace {
 
 // Animation.
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(167);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ void RecordTimeFromFirstAvailabilityToFirstEntry(PrefService* prefs) {
 class HoldingSpaceTrayBubbleEventHandler : public ui::EventHandler {
  public:
   HoldingSpaceTrayBubbleEventHandler(HoldingSpaceTrayBubble* bubble,
-                                     HoldingSpaceItemViewDelegate* delegate)
+                                     HoldingSpaceViewDelegate* delegate)
       : bubble_(bubble), delegate_(delegate) {
     aura::Env::GetInstance()->AddPreTargetHandler(
         this, ui::EventTarget::Priority::kSystem);
@@ -101,7 +101,7 @@ class HoldingSpaceTrayBubbleEventHandler : public ui::EventHandler {
   }
 
   HoldingSpaceTrayBubble* const bubble_;
-  HoldingSpaceItemViewDelegate* const delegate_;
+  HoldingSpaceViewDelegate* const delegate_;
 };
 
 // ChildBubbleContainerLayout --------------------------------------------------

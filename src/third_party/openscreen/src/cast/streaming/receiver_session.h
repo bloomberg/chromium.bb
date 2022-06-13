@@ -16,9 +16,10 @@
 #include "cast/streaming/offer_messages.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/resolution.h"
+#include "cast/streaming/rpc_messenger.h"
 #include "cast/streaming/sender_message.h"
 #include "cast/streaming/session_config.h"
-#include "cast/streaming/session_messager.h"
+#include "cast/streaming/session_messenger.h"
 
 namespace openscreen {
 namespace cast {
@@ -26,9 +27,9 @@ namespace cast {
 class Environment;
 class Receiver;
 
-// This class is responsible for listening for streaming (both mirroring and
-// remoting) requests from Cast Sender devices, then negotiating capture
-// constraints and instantiating audio and video Receiver objects.
+// This class is responsible for listening for streaming requests from Cast
+// Sender devices, then negotiating capture constraints and instantiating audio
+// and video Receiver objects.
 //   The owner of this session is expected to provide a client for
 // updates, an environment for getting UDP socket information (as well as
 // other OS dependencies), and a set of preferences to be used for
@@ -62,16 +63,42 @@ class ReceiverSession final : public Environment::SocketSubscriber {
     VideoCaptureConfig video_config;
   };
 
+  // This struct contains all of the information necessary to begin remoting
+  // once we get a remoting request from a Sender.
+  struct RemotingNegotiation {
+    // The configured receivers set to be used for handling audio and
+    // video streams. Unlike in the general streaming case, when we are remoting
+    // we don't know the codec and other information about the stream until
+    // the sender provices that information through the
+    // DemuxerStreamInitializeCallback RPC method.
+    ConfiguredReceivers receivers;
+
+    // The RPC messenger to be used for subscribing to remoting proto messages.
+    // Unlike the SenderSession API, the RPC messenger is negotiation specific.
+    // The messenger is torn down when |OnReceiversDestroying| is called, and
+    // is owned by the ReceiverSession.
+    RpcMessenger* messenger;
+  };
+
   // The embedder should provide a client for handling connections.
   // When a connection is established, the OnNegotiated callback is called.
   class Client {
    public:
+    // Currently we only care about the session ending or being renegotiated,
+    // which means that we don't have to tear down as much state.
     enum ReceiversDestroyingReason { kEndOfSession, kRenegotiated };
 
-    // Called when a new set of receivers has been negotiated. This may be
-    // called multiple times during a session, as renegotiations occur.
+    // Called when a set of streaming receivers has been negotiated. Both this
+    // and |OnRemotingNegotiated| may be called repeatedly as negotiations occur
+    // through the life of a session.
     virtual void OnNegotiated(const ReceiverSession* session,
                               ConfiguredReceivers receivers) = 0;
+
+    // Called when a set of remoting receivers has been negotiated. This will
+    // only be called if |RemotingPreferences| are provided as part of
+    // constructing the ReceiverSession object.
+    virtual void OnRemotingNegotiated(const ReceiverSession* session,
+                                      RemotingNegotiation negotiation) {}
 
     // Called immediately preceding the destruction of this session's receivers.
     // If |reason| is |kEndOfSession|, OnNegotiated() will never be called
@@ -83,7 +110,24 @@ class ReceiverSession final : public Environment::SocketSubscriber {
     virtual void OnReceiversDestroying(const ReceiverSession* session,
                                        ReceiversDestroyingReason reason) = 0;
 
+    // Called whenever an error that the client may care about occurs.
+    // Recoverable errors are usually logged by the receiver session instead
+    // of reported here.
     virtual void OnError(const ReceiverSession* session, Error error) = 0;
+
+    // Called to verify whether a given codec parameter is supported by
+    // this client. If not overriden, this always assumes true.
+    // This method is used only for secondary matching, e.g.
+    // if you don't add VideoCodec::kHevc to the VideoCaptureConfig, then
+    // supporting codec parameter "hev1.1.6.L153.B0" does not matter.
+    //
+    // The codec parameter support callback is optional, however if provided
+    // then any offered streams that have a non-empty codec parameter field must
+    // match. If a stream does not have a codec parameter, this callback will
+    // not be called.
+    virtual bool SupportsCodecParameter(const std::string& parameter) {
+      return true;
+    }
 
    protected:
     virtual ~Client();
@@ -91,8 +135,12 @@ class ReceiverSession final : public Environment::SocketSubscriber {
 
   // Information about the display the receiver is attached to.
   struct Display {
+    // Returns true if all configurations supported by |other| are also
+    // supported by this instance.
+    bool IsSupersetOf(const Display& other) const;
+
     // The display limitations of the actual screen, used to provide upper
-    // bounds on mirroring and remoting streams. For example, we will never
+    // bounds on streams. For example, we will never
     // send 60FPS if it is going to be displayed on a 30FPS screen.
     // Note that we may exceed the display width and height for standard
     // content sizes like 720p or 1080p.
@@ -105,6 +153,10 @@ class ReceiverSession final : public Environment::SocketSubscriber {
 
   // Codec-specific audio limits for playback.
   struct AudioLimits {
+    // Returns true if all configurations supported by |other| are also
+    // supported by this instance.
+    bool IsSupersetOf(const AudioLimits& other) const;
+
     // Whether or not these limits apply to all codecs.
     bool applies_to_all_codecs = false;
 
@@ -130,6 +182,10 @@ class ReceiverSession final : public Environment::SocketSubscriber {
 
   // Codec-specific video limits for playback.
   struct VideoLimits {
+    // Returns true if all configurations supported by |other| are also
+    // supported by this instance.
+    bool IsSupersetOf(const VideoLimits& other) const;
+
     // Whether or not these limits apply to all codecs.
     bool applies_to_all_codecs = false;
 
@@ -156,16 +212,13 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   };
 
   // This struct is used to provide preferences for setting up and running
-  // remoting streams. The kludgy properties are based on the current control
-  // protocol and allow remoting with current senders. Once libcast has
-  // been adopted in Chrome, new, cleaner APIs will be added here to replace
-  // these.
-  //
-  // TODO(issuetracker.google.com/184759616): Chrome should use libcast
-  // for mirroring and remoting.
-  // TODO(issuetracker.google.com/184429130): the mirroring control
-  // protocol needs to be updated to allow more discrete support.
+  // remoting streams. These properties are based on the current control
+  // protocol and allow remoting with current senders.
   struct RemotingPreferences {
+    // Returns true if all configurations supported by |other| are also
+    // supported by this instance.
+    bool IsSupersetOf(const RemotingPreferences& other) const;
+
     // Current remoting senders take an "all or nothing" support for audio
     // codec support. While Opus and AAC support is handled in our Preferences'
     // |audio_codecs| property, support for the following codecs must be
@@ -201,10 +254,18 @@ class ReceiverSession final : public Environment::SocketSubscriber {
                 std::unique_ptr<Display> description);
 
     Preferences(Preferences&&) noexcept;
-    Preferences(const Preferences&) = delete;
+    Preferences(const Preferences&);
     Preferences& operator=(Preferences&&) noexcept;
-    Preferences& operator=(const Preferences&) = delete;
+    Preferences& operator=(const Preferences&);
 
+    // Returns true if all configurations supported by |other| are also
+    // supported by this instance.
+    bool IsSupersetOf(const Preferences& other) const;
+
+    // Audio and video codec preferences. Should be supplied in order of
+    // preference, e.g. in this example if we get both VP8 and H264 we will
+    // generally select the VP8 offer. If a codec is omitted from these fields
+    // it will never be selected in the OFFER/ANSWER negotiation.
     std::vector<VideoCodec> video_codecs{VideoCodec::kVp8, VideoCodec::kH264};
     std::vector<AudioCodec> audio_codecs{AudioCodec::kOpus, AudioCodec::kAac};
 
@@ -219,7 +280,7 @@ class ReceiverSession final : public Environment::SocketSubscriber {
 
     // Libcast remoting support is opt-in: embedders wishing to field remoting
     // offers may provide a set of remoting preferences, or leave nullptr for
-    // all remoting OFFERs to be rejected in favor of continuing mirroring.
+    // all remoting OFFERs to be rejected in favor of continuing streaming.
     std::unique_ptr<RemotingPreferences> remoting;
   };
 
@@ -262,6 +323,11 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   // Specific message type handler methods.
   void OnOffer(SenderMessage message);
   void OnCapabilitiesRequest(SenderMessage message);
+  void OnRpcMessage(SenderMessage message);
+
+  // Selects streams from an offer based on its configuration, and sets
+  // them in the session properties.
+  void SelectStreams(const Offer& offer, SessionProperties* properties);
 
   // Creates receivers and sends an appropriate Answer message using the
   // session properties.
@@ -294,8 +360,8 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   // The sender_id of this session.
   const std::string session_id_;
 
-  // The session messager used for the lifetime of this session.
-  ReceiverSessionMessager messager_;
+  // The session messenger used for the lifetime of this session.
+  ReceiverSessionMessenger messenger_;
 
   // The packet router to be used for all Receivers spawned by this session.
   ReceiverPacketRouter packet_router_;
@@ -307,6 +373,10 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   // through |Client::OnReceiversDestroying|.
   std::unique_ptr<Receiver> current_audio_receiver_;
   std::unique_ptr<Receiver> current_video_receiver_;
+
+  // If remoting, we store the RpcMessenger used by the embedder to send RPC
+  // messages from the remoting protobuf specification.
+  std::unique_ptr<RpcMessenger> rpc_messenger_;
 };
 
 }  // namespace cast

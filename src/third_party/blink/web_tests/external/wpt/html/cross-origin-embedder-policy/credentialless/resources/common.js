@@ -1,6 +1,6 @@
-const directory = '/html/cross-origin-embedder-policy/credentialless';
-const executor_path = directory + '/resources/executor.html?pipe=';
-const executor_js_path = directory + '/resources/executor.js?pipe=';
+const executor_path = '/common/dispatcher/executor.html?pipe=';
+const executor_worker_path = '/common/dispatcher/executor-worker.js?pipe=';
+const executor_service_worker_path = '/common/dispatcher/executor-service-worker.js?pipe=';
 
 // COEP
 const coep_none =
@@ -21,6 +21,8 @@ const coop_same_origin =
 // CORP
 const corp_cross_origin =
     '|header(Cross-Origin-Resource-Policy,cross-origin)';
+
+const cookie_same_site_none = ';SameSite=None;Secure';
 
 // Test using the modern async/await primitives are easier to read/write.
 // However they run sequentially, contrary to async_test. This is the parallel
@@ -59,7 +61,7 @@ let parseCookies = function(headers_json) {
     .split(';')
     .map(v => v.split('='))
     .reduce((acc, v) => {
-      acc[v[0]] = v[1];
+      acc[v[0].trim()] = v[1].trim();
       return acc;
     }, {});
 }
@@ -89,39 +91,44 @@ const newCredentiallessIframe = (parent_token, child_origin) => {
   return sub_document_token;
 };
 
+// A common interface for building the 4 type of execution contexts:
+// It outputs: [
+//   - The token to communicate with the environment.
+//   - A promise resolved when the environment encounters an error.
+// ]
 const environments = {
   document: headers => {
     const tok = token();
     const url = window.origin + executor_path + headers + `&uuid=${tok}`;
     const context = window.open(url);
     add_completion_callback(() => context.close());
-    return tok;
+    return [tok, new Promise(resolve => {})];
   },
 
   dedicated_worker: headers => {
     const tok = token();
-    const url = window.origin + executor_js_path + headers + `&uuid=${tok}`;
+    const url = window.origin + executor_worker_path + headers + `&uuid=${tok}`;
     const context = new Worker(url);
-    return tok;
+    return [tok, new Promise(resolve => context.onerror = resolve)];
   },
 
   shared_worker: headers => {
     const tok = token();
-    const url = window.origin + executor_js_path + headers + `&uuid=${tok}`;
+    const url = window.origin + executor_worker_path + headers + `&uuid=${tok}`;
     const context = new SharedWorker(url);
-    return tok;
+    return [tok, new Promise(resolve => context.onerror = resolve)];
   },
 
   service_worker: headers => {
     const tok = token();
-    const url = window.origin + executor_js_path + headers + `&uuid=${tok}`;
+    const url = window.origin + executor_worker_path + headers + `&uuid=${tok}`;
     const scope = url; // Generate a one-time scope for service worker.
-    navigator.serviceWorker.register(url, {scope: scope})
-    .then(registration => {
-      add_completion_callback(() => registration.unregister());
+    const error = new Promise(resolve => {
+      navigator.serviceWorker.register(url, {scope: scope})
+        .then(registration => {
+          add_completion_callback(() => registration.unregister());
+        }, /* catch */ resolve);
     });
-    return tok;
+    return [tok, error];
   },
 };
-
-

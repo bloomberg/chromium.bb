@@ -12,8 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import itertools
 import subprocess
+import time
+
+
+def RunAndReportIfLong(func, *args, **kargs):
+  start = time.time()
+  results = func(*args, **kargs)
+  end = time.time()
+  limit = 0.5  # seconds
+  name = func.__name__
+  runtime = end - start
+  if runtime > limit:
+    print("{} took >{:.2}s ({:.2}s)".format(name, limit, runtime))
+  return results
 
 
 def CheckChange(input, output):
@@ -24,29 +38,44 @@ def CheckChange(input, output):
         x,
         files_to_check='.*',
         files_to_skip=[
-            'Android[.]bp', '.*[.]json$', '.*[.]sql$', '.*[.]out$',
-            'test/trace_processor/.*/index$', '(.*/)?BUILD$', 'WORKSPACE',
-            '.*/Makefile$', '/perfetto_build_flags.h$'
+            'Android[.]bp',
+            '.*[.]json$',
+            '.*[.]sql$',
+            '.*[.]out$',
+            'test/trace_processor/.*/index$',
+            '(.*/)?BUILD$',
+            'WORKSPACE',
+            '.*/Makefile$',
+            '/perfetto_build_flags.h$',
+            "infra/luci/.*",
         ])
 
   results = []
-  results += input.canned_checks.CheckDoNotSubmit(input, output)
-  results += input.canned_checks.CheckChangeHasNoTabs(input, output)
-  results += input.canned_checks.CheckLongLines(
-      input, output, 80, source_file_filter=long_line_sources)
-  results += input.canned_checks.CheckPatchFormatted(
-      input, output, check_js=True)
-  results += input.canned_checks.CheckGNFormatted(input, output)
-  results += CheckIncludeGuards(input, output)
-  results += CheckIncludeViolations(input, output)
-  results += CheckProtoComments(input, output)
-  results += CheckBuild(input, output)
-  results += CheckAndroidBlueprint(input, output)
-  results += CheckBinaryDescriptors(input, output)
-  results += CheckMergedTraceConfigProto(input, output)
-  results += CheckProtoEventList(input, output)
-  results += CheckBannedCpp(input, output)
-  results += CheckSqlMetrics(input, output)
+  results += RunAndReportIfLong(input.canned_checks.CheckDoNotSubmit, input,
+                                output)
+  results += RunAndReportIfLong(input.canned_checks.CheckChangeHasNoTabs, input,
+                                output)
+  results += RunAndReportIfLong(
+      input.canned_checks.CheckLongLines,
+      input,
+      output,
+      80,
+      source_file_filter=long_line_sources)
+  results += RunAndReportIfLong(
+      input.canned_checks.CheckPatchFormatted, input, output, check_js=True)
+  results += RunAndReportIfLong(input.canned_checks.CheckGNFormatted, input,
+                                output)
+  results += RunAndReportIfLong(CheckIncludeGuards, input, output)
+  results += RunAndReportIfLong(CheckIncludeViolations, input, output)
+  results += RunAndReportIfLong(CheckProtoComments, input, output)
+  results += RunAndReportIfLong(CheckBuild, input, output)
+  results += RunAndReportIfLong(CheckAndroidBlueprint, input, output)
+  results += RunAndReportIfLong(CheckBinaryDescriptors, input, output)
+  results += RunAndReportIfLong(CheckMergedTraceConfigProto, input, output)
+  results += RunAndReportIfLong(CheckProtoEventList, input, output)
+  results += RunAndReportIfLong(CheckBannedCpp, input, output)
+  results += RunAndReportIfLong(CheckSqlMetrics, input, output)
+  results += RunAndReportIfLong(CheckTestData, input, output)
   return results
 
 
@@ -129,9 +158,17 @@ def CheckBannedCpp(input_api, output_api):
        'std::stod throws exceptions prefer base::StringToDouble()'),
       (r'\bstd::stold\b',
        'std::stold throws exceptions prefer base::StringToDouble()'),
+      (r'\bstrncpy\b',
+       'strncpy does not null-terminate if src > dst. Use base::StringCopy'),
+      (r'[(=]\s*snprintf\(',
+       'snprintf can return > dst_size. Use base::SprintfTrunc'),
+      (r'//.*\bDNS\b',
+       '// DNS (Do Not Ship) found. Did you mean to remove some testing code?'),
       (r'\bPERFETTO_EINTR\(close\(',
        'close(2) must not be retried on EINTR on Linux and other OSes '
        'that we run on, as the fd will be closed.'),
+      (r'^#include <inttypes.h>', 'Use <cinttypes> rather than <inttypes.h>. ' +
+       'See https://github.com/google/perfetto/issues/146'),
   ]
 
   def file_filter(x):
@@ -140,6 +177,8 @@ def CheckBannedCpp(input_api, output_api):
   errors = []
   for f in input_api.AffectedSourceFiles(file_filter):
     for line_number, line in f.ChangedContents():
+      if input_api.re.search(r'^\s*//', line):
+        continue  # Skip comments
       for regex, message in bad_cpp:
         if input_api.re.search(regex, line):
           errors.append(
@@ -203,8 +242,7 @@ def CheckProtoEventList(input_api, output_api):
     if f.LocalPath() != 'tools/ftrace_proto_gen/event_list':
       continue
     if any((not new_line.startswith('removed')) and new_line != old_line
-           for old_line, new_line in itertools.izip(f.OldContents(),
-                                                    f.NewContents())):
+           for old_line, new_line in zip(f.OldContents(), f.NewContents())):
       return [
           output_api.PresubmitError(
               'event_list only has two supported changes: '
@@ -238,4 +276,16 @@ def CheckSqlMetrics(input_api, output_api):
     return []
   if subprocess.call([tool]):
     return [output_api.PresubmitError(tool + ' failed')]
+  return []
+
+
+def CheckTestData(input_api, output_api):
+  tool = 'tools/test_data'
+  if subprocess.call([tool, 'status', '--quiet']):
+    return [
+        output_api.PresubmitError(
+            '//test/data is out of sync. Run ' + tool + ' status for more. \n' +
+            'If you rebaselined UI tests or added a new test trace, run: \n' +
+            'tools/test_data upload')
+    ]
   return []

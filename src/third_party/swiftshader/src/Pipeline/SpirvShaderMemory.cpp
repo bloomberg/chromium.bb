@@ -16,7 +16,7 @@
 #include "SpirvShaderDebug.hpp"
 
 #include "ShaderCore.hpp"
-
+#include "Reactor/Assert.hpp"
 #include "Vulkan/VkPipelineLayout.hpp"
 
 #include <spirv/unified1/spirv.hpp>
@@ -186,7 +186,7 @@ SpirvShader::EmitResult SpirvShader::EmitVariable(InsnIterator insn, EmitState *
 			// Note: the module may contain descriptor set references that are not suitable for this implementation -- using a set index higher than the number
 			// of descriptor set binding points we support. As long as the selected entrypoint doesn't actually touch the out of range binding points, this
 			// is valid. In this case make the value nullptr to make it easier to diagnose an attempt to dereference it.
-			if(d.DescriptorSet < vk::MAX_BOUND_DESCRIPTOR_SETS)
+			if(static_cast<uint32_t>(d.DescriptorSet) < vk::MAX_BOUND_DESCRIPTOR_SETS)
 			{
 				state->createPointer(resultId, SIMD::Pointer(routine->descriptorSets[d.DescriptorSet], size));
 			}
@@ -243,8 +243,8 @@ SpirvShader::EmitResult SpirvShader::EmitCopyMemory(InsnIterator insn, EmitState
 {
 	Object::ID dstPtrId = insn.word(1);
 	Object::ID srcPtrId = insn.word(2);
-	auto &dstPtrTy = getType(getObject(dstPtrId));
-	auto &srcPtrTy = getType(getObject(srcPtrId));
+	auto &dstPtrTy = getObjectType(dstPtrId);
+	auto &srcPtrTy = getObjectType(srcPtrId);
 	ASSERT(dstPtrTy.element == srcPtrTy.element);
 
 	bool dstInterleavedByLane = IsStorageInterleavedByLane(dstPtrTy.storageClass);
@@ -385,7 +385,7 @@ SIMD::Pointer SpirvShader::GetPointerToData(Object::ID id, Int arrayIndex, EmitS
 	case Object::Kind::DescriptorSet:
 		{
 			const auto &d = descriptorDecorations.at(id);
-			ASSERT(d.DescriptorSet >= 0 && d.DescriptorSet < vk::MAX_BOUND_DESCRIPTOR_SETS);
+			ASSERT(d.DescriptorSet >= 0 && static_cast<uint32_t>(d.DescriptorSet) < vk::MAX_BOUND_DESCRIPTOR_SETS);
 			ASSERT(d.Binding >= 0);
 			ASSERT(routine->pipelineLayout->getDescriptorCount(d.DescriptorSet, d.Binding) != 0);  // "If descriptorCount is zero this binding entry is reserved and the resource must not be accessed from any stage via this binding within any pipeline using the set layout."
 
@@ -394,6 +394,7 @@ SIMD::Pointer SpirvShader::GetPointerToData(Object::ID id, Int arrayIndex, EmitS
 			Int descriptorOffset = bindingOffset + descriptorSize * arrayIndex;
 
 			auto set = state->getPointer(id);
+			Assert(set.base != Pointer<Byte>(nullptr));
 			Pointer<Byte> descriptor = set.base + descriptorOffset;                                        // BufferDescriptor*
 			Pointer<Byte> data = *Pointer<Pointer<Byte>>(descriptor + OFFSET(vk::BufferDescriptor, ptr));  // void*
 			Int size = *Pointer<Int>(descriptor + OFFSET(vk::BufferDescriptor, sizeInBytes));

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -28,6 +27,11 @@ namespace bluez {
 // providers before registering a GATT service with the Bluetooth daemon.
 class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProvider {
  public:
+  BluetoothGattServiceServiceProvider(
+      const BluetoothGattServiceServiceProvider&) = delete;
+  BluetoothGattServiceServiceProvider& operator=(
+      const BluetoothGattServiceServiceProvider&) = delete;
+
   virtual ~BluetoothGattServiceServiceProvider();
 
   // Writes an array of the service's properties into the provided writer.
@@ -50,9 +54,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattServiceServiceProvider {
 
  protected:
   BluetoothGattServiceServiceProvider();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattServiceServiceProvider);
 };
 
 }  // namespace bluez

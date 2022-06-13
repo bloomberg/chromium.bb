@@ -7,7 +7,7 @@
 // #import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {FakeSettingsPrivate} from '../fake_settings_private.js';
-// #import {waitAfterNextRender} from '../../test_util.m.js';
+// #import {waitAfterNextRender} from '../../test_util.js';
 // clang-format on
 
 /**
@@ -81,15 +81,15 @@ suite('InputMethodOptionsPage', function() {
     const titles = optionsPage.shadowRoot.querySelectorAll('h2');
     assertTrue(!!titles);
     assertEquals(titles.length, 2);
-    assertEquals(titles[0].textContent, 'Basics');
-    assertEquals(titles[1].textContent, 'Advanced');
+    assertEquals(titles[0].textContent, 'Advanced');
+    assertEquals(titles[1].textContent, 'Physical keyboard');
   });
 
   test('updates options in prefs', async () => {
     createOptionsPage(FIRST_PARTY_INPUT_METHOD_ID_PREFIX + 'xkb:us::eng');
     const options = optionsPage.shadowRoot.querySelectorAll('.list-item');
     assertTrue(!!options);
-    assertEquals(options.length, 9);
+    assertEquals(options.length, 7);
     assertEquals(
         options[0].querySelector('.start').textContent.trim(),
         'Auto-correction');
@@ -105,7 +105,7 @@ suite('InputMethodOptionsPage', function() {
 
     assertEquals(
         options[1].querySelector('.start').textContent.trim(),
-        'Auto-capitalization');
+        'Sound on keypress');
     const toggleButton = options[1].querySelector('cr-toggle');
     assertEquals(toggleButton.checked, false);
     toggleButton.click();
@@ -113,7 +113,7 @@ suite('InputMethodOptionsPage', function() {
     assertEquals(toggleButton.checked, true);
     assertEquals(
         optionsPage.getPref(PREFS_KEY)
-            .value['xkb:us::eng']['physicalKeyboardEnableCapitalization'],
+            .value['xkb:us::eng']['enableSoundOnKeypress'],
         true);
   });
 });

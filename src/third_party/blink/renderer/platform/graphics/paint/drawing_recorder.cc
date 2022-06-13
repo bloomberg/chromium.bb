@@ -15,7 +15,7 @@ namespace blink {
 DrawingRecorder::DrawingRecorder(GraphicsContext& context,
                                  const DisplayItemClient& display_item_client,
                                  DisplayItem::Type display_item_type,
-                                 const IntRect& visual_rect)
+                                 const gfx::Rect& visual_rect)
     : context_(context),
       client_(display_item_client),
       type_(display_item_type),
@@ -29,7 +29,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context,
   DCHECK(DisplayItem::IsDrawingType(display_item_type));
 
   context.SetInDrawingRecorder(true);
-  context.BeginRecording(FloatRect());
+  context.BeginRecording(gfx::RectF());
 
   if (context.NeedsDOMNodeId()) {
     DOMNodeId dom_node_id = display_item_client.OwnerNodeId();
@@ -47,7 +47,9 @@ DrawingRecorder::~DrawingRecorder() {
   context_.SetInDrawingRecorder(false);
 
   context_.GetPaintController().CreateAndAppend<DrawingDisplayItem>(
-      client_, type_, visual_rect_, context_.EndRecording());
+      client_, type_, visual_rect_, context_.EndRecording(),
+      client_.VisualRectOutsetForRasterEffects(),
+      client_.GetPaintInvalidationReason());
 }
 
 }  // namespace blink

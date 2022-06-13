@@ -19,6 +19,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/animation/ink_drop.h"
 
 using dom_distiller::UMAHelper;
 using dom_distiller::url_utils::IsDistilledPage;
@@ -62,13 +63,15 @@ ReaderModeIconView::~ReaderModeIconView() {
 void ReaderModeIconView::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (GetVisible())
-    ink_drop()->AnimateToState(views::InkDropState::HIDDEN, nullptr);
+    views::InkDrop::Get(this)->AnimateToState(views::InkDropState::HIDDEN,
+                                              nullptr);
 }
 
 void ReaderModeIconView::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   content::WebContents* web_contents = GetWebContents();
-  if (!navigation_handle->IsInMainFrame() || !web_contents)
+  // Only primary main frame navigations are relevant for tracking time stats.
+  if (!navigation_handle->IsInPrimaryMainFrame() || !web_contents)
     return;
   // When navigation is about to happen, ensure timers are appropriately stopped
   // and reset.

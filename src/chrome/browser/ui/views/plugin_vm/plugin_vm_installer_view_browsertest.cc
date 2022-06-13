@@ -24,7 +24,7 @@
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
@@ -60,6 +60,11 @@ const char kJpgFileHash[] =
 class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
  public:
   PluginVmInstallerViewBrowserTest() = default;
+
+  PluginVmInstallerViewBrowserTest(const PluginVmInstallerViewBrowserTest&) =
+      delete;
+  PluginVmInstallerViewBrowserTest& operator=(
+      const PluginVmInstallerViewBrowserTest&) = delete;
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -101,6 +106,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     auto* installer = plugin_vm::PluginVmInstallerFactory::GetForProfile(
         browser()->profile());
     installer->SetFreeDiskSpaceForTesting(installer->RequiredFreeDiskSpace());
+    installer->SkipLicenseCheckForTesting();
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -162,10 +168,8 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     browser()->profile()->GetPrefs()->SetBoolean(
         plugin_vm::prefs::kPluginVmAllowed, true);
     // Device policies.
-    scoped_testing_cros_settings_.device_settings()->Set(
-        chromeos::kPluginVmAllowed, base::Value(true));
-    scoped_testing_cros_settings_.device_settings()->Set(
-        chromeos::kPluginVmLicenseKey, base::Value("LICENSE_KEY"));
+    scoped_testing_cros_settings_.device_settings()->Set(ash::kPluginVmAllowed,
+                                                         base::Value(true));
   }
 
   void SetUserWithAffiliation() {
@@ -184,8 +188,6 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(quit_closure));
   }
-
-  DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerViewBrowserTest);
 };
 
 class PluginVmInstallerViewBrowserTestWithFeatureEnabled

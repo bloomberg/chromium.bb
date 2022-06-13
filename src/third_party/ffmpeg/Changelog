@@ -2,6 +2,37 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- ADPCM IMA Westwood encoder
+- Westwood AUD muxer
+- ADPCM IMA Acorn Replay decoder
+- Argonaut Games CVG demuxer
+- Argonaut Games CVG muxer
+- Concatf protocol
+- afwtdn audio filter
+- audio and video segment filters
+- Apple Graphics (SMC) encoder
+- hsvkey and hsvhold video filters
+- adecorrelate audio filter
+- atilt audio filter
+- grayworld video filter
+- AV1 Low overhead bitstream format muxer
+- swscale slice threading
+- MSN Siren decoder
+- scharr video filter
+- apsyclip audio filter
+- morpho video filter
+- amr parser
+- (a)latency filters
+- GEM Raster image decoder
+- asdr audio filter
+- speex decoder
+- limitdiff video filter
+- xcorrelate video filter
+- varblur video filter
+- huesaturation video filter
+
+
+version 4.4:
 - AudioToolbox output device
 - MacCaption demuxer
 - PGX decoder
@@ -81,6 +112,8 @@ version <next>:
 - TTML subtitle encoder and muxer
 - identity video filter
 - msad video filter
+- gophers protocol
+- RIST protocol via librist
 
 
 version 4.3:

@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_CORE_COMMON_FORM_FIELD_DATA_PREDICTIONS_H_
 
 #include <string>
-#include <vector>
 
 #include "components/autofill/core/common/form_field_data.h"
 
@@ -21,6 +20,7 @@ struct FormFieldDataPredictions {
   FormFieldDataPredictions& operator=(FormFieldDataPredictions&&);
   ~FormFieldDataPredictions();
 
+  std::string host_form_signature;
   std::string signature;
   std::string heuristic_type;
   std::string server_type;

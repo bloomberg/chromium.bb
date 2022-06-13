@@ -5,20 +5,24 @@
 #ifndef SANDBOX_LINUX_TESTS_SANDBOX_TEST_RUNNER_FUNCTION_POINTER_H_
 #define SANDBOX_LINUX_TESTS_SANDBOX_TEST_RUNNER_FUNCTION_POINTER_H_
 
-#include "base/macros.h"
 #include "sandbox/linux/tests/sandbox_test_runner.h"
 
 namespace sandbox {
 
 class SandboxTestRunnerFunctionPointer : public SandboxTestRunner {
  public:
-  SandboxTestRunnerFunctionPointer(void (*function_to_run)(void));
+  explicit SandboxTestRunnerFunctionPointer(void (*function_to_run)());
+
+  SandboxTestRunnerFunctionPointer(const SandboxTestRunnerFunctionPointer&) =
+      delete;
+  SandboxTestRunnerFunctionPointer& operator=(
+      const SandboxTestRunnerFunctionPointer&) = delete;
+
   ~SandboxTestRunnerFunctionPointer() override;
   void Run() override;
 
  private:
   void (*function_to_run_)(void);
-  DISALLOW_COPY_AND_ASSIGN(SandboxTestRunnerFunctionPointer);
 };
 
 }  // namespace sandbox

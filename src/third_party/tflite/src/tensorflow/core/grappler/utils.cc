@@ -73,26 +73,6 @@ bool IsShapeConsumer(const NodeDef& node) {
 
 }  // namespace
 
-NodeMap::NodeMap(GraphDef* graph) {
-  CHECK(graph != nullptr);
-  nodes_.reserve(graph->node_size());
-  outputs_.reserve(graph->node_size());
-  for (int i = 0; i < graph->node_size(); i++) {
-    NodeDef* node = graph->mutable_node(i);
-    const string& node_name = node->name();
-    auto rslt = nodes_.emplace(node_name, node);
-    // Check that the graph doesn't contain multiple nodes with the same name.
-    if (!rslt.second) {
-      // The first node found with a given name becomes the canonical.
-      LOG(WARNING) << "Duplicated node in the graph: " << node_name;
-    }
-    NodeDef* canonical = rslt.second ? node : rslt.first->second;
-    for (const auto& input : node->input()) {
-      outputs_[NodeName(input)].insert(canonical);
-    }
-  }
-}
-
 string TensorIdToString(const TensorId& tensor_id) {
   return tensor_id.index() == 0 ? string(tensor_id.node())
                                 : tensor_id.ToString();
@@ -129,7 +109,7 @@ string AddPrefixToNodeName(const string& name, const string& prefix) {
   return AddPrefixToNodeName(name, prefix, "/");
 }
 
-bool ExecuteWithTimeout(std::function<void()> fn, const int64 timeout_in_ms,
+bool ExecuteWithTimeout(std::function<void()> fn, const int64_t timeout_in_ms,
                         thread::ThreadPool* const thread_pool) {
   if (timeout_in_ms <= 0) {
     fn();
@@ -357,8 +337,7 @@ void PermuteNodesInPlace(GraphDef* graph, std::vector<int>* permutation,
     }
     permutation->swap(inv_perm);
   }
-  for (int n = 0, permutation_size = permutation->size();
-       n + 1 < permutation_size; ++n) {
+  for (int n = 0, end = permutation->size(); n + 1 < end; ++n) {
     while (n != (*permutation)[n]) {
       std::size_t r = (*permutation)[n];
       graph->mutable_node()->SwapElements(n, r);
@@ -515,6 +494,43 @@ Status IsKernelRegisteredForNode(const NodeDef& node) {
                                    node.has_experimental_debug_info(),
                                    node.experimental_debug_info(), node.op(),
                                    node.device(), AttrSlice(&node.attr()));
+}
+
+namespace {
+void RemoveAttributes(const std::vector<absl::string_view>& to_remove,
+                      NodeDef* node) {
+  if (to_remove.size() == node->attr_size()) {
+    node->clear_attr();
+  } else {
+    for (const auto& key : to_remove) {
+      node->mutable_attr()->erase(string(key));
+    }
+  }
+}
+}  // namespace
+
+int EraseRegularNodeAttributes(NodeDef* node) {
+  std::vector<absl::string_view> to_remove;
+  for (const auto& attr : node->attr()) {
+    if (!attr.first.empty() && (attr.first)[0] != '_') {
+      to_remove.push_back(attr.first);
+    }
+  }
+  RemoveAttributes(to_remove, node);
+  return to_remove.size();
+}
+
+int EraseNodeOutputAttributes(NodeDef* node) {
+  std::vector<absl::string_view> to_remove;
+  for (const auto& attr : node->attr()) {
+    const string& attr_name = attr.first;
+    if (attr_name == "_xla_inferred_shapes" ||
+        absl::StartsWith(attr_name, "_output_")) {
+      to_remove.push_back(attr_name);
+    }
+  }
+  RemoveAttributes(to_remove, node);
+  return to_remove.size();
 }
 
 }  // end namespace grappler

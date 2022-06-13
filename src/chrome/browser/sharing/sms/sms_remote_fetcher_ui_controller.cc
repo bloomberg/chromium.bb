@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
+#include "chrome/browser/sharing/sms/sms_remote_fetcher_metrics.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,7 +37,9 @@ SmsRemoteFetcherUiController::GetOrCreateFromWebContents(
 
 SmsRemoteFetcherUiController::SmsRemoteFetcherUiController(
     content::WebContents* web_contents)
-    : SharingUiController(web_contents) {}
+    : SharingUiController(web_contents),
+      content::WebContentsUserData<SmsRemoteFetcherUiController>(
+          *web_contents) {}
 
 SmsRemoteFetcherUiController::~SmsRemoteFetcherUiController() = default;
 
@@ -65,10 +69,13 @@ const gfx::VectorIcon& SmsRemoteFetcherUiController::GetVectorIcon() const {
   return kSmartphoneIcon;
 }
 
+bool SmsRemoteFetcherUiController::ShouldShowLoadingIcon() const {
+  return false;
+}
+
 std::u16string
 SmsRemoteFetcherUiController::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringFUTF16(IDS_OMNIBOX_TOOLTIP_SMS_REMOTE_FETCHER,
-                                    base::UTF8ToUTF16(last_device_name_));
+  return std::u16string();
 }
 
 SharingFeatureName SmsRemoteFetcherUiController::GetFeatureMetricsPrefix()
@@ -81,9 +88,10 @@ void SmsRemoteFetcherUiController::OnSmsRemoteFetchResponse(
     SharingSendMessageResult result,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   if (result != SharingSendMessageResult::kSuccessful) {
-    // TODO(crbug.com/1015645): We should have a new category for remote
-    // failures.
-    std::move(callback).Run(absl::nullopt, absl::nullopt, absl::nullopt);
+    std::move(callback).Run(absl::nullopt, absl::nullopt,
+                            content::SmsFetchFailureType::kCrossDeviceFailure);
+    RecordWebOTPCrossDeviceFailure(
+        WebOTPCrossDeviceFailure::kSharingMessageFailure);
     return;
   }
 
@@ -93,9 +101,11 @@ void SmsRemoteFetcherUiController::OnSmsRemoteFetchResponse(
     std::move(callback).Run(absl::nullopt, absl::nullopt,
                             static_cast<content::SmsFetchFailureType>(
                                 response->sms_fetch_response().failure_type()));
+    RecordWebOTPCrossDeviceFailure(
+        WebOTPCrossDeviceFailure::kAPIFailureOnAndroid);
     return;
   }
-  auto origin_strings = response->sms_fetch_response().origin();
+  auto origin_strings = response->sms_fetch_response().origins();
   std::vector<url::Origin> origin_list;
   for (const std::string& origin_string : origin_strings)
     origin_list.push_back(url::Origin::Create(GURL(origin_string)));
@@ -103,18 +113,21 @@ void SmsRemoteFetcherUiController::OnSmsRemoteFetchResponse(
   std::move(callback).Run(std::move(origin_list),
                           response->sms_fetch_response().one_time_code(),
                           absl::nullopt);
+  RecordWebOTPCrossDeviceFailure(WebOTPCrossDeviceFailure::kNoFailure);
 }
 
 base::OnceClosure SmsRemoteFetcherUiController::FetchRemoteSms(
-    const url::Origin& origin,
+    const std::vector<url::Origin>& origin_list,
     OnRemoteCallback callback) {
   SharingService::SharingDeviceList devices = GetDevices();
+  base::UmaHistogramExactLinear("Sharing.SmsFetcherAvailableDeviceCount",
+                                devices.size(),
+                                /*value_max=*/20);
 
   if (devices.empty()) {
-    // No devices available to call.
-    // TODO(crbug.com/1015645): We should have a new category for remote
-    // failures.
-    std::move(callback).Run(absl::nullopt, absl::nullopt, absl::nullopt);
+    std::move(callback).Run(absl::nullopt, absl::nullopt,
+                            content::SmsFetchFailureType::kCrossDeviceFailure);
+    RecordWebOTPCrossDeviceFailure(WebOTPCrossDeviceFailure::kNoRemoteDevice);
     return base::NullCallback();
   }
 
@@ -124,7 +137,8 @@ base::OnceClosure SmsRemoteFetcherUiController::FetchRemoteSms(
   last_device_name_ = device->client_name();
   chrome_browser_sharing::SharingMessage request;
 
-  request.mutable_sms_fetch_request()->set_origin(origin.Serialize());
+  for (const url::Origin& origin : origin_list)
+    request.mutable_sms_fetch_request()->add_origins(origin.Serialize());
 
   return SendMessageToDevice(
       *device.get(), blink::kWebOTPRequestTimeout, std::move(request),
@@ -132,4 +146,4 @@ base::OnceClosure SmsRemoteFetcherUiController::FetchRemoteSms(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SmsRemoteFetcherUiController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SmsRemoteFetcherUiController);

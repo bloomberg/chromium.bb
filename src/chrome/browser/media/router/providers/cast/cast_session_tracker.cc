@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -131,6 +130,10 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
     DVLOG(2) << "No status list in media status message.";
     return;
   }
+
+  // Ensure every item in |updated_status| is a dictionary.
+  updated_status->EraseListValueIf(
+      [](auto const& media) { return !media.is_dict(); });
 
   base::Value::ListView media_list = updated_status->GetList();
 

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/renderer/render_frame.h"
@@ -25,6 +26,7 @@
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -32,18 +34,24 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 
 namespace extensions {
 
 namespace {
-
-constexpr int kMainWorldId = 0;
 
 base::LazyInstance<std::set<const ExtensionFrameHelper*>>::DestructorAtExit
     g_frame_helpers = LAZY_INSTANCE_INITIALIZER;
 
 // Returns true if the render frame corresponding with |frame_helper| matches
 // the given criteria.
+//
+// We deliberately do not access any methods that require a v8::Context or
+// ScriptContext.  See also comment below.
 bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
                         mojom::ViewType match_view_type,
                         int match_window_id,
@@ -74,7 +82,16 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
       frame_helper->tab_id() != match_tab_id)
     return false;
 
-  return true;
+  // Returning handles to frames that haven't created a script context yet
+  // can result in the caller "forcing" a script context (by accessing
+  // properties on the window object). This, in turn, can cause the script
+  // context to be initialized prematurely, with invalid values (e.g., the
+  // inability to retrieve a valid URL from the frame). That then leads to
+  // the ScriptContext being misclassified.
+  // Don't return any frames until they have a valid ScriptContext to limit
+  // the chances for bindings to prematurely initialize these contexts.
+  // This fixes https://crbug.com/1021014.
+  return frame_helper->did_create_script_context();
 }
 
 // Runs every callback in |callbacks_to_be_run_and_cleared| while |frame_helper|
@@ -336,8 +353,8 @@ void ExtensionFrameHelper::ReadyToCommitNavigation(
   // are many callers which will have to pass nullptr.
   ScriptContext::ScopedFrameDocumentLoader scoped_document_loader(
       render_frame()->GetWebFrame(), document_loader);
-  extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),
-                                                context, kMainWorldId);
+  extension_dispatcher_->DidCreateScriptContext(
+      render_frame()->GetWebFrame(), context, blink::kMainDOMWorldId);
   // TODO(devlin): Add constants for main world id, no extension group.
 }
 
@@ -353,7 +370,7 @@ void ExtensionFrameHelper::DidCommitProvisionalLoad(
 void ExtensionFrameHelper::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int32_t world_id) {
-  if (world_id == kMainWorldId) {
+  if (world_id == blink::kMainDOMWorldId) {
     if (render_frame()->IsBrowserSideNavigationPending()) {
       // Defer initializing the extensions script context now because it depends
       // on having the URL of the provisional load which isn't available at this
@@ -471,6 +488,33 @@ void ExtensionFrameHelper::MessageInvoke(const std::string& extension_id,
 
 void ExtensionFrameHelper::ExecuteCode(mojom::ExecuteCodeParamsPtr param,
                                        ExecuteCodeCallback callback) {
+  // Sanity checks.
+  if (param->injection->is_css()) {
+    if (param->injection->get_css()->sources.empty()) {
+      local_frame_receiver_.ReportBadMessage(
+          "At least one CSS source must be specified.");
+      return;
+    }
+
+    if (param->injection->get_css()->operation ==
+            mojom::CSSInjection::Operation::kRemove &&
+        !base::ranges::all_of(param->injection->get_css()->sources,
+                              [](const mojom::CSSSourcePtr& source) {
+                                return source->key.has_value();
+                              })) {
+      local_frame_receiver_.ReportBadMessage(
+          "An injection key must be specified for CSS removal.");
+      return;
+    }
+  } else {
+    DCHECK(param->injection->is_js());  // Enforced by mojo.
+    if (param->injection->get_js()->sources.empty()) {
+      local_frame_receiver_.ReportBadMessage(
+          "At least one JS source must be specified.");
+      return;
+    }
+  }
+
   extension_dispatcher_->ExecuteCode(std::move(param), std::move(callback),
                                      render_frame());
 }
@@ -498,7 +542,6 @@ void ExtensionFrameHelper::AppWindowClosed(bool send_onclosed) {
 
 void ExtensionFrameHelper::SetSpatialNavigationEnabled(bool enabled) {
   render_frame()
-      ->GetRenderView()
       ->GetWebView()
       ->GetSettings()
       ->SetSpatialNavigationEnabled(enabled);

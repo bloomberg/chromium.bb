@@ -87,6 +87,7 @@ const base::FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
 const base::FilePath::CharType kFrameworkExecutableName[] =
     FPL(PRODUCT_STRING " Framework");
+const char kMacHelperSuffixAlerts[] = " (Alerts)";
 #endif  // OS_MAC
 
 #if defined(OS_WIN)
@@ -98,7 +99,6 @@ const base::FilePath::CharType kStatusTrayWindowClass[] =
 
 const char kInitialProfile[] = "Default";
 const char kMultiProfileDirPrefix[] = "Profile ";
-const char kEphemeralGuestProfileDirPrefix[] = "Guest ";
 const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
 
@@ -123,6 +123,7 @@ const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
     FPL("Network Persistent State");
+const base::FilePath::CharType kNetworkDataDirname[] = FPL("Network");
 const base::FilePath::CharType kNotificationSchedulerStorageDirname[] =
     FPL("Notification Scheduler");
 const base::FilePath::CharType kOfflinePageArchivesDirname[] =
@@ -151,6 +152,8 @@ const base::FilePath::CharType kSingletonSocketFilename[] =
 const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
+const base::FilePath::CharType kTransportSecurityPersisterFilename[] =
+    FPL("TransportSecurity");
 const base::FilePath::CharType kTrustTokenFilename[] = FPL("Trust Tokens");
 const base::FilePath::CharType kVideoTutorialsStorageDirname[] =
     FPL("Video Tutorials");

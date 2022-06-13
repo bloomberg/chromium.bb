@@ -13,11 +13,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -149,18 +148,18 @@ void OpenBrowserWindowForProfile(CreateOnceCallback callback,
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
 
-  chrome::startup::IsProcessStartup is_process_startup =
-      chrome::startup::IS_NOT_PROCESS_STARTUP;
-  chrome::startup::IsFirstRun is_first_run = chrome::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsProcessStartup process_startup =
+      chrome::startup::IsProcessStartup::kNo;
+  chrome::startup::IsFirstRun is_first_run = chrome::startup::IsFirstRun::kNo;
 
   // If this is a brand new profile, then start a first run window.
   if (is_new_profile) {
-    is_process_startup = chrome::startup::IS_PROCESS_STARTUP;
-    is_first_run = chrome::startup::IS_FIRST_RUN;
+    process_startup = chrome::startup::IsProcessStartup::kYes;
+    is_first_run = chrome::startup::IsFirstRun::kYes;
   }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!profile->IsGuestSession() && !profile->IsEphemeralGuestProfile()) {
+  if (!profile->IsGuestSession()) {
     ProfileAttributesEntry* entry =
         g_browser_process->profile_manager()
             ->GetProfileAttributesStorage()
@@ -213,7 +212,7 @@ void OpenBrowserWindowForProfile(CreateOnceCallback callback,
   // existed, which means that here a browser definitely needs to be created.
   // Passing true for |always_create| means we won't duplicate the code that
   // tries to find a browser.
-  profiles::FindOrCreateNewWindowForProfile(profile, is_process_startup,
+  profiles::FindOrCreateNewWindowForProfile(profile, process_startup,
                                             is_first_run, true);
 }
 
@@ -242,8 +241,7 @@ void SwitchToGuestProfile(ProfileManager::CreateCallback callback) {
 #endif
 
 bool HasProfileSwitchTargets(Profile* profile) {
-  size_t min_profiles =
-      (profile->IsGuestSession() || profile->IsEphemeralGuestProfile()) ? 1 : 2;
+  size_t min_profiles = profile->IsGuestSession() ? 1 : 2;
   size_t number_of_profiles =
       g_browser_process->profile_manager()->GetNumberOfProfiles();
   return number_of_profiles >= min_profiles;

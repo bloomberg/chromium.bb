@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "content/public/browser/global_routing_id.h"
@@ -37,8 +36,6 @@ class ExtensionNavigationUIData;
 // Helper struct to initialize WebRequestInfo.
 struct WebRequestInfoInitParams {
   WebRequestInfoInitParams();
-  WebRequestInfoInitParams(WebRequestInfoInitParams&& other);
-  WebRequestInfoInitParams& operator=(WebRequestInfoInitParams&& other);
 
   // Initializes a WebRequestInfoInitParams from information provided over a
   // URLLoaderFactory interface.
@@ -54,6 +51,12 @@ struct WebRequestInfoInitParams {
       bool is_service_worker_script,
       absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id);
+
+  WebRequestInfoInitParams(const WebRequestInfoInitParams&) = delete;
+  WebRequestInfoInitParams(WebRequestInfoInitParams&& other);
+
+  WebRequestInfoInitParams& operator=(const WebRequestInfoInitParams&) = delete;
+  WebRequestInfoInitParams& operator=(WebRequestInfoInitParams&& other);
 
   ~WebRequestInfoInitParams();
 
@@ -77,19 +80,20 @@ struct WebRequestInfoInitParams {
   bool is_service_worker_script = false;
   absl::optional<int64_t> navigation_id;
   ukm::SourceIdObj ukm_source_id = ukm::kInvalidSourceIdObj;
-  content::GlobalFrameRoutingId parent_routing_id;
+  content::GlobalRenderFrameHostId parent_routing_id;
 
  private:
   void InitializeWebViewAndFrameData(
       const ExtensionNavigationUIData* navigation_ui_data);
-
-  DISALLOW_COPY_AND_ASSIGN(WebRequestInfoInitParams);
 };
 
 // A URL request representation used by WebRequest API internals. This structure
 // carries information about an in-progress request.
 struct WebRequestInfo {
   explicit WebRequestInfo(WebRequestInfoInitParams params);
+
+  WebRequestInfo(const WebRequestInfo&) = delete;
+  WebRequestInfo& operator=(const WebRequestInfo&) = delete;
 
   ~WebRequestInfo();
 
@@ -184,10 +188,7 @@ struct WebRequestInfo {
   // document subresource and sub-frame requests.
   // TODO(karandeepb, mcnee): For subresources, having "parent" in the name is
   // misleading. This should be renamed to indicate that this is the initiator.
-  const content::GlobalFrameRoutingId parent_routing_id;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);
+  const content::GlobalRenderFrameHostId parent_routing_id;
 };
 
 }  // namespace extensions

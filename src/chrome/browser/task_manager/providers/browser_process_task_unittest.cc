@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,13 +35,13 @@ class BrowserProcessTaskProviderTest
   }
 
  protected:
-  Task* provided_task_;
+  raw_ptr<Task> provided_task_;
 };
 
 // Tests the browser process task provider and browser process task itself.
 TEST_F(BrowserProcessTaskProviderTest, TestObserving) {
   BrowserProcessTaskProvider provider;
-  EXPECT_EQ(nullptr, provided_task_);
+  EXPECT_EQ(nullptr, provided_task_.get());
   provider.SetObserver(this);
   EXPECT_NE(nullptr, provided_task_);
   provider.ClearObserver();
@@ -50,7 +51,7 @@ TEST_F(BrowserProcessTaskProviderTest, TestObserving) {
 // Testing retrieving the task from the provider using the ids of a URL request.
 TEST_F(BrowserProcessTaskProviderTest, GetTaskOfUrlRequest) {
   BrowserProcessTaskProvider provider;
-  EXPECT_EQ(nullptr, provided_task_);
+  EXPECT_EQ(nullptr, provided_task_.get());
   provider.SetObserver(this);
   EXPECT_NE(nullptr, provided_task_);
 
@@ -63,7 +64,7 @@ TEST_F(BrowserProcessTaskProviderTest, GetTaskOfUrlRequest) {
 // Test the provided browser process task itself.
 TEST_F(BrowserProcessTaskProviderTest, TestProvidedTask) {
   BrowserProcessTaskProvider provider;
-  EXPECT_EQ(nullptr, provided_task_);
+  EXPECT_EQ(nullptr, provided_task_.get());
   provider.SetObserver(this);
   ASSERT_NE(nullptr, provided_task_);
 
@@ -78,8 +79,7 @@ TEST_F(BrowserProcessTaskProviderTest, TestProvidedTask) {
   EXPECT_EQ(0, provided_task_->GetNetworkUsageRate());
   provided_task_->OnNetworkBytesRead(received_bytes);
   // Do a refresh with a 1-second update time.
-  provided_task_->Refresh(base::TimeDelta::FromSeconds(1),
-                          REFRESH_TYPE_NETWORK_USAGE);
+  provided_task_->Refresh(base::Seconds(1), REFRESH_TYPE_NETWORK_USAGE);
   EXPECT_EQ(received_bytes, provided_task_->GetNetworkUsageRate());
 }
 

@@ -6,13 +6,17 @@
 
 #include "core/fpdfapi/font/cpdf_simplefont.h"
 
+#include <algorithm>
+#include <iterator>
+
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_name.h"
+#include "core/fxcrt/fx_codepage.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/fx_freetype.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/numerics/safe_math.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -146,7 +150,7 @@ void CPDF_SimpleFont::LoadPDFEncoding(bool bEmbedded, bool bTrueType) {
   if (!pDiffs)
     return;
 
-  m_CharNames.resize(256);
+  m_CharNames.resize(kInternalTableSize);
   uint32_t cur_code = 0;
   for (uint32_t i = 0; i < pDiffs->size(); i++) {
     const CPDF_Object* pElement = pDiffs->GetDirectObjectAt(i);
@@ -155,7 +159,7 @@ void CPDF_SimpleFont::LoadPDFEncoding(bool bEmbedded, bool bTrueType) {
 
     const CPDF_Name* pName = pElement->AsName();
     if (pName) {
-      if (cur_code < 256)
+      if (cur_code < m_CharNames.size())
         m_CharNames[cur_code] = pName->GetString();
       cur_code++;
     } else {
@@ -197,9 +201,7 @@ bool CPDF_SimpleFont::LoadCommon() {
   if (pWidthArray) {
     if (pFontDesc && pFontDesc->KeyExist("MissingWidth")) {
       int MissingWidth = pFontDesc->GetIntegerFor("MissingWidth");
-      for (int i = 0; i < 256; i++) {
-        m_CharWidth[i] = MissingWidth;
-      }
+      std::fill(std::begin(m_CharWidth), std::end(m_CharWidth), MissingWidth);
     }
     size_t width_start = m_pFontDict->GetIntegerFor("FirstChar", 0);
     size_t width_end = m_pFontDict->GetIntegerFor("LastChar", 0);
@@ -251,8 +253,8 @@ bool CPDF_SimpleFont::LoadCommon() {
 void CPDF_SimpleFont::LoadSubstFont() {
   if (!m_bUseFontWidth && !FontStyleIsFixedPitch(m_Flags)) {
     int width = 0;
-    int i;
-    for (i = 0; i < 256; i++) {
+    size_t i;
+    for (i = 0; i < kInternalTableSize; i++) {
       if (m_CharWidth[i] == 0 || m_CharWidth[i] == 0xffff)
         continue;
 
@@ -261,11 +263,11 @@ void CPDF_SimpleFont::LoadSubstFont() {
       else if (width != m_CharWidth[i])
         break;
     }
-    if (i == 256 && width)
+    if (i == kInternalTableSize && width)
       m_Flags |= FXFONT_FIXED_PITCH;
   }
   m_Font.LoadSubst(m_BaseFontName, IsTrueTypeFont(), m_Flags, GetFontWeight(),
-                   m_ItalicAngle, 0, false);
+                   m_ItalicAngle, FX_CodePage::kDefANSI, false);
 }
 
 bool CPDF_SimpleFont::IsUnicodeCompatible() const {

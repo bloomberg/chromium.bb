@@ -7,6 +7,7 @@
 
 #include "src/heap/heap.h"
 #include "src/heap/list.h"
+#include "src/heap/progress-bar.h"
 #include "src/heap/slot-set.h"
 
 #ifdef V8_ENABLE_CONSERVATIVE_STACK_SCANNING
@@ -26,6 +27,7 @@ class SlotSet;
 enum RememberedSetType {
   OLD_TO_NEW,
   OLD_TO_OLD,
+  OLD_TO_CODE = V8_EXTERNAL_CODE_SPACE_BOOL ? OLD_TO_OLD + 1 : OLD_TO_OLD,
   NUMBER_OF_REMEMBERED_SET_TYPES
 };
 
@@ -49,7 +51,7 @@ class V8_EXPORT_PRIVATE MemoryChunkLayout {
     FIELD(VirtualMemory, Reservation),
     // MemoryChunk fields:
     FIELD(SlotSet* [kNumSets], SlotSet),
-    FIELD(std::atomic<size_t>, ProgressBar),
+    FIELD(ProgressBar, ProgressBar),
     FIELD(std::atomic<intptr_t>, LiveByteCount),
     FIELD(SlotSet*, SweepingSlotSet),
     FIELD(TypedSlotsSet* [kNumSets], TypedSlotSet),

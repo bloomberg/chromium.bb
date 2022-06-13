@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-
 namespace net {
 
 namespace transport_security_state {
@@ -20,6 +18,10 @@ namespace transport_security_state {
 class Pinset {
  public:
   Pinset(std::string name, std::string report_uri);
+
+  Pinset(const Pinset&) = delete;
+  Pinset& operator=(const Pinset&) = delete;
+
   ~Pinset();
 
   const std::string& name() const { return name_; }
@@ -47,8 +49,6 @@ class Pinset {
   // These vectors contain names rather than actual hashes.
   std::vector<std::string> static_spki_hashes_;
   std::vector<std::string> bad_static_spki_hashes_;
-
-  DISALLOW_COPY_AND_ASSIGN(Pinset);
 };
 
 }  // namespace transport_security_state

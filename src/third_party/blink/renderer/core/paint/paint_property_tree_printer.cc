@@ -113,7 +113,9 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNodeOrAlias> {
  public:
   static void AddVisualViewportProperties(
       const VisualViewport& visual_viewport,
-      PropertyTreePrinter<EffectPaintPropertyNodeOrAlias>& printer) {}
+      PropertyTreePrinter<EffectPaintPropertyNodeOrAlias>& printer) {
+    printer.AddNode(visual_viewport.GetOverscrollElasticityEffectNode());
+  }
 
   static void AddObjectPaintProperties(
       const ObjectPaintProperties& properties,
@@ -165,6 +167,10 @@ namespace paint_property_tree_printer {
 void UpdateDebugNames(const VisualViewport& viewport) {
   if (auto* device_emulation_node = viewport.GetDeviceEmulationTransformNode())
     device_emulation_node->SetDebugName("Device Emulation Node");
+  if (auto* overscroll_effect_node =
+          viewport.GetOverscrollElasticityEffectNode()) {
+    overscroll_effect_node->SetDebugName("Overscroll Elasticity Effect Node");
+  }
   if (auto* overscroll_node = viewport.GetOverscrollElasticityTransformNode())
     overscroll_node->SetDebugName("Overscroll Elasticity Node");
   viewport.GetPageScaleNode()->SetDebugName("VisualViewport Scale Node");
@@ -216,49 +222,49 @@ void UpdateDebugNames(const LayoutObject& object,
 
 }  // namespace blink
 
-CORE_EXPORT void showAllPropertyTrees(const blink::LocalFrameView& rootFrame) {
-  showTransformPropertyTree(rootFrame);
-  showClipPropertyTree(rootFrame);
-  showEffectPropertyTree(rootFrame);
-  showScrollPropertyTree(rootFrame);
+CORE_EXPORT void ShowAllPropertyTrees(const blink::LocalFrameView& rootFrame) {
+  ShowTransformPropertyTree(rootFrame);
+  ShowClipPropertyTree(rootFrame);
+  ShowEffectPropertyTree(rootFrame);
+  ShowScrollPropertyTree(rootFrame);
 }
 
-void showTransformPropertyTree(const blink::LocalFrameView& rootFrame) {
+void ShowTransformPropertyTree(const blink::LocalFrameView& rootFrame) {
   LOG(INFO) << "Transform tree:\n"
-            << transformPropertyTreeAsString(rootFrame).Utf8();
+            << TransformPropertyTreeAsString(rootFrame).Utf8();
 }
 
-void showClipPropertyTree(const blink::LocalFrameView& rootFrame) {
-  LOG(INFO) << "Clip tree:\n" << clipPropertyTreeAsString(rootFrame).Utf8();
+void ShowClipPropertyTree(const blink::LocalFrameView& rootFrame) {
+  LOG(INFO) << "Clip tree:\n" << ClipPropertyTreeAsString(rootFrame).Utf8();
 }
 
-void showEffectPropertyTree(const blink::LocalFrameView& rootFrame) {
-  LOG(INFO) << "Effect tree:\n" << effectPropertyTreeAsString(rootFrame).Utf8();
+void ShowEffectPropertyTree(const blink::LocalFrameView& rootFrame) {
+  LOG(INFO) << "Effect tree:\n" << EffectPropertyTreeAsString(rootFrame).Utf8();
 }
 
-void showScrollPropertyTree(const blink::LocalFrameView& rootFrame) {
-  LOG(INFO) << "Scroll tree:\n" << scrollPropertyTreeAsString(rootFrame).Utf8();
+void ShowScrollPropertyTree(const blink::LocalFrameView& rootFrame) {
+  LOG(INFO) << "Scroll tree:\n" << ScrollPropertyTreeAsString(rootFrame).Utf8();
 }
 
-String transformPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
+String TransformPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
   return blink::FrameViewPropertyTreePrinter<
              blink::TransformPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 
-String clipPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
+String ClipPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
   return blink::FrameViewPropertyTreePrinter<
              blink::ClipPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 
-String effectPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
+String EffectPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
   return blink::FrameViewPropertyTreePrinter<
              blink::EffectPaintPropertyNodeOrAlias>()
       .TreeAsString(rootFrame);
 }
 
-String scrollPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
+String ScrollPropertyTreeAsString(const blink::LocalFrameView& rootFrame) {
   return blink::FrameViewPropertyTreePrinter<blink::ScrollPaintPropertyNode>()
       .TreeAsString(rootFrame);
 }

@@ -7,11 +7,13 @@
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cross_origin_opener_policy.mojom-blink.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -22,12 +24,14 @@ namespace blink {
 class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
-class MessageEvent;
 class ScriptValue;
 class SecurityOrigin;
 class SerializedScriptValue;
+class UserActivation;
 class WindowPostMessageOptions;
 class WindowProxyManager;
+
+struct BlinkTransferableMessage;
 
 // DOMWindow is an abstract class of Window interface implementations.
 // We have two derived implementation classes;  LocalDOMWindow and
@@ -137,12 +141,9 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // Check accesses from |accessing_frame| and every same-origin iframe toward
   // this window. A report is sent to |reporter| when this happens.
   void InstallCoopAccessMonitor(
-      network::mojom::blink::CoopAccessReportType report_type,
       LocalFrame* accessing_frame,
-      mojo::PendingRemote<
-          network::mojom::blink::CrossOriginOpenerPolicyReporter> reporter,
-      bool endpoint_defined,
-      const WTF::String& reported_window_url);
+      network::mojom::blink::CrossOriginOpenerPolicyReporterParamsPtr
+          coop_reporter_params);
   // Whenever we detect that the enforcement of a report-only COOP policy would
   // have resulted in preventing access to this window, a report is potentially
   // sent when calling this function.
@@ -154,9 +155,19 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
  protected:
   explicit DOMWindow(Frame&);
 
-  virtual void SchedulePostMessage(MessageEvent*,
-                                   scoped_refptr<const SecurityOrigin> target,
-                                   LocalDOMWindow* source) = 0;
+  struct PostedMessage final : GarbageCollected<PostedMessage> {
+    void Trace(Visitor* visitor) const;
+    BlinkTransferableMessage ToBlinkTransferableMessage() &&;
+
+    scoped_refptr<const SecurityOrigin> source_origin;
+    scoped_refptr<const SecurityOrigin> target_origin;
+    scoped_refptr<SerializedScriptValue> data;
+    Vector<MessagePortChannel> channels;
+    Member<LocalDOMWindow> source;
+    Member<UserActivation> user_activation;
+    bool delegate_payment_request = false;
+  };
+  virtual void SchedulePostMessage(PostedMessage* message) = 0;
 
   void DisconnectFromFrame() { frame_ = nullptr; }
 

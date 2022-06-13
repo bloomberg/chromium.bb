@@ -12,7 +12,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kTimePatternsPropertyData[] = {
-    {XFA_Element::TimePattern, 4, 0},
+    {XFA_Element::TimePattern, 4, {}},
 };
 
 }  // namespace
@@ -20,7 +20,7 @@ const CXFA_Node::PropertyData kTimePatternsPropertyData[] = {
 CXFA_TimePatterns::CXFA_TimePatterns(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_LocaleSet,
+                XFA_XDPPACKET::kLocaleSet,
                 XFA_ObjectType::Node,
                 XFA_Element::TimePatterns,
                 kTimePatternsPropertyData,

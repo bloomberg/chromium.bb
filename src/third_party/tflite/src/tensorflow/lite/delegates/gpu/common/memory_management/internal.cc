@@ -16,6 +16,11 @@ limitations under the License.
 #include "tensorflow/lite/delegates/gpu/common/memory_management/internal.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <vector>
+
+#include "tensorflow/lite/delegates/gpu/common/memory_management/types.h"
+#include "tensorflow/lite/delegates/gpu/common/types.h"
 
 namespace tflite {
 namespace gpu {
@@ -74,7 +79,7 @@ std::vector<TaskProfile> CalculateTaskProfiles(
   // Records in each TaskProfile must be sorted in non-increasing order of
   // corresponding tensors sizes.
   for (auto& task_profile : task_profiles) {
-    std::sort(task_profile.begin(), task_profile.end(), CompareBySize);
+    std::stable_sort(task_profile.begin(), task_profile.end(), CompareBySize);
   }
   return task_profiles;
 }

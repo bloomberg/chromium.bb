@@ -14,11 +14,12 @@
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
+#include "base/feature_list.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -136,12 +137,13 @@ void NetworkDeviceHandlerImpl::SetDeviceProperty(
     const base::Value& value,
     base::OnceClosure callback,
     network_handler::ErrorCallback error_callback) {
-  const char* const property_blocked[] = {
-      // Must only be changed by policy/owner through.
-      shill::kCellularAllowRoamingProperty};
+  const char* const blocked_properties[] = {
+      // Must only be changed by policy/owner through
+      // NetworkConfigurationUpdater.
+      shill::kCellularPolicyAllowRoamingProperty};
 
-  for (size_t i = 0; i < base::size(property_blocked); ++i) {
-    if (property_name == property_blocked[i]) {
+  for (size_t i = 0; i < base::size(blocked_properties); ++i) {
+    if (property_name == blocked_properties[i]) {
       InvokeErrorCallback(
           device_path, std::move(error_callback),
           "SetDeviceProperty called on blocked property " + property_name);
@@ -233,9 +235,9 @@ void NetworkDeviceHandlerImpl::ChangePin(
                      device_path, std::move(error_callback)));
 }
 
-void NetworkDeviceHandlerImpl::SetCellularAllowRoaming(
-    const bool allow_roaming) {
-  cellular_allow_roaming_ = allow_roaming;
+void NetworkDeviceHandlerImpl::SetCellularPolicyAllowRoaming(
+    const bool policy_allow_roaming) {
+  cellular_policy_allow_roaming_ = policy_allow_roaming;
   ApplyCellularAllowRoamingToShill();
 }
 
@@ -287,22 +289,10 @@ void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
   }
   for (NetworkStateHandler::DeviceStateList::const_iterator it = list.begin();
        it != list.end(); ++it) {
-    const DeviceState* device_state = *it;
-    bool current_allow_roaming = device_state->allow_roaming();
-
-    // If roaming is required by the provider, always try to set to true.
-    bool new_device_value =
-        device_state->provider_requires_roaming() || cellular_allow_roaming_;
-
-    // Only set the value if the current value is different from
-    // |new_device_value|.
-    if (new_device_value == current_allow_roaming)
-      continue;
-
-    SetDevicePropertyInternal(device_state->path(),
-                              shill::kCellularAllowRoamingProperty,
-                              base::Value(new_device_value), base::DoNothing(),
-                              network_handler::ErrorCallback());
+    SetDevicePropertyInternal(
+        (*it)->path(), shill::kCellularPolicyAllowRoamingProperty,
+        base::Value(cellular_policy_allow_roaming_), base::DoNothing(),
+        network_handler::ErrorCallback());
   }
 }
 

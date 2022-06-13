@@ -10,7 +10,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/system_impl_export.h"
@@ -61,6 +60,9 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       size_t num_ports,
       PlatformHandle* platform_handles,
       size_t num_handles);
+
+  SharedBufferDispatcher(const SharedBufferDispatcher&) = delete;
+  SharedBufferDispatcher& operator=(const SharedBufferDispatcher&) = delete;
 
   // Passes the underlying PlatformSharedMemoryRegion. This dispatcher must be
   // closed after calling this function.
@@ -114,8 +116,6 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
 
   bool in_transit_ = false;
   base::subtle::PlatformSharedMemoryRegion region_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcher);
 };
 
 }  // namespace core

@@ -9,10 +9,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -47,14 +46,16 @@ void ShowPrompt() {
   // Show the default browser request prompt in the most recently active,
   // visible, tabbed browser. Do not show the prompt if no such browser exists.
   BrowserList* browser_list = BrowserList::GetInstance();
-  for (auto browser_iterator = browser_list->begin_last_active();
-       browser_iterator != browser_list->end_last_active();
+  for (auto browser_iterator =
+           browser_list->begin_browsers_ordered_by_activation();
+       browser_iterator != browser_list->end_browsers_ordered_by_activation();
        ++browser_iterator) {
     Browser* browser = *browser_iterator;
 
     // |browser| may be null in UI tests. Also, don't show the prompt in an app
-    // window, which is not meant to be treated as a Chrome window.
-    if (!browser || browser->deprecated_is_app())
+    // window, which is not meant to be treated as a Chrome window. Only show in
+    // a normal, tabbed browser.
+    if (browser && !browser->is_type_normal())
       continue;
 
     // In ChromeBot tests, there might be a race. This line appears to get
@@ -109,7 +110,7 @@ bool ShouldShowDefaultBrowserPrompt(Profile* profile) {
       return false;  // Failed to parse a reasonable period.
     base::Time show_on_or_after =
         base::Time::FromInternalValue(last_dismissed_value) +
-        base::TimeDelta::FromDays(period_days);
+        base::Days(period_days);
     if (base::Time::Now() < show_on_or_after)
       return false;
   }

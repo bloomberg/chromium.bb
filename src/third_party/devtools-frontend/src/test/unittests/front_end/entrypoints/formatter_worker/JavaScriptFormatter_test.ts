@@ -7,7 +7,7 @@ const {assert} = chai;
 import * as FormatterWorker from '../../../../../front_end/entrypoints/formatter_worker/formatter_worker.js';
 
 function formatJavaScript(text: string): string {
-  return FormatterWorker.FormatterWorker.format('application/javascript', text, '  ').content;
+  return FormatterWorker.FormatterWorker.format('text/javascript', text, '  ').content;
 }
 
 describe('JavaScriptFormatter', () => {
@@ -24,6 +24,11 @@ describe('JavaScriptFormatter', () => {
   return await Promise.resolve(1);
 }
 `);
+  });
+
+  it('formats identifiers containing escaped characters correctly', () => {
+    const formattedCode = formatJavaScript(String.raw`const x=42;let \u0275_escaped;`);
+    assert.strictEqual(formattedCode, 'const x = 42;\nlet \\u0275_escaped;\n');
   });
 
   it('formats nullish coalescing expressions correctly', () => {
@@ -692,6 +697,18 @@ function formatted2() {
     const formattedCode = formatJavaScript('function foo(){console.log(import.meta.url);}');
     assert.strictEqual(formattedCode, `function foo() {
   console.log(import.meta.url);
+}
+`);
+  });
+
+  it('format class fields correctly', () => {
+    const formattedCode = formatJavaScript('class Clazz {map=new Map();someMethod(){console.log(42);}map2=new Map();}');
+    assert.strictEqual(formattedCode, `class Clazz {
+  map = new Map();
+  someMethod() {
+    console.log(42);
+  }
+  map2 = new Map();
 }
 `);
   });

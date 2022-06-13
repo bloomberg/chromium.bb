@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
@@ -34,6 +33,10 @@ namespace {
 class RunLoopWithExpectedCount {
  public:
   RunLoopWithExpectedCount() : expected_quit_calls_(0), actual_quit_calls_(0) {}
+
+  RunLoopWithExpectedCount(const RunLoopWithExpectedCount&) = delete;
+  RunLoopWithExpectedCount& operator=(const RunLoopWithExpectedCount&) = delete;
+
   ~RunLoopWithExpectedCount() = default;
 
   void Run(int expected_quit_calls) {
@@ -56,8 +59,6 @@ class RunLoopWithExpectedCount {
   std::unique_ptr<base::RunLoop> run_loop_;
   int expected_quit_calls_;
   int actual_quit_calls_;
-
-  DISALLOW_COPY_AND_ASSIGN(RunLoopWithExpectedCount);
 };
 
 // Test helper for BusTest.ListenForServiceOwnerChange.

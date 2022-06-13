@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -53,6 +53,10 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   InkDropImpl(InkDropHost* ink_drop_host,
               const gfx::Size& host_size,
               AutoHighlightMode auto_highlight_mode);
+
+  InkDropImpl(const InkDropImpl&) = delete;
+  InkDropImpl& operator=(const InkDropImpl&) = delete;
+
   ~InkDropImpl() override;
 
   const absl::optional<base::TimeDelta>& hover_highlight_fade_duration() const {
@@ -98,6 +102,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // anywhere else may be a sign that a new state should exist.
   class HighlightState {
    public:
+    HighlightState(const HighlightState&) = delete;
+    HighlightState& operator=(const HighlightState&) = delete;
+
     virtual ~HighlightState() = default;
 
     // Called when |this| becomes the current state. Allows subclasses to
@@ -147,9 +154,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
    private:
     // Used by |this| to create the new states to transition to.
-    HighlightStateFactory* const state_factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(HighlightState);
+    const raw_ptr<HighlightStateFactory> state_factory_;
   };
 
   // Creates the different HighlightStates instances. A factory is used to make
@@ -158,6 +163,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
    public:
     HighlightStateFactory(AutoHighlightMode highlight_mode,
                           InkDropImpl* ink_drop);
+
+    HighlightStateFactory(const HighlightStateFactory&) = delete;
+    HighlightStateFactory& operator=(const HighlightStateFactory&) = delete;
 
     // Returns the initial state.
     std::unique_ptr<HighlightState> CreateStartState();
@@ -175,9 +183,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
     AutoHighlightMode highlight_mode_;
 
     // The ink drop to invoke highlight changes on.
-    InkDropImpl* ink_drop_;
-
-    DISALLOW_COPY_AND_ASSIGN(HighlightStateFactory);
+    raw_ptr<InkDropImpl> ink_drop_;
   };
 
   class DestroyingHighlightState;
@@ -258,7 +264,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
   // The host of the ink drop. Used to create the ripples and highlights, and to
   // add/remove the root layer to/from it.
-  InkDropHost* const ink_drop_host_;
+  const raw_ptr<InkDropHost> ink_drop_host_;
 
   // Used by |this| to initialize the starting |highlight_state_| and by the
   // current |highlight_state_| to create the next state.
@@ -306,8 +312,6 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
   // Used to fail DCHECKS to catch unexpected behavior during tear down.
   bool destroying_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropImpl);
 };
 
 }  // namespace views

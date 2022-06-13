@@ -7,9 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/types/strong_alias.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -29,7 +28,7 @@ class FeatureContext;
 
 // ManifestParser handles the logic of parsing the Web Manifest from a string.
 // It implements:
-// http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
+// https://w3c.github.io/manifest/#processing
 // Takes a |FeatureContext| to check origin trial statuses with.
 class MODULES_EXPORT ManifestParser {
  public:
@@ -37,11 +36,15 @@ class MODULES_EXPORT ManifestParser {
                  const KURL& manifest_url,
                  const KURL& document_url,
                  const FeatureContext* feature_context);
+
+  ManifestParser(const ManifestParser&) = delete;
+  ManifestParser& operator=(const ManifestParser&) = delete;
+
   ~ManifestParser();
 
   // Parse the Manifest from a string using following:
-  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
-  void Parse();
+  // https://w3c.github.io/manifest/#processing
+  bool Parse();
 
   const mojom::blink::ManifestPtr& manifest() const;
   bool failed() const;
@@ -50,7 +53,7 @@ class MODULES_EXPORT ManifestParser {
 
  private:
   // Used to indicate whether to strip whitespace when parsing a string.
-  enum TrimType { Trim, NoTrim };
+  using Trim = base::StrongAlias<class TrimTag, bool>;
 
   // Indicate restrictions to be placed on the parsed URL with respect to the
   // document URL or manifest scope.
@@ -73,7 +76,7 @@ class MODULES_EXPORT ManifestParser {
   // Returns the parsed string if any, a null optional if the parsing failed.
   absl::optional<String> ParseString(const JSONObject* object,
                                      const String& key,
-                                     TrimType trim);
+                                     Trim trim);
 
   // Helper function to parse strings present in a member that itself is
   // a dictionary like 'shortcut' as defined in:
@@ -86,7 +89,7 @@ class MODULES_EXPORT ManifestParser {
                                               const String& member_name,
                                               const String& key,
                                               bool required,
-                                              TrimType trim);
+                                              Trim trim);
 
   // Helper function to parse colors present on a given |dictionary| in a given
   // field identified by its |key|. Returns a null optional if the value is not
@@ -100,10 +103,28 @@ class MODULES_EXPORT ManifestParser {
   // enforce matching of the document's and parsed URL's origins.
   // Returns a KURL. If the parsing failed or origin matching was enforced but
   // not present, the returned KURL will be empty.
+  // |ignore_empty_string| treats empty string as the field missing.
+  // TODO(crbug.com/1223173): remove ignore_empty_string when all url fields are
+  // parsed the same.
   KURL ParseURL(const JSONObject* object,
                 const String& key,
                 const KURL& base_url,
-                ParseURLRestrictions origin_restriction);
+                ParseURLRestrictions origin_restriction,
+                bool ignore_empty_string = false);
+
+  // Helper function to parse "enum" fields that accept a single value or a
+  // list of values to allow sites to be backwards compatible with browsers that
+  // don't support the latest spec.
+  // Example:
+  //  - Spec specifies valid field values are A, B and C.
+  //  - Browser supports only A and B.
+  //  - Site specifies "field": ["C", "B"].
+  //  - Browser will fail to parse C and fallback to B.
+  template <typename Enum>
+  Enum ParseFirstValidEnum(const JSONObject* object,
+                           const String& key,
+                           Enum (*parse_enum)(const std::string&),
+                           Enum invalid_value);
 
   // Parses the 'name' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
@@ -119,6 +140,9 @@ class MODULES_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#description-member-0
   // Returns the parsed string if any, a null string if the parsing failed.
   String ParseDescription(const JSONObject* object);
+
+  // Parses the 'id' field of the manifest.
+  String ParseId(const JSONObject* object, const KURL& start_url);
 
   // Parses the 'scope' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#scope-member. Returns the parsed KURL if
@@ -400,6 +424,42 @@ class MODULES_EXPORT ManifestParser {
   // https://github.com/WICG/sw-launch/blob/master/declarative_link_capturing.md#proposal
   mojom::blink::CaptureLinks ParseCaptureLinks(const JSONObject* object);
 
+  // Parses the 'isolated_storage' field of the manifest.
+  // This marks whether the application should be loaded in a dedicated storage
+  // partition.
+  // Returns true iff the field could be parsed as the boolean true.
+  bool ParseIsolatedStorage(const JSONObject* object);
+
+  // Parses the 'permissions_policy' field of the manifest.
+  Vector<mojom::blink::ManifestPermissionsPolicyDeclarationPtr>
+  ParseIsolatedAppPermissions(const JSONObject* object);
+  Vector<String> ParseOriginAllowlist(const JSONArray* allowlist,
+                                      const String& feature);
+
+  // Parses the 'launch_handler' field of the manifest as defined in:
+  // https://github.com/WICG/sw-launch/blob/main/launch_handler.md
+  // Returns default values if parsing fails.
+  mojom::blink::ManifestLaunchHandlerPtr ParseLaunchHandler(
+      const JSONObject* object);
+
+  // Parses the 'translations' field of the manifest as defined in:
+  // https://github.com/WICG/manifest-incubations/blob/gh-pages/translations-explainer.md
+  // Returns empty map if parsing fails.
+  HashMap<String, mojom::blink::ManifestTranslationItemPtr> ParseTranslations(
+      const JSONObject* object);
+
+  // Parses individual preferences from the 'user_preferences' field.
+  // Returns nullptr if not present or parsing failed.
+  mojom::blink::ManifestUserPreferenceOverridesPtr ParsePreferenceOverrides(
+      const JSONObject* object,
+      const String& preference);
+
+  // Parse the 'user_preferences' field of the manifest as defined in:
+  // https://github.com/w3c/manifest/issues/975#issuecomment-960222756
+  // Returns nullptr if parsing fails.
+  mojom::blink::ManifestUserPreferencesPtr ParseUserPreferences(
+      const JSONObject* object);
+
   void AddErrorInfo(const String& error_msg,
                     bool critical = false,
                     int error_line = 0,
@@ -413,8 +473,6 @@ class MODULES_EXPORT ManifestParser {
   bool failed_;
   mojom::blink::ManifestPtr manifest_;
   Vector<mojom::blink::ManifestErrorPtr> errors_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };
 
 }  // namespace blink

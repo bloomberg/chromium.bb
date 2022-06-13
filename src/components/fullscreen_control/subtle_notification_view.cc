@@ -16,6 +16,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -94,7 +95,7 @@ void SubtleNotificationView::InstructionView::SetText(
   if (text == text_)
     return;
 
-  RemoveAllChildViews(true);
+  RemoveAllChildViews();
 
   // Parse |text|, looking for pipe-delimited segment.
   std::vector<std::u16string> segments = base::SplitString(
@@ -160,7 +161,7 @@ SubtleNotificationView::SubtleNotificationView() : instruction_view_(nullptr) {
 
   int outer_padding_horiz = kOuterPaddingHorizPx;
   int outer_padding_vert = kOuterPaddingVertPx;
-  AddChildView(instruction_view_);
+  AddChildView(instruction_view_.get());
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,

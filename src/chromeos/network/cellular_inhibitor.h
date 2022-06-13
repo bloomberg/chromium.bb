@@ -68,7 +68,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
     kRenamingProfile,
     kRemovingProfile,
     kConnectingToProfile,
-    kRefreshingProfileList
+    kRefreshingProfileList,
+    kResettingEuiccMemory
   };
 
   // Callback which returns InhibitLock on inhibit success or nullptr on
@@ -121,7 +122,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
     kInhibited,
     kUninhibiting,
     kWaitForUninhibit,
-    kWaitingForScanningToStart,
     kWaitingForScanningToStop,
   };
   friend std::ostream& operator<<(std::ostream& stream, const State& state);
@@ -153,8 +153,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularInhibitor
   void OnUninhibit(bool success);
 
   void CheckScanningIfNeeded();
-  void CheckForScanningStarted();
-  bool HasScanningStarted();
   void CheckForScanningStopped();
   bool HasScanningStopped();
   void OnScanningChangeTimeout();

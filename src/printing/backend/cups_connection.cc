@@ -11,13 +11,16 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "printing/backend/cups_helper.h"
 #include "printing/backend/cups_jobs.h"
+
+#if defined(OS_CHROMEOS)
+#include "printing/backend/cups_connection_pool.h"
+#endif
 
 namespace printing {
 
 namespace {
-
-constexpr int kTimeoutMs = 3000;
 
 // The number of jobs we'll retrieve for a queue.  We expect a user to queue at
 // most 10 jobs per printer.  If they queue more, they won't receive updates for
@@ -78,40 +81,45 @@ class CupsConnectionImpl : public CupsConnection {
         blocking_(connection.blocking_),
         cups_http_(std::move(connection.cups_http_)) {}
 
-  ~CupsConnectionImpl() override {}
-
-  std::vector<std::unique_ptr<CupsPrinter>> GetDests() override {
-    if (!Connect()) {
-      LOG(WARNING) << "CUPS connection failed";
-      return std::vector<std::unique_ptr<CupsPrinter>>();
+  ~CupsConnectionImpl() override {
+#if defined(OS_CHROMEOS)
+    if (cups_http_) {
+      // If there is a connection pool, then the connection we have came from
+      // it.  We must add the connection back to the pool for possible reuse
+      // rather than letting it be automatically closed, since we can never get
+      // it back after closing it.
+      CupsConnectionPool* connection_pool = CupsConnectionPool::GetInstance();
+      if (connection_pool)
+        connection_pool->AddConnection(std::move(cups_http_));
     }
+#endif  // defined(OS_CHROMEOS)
+  }
 
-    // On macOS, AirPrint destinations show up even if they're not added to the
-    // system, and their capabilities cannot be read in that situation
-    // (crbug.com/1027834). Therefore, only show discovered destinations that
-    // have been added locally. Also exclude fax and scanner devices.
-    constexpr cups_ptype_t kMask =
-        CUPS_PRINTER_FAX | CUPS_PRINTER_SCANNER | CUPS_PRINTER_DISCOVERED;
+  bool GetDests(std::vector<std::unique_ptr<CupsPrinter>>& printers) override {
+    printers.clear();
+    if (!Connect()) {
+      LOG(WARNING) << "CUPS connection failed: ";
+      return false;
+    }
     DestinationEnumerator enumerator;
     const int success =
-        cupsEnumDests(CUPS_DEST_FLAGS_NONE, kTimeoutMs,
+        cupsEnumDests(CUPS_DEST_FLAGS_NONE, kCupsTimeoutMs,
                       /*cancel=*/nullptr,
-                      /*type=*/CUPS_PRINTER_LOCAL, kMask,
+                      /*type=*/CUPS_PRINTER_LOCAL, kDestinationsFilterMask,
                       &DestinationEnumerator::cups_callback, &enumerator);
 
     if (!success) {
       LOG(WARNING) << "Enumerating printers failed";
-      return std::vector<std::unique_ptr<CupsPrinter>>();
+      return false;
     }
 
     auto dests = std::move(enumerator.get_dests());
-    std::vector<std::unique_ptr<CupsPrinter>> printers;
     for (auto& dest : dests) {
       printers.push_back(
           CupsPrinter::Create(cups_http_.get(), std::move(dest)));
     }
 
-    return printers;
+    return true;
   }
 
   std::unique_ptr<CupsPrinter> GetPrinter(const std::string& name) override {
@@ -186,6 +194,18 @@ class CupsConnectionImpl : public CupsConnection {
     if (cups_http_)
       return true;  // we're already connected
 
+#if defined(OS_CHROMEOS)
+    // If a connection pool has been created for this process then we must
+    // allocate a connection from that, and not try to create a new one now.
+    CupsConnectionPool* connection_pool = CupsConnectionPool::GetInstance();
+    if (connection_pool) {
+      cups_http_ = connection_pool->TakeConnection();
+      if (!cups_http_)
+        LOG(WARNING) << "No available connections in the CUPS connection pool";
+      return !!cups_http_;
+    }
+#endif  // defined(OS_CHROMEOS)
+
     std::string host;
     int port;
 
@@ -199,7 +219,7 @@ class CupsConnectionImpl : public CupsConnection {
 
     cups_http_.reset(httpConnect2(host.c_str(), port, nullptr, AF_UNSPEC,
                                   cups_encryption_, blocking_ ? 1 : 0,
-                                  kTimeoutMs, nullptr));
+                                  kCupsTimeoutMs, nullptr));
     return !!cups_http_;
   }
 

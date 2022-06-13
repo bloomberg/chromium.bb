@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_header_item.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,10 +24,6 @@ namespace {
 
 const CGFloat kViewControllerWidth = 312.;
 const CGFloat kViewControllerHeight = 230.;
-// Header height for identity section.
-const CGFloat kHeaderHeight = 49.;
-// Row height.
-const CGFloat kRowHeight = 54.;
 // Footer height for "Add Account…" section.
 const CGFloat kFooterHeight = 17.;
 
@@ -46,17 +44,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor =
+
+  self.tableView.backgroundColor =
       [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
+
   self.preferredContentSize =
       CGSizeMake(kViewControllerWidth, kViewControllerHeight);
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.tableView.contentInset = UIEdgeInsetsMake(0, 0, kFooterHeight, 0);
   self.tableView.sectionFooterHeight = 0;
-  // Setting -UITableView.rowHeight is required for iOS 10. On iOS 11, the row
-  // height is automatically set.
-  self.tableView.estimatedRowHeight = kRowHeight;
-  self.tableView.estimatedSectionHeaderHeight = kHeaderHeight;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {

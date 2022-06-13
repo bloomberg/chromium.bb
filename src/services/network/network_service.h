@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
+#include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/host_resolver.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
@@ -42,10 +43,14 @@
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
 #include "services/network/trust_tokens/trust_token_key_commitments.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "services/network/public/mojom/ct_log_info.mojom.h"
+#endif
 
 namespace net {
 class FileNetLogObserver;
@@ -59,6 +64,7 @@ class URLRequestContext;
 namespace network {
 
 class CRLSetDistributor;
+class CtLogListDistributor;
 class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
 class NetLogProxySink;
@@ -75,6 +81,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                  mojo::PendingReceiver<mojom::NetworkService> receiver =
                      mojo::NullReceiver(),
                  bool delay_initialization_until_set_client = false);
+
+  NetworkService(const NetworkService&) = delete;
+  NetworkService& operator=(const NetworkService&) = delete;
 
   ~NetworkService() override;
 
@@ -176,6 +185,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
   void SetTrustTokenKeyCommitments(const std::string& raw_commitments,
                                    base::OnceClosure done) override;
+  void ParseHeaders(const GURL& url,
+                    const scoped_refptr<net::HttpResponseHeaders>& headers,
+                    ParseHeadersCallback callback) override;
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void ClearSCTAuditingCache() override;
   void ConfigureSCTAuditing(
@@ -184,6 +196,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       const GURL& reporting_uri,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojo::PendingRemote<mojom::URLLoaderFactory> factory) override;
+  void UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
+                       base::Time update_time) override;
+  void SetCtEnforcementEnabled(bool enabled) override;
 #endif
 
 #if defined(OS_ANDROID)
@@ -191,7 +206,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void BindTestInterface(
       mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
-  void SetFirstPartySets(const std::string& raw_sets) override;
+  void SetFirstPartySets(base::File sets_file) override;
+  void SetPersistedFirstPartySetsAndGetCurrentSets(
+      const std::string& persisted_sets,
+      mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
+          callback) override;
   void SetExplicitlyAllowedPorts(const std::vector<uint16_t>& ports) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
@@ -225,6 +244,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return crl_set_distributor_.get();
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  CtLogListDistributor* ct_log_list_distributor() {
+    return ct_log_list_distributor_.get();
+  }
+#endif
+
   const FirstPartySets* first_party_sets() const {
     return first_party_sets_.get();
   }
@@ -250,6 +275,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   SCTAuditingCache* sct_auditing_cache() { return sct_auditing_cache_.get(); }
+
+  const std::vector<mojom::CTLogInfoPtr>& log_list() const { return log_list_; }
+
+  base::Time ct_log_list_update_time() const {
+    return ct_log_list_update_time_;
+  }
 #endif
 
   mojom::URLLoaderNetworkServiceObserver*
@@ -266,9 +297,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // context.
   void OnNetworkContextConnectionClosed(NetworkContext* network_context);
 
+  // Sets First-Party Set data after having read it from a file.
+  void OnReadFirstPartySetsFile(const std::string& raw_sets);
+
   bool initialized_ = false;
 
-  net::NetLog* net_log_;
+  raw_ptr<net::NetLog> net_log_;
 
   std::unique_ptr<NetLogProxySink> net_log_proxy_sink_;
 
@@ -286,6 +320,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
+
+  // Globally-scoped state for First-Party Sets. Must be above the `receiver_`
+  // so it's destroyed after, to make sure even when the reply callback owned by
+  // the `first_party_sets_` is never run when destroyed, the receiver which the
+  // reply callback associated with is already disconnected.
+  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   mojo::Receiver<mojom::NetworkService> receiver_{this};
 
@@ -306,9 +346,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // HttpAuthPreferences.
   mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_network_service_params_;
   mojom::HttpAuthStaticParamsPtr http_auth_static_network_service_params_;
-
-  // Globally-scoped state for First-Party Sets.
-  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete
@@ -352,14 +389,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<SCTAuditingCache> sct_auditing_cache_;
+
+  std::vector<mojom::CTLogInfoPtr> log_list_;
+
+  std::unique_ptr<CtLogListDistributor> ct_log_list_distributor_;
+
+  base::Time ct_log_list_update_time_;
 #endif
 
   // Map from a renderer process id, to the set of plugin origins embedded by
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };
 
 }  // namespace network

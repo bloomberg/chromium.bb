@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -38,6 +39,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
+#include "extensions/browser/blocklist_extension_prefs.h"
+#include "extensions/browser/blocklist_state.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -115,13 +118,13 @@ class TestTimestampDelegate : public TimestampDelegate {
     // same day. This test time is hard coded to prevent DST flakiness, see
     // crbug.com/1066576.
     return base::Time::FromDoubleT(1609459199).LocalMidnight() -
-           base::TimeDelta::FromSeconds(1);
+           base::Seconds(1);
   }
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::Time FetchChromeCleanerScanCompletionTimestamp() override {
     // 2 seconds before midnight Dec 31st 2020.
     return base::Time::FromDoubleT(1609459199).LocalMidnight() -
-           base::TimeDelta::FromSeconds(2);
+           base::Seconds(2);
   }
 #endif
 };
@@ -130,7 +133,9 @@ bool TestDestructionVersionUpdater::destructor_invoked_ = false;
 
 class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  public:
-  TestPasswordsDelegate() { store_->Init(/*prefs=*/nullptr); }
+  TestPasswordsDelegate() {
+    store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  }
 
   void TearDown() {
     store_->ShutdownOnUIThread();
@@ -173,12 +178,10 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
     form.password_value = u"password";
     form.username_element = u"username_element";
     store_->AddLogin(form);
-    base::RunLoop().RunUntilIdle();
-
-    store_->AddInsecureCredential(password_manager::InsecureCredential(
-        form.signon_realm, form.username_value, base::Time(),
-        password_manager::InsecureType::kLeaked,
-        password_manager::IsMuted(false)));
+    form.password_issues = {
+        {password_manager::InsecureType::kLeaked,
+         password_manager::InsecurityMetadata(
+             base::Time(), password_manager::IsMuted(false))}};
     base::RunLoop().RunUntilIdle();
   }
 
@@ -219,7 +222,7 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
   }
 
  private:
-  password_manager::BulkLeakCheckService* leak_service_ = nullptr;
+  raw_ptr<password_manager::BulkLeakCheckService> leak_service_ = nullptr;
   int compromised_password_count_ = 0;
   int weak_password_count_ = 0;
   int done_ = 0;
@@ -307,11 +310,11 @@ class SafetyCheckHandlerTest : public testing::Test {
   content::BrowserTaskEnvironment browser_task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<content::WebContents> web_contents_;
-  safety_check::TestUpdateCheckHelper* update_helper_ = nullptr;
-  TestVersionUpdater* version_updater_ = nullptr;
+  raw_ptr<safety_check::TestUpdateCheckHelper> update_helper_ = nullptr;
+  raw_ptr<TestVersionUpdater> version_updater_ = nullptr;
   std::unique_ptr<password_manager::BulkLeakCheckService> test_leak_service_;
   TestPasswordsDelegate test_passwords_delegate_;
-  extensions::ExtensionPrefs* test_extension_prefs_ = nullptr;
+  raw_ptr<extensions::ExtensionPrefs> test_extension_prefs_ = nullptr;
   TestSafetyCheckExtensionService test_extension_service_;
   content::TestWebUI test_web_ui_;
   std::unique_ptr<TestingSafetyCheckHandler> safety_check_;
@@ -323,8 +326,6 @@ class SafetyCheckHandlerTest : public testing::Test {
 };
 
 void SafetyCheckHandlerTest::SetUp() {
-  feature_list_.InitWithFeatures({features::kSafetyCheckWeakPasswords}, {});
-
   TestingProfile::Builder builder;
   profile_ = builder.Build();
 
@@ -372,20 +373,16 @@ SafetyCheckHandlerTest::GetSafetyCheckStatusChangedWithDataIfExists(
     if (data.function_name() != "cr.webUIListenerCallback") {
       continue;
     }
-    std::string event;
-    if ((!data.arg1()->GetAsString(&event)) ||
-        event != "safety-check-" + component + "-status-changed") {
+    const std::string* event = data.arg1()->GetIfString();
+    if (!event || *event != "safety-check-" + component + "-status-changed")
       continue;
-    }
     const base::DictionaryValue* dictionary = nullptr;
     if (!data.arg2()->GetAsDictionary(&dictionary)) {
       continue;
     }
-    int cur_new_state;
-    if (dictionary->GetInteger("newState", &cur_new_state) &&
-        cur_new_state == new_state) {
+    absl::optional<int> cur_new_state = dictionary->FindIntKey("newState");
+    if (cur_new_state == new_state)
       return dictionary;
-    }
   }
   return nullptr;
 }
@@ -1253,8 +1250,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_NoneBlocklisted) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension_id, extensions::NOT_BLOCKLISTED);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension_id, extensions::BitMapBlocklistState::NOT_BLOCKLISTED,
+      test_extension_prefs_);
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
       GetSafetyCheckStatusChangedWithDataIfExists(
@@ -1276,8 +1274,9 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedAllDisabled) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::DISABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension_id, extensions::BLOCKLISTED_MALWARE);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension_id, extensions::BitMapBlocklistState::BLOCKLISTED_MALWARE,
+      test_extension_prefs_);
   test_extension_service_.AddExtensionState(extension_id, Enabled(false),
                                             UserCanDisable(false));
   safety_check_->PerformSafetyCheck();
@@ -1301,8 +1300,10 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension_id,
+      extensions::BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      test_extension_prefs_);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(true));
   safety_check_->PerformSafetyCheck();
@@ -1325,8 +1326,10 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledAllByAdmin) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension_id,
+      extensions::BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      test_extension_prefs_);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(false));
   safety_check_->PerformSafetyCheck();
@@ -1349,8 +1352,10 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension_id,
+      extensions::BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      test_extension_prefs_);
   test_extension_service_.AddExtensionState(extension_id, Enabled(true),
                                             UserCanDisable(true));
 
@@ -1360,8 +1365,10 @@ TEST_F(SafetyCheckHandlerTest, CheckExtensions_BlocklistedReenabledSomeByUser) {
   test_extension_prefs_->OnExtensionInstalled(
       extension2.get(), extensions::Extension::State::ENABLED,
       syncer::StringOrdinal(), "");
-  test_extension_prefs_->SetExtensionBlocklistState(
-      extension2_id, extensions::BLOCKLISTED_POTENTIALLY_UNWANTED);
+  extensions::blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
+      extension2_id,
+      extensions::BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED,
+      test_extension_prefs_);
   test_extension_service_.AddExtensionState(extension2_id, Enabled(true),
                                             UserCanDisable(false));
 
@@ -1652,8 +1659,7 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
   // same day. This test time is hard coded to prevent DST flakiness, see
   // crbug.com/1066576.
   const base::Time system_time =
-      base::Time::FromDoubleT(1609459199).LocalMidnight() -
-      base::TimeDelta::FromSeconds(1);
+      base::Time::FromDoubleT(1609459199).LocalMidnight() - base::Seconds(1);
   // Display strings for given time deltas in seconds.
   std::vector<std::tuple<std::u16string, int>> tuples{
       std::make_tuple(u"a moment ago", 1),
@@ -1672,8 +1678,7 @@ TEST_F(SafetyCheckHandlerTest, CheckParentRanDisplayString) {
       std::make_tuple(u"3 days ago", 60 * 60 * 24 * 4 - 1)};
   // Test that above time deltas produce the corresponding display strings.
   for (auto tuple : tuples) {
-    const base::Time time =
-        system_time - base::TimeDelta::FromSeconds(std::get<1>(tuple));
+    const base::Time time = system_time - base::Seconds(std::get<1>(tuple));
     const std::u16string display_string =
         safety_check_->GetStringForParentRan(time, system_time);
     EXPECT_EQ(base::StrCat({u"Safety check ran ", std::get<0>(tuple)}),
@@ -1695,8 +1700,7 @@ TEST_F(SafetyCheckHandlerTest, CheckChromeCleanerRanDisplayString) {
   // same day. This test time is hard coded to prevent DST flakiness, see
   // crbug.com/1066576.
   const base::Time system_time =
-      base::Time::FromDoubleT(1609459199).LocalMidnight() -
-      base::TimeDelta::FromSeconds(1);
+      base::Time::FromDoubleT(1609459199).LocalMidnight() - base::Seconds(1);
   // Display strings for given time deltas in seconds.
   std::vector<std::tuple<std::u16string, int>> tuples{
       std::make_tuple(u"just now", 1),
@@ -1715,8 +1719,7 @@ TEST_F(SafetyCheckHandlerTest, CheckChromeCleanerRanDisplayString) {
       std::make_tuple(u"3 days ago", 60 * 60 * 24 * 4 - 1)};
   // Test that above time deltas produce the corresponding display strings.
   for (auto tuple : tuples) {
-    const base::Time time =
-        system_time - base::TimeDelta::FromSeconds(std::get<1>(tuple));
+    const base::Time time = system_time - base::Seconds(std::get<1>(tuple));
     display_string =
         safety_check_->GetStringForChromeCleanerRan(time, system_time);
     ReplaceBrowserName(&display_string);

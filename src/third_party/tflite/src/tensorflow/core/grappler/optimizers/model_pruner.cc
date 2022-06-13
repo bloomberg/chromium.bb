@@ -401,7 +401,7 @@ Status SplitIdentityNInputs(GraphDef* graph,
     }
 
     const int num_non_control_inputs = NumNonControlInputs(*node);
-    int terminal_second_size = terminal.second.size();
+    const int terminal_second_size = terminal.second.size();
     if (node->attr().count("T") == 0 ||
         node->attr().at("T").list().type_size() != num_non_control_inputs ||
         terminal_second_size >= num_non_control_inputs) {
@@ -527,11 +527,6 @@ Status ModelPruner::Optimize(Cluster* cluster, const GrapplerItem& item,
     return errors::Internal("Pruning increased graph size.");
   }
   return Status::OK();
-}
-
-void ModelPruner::Feedback(Cluster* cluster, const GrapplerItem& item,
-                           const GraphDef& optimized_graph, double result) {
-  // Nothing to do for ModelPruner.
 }
 
 }  // end namespace grappler

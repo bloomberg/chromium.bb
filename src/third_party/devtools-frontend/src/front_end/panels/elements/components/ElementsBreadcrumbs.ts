@@ -2,35 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 
+import elementsBreadcrumbsStyles from './elementsBreadcrumbs.css.js';
+
 import type {UserScrollPosition} from './ElementsBreadcrumbsUtils.js';
-import {crumbsToRender, DOMNode, NodeSelectedEvent} from './ElementsBreadcrumbsUtils.js';
+import {crumbsToRender} from './ElementsBreadcrumbsUtils.js';
+import type * as SDK from '../../../core/sdk/sdk.js';
+import type {DOMNode} from './Helper.js';
 
 import {NodeText} from './NodeText.js';
 import type {NodeTextData} from './NodeText.js';
-export {DOMNode};
+
+const UIStrings = {
+  /**
+  * @description Accessible name for DOM tree breadcrumb navigation.
+  */
+  breadcrumbs: 'DOM tree breadcrumbs',
+};
+
+const str_ = i18n.i18n.registerUIStrings('panels/elements/components/ElementsBreadcrumbs.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+
+export class NodeSelectedEvent extends Event {
+  static readonly eventName = 'breadcrumbsnodeselected';
+  legacyDomNode: SDK.DOMModel.DOMNode;
+
+  constructor(node: DOMNode) {
+    super(NodeSelectedEvent.eventName, {});
+    this.legacyDomNode = node.legacyDomNode;
+  }
+}
 
 export interface ElementsBreadcrumbsData {
   selectedNode: DOMNode|null;
   crumbs: DOMNode[];
 }
-export interface ElementsBreadcrumbs extends HTMLElement {
-  addEventListener<K extends keyof HTMLElementEventMap>(
-      type: K,
-      listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) =>
-          any,  // eslint-disable-line @typescript-eslint/no-explicit-any
-      options?: boolean|AddEventListenerOptions): void;
-  addEventListener(
-      type: string, listener: EventListenerOrEventListenerObject, options?: boolean|AddEventListenerOptions): void;
-  addEventListener(type: 'breadcrumbsnodeselected', callback: (event: NodeSelectedEvent) => void): void;
-}
-
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 
 export class ElementsBreadcrumbs extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-elements-breadcrumbs`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private readonly resizeObserver = new ResizeObserver(() => this.checkForOverflowOnResize());
 
@@ -40,6 +54,10 @@ export class ElementsBreadcrumbs extends HTMLElement {
   private userScrollPosition: UserScrollPosition = 'start';
   private isObservingResize = false;
   private userHasManuallyScrolled = false;
+
+  connectedCallback(): void {
+    this.shadow.adoptedStyleSheets = [elementsBreadcrumbsStyles];
+  }
 
   set data(data: ElementsBreadcrumbsData) {
     this.selectedDOMNode = data.selectedNode;
@@ -258,95 +276,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
       // Disabled until https://crbug.com/1079231 is fixed.
       // clang-format off
       LitHtml.render(LitHtml.html`
-        <style>
-          :host {
-            --node-text-label-color: var(--color-syntax-2);
-            --node-text-class-color: var(--color-syntax-4);
-            --node-text-id-color: var(--color-syntax-4);
-            --node-text-multiple-descriptors-id: var(--color-syntax-7);
-          }
-
-          .crumbs {
-            display: inline-flex;
-            align-items: stretch;
-            width: 100%;
-            overflow: hidden;
-            pointer-events: auto;
-            cursor: default;
-            white-space: nowrap;
-            position: relative;
-            background: var(--color-background);
-          }
-
-          .crumbs-window {
-            flex-grow: 2;
-            overflow: hidden;
-          }
-
-          .crumbs-scroll-container {
-            display: inline-flex;
-            margin: 0;
-            padding: 0;
-          }
-
-          .crumb {
-            display: block;
-            padding: 0 7px;
-            line-height: 23px;
-            white-space: nowrap;
-          }
-
-          .overflow {
-            padding: 0 7px;
-            font-weight: bold;
-            display: block;
-            border: none;
-            flex-grow: 0;
-            flex-shrink: 0;
-            text-align: center;
-            background-color: var(--color-background-elevation-1);
-            color: var(--color-text-secondary);
-            margin: 1px;
-            outline: var(--color-background-elevation-1) solid 1px;
-          }
-
-          .overflow.hidden {
-            display: none;
-          }
-
-          .overflow:disabled {
-            opacity: 50%;
-          }
-
-          .overflow:focus {
-            outline-color: var(--color-primary);
-          }
-
-          .overflow:not(:disabled):hover {
-            background-color: var(--color-background-elevation-2);
-            color: var(--color-text-primary);
-            cursor: pointer;
-          }
-
-          .crumb-link {
-            text-decoration: none;
-            color: inherit;
-          }
-
-          .crumb:hover {
-            background: var(--color-background-elevation-2);
-          }
-
-          .crumb.selected {
-            background: var(--color-background-elevation-1);
-          }
-
-          .crumb:focus {
-            outline: var(--color-primary) auto 1px;
-          }
-        </style>
-
-        <nav class="crumbs">
+        <nav class="crumbs" aria-label=${i18nString(UIStrings.breadcrumbs)}>
           ${this.renderOverflowButton('left', this.userScrollPosition === 'start')}
 
           <div class="crumbs-window" @scroll=${this.onCrumbsWindowScroll}>
@@ -356,6 +286,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
                   crumb: true,
                   selected: crumb.selected,
                 };
+                // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
                 return LitHtml.html`
                   <li class=${LitHtml.Directives.classMap(crumbClasses)}
                     data-node-id=${crumb.node.id}
@@ -380,9 +311,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
           </div>
           ${this.renderOverflowButton('right', this.userScrollPosition === 'end')}
         </nav>
-      `, this.shadow, {
-        host: this,
-      });
+      `, this.shadow, { host: this });
       // clang-format on
     });
 
@@ -419,8 +348,11 @@ export class ElementsBreadcrumbs extends HTMLElement {
 ComponentHelpers.CustomElements.defineComponent('devtools-elements-breadcrumbs', ElementsBreadcrumbs);
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface HTMLElementTagNameMap {
     'devtools-elements-breadcrumbs': ElementsBreadcrumbs;
+  }
+
+  interface HTMLElementEventMap {
+    [NodeSelectedEvent.eventName]: NodeSelectedEvent;
   }
 }

@@ -18,6 +18,11 @@
 // This macro does nothing. That's all.
 #define NOTHING(...)
 
+#define CONCAT_(a, b) a##b
+#define CONCAT(a, b) CONCAT_(a, b)
+// Creates an unique identifier. Useful for scopes to avoid shadowing names.
+#define UNIQUE_IDENTIFIER(base) CONCAT(base, __COUNTER__)
+
 // TODO(all) Replace all uses of this macro with C++'s offsetof. To do that, we
 // have to make sure that only standard-layout types and simple field
 // designators are used.
@@ -105,7 +110,7 @@ V8_INLINE Dest bit_cast(Source const& source) {
   static_assert(sizeof(Dest) == sizeof(Source),
                 "source and dest must be same size");
   Dest dest;
-  v8::base::Memcpy(&dest, &source, sizeof(dest));
+  memcpy(&dest, &source, sizeof(dest));
   return dest;
 }
 
@@ -155,17 +160,17 @@ V8_INLINE Dest bit_cast(Source const& source) {
 #endif
 #endif
 
-// Define DISABLE_ASAN macro.
-#ifdef V8_USE_ADDRESS_SANITIZER
-#define DISABLE_ASAN __attribute__((no_sanitize_address))
-#else
-#define DISABLE_ASAN
-#endif
-
 // Define V8_USE_MEMORY_SANITIZER macro.
 #if defined(__has_feature)
 #if __has_feature(memory_sanitizer)
 #define V8_USE_MEMORY_SANITIZER 1
+#endif
+#endif
+
+// Define V8_USE_UNDEFINED_BEHAVIOR_SANITIZER macro.
+#if defined(__has_feature)
+#if __has_feature(undefined_behavior_sanitizer)
+#define V8_USE_UNDEFINED_BEHAVIOR_SANITIZER 1
 #endif
 #endif
 
@@ -419,5 +424,19 @@ bool is_inbounds(float_t v) {
 #else
 #define IF_WASM(V, ...)
 #endif  // V8_ENABLE_WEBASSEMBLY
+
+// Defines IF_TSAN, to be used in macro lists for elements that should only be
+// there if TSAN is enabled.
+#ifdef V8_IS_TSAN
+// EXPAND is needed to work around MSVC's broken __VA_ARGS__ expansion.
+#define IF_TSAN(V, ...) EXPAND(V(__VA_ARGS__))
+#else
+#define IF_TSAN(V, ...)
+#endif  // V8_ENABLE_WEBASSEMBLY
+
+#ifdef GOOGLE3
+// Disable FRIEND_TEST macro in Google3.
+#define FRIEND_TEST(test_case_name, test_name)
+#endif
 
 #endif  // V8_BASE_MACROS_H_

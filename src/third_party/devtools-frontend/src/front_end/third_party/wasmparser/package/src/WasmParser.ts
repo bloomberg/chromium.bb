@@ -61,6 +61,7 @@ export const enum OperatorCode {
   catch_all = 0x19,
   drop = 0x1a,
   select = 0x1b,
+  select_with_type = 0x1c,
   local_get = 0x20,
   local_set = 0x21,
   local_tee = 0x22,
@@ -260,6 +261,7 @@ export const enum OperatorCode {
   ref_as_non_null = 0xd3,
   br_on_null = 0xd4,
   ref_eq = 0xd5,
+  br_on_non_null = 0xd6,
 
   atomic_notify = 0xfe00,
   i32_atomic_wait = 0xfe01,
@@ -432,10 +434,10 @@ export const enum OperatorCode {
   i8x16_bitmask = 0xfd64,
   i8x16_narrow_i16x8_s = 0xfd65,
   i8x16_narrow_i16x8_u = 0xfd66,
-  f32x4_ceil = 0x67,
-  f32x4_floor = 0x68,
-  f32x4_trunc = 0x69,
-  f32x4_nearest = 0x6a,
+  f32x4_ceil = 0xfd67,
+  f32x4_floor = 0xfd68,
+  f32x4_trunc = 0xfd69,
+  f32x4_nearest = 0xfd6a,
   i8x16_shl = 0xfd6b,
   i8x16_shr_s = 0xfd6c,
   i8x16_shr_u = 0xfd6d,
@@ -573,6 +575,8 @@ export const enum OperatorCode {
   struct_get_s = 0xfb04,
   struct_get_u = 0xfb05,
   struct_set = 0xfb06,
+  struct_new = 0xfb07,
+  struct_new_default = 0xfb08,
   array_new_with_rtt = 0xfb11,
   array_new_default_with_rtt = 0xfb12,
   array_get = 0xfb13,
@@ -580,14 +584,25 @@ export const enum OperatorCode {
   array_get_u = 0xfb15,
   array_set = 0xfb16,
   array_len = 0xfb17,
+  array_copy = 0xfb18, // Non-standard experiment in V8.
+  array_init = 0xfb19,
+  array_init_static = 0xfb1a,
+  array_new = 0xfb1b,
+  array_new_default = 0xfb1c,
   i31_new = 0xfb20,
   i31_get_s = 0xfb21,
   i31_get_u = 0xfb22,
   rtt_canon = 0xfb30,
   rtt_sub = 0xfb31,
+  rtt_fresh_sub = 0xfb32, // Non-standard experiment in V8.
   ref_test = 0xfb40,
+  ref_test_static = 0xfb44,
   ref_cast = 0xfb41,
+  ref_cast_static = 0xfb45,
   br_on_cast = 0xfb42,
+  br_on_cast_static = 0xfb46,
+  br_on_cast_fail = 0xfb43,
+  br_on_cast_static_fail = 0xfb47,
   ref_is_func = 0xfb50,
   ref_is_data = 0xfb51,
   ref_is_i31 = 0xfb52,
@@ -597,6 +612,9 @@ export const enum OperatorCode {
   br_on_func = 0xfb60,
   br_on_data = 0xfb61,
   br_on_i31 = 0xfb62,
+  br_on_non_func = 0xfb63,
+  br_on_non_data = 0xfb64,
+  br_on_non_i31 = 0xfb65,
 }
 
 export const OperatorCodeNames = [
@@ -628,7 +646,7 @@ export const OperatorCodeNames = [
   "catch_all",
   "drop",
   "select",
-  undefined,
+  "select", // with types.
   undefined,
   undefined,
   undefined,
@@ -814,7 +832,7 @@ export const OperatorCodeNames = [
   "ref.as_non_null",
   "br_on_null",
   "ref.eq",
-  undefined,
+  "br_on_non_null",
   undefined,
   undefined,
   undefined,
@@ -1232,6 +1250,8 @@ OperatorCodeNames[0xfb03] = "struct.get";
 OperatorCodeNames[0xfb04] = "struct.get_s";
 OperatorCodeNames[0xfb05] = "struct.get_u";
 OperatorCodeNames[0xfb06] = "struct.set";
+OperatorCodeNames[0xfb07] = "struct.new";
+OperatorCodeNames[0xfb08] = "struct.new_default";
 OperatorCodeNames[0xfb11] = "array.new_with_rtt";
 OperatorCodeNames[0xfb12] = "array.new_default_with_rtt";
 OperatorCodeNames[0xfb13] = "array.get";
@@ -1239,14 +1259,25 @@ OperatorCodeNames[0xfb14] = "array.get_s";
 OperatorCodeNames[0xfb15] = "array.get_u";
 OperatorCodeNames[0xfb16] = "array.set";
 OperatorCodeNames[0xfb17] = "array.len";
+OperatorCodeNames[0xfb18] = "array.copy";
+OperatorCodeNames[0xfb19] = "array.init";
+OperatorCodeNames[0xfb1a] = "array.init_static";
+OperatorCodeNames[0xfb1b] = "array.new";
+OperatorCodeNames[0xfb1c] = "array.new_default";
 OperatorCodeNames[0xfb20] = "i31.new";
 OperatorCodeNames[0xfb21] = "i31.get_s";
 OperatorCodeNames[0xfb22] = "i31.get_u";
 OperatorCodeNames[0xfb30] = "rtt.canon";
 OperatorCodeNames[0xfb31] = "rtt.sub";
+OperatorCodeNames[0xfb32] = "rtt.fresh_sub";
 OperatorCodeNames[0xfb40] = "ref.test";
 OperatorCodeNames[0xfb41] = "ref.cast";
 OperatorCodeNames[0xfb42] = "br_on_cast";
+OperatorCodeNames[0xfb43] = "br_on_cast_fail";
+OperatorCodeNames[0xfb44] = "ref.test_static";
+OperatorCodeNames[0xfb45] = "ref.cast_static";
+OperatorCodeNames[0xfb46] = "br_on_cast_static";
+OperatorCodeNames[0xfb47] = "br_on_cast_static_fail";
 OperatorCodeNames[0xfb50] = "ref.is_func";
 OperatorCodeNames[0xfb51] = "ref.is_data";
 OperatorCodeNames[0xfb52] = "ref.is_i31";
@@ -1256,6 +1287,9 @@ OperatorCodeNames[0xfb5a] = "ref.as_i31";
 OperatorCodeNames[0xfb60] = "br_on_func";
 OperatorCodeNames[0xfb61] = "br_on_data";
 OperatorCodeNames[0xfb62] = "br_on_i31";
+OperatorCodeNames[0xfb63] = "br_on_non_func";
+OperatorCodeNames[0xfb64] = "br_on_non_data";
+OperatorCodeNames[0xfb65] = "br_on_non_i31";
 
 export const enum ExternalKind {
   Function = 0,
@@ -1286,6 +1320,9 @@ export const enum TypeKind {
   func = -0x20,
   struct = -0x21,
   array = -0x22,
+  func_subtype = -0x23,
+  struct_subtype = -0x24,
+  array_subtype = -0x25,
   empty_block_type = -0x40,
 }
 export class Type {
@@ -1596,13 +1633,15 @@ export interface IFunctionEntry {
   typeIndex: number;
 }
 export interface ITypeEntry {
-  form: number; // func | struct | array
+  // func | struct | array | func_subtype | struct_subtype | array_subtype
+  form: number;
   params?: Type[]; // For function types.
   returns?: Type[]; // For function types.
   fields?: Type[]; // For struct types.
   mutabilities?: boolean[]; // For struct types.
   elementType?: Type; // For array types.
   mutability?: boolean; // For array types.
+  supertype?: number; // For *_subtype types.
 }
 export interface ISectionInformation {
   id: SectionCode;
@@ -1622,7 +1661,9 @@ export interface IMemoryAddress {
 export interface IOperatorInformation {
   code: OperatorCode;
   blockType?: Type;
+  selectType?: Type;
   refType?: number; // "HeapType" format, a.k.a. s33
+  srcType?: number; // "HeapType" format, a.k.a. s33
   brDepth?: number;
   brTable?: Array<number>;
   relativeDepth?: number;
@@ -1836,7 +1877,7 @@ export class BinaryReader {
       shift += 7;
       if ((byte & 0x80) === 0) break;
     }
-    return result;
+    return result >>> 0;
   }
   private readVarInt64(): Int64 {
     var result = new Uint8Array(8);
@@ -1910,7 +1951,7 @@ export class BinaryReader {
     return new Type(TypeKind.unspecified, func_index);
   }
   private readStringBytes(): Uint8Array {
-    var length = this.readVarUint32() >>> 0;
+    var length = this.readVarUint32();
     return this.readBytes(length);
   }
   private readBytes(length: number): Uint8Array {
@@ -1924,7 +1965,7 @@ export class BinaryReader {
   private hasStringBytes(): boolean {
     if (!this.hasVarIntBytes()) return false;
     var pos = this._pos;
-    var length = this.readVarUint32() >>> 0;
+    var length = this.readVarUint32();
     var result = this.hasBytes(length);
     this._pos = pos;
     return result;
@@ -1933,7 +1974,7 @@ export class BinaryReader {
     return this.hasBytes(this._sectionRange.end - this._pos);
   }
   private readFuncType(): ITypeEntry {
-    var paramCount = this.readVarUint32() >>> 0;
+    var paramCount = this.readVarUint32();
     var paramTypes = new Array(paramCount);
     for (var i = 0; i < paramCount; i++) paramTypes[i] = this.readType();
     var returnCount = this.readVarUint1();
@@ -1945,8 +1986,14 @@ export class BinaryReader {
       returns: returnTypes,
     };
   }
+  private readFuncSubtype(): ITypeEntry {
+    var result = this.readFuncType();
+    result.form = TypeKind.func_subtype;
+    result.supertype = this.readHeapType();
+    return result;
+  }
   private readStructType(): ITypeEntry {
-    var fieldCount = this.readVarUint32() >>> 0;
+    var fieldCount = this.readVarUint32();
     var fieldTypes = new Array(fieldCount);
     var fieldMutabilities = new Array(fieldCount);
     for (var i = 0; i < fieldCount; i++) {
@@ -1959,6 +2006,12 @@ export class BinaryReader {
       mutabilities: fieldMutabilities,
     };
   }
+  private readStructSubtype(): ITypeEntry {
+    var result = this.readStructType();
+    result.form = TypeKind.struct_subtype;
+    result.supertype = this.readHeapType();
+    return result;
+  }
   private readArrayType(): ITypeEntry {
     var elementType = this.readType();
     var mutability = !!this.readVarUint1();
@@ -1968,22 +2021,28 @@ export class BinaryReader {
       mutability: mutability,
     };
   }
+  private readArraySubtype(): ITypeEntry {
+    var result = this.readArrayType();
+    result.form = TypeKind.array_subtype;
+    result.supertype = this.readHeapType();
+    return result;
+  }
   private readResizableLimits(maxPresent: boolean): IResizableLimits {
-    var initial = this.readVarUint32() >>> 0;
+    var initial = this.readVarUint32();
     var maximum;
     if (maxPresent) {
-      maximum = this.readVarUint32() >>> 0;
+      maximum = this.readVarUint32();
     }
     return { initial: initial, maximum: maximum };
   }
   private readTableType(): ITableType {
     var elementType = this.readType();
-    var flags = this.readVarUint32() >>> 0;
+    var flags = this.readVarUint32();
     var limits = this.readResizableLimits(!!(flags & 0x01));
     return { elementType: elementType, limits: limits };
   }
   private readMemoryType(): IMemoryType {
-    var flags = this.readVarUint32() >>> 0;
+    var flags = this.readVarUint32();
     var shared = !!(flags & 0x02);
     return {
       limits: this.readResizableLimits(!!(flags & 0x01)),
@@ -2004,8 +2063,8 @@ export class BinaryReader {
     return { contentType: contentType, mutability: mutability };
   }
   private readEventType(): IEventType {
-    var attribute = this.readVarUint32() >>> 0;
-    var typeIndex = this.readVarUint32() >>> 0;
+    var attribute = this.readVarUint32();
+    var typeIndex = this.readVarUint32();
     return {
       attribute: attribute,
       typeIndex: typeIndex,
@@ -2022,11 +2081,20 @@ export class BinaryReader {
       case TypeKind.func:
         this.result = this.readFuncType();
         break;
+      case TypeKind.func_subtype:
+        this.result = this.readFuncSubtype();
+        break;
       case TypeKind.struct:
         this.result = this.readStructType();
         break;
+      case TypeKind.struct_subtype:
+        this.result = this.readStructSubtype();
+        break;
       case TypeKind.array:
         this.result = this.readArrayType();
+        break;
+      case TypeKind.array_subtype:
+        this.result = this.readArraySubtype();
         break;
       default:
         throw new Error(`Unknown type kind: ${form}`);
@@ -2047,7 +2115,7 @@ export class BinaryReader {
     var type: ITableType | IMemoryType | IGlobalType | IEventType;
     switch (kind) {
       case ExternalKind.Function:
-        funcTypeIndex = this.readVarUint32() >>> 0;
+        funcTypeIndex = this.readVarUint32();
         break;
       case ExternalKind.Table:
         type = this.readTableType();
@@ -2079,7 +2147,7 @@ export class BinaryReader {
     }
     var field = this.readStringBytes();
     var kind = this.readUint8();
-    var index = this.readVarUint32() >>> 0;
+    var index = this.readVarUint32();
     this.state = BinaryReaderState.EXPORT_SECTION_ENTRY;
     this.result = { field: field, kind: kind, index: index };
     this._sectionEntriesLeft--;
@@ -2090,7 +2158,7 @@ export class BinaryReader {
       this.skipSection();
       return this.read();
     }
-    var typeIndex = this.readVarUint32() >>> 0;
+    var typeIndex = this.readVarUint32();
     this.state = BinaryReaderState.FUNCTION_SECTION_ENTRY;
     this.result = { typeIndex: typeIndex };
     this._sectionEntriesLeft--;
@@ -2277,8 +2345,8 @@ export class BinaryReader {
     return true;
   }
   private readMemoryImmediate(): IMemoryAddress {
-    var flags = this.readVarUint32() >>> 0;
-    var offset = this.readVarUint32() >>> 0;
+    var flags = this.readVarUint32();
+    var offset = this.readVarUint32();
     return { flags: flags, offset: offset };
   }
   private readNameMap(): INaming[] {
@@ -2405,7 +2473,7 @@ export class BinaryReader {
     }
     if (!this.hasVarIntBytes()) return false;
     var pos = this._pos;
-    var type: LinkingType = this.readVarUint32() >>> 0;
+    var type: LinkingType = this.readVarUint32();
     var index;
     switch (type) {
       case LinkingType.StackPointer:
@@ -2490,28 +2558,48 @@ export class BinaryReader {
     if (!this._eof && !this.hasBytes(MAX_CODE_OPERATOR_0XFB_SIZE)) {
       return false;
     }
-    var code, brDepth, refType, fieldIndex;
+    var code, brDepth, refType, srcType, fieldIndex;
 
     code = this._data[this._pos++] | 0xfb00;
     switch (code) {
       case OperatorCode.br_on_cast:
+      case OperatorCode.br_on_cast_fail:
       case OperatorCode.br_on_func:
+      case OperatorCode.br_on_non_func:
       case OperatorCode.br_on_data:
+      case OperatorCode.br_on_non_data:
       case OperatorCode.br_on_i31:
-        brDepth = this.readVarUint32() >>> 0;
+      case OperatorCode.br_on_non_i31:
+        brDepth = this.readVarUint32();
+        break;
+      case OperatorCode.br_on_cast_static:
+      case OperatorCode.br_on_cast_static_fail:
+        brDepth = this.readVarUint32();
+        refType = this.readHeapType();
         break;
       case OperatorCode.array_get:
       case OperatorCode.array_get_s:
       case OperatorCode.array_get_u:
       case OperatorCode.array_len:
       case OperatorCode.array_set:
+      case OperatorCode.array_new:
       case OperatorCode.array_new_with_rtt:
+      case OperatorCode.array_new_default:
       case OperatorCode.array_new_default_with_rtt:
+      case OperatorCode.struct_new:
       case OperatorCode.struct_new_with_rtt:
+      case OperatorCode.struct_new_default:
       case OperatorCode.struct_new_default_with_rtt:
       case OperatorCode.rtt_canon:
       case OperatorCode.rtt_sub:
+      case OperatorCode.rtt_fresh_sub:
+      case OperatorCode.ref_test_static:
+      case OperatorCode.ref_cast_static:
         refType = this.readHeapType();
+        break;
+      case OperatorCode.array_copy:
+        refType = this.readHeapType();
+        srcType = this.readHeapType();
         break;
       case OperatorCode.struct_get:
       case OperatorCode.struct_get_s:
@@ -2519,6 +2607,13 @@ export class BinaryReader {
       case OperatorCode.struct_set:
         refType = this.readHeapType();
         fieldIndex = this.readVarUint32();
+        break;
+      case OperatorCode.array_init:
+      case OperatorCode.array_init_static:
+        refType = this.readHeapType();
+        // This really is the "length" value. Overload "brDepth" to keep the
+        // IOperatorInformation interface a little leaner.
+        brDepth = this.readVarUint32();
         break;
       case OperatorCode.ref_is_func:
       case OperatorCode.ref_is_data:
@@ -2543,6 +2638,7 @@ export class BinaryReader {
       code,
       blockType: undefined,
       refType,
+      srcType,
       brDepth,
       brTable: undefined,
       tableIndex: undefined,
@@ -2586,25 +2682,25 @@ export class BinaryReader {
         reserved = this.readVarUint1();
         break;
       case OperatorCode.table_init:
-        segmentIndex = this.readVarUint32() >>> 0;
-        tableIndex = this.readVarUint32() >>> 0;
+        segmentIndex = this.readVarUint32();
+        tableIndex = this.readVarUint32();
         break;
       case OperatorCode.table_copy:
-        tableIndex = this.readVarUint32() >>> 0;
-        destinationIndex = this.readVarUint32() >>> 0;
+        tableIndex = this.readVarUint32();
+        destinationIndex = this.readVarUint32();
         break;
       case OperatorCode.table_grow:
       case OperatorCode.table_size:
       case OperatorCode.table_fill:
-        tableIndex = this.readVarUint32() >>> 0;
+        tableIndex = this.readVarUint32();
         break;
       case OperatorCode.memory_init:
-        segmentIndex = this.readVarUint32() >>> 0;
+        segmentIndex = this.readVarUint32();
         reserved = this.readVarUint1();
         break;
       case OperatorCode.data_drop:
       case OperatorCode.elem_drop:
-        segmentIndex = this.readVarUint32() >>> 0;
+        segmentIndex = this.readVarUint32();
         break;
       default:
         this.error = new Error(
@@ -2616,7 +2712,9 @@ export class BinaryReader {
     this.result = {
       code: code,
       blockType: undefined,
+      selectType: undefined,
       refType: undefined,
+      srcType: undefined,
       brDepth: undefined,
       brTable: undefined,
       funcIndex: undefined,
@@ -2901,7 +2999,9 @@ export class BinaryReader {
     this.result = {
       code: code,
       blockType: undefined,
+      selectType: undefined,
       refType: undefined,
+      srcType: undefined,
       brDepth: undefined,
       brTable: undefined,
       funcIndex: undefined,
@@ -3018,7 +3118,9 @@ export class BinaryReader {
     this.result = {
       code: code,
       blockType: undefined,
+      selectType: undefined,
       refType: undefined,
+      srcType: undefined,
       brDepth: undefined,
       brTable: undefined,
       funcIndex: undefined,
@@ -3067,6 +3169,7 @@ export class BinaryReader {
     }
     var code,
       blockType,
+      selectType,
       refType,
       brDepth,
       brTable,
@@ -3114,10 +3217,11 @@ export class BinaryReader {
         case OperatorCode.br:
         case OperatorCode.br_if:
         case OperatorCode.br_on_null:
-          brDepth = this.readVarUint32() >>> 0;
+        case OperatorCode.br_on_non_null:
+          brDepth = this.readVarUint32();
           break;
         case OperatorCode.br_table:
-          var tableCount = this.readVarUint32() >>> 0;
+          var tableCount = this.readVarUint32();
           if (!this.hasBytes(tableCount + 1)) {
             // We need at least (tableCount + 1) bytes
             this._pos = pos;
@@ -3130,12 +3234,12 @@ export class BinaryReader {
               this._pos = pos;
               return false;
             }
-            brTable.push(this.readVarUint32() >>> 0);
+            brTable.push(this.readVarUint32());
           }
           break;
         case OperatorCode.rethrow:
         case OperatorCode.delegate:
-          relativeDepth = this.readVarUint32() >>> 0;
+          relativeDepth = this.readVarUint32();
           break;
         case OperatorCode.catch:
         case OperatorCode.throw:
@@ -3147,25 +3251,25 @@ export class BinaryReader {
         case OperatorCode.call:
         case OperatorCode.return_call:
         case OperatorCode.ref_func:
-          funcIndex = this.readVarUint32() >>> 0;
+          funcIndex = this.readVarUint32();
           break;
         case OperatorCode.call_indirect:
         case OperatorCode.return_call_indirect:
-          typeIndex = this.readVarUint32() >>> 0;
+          typeIndex = this.readVarUint32();
           reserved = this.readVarUint1();
           break;
         case OperatorCode.local_get:
         case OperatorCode.local_set:
         case OperatorCode.local_tee:
-          localIndex = this.readVarUint32() >>> 0;
+          localIndex = this.readVarUint32();
           break;
         case OperatorCode.global_get:
         case OperatorCode.global_set:
-          globalIndex = this.readVarUint32() >>> 0;
+          globalIndex = this.readVarUint32();
           break;
         case OperatorCode.table_get:
         case OperatorCode.table_set:
-          tableIndex = this.readVarUint32() >>> 0;
+          tableIndex = this.readVarUint32();
           break;
         case OperatorCode.i32_load:
         case OperatorCode.i64_load:
@@ -3215,6 +3319,13 @@ export class BinaryReader {
             this._data.byteOffset
           ).getFloat64(this._pos, true);
           this._pos += 8;
+          break;
+        case OperatorCode.select_with_type:
+          const num_types = this.readVarInt32();
+          // Only 1 is a valid value currently.
+          if (num_types == 1) {
+            selectType = this.readType();
+          }
           break;
         case OperatorCode.prefix_0xfb:
           if (this.readCodeOperator_0xfb()) {
@@ -3392,7 +3503,9 @@ export class BinaryReader {
     this.result = {
       code,
       blockType,
+      selectType,
       refType,
+      srcType: undefined,
       brDepth,
       brTable,
       relativeDepth,
@@ -3419,20 +3532,20 @@ export class BinaryReader {
     }
     if (!this.hasVarIntBytes()) return false;
     var pos = this._pos;
-    var size = this.readVarUint32() >>> 0;
+    var size = this.readVarUint32();
     var bodyEnd = this._pos + size;
     if (!this.hasVarIntBytes()) {
       this._pos = pos;
       return false;
     }
-    var localCount = this.readVarUint32() >>> 0;
+    var localCount = this.readVarUint32();
     var locals: Array<ILocals> = [];
     for (var i = 0; i < localCount; i++) {
       if (!this.hasVarIntBytes()) {
         this._pos = pos;
         return false;
       }
-      var count = this.readVarUint32() >>> 0;
+      var count = this.readVarUint32();
       if (!this.hasVarIntBytes()) {
         this._pos = pos;
         return false;
@@ -3475,7 +3588,7 @@ export class BinaryReader {
       this._pos = sectionStart;
       return false;
     }
-    var payloadLength = this.readVarUint32() >>> 0;
+    var payloadLength = this.readVarUint32();
     var name = null;
     var payloadEnd = this._pos + payloadLength;
     if (id == 0) {
@@ -3512,31 +3625,31 @@ export class BinaryReader {
     switch (currentSection.id) {
       case SectionCode.Type:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readTypeEntry();
       case SectionCode.Import:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readImportEntry();
       case SectionCode.Export:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readExportEntry();
       case SectionCode.Function:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readFunctionEntry();
       case SectionCode.Table:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readTableEntry();
       case SectionCode.Memory:
         if (!this.hasSectionPayload()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readMemoryEntry();
       case SectionCode.Global:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readGlobalEntry();
       case SectionCode.Start:
         if (!this.hasVarIntBytes()) return false;
@@ -3545,20 +3658,20 @@ export class BinaryReader {
         return true;
       case SectionCode.Code:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         this.state = BinaryReaderState.READING_FUNCTION_HEADER;
         return this.readFunctionBody();
       case SectionCode.Element:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readElementEntry();
       case SectionCode.Data:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readDataEntry();
       case SectionCode.Event:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readEventEntry();
       case SectionCode.Custom:
         var customSectionName = bytesToString(currentSection.name);
@@ -3570,7 +3683,7 @@ export class BinaryReader {
         }
         if (customSectionName === "linking") {
           if (!this.hasVarIntBytes()) return false;
-          this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+          this._sectionEntriesLeft = this.readVarUint32();
           return this.readLinkingEntry();
         }
         if (customSectionName === "sourceMappingURL") {
@@ -3714,7 +3827,7 @@ export class BinaryReader {
         return this.readNameEntry();
       case BinaryReaderState.RELOC_SECTION_HEADER:
         if (!this.hasVarIntBytes()) return false;
-        this._sectionEntriesLeft = this.readVarUint32() >>> 0;
+        this._sectionEntriesLeft = this.readVarUint32();
         return this.readRelocEntry();
       case BinaryReaderState.LINKING_SECTION_ENTRY:
         return this.readLinkingEntry();

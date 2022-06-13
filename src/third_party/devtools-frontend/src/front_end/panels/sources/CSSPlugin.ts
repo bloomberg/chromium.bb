@@ -1,48 +1,20 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/* eslint-disable rulesdir/no_underscored_properties */
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
-import type * as Workspace from '../../models/workspace/workspace.js'; // eslint-disable-line no-unused-vars
+import type * as Workspace from '../../models/workspace/workspace.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
-import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
-import type * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js'; // eslint-disable-line no-unused-vars
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import {Plugin} from './Plugin.js';
+
+// Plugin to add CSS completion, shortcuts, and color/curve swatches
+// to editors with CSS content.
 
 const UIStrings = {
   /**
@@ -56,355 +28,362 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/CSSPlugin.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class CSSPlugin extends Plugin {
-  _textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor;
-  _swatchPopoverHelper: InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
-  _muteSwatchProcessing: boolean;
-  _hadSwatchChange: boolean;
-  _bezierEditor: InlineEditor.BezierEditor.BezierEditor|null;
-  _editedSwatchTextRange: TextUtils.TextRange.TextRange|null;
-  _spectrum: ColorPicker.Spectrum.Spectrum|null;
-  _currentSwatch: Element|null;
-  _boundHandleKeyDown: ((arg0: Event) => void)|null;
-  constructor(textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor) {
+
+export function completion(): CodeMirror.Extension {
+  const {cssCompletionSource} = CodeMirror.css;
+  return CodeMirror.autocompletion({
+    override:
+        [async(cx: CodeMirror.CompletionContext):
+             Promise<CodeMirror.CompletionResult|null> => {
+               return (await specificCssCompletion(cx)) || cssCompletionSource(cx);
+             }],
+  });
+}
+
+const dontCompleteIn = new Set(['ColorLiteral', 'NumberLiteral', 'StringLiteral', 'Comment', 'Important']);
+
+function findPropertyAt(node: CodeMirror.SyntaxNode, pos: number): CodeMirror.SyntaxNode|null {
+  if (dontCompleteIn.has(node.name)) {
+    return null;
+  }
+  for (let cur: CodeMirror.SyntaxNode|null = node; cur; cur = cur.parent) {
+    if (cur.name === 'StyleSheet') {
+      break;
+    } else if (cur.name === 'Declaration') {
+      const name = cur.getChild('PropertyName'), colon = cur.getChild(':');
+      return name && colon && colon.to <= pos ? name : null;
+    }
+  }
+  return null;
+}
+
+function specificCssCompletion(cx: CodeMirror.CompletionContext): CodeMirror.CompletionResult|null {
+  const node = CodeMirror.syntaxTree(cx.state).resolveInner(cx.pos, -1);
+  const property = findPropertyAt(node, cx.pos);
+  if (!property) {
+    return null;
+  }
+  const propertyValues = SDK.CSSMetadata.cssMetadata().getPropertyValues(cx.state.sliceDoc(property.from, property.to));
+  return {
+    from: node.name === 'ValueName' ? node.from : cx.pos,
+    options: propertyValues.map(value => ({type: 'constant', label: value})),
+    span: /^[\w\P{ASCII}\-]+$/u,
+  };
+}
+
+function findColorsAndCurves(
+    state: CodeMirror.EditorState,
+    from: number,
+    to: number,
+    onColor: (pos: number, color: Common.Color.Color, text: string) => void,
+    onCurve: (pos: number, curve: UI.Geometry.CubicBezier, text: string) => void,
+    ): void {
+  let line = state.doc.lineAt(from);
+  function getToken(from: number, to: number): string {
+    if (from >= line.to) {
+      line = state.doc.lineAt(from);
+    }
+    return line.text.slice(from - line.from, to - line.from);
+  }
+
+  const tree = CodeMirror.ensureSyntaxTree(state, to, 100);
+  if (!tree) {
+    return;
+  }
+  tree.iterate({
+    from,
+    to,
+    enter: (type, from, to, node) => {
+      let content;
+      if (type.name === 'ValueName' || type.name === 'ColorLiteral') {
+        content = getToken(from, to);
+      } else if (type.name === 'Callee' && /^(?:(?:rgb|hsl)a?|cubic-bezier)$/.test(getToken(from, to))) {
+        content = state.sliceDoc(from, (node().parent as CodeMirror.SyntaxNode).to);
+      }
+      if (content) {
+        const parsedColor = Common.Color.Color.parse(content);
+        if (parsedColor) {
+          onColor(from, parsedColor, content);
+        } else {
+          const parsedCurve = UI.Geometry.CubicBezier.parse(content);
+          if (parsedCurve) {
+            onCurve(from, parsedCurve, content);
+          }
+        }
+      }
+    },
+  });
+}
+
+class ColorSwatchWidget extends CodeMirror.WidgetType {
+  constructor(readonly color: Common.Color.Color, readonly text: string) {
     super();
-    this._textEditor = textEditor;
-    this._swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
-    this._muteSwatchProcessing = false;
-    this._hadSwatchChange = false;
-    this._bezierEditor = null;
-    this._editedSwatchTextRange = null;
-    this._spectrum = null;
-    this._currentSwatch = null;
-    this._textEditor.configureAutocomplete({
-      suggestionsCallback: this._cssSuggestions.bind(this),
-      isWordChar: this._isWordChar.bind(this),
-      anchorBehavior: undefined,
-      substituteRangeCallback: undefined,
-      tooltipCallback: undefined,
-    });
-    this._textEditor.addEventListener(
-        SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
-    this._textEditor.addEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
-    this._updateSwatches(0, this._textEditor.linesCount - 1);
-    this._boundHandleKeyDown = null;
-
-    this._registerShortcuts();
   }
 
-  static accepts(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {
-    return uiSourceCode.contentType().isStyleSheet();
+  eq(other: ColorSwatchWidget): boolean {
+    return this.color.equal(other.color) && this.text === other.text;
   }
 
-  _registerShortcuts(): void {
-    this._boundHandleKeyDown =
-        UI.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(this._textEditor.element, {
-          'sources.increment-css': this._handleUnitModification.bind(this, 1),
-          'sources.increment-css-by-ten': this._handleUnitModification.bind(this, 10),
-          'sources.decrement-css': this._handleUnitModification.bind(this, -1),
-          'sources.decrement-css-by-ten': this._handleUnitModification.bind(this, -10),
-        });
-  }
-
-  _textEditorScrolled(): void {
-    if (this._swatchPopoverHelper.isShowing()) {
-      this._swatchPopoverHelper.hide(true);
-    }
-  }
-
-  _modifyUnit(unit: string, change: number): string|null {
-    const unitValue = parseInt(unit, 10);
-    if (isNaN(unitValue)) {
-      return null;
-    }
-    const tail = unit.substring((unitValue).toString().length);
-    return Platform.StringUtilities.sprintf('%d%s', unitValue + change, tail);
-  }
-
-  async _handleUnitModification(change: number): Promise<boolean> {
-    const selection = this._textEditor.selection().normalize();
-    let token = this._textEditor.tokenAtTextPosition(selection.startLine, selection.startColumn);
-    if (!token) {
-      if (selection.startColumn > 0) {
-        token = this._textEditor.tokenAtTextPosition(selection.startLine, selection.startColumn - 1);
-      }
-      if (!token) {
-        return false;
-      }
-    }
-    if (token.type !== 'css-number') {
-      return false;
-    }
-
-    const cssUnitRange =
-        new TextUtils.TextRange.TextRange(selection.startLine, token.startColumn, selection.startLine, token.endColumn);
-    const cssUnitText = this._textEditor.text(cssUnitRange);
-    const newUnitText = this._modifyUnit(cssUnitText, change);
-    if (!newUnitText) {
-      return false;
-    }
-    this._textEditor.editRange(cssUnitRange, newUnitText);
-    selection.startColumn = token.startColumn;
-    selection.endColumn = selection.startColumn + newUnitText.length;
-    this._textEditor.setSelection(selection);
-    return true;
-  }
-
-  _updateSwatches(startLine: number, endLine: number): void {
-    const swatches: HTMLElement[] = [];
-    const swatchPositions: TextUtils.TextRange.TextRange[] = [];
-
-    const regexes =
-        [SDK.CSSMetadata.VariableRegex, SDK.CSSMetadata.URLRegex, UI.Geometry.CubicBezier.Regex, Common.Color.Regex];
-    const handlers = new Map<RegExp, (text: string) => HTMLElement | null>();
-    handlers.set(Common.Color.Regex, this._createColorSwatch.bind(this));
-    handlers.set(UI.Geometry.CubicBezier.Regex, this._createBezierSwatch.bind(this));
-
-    for (let lineNumber = startLine; lineNumber <= endLine; lineNumber++) {
-      const line = this._textEditor.line(lineNumber).substring(0, maxSwatchProcessingLength);
-      const results = TextUtils.TextUtils.Utils.splitStringByRegexes(line, regexes);
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        const handler = handlers.get(regexes[result.regexIndex]);
-        if (result.regexIndex === -1 || !handler) {
-          continue;
-        }
-        const delimiters = /[\s:;,(){}]/;
-        const positionBefore = result.position - 1;
-        const positionAfter = result.position + result.value.length;
-        if (positionBefore >= 0 && !delimiters.test(line.charAt(positionBefore)) ||
-            positionAfter < line.length && !delimiters.test(line.charAt(positionAfter))) {
-          continue;
-        }
-        const swatch = handler(result.value);
-        if (!swatch) {
-          continue;
-        }
-        swatches.push(swatch);
-        swatchPositions.push(TextUtils.TextRange.TextRange.createFromLocation(lineNumber, result.position));
-      }
-    }
-    this._textEditor.operation(putSwatchesInline.bind(this));
-
-    function putSwatchesInline(this: CSSPlugin): void {
-      const clearRange =
-          new TextUtils.TextRange.TextRange(startLine, 0, endLine, this._textEditor.line(endLine).length);
-      this._textEditor.bookmarks(clearRange, SwatchBookmark).forEach(marker => marker.clear());
-
-      for (let i = 0; i < swatches.length; i++) {
-        const swatch = swatches[i];
-        const swatchPosition = swatchPositions[i];
-        const bookmark =
-            this._textEditor.addBookmark(swatchPosition.startLine, swatchPosition.startColumn, swatch, SwatchBookmark);
-        swatchToBookmark.set(swatch, bookmark);
-      }
-    }
-  }
-
-  _createColorSwatch(text: string): HTMLElement|null {
-    const color = Common.Color.Color.parse(text);
-    if (!color) {
-      return null;
-    }
+  toDOM(view: CodeMirror.EditorView): HTMLElement {
     const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-    swatch.renderColor(color, false, i18nString(UIStrings.openColorPicker));
+    swatch.renderColor(this.color, false, i18nString(UIStrings.openColorPicker));
     const value = swatch.createChild('span');
-    value.textContent = text;
+    value.textContent = this.text;
     value.setAttribute('hidden', 'true');
-
-    swatch.addEventListener('swatch-click', this._swatchIconClicked.bind(this, swatch), false);
+    swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, event => {
+      event.consume(true);
+      view.dispatch({
+        effects: setTooltip.of({
+          type: TooltipType.Color,
+          pos: view.posAtDOM(swatch),
+          text: this.text,
+          swatch,
+          color: this.color,
+        }),
+      });
+    });
     return swatch;
   }
 
-  _createBezierSwatch(text: string): InlineEditor.Swatches.BezierSwatch|null {
-    if (!UI.Geometry.CubicBezier.parse(text)) {
-      return null;
-    }
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+class CurveSwatchWidget extends CodeMirror.WidgetType {
+  constructor(readonly curve: UI.Geometry.CubicBezier, readonly text: string) {
+    super();
+  }
+
+  eq(other: CurveSwatchWidget): boolean {
+    return this.curve.asCSSText() === other.curve.asCSSText() && this.text === other.text;
+  }
+
+  toDOM(view: CodeMirror.EditorView): HTMLElement {
     const swatch = InlineEditor.Swatches.BezierSwatch.create();
-    swatch.setBezierText(text);
+    swatch.setBezierText(this.text);
     UI.Tooltip.Tooltip.install(swatch.iconElement(), i18nString(UIStrings.openCubicBezierEditor));
-    swatch.iconElement().addEventListener('click', this._swatchIconClicked.bind(this, swatch), false);
+    swatch.iconElement().addEventListener('click', (event: MouseEvent) => {
+      event.consume(true);
+      view.dispatch({
+        effects: setTooltip.of({
+          type: TooltipType.Curve,
+          pos: view.posAtDOM(swatch),
+          text: this.text,
+          swatch,
+          curve: this.curve,
+        }),
+      });
+    }, false);
     swatch.hideText(true);
     return swatch;
   }
 
-  _swatchIconClicked(swatch: Element, event: Event): void {
-    event.consume(true);
-    this._hadSwatchChange = false;
-    this._muteSwatchProcessing = true;
-    const bookmark = swatchToBookmark.get(swatch);
-    if (!bookmark) {
-      return;
-    }
-    const swatchPosition = bookmark.position();
-    if (!swatchPosition) {
-      return;
-    }
-    this._textEditor.setSelection(swatchPosition);
-    this._editedSwatchTextRange = swatchPosition.clone();
-    if (this._editedSwatchTextRange) {
-      this._editedSwatchTextRange.endColumn += (swatch.textContent || '').length;
-    }
-    this._currentSwatch = swatch;
-
-    if (InlineEditor.ColorSwatch.ColorSwatch.isColorSwatch(swatch)) {
-      this._showSpectrum((swatch as InlineEditor.ColorSwatch.ColorSwatch));
-    } else if (swatch instanceof InlineEditor.Swatches.BezierSwatch) {
-      this._showBezierEditor(swatch);
-    }
-  }
-
-  _showSpectrum(swatch: InlineEditor.ColorSwatch.ColorSwatch): void {
-    if (!this._spectrum) {
-      this._spectrum = new ColorPicker.Spectrum.Spectrum();
-      this._spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, this._spectrumResized, this);
-      this._spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, this._spectrumChanged, this);
-    }
-    this._spectrum.setColor((swatch.getColor() as Common.Color.Color), swatch.getFormat() || '');
-    this._swatchPopoverHelper.show(this._spectrum, swatch, this._swatchPopoverHidden.bind(this));
-  }
-
-  _spectrumResized(_event: Common.EventTarget.EventTargetEvent): void {
-    this._swatchPopoverHelper.reposition();
-  }
-
-  _spectrumChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const colorString = (event.data as string);
-    const color = Common.Color.Color.parse(colorString);
-    if (!color || !this._currentSwatch) {
-      return;
-    }
-
-    if (InlineEditor.ColorSwatch.ColorSwatch.isColorSwatch(this._currentSwatch)) {
-      const swatch = (this._currentSwatch as InlineEditor.ColorSwatch.ColorSwatch);
-      swatch.renderColor(color);
-    }
-    this._changeSwatchText(colorString);
-  }
-
-  _showBezierEditor(swatch: InlineEditor.Swatches.BezierSwatch): void {
-    const cubicBezier = UI.Geometry.CubicBezier.parse(swatch.bezierText()) ||
-        (UI.Geometry.CubicBezier.parse('linear') as UI.Geometry.CubicBezier);
-    if (!this._bezierEditor) {
-      this._bezierEditor = new InlineEditor.BezierEditor.BezierEditor(cubicBezier);
-      this._bezierEditor.addEventListener(InlineEditor.BezierEditor.Events.BezierChanged, this._bezierChanged, this);
-    } else {
-      this._bezierEditor.setBezier(cubicBezier);
-    }
-    this._swatchPopoverHelper.show(this._bezierEditor, swatch.iconElement(), this._swatchPopoverHidden.bind(this));
-  }
-
-  _bezierChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const bezierString = (event.data as string);
-    if (this._currentSwatch instanceof InlineEditor.Swatches.BezierSwatch) {
-      this._currentSwatch.setBezierText(bezierString);
-    }
-    this._changeSwatchText(bezierString);
-  }
-
-  _changeSwatchText(text: string): void {
-    this._hadSwatchChange = true;
-    const editedRange = (this._editedSwatchTextRange as TextUtils.TextRange.TextRange);
-    this._textEditor.editRange(editedRange, text, '*swatch-text-changed');
-    editedRange.endColumn = editedRange.startColumn + text.length;
-  }
-
-  _swatchPopoverHidden(commitEdit: boolean): void {
-    this._muteSwatchProcessing = false;
-    if (!commitEdit && this._hadSwatchChange) {
-      this._textEditor.undo();
-    }
-  }
-
-  _onTextChanged(event: Common.EventTarget.EventTargetEvent): void {
-    if (!this._muteSwatchProcessing) {
-      this._updateSwatches(event.data.newRange.startLine, event.data.newRange.endLine);
-    }
-  }
-
-  _isWordChar(char: string): boolean {
-    return TextUtils.TextUtils.Utils.isWordChar(char) || char === '.' || char === '-' || char === '$';
-  }
-
-  _cssSuggestions(prefixRange: TextUtils.TextRange.TextRange, _substituteRange: TextUtils.TextRange.TextRange):
-      Promise<UI.SuggestBox.Suggestions>|null {
-    const prefix = this._textEditor.text(prefixRange);
-    if (prefix.startsWith('$')) {
-      return null;
-    }
-
-    const propertyToken = this._backtrackPropertyToken(prefixRange.startLine, prefixRange.startColumn - 1);
-    if (!propertyToken) {
-      return null;
-    }
-
-    const line = this._textEditor.line(prefixRange.startLine);
-    const tokenContent = line.substring(propertyToken.startColumn, propertyToken.endColumn);
-    const propertyValues = SDK.CSSMetadata.cssMetadata().propertyValues(tokenContent);
-    return Promise.resolve(propertyValues.filter(value => value.startsWith(prefix)).map(value => {
-      return {
-        text: value,
-        title: undefined,
-        subtitle: undefined,
-        iconType: undefined,
-        priority: undefined,
-        isSecondary: undefined,
-        subtitleRenderer: undefined,
-        selectionRange: undefined,
-        hideGhostText: undefined,
-        iconElement: undefined,
-      };
-    }));
-  }
-
-  _backtrackPropertyToken(lineNumber: number, columnNumber: number): {
-    startColumn: number,
-    endColumn: number,
-    type: string,
-  }|null {
-    const backtrackDepth = 10;
-    let tokenPosition: number = columnNumber;
-    const line = this._textEditor.line(lineNumber);
-    let seenColon = false;
-
-    for (let i = 0; i < backtrackDepth && tokenPosition >= 0; ++i) {
-      const token = this._textEditor.tokenAtTextPosition(lineNumber, tokenPosition);
-      if (!token) {
-        return null;
-      }
-      if (token.type === 'css-property') {
-        return seenColon ? token : null;
-      }
-      if (token.type && !(token.type.indexOf('whitespace') !== -1 || token.type.startsWith('css-comment'))) {
-        return null;
-      }
-
-      if (!token.type && line.substring(token.startColumn, token.endColumn) === ':') {
-        if (!seenColon) {
-          seenColon = true;
-        } else {
-          return null;
-        }
-      }
-      tokenPosition = token.startColumn - 1;
-    }
-    return null;
-  }
-
-  dispose(): void {
-    if (this._swatchPopoverHelper.isShowing()) {
-      this._swatchPopoverHelper.hide(true);
-    }
-    this._textEditor.removeEventListener(
-        SourceFrame.SourcesTextEditor.Events.ScrollChanged, this._textEditorScrolled, this);
-    this._textEditor.removeEventListener(UI.TextEditor.Events.TextChanged, this._onTextChanged, this);
-    this._textEditor.bookmarks(this._textEditor.fullRange(), SwatchBookmark).forEach(marker => marker.clear());
-    this._textEditor.element.removeEventListener('keydown', (this._boundHandleKeyDown as EventListener));
+  ignoreEvent(): boolean {
+    return true;
   }
 }
 
-export const maxSwatchProcessingLength: number = 300;
+const enum TooltipType {
+  Color = 0,
+  Curve = 1,
+}
 
-export const SwatchBookmark: symbol = Symbol('swatch');
+type ActiveTooltip = {
+  type: TooltipType.Color,
+  pos: number,
+  text: string,
+  color: Common.Color.Color,
+  swatch: InlineEditor.ColorSwatch.ColorSwatch,
+}|{
+  type: TooltipType.Curve,
+  pos: number,
+  text: string,
+  curve: UI.Geometry.CubicBezier,
+  swatch: InlineEditor.Swatches.BezierSwatch,
+};
 
-const swatchToBookmark = new WeakMap<Element, TextEditor.CodeMirrorTextEditor.TextEditorBookMark>();
+function createCSSTooltip(active: ActiveTooltip): CodeMirror.Tooltip {
+  return {
+    pos: active.pos,
+    arrow: true,
+    create(view): CodeMirror.TooltipView {
+      let text = active.text;
+      let widget: UI.Widget.VBox, addListener: (handler: (event: {data: string}) => void) => void;
+      if (active.type === TooltipType.Color) {
+        const spectrum = new ColorPicker.Spectrum.Spectrum();
+        addListener = (handler): void => {
+          spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, handler);
+        };
+        spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, () => view.requestMeasure());
+        spectrum.setColor(active.color, active.color.format());
+        widget = spectrum;
+      } else {
+        const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
+        widget = spectrum;
+        addListener = (handler): void => {
+          spectrum.addEventListener(InlineEditor.BezierEditor.Events.BezierChanged, handler);
+        };
+      }
+      const dom = document.createElement('div');
+      dom.className = 'cm-tooltip-swatchEdit';
+      widget.markAsRoot();
+      widget.show(dom);
+      widget.showWidget();
+      widget.element.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.consume();
+          view.dispatch({
+            effects: setTooltip.of(null),
+            changes: text === active.text ? undefined :
+                                            {from: active.pos, to: active.pos + text.length, insert: active.text},
+          });
+          view.focus();
+        }
+      });
+      widget.element.addEventListener('focusout', event => {
+        if (event.relatedTarget && !widget.element.contains(event.relatedTarget as Node)) {
+          view.dispatch({effects: setTooltip.of(null)});
+        }
+      }, false);
+      widget.element.addEventListener('mousedown', event => event.consume());
+      return {
+        dom,
+        offset: {x: -8, y: 0},
+        mount: (): void => {
+          widget.focus();
+          widget.wasShown();
+          addListener((event: {data: string}): void => {
+            view.dispatch({
+              changes: {from: active.pos, to: active.pos + text.length, insert: event.data},
+              annotations: isSwatchEdit.of(true),
+            });
+            text = event.data;
+          });
+        },
+      };
+    },
+  };
+}
+
+const setTooltip = CodeMirror.StateEffect.define<ActiveTooltip|null>();
+
+const isSwatchEdit = CodeMirror.Annotation.define<boolean>();
+
+const cssTooltipState = CodeMirror.StateField.define<ActiveTooltip|null>({
+  create() {
+    return null;
+  },
+
+  update(value: ActiveTooltip|null, tr: CodeMirror.Transaction): ActiveTooltip |
+      null {
+        if ((tr.docChanged || tr.selection) && !tr.annotation(isSwatchEdit)) {
+          value = null;
+        }
+        for (const effect of tr.effects) {
+          if (effect.is(setTooltip)) {
+            value = effect.value;
+          }
+        }
+        return value;
+      },
+
+  provide: field => CodeMirror.showTooltip.from(field, active => active && createCSSTooltip(active)),
+});
+
+function computeSwatchDeco(state: CodeMirror.EditorState, from: number, to: number): CodeMirror.DecorationSet {
+  const builder = new CodeMirror.RangeSetBuilder<CodeMirror.Decoration>();
+  findColorsAndCurves(
+      state, from, to,
+      (pos, color, text) => {
+        builder.add(pos, pos, CodeMirror.Decoration.widget({widget: new ColorSwatchWidget(color, text)}));
+      },
+      (pos, curve, text) => {
+        builder.add(pos, pos, CodeMirror.Decoration.widget({widget: new CurveSwatchWidget(curve, text)}));
+      });
+  return builder.finish();
+}
+
+const cssSwatchPlugin = CodeMirror.ViewPlugin.fromClass(class {
+  decorations: CodeMirror.DecorationSet;
+
+  constructor(view: CodeMirror.EditorView) {
+    this.decorations = computeSwatchDeco(view.state, view.viewport.from, view.viewport.to);
+  }
+
+  update(update: CodeMirror.ViewUpdate): void {
+    if (update.viewportChanged || update.docChanged) {
+      this.decorations = computeSwatchDeco(update.state, update.view.viewport.from, update.view.viewport.to);
+    }
+  }
+}, {
+  decorations: v => v.decorations,
+});
+
+function cssSwatches(): CodeMirror.Extension {
+  return [cssSwatchPlugin, cssTooltipState];
+}
+
+function getNumberAt(node: CodeMirror.SyntaxNode): {from: number, to: number}|null {
+  if (node.name === 'Unit') {
+    node = node.parent as CodeMirror.SyntaxNode;
+  }
+  if (node.name === 'NumberLiteral') {
+    const lastChild = node.lastChild;
+    return {from: node.from, to: lastChild && lastChild.name === 'Unit' ? lastChild.from : node.to};
+  }
+  return null;
+}
+
+function modifyUnit(view: CodeMirror.EditorView, by: number): boolean {
+  const {head} = view.state.selection.main;
+  const context = CodeMirror.syntaxTree(view.state).resolveInner(head, -1);
+  const numberRange = getNumberAt(context) || getNumberAt(context.resolve(head, 1));
+  if (!numberRange) {
+    return false;
+  }
+
+  const currentNumber = Number(view.state.sliceDoc(numberRange.from, numberRange.to));
+  if (isNaN(currentNumber)) {
+    return false;
+  }
+
+  view.dispatch({
+    changes: {from: numberRange.from, to: numberRange.to, insert: String(currentNumber + by)},
+    scrollIntoView: true,
+    userEvent: 'insert.modifyUnit',
+  });
+  return true;
+}
+
+export function cssBindings(): CodeMirror.Extension {
+  // This is an awkward way to pass the argument given to the editor
+  // event handler through the ShortcutRegistry calling convention.
+  let currentView: CodeMirror.EditorView = null as unknown as CodeMirror.EditorView;
+  const listener = UI.ShortcutRegistry.ShortcutRegistry.instance().getShortcutListener({
+    'sources.increment-css': () => Promise.resolve(modifyUnit(currentView, 1)),
+    'sources.increment-css-by-ten': () => Promise.resolve(modifyUnit(currentView, 10)),
+    'sources.decrement-css': () => Promise.resolve(modifyUnit(currentView, -1)),
+    'sources.decrement-css-by-ten': () => Promise.resolve(modifyUnit(currentView, -10)),
+  });
+
+  return CodeMirror.EditorView.domEventHandlers({
+    keydown: (event, view): boolean => {
+      const prevView = currentView;
+      currentView = view;
+      listener(event);
+      currentView = prevView;
+      return event.defaultPrevented;
+    },
+  });
+}
+
+export class CSSPlugin extends Plugin {
+  static accepts(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {
+    return uiSourceCode.contentType().isStyleSheet();
+  }
+
+  editorExtension(): CodeMirror.Extension {
+    return [cssBindings(), completion(), cssSwatches()];
+  }
+}

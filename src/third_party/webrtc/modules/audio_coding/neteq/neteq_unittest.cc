@@ -34,7 +34,6 @@
 #include "rtc_base/ignore_wundef.h"
 #include "rtc_base/message_digest.h"
 #include "rtc_base/numerics/safe_conversions.h"
-#include "rtc_base/string_encode.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/system/arch.h"
 #include "test/field_trial.h"
@@ -84,16 +83,16 @@ TEST_F(NetEqDecodingTest, MAYBE_TestBitExactness) {
       webrtc::test::ResourcePath("audio_coding/neteq_universal_new", "rtp");
 
   const std::string output_checksum =
-      PlatformChecksum("6c35140ce4d75874bdd60aa1872400b05fd05ca2",
-                       "ab451bb8301d9a92fbf4de91556b56f1ea38b4ce", "not used",
-                       "6c35140ce4d75874bdd60aa1872400b05fd05ca2",
+      PlatformChecksum("ba4fae83a52f5e9d95b0910f05d540114285697b",
+                       "aa557f30f7fdcebbbbf99d7f235ccba3a1c98983", "not used",
+                       "ba4fae83a52f5e9d95b0910f05d540114285697b",
                        "64b46bb3c1165537a880ae8404afce2efba456c0");
 
   const std::string network_stats_checksum =
-      PlatformChecksum("90594d85fa31d3d9584d79293bf7aa4ee55ed751",
-                       "77b9c3640b81aff6a38d69d07dd782d39c15321d", "not used",
-                       "90594d85fa31d3d9584d79293bf7aa4ee55ed751",
-                       "90594d85fa31d3d9584d79293bf7aa4ee55ed751");
+      PlatformChecksum("fa878a8464ef1cb3d01503b7f927c3e2ce6f02c4",
+                       "300ccc2aaee7ed1971afb2f9a20247ed8760441d", "not used",
+                       "fa878a8464ef1cb3d01503b7f927c3e2ce6f02c4",
+                       "fa878a8464ef1cb3d01503b7f927c3e2ce6f02c4");
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
                    absl::GetFlag(FLAGS_gen_ref));
@@ -294,7 +293,7 @@ TEST_F(NetEqDecodingTest, MAYBE_DecoderError) {
   PopulateRtpInfo(0, 0, &rtp_info);
   rtp_info.payloadType = 103;  // iSAC, but the payload is invalid.
   EXPECT_EQ(0, neteq_->InsertPacket(rtp_info, payload));
-  // Set all of |out_data_| to 1, and verify that it was set to 0 by the call
+  // Set all of `out_data_` to 1, and verify that it was set to 0 by the call
   // to GetAudio.
   int16_t* out_frame_data = out_frame_.mutable_data();
   for (size_t i = 0; i < AudioFrame::kMaxDataSizeSamples; ++i) {
@@ -316,7 +315,7 @@ TEST_F(NetEqDecodingTest, MAYBE_DecoderError) {
 }
 
 TEST_F(NetEqDecodingTest, GetAudioBeforeInsertPacket) {
-  // Set all of |out_data_| to 1, and verify that it was set to 0 by the call
+  // Set all of `out_data_` to 1, and verify that it was set to 0 by the call
   // to GetAudio.
   int16_t* out_frame_data = out_frame_.mutable_data();
   for (size_t i = 0; i < AudioFrame::kMaxDataSizeSamples; ++i) {
@@ -360,7 +359,7 @@ class NetEqBgnTest : public NetEqDecodingTest {
     AudioFrame output;
     test::AudioLoop input;
     // We are using the same 32 kHz input file for all tests, regardless of
-    // |sampling_rate_hz|. The output may sound weird, but the test is still
+    // `sampling_rate_hz`. The output may sound weird, but the test is still
     // valid.
     ASSERT_TRUE(input.Init(
         webrtc::test::ResourcePath("audio_coding/testfile32kHz", "pcm"),
@@ -373,7 +372,6 @@ class NetEqBgnTest : public NetEqDecodingTest {
     PopulateRtpInfo(0, 0, &rtp_info);
     rtp_info.payloadType = payload_type;
 
-    uint32_t receive_timestamp = 0;
     bool muted;
     for (int n = 0; n < 10; ++n) {  // Insert few packets and get audio.
       auto block = input.GetNextBlock();
@@ -394,8 +392,6 @@ class NetEqBgnTest : public NetEqDecodingTest {
       rtp_info.timestamp +=
           rtc::checked_cast<uint32_t>(expected_samples_per_channel);
       rtp_info.sequenceNumber++;
-      receive_timestamp +=
-          rtc::checked_cast<uint32_t>(expected_samples_per_channel);
     }
 
     output.Reset();
@@ -523,7 +519,7 @@ TEST_F(NetEqDecodingTest, DiscardDuplicateCng) {
   ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, rtc::ArrayView<const uint8_t>(
                                                   payload, payload_len)));
 
-  // Pull audio until we have played |kCngPeriodMs| of CNG. Start at 10 ms since
+  // Pull audio until we have played `kCngPeriodMs` of CNG. Start at 10 ms since
   // we have already pulled out CNG once.
   for (int cng_time_ms = 10; cng_time_ms < kCngPeriodMs; cng_time_ms += 10) {
     ASSERT_EQ(0, neteq_->GetAudio(&out_frame_, &muted));
@@ -535,11 +531,16 @@ TEST_F(NetEqDecodingTest, DiscardDuplicateCng) {
               out_frame_.timestamp_ + out_frame_.samples_per_channel_);
   }
 
-  // Insert speech again.
   ++seq_no;
   timestamp += kCngPeriodSamples;
-  PopulateRtpInfo(seq_no, timestamp, &rtp_info);
-  ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, payload));
+  uint32_t first_speech_timestamp = timestamp;
+  // Insert speech again.
+  for (int i = 0; i < 3; ++i) {
+    PopulateRtpInfo(seq_no, timestamp, &rtp_info);
+    ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, payload));
+    ++seq_no;
+    timestamp += kSamples;
+  }
 
   // Pull audio once and verify that the output is speech again.
   ASSERT_EQ(0, neteq_->GetAudio(&out_frame_, &muted));
@@ -547,7 +548,7 @@ TEST_F(NetEqDecodingTest, DiscardDuplicateCng) {
   EXPECT_EQ(AudioFrame::kNormalSpeech, out_frame_.speech_type_);
   absl::optional<uint32_t> playout_timestamp = neteq_->GetPlayoutTimestamp();
   ASSERT_TRUE(playout_timestamp);
-  EXPECT_EQ(timestamp + kSamples - algorithmic_delay_samples,
+  EXPECT_EQ(first_speech_timestamp + kSamples - algorithmic_delay_samples,
             *playout_timestamp);
 }
 
@@ -1066,7 +1067,7 @@ TEST_F(NetEqDecodingTestFaxMode, TestJitterBufferDelayWithAcceleration) {
   expected_target_delay += neteq_->TargetDelayMs() * 2 * kSamples;
   // We have two packets in the buffer and kAccelerate operation will
   // extract 20 ms of data.
-  neteq_->GetAudio(&out_frame_, &muted, NetEq::Operation::kAccelerate);
+  neteq_->GetAudio(&out_frame_, &muted, nullptr, NetEq::Operation::kAccelerate);
 
   // Check jitter buffer delay.
   NetEqLifetimeStatistics stats = neteq_->GetLifetimeStatistics();
@@ -1102,187 +1103,6 @@ TEST(NetEqNoTimeStretchingMode, RunTest) {
   const auto stats = test.SimulationStats();
   EXPECT_EQ(0, stats.accelerate_rate);
   EXPECT_EQ(0, stats.preemptive_rate);
-}
-
-namespace {
-// Helper classes and data types and functions for NetEqOutputDelayTest.
-
-class VectorAudioSink : public AudioSink {
- public:
-  // Does not take ownership of the vector.
-  VectorAudioSink(std::vector<int16_t>* output_vector) : v_(output_vector) {}
-
-  virtual ~VectorAudioSink() = default;
-
-  bool WriteArray(const int16_t* audio, size_t num_samples) override {
-    v_->reserve(v_->size() + num_samples);
-    for (size_t i = 0; i < num_samples; ++i) {
-      v_->push_back(audio[i]);
-    }
-    return true;
-  }
-
- private:
-  std::vector<int16_t>* const v_;
-};
-
-struct TestResult {
-  NetEqLifetimeStatistics lifetime_stats;
-  NetEqNetworkStatistics network_stats;
-  absl::optional<uint32_t> playout_timestamp;
-  int target_delay_ms;
-  int filtered_current_delay_ms;
-  int sample_rate_hz;
-};
-
-// This class is used as callback object to NetEqTest to collect some stats
-// at the end of the simulation.
-class SimEndStatsCollector : public NetEqSimulationEndedCallback {
- public:
-  SimEndStatsCollector(TestResult& result) : result_(result) {}
-
-  void SimulationEnded(int64_t /*simulation_time_ms*/, NetEq* neteq) override {
-    result_.playout_timestamp = neteq->GetPlayoutTimestamp();
-    result_.target_delay_ms = neteq->TargetDelayMs();
-    result_.filtered_current_delay_ms = neteq->FilteredCurrentDelayMs();
-    result_.sample_rate_hz = neteq->last_output_sample_rate_hz();
-  }
-
- private:
-  TestResult& result_;
-};
-
-TestResult DelayLineNetEqTest(int delay_ms,
-                              std::vector<int16_t>* output_vector) {
-  NetEq::Config config;
-  config.for_test_no_time_stretching = true;
-  config.extra_output_delay_ms = delay_ms;
-  auto codecs = NetEqTest::StandardDecoderMap();
-  NetEqPacketSourceInput::RtpHeaderExtensionMap rtp_ext_map = {
-      {1, kRtpExtensionAudioLevel},
-      {3, kRtpExtensionAbsoluteSendTime},
-      {5, kRtpExtensionTransportSequenceNumber},
-      {7, kRtpExtensionVideoContentType},
-      {8, kRtpExtensionVideoTiming}};
-  std::unique_ptr<NetEqInput> input = std::make_unique<NetEqRtpDumpInput>(
-      webrtc::test::ResourcePath("audio_coding/neteq_universal_new", "rtp"),
-      rtp_ext_map, absl::nullopt /*No SSRC filter*/);
-  std::unique_ptr<TimeLimitedNetEqInput> input_time_limit(
-      new TimeLimitedNetEqInput(std::move(input), 10000));
-  std::unique_ptr<AudioSink> output =
-      std::make_unique<VectorAudioSink>(output_vector);
-
-  TestResult result;
-  SimEndStatsCollector stats_collector(result);
-  NetEqTest::Callbacks callbacks;
-  callbacks.simulation_ended_callback = &stats_collector;
-
-  NetEqTest test(config, CreateBuiltinAudioDecoderFactory(), codecs,
-                 /*text_log=*/nullptr, /*neteq_factory=*/nullptr,
-                 /*input=*/std::move(input_time_limit), std::move(output),
-                 callbacks);
-  test.Run();
-  result.lifetime_stats = test.LifetimeStats();
-  result.network_stats = test.SimulationStats();
-  return result;
-}
-}  // namespace
-
-// Tests the extra output delay functionality of NetEq.
-TEST(NetEqOutputDelayTest, RunTest) {
-  std::vector<int16_t> output;
-  const auto result_no_delay = DelayLineNetEqTest(0, &output);
-  std::vector<int16_t> output_delayed;
-  constexpr int kDelayMs = 100;
-  const auto result_delay = DelayLineNetEqTest(kDelayMs, &output_delayed);
-
-  // Verify that the loss concealment remains unchanged. The point of the delay
-  // is to not affect the jitter buffering behavior.
-  // First verify that there are concealments in the test.
-  EXPECT_GT(result_no_delay.lifetime_stats.concealed_samples, 0u);
-  // And that not all of the output is concealment.
-  EXPECT_GT(result_no_delay.lifetime_stats.total_samples_received,
-            result_no_delay.lifetime_stats.concealed_samples);
-  // Now verify that they remain unchanged by the delay.
-  EXPECT_EQ(result_no_delay.lifetime_stats.concealed_samples,
-            result_delay.lifetime_stats.concealed_samples);
-  // Accelerate and pre-emptive expand should also be unchanged.
-  EXPECT_EQ(result_no_delay.lifetime_stats.inserted_samples_for_deceleration,
-            result_delay.lifetime_stats.inserted_samples_for_deceleration);
-  EXPECT_EQ(result_no_delay.lifetime_stats.removed_samples_for_acceleration,
-            result_delay.lifetime_stats.removed_samples_for_acceleration);
-  // Verify that delay stats are increased with the delay chain.
-  EXPECT_EQ(
-      result_no_delay.lifetime_stats.jitter_buffer_delay_ms +
-          kDelayMs * result_no_delay.lifetime_stats.jitter_buffer_emitted_count,
-      result_delay.lifetime_stats.jitter_buffer_delay_ms);
-  EXPECT_EQ(
-      result_no_delay.lifetime_stats.jitter_buffer_target_delay_ms +
-          kDelayMs * result_no_delay.lifetime_stats.jitter_buffer_emitted_count,
-      result_delay.lifetime_stats.jitter_buffer_target_delay_ms);
-  EXPECT_EQ(result_no_delay.network_stats.current_buffer_size_ms + kDelayMs,
-            result_delay.network_stats.current_buffer_size_ms);
-  EXPECT_EQ(result_no_delay.network_stats.preferred_buffer_size_ms + kDelayMs,
-            result_delay.network_stats.preferred_buffer_size_ms);
-  EXPECT_EQ(result_no_delay.network_stats.mean_waiting_time_ms + kDelayMs,
-            result_delay.network_stats.mean_waiting_time_ms);
-  EXPECT_EQ(result_no_delay.network_stats.median_waiting_time_ms + kDelayMs,
-            result_delay.network_stats.median_waiting_time_ms);
-  EXPECT_EQ(result_no_delay.network_stats.min_waiting_time_ms + kDelayMs,
-            result_delay.network_stats.min_waiting_time_ms);
-  EXPECT_EQ(result_no_delay.network_stats.max_waiting_time_ms + kDelayMs,
-            result_delay.network_stats.max_waiting_time_ms);
-
-  ASSERT_TRUE(result_no_delay.playout_timestamp);
-  ASSERT_TRUE(result_delay.playout_timestamp);
-  EXPECT_EQ(*result_no_delay.playout_timestamp -
-                static_cast<uint32_t>(
-                    kDelayMs *
-                    rtc::CheckedDivExact(result_no_delay.sample_rate_hz, 1000)),
-            *result_delay.playout_timestamp);
-  EXPECT_EQ(result_no_delay.target_delay_ms + kDelayMs,
-            result_delay.target_delay_ms);
-  EXPECT_EQ(result_no_delay.filtered_current_delay_ms + kDelayMs,
-            result_delay.filtered_current_delay_ms);
-
-  // Verify expected delay in decoded signal. The test vector uses 8 kHz sample
-  // rate, so the delay will be 8 times the delay in ms.
-  constexpr size_t kExpectedDelaySamples = kDelayMs * 8;
-  for (size_t i = 0;
-       i < output.size() && i + kExpectedDelaySamples < output_delayed.size();
-       ++i) {
-    EXPECT_EQ(output[i], output_delayed[i + kExpectedDelaySamples]);
-  }
-}
-
-// Tests the extra output delay functionality of NetEq when configured via
-// field trial.
-TEST(NetEqOutputDelayTest, RunTestWithFieldTrial) {
-  test::ScopedFieldTrials field_trial(
-      "WebRTC-Audio-NetEqExtraDelay/Enabled-50/");
-  constexpr int kExpectedDelayMs = 50;
-  std::vector<int16_t> output;
-  const auto result = DelayLineNetEqTest(0, &output);
-
-  // The base delay values are taken from the resuts of the non-delayed case in
-  // NetEqOutputDelayTest.RunTest above.
-  EXPECT_EQ(20 + kExpectedDelayMs, result.target_delay_ms);
-  EXPECT_EQ(24 + kExpectedDelayMs, result.filtered_current_delay_ms);
-}
-
-// Set a non-multiple-of-10 value in the field trial, and verify that we don't
-// crash, and that the result is rounded down.
-TEST(NetEqOutputDelayTest, RunTestWithFieldTrialOddValue) {
-  test::ScopedFieldTrials field_trial(
-      "WebRTC-Audio-NetEqExtraDelay/Enabled-103/");
-  constexpr int kRoundedDelayMs = 100;
-  std::vector<int16_t> output;
-  const auto result = DelayLineNetEqTest(0, &output);
-
-  // The base delay values are taken from the resuts of the non-delayed case in
-  // NetEqOutputDelayTest.RunTest above.
-  EXPECT_EQ(20 + kRoundedDelayMs, result.target_delay_ms);
-  EXPECT_EQ(24 + kRoundedDelayMs, result.filtered_current_delay_ms);
 }
 
 }  // namespace test

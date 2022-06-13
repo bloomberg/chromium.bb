@@ -5,9 +5,9 @@
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -18,8 +18,11 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_service.h"
 #endif
+
+using testing::NiceMock;
 
 namespace {
 
@@ -79,7 +82,7 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
                     ->AppendChild("subframe");
   }
 
-  content::RenderFrameHost* subframe_;
+  raw_ptr<content::RenderFrameHost> subframe_;
 };
 
 TEST_F(PDFIFrameNavigationThrottleTest, OnlyCreateThrottleForSubframes) {
@@ -114,7 +117,7 @@ TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
   run_loop.Run();
 #endif
 
-  content::MockNavigationHandle handle(GURL(kExampleURL), subframe());
+  NiceMock<content::MockNavigationHandle> handle(GURL(kExampleURL), subframe());
   handle.set_response_headers(GetHeaderWithMimeType("application/pdf"));
 
   // Verify that we CANCEL for PDF mime type.
@@ -188,7 +191,7 @@ TEST_F(PDFIFrameNavigationThrottleTest, ProceedIfPDFViewerIsEnabled) {
 }
 
 TEST_F(PDFIFrameNavigationThrottleTest, CancelIfPDFViewerIsDisabled) {
-  content::MockNavigationHandle handle(GURL(kExampleURL), subframe());
+  NiceMock<content::MockNavigationHandle> handle(GURL(kExampleURL), subframe());
   handle.set_response_headers(GetHeaderWithMimeType("application/pdf"));
 
   SetAlwaysOpenPdfExternallyForTests(true);

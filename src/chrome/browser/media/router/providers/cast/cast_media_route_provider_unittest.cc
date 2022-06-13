@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
@@ -24,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::NiceMock;
 using testing::WithArg;
 
 namespace media_router {
@@ -37,8 +40,7 @@ constexpr char kCastSource[] =
 static constexpr char kPresentationId[] = "presentationId";
 static constexpr char kOrigin[] = "https://www.youtube.com";
 static constexpr int kTabId = 1;
-static constexpr base::TimeDelta kRouteTimeout =
-    base::TimeDelta::FromSeconds(30);
+static constexpr base::TimeDelta kRouteTimeout = base::Seconds(30);
 
 base::Value MakeReceiverStatus() {
   return base::test::ParseJson(R"({
@@ -62,6 +64,8 @@ class CastMediaRouteProviderTest : public testing::Test {
   CastMediaRouteProviderTest()
       : socket_service_(content::GetUIThreadTaskRunner({})),
         message_handler_(&socket_service_) {}
+  CastMediaRouteProviderTest(CastMediaRouteProviderTest&) = delete;
+  CastMediaRouteProviderTest& operator=(CastMediaRouteProviderTest&) = delete;
   ~CastMediaRouteProviderTest() override = default;
 
   void SetUp() override {
@@ -74,7 +78,6 @@ class CastMediaRouteProviderTest : public testing::Test {
                                socket_service_.task_runner()));
     CastSessionTracker::SetInstanceForTest(session_tracker_.get());
 
-    EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<CastMediaRouteProvider>(
         provider_remote_.BindNewPipeAndPassReceiver(), std::move(router_remote),
         &media_sink_service_, &app_discovery_service_, &message_handler_,
@@ -140,11 +143,11 @@ class CastMediaRouteProviderTest : public testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   mojo::Remote<mojom::MediaRouteProvider> provider_remote_;
-  MockMojoMediaRouter mock_router_;
+  NiceMock<MockMojoMediaRouter> mock_router_;
   std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
 
   cast_channel::MockCastSocketService socket_service_;
-  cast_channel::MockCastMessageHandler message_handler_;
+  NiceMock<cast_channel::MockCastMessageHandler> message_handler_;
 
   std::unique_ptr<CastSessionTracker> session_tracker_;
   TestMediaSinkService media_sink_service_;
@@ -155,9 +158,6 @@ class CastMediaRouteProviderTest : public testing::Test {
 
   url::Origin origin_ = url::Origin::Create(GURL(kOrigin));
   std::unique_ptr<MediaRoute> route_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastMediaRouteProviderTest);
 };
 
 TEST_F(CastMediaRouteProviderTest, StartObservingMediaSinks) {

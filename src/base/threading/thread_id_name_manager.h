@@ -11,7 +11,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -24,6 +24,9 @@ struct DefaultSingletonTraits;
 class BASE_EXPORT ThreadIdNameManager {
  public:
   static ThreadIdNameManager* GetInstance();
+
+  ThreadIdNameManager(const ThreadIdNameManager&) = delete;
+  ThreadIdNameManager& operator=(const ThreadIdNameManager&) = delete;
 
   static const char* GetDefaultInternedString();
 
@@ -79,14 +82,12 @@ class BASE_EXPORT ThreadIdNameManager {
   ThreadHandleToInternedNameMap thread_handle_to_interned_name_;
 
   // Treat the main process specially as there is no PlatformThreadHandle.
-  std::string* main_process_name_;
+  raw_ptr<std::string> main_process_name_;
   PlatformThreadId main_process_id_;
 
   // There's no point using a base::ObserverList behind a lock, so we just use
   // an std::vector instead.
   std::vector<Observer*> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadIdNameManager);
 };
 
 }  // namespace base

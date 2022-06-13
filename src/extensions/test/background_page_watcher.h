@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "extensions/browser/process_manager_observer.h"
 
 namespace extensions {
@@ -21,6 +21,9 @@ class BackgroundPageWatcher : public ProcessManagerObserver {
  public:
   BackgroundPageWatcher(ProcessManager* process_manager,
                         const Extension* extension);
+
+  BackgroundPageWatcher(const BackgroundPageWatcher&) = delete;
+  BackgroundPageWatcher& operator=(const BackgroundPageWatcher&) = delete;
 
   ~BackgroundPageWatcher() override;
 
@@ -47,13 +50,11 @@ class BackgroundPageWatcher : public ProcessManagerObserver {
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) override;
 
-  ProcessManager* process_manager_;
+  raw_ptr<ProcessManager> process_manager_;
   const std::string extension_id_;
   base::OnceClosure quit_run_loop_;
   bool is_waiting_for_open_;
   bool is_waiting_for_close_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundPageWatcher);
 };
 
 }  // namespace extensions

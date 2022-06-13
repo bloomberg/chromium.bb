@@ -135,7 +135,7 @@ bool ValueToString(UserModel* user_model,
           return false;
         }
         auto date = value->dates().values(i);
-        base::Time::Exploded exploded_time = {date.year(),
+        base::Time::Exploded exploded_time = {static_cast<int>(date.year()),
                                               date.month(),
                                               /* day_of_week = */ -1,
                                               date.day(),
@@ -415,11 +415,15 @@ base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-BasicInteractions::BasicInteractions(ScriptExecutorDelegate* delegate)
-    : delegate_(delegate) {}
+BasicInteractions::BasicInteractions(ScriptExecutorDelegate* delegate,
+                                     ClientSettings* settings)
+    : delegate_(delegate), settings_(settings) {}
 
 BasicInteractions::~BasicInteractions() {}
 
+const ClientSettings& BasicInteractions::GetClientSettings() {
+  return *settings_;
+}
 bool BasicInteractions::SetValue(const SetModelValueProto& proto) {
   if (proto.model_identifier().empty()) {
     DVLOG(2) << "Error setting value: model_identifier empty";
@@ -502,7 +506,6 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       return CreateLoginOptionResponse(delegate_->GetUserModel(),
                                        proto.result_model_identifier(),
                                        proto.create_login_option_response());
-      break;
     case ComputeValueProto::kStringEmpty:
       if (!proto.string_empty().has_value()) {
         DVLOG(2)
@@ -541,8 +544,7 @@ bool BasicInteractions::SetUserActions(const SetUserActionsProto& proto) {
     user_actions->push_back({user_action});
     // No callback needed, the framework relies on generic events which will
     // be fired automatically when user actions are called.
-    user_actions->back().SetCallback(
-        base::DoNothing::Once<std::unique_ptr<TriggerContext>>());
+    user_actions->back().SetCallback(base::DoNothing());
   }
 
   delegate_->SetUserActions(std::move(user_actions));

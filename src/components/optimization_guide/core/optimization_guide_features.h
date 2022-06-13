@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -29,8 +30,10 @@ extern const base::Feature kOptimizationTargetPrediction;
 extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
 extern const base::Feature kPageTextExtraction;
-extern const base::Feature kLoadModelFileForEachExecution;
 extern const base::Feature kPushNotifications;
+extern const base::Feature kOptimizationGuideMetadataValidation;
+extern const base::Feature kPageTopicsBatchAnnotations;
+extern const base::Feature kPageVisibilityBatchAnnotations;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -38,13 +41,6 @@ base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod();
 
 // Whether hints for active tabs and top hosts should be batch updated.
 bool ShouldBatchUpdateHintsForActiveTabsAndTopHosts();
-
-// The maximum number of hosts that can be stored in the
-// |kHintsFetcherTopHostBlocklist| dictionary pref when initialized. The top
-// hosts will also be returned in order of most engaged. This prevents the most
-// engaged hosts in a user's history before DataSaver being enabled from being
-// requested until the user navigates to the host again.
-size_t MaxHintsFetcherTopHostBlocklistSize();
 
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimzation Guide Service.
@@ -58,19 +54,9 @@ size_t MaxUrlsForOptimizationGuideServiceHintsFetch();
 // fetcher.
 size_t MaxHostsForRecordingSuccessfullyCovered();
 
-// The minimum score required to be considered a top host and be included in a
-// hints fetch request.
-double MinTopHostEngagementScoreThreshold();
-
 // The amount of time a fetched hint will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();
-
-// The duration of time after the blocklist initialization for which the low
-// engagement score threshold needs to be applied. If the blocklist was
-// initialized more than DurationApplyLowEngagementScoreThreshold() ago, then
-// the low engagement score threshold need not be applied.
-base::TimeDelta DurationApplyLowEngagementScoreThreshold();
 
 // The API key for the One Platform Optimization Guide Service.
 std::string GetOptimizationGuideServiceAPIKey();
@@ -105,12 +91,6 @@ bool IsPushNotificationsEnabled();
 // a bloom filter.
 int MaxServerBloomFilterByteSize();
 
-// Maximum effective connection type at which hints can be fetched for
-// navigations in real-time. Returns null if the hints fetching for navigations
-// is disabled.
-absl::optional<net::EffectiveConnectionType>
-GetMaxEffectiveConnectionTypeForNavigationHintsFetch();
-
 // Returns the duration of the time window before hints expiration during which
 // the hosts should be refreshed. Example: If the hints for a host expire at
 // time T, then they are eligible for refresh at T -
@@ -126,7 +106,11 @@ base::TimeDelta GetActiveTabsFetchRefreshDuration();
 base::TimeDelta GetActiveTabsStalenessTolerance();
 
 // Returns the max number of concurrent fetches to the remote Optimization Guide
-// Service that should be allowed.
+// Service that should be allowed for batch updates
+size_t MaxConcurrentBatchUpdateFetches();
+
+// Returns the max number of concurrent fetches to the remote Optimization Guide
+// Service that should be allowed for navigations.
 size_t MaxConcurrentPageNavigationFetches();
 
 // Returns the minimum number of seconds to randomly delay before starting to
@@ -136,6 +120,12 @@ int ActiveTabsHintsFetchRandomMinDelaySecs();
 // Returns the maximum number of seconds to randomly delay before starting to
 // fetch for hints for active tabs.
 int ActiveTabsHintsFetchRandomMaxDelaySecs();
+
+// Returns whether fetching hints for active tabs should happen on deferred
+// startup. Otherwise active tabs hints will be fetched after a random interval
+// between ActiveTabsHintsFetchRandomMinDelaySecs() and
+// ActiveTabsHintsFetchRandomMaxDelaySecs().
+bool ShouldDeferStartupActiveTabsHintsFetch();
 
 // The amount of time host model features will be considered fresh enough
 // to be used and remain in the OptimizationGuideStore.
@@ -209,16 +199,55 @@ bool IsPageContentAnnotationEnabled();
 // Returns the max size that should be requested for a page content text dump.
 uint64_t MaxSizeForPageContentTextDump();
 
+// Returns whether the title should always be annotated instead of a page
+// content text dump.
+bool ShouldAnnotateTitleInsteadOfPageContent();
+
 // Whether we should write content annotations to History Service.
 bool ShouldWriteContentAnnotationsToHistoryService();
 
-// Whether the model files that use |OptimizationTargetModelExecutor| should be
-// loaded for each execution, and then unloaded once complete.
-bool LoadModelFileForEachExecution();
+// Returns the max size of the MRU Cache of content that has been requested
+// for annotation.
+size_t MaxContentAnnotationRequestsCached();
+
+// Returns whether or not related searches should be extracted from Google SRP
+// as part of page content annotations.
+bool ShouldExtractRelatedSearches();
+
+// Returns an ordered vector of models to execute on the page content for each
+// page load. It is guaranteed that an optimization target will only be present
+// at most once in the returned vector. However, it is not guaranteed that it
+// will only contain models that the current PageContentAnnotationsService
+// supports, so it is up to the caller to ensure that it can execute the
+// specified models. `locale` is used for implement client-side locale filtering
+// for models that only work for some locales.
+std::vector<optimization_guide::proto::OptimizationTarget>
+GetPageContentModelsToExecute(const std::string& locale);
+
+// Returns whether page entities should be retrieved from the remote
+// Optimization Guide service.
+bool RemotePageEntitiesEnabled();
 
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.
 base::TimeDelta GetOnloadDelayForHintsFetching();
+
+// The number of bits used for RAPPOR-style metrics reporting on content
+// annotation models. Must be at least 1 bit.
+int NumBitsForRAPPORMetrics();
+
+// The probability of a bit flip a score with RAPPOR-style metrics reporting.
+// Must be between 0 and 1.
+double NoiseProbabilityForRAPPORMetrics();
+
+// Returns whether the metadata validation fetch feature is host keyed.
+bool ShouldMetadataValidationFetchHostKeyed();
+
+// Returns if Page Topics Batch Annotations are enabled.
+bool PageTopicsBatchAnnotationsEnabled();
+
+// Returns if Page Visibility Batch Annotations are enabled.
+bool PageVisibilityBatchAnnotationsEnabled();
 
 }  // namespace features
 }  // namespace optimization_guide

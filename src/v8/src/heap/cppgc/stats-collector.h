@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <vector>
 
 #include "include/cppgc/platform.h"
@@ -217,8 +218,9 @@ class V8_EXPORT_PRIVATE StatsCollector final {
   using DisabledConcurrentScope = InternalScope<kDisabled, kConcurrentThread>;
   using EnabledConcurrentScope = InternalScope<kEnabled, kConcurrentThread>;
 
-  // Observer for allocated object size. May be used to implement heap growing
-  // heuristics.
+  // Observer for allocated object size. May e.g. be used to implement heap
+  // growing heuristics. Observers may register/unregister observers at any
+  // time when being invoked.
   class AllocationObserver {
    public:
     // Called after observing at least
@@ -249,7 +251,7 @@ class V8_EXPORT_PRIVATE StatsCollector final {
   // reasonably interesting sizes.
   static constexpr size_t kAllocationThresholdBytes = 1024;
 
-  StatsCollector(std::unique_ptr<MetricRecorder>, Platform*);
+  explicit StatsCollector(Platform*);
   StatsCollector(const StatsCollector&) = delete;
   StatsCollector& operator=(const StatsCollector&) = delete;
 
@@ -293,10 +295,17 @@ class V8_EXPORT_PRIVATE StatsCollector final {
   void NotifyAllocatedMemory(int64_t);
   void NotifyFreedMemory(int64_t);
 
-  void SetMetricRecorderForTesting(
-      std::unique_ptr<MetricRecorder> histogram_recorder) {
+  void IncrementDiscardedMemory(size_t);
+  void DecrementDiscardedMemory(size_t);
+  void ResetDiscardedMemory();
+  size_t discarded_memory_size() const;
+  size_t resident_memory_size() const;
+
+  void SetMetricRecorder(std::unique_ptr<MetricRecorder> histogram_recorder) {
     metric_recorder_ = std::move(histogram_recorder);
   }
+
+  MetricRecorder* GetMetricRecorder() const { return metric_recorder_.get(); }
 
  private:
   enum class GarbageCollectionState : uint8_t {
@@ -326,13 +335,19 @@ class V8_EXPORT_PRIVATE StatsCollector final {
   // arithmetic for simplicity.
   int64_t allocated_bytes_since_safepoint_ = 0;
   int64_t explicitly_freed_bytes_since_safepoint_ = 0;
+#ifdef CPPGC_VERIFY_HEAP
+  // Tracks live bytes for overflows.
+  size_t tracked_live_bytes_ = 0;
+#endif  // CPPGC_VERIFY_HEAP
 
   int64_t memory_allocated_bytes_ = 0;
   int64_t memory_freed_bytes_since_end_of_marking_ = 0;
+  std::atomic<size_t> discarded_bytes_{0};
 
   // vector to allow fast iteration of observers. Register/Unregisters only
   // happens on startup/teardown.
   std::vector<AllocationObserver*> allocation_observers_;
+  bool allocation_observer_deleted_ = false;
 
   GarbageCollectionState gc_state_ = GarbageCollectionState::kNotRunning;
 
@@ -344,13 +359,25 @@ class V8_EXPORT_PRIVATE StatsCollector final {
 
   std::unique_ptr<MetricRecorder> metric_recorder_;
 
+  // |platform_| is used by the TRACE_EVENT_* macros.
   Platform* platform_;
 };
 
 template <typename Callback>
 void StatsCollector::ForAllAllocationObservers(Callback callback) {
-  for (AllocationObserver* observer : allocation_observers_) {
-    callback(observer);
+  // Iterate using indices to allow push_back() of new observers.
+  for (size_t i = 0; i < allocation_observers_.size(); ++i) {
+    auto* observer = allocation_observers_[i];
+    if (observer) {
+      callback(observer);
+    }
+  }
+  if (allocation_observer_deleted_) {
+    allocation_observers_.erase(
+        std::remove(allocation_observers_.begin(), allocation_observers_.end(),
+                    nullptr),
+        allocation_observers_.end());
+    allocation_observer_deleted_ = false;
   }
 }
 

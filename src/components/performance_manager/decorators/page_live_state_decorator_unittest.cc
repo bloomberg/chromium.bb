@@ -5,6 +5,7 @@
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "components/performance_manager/test_support/decorators_utils.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
@@ -81,7 +82,7 @@ class TestPageLiveStateObserver : public PageLiveStateObserver {
   }
 
   ObserverFunction latest_function_called_ = ObserverFunction::kNone;
-  const PageNode* page_node_passed_ = nullptr;
+  raw_ptr<const PageNode> page_node_passed_ = nullptr;
 };
 
 }  // namespace
@@ -113,7 +114,8 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
                   ->AddObserver(observer);
               std::move(quit_closure).Run();
             },
-            PerformanceManager::GetPageNodeForWebContents(web_contents()),
+            PerformanceManager::GetPrimaryPageNodeForWebContents(
+                web_contents()),
             observer_.get(), std::move(quit_closure)));
     run_loop.Run();
   }
@@ -133,7 +135,8 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
                   ->RemoveObserver(observer);
               std::move(quit_closure).Run();
             },
-            PerformanceManager::GetPageNodeForWebContents(web_contents()),
+            PerformanceManager::GetPrimaryPageNodeForWebContents(
+                web_contents()),
             observer_.get(), std::move(quit_closure)));
     run_loop.Run();
 
@@ -159,7 +162,8 @@ class PageLiveStateDecoratorTest : public PerformanceManagerTestHarness {
               EXPECT_EQ(page_node.get(), observer->page_node_passed_);
               std::move(quit_closure).Run();
             },
-            PerformanceManager::GetPageNodeForWebContents(web_contents()),
+            PerformanceManager::GetPrimaryPageNodeForWebContents(
+                web_contents()),
             observer_.get(), expected_call, std::move(quit_closure)));
     run_loop.Run();
   }

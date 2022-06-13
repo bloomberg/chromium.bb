@@ -1,22 +1,10 @@
-// Copyright (c) 2017-2020 The Khronos Group Inc.
+// Copyright (c) 2017-2021, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Author: Mark Young <marky@lunarg.com>
+// Initial Author: Mark Young <marky@lunarg.com>
 //
 
 #include "loader_logger.hpp"
@@ -118,9 +106,13 @@ LoaderLogger::LoaderLogger() {
     // present as "none" then we don't.
     if (debug_string != "none") {
         AddLogRecorder(MakeStdErrLoaderLogRecorder(nullptr));
+#ifdef __ANDROID__
+        // Add a logcat logger by default.
+        AddLogRecorder(MakeLogcatLoaderLogRecorder());
+#endif  // __ANDROID__
     }
 
-#if _WIN32
+#ifdef _WIN32
     // Add an debugger logger by default so that we at least get errors out to the debugger.
     AddLogRecorder(MakeDebuggerLoaderLogRecorder(nullptr));
 #endif
@@ -144,14 +136,19 @@ LoaderLogger::LoaderLogger() {
     }
 }
 
-void LoaderLogger::AddLogRecorder(std::unique_ptr<LoaderLogRecorder>&& recorder) { _recorders.push_back(std::move(recorder)); }
+void LoaderLogger::AddLogRecorder(std::unique_ptr<LoaderLogRecorder>&& recorder) {
+    std::unique_lock<std::shared_timed_mutex> lock(_mutex);
+    _recorders.push_back(std::move(recorder));
+}
 
 void LoaderLogger::AddLogRecorderForXrInstance(XrInstance instance, std::unique_ptr<LoaderLogRecorder>&& recorder) {
+    std::unique_lock<std::shared_timed_mutex> lock(_mutex);
     _recordersByInstance[instance].insert(recorder->UniqueId());
     _recorders.emplace_back(std::move(recorder));
 }
 
 void LoaderLogger::RemoveLogRecorder(uint64_t unique_id) {
+    std::unique_lock<std::shared_timed_mutex> lock(_mutex);
     vector_remove_if_and_erase(
         _recorders, [=](std::unique_ptr<LoaderLogRecorder> const& recorder) { return recorder->UniqueId() == unique_id; });
     for (auto& recorders : _recordersByInstance) {
@@ -163,6 +160,7 @@ void LoaderLogger::RemoveLogRecorder(uint64_t unique_id) {
 }
 
 void LoaderLogger::RemoveLogRecordersForXrInstance(XrInstance instance) {
+    std::unique_lock<std::shared_timed_mutex> lock(_mutex);
     if (_recordersByInstance.find(instance) != _recordersByInstance.end()) {
         auto recorders = _recordersByInstance[instance];
         vector_remove_if_and_erase(_recorders, [=](std::unique_ptr<LoaderLogRecorder> const& recorder) {
@@ -187,6 +185,7 @@ bool LoaderLogger::LogMessage(XrLoaderLogMessageSeverityFlagBits message_severit
     callback_data.session_labels = names_and_labels.labels.empty() ? nullptr : names_and_labels.labels.data();
     callback_data.session_labels_count = static_cast<uint8_t>(names_and_labels.labels.size());
 
+    std::shared_lock<std::shared_timed_mutex> lock(_mutex);
     bool exit_app = false;
     for (std::unique_ptr<LoaderLogRecorder>& recorder : _recorders) {
         if ((recorder->MessageSeverities() & message_severity) == message_severity &&
@@ -209,6 +208,7 @@ bool LoaderLogger::LogDebugUtilsMessage(XrDebugUtilsMessageSeverityFlagsEXT mess
     data_.WrapCallbackData(&augmented_data, callback_data);
 
     // Loop through the recorders
+    std::shared_lock<std::shared_timed_mutex> lock(_mutex);
     for (std::unique_ptr<LoaderLogRecorder>& recorder : _recorders) {
         // Only send the message if it's a debug utils recorder and of the type the recorder cares about.
         if (recorder->Type() != XR_LOADER_LOG_DEBUG_UTILS ||

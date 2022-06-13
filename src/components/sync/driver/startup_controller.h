@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -14,9 +15,9 @@
 
 namespace syncer {
 
-// This class is used by ProfileSyncService to manage all logic and state
+// This class is used by SyncServiceImpl to manage all logic and state
 // pertaining to initialization of the SyncEngine.
-class StartupController : public policy::PolicyService::Observer {
+class StartupController final : public policy::PolicyService::Observer {
  public:
   enum class State {
     // Startup has not been triggered yet.
@@ -37,12 +38,16 @@ class StartupController : public policy::PolicyService::Observer {
       base::RepeatingCallback<bool()> should_start,
       base::RepeatingClosure start_engine,
       policy::PolicyService* policy_service);
-  ~StartupController() final;
+  ~StartupController() override;
 
   // Starts up sync if it is requested by the user and preconditions are met.
   // If |force_immediate| is true, this will start sync immediately, bypassing
   // deferred startup and the "first setup complete" check (but *not* the
   // |should_start_callback_| check!).
+  // Note that (even in the "immediate" case), this will never directly run the
+  // start engine callback - that always happens as a posted task, so that
+  // callers have the opportunity to set up any other state as necessary before
+  // the engine actually starts.
   void TryStart(bool force_immediate);
 
   // Called when a datatype (SyncableService) has a need for sync to start
@@ -73,6 +78,22 @@ class StartupController : public policy::PolicyService::Observer {
  private:
   enum StartUpDeferredOption { STARTUP_DEFERRED, STARTUP_IMMEDIATE };
 
+  // Enum for UMA defining different events that cause us to exit the "deferred"
+  // state of initialization and invoke start_engine.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class DeferredInitTrigger {
+    // We have received a signal from a data type requesting that sync starts as
+    // soon as possible.
+    kDataTypeRequest = 0,
+    // No data type requested sync to start and our fallback timer expired.
+    kFallbackTimer = 1,
+    kMaxValue = kFallbackTimer
+  };
+
+  // The actual (synchronous) implementation of TryStart().
+  void TryStartImpl(bool force_immediate);
+
   // Called when |policy_service_| is defined, but it took too long to receive
   // the first chrome policies.
   void OnFirstPoliciesLoadedTimeout();
@@ -86,7 +107,7 @@ class StartupController : public policy::PolicyService::Observer {
   void OnFallbackStartupTimerExpired();
 
   // Records time spent in deferred state with UMA histograms.
-  void RecordTimeDeferred();
+  void RecordTimeDeferred(DeferredInitTrigger trigger);
 
   const base::RepeatingCallback<ModelTypeSet()>
       get_preferred_data_types_callback_;
@@ -122,7 +143,7 @@ class StartupController : public policy::PolicyService::Observer {
   // |OnFirstPoliciesLoaded| to be called before trying to start the engine. If
   // this is null, there is no need to wait for policies to be loaded before
   // starting the engine.
-  policy::PolicyService* policy_service_;
+  raw_ptr<policy::PolicyService> policy_service_;
 
   // Timer to try and start the sync engine in case we are waiting for policies
   // to be loaded and |OnFirstPoliciesLoaded| has not been called before a

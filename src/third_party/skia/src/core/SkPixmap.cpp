@@ -128,6 +128,7 @@ float SkPixmap::getAlphaf(int x, int y) const {
         }
         case kRGBA_8888_SkColorType:
         case kBGRA_8888_SkColorType:
+        case kSRGBA_8888_SkColorType:
             value = static_cast<const uint8_t*>(srcPtr)[3] * (1.0f/255);
             break;
         case kRGBA_1010102_SkColorType:
@@ -188,7 +189,7 @@ bool SkPixmap::erase(const SkColor4f& color, SkColorSpace* cs, const SkIRect* su
     SkRasterClip rc{clip};
 
     SkDraw draw;
-    SkSimpleMatrixProvider matrixProvider(SkMatrix::I());
+    SkMatrixProvider matrixProvider(SkMatrix::I());
     draw.fDst            = *this;
     draw.fMatrixProvider = &matrixProvider;
     draw.fRC             = &rc;
@@ -325,6 +326,30 @@ SkColor SkPixmap::getColor(int x, int y) const {
             uint32_t value = *this->addr32(x, y);
             SkPMColor c = SkSwizzle_RGBA_to_PMColor(value);
             return toColor(c);
+        }
+        case kSRGBA_8888_SkColorType: {
+            auto srgb_to_linear = [](float x) {
+                return (x <= 0.04045f) ? x * (1 / 12.92f)
+                                       : sk_float_pow(x * (1 / 1.055f) + (0.055f / 1.055f), 2.4f);
+            };
+
+            uint32_t value = *this->addr32(x, y);
+            float r = ((value >>  0) & 0xff) * (1/255.0f),
+                  g = ((value >>  8) & 0xff) * (1/255.0f),
+                  b = ((value >> 16) & 0xff) * (1/255.0f),
+                  a = ((value >> 24) & 0xff) * (1/255.0f);
+            r = srgb_to_linear(r);
+            g = srgb_to_linear(g);
+            b = srgb_to_linear(b);
+            if (a != 0 && needsUnpremul) {
+                r = SkTPin(r/a, 0.0f, 1.0f);
+                g = SkTPin(g/a, 0.0f, 1.0f);
+                b = SkTPin(b/a, 0.0f, 1.0f);
+            }
+            return (uint32_t)( r * 255.0f ) << 16
+                 | (uint32_t)( g * 255.0f ) <<  8
+                 | (uint32_t)( b * 255.0f ) <<  0
+                 | (uint32_t)( a * 255.0f ) << 24;
         }
         case kRGB_101010x_SkColorType: {
             uint32_t value = *this->addr32(x, y);
@@ -481,7 +506,8 @@ bool SkPixmap::computeIsOpaque() const {
             return true;
         }
         case kBGRA_8888_SkColorType:
-        case kRGBA_8888_SkColorType: {
+        case kRGBA_8888_SkColorType:
+        case kSRGBA_8888_SkColorType: {
             SkPMColor c = (SkPMColor)~0;
             for (int y = 0; y < height; ++y) {
                 const SkPMColor* row = this->addr32(0, y);

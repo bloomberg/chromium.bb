@@ -43,7 +43,7 @@ ReadingListSuggestionsProvider::ReadingListSuggestionsProvider(
 
   // If the ReadingListModel is loaded, this will trigger a call to
   // ReadingListModelLoaded. Keep it as last instruction.
-  scoped_observation_.Observe(reading_list_model_);
+  scoped_observation_.Observe(reading_list_model_.get());
 }
 
 ReadingListSuggestionsProvider::~ReadingListSuggestionsProvider() {}
@@ -160,7 +160,7 @@ void ReadingListSuggestionsProvider::ReadingListModelLoaded(
 void ReadingListSuggestionsProvider::ReadingListModelBeingDeleted(
     const ReadingListModel* model) {
   DCHECK(model == reading_list_model_);
-  DCHECK(scoped_observation_.IsObservingSource(reading_list_model_));
+  DCHECK(scoped_observation_.IsObservingSource(reading_list_model_.get()));
   scoped_observation_.Reset();
   reading_list_model_ = nullptr;
 }
@@ -225,7 +225,7 @@ ContentSuggestion ReadingListSuggestionsProvider::ConvertEntry(
     suggestion.set_title(url_formatter::FormatUrl(entry->URL()));
   }
   suggestion.set_publisher_name(
-      url_formatter::FormatUrl(entry->URL().GetOrigin()));
+      url_formatter::FormatUrl(entry->URL().DeprecatedGetOriginAsURL()));
   int64_t entry_time = entry->DistillationTime();
   if (entry_time == 0) {
     entry_time = entry->CreationTime();

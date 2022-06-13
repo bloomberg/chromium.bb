@@ -13,11 +13,12 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
-#include "crypto/ec_signature_creator.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
@@ -141,38 +142,6 @@ class StreamReleaserCallback : public TestCompletionCallbackBase {
   void OnComplete(SpdyStreamRequest* request, int result);
 };
 
-// An ECSignatureCreator that returns deterministic signatures.
-class MockECSignatureCreator : public crypto::ECSignatureCreator {
- public:
-  explicit MockECSignatureCreator(crypto::ECPrivateKey* key);
-
-  // crypto::ECSignatureCreator
-  bool Sign(const uint8_t* data,
-            int data_len,
-            std::vector<uint8_t>* signature) override;
-  bool DecodeSignature(const std::vector<uint8_t>& signature,
-                       std::vector<uint8_t>* out_raw_sig) override;
-
- private:
-  crypto::ECPrivateKey* key_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreator);
-};
-
-// An ECSignatureCreatorFactory creates MockECSignatureCreator.
-class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
- public:
-  MockECSignatureCreatorFactory();
-  ~MockECSignatureCreatorFactory() override;
-
-  // crypto::ECSignatureCreatorFactory
-  std::unique_ptr<crypto::ECSignatureCreator> Create(
-      crypto::ECPrivateKey* key) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockECSignatureCreatorFactory);
-};
-
 // Helper to manage the lifetimes of the dependencies for a
 // HttpNetworkTransaction.
 struct SpdySessionDependencies {
@@ -198,9 +167,9 @@ struct SpdySessionDependencies {
   static std::unique_ptr<HttpNetworkSession> SpdyCreateSessionWithSocketFactory(
       SpdySessionDependencies* session_deps,
       ClientSocketFactory* factory);
-  static HttpNetworkSession::Params CreateSessionParams(
+  static HttpNetworkSessionParams CreateSessionParams(
       SpdySessionDependencies* session_deps);
-  static HttpNetworkSession::Context CreateSessionContext(
+  static HttpNetworkSessionContext CreateSessionContext(
       SpdySessionDependencies* session_deps);
 
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
@@ -232,13 +201,15 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   bool enable_http2_alternative_service;
   bool enable_websocket_over_http2;
+  bool enable_http2_settings_grease;
   absl::optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
   bool http2_end_stream_with_data_frame;
-  NetLog* net_log;
+  raw_ptr<NetLog> net_log;
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
   bool key_auth_cache_server_entries_by_network_isolation_key;
   bool enable_priority_update;
+  bool go_away_on_ip_change;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {
@@ -281,13 +252,14 @@ class SpdySessionPoolPeer {
  public:
   explicit SpdySessionPoolPeer(SpdySessionPool* pool);
 
+  SpdySessionPoolPeer(const SpdySessionPoolPeer&) = delete;
+  SpdySessionPoolPeer& operator=(const SpdySessionPoolPeer&) = delete;
+
   void RemoveAliases(const SpdySessionKey& key);
   void SetEnableSendingInitialData(bool enabled);
 
  private:
-  SpdySessionPool* const pool_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
+  const raw_ptr<SpdySessionPool> pool_;
 };
 
 class SpdyTestUtil {

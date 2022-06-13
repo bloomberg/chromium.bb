@@ -18,7 +18,14 @@ macro(ei_add_test_internal testname testname_with_suffix)
     set(filename ${testname}.cpp)
   endif()
 
+  # Add the current target to the list of subtest targets
+  get_property(EIGEN_SUBTESTS_LIST GLOBAL PROPERTY EIGEN_SUBTESTS_LIST)
+  set(EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}${targetname}\n")
+  set_property(GLOBAL PROPERTY EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}")
+
+  set(is_gpu_test OFF)
   if(EIGEN_ADD_TEST_FILENAME_EXTENSION STREQUAL cu)
+    set(is_gpu_test ON)
     if(EIGEN_TEST_HIP)
       hip_reset_flags()
       hip_add_executable(${targetname} ${filename} HIPCC_OPTIONS "-DEIGEN_USE_HIP ${ARGV2}")
@@ -52,10 +59,10 @@ macro(ei_add_test_internal testname testname_with_suffix)
     add_executable(${targetname} ${filename})
   endif()
 
-  if (targetname MATCHES "^eigen2_")
-    add_dependencies(eigen2_buildtests ${targetname})
-  else()
-    add_dependencies(buildtests ${targetname})
+  add_dependencies(buildtests ${targetname})
+  
+  if (is_gpu_test)
+    add_dependencies(buildtests_gpu ${targetname})
   endif()
 
   if(EIGEN_NO_ASSERTION_CHECKING)
@@ -113,6 +120,11 @@ macro(ei_add_test_internal testname testname_with_suffix)
     add_dependencies("Build${current_subproject}" ${targetname})
     set_property(TEST ${testname_with_suffix} PROPERTY LABELS "${current_subproject}")
   endif()
+  if (is_gpu_test)
+    # Add gpu tag for testing only GPU tests.
+    set_property(TEST ${testname_with_suffix} APPEND PROPERTY LABELS "gpu")
+  endif()
+  
   if(EIGEN_SYCL)
     # Force include of the SYCL file at the end to avoid errors.
     set_property(TARGET ${targetname} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
@@ -413,11 +425,13 @@ macro(ei_init_testing)
   define_property(GLOBAL PROPERTY EIGEN_MISSING_BACKENDS BRIEF_DOCS " " FULL_DOCS " ")
   define_property(GLOBAL PROPERTY EIGEN_TESTING_SUMMARY BRIEF_DOCS " " FULL_DOCS " ")
   define_property(GLOBAL PROPERTY EIGEN_TESTS_LIST BRIEF_DOCS " " FULL_DOCS " ")
+  define_property(GLOBAL PROPERTY EIGEN_SUBTESTS_LIST BRIEF_DOCS " " FULL_DOCS " ")
 
   set_property(GLOBAL PROPERTY EIGEN_TESTED_BACKENDS "")
   set_property(GLOBAL PROPERTY EIGEN_MISSING_BACKENDS "")
   set_property(GLOBAL PROPERTY EIGEN_TESTING_SUMMARY "")
   set_property(GLOBAL PROPERTY EIGEN_TESTS_LIST "")
+  set_property(GLOBAL PROPERTY EIGEN_SUBTESTS_LIST "")
 
   define_property(GLOBAL PROPERTY EIGEN_FAILTEST_FAILURE_COUNT BRIEF_DOCS " " FULL_DOCS " ")
   define_property(GLOBAL PROPERTY EIGEN_FAILTEST_COUNT BRIEF_DOCS " " FULL_DOCS " ")
@@ -448,15 +462,7 @@ endmacro()
 
 macro(ei_get_compilerver VAR)
     if(MSVC)
-      # on windows system, we use a modified CMake script
-      include(EigenDetermineVSServicePack)
-      EigenDetermineVSServicePack( my_service_pack )
-
-      if( my_service_pack )
-        set(${VAR} ${my_service_pack})
-      else()
-        set(${VAR} "na")
-      endif()
+      set(${VAR} "${CMAKE_CXX_COMPILER_VERSION}")
     elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "PGI")
       set(${VAR} "${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
     else()
@@ -471,6 +477,7 @@ macro(ei_get_compilerver VAR)
 
     execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${EIGEN_CXX_FLAG_VERSION}
                     OUTPUT_VARIABLE eigen_cxx_compiler_version_string OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(REGEX REPLACE "^[ \n\r]+" "" eigen_cxx_compiler_version_string ${eigen_cxx_compiler_version_string})
     string(REGEX REPLACE "[\n\r].*"  ""  eigen_cxx_compiler_version_string  ${eigen_cxx_compiler_version_string})
 
     ei_get_compilerver_from_cxx_version_string("${eigen_cxx_compiler_version_string}" CNAME CVER)
@@ -480,9 +487,10 @@ macro(ei_get_compilerver VAR)
 endmacro()
 
 # Extract compiler name and version from a raw version string
-# WARNING: if you edit thid macro, then please test it by  uncommenting
+# WARNING: if you edit this macro, then please test it by uncommenting
 # the testing macro call in ei_init_testing() of the EigenTesting.cmake file.
-# See also the ei_test_get_compilerver_from_cxx_version_string macro at the end of the file
+# See also the ei_test_get_compilerver_from_cxx_version_string macro at the end
+# of the file
 macro(ei_get_compilerver_from_cxx_version_string VERSTRING CNAME CVER)
   # extract possible compiler names
   string(REGEX MATCH "g\\+\\+"      ei_has_gpp    ${VERSTRING})
@@ -490,6 +498,7 @@ macro(ei_get_compilerver_from_cxx_version_string VERSTRING CNAME CVER)
   string(REGEX MATCH "gcc|GCC"      ei_has_gcc    ${VERSTRING})
   string(REGEX MATCH "icpc|ICC"     ei_has_icpc   ${VERSTRING})
   string(REGEX MATCH "clang|CLANG"  ei_has_clang  ${VERSTRING})
+  string(REGEX MATCH "mingw32"      ei_has_mingw  ${VERSTRING})
 
   # combine them
   if((ei_has_llvm) AND (ei_has_gpp OR ei_has_gcc))
@@ -498,6 +507,8 @@ macro(ei_get_compilerver_from_cxx_version_string VERSTRING CNAME CVER)
     set(${CNAME} "llvm-clang++")
   elseif(ei_has_clang)
     set(${CNAME} "clang++")
+  elseif ((ei_has_mingw) AND (ei_has_gpp OR ei_has_gcc))
+    set(${CNAME} "mingw32-g++")
   elseif(ei_has_icpc)
     set(${CNAME} "icpc")
   elseif(ei_has_gpp OR ei_has_gcc)
@@ -518,10 +529,16 @@ macro(ei_get_compilerver_from_cxx_version_string VERSTRING CNAME CVER)
       if(NOT eicver)
         # try to extract 2:
         string(REGEX MATCH "[^0-9][0-9]+\\.[0-9]+" eicver ${VERSTRING})
-      else()
-        set(eicver " _")
+        if (NOT eicver AND ei_has_mingw)
+          # try to extract 1 number plus suffix:
+          string(REGEX MATCH "[^0-9][0-9]+-win32" eicver ${VERSTRING})          
+        endif()
       endif()
     endif()
+  endif()
+  
+  if (NOT eicver)
+    set(eicver " _")
   endif()
 
   string(REGEX REPLACE ".(.*)" "\\1" ${CVER} ${eicver})
@@ -580,10 +597,7 @@ macro(ei_set_build_string)
   ei_get_compilerver(LOCAL_COMPILER_VERSION)
   ei_get_cxxflags(LOCAL_COMPILER_FLAGS)
 
-  include(EigenDetermineOSVersion)
-  DetermineOSVersion(OS_VERSION)
-
-  set(TMP_BUILD_STRING ${OS_VERSION}-${LOCAL_COMPILER_VERSION})
+  set(TMP_BUILD_STRING ${CMAKE_SYSTEM}-${LOCAL_COMPILER_VERSION})
 
   if (NOT ${LOCAL_COMPILER_FLAGS} STREQUAL  "")
     set(TMP_BUILD_STRING ${TMP_BUILD_STRING}-${LOCAL_COMPILER_FLAGS})
@@ -647,13 +661,14 @@ macro(ei_test_get_compilerver_from_cxx_version_string)
   ei_test1_get_compilerver_from_cxx_version_string("i686-apple-darwin11-llvm-g++-4.2 (GCC) 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2335.15.00)" "llvm-g++" "4.2.1")
   ei_test1_get_compilerver_from_cxx_version_string("g++-mp-4.4 (GCC) 4.4.6" "g++" "4.4.6")
   ei_test1_get_compilerver_from_cxx_version_string("g++-mp-4.4 (GCC) 2011" "g++" "4.4")
+  ei_test1_get_compilerver_from_cxx_version_string("x86_64-w64-mingw32-g++ (GCC) 10-win32 20210110" "mingw32-g++" "10-win32")
 endmacro()
 
 # Split all tests listed in EIGEN_TESTS_LIST into num_splits many targets
 # named buildtestspartN with N = { 0, ..., num_splits-1}.
 #
-# The intention behind the existance of this macro is the size of Eigen's
-# testsuite. Together with the relativly big compile-times building all tests
+# The intention behind the existence of this macro is the size of Eigen's
+# testsuite. Together with the relatively big compile-times building all tests
 # can take a substantial amount of time depending on the available hardware.
 # 
 # The last buildtestspartN target will build possible remaining tests.
@@ -708,3 +723,55 @@ macro(ei_split_testsuite num_splits)
     add_dependencies("${current_target}" "${curr_test}")
   endforeach()
 endmacro(ei_split_testsuite num_splits)
+
+# Defines the custom command buildsmoketests to build a number of tests
+# specified in smoke_test_list.
+# 
+# Test in smoke_test_list can be either test targets (e.g. packetmath) or
+# subtests targets (e.g. packetmath_2). If any of the test are not available
+# in the current configuration they are just skipped. 
+#
+# All tests added via this macro are labeled with the smoketest label. This
+# allows running smoketests only using ctest.
+#
+# Smoke tests are intended to be run before the whole test suite is invoked,
+# e.g., to smoke test patches.
+macro(ei_add_smoke_tests smoke_test_list)
+  # Set the build target to build smoketests
+  set(buildtarget "buildsmoketests")
+  add_custom_target("${buildtarget}")
+
+  # Get list of all tests and translate it into a CMake list
+  get_property(EIGEN_TESTS_LIST GLOBAL PROPERTY EIGEN_TESTS_LIST)
+  string(REGEX REPLACE "\n" " " EIGEN_TESTS_LIST "${EIGEN_TESTS_LIST}")
+  set(EIGEN_TESTS_LIST "${EIGEN_TESTS_LIST}")
+  separate_arguments(EIGEN_TESTS_LIST)
+
+  # Check if the test in smoke_test_list is a currently valid test target
+  foreach(test IN ITEMS ${smoke_test_list})
+    # Add tests in smoke_test_list to our smoke test target but only if the test
+    # is currently available, i.e., is in EIGEN_SUBTESTS_LIST
+    if ("${test}" IN_LIST EIGEN_TESTS_LIST)
+      add_dependencies("${buildtarget}" "${test}")
+      # In the case of a test we match all subtests
+      set(ctest_regex "${ctest_regex}^${test}_[0-9]+$$|")
+    endif()
+  endforeach()
+
+  # Get list of all subtests and translate it into a CMake list
+  get_property(EIGEN_SUBTESTS_LIST GLOBAL PROPERTY EIGEN_SUBTESTS_LIST)
+  string(REGEX REPLACE "\n" " " EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}")
+  set(EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}")
+  separate_arguments(EIGEN_SUBTESTS_LIST)
+
+  # Check if the test in smoke_test_list is a currently valid subtest target
+  foreach(test IN ITEMS ${smoke_test_list})
+    # Add tests in smoke_test_list to our smoke test target but only if the test
+    # is currently available, i.e., is in EIGEN_SUBTESTS_LIST
+    if ("${test}" IN_LIST EIGEN_SUBTESTS_LIST)
+      add_dependencies("${buildtarget}" "${test}")
+      # Add label smoketest to be able to run smoketests using ctest
+      set_property(TEST ${test} APPEND PROPERTY LABELS "smoketest")
+    endif()
+  endforeach()
+endmacro(ei_add_smoke_tests)

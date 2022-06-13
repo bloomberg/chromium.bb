@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_annotiterator.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
-#include "fpdfsdk/formfiller/cffl_formfiller.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
+#include "fpdfsdk/formfiller/cffl_formfield.h"
 #include "fpdfsdk/pwl/cpwl_special_button.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "testing/embedder_test.h"
@@ -31,63 +31,66 @@ class CPWLSpecialButtonEmbedderTest : public EmbedderTest {
 
     formfill_env_ = CPDFSDKFormFillEnvironmentFromFPDFFormHandle(form_handle());
     CPDFSDK_AnnotIterator it(formfill_env_->GetPageViewAtIndex(0),
-                             CPDF_Annot::Subtype::WIDGET);
+                             {CPDF_Annot::Subtype::WIDGET});
 
     // Read only check box.
-    annot_readonly_checkbox_ = it.GetFirstAnnot();
-    ASSERT_TRUE(annot_readonly_checkbox_);
+    widget_readonly_checkbox_ = ToCPDFSDKWidget(it.GetFirstAnnot());
+    ASSERT_TRUE(widget_readonly_checkbox_);
     ASSERT_EQ(CPDF_Annot::Subtype::WIDGET,
-              annot_readonly_checkbox_->GetAnnotSubtype());
+              widget_readonly_checkbox_->GetAnnotSubtype());
 
     // Check box.
-    annot_checkbox_ = it.GetNextAnnot(annot_readonly_checkbox_);
-    ASSERT_TRUE(annot_checkbox_);
-    ASSERT_EQ(CPDF_Annot::Subtype::WIDGET, annot_checkbox_->GetAnnotSubtype());
+    widget_checkbox_ =
+        ToCPDFSDKWidget(it.GetNextAnnot(widget_readonly_checkbox_));
+    ASSERT_TRUE(widget_checkbox_);
+    ASSERT_EQ(CPDF_Annot::Subtype::WIDGET, widget_checkbox_->GetAnnotSubtype());
 
     // Read only radio button.
-    annot_readonly_radiobutton_ = it.GetNextAnnot(annot_checkbox_);
-    ASSERT_TRUE(annot_readonly_radiobutton_);
+    widget_readonly_radiobutton_ =
+        ToCPDFSDKWidget(it.GetNextAnnot(widget_checkbox_));
+    ASSERT_TRUE(widget_readonly_radiobutton_);
     ASSERT_EQ(CPDF_Annot::Subtype::WIDGET,
-              annot_readonly_radiobutton_->GetAnnotSubtype());
+              widget_readonly_radiobutton_->GetAnnotSubtype());
 
     // Tabbing three times from read only radio button to unselected normal
     // radio button.
-    annot_radiobutton_ = annot_readonly_radiobutton_;
-    ASSERT_TRUE(annot_radiobutton_);
+    widget_radiobutton_ = widget_readonly_radiobutton_;
+    ASSERT_TRUE(widget_radiobutton_);
     for (int i = 0; i < 3; i++) {
-      annot_radiobutton_ = it.GetNextAnnot(annot_radiobutton_);
-      ASSERT_TRUE(annot_radiobutton_);
+      widget_radiobutton_ =
+          ToCPDFSDKWidget(it.GetNextAnnot(widget_radiobutton_));
+      ASSERT_TRUE(widget_radiobutton_);
     }
 
     ASSERT_EQ(CPDF_Annot::Subtype::WIDGET,
-              annot_radiobutton_->GetAnnotSubtype());
+              widget_radiobutton_->GetAnnotSubtype());
   }
 
-  void FormFillerAndWindowSetup(CPDFSDK_Annot* annot) {
+  void FormFillerAndWindowSetup(CPDFSDK_Widget* widget) {
     CFFL_InteractiveFormFiller* interactive_formfiller =
         formfill_env_->GetInteractiveFormFiller();
     {
-      ObservedPtr<CPDFSDK_Annot> observed(annot);
-      EXPECT_TRUE(interactive_formfiller->OnSetFocus(&observed, 0));
+      ObservedPtr<CPDFSDK_Widget> observed(widget);
+      EXPECT_TRUE(interactive_formfiller->OnSetFocus(observed, {}));
     }
 
-    form_filler_ = interactive_formfiller->GetFormFillerForTesting(annot);
+    form_filler_ = interactive_formfiller->GetFormFieldForTesting(widget);
     ASSERT_TRUE(form_filler_);
 
-    window_ =
-        form_filler_->GetPWLWindow(formfill_env_->GetPageViewAtIndex(0), true);
+    window_ = form_filler_->CreateOrUpdatePWLWindow(
+        formfill_env_->GetPageViewAtIndex(0));
     ASSERT_TRUE(window_);
   }
 
-  CPDFSDK_Annot* GetCPDFSDKAnnotCheckBox() const { return annot_checkbox_; }
-  CPDFSDK_Annot* GetCPDFSDKAnnotReadOnlyCheckBox() const {
-    return annot_readonly_checkbox_;
+  CPDFSDK_Widget* GetCPDFSDKWidgetCheckBox() const { return widget_checkbox_; }
+  CPDFSDK_Widget* GetCPDFSDKWidgetReadOnlyCheckBox() const {
+    return widget_readonly_checkbox_;
   }
-  CPDFSDK_Annot* GetCPDFSDKAnnotRadioButton() const {
-    return annot_radiobutton_;
+  CPDFSDK_Widget* GetCPDFSDKWidgetRadioButton() const {
+    return widget_radiobutton_;
   }
-  CPDFSDK_Annot* GetCPDFSDKAnnotReadOnlyRadioButton() const {
-    return annot_readonly_radiobutton_;
+  CPDFSDK_Widget* GetCPDFSDKWidgetReadOnlyRadioButton() const {
+    return widget_readonly_radiobutton_;
   }
   CPDFSDK_FormFillEnvironment* GetCPDFSDKFormFillEnv() const {
     return formfill_env_;
@@ -96,49 +99,49 @@ class CPWLSpecialButtonEmbedderTest : public EmbedderTest {
 
  private:
   FPDF_PAGE page_;
-  CFFL_FormFiller* form_filler_;
-  CPDFSDK_Annot* annot_checkbox_;
-  CPDFSDK_Annot* annot_readonly_checkbox_;
-  CPDFSDK_Annot* annot_radiobutton_;
-  CPDFSDK_Annot* annot_readonly_radiobutton_;
+  CFFL_FormField* form_filler_;
+  CPDFSDK_Widget* widget_checkbox_;
+  CPDFSDK_Widget* widget_readonly_checkbox_;
+  CPDFSDK_Widget* widget_radiobutton_;
+  CPDFSDK_Widget* widget_readonly_radiobutton_;
   CPDFSDK_FormFillEnvironment* formfill_env_;
   CPWL_Wnd* window_;
 };
 
 TEST_F(CPWLSpecialButtonEmbedderTest, EnterOnReadOnlyCheckBox) {
-  FormFillerAndWindowSetup(GetCPDFSDKAnnotReadOnlyCheckBox());
+  FormFillerAndWindowSetup(GetCPDFSDKWidgetReadOnlyCheckBox());
   CPWL_CheckBox* check_box = static_cast<CPWL_CheckBox*>(GetWindow());
   EXPECT_TRUE(check_box->IsChecked());
   EXPECT_TRUE(GetCPDFSDKFormFillEnv()->GetInteractiveFormFiller()->OnChar(
-      GetCPDFSDKAnnotReadOnlyCheckBox(), '\r', 0));
+      GetCPDFSDKWidgetReadOnlyCheckBox(), '\r', {}));
   EXPECT_TRUE(check_box->IsChecked());
 }
 
 TEST_F(CPWLSpecialButtonEmbedderTest, EnterOnCheckBox) {
-  FormFillerAndWindowSetup(GetCPDFSDKAnnotCheckBox());
+  FormFillerAndWindowSetup(GetCPDFSDKWidgetCheckBox());
   CPWL_CheckBox* check_box = static_cast<CPWL_CheckBox*>(GetWindow());
   EXPECT_TRUE(GetCPDFSDKFormFillEnv()->GetInteractiveFormFiller()->OnChar(
-      GetCPDFSDKAnnotCheckBox(), '\r', 0));
+      GetCPDFSDKWidgetCheckBox(), '\r', {}));
   EXPECT_TRUE(check_box->IsChecked());
 
   EXPECT_TRUE(GetCPDFSDKFormFillEnv()->GetInteractiveFormFiller()->OnChar(
-      GetCPDFSDKAnnotCheckBox(), '\r', 0));
+      GetCPDFSDKWidgetCheckBox(), '\r', {}));
   EXPECT_FALSE(check_box->IsChecked());
 }
 
 TEST_F(CPWLSpecialButtonEmbedderTest, EnterOnReadOnlyRadioButton) {
-  FormFillerAndWindowSetup(GetCPDFSDKAnnotReadOnlyRadioButton());
+  FormFillerAndWindowSetup(GetCPDFSDKWidgetReadOnlyRadioButton());
   CPWL_RadioButton* radio_button = static_cast<CPWL_RadioButton*>(GetWindow());
   EXPECT_FALSE(radio_button->IsChecked());
   EXPECT_TRUE(GetCPDFSDKFormFillEnv()->GetInteractiveFormFiller()->OnChar(
-      GetCPDFSDKAnnotReadOnlyRadioButton(), '\r', 0));
+      GetCPDFSDKWidgetReadOnlyRadioButton(), '\r', {}));
   EXPECT_FALSE(radio_button->IsChecked());
 }
 
 TEST_F(CPWLSpecialButtonEmbedderTest, EnterOnRadioButton) {
-  FormFillerAndWindowSetup(GetCPDFSDKAnnotRadioButton());
+  FormFillerAndWindowSetup(GetCPDFSDKWidgetRadioButton());
   CPWL_RadioButton* radio_button = static_cast<CPWL_RadioButton*>(GetWindow());
   EXPECT_TRUE(GetCPDFSDKFormFillEnv()->GetInteractiveFormFiller()->OnChar(
-      GetCPDFSDKAnnotRadioButton(), '\r', 0));
+      GetCPDFSDKWidgetRadioButton(), '\r', {}));
   EXPECT_TRUE(radio_button->IsChecked());
 }

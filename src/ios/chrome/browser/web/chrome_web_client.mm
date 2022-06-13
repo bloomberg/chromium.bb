@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/version.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
@@ -28,13 +29,20 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
+#import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/safe_browsing/password_protection_java_script_feature.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
+#import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_javascript_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
@@ -44,25 +52,20 @@
 #import "ios/chrome/browser/web/java_script_console/java_script_console_feature_factory.h"
 #include "ios/chrome/browser/web/print/print_java_script_feature.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
+#import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_java_script_feature.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
-#import "ios/components/security_interstitials/legacy_tls/legacy_tls_blocking_page.h"
-#import "ios/components/security_interstitials/legacy_tls/legacy_tls_controller_client.h"
-#import "ios/components/security_interstitials/legacy_tls/legacy_tls_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_blocking_page.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_controller_client.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
-#include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/font_size_java_script_feature.h"
-#include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
-#include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -78,6 +81,8 @@
 namespace {
 // The tag describing the product name with a placeholder for the version.
 const char kProductTagWithPlaceholder[] = "CriOS/%s";
+
+constexpr char kMajorVersion100[] = "100";
 
 // Returns an autoreleased string containing the JavaScript loaded from a
 // bundled resource file with the given name (excluding extension).
@@ -145,37 +150,30 @@ NSString* GetLookalikeUrlErrorPageHtml(web::WebState* web_state,
   return base::SysUTF8ToNSString(error_page_content);
 }
 
-// Returns the legacy TLS error page HTML.
-NSString* GetLegacyTLSErrorPageHTML(web::WebState* web_state,
-                                    int64_t navigation_id) {
-  std::string error_page_content;
-  security_interstitials::IOSBlockingPageTabHelper* blocking_page_tab_helper =
-      security_interstitials::IOSBlockingPageTabHelper::FromWebState(web_state);
-
-  // WebStates that are not in the WebStateList (e.g., WebStates used for
-  // reading list sync) do not have an IOSBlockingPageTabHelper. Since such
-  // WebStates are not used for displaying web contents to a user, it is not
-  // necessary to produce an actual error page, and instead an empty string is
-  // used.
-  if (blocking_page_tab_helper) {
-    // Construct the blocking page and associate it with the WebState.
-    std::unique_ptr<security_interstitials::IOSSecurityInterstitialPage> page =
-        std::make_unique<LegacyTLSBlockingPage>(
-            web_state, web_state->GetVisibleURL() /*request_url*/,
-            std::make_unique<LegacyTLSControllerClient>(
-                web_state, web_state->GetVisibleURL(),
-                GetApplicationContext()->GetApplicationLocale()));
-    error_page_content = page->GetHtmlContents();
-    blocking_page_tab_helper->AssociateBlockingPage(navigation_id,
-                                                    std::move(page));
-  }
-
-  return base::SysUTF8ToNSString(error_page_content);
+// Returns a version string that matches the current version number except that
+// the major version is 100.
+const std::string& GetM100VersionNumber() {
+  static const base::NoDestructor<std::string> m100_version_number([] {
+    base::Version version(version_info::GetVersionNumber());
+    std::string version_str(kMajorVersion100);
+    const std::vector<uint32_t>& components = version.components();
+    // Rest of the version string remains the same.
+    for (size_t i = 1; i < components.size(); ++i) {
+      version_str.append(".");
+      version_str.append(base::NumberToString(components[i]));
+    }
+    return version_str;
+  }());
+  return *m100_version_number;
 }
 
 // Returns a string describing the product name and version, of the
 // form "productname/version". Used as part of the user agent string.
 std::string GetMobileProduct() {
+  if (base::FeatureList::IsEnabled(web::kForceMajorVersion100InUserAgent)) {
+    return base::StringPrintf(kProductTagWithPlaceholder,
+                              GetM100VersionNumber().c_str());
+  }
   return base::StringPrintf(kProductTagWithPlaceholder,
                             version_info::GetVersionNumber().c_str());
 }
@@ -186,6 +184,10 @@ std::string GetMobileProduct() {
 // for fingerprinting. The Mobile one is using the full version for legacy
 // reasons.
 std::string GetDesktopProduct() {
+  if (base::FeatureList::IsEnabled(web::kForceMajorVersion100InUserAgent)) {
+    return base::StringPrintf(kProductTagWithPlaceholder, kMajorVersion100);
+  }
+
   return base::StringPrintf(kProductTagWithPlaceholder,
                             version_info::GetMajorVersionNumber().c_str());
 }
@@ -201,24 +203,7 @@ std::unique_ptr<web::WebMainParts> ChromeWebClient::CreateWebMainParts() {
       *base::CommandLine::ForCurrentProcess());
 }
 
-void ChromeWebClient::PreWebViewCreation() const {
-  // TODO(crbug.com/1082371): Confirm that this code is no longer needed and
-  // remove it entirely. Until then, prevent this from running on iOS 13.4+, as
-  // it occasionally triggers a permissions prompt.
-  if (!base::ios::IsRunningOnOrLater(13, 4, 0)) {
-    // Initialize the audio session to allow a web page's audio to continue
-    // playing after the app is backgrounded.
-    VoiceSearchProvider* voice_provider =
-        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
-    if (voice_provider) {
-      AudioSessionController* audio_controller =
-          voice_provider->GetAudioSessionController();
-      if (audio_controller) {
-        audio_controller->InitializeSessionIfNecessary();
-      }
-    }
-  }
-}
+void ChromeWebClient::PreWebViewCreation() const {}
 
 void ChromeWebClient::AddAdditionalSchemes(Schemes* schemes) const {
   schemes->standard_schemes.push_back(kChromeUIScheme);
@@ -265,7 +250,7 @@ std::u16string ChromeWebClient::GetLocalizedString(int message_id) const {
 
 base::StringPiece ChromeWebClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ResourceScaleFactor scale_factor) const {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
@@ -284,10 +269,7 @@ void ChromeWebClient::GetAdditionalWebUISchemes(
 void ChromeWebClient::PostBrowserURLRewriterCreation(
     web::BrowserURLRewriter* rewriter) {
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
-  BrowserURLRewriterProvider* provider =
-      ios::GetChromeBrowserProvider()->GetBrowserURLRewriterProvider();
-  if (provider)
-    provider->AddProviderRewriters(rewriter);
+  ios::provider::AddURLRewriters(rewriter);
 }
 
 std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
@@ -295,8 +277,7 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   static base::NoDestructor<PrintJavaScriptFeature> print_feature;
   std::vector<web::JavaScriptFeature*> features;
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordReuseDetectionEnabled) &&
-      base::ios::IsRunningOnIOS14OrLater()) {
+          password_manager::features::kPasswordReuseDetectionEnabled)) {
     features.push_back(PasswordProtectionJavaScriptFeature::GetInstance());
   }
 
@@ -307,6 +288,14 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
 
   features.push_back(print_feature.get());
 
+  BOOL shouldInjectReadingListJavaScript =
+      IsReadingListMessagesEnabled() || IsReadingListTimeToReadEnabled();
+  if (!browser_state->IsOffTheRecord() && shouldInjectReadingListJavaScript) {
+    static base::NoDestructor<ReadingListJavaScriptFeature>
+        reading_list_feature;
+    features.push_back(reading_list_feature.get());
+  }
+
   features.push_back(autofill::AutofillJavaScriptFeature::GetInstance());
   features.push_back(autofill::FormHandlersJavaScriptFeature::GetInstance());
   features.push_back(
@@ -315,7 +304,12 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(ImageFetchJavaScriptFeature::GetInstance());
   features.push_back(
       password_manager::PasswordManagerJavaScriptFeature::GetInstance());
+  features.push_back(LinkToTextJavaScriptFeature::GetInstance());
 
+  SearchEngineJavaScriptFeature::GetInstance()->SetDelegate(
+      SearchEngineTabHelperFactory::GetInstance());
+  features.push_back(SearchEngineJavaScriptFeature::GetInstance());
+  features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
   return features;
 }
 
@@ -325,14 +319,6 @@ NSString* ChromeWebClient::GetDocumentStartScriptForMainFrame(
   [scripts addObject:GetPageScript(@"chrome_bundle_main_frame")];
 
   return [scripts componentsJoinedByString:@";"];
-}
-
-bool ChromeWebClient::IsLegacyTLSAllowedForHost(web::WebState* web_state,
-                                                const std::string& hostname) {
-  auto* allowlist = LegacyTLSTabAllowList::FromWebState(web_state);
-  if (!allowlist)
-    return false;
-  return allowlist->IsDomainAllowed(hostname);
 }
 
 void ChromeWebClient::PrepareErrorPage(
@@ -377,10 +363,6 @@ void ChromeWebClient::PrepareErrorPage(
     DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
     std::move(error_html_callback)
         .Run(GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
-  } else if ([final_underlying_error.domain isEqual:net::kNSErrorDomain] &&
-             final_underlying_error.code == net::ERR_SSL_OBSOLETE_VERSION) {
-    std::move(error_html_callback)
-        .Run(GetLegacyTLSErrorPageHTML(web_state, navigation_id));
   } else if (info.has_value()) {
     base::OnceCallback<void(NSString*)> blocking_page_callback =
         base::BindOnce(^(NSString* blocking_page_html) {
@@ -416,32 +398,34 @@ bool ChromeWebClient::EnableLongPressAndForceTouchHandling() const {
 }
 
 bool ChromeWebClient::EnableLongPressUIContextMenu() const {
-  return web::features::UseWebViewNativeContextMenuSystem();
-}
-
-bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
-  DCHECK(web::features::UseWebClientDefaultUserAgent());
-  if (base::FeatureList::IsEnabled(web::kMobileGoogleSRP)) {
-    return google_util::IsGoogleSearchUrl(url);
-  }
-  return false;
+  return true;
 }
 
 web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
     id<UITraitEnvironment> web_view,
     const GURL& url) {
-  DCHECK(web::features::UseWebClientDefaultUserAgent());
-  if (ForceMobileVersionByDefault(url))
-    return web::UserAgentType::MOBILE;
-  BOOL isRegularRegular = web_view.traitCollection.horizontalSizeClass ==
-                              UIUserInterfaceSizeClassRegular &&
-                          web_view.traitCollection.verticalSizeClass ==
-                              UIUserInterfaceSizeClassRegular;
-  return isRegularRegular ? web::UserAgentType::DESKTOP
-                          : web::UserAgentType::MOBILE;
+  return web::UserAgentType::MOBILE;
 }
 
 bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
   return WebSessionStateTabHelper::FromWebState(web_state)
       ->RestoreSessionFromCache();
+}
+
+void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {
+  web::NavigationManager* navigationManager = web_state->GetNavigationManager();
+  for (int i = 0; i < navigationManager->GetItemCount(); i++) {
+    // The WKWebView URL underneath the NTP is about://newtab, which has no
+    // title. When restoring the NTP, be sure to re-add the title below.
+    web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
+    NewTabPageTabHelper::UpdateItem(item);
+
+    // The WKWebView URL underneath a forced-offline page is chrome://offline,
+    // which has an embedded entry URL. Apply that entryURL to the virtualURL
+    // here.
+    if (item->GetVirtualURL().host() == kChromeUIOfflineHost) {
+      item->SetVirtualURL(
+          reading_list::EntryURLForOfflineURL(item->GetVirtualURL()));
+    }
+  }
 }

@@ -8,12 +8,14 @@
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using testing::UnorderedElementsAre;
 
 namespace network {
 
-TEST(ClientHintsTest, ParseAcceptCH) {
+TEST(ClientHintsTest, ParseClientHintsHeader) {
   absl::optional<std::vector<network::mojom::WebClientHintsType>> result;
 
   // Empty is OK.
@@ -22,58 +24,137 @@ TEST(ClientHintsTest, ParseAcceptCH) {
   EXPECT_TRUE(result.value().empty());
 
   // Normal case.
-  result = ParseClientHintsHeader("device-memory,  rtt, lang ");
+  result = ParseClientHintsHeader("device-memory,  rtt ");
   ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
+  EXPECT_THAT(result.value(),
+              UnorderedElementsAre(
+                  network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+                  network::mojom::WebClientHintsType::kRtt_DEPRECATED));
 
   // Must be a list of tokens, not other things.
-  result = ParseClientHintsHeader("\"device-memory\", \"rtt\", \"lang\"");
+  result = ParseClientHintsHeader("\"device-memory\", \"rtt\"");
   EXPECT_FALSE(result.has_value());
 
   // Parameters to the tokens are ignored, as encourageed by structured headers
   // spec.
-  result = ParseClientHintsHeader("device-memory;resolution=GIB, rtt, lang");
+  result = ParseClientHintsHeader("device-memory;resolution=GIB, rtt");
   ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
+  EXPECT_THAT(result.value(),
+              UnorderedElementsAre(
+                  network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+                  network::mojom::WebClientHintsType::kRtt_DEPRECATED));
 
   // Unknown tokens are fine, since this meant to be extensible.
-  result = ParseClientHintsHeader(
-      "device-memory,  rtt, lang , nosuchtokenwhywhywhy");
+  result = ParseClientHintsHeader("device-memory,  rtt , nosuchtokenwhywhywhy");
   ASSERT_TRUE(result.has_value());
-  EXPECT_THAT(
-      result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-}
-
-TEST(ClientHintsTest, ParseAcceptCHCaseInsensitive) {
-  absl::optional<std::vector<network::mojom::WebClientHintsType>> result;
+  EXPECT_THAT(result.value(),
+              UnorderedElementsAre(
+                  network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+                  network::mojom::WebClientHintsType::kRtt_DEPRECATED));
 
   // Matching is case-insensitive.
-  result = ParseClientHintsHeader("Device-meMory,  Rtt, lanG ");
+  result = ParseClientHintsHeader("Device-meMory,  Rtt ");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(result.value(),
+              UnorderedElementsAre(
+                  network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+                  network::mojom::WebClientHintsType::kRtt_DEPRECATED));
+}
+
+TEST(ClientHintsTest, ParseClientHintToDelegatedThirdPartiesHeader) {
+  absl::optional<ClientHintToDelegatedThirdPartiesMap> result;
+
+  // Empty is OK.
+  result = ParseClientHintToDelegatedThirdPartiesHeader(" ");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_TRUE(result.value().empty());
+
+  // Normal case.
+  result = ParseClientHintToDelegatedThirdPartiesHeader("device-memory,  rtt ");
   ASSERT_TRUE(result.has_value());
   EXPECT_THAT(
       result.value(),
-      UnorderedElementsAre(network::mojom::WebClientHintsType::kDeviceMemory,
-                           network::mojom::WebClientHintsType::kRtt,
-                           network::mojom::WebClientHintsType::kLang));
-}
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){})));
 
-TEST(ClientHintsTest, ParseAcceptCHLifetime) {
-  EXPECT_EQ(base::TimeDelta(), ParseAcceptCHLifetime(""));
-  EXPECT_EQ(base::TimeDelta(), ParseAcceptCHLifetime("-1000"));
-  EXPECT_EQ(base::TimeDelta(), ParseAcceptCHLifetime("1000s"));
-  EXPECT_EQ(base::TimeDelta(), ParseAcceptCHLifetime("1000.5"));
-  EXPECT_EQ(base::TimeDelta::FromSeconds(1000), ParseAcceptCHLifetime("1000"));
+  // Must be a list of tokens, not other things.
+  result = ParseClientHintToDelegatedThirdPartiesHeader(
+      "\"device-memory\", \"rtt\"");
+  EXPECT_FALSE(result.has_value());
+
+  // Parameters to the tokens are ignored, as encourageed by structured headers
+  // spec.
+  result = ParseClientHintToDelegatedThirdPartiesHeader(
+      "device-memory;resolution=GIB, rtt");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(
+      result.value(),
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){})));
+
+  // Unknown tokens are fine, since this meant to be extensible.
+  result = ParseClientHintToDelegatedThirdPartiesHeader(
+      "device-memory,  rtt , nosuchtokenwhywhywhy");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(
+      result.value(),
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){})));
+
+  // Matching is case-insensitive.
+  result = ParseClientHintToDelegatedThirdPartiesHeader("Device-meMory,  Rtt ");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(
+      result.value(),
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){})));
+
+  // Matching can find a one or more origins.
+  result = ParseClientHintToDelegatedThirdPartiesHeader(
+      "device-memory=https://foo.bar,  rtt=( https://foo.bar "
+      "https://baz.qux) ");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(
+      result.value(),
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){
+                  url::Origin::Create(GURL("https://foo.bar"))}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){
+                             url::Origin::Create(GURL("https://foo.bar")),
+                             url::Origin::Create(GURL("https://baz.qux"))})));
+
+  // Matching ignores invalid domains
+  result = ParseClientHintToDelegatedThirdPartiesHeader(
+      "device-memory=6,  rtt=( https://foo.bar/wasd self ) ");
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(
+      result.value(),
+      UnorderedElementsAre(
+          std::make_pair(
+              network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+              (std::vector<url::Origin>){}),
+          std::make_pair(network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+                         (std::vector<url::Origin>){
+                             url::Origin::Create(GURL("https://foo.bar"))})));
 }
 
 }  // namespace network

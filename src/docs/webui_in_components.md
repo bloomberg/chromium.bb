@@ -12,14 +12,14 @@
 
 # Creating WebUI Interfaces in `components/`
 
-To create a WebUI interface in `components/` you need to follow different steps from [Creating WebUI Interfaces in `chrome/`](https://www.chromium.org/developers/webui). This guide is specific to creating a WebUI interface in `src/components/`. It is based on the steps I went through to create the WebUI infrastructure for chrome://safe-browsing in 'src/components/safe_browsing/content/web_ui/'.
+To create a WebUI interface in `components/` you need to follow different steps from [Creating WebUI Interfaces in `chrome/`](https://www.chromium.org/developers/webui). This guide is specific to creating a WebUI interface in `src/components/`. It is based on the steps I went through to create the WebUI infrastructure for chrome://safe-browsing in 'src/components/safe_browsing/content/browser/web_ui/'.
 
 [TOC]
 
 <a name="creating_webui_page"></a>
 ## Creating the WebUI page
 
-WebUI resources in `components/` will be added in your specific project folder. Create a project folder `src/components/hello_world/`. When creating WebUI resources, follow the [Web Development Style Guide](https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/web.md). For a sample WebUI page you could start with the following files:
+WebUI resources in `components/` will be added in your specific project folder. Create a project folder `src/components/hello_world/`. When creating WebUI resources, follow the [Web Development Style Guide](https://chromium.googlesource.com/chromium/src/+/main/styleguide/web/web.md). For a sample WebUI page you could start with the following files:
 
 `src/components/hello_world/hello_world.html:`
 ```html
@@ -136,7 +136,6 @@ Next we need a class to handle requests to this new resource URL. Typically this
 #define COMPONENTS_HELLO_WORLD_HELLO_WORLD_UI_H_
 #pragma once
 
-#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The WebUI for chrome://hello-world
@@ -236,11 +235,8 @@ You probably want your new WebUI page to be able to do something or get informat
 
 `src/components/hello_world/hello_world_ui.h:`
 ```c++
+#include "base/values.h"
 #include "content/public/browser/web_ui.h"
-+
-+ namespace base {
-+   class ListValue;
-+ }  // namespace base
 
 // The WebUI for chrome://hello-world
 ...
@@ -249,7 +245,7 @@ You probably want your new WebUI page to be able to do something or get informat
 +
 +   // Register callback handler.
 +   RegisterMessageCallback("addNumbers",
-+       base::BindRepeating(&HelloWorldUI::AddNumbers,
++       base::BindRepeating(&HelloWorldUI::AddPositiveNumbers,
 +                           base::Unretained(this)));
 
     // Localized strings.
@@ -257,8 +253,8 @@ You probably want your new WebUI page to be able to do something or get informat
     virtual ~HelloWorldUI();
 +
 +  private:
-+   // Add two numbers together using integer arithmetic.
-+   void AddNumbers(const base::ListValue* args);
++   // Add two positive numbers together using integer arithmetic.
++   void AddPositiveNumbers(base::Value::ConstListView args);
   };
 ```
 
@@ -272,14 +268,16 @@ You probably want your new WebUI page to be able to do something or get informat
   HelloWorldUI::~HelloWorldUI() {
   }
 +
-+ void HelloWorldUI::AddNumbers(const base::ListValue* args) {
-+   int term1, term2;
-+   if (!args->GetInteger(0, &term1) || !args->GetInteger(1, &term2))
-+     return;
++ void HelloWorldUI::AddPositiveNumbers(base::Value::ConstListView args) {
++   // IMPORTANT: Fully validate `args`.
++   CHECK_EQ(3u, args.size());
++   int term1 = args[1].GetInt();
++   CHECK_GT(term1, 0);
++   int term2 = args[2].GetInt();
++   CHECK_GT(term2, 0);
 +   base::FundamentalValue result(term1 + term2);
 +   AllowJavascript();
-+   std::string callback_id;
-+   args->GetString(0, &callback_id);
++   std::string callback_id = args[0].GetString();
 +   ResolveJavascriptCallback(base::Value(callback_id), result);
 + }
 ```
@@ -304,11 +302,11 @@ You'll notice that the call is asynchronous. We must wait for the C++ side to ca
 
 ## Creating a WebUI Dialog
 
-Some pages have many messages or share code that sends messages. To make possible message handling and/or to create a WebUI dialogue `c++->js` and `js->c++`, follow the guide in [WebUI Explainer](https://chromium.googlesource.com/chromium/src/+/master/docs/webui_explainer.md).
+Some pages have many messages or share code that sends messages. To make possible message handling and/or to create a WebUI dialogue `c++->js` and `js->c++`, follow the guide in [WebUI Explainer](https://chromium.googlesource.com/chromium/src/+/main/docs/webui_explainer.md).
 
 ## DevUI Pages
 
-DevUI pages are WebUI pages intended for developers, and unlikely used by most users. An example is `chrome://bluetooth-internals`. On Android Chrome, these pages are moved to a separate [Dynamic Feature Module (DFM)](https://chromium.googlesource.com/chromium/src/+/master/docs/android_dynamic_feature_modules.md) to reduce binary size. Most WebUI pages are DevUI. This is why in this doc uses `dev_ui_components_resources.{grd, h}` in its examples.
+DevUI pages are WebUI pages intended for developers, and unlikely used by most users. An example is `chrome://bluetooth-internals`. On Android Chrome, these pages are moved to a separate [Dynamic Feature Module (DFM)](https://chromium.googlesource.com/chromium/src/+/main/docs/android_dynamic_feature_modules.md) to reduce binary size. Most WebUI pages are DevUI. This is why in this doc uses `dev_ui_components_resources.{grd, h}` in its examples.
 
 `components/` resources that are intended for end users are associated with `components_resources.{grd, h}` and `components_scaled_resorces.{grd, h}`. Use these in place of or inadditional to `dev_ui_components_resources.{grd, h}` if needed.
 

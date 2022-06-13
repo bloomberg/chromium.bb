@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "media/audio/audio_input_ipc.h"
@@ -31,6 +31,10 @@ class InputIPC : public media::AudioInputIPC,
   InputIPC(mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory,
            const std::string& device_id,
            mojo::PendingRemote<media::mojom::AudioLog> log);
+
+  InputIPC(const InputIPC&) = delete;
+  InputIPC& operator=(const InputIPC&) = delete;
+
   ~InputIPC() override;
 
   // AudioInputIPC implementation
@@ -56,7 +60,7 @@ class InputIPC : public media::AudioInputIPC,
 
   mojo::Remote<media::mojom::AudioInputStream> stream_;
   mojo::Receiver<AudioInputStreamClient> stream_client_receiver_{this};
-  media::AudioInputIPCDelegate* delegate_ = nullptr;
+  raw_ptr<media::AudioInputIPCDelegate> delegate_ = nullptr;
 
   std::string device_id_;
   absl::optional<base::UnguessableToken> stream_id_;
@@ -71,8 +75,6 @@ class InputIPC : public media::AudioInputIPC,
   mojo::Remote<media::mojom::AudioLog> log_;
 
   base::WeakPtrFactory<InputIPC> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InputIPC);
 };
 
 }  // namespace audio

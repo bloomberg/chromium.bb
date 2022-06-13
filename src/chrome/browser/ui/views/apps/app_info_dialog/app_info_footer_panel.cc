@@ -28,6 +28,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // gn check complains on Linux Ozone.
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
+#include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #endif
@@ -147,10 +148,11 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
       ChromeShelfController::instance()->shelf_model();
   DCHECK(shelf_model);
   ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(shelf_model);
-  if (value)
-    shelf_model->PinAppWithID(app_->id());
-  else
-    shelf_model->UnpinAppWithID(app_->id());
+  if (value) {
+    PinAppWithIDToShelf(app_->id());
+  } else {
+    UnpinAppWithIDFromShelf(app_->id());
+  }
 
   UpdatePinButtons(true);
   Layout();
@@ -171,7 +173,7 @@ void AppInfoFooterPanel::UninstallApp() {
   extension_uninstall_dialog_ = extensions::ExtensionUninstallDialog::Create(
       profile_, GetWidget()->GetNativeWindow(), this);
   extension_uninstall_dialog_->ConfirmUninstall(
-      app_, extensions::UNINSTALL_REASON_USER_INITIATED,
+      app_.get(), extensions::UNINSTALL_REASON_USER_INITIATED,
       extensions::UNINSTALL_SOURCE_APP_INFO_DIALOG);
 }
 

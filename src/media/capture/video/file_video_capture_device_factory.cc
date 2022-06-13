@@ -26,16 +26,16 @@ base::FilePath GetFilePathFromCommandLine() {
   return command_line_file_path;
 }
 
-std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::CreateDevice(
+VideoCaptureErrorOrDevice FileVideoCaptureDeviceFactory::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 #if defined(OS_WIN)
-  return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
+  return VideoCaptureErrorOrDevice(std::make_unique<FileVideoCaptureDevice>(
       base::FilePath(base::SysUTF8ToWide(device_descriptor.display_name()))));
 #else
-  return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
+  return VideoCaptureErrorOrDevice(std::make_unique<FileVideoCaptureDevice>(
       base::FilePath(device_descriptor.display_name())));
 #endif
 }
@@ -43,7 +43,7 @@ std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::CreateDevice(
 void FileVideoCaptureDeviceFactory::GetDevicesInfo(
     GetDevicesInfoCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ThreadRestrictions::SetIOAllowed(true);
+  base::ScopedAllowBlocking allow_blocking;
 
   std::vector<VideoCaptureDeviceInfo> devices_info;
 

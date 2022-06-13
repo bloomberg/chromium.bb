@@ -80,7 +80,7 @@ NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
 scoped_refptr<const NGPhysicalBoxFragment>
 NGBaseLayoutAlgorithmTest::GetBoxFragmentByElementId(const char* id) {
   LayoutObject* layout_object = GetLayoutObjectByElementId(id);
-  CHECK(layout_object && layout_object->IsLayoutNGMixin());
+  CHECK(layout_object && layout_object->IsLayoutNGObject());
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       To<LayoutBlockFlow>(layout_object)->GetPhysicalFragment(0);
   CHECK(fragment);
@@ -126,7 +126,9 @@ NGConstraintSpace ConstructBlockLayoutTestConstraintSpace(
                                    is_new_formatting_context);
   builder.SetAvailableSize(size);
   builder.SetPercentageResolutionSize(size);
-  builder.SetStretchInlineSizeIfAuto(stretch_inline_size_if_auto);
+  builder.SetInlineAutoBehavior(stretch_inline_size_if_auto
+                                    ? NGAutoBehavior::kStretchImplicit
+                                    : NGAutoBehavior::kFitContent);
   builder.SetFragmentainerBlockSize(fragmentainer_space_available);
   builder.SetFragmentationType(block_fragmentation);
   return builder.ToConstraintSpace();

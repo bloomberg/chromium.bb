@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/modules/audio_device/include/audio_device.h"
@@ -24,6 +23,9 @@ class MODULES_EXPORT WebRtcAudioDeviceNotImpl
     : public webrtc::AudioDeviceModule {
  public:
   WebRtcAudioDeviceNotImpl();
+
+  WebRtcAudioDeviceNotImpl(const WebRtcAudioDeviceNotImpl&) = delete;
+  WebRtcAudioDeviceNotImpl& operator=(const WebRtcAudioDeviceNotImpl&) = delete;
 
   // Methods in webrtc::AudioDeviceModule which are not yet implemented.
   // The idea is that we can move methods from this class to the real
@@ -54,6 +56,10 @@ class MODULES_EXPORT WebRtcAudioDeviceNotImpl
   int32_t MaxSpeakerVolume(uint32_t* max_volume) const override;
   int32_t MinSpeakerVolume(uint32_t* min_volume) const override;
   int32_t MicrophoneVolumeIsAvailable(bool* available) override;
+  int32_t SetMicrophoneVolume(uint32_t volume) override;
+  int32_t MicrophoneVolume(uint32_t* volume) const override;
+  int32_t MaxMicrophoneVolume(uint32_t* max_volume) const override;
+  int32_t MinMicrophoneVolume(uint32_t* min_volume) const override;
   int32_t SpeakerMuteIsAvailable(bool* available) override;
   int32_t SetSpeakerMute(bool enable) override;
   int32_t SpeakerMute(bool* enabled) const override;
@@ -79,9 +85,6 @@ class MODULES_EXPORT WebRtcAudioDeviceNotImpl
 
  protected:
   ~WebRtcAudioDeviceNotImpl() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceNotImpl);
 };
 
 }  // namespace blink

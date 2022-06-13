@@ -5,7 +5,7 @@
 #include "ui/base/test/skia_gold_pixel_diff.h"
 
 #include "base/command_line.h"
-#include "base/test/scoped_environment_variable_override.h"
+#include "base/scoped_environment_variable_override.h"
 #include "base/test/test_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,6 +38,9 @@ class SkiaGoldPixelDiffTest : public ::testing::Test {
     CreateTestBitmap();
   }
 
+  SkiaGoldPixelDiffTest(const SkiaGoldPixelDiffTest&) = delete;
+  SkiaGoldPixelDiffTest& operator=(const SkiaGoldPixelDiffTest&) = delete;
+
   ~SkiaGoldPixelDiffTest() override {}
 
   SkBitmap GetTestBitmap() { return test_bitmap_; }
@@ -49,7 +52,6 @@ class SkiaGoldPixelDiffTest : public ::testing::Test {
   }
 
  protected:
-  DISALLOW_COPY_AND_ASSIGN(SkiaGoldPixelDiffTest);
 
  private:
   SkBitmap test_bitmap_;
@@ -108,7 +110,7 @@ TEST_F(SkiaGoldPixelDiffTest, LocalNoLuciAuth) {
   MockSkiaGoldPixelDiff mock_pixel;
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   cmd_line->RemoveSwitch(switches::kTestLauncherBotMode);
-  base::test::ScopedEnvironmentVariableOverride env_override(
+  base::ScopedEnvironmentVariableOverride env_override(
       "CHROMIUM_TEST_LAUNCHER_BOT_MODE");
 
   EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
@@ -274,7 +276,7 @@ TEST_F(SkiaGoldPixelDiffTest, ExplicitCodeReviewSystem) {
 TEST_F(SkiaGoldPixelDiffTest, DryRunLocally) {
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   cmd_line->RemoveSwitch(switches::kTestLauncherBotMode);
-  base::test::ScopedEnvironmentVariableOverride env_override(
+  base::ScopedEnvironmentVariableOverride env_override(
       "CHROMIUM_TEST_LAUNCHER_BOT_MODE");
 
   MockSkiaGoldPixelDiff mock_pixel;
@@ -299,6 +301,23 @@ TEST_F(SkiaGoldPixelDiffTest, NotDryRunOnBots) {
                               &base::CommandLine::GetCommandLineString,
                               Not(HasSubstr(FILE_PATH_LITERAL("--dryrun")))))))
       .Times(3);
+  mock_pixel.Init("Prefix");
+  bool ret = mock_pixel.CompareScreenshot("test", GetTestBitmap());
+  EXPECT_TRUE(ret);
+}
+
+TEST_F(SkiaGoldPixelDiffTest, DryRunForTryjobWithoutPatch) {
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kTestLauncherBotMode);
+  cmd_line->AppendSwitchASCII(switches::kTestLauncherBatchLimit, "1");
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_pixel,
+      LaunchProcess(AllOf(Property(&base::CommandLine::GetCommandLineString,
+                                   HasSubstr(FILE_PATH_LITERAL("--dryrun"))))))
+      .Times(1);
   mock_pixel.Init("Prefix");
   bool ret = mock_pixel.CompareScreenshot("test", GetTestBitmap());
   EXPECT_TRUE(ret);

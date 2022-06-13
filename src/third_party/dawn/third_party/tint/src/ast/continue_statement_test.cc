@@ -24,7 +24,7 @@ using ContinueStatementTest = TestHelper;
 
 TEST_F(ContinueStatementTest, Creation_WithSource) {
   auto* stmt = create<ContinueStatement>(Source{Source::Location{20, 2}});
-  auto src = stmt->source();
+  auto src = stmt->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -32,12 +32,6 @@ TEST_F(ContinueStatementTest, Creation_WithSource) {
 TEST_F(ContinueStatementTest, IsContinue) {
   auto* stmt = create<ContinueStatement>();
   EXPECT_TRUE(stmt->Is<ContinueStatement>());
-}
-
-TEST_F(ContinueStatementTest, ToStr) {
-  auto* stmt = create<ContinueStatement>();
-  EXPECT_EQ(str(stmt), R"(Continue{}
-)");
 }
 
 }  // namespace

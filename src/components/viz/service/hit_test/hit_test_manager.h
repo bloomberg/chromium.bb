@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -26,6 +27,10 @@ class LatestLocalSurfaceIdLookupDelegate;
 class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
  public:
   explicit HitTestManager(SurfaceManager* surface_manager);
+
+  HitTestManager(const HitTestManager&) = delete;
+  HitTestManager& operator=(const HitTestManager&) = delete;
+
   ~HitTestManager() override;
 
   // SurfaceObserver:
@@ -72,7 +77,7 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,
                                  HitTestRegionList* hit_test_region_list);
 
-  SurfaceManager* const surface_manager_;
+  const raw_ptr<SurfaceManager> surface_manager_;
 
   std::map<SurfaceId, base::flat_map<uint64_t, HitTestRegionList>>
       hit_test_region_lists_;
@@ -100,8 +105,6 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   // HitTestAggregators to stay in sync with the HitTestManager and only
   // aggregate when there is new hit-test data.
   uint64_t submit_hit_test_region_list_index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(HitTestManager);
 };
 
 }  // namespace viz

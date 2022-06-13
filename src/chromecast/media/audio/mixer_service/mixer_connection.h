@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -25,6 +24,10 @@ class MixerSocket;
 class MixerConnection {
  public:
   MixerConnection();
+
+  MixerConnection(const MixerConnection&) = delete;
+  MixerConnection& operator=(const MixerConnection&) = delete;
+
   virtual ~MixerConnection();
 
   // Initiates connection to the mixer service. Will call OnConnected() when
@@ -46,8 +49,6 @@ class MixerConnection {
   bool log_timeout_ = true;
 
   base::WeakPtrFactory<MixerConnection> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MixerConnection);
 };
 
 }  // namespace mixer_service

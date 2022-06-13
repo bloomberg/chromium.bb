@@ -2,23 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as i18n from '../../../../core/i18n/i18n.js';
-import type * as UI from '../../legacy.js'; // eslint-disable-line no-unused-vars
+import type * as UI from '../../legacy.js';
 
 import type {Provider} from './FilteredListWidget.js';
-import {FilteredListWidget, getRegisteredProviders} from './FilteredListWidget.js';  // eslint-disable-line no-unused-vars
+import {FilteredListWidget, getRegisteredProviders} from './FilteredListWidget.js';
 
 const UIStrings = {
   /**
-  * @description Text in Quick Open of the Command Menu
+  * @description Text of the hint shows under Quick Open input box
   */
-  typeToSeeAvailableCommands: 'Type \'?\' to see available commands',
-  /**
-  * @description Aria-placeholder text for quick open dialog prompt
-  */
-  typeQuestionMarkToSeeAvailable: 'Type question mark to see available commands',
+  useTabToSwitchCommandsTypeToSeeAvailableCommands: 'Use Tab to switch commands. Type \'?\' to see available commands',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/quick_open/QuickOpen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -26,70 +20,86 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const history: string[] = [];
 
 export class QuickOpenImpl {
-  _prefix: string|null;
-  _query: string;
-  _providers: Map<string, () => Promise<Provider>>;
-  _prefixes: string[];
-  _filteredListWidget: FilteredListWidget|null;
-  constructor() {
-    this._prefix = null;
-    this._query = '';
-    this._providers = new Map();
-    this._prefixes = [];
-    this._filteredListWidget = null;
+  private prefix: string|null;
+  private readonly prefixes: string[];
+  private providers: Map<string, {
+    provider: () => Promise<Provider>,
+    titlePrefix: (() => string),
+    titleSuggestion?: (() => string),
+  }>;
+  private filteredListWidget: FilteredListWidget|null;
 
-    getRegisteredProviders().forEach(this._addProvider.bind(this));
-    this._prefixes.sort((a, b) => b.length - a.length);
+  constructor() {
+    this.prefix = null;
+    this.prefixes = [];
+    this.providers = new Map();
+    this.filteredListWidget = null;
+
+    getRegisteredProviders().forEach(this.addProvider.bind(this));
+    this.prefixes.sort((a, b) => b.length - a.length);
   }
 
   static show(query: string): void {
     const quickOpen = new this();
-    const filteredListWidget = new FilteredListWidget(null, history, quickOpen._queryChanged.bind(quickOpen));
-    quickOpen._filteredListWidget = filteredListWidget;
-    filteredListWidget.setPlaceholder(
-        i18nString(UIStrings.typeToSeeAvailableCommands), i18nString(UIStrings.typeQuestionMarkToSeeAvailable));
+    const filteredListWidget = new FilteredListWidget(null, history, quickOpen.queryChanged.bind(quickOpen));
+    quickOpen.filteredListWidget = filteredListWidget;
+    filteredListWidget.setHintElement(i18nString(UIStrings.useTabToSwitchCommandsTypeToSeeAvailableCommands));
     filteredListWidget.showAsDialog();
     filteredListWidget.setQuery(query);
   }
 
-  _addProvider(extension: {
+  private addProvider(extension: {
     prefix: string,
     provider: () => Promise<Provider>,
+    titlePrefix: () => string,
+    titleSuggestion?: (() => string),
   }): void {
     const prefix = extension.prefix;
     if (prefix === null) {
       return;
     }
-    this._prefixes.push(prefix);
-    this._providers.set(prefix, extension.provider);
-  }
-
-  _queryChanged(query: string): void {
-    const prefix = this._prefixes.find(prefix => query.startsWith(prefix));
-    if (typeof prefix !== 'string' || this._prefix === prefix) {
-      return;
-    }
-
-    this._prefix = prefix;
-    if (!this._filteredListWidget) {
-      return;
-    }
-    this._filteredListWidget.setPrefix(prefix);
-    this._filteredListWidget.setProvider(null);
-    const providerFunction = this._providers.get(prefix);
-    if (!providerFunction) {
-      return;
-    }
-    providerFunction().then(provider => {
-      if (this._prefix !== prefix || !this._filteredListWidget) {
-        return;
-      }
-      this._filteredListWidget.setProvider(provider);
-      this._providerLoadedForTest(provider);
+    this.prefixes.push(prefix);
+    this.providers.set(prefix, {
+      provider: extension.provider,
+      titlePrefix: extension.titlePrefix,
+      titleSuggestion: extension.titleSuggestion,
     });
   }
 
-  _providerLoadedForTest(_provider: Provider): void {
+  private async queryChanged(query: string): Promise<void> {
+    const prefix = this.prefixes.find(prefix => query.startsWith(prefix));
+    if (typeof prefix !== 'string') {
+      return;
+    }
+
+    if (!this.filteredListWidget) {
+      return;
+    }
+    this.filteredListWidget.setPrefix(prefix);
+    const titlePrefixFunction = this.providers.get(prefix)?.titlePrefix;
+    this.filteredListWidget.setCommandPrefix(titlePrefixFunction ? titlePrefixFunction() : '');
+    const titleSuggestionFunction = (query === prefix) && this.providers.get(prefix)?.titleSuggestion;
+    this.filteredListWidget.setCommandSuggestion(titleSuggestionFunction ? titleSuggestionFunction() : '');
+
+    if (this.prefix === prefix) {
+      return;
+    }
+    this.prefix = prefix;
+    this.filteredListWidget.setProvider(null);
+    const providerFunction = this.providers.get(prefix)?.provider;
+    if (!providerFunction) {
+      return;
+    }
+
+    const provider = await providerFunction();
+    if (this.prefix !== prefix || !this.filteredListWidget) {
+      return;
+    }
+    this.filteredListWidget.setProvider(provider);
+    this.providerLoadedForTest(provider);
+  }
+
+  private providerLoadedForTest(_provider: Provider): void {
   }
 }
 

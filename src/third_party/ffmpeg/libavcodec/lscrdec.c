@@ -76,6 +76,10 @@ static int decode_idat(LSCRContext *s, int length)
     int ret;
     s->zstream.avail_in = FFMIN(length, bytestream2_get_bytes_left(&s->gb));
     s->zstream.next_in  = s->gb.buffer;
+
+    if (length <= 0)
+        return AVERROR_INVALIDDATA;
+
     bytestream2_skip(&s->gb, length);
 
     /* decode one line if possible */
@@ -260,7 +264,7 @@ static void lscr_decode_flush(AVCodecContext *avctx)
     av_frame_unref(s->last_picture);
 }
 
-AVCodec ff_lscr_decoder = {
+const AVCodec ff_lscr_decoder = {
     .name           = "lscr",
     .long_name      = NULL_IF_CONFIG_SMALL("LEAD Screen Capture"),
     .type           = AVMEDIA_TYPE_VIDEO,

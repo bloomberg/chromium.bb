@@ -102,7 +102,7 @@ class ReceiverBase {
   static constexpr int kNoFramesReady = -1;
 };
 
-#endif  // CAST_STREAMING_RECEIVER_BASE_H_
-
 }  // namespace cast
 }  // namespace openscreen
+
+#endif  // CAST_STREAMING_RECEIVER_BASE_H_

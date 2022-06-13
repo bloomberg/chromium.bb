@@ -22,14 +22,16 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -193,6 +195,12 @@ class BASE_EXPORT ActivityTrackerMemoryAllocator {
                                  size_t object_size,
                                  size_t cache_size,
                                  bool make_iterable);
+
+  ActivityTrackerMemoryAllocator(const ActivityTrackerMemoryAllocator&) =
+      delete;
+  ActivityTrackerMemoryAllocator& operator=(
+      const ActivityTrackerMemoryAllocator&) = delete;
+
   ~ActivityTrackerMemoryAllocator();
 
   // Gets a reference to an object of the configured type. This can return
@@ -218,7 +226,7 @@ class BASE_EXPORT ActivityTrackerMemoryAllocator {
   size_t cache_used() const { return cache_used_; }
 
  private:
-  PersistentMemoryAllocator* const allocator_;
+  const raw_ptr<PersistentMemoryAllocator> allocator_;
   const uint32_t object_type_;
   const uint32_t object_free_type_;
   const size_t object_size_;
@@ -231,8 +239,6 @@ class BASE_EXPORT ActivityTrackerMemoryAllocator {
   // The cache of released object memories.
   std::unique_ptr<Reference[]> cache_values_;
   size_t cache_used_;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityTrackerMemoryAllocator);
 };
 
 
@@ -400,6 +406,10 @@ class BASE_EXPORT ActivityUserData {
   // data or an active one that writes to a given (zeroed) memory block.
   ActivityUserData();
   ActivityUserData(void* memory, size_t size, int64_t pid = 0);
+
+  ActivityUserData(const ActivityUserData&) = delete;
+  ActivityUserData& operator=(const ActivityUserData&) = delete;
+
   virtual ~ActivityUserData();
 
   // Gets the unique ID number for this user data. If this changes then the
@@ -528,8 +538,9 @@ class BASE_EXPORT ActivityUserData {
 
     StringPiece name;                 // The "key" of the record.
     ValueType type;                   // The type of the value.
-    void* memory;                     // Where the "value" is held.
-    std::atomic<uint16_t>* size_ptr;  // Address of the actual size of value.
+    raw_ptr<void> memory;             // Where the "value" is held.
+    raw_ptr<std::atomic<uint16_t>>
+        size_ptr;                     // Address of the actual size of value.
     size_t extent;                    // The total storage of the value,
   };                                  // typically rounded up for alignment.
 
@@ -553,19 +564,17 @@ class BASE_EXPORT ActivityUserData {
   // Information about the memory block in which new data can be stored. These
   // are "mutable" because they change even on "const" objects that are just
   // skipping already set values.
-  mutable char* memory_;
+  mutable raw_ptr<char> memory_;
   mutable size_t available_;
 
   // A pointer to the memory header for this instance.
-  MemoryHeader* const header_;
+  const raw_ptr<MemoryHeader> header_;
 
   // These hold values used when initially creating the object. They are
   // compared against current header values to check for outside changes.
   const uint32_t orig_data_id;
   const int64_t orig_process_id;
   const int64_t orig_create_stamp;
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityUserData);
 };
 
 // This class manages tracking a stack of activities for a single thread in
@@ -632,6 +641,10 @@ class BASE_EXPORT ThreadActivityTracker {
                    const void* origin,
                    Activity::Type type,
                    const ActivityData& data);
+
+    ScopedActivity(const ScopedActivity&) = delete;
+    ScopedActivity& operator=(const ScopedActivity&) = delete;
+
     ~ScopedActivity();
 
     // Indicates if this activity is actually being recorded. It may not be if
@@ -645,19 +658,20 @@ class BASE_EXPORT ThreadActivityTracker {
    protected:
     // The thread tracker to which this object reports. It can be null if
     // activity tracking is not (yet) enabled.
-    ThreadActivityTracker* const tracker_;
+    const raw_ptr<ThreadActivityTracker> tracker_;
 
     // An identifier that indicates a specific activity on the stack.
     ActivityId activity_id_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedActivity);
   };
 
   // A ThreadActivityTracker runs on top of memory that is managed externally.
   // It must be large enough for the internal header and a few Activity
   // blocks. See SizeForStackDepth().
   ThreadActivityTracker(void* base, size_t size);
+
+  ThreadActivityTracker(const ThreadActivityTracker&) = delete;
+  ThreadActivityTracker& operator=(const ThreadActivityTracker&) = delete;
+
   virtual ~ThreadActivityTracker();
 
   // Indicates that an activity has started from a given |origin| address in
@@ -755,8 +769,8 @@ class BASE_EXPORT ThreadActivityTracker {
       Activity* activity,
       ActivityTrackerMemoryAllocator* allocator);
 
-  Header* const header_;        // Pointer to the Header structure.
-  Activity* const stack_;       // The stack of activities.
+  const raw_ptr<Header> header_;   // Pointer to the Header structure.
+  const raw_ptr<Activity> stack_;  // The stack of activities.
 
 #if DCHECK_IS_ON()
   // The ActivityTracker is thread bound, and will be invoked across all the
@@ -767,8 +781,6 @@ class BASE_EXPORT ThreadActivityTracker {
   const uint32_t stack_slots_;  // The total number of stack slots.
 
   bool valid_ = false;          // Tracks whether the data is valid or not.
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadActivityTracker);
 };
 
 
@@ -859,6 +871,10 @@ class BASE_EXPORT GlobalActivityTracker {
                          Activity::Type type,
                          const ActivityData& data,
                          bool lock_allowed);
+
+    ScopedThreadActivity(const ScopedThreadActivity&) = delete;
+    ScopedThreadActivity& operator=(const ScopedThreadActivity&) = delete;
+
     ~ScopedThreadActivity();
 
     // Returns an object for manipulating user data.
@@ -883,9 +899,10 @@ class BASE_EXPORT GlobalActivityTracker {
 
     // An object that manages additional user data, created only upon request.
     std::unique_ptr<ActivityUserData> user_data_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedThreadActivity);
   };
+
+  GlobalActivityTracker(const GlobalActivityTracker&) = delete;
+  GlobalActivityTracker& operator=(const GlobalActivityTracker&) = delete;
 
   ~GlobalActivityTracker();
 
@@ -1077,6 +1094,10 @@ class BASE_EXPORT GlobalActivityTracker {
   class ThreadSafeUserData : public ActivityUserData {
    public:
     ThreadSafeUserData(void* memory, size_t size, int64_t pid = 0);
+
+    ThreadSafeUserData(const ThreadSafeUserData&) = delete;
+    ThreadSafeUserData& operator=(const ThreadSafeUserData&) = delete;
+
     ~ThreadSafeUserData() override;
 
    private:
@@ -1086,8 +1107,6 @@ class BASE_EXPORT GlobalActivityTracker {
               size_t size) override;
 
     Lock data_lock_;
-
-    DISALLOW_COPY_AND_ASSIGN(ThreadSafeUserData);
   };
 
   // State of a module as stored in persistent memory. This supports a single
@@ -1106,6 +1125,10 @@ class BASE_EXPORT GlobalActivityTracker {
     // and thus requires an out-of-line constructor & destructor even though
     // they do nothing.
     ModuleInfoRecord();
+
+    ModuleInfoRecord(const ModuleInfoRecord&) = delete;
+    ModuleInfoRecord& operator=(const ModuleInfoRecord&) = delete;
+
     ~ModuleInfoRecord();
 
     OwningProcess owner;            // The process that created this record.
@@ -1130,9 +1153,6 @@ class BASE_EXPORT GlobalActivityTracker {
     // Updates the core information without changing the encoded strings. This
     // is useful when a known module changes state (i.e. new load or unload).
     bool UpdateFrom(const GlobalActivityTracker::ModuleInfo& info);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ModuleInfoRecord);
   };
 
   // A thin wrapper around the main thread-tracker that keeps additional
@@ -1142,6 +1162,10 @@ class BASE_EXPORT GlobalActivityTracker {
     ManagedActivityTracker(PersistentMemoryAllocator::Reference mem_reference,
                            void* base,
                            size_t size);
+
+    ManagedActivityTracker(const ManagedActivityTracker&) = delete;
+    ManagedActivityTracker& operator=(const ManagedActivityTracker&) = delete;
+
     ~ManagedActivityTracker() override;
 
     // The reference into persistent memory from which the thread-tracker's
@@ -1149,10 +1173,7 @@ class BASE_EXPORT GlobalActivityTracker {
     const PersistentMemoryAllocator::Reference mem_reference_;
 
     // The physical address used for the thread-tracker's memory.
-    void* const mem_base_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ManagedActivityTracker);
+    const raw_ptr<void> mem_base_;
   };
 
   // Creates a global tracker using a given persistent-memory |allocator| and
@@ -1236,8 +1257,6 @@ class BASE_EXPORT GlobalActivityTracker {
   // the |background_task_runner_| if one is set or whatever thread reaped
   // the process otherwise.
   ProcessExitCallback process_exit_callback_ GUARDED_BY(global_tracker_lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(GlobalActivityTracker);
 };
 
 // Record entry in to and out of an arbitrary block of code.
@@ -1266,6 +1285,9 @@ class BASE_EXPORT ScopedActivity
       : ScopedActivity(from_here.program_counter(), action, id, info) {}
   ScopedActivity() : ScopedActivity(0, 0, 0) {}
 
+  ScopedActivity(const ScopedActivity&) = delete;
+  ScopedActivity& operator=(const ScopedActivity&) = delete;
+
   // Changes the |action| and/or |info| of this activity on the stack. This
   // is useful for tracking progress through a function, updating the action
   // to indicate "milestones" in the block (max 16 milestones: 0-15) or the
@@ -1285,8 +1307,6 @@ class BASE_EXPORT ScopedActivity
   // A copy of the ID code so it doesn't have to be passed by the caller when
   // changing the |info| field.
   uint32_t id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedActivity);
 };
 
 
@@ -1299,9 +1319,11 @@ class BASE_EXPORT ScopedTaskRunActivity
   explicit ScopedTaskRunActivity(const PendingTask& task)
       : ScopedTaskRunActivity(GetProgramCounter(), task) {}
 
+  ScopedTaskRunActivity(const ScopedTaskRunActivity&) = delete;
+  ScopedTaskRunActivity& operator=(const ScopedTaskRunActivity&) = delete;
+
  private:
   ScopedTaskRunActivity(const void* program_counter, const PendingTask& task);
-  DISALLOW_COPY_AND_ASSIGN(ScopedTaskRunActivity);
 };
 
 class BASE_EXPORT ScopedLockAcquireActivity
@@ -1311,10 +1333,13 @@ class BASE_EXPORT ScopedLockAcquireActivity
   explicit ScopedLockAcquireActivity(const base::internal::LockImpl* lock)
       : ScopedLockAcquireActivity(GetProgramCounter(), lock) {}
 
+  ScopedLockAcquireActivity(const ScopedLockAcquireActivity&) = delete;
+  ScopedLockAcquireActivity& operator=(const ScopedLockAcquireActivity&) =
+      delete;
+
  private:
   ScopedLockAcquireActivity(const void* program_counter,
                             const base::internal::LockImpl* lock);
-  DISALLOW_COPY_AND_ASSIGN(ScopedLockAcquireActivity);
 };
 
 class BASE_EXPORT ScopedEventWaitActivity
@@ -1324,10 +1349,12 @@ class BASE_EXPORT ScopedEventWaitActivity
   explicit ScopedEventWaitActivity(const WaitableEvent* event)
       : ScopedEventWaitActivity(GetProgramCounter(), event) {}
 
+  ScopedEventWaitActivity(const ScopedEventWaitActivity&) = delete;
+  ScopedEventWaitActivity& operator=(const ScopedEventWaitActivity&) = delete;
+
  private:
   ScopedEventWaitActivity(const void* program_counter,
                           const WaitableEvent* event);
-  DISALLOW_COPY_AND_ASSIGN(ScopedEventWaitActivity);
 };
 
 class BASE_EXPORT ScopedThreadJoinActivity
@@ -1337,10 +1364,12 @@ class BASE_EXPORT ScopedThreadJoinActivity
   explicit ScopedThreadJoinActivity(const PlatformThreadHandle* thread)
       : ScopedThreadJoinActivity(GetProgramCounter(), thread) {}
 
+  ScopedThreadJoinActivity(const ScopedThreadJoinActivity&) = delete;
+  ScopedThreadJoinActivity& operator=(const ScopedThreadJoinActivity&) = delete;
+
  private:
   ScopedThreadJoinActivity(const void* program_counter,
                            const PlatformThreadHandle* thread);
-  DISALLOW_COPY_AND_ASSIGN(ScopedThreadJoinActivity);
 };
 
 // Some systems don't have base::Process
@@ -1352,10 +1381,13 @@ class BASE_EXPORT ScopedProcessWaitActivity
   explicit ScopedProcessWaitActivity(const Process* process)
       : ScopedProcessWaitActivity(GetProgramCounter(), process) {}
 
+  ScopedProcessWaitActivity(const ScopedProcessWaitActivity&) = delete;
+  ScopedProcessWaitActivity& operator=(const ScopedProcessWaitActivity&) =
+      delete;
+
  private:
   ScopedProcessWaitActivity(const void* program_counter,
                             const Process* process);
-  DISALLOW_COPY_AND_ASSIGN(ScopedProcessWaitActivity);
 };
 #endif
 

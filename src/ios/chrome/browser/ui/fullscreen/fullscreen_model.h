@@ -8,7 +8,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #include <cmath>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -20,6 +19,10 @@ class FullscreenModelObserver;
 class FullscreenModel : public ChromeBroadcastObserverInterface {
  public:
   FullscreenModel();
+
+  FullscreenModel(const FullscreenModel&) = delete;
+  FullscreenModel& operator=(const FullscreenModel&) = delete;
+
   ~FullscreenModel() override;
 
   // Adds and removes FullscreenModelObservers.
@@ -238,8 +241,6 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
   // The number of FullscreenModelObserver callbacks currently being executed.
   size_t observer_callback_count_ = 0;
   bool freeze_toolbar_height_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenModel);
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_MODEL_H_

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_direction_aware_resolver.h"
 
-#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
@@ -104,6 +103,14 @@ LogicalMapping<4> CSSDirectionAwareResolver::LogicalBorderWidthMapping() {
       &GetCSSPropertyBorderInlineStartWidth(),
       &GetCSSPropertyBorderInlineEndWidth()};
   return LogicalMapping<4>(kProperties);
+}
+
+PhysicalMapping<2>
+CSSDirectionAwareResolver::PhysicalContainIntrinsicSizeMapping() {
+  static const CSSProperty* kProperties[] = {
+      &GetCSSPropertyContainIntrinsicWidth(),
+      &GetCSSPropertyContainIntrinsicHeight()};
+  return PhysicalMapping<2>(kProperties);
 }
 
 LogicalMapping<4> CSSDirectionAwareResolver::LogicalBorderRadiusMapping() {

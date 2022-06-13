@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/accelerator_utils.h"
@@ -339,10 +340,10 @@ CommandSource::CommandResults AddTabsToGroupCommandsForGroupsMatching(
   }
   for (auto& match : GroupsMatchingInput(
            browser, input, IneligibleGroupForSelected(tab_strip_model))) {
-    auto item = match.ToCommandItem();
-    item->command =
+    auto command_item = match.ToCommandItem();
+    command_item->command =
         base::BindOnce(&AddTabsToGroup, browser->AsWeakPtr(), match.group);
-    results.push_back(std::move(item));
+    results.push_back(std::move(command_item));
   }
   return results;
 }

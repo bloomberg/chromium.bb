@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 
 namespace content {
@@ -27,6 +27,11 @@ class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
   static std::unique_ptr<SendTabToSelfInfoBarDelegate> Create(
       content::WebContents* web_contents,
       const SendTabToSelfEntry* entry);
+
+  SendTabToSelfInfoBarDelegate(const SendTabToSelfInfoBarDelegate&) = delete;
+  SendTabToSelfInfoBarDelegate& operator=(const SendTabToSelfInfoBarDelegate&) =
+      delete;
+
   ~SendTabToSelfInfoBarDelegate() override;
 
   // Returns the message to be shown in the infobar.
@@ -44,11 +49,9 @@ class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
                                         const SendTabToSelfEntry* entry);
 
   // The web_content the infobar is attached to. Must outlive this class.
-  content::WebContents* web_contents_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   // The entry that was share to this device. Must outlive this instance.
-  const SendTabToSelfEntry* entry_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfInfoBarDelegate);
+  raw_ptr<const SendTabToSelfEntry> entry_ = nullptr;
 };
 
 }  // namespace send_tab_to_self

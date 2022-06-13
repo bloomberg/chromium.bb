@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/ax_event_notification_details.h"
 
 namespace content {
@@ -26,6 +26,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
  public:
   BrowserAccessibilityManagerMac(const ui::AXTreeUpdate& initial_tree,
                                  BrowserAccessibilityDelegate* delegate);
+
+  BrowserAccessibilityManagerMac(const BrowserAccessibilityManagerMac&) =
+      delete;
+  BrowserAccessibilityManagerMac& operator=(
+      const BrowserAccessibilityManagerMac&) = delete;
 
   ~BrowserAccessibilityManagerMac() override;
 
@@ -82,8 +87,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   friend class BrowserAccessibilityManager;
 
   friend class BrowserAccessibilityCocoaBrowserTest;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };
 
 }  // namespace content

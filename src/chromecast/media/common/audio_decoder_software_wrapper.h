@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/media/api/cast_audio_decoder.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -29,6 +28,11 @@ class AudioDecoderSoftwareWrapper
 
   AudioDecoderSoftwareWrapper(
       MediaPipelineBackend::AudioDecoder* backend_decoder);
+
+  AudioDecoderSoftwareWrapper(const AudioDecoderSoftwareWrapper&) = delete;
+  AudioDecoderSoftwareWrapper& operator=(const AudioDecoderSoftwareWrapper&) =
+      delete;
+
   ~AudioDecoderSoftwareWrapper() override;
 
   void SetDelegate(DecoderDelegate* delegate);
@@ -60,8 +64,6 @@ class AudioDecoderSoftwareWrapper
   AudioConfig output_config_;
   scoped_refptr<DecoderBufferBase> pending_pushed_buffer_;
   bool decoder_error_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderSoftwareWrapper);
 };
 
 }  // namespace media

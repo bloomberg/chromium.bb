@@ -5,14 +5,16 @@
 #include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/event_page_show_persisted.h"
+#include "third_party/blink/public/common/page/page_lifecycle_state_updater.h"
 
 namespace {
-constexpr base::TimeDelta kBackForwardCacheTimeoutInSeconds =
-    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kBackForwardCacheTimeoutInSeconds = base::Seconds(3);
 }
 
 namespace content {
@@ -49,8 +51,9 @@ void PageLifecycleStateManager::SetIsFrozen(bool frozen) {
     return;
   is_set_frozen_called_ = frozen;
 
-  SendUpdatesToRendererIfNeeded(/*page_restore_params=*/nullptr,
-                                base::NullCallback());
+  SendUpdatesToRendererIfNeeded(
+      /*page_restore_params=*/nullptr, base::NullCallback(),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
 }
 
 void PageLifecycleStateManager::SetFrameTreeVisibility(
@@ -59,15 +62,17 @@ void PageLifecycleStateManager::SetFrameTreeVisibility(
     return;
 
   frame_tree_visibility_ = visibility;
-  SendUpdatesToRendererIfNeeded(/*page_restore_params=*/nullptr,
-                                base::NullCallback());
+  SendUpdatesToRendererIfNeeded(
+      /*page_restore_params=*/nullptr, base::NullCallback(),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
   // TODO(yuzus): When a page is frozen and made visible, the page should
   // automatically resume.
 }
 
 void PageLifecycleStateManager::SetIsInBackForwardCache(
     bool is_in_back_forward_cache,
-    blink::mojom::PageRestoreParamsPtr page_restore_params) {
+    blink::mojom::PageRestoreParamsPtr page_restore_params,
+    bool restoring_main_frame_from_back_forward_cache) {
   if (is_in_back_forward_cache_ == is_in_back_forward_cache)
     return;
   // Prevent races by waiting for confirmation that the renderer will no longer
@@ -80,12 +85,10 @@ void PageLifecycleStateManager::SetIsInBackForwardCache(
     // When a page is put into BackForwardCache, the page can run a busy loop.
     // Set a timeout monitor to check that the transition finishes within the
     // time limit.
-    back_forward_cache_timeout_monitor_ =
-        std::make_unique<OneShotTimeoutMonitor>(
-            base::BindOnce(
-                &PageLifecycleStateManager::OnBackForwardCacheTimeout,
-                weak_ptr_factory_.GetWeakPtr()),
-            kBackForwardCacheTimeoutInSeconds);
+    back_forward_cache_timeout_monitor_.Start(
+        FROM_HERE, kBackForwardCacheTimeoutInSeconds,
+        base::BindOnce(&PageLifecycleStateManager::OnBackForwardCacheTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
     pagehide_dispatch_ = blink::mojom::PagehideDispatch::kDispatchedPersisted;
   } else {
     DCHECK(page_restore_params);
@@ -96,7 +99,8 @@ void PageLifecycleStateManager::SetIsInBackForwardCache(
   }
 
   SendUpdatesToRendererIfNeeded(std::move(page_restore_params),
-                                base::NullCallback());
+                                base::NullCallback(),
+                                restoring_main_frame_from_back_forward_cache);
 }
 
 blink::mojom::PageLifecycleStatePtr
@@ -132,7 +136,9 @@ void PageLifecycleStateManager::SetIsLeavingBackForwardCache(
     base::OnceClosure done_cb) {
   DCHECK(is_in_back_forward_cache_);
   eviction_enabled_ = false;
-  SendUpdatesToRendererIfNeeded(nullptr, std::move(done_cb));
+  SendUpdatesToRendererIfNeeded(
+      nullptr, std::move(done_cb),
+      /*restoring_main_frame_from_back_forward_cache=*/false);
 }
 
 bool PageLifecycleStateManager::RendererExpectedToSendChannelAssociatedIpcs()
@@ -144,7 +150,8 @@ bool PageLifecycleStateManager::RendererExpectedToSendChannelAssociatedIpcs()
 
 void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     blink::mojom::PageRestoreParamsPtr page_restore_params,
-    base::OnceClosure done_cb) {
+    base::OnceClosure done_cb,
+    bool restoring_main_frame_from_back_forward_cache) {
   if (!render_view_host_impl_->GetAssociatedPageBroadcast()) {
     // TODO(https://crbug.com/1153155): For some tests, |render_view_host_impl_|
     // does not have the associated page.
@@ -162,6 +169,34 @@ void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     // page lifecycle state) has changed since last sent to renderer. It is
     // possible that the web contents state has changed but the effective state
     // has not.
+  }
+
+  // TODO(https://crbug.com/1234634): Remove this |if|.
+  if (restoring_main_frame_from_back_forward_cache) {
+    DCHECK(last_state_sent_to_renderer_);
+    if (blink::IsRestoredFromBackForwardCache(last_state_sent_to_renderer_,
+                                              new_state)) {
+      // We see that IPCs are not received by the renderer. Check that we are
+      // about to send an IPC to a live RVH.
+      if (!render_view_host_impl_->IsRenderViewLive()) {
+        blink::RecordUMAEventPageShowPersisted(
+            blink::EventPageShowPersisted::kYesInBrowserRenderViewNotLive);
+        NOTREACHED();
+      }
+      // And that the mojo interface is connected.
+      if (!render_view_host_impl_->GetAssociatedPageBroadcast()
+               .is_connected()) {
+        blink::RecordUMAEventPageShowPersisted(
+            blink::EventPageShowPersisted::kYesInBrowserDisconnected);
+        NOTREACHED();
+      } else {
+        blink::RecordUMAEventPageShowPersisted(
+            blink::EventPageShowPersisted::kYesInBrowser);
+      }
+      new_state->should_dispatch_pageshow_for_debugging = true;
+    } else {
+      NOTREACHED();
+    }
   }
 
   last_state_sent_to_renderer_ = new_state.Clone();
@@ -192,6 +227,10 @@ PageLifecycleStateManager::CalculatePageLifecycleState() {
           ? blink::mojom::PageVisibilityState::kHidden
           : frame_tree_visibility_;
   state->eviction_enabled = eviction_enabled_;
+  // TODO(https://crbug.com/1234634): Remove this. It's for temporary
+  // debugging.
+  // This may become true later.
+  state->should_dispatch_pageshow_for_debugging = false;
   return state;
 }
 
@@ -200,6 +239,11 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
     base::OnceClosure done_cb) {
   blink::mojom::PageLifecycleStatePtr old_state =
       std::move(last_acknowledged_state_);
+  if (acknowledged_state->should_dispatch_pageshow_for_debugging) {
+    blink::RecordUMAEventPageShowPersisted(
+        blink::EventPageShowPersisted::kYesInBrowserAck);
+  }
+
   last_acknowledged_state_ = std::move(acknowledged_state);
 
   if (last_acknowledged_state_->is_in_back_forward_cache)
@@ -223,7 +267,7 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
   render_view_host_impl_->EnforceBackForwardCacheSizeLimit();
 
   if (last_acknowledged_state_->is_in_back_forward_cache) {
-    back_forward_cache_timeout_monitor_.reset(nullptr);
+    back_forward_cache_timeout_monitor_.Stop();
   }
 
   if (test_delegate_) {
@@ -237,7 +281,7 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
 void PageLifecycleStateManager::OnBackForwardCacheTimeout() {
   DCHECK(!last_acknowledged_state_->is_in_back_forward_cache);
   render_view_host_impl_->OnBackForwardCacheTimeout();
-  back_forward_cache_timeout_monitor_.reset(nullptr);
+  back_forward_cache_timeout_monitor_.Stop();
 }
 
 void PageLifecycleStateManager::SetDelegateForTesting(

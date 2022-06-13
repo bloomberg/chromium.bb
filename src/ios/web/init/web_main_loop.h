@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
 namespace web {
@@ -22,6 +21,10 @@ class WebSubThread;
 class WebMainLoop {
  public:
   explicit WebMainLoop();
+
+  WebMainLoop(const WebMainLoop&) = delete;
+  WebMainLoop& operator=(const WebMainLoop&) = delete;
+
   virtual ~WebMainLoop();
 
   void Init();
@@ -78,8 +81,6 @@ class WebMainLoop {
 
   // Members initialized in |WebThreadsStarted()| --------------------------
   std::unique_ptr<CookieNotificationBridge> cookie_notification_bridge_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebMainLoop);
 };
 
 }  // namespace web

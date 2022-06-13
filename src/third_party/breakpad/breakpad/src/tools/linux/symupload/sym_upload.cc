@@ -127,7 +127,6 @@ SetupOptions(int argc, const char *argv[], Options *options) {
         // the bad arg value, so return an error code if optopt is set,
         // otherwise exit cleanly.
         exit(optopt == 0 ? 0 : 1);
-        break;
       case 'u':
         options->proxy_user_pwd = optarg;
         break;
@@ -172,7 +171,6 @@ SetupOptions(int argc, const char *argv[], Options *options) {
         fprintf(stderr, "Invalid option '%c'\n", ch);
         Usage(argc, argv);
         exit(1);
-        break;
     }
   }
 

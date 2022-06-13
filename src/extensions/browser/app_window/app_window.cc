@@ -16,13 +16,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -446,11 +447,11 @@ void AppWindow::ExitPictureInPicture() {
 }
 
 bool AppWindow::ShouldShowStaleContentOnEviction(content::WebContents* source) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   return true;
 #else
   return false;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AppWindow::OnMessageReceived(const IPC::Message& message,
@@ -796,10 +797,12 @@ void AppWindow::StartAppIconDownload() {
 
   // Avoid using any previous icons that were being downloaded.
   image_loader_ptr_factory_.InvalidateWeakPtrs();
+  const gfx::Size preferred_size(app_delegate_->PreferredIconSize(),
+                                 app_delegate_->PreferredIconSize());
   web_contents()->DownloadImage(
       app_icon_url_,
       true,  // is a favicon
-      app_delegate_->PreferredIconSize(),
+      preferred_size,
       0,      // no maximum size
       false,  // normal cache policy
       base::BindOnce(&AppWindow::DidDownloadFavicon,
@@ -882,13 +885,6 @@ void AppWindow::CloseContents(WebContents* contents) {
 
 bool AppWindow::ShouldSuppressDialogs(WebContents* source) {
   return true;
-}
-
-content::ColorChooser* AppWindow::OpenColorChooser(
-    WebContents* web_contents,
-    SkColor initial_color,
-    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return app_delegate_->ShowColorChooser(web_contents, initial_color);
 }
 
 void AppWindow::RunFileChooser(

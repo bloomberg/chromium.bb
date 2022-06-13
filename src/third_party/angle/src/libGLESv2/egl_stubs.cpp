@@ -8,7 +8,7 @@
 
 #include "libGLESv2/egl_stubs_autogen.h"
 
-#include "common/version.h"
+#include "common/angle_version_info.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Display.h"
 #include "libANGLE/EGLSync.h"
@@ -23,6 +23,7 @@ namespace egl
 {
 namespace
 {
+
 bool CompareProc(const ProcEntry &a, const char *b)
 {
     return strcmp(a.first, b) < 0;
@@ -275,43 +276,13 @@ EGLSurface CreateWindowSurface(Thread *thread,
 
 EGLBoolean DestroyContext(Thread *thread, Display *display, gl::Context *context)
 {
-
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglDestroyContext",
                          GetDisplayIfValid(display), EGL_FALSE);
 
-    gl::Context *contextForThread = thread->getContext();
-    bool contextWasCurrent        = context == contextForThread;
+    ScopedSyncCurrentContextFromThread scopedSyncCurrent(thread);
 
-    bool shouldMakeCurrent =
-        !contextWasCurrent && !context->isExternal() && context->getRefCount() <= 1;
-
-    // Display can't access the current global context, but does exhibit a context switch,
-    // so ensuring the current global context is correct needs to happen here.
-    Surface *currentDrawSurface = thread->getCurrentDrawSurface();
-    Surface *currentReadSurface = thread->getCurrentReadSurface();
-
-    if (shouldMakeCurrent)
-    {
-        SetContextCurrent(thread, context);
-    }
-
-    ANGLE_EGL_TRY_RETURN(
-        thread,
-        display->destroyContextWithSurfaces(thread, context, contextForThread, currentDrawSurface,
-                                            currentReadSurface),
-        "eglDestroyContext", GetContextIfValid(display, context), EGL_FALSE);
-
-    if (contextWasCurrent)
-    {
-        ANGLE_EGL_TRY_RETURN(thread, display->makeCurrent(context, nullptr, nullptr, nullptr),
-                             "eglDestroyContext", GetContextIfValid(display, context), EGL_FALSE);
-        SetContextCurrent(thread, nullptr);
-    }
-    else if (shouldMakeCurrent)
-    {
-        SetContextCurrent(thread, contextForThread);
-    }
-
+    ANGLE_EGL_TRY_RETURN(thread, display->destroyContext(thread, context), "eglDestroyContext",
+                         GetContextIfValid(display, context), EGL_FALSE);
     thread->setSuccess();
     return EGL_TRUE;
 }
@@ -494,6 +465,8 @@ EGLBoolean MakeCurrent(Thread *thread,
 {
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglMakeCurrent",
                          GetDisplayIfValid(display), EGL_FALSE);
+    ScopedSyncCurrentContextFromThread scopedSyncCurrent(thread);
+
     Surface *previousDraw        = thread->getCurrentDrawSurface();
     Surface *previousRead        = thread->getCurrentReadSurface();
     gl::Context *previousContext = thread->getContext();
@@ -502,9 +475,9 @@ EGLBoolean MakeCurrent(Thread *thread,
     if (previousDraw != drawSurface || previousRead != readSurface || previousContext != context)
     {
         ANGLE_EGL_TRY_RETURN(
-            thread, display->makeCurrent(previousContext, drawSurface, readSurface, context),
+            thread,
+            display->makeCurrent(thread, previousContext, drawSurface, readSurface, context),
             "eglMakeCurrent", GetContextIfValid(display, context), EGL_FALSE);
-        SetContextCurrent(thread, context);
     }
 
     thread->setSuccess();
@@ -561,8 +534,12 @@ const char *QueryString(Thread *thread, Display *display, EGLint name)
             result = display->getVendorString().c_str();
             break;
         case EGL_VERSION:
-            result = "1.5 (ANGLE " ANGLE_VERSION_STRING ")";
+        {
+            static const char *sVersionString =
+                MakeStaticString(std::string("1.5 (ANGLE ") + angle::GetANGLEVersionString() + ")");
+            result = sVersionString;
             break;
+        }
         default:
             UNREACHABLE();
             break;
@@ -607,6 +584,8 @@ EGLBoolean ReleaseTexImage(Thread *thread, Display *display, Surface *eglSurface
 
 EGLBoolean ReleaseThread(Thread *thread)
 {
+    ScopedSyncCurrentContextFromThread scopedSyncCurrent(thread);
+
     Surface *previousDraw        = thread->getCurrentDrawSurface();
     Surface *previousRead        = thread->getCurrentReadSurface();
     gl::Context *previousContext = thread->getContext();
@@ -621,12 +600,12 @@ EGLBoolean ReleaseThread(Thread *thread)
             previousContext != EGL_NO_CONTEXT)
         {
             ANGLE_EGL_TRY_RETURN(
-                thread, previousDisplay->makeCurrent(previousContext, nullptr, nullptr, nullptr),
+                thread,
+                previousDisplay->makeCurrent(thread, previousContext, nullptr, nullptr, nullptr),
                 "eglReleaseThread", nullptr, EGL_FALSE);
         }
         ANGLE_EGL_TRY_RETURN(thread, previousDisplay->releaseThread(), "eglReleaseThread",
                              GetDisplayIfValid(previousDisplay), EGL_FALSE);
-        SetContextCurrent(thread, nullptr);
     }
 
     thread->setSuccess();
@@ -641,7 +620,9 @@ EGLBoolean SurfaceAttrib(Thread *thread,
 {
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglSurfaceAttrib",
                          GetDisplayIfValid(display), EGL_FALSE);
-    SetSurfaceAttrib(eglSurface, attribute, value);
+
+    ANGLE_EGL_TRY_RETURN(thread, SetSurfaceAttrib(eglSurface, attribute, value), "eglSurfaceAttrib",
+                         GetDisplayIfValid(display), EGL_FALSE);
 
     thread->setSuccess();
     return EGL_TRUE;
@@ -679,12 +660,11 @@ EGLBoolean Terminate(Thread *thread, Display *display)
 {
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglTerminate",
                          GetDisplayIfValid(display), EGL_FALSE);
-    ANGLE_EGL_TRY_RETURN(thread,
-                         display->makeCurrent(thread->getContext(), nullptr, nullptr, nullptr),
+
+    ScopedSyncCurrentContextFromThread scopedSyncCurrent(thread);
+
+    ANGLE_EGL_TRY_RETURN(thread, display->terminate(thread, Display::TerminateReason::Api),
                          "eglTerminate", GetDisplayIfValid(display), EGL_FALSE);
-    SetContextCurrent(thread, nullptr);
-    ANGLE_EGL_TRY_RETURN(thread, display->terminate(thread), "eglTerminate",
-                         GetDisplayIfValid(display), EGL_FALSE);
 
     thread->setSuccess();
     return EGL_TRUE;

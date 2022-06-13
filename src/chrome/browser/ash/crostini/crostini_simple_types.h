@@ -9,9 +9,12 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 
-// This file contains simple C++ types (enums and Plain-Old-Data structs).
+// This file contains simple C++ types. Simple isn't a precise term, but as a
+// guideline enums and PoD structs are simple while structs/classes with methods
+// other than trivial or defaulted constructors or destructors are not.
 // Importantly, #include'ing this file will not depend on eventually executing
 // "#include <dbus/dbus.h>",
 
@@ -146,6 +149,7 @@ enum class ContainerVersion {
   UNKNOWN,
   STRETCH,
   BUSTER,
+  BULLSEYE,
 };
 
 struct VmInfo {
@@ -181,8 +185,11 @@ struct ContainerInfo {
 struct Icon {
   std::string desktop_file_id;
 
-  // Icon file content in PNG format.
+  // Icon file content in specified format.
   std::string content;
+
+  // Icon format (e.g. PNG, SVG)
+  vm_tools::cicerone::DesktopIcon::Format format;
 };
 
 struct LinuxPackageInfo {
@@ -250,13 +257,16 @@ enum class CrostiniDiskImageType {
 
 }  // namespace crostini
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class ContainerOsVersion {
   kUnknown = 0,
   kDebianStretch = 1,
   kDebianBuster = 2,
   kDebianOther = 3,
   kOtherOs = 4,
-  kMaxValue = kOtherOs,
+  kDebianBullseye = 5,
+  kMaxValue = kDebianBullseye,
 };
 
 #endif  // CHROME_BROWSER_ASH_CROSTINI_CROSTINI_SIMPLE_TYPES_H_

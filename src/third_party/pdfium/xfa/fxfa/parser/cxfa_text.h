@@ -7,7 +7,7 @@
 #ifndef XFA_FXFA_PARSER_CXFA_TEXT_H_
 #define XFA_FXFA_PARSER_CXFA_TEXT_H_
 
-#include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/widestring.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
 
 class CXFA_Text final : public CXFA_Node {
@@ -15,7 +15,7 @@ class CXFA_Text final : public CXFA_Node {
   CONSTRUCT_VIA_MAKE_GARBAGE_COLLECTED;
   ~CXFA_Text() override;
 
-  WideString GetContent();
+  WideString GetContent() const;
 
  private:
   CXFA_Text(CXFA_Document* doc, XFA_PacketType packet);

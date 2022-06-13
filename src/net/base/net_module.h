@@ -5,7 +5,6 @@
 #ifndef NET_BASE_NET_MODULE_H__
 #define NET_BASE_NET_MODULE_H__
 
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "net/base/net_export.h"
 
@@ -22,6 +21,10 @@ class NET_EXPORT NetModule {
  public:
   typedef scoped_refptr<base::RefCountedMemory> (*ResourceProvider)(int key);
 
+  NetModule() = delete;
+  NetModule(const NetModule&) = delete;
+  NetModule& operator=(const NetModule&) = delete;
+
   // Set the function to call when the net module needs resources
   static void SetResourceProvider(ResourceProvider func);
 
@@ -29,9 +32,6 @@ class NET_EXPORT NetModule {
   // Returns nullptr if the resource does not exist or if there is no resource
   // provider.
   static scoped_refptr<base::RefCountedMemory> GetResource(int key);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(NetModule);
 };
 
 }  // namespace net

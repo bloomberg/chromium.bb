@@ -8,6 +8,7 @@
 
 {% block extra_uses_permissions %}
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="android.permission.SET_ANIMATION_SCALE"/>
 {% endblock %}
@@ -47,6 +48,9 @@
         <activity android:name="org.chromium.chrome.browser.sync.SyncTestRule$DummyKeyRetrievalActivity"
             android:exported="true"/>
 
+        <activity android:name="org.chromium.chrome.browser.sync.SyncTestRule$DummyRecoverabilityDegradedFixActivity"
+            android:exported="true"/>
+
         <activity android:name="org.chromium.chrome.browser.browserservices.TestTrustedWebActivityService"
             android:exported="true"/>
 
@@ -55,6 +59,9 @@
 
         <activity android:name="org.chromium.ui.test.util.DummyUiActivity"
             android:theme="@style/Theme.Chromium.Activity"
+            android:exported="true"/>
+
+        <activity android:name="org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetTest$DummyAddAccountActivity"
             android:exported="true"/>
 
         <service

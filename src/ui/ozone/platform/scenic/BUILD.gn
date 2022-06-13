@@ -62,7 +62,6 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//ui/base",
     "//ui/base/cursor",
-    "//ui/base/cursor:cursor_base",
     "//ui/base/ime/fuchsia",
     "//ui/display/fake",
     "//ui/events:dom_keycode_converter",
@@ -93,15 +92,4 @@ source_set("scenic") {
       "//third_party/angle:libGLESv2",
     ]
   }
-}
-
-source_set("scenic_unittests") {
-  testonly = true
-  sources = [ "scenic_window_unittest.cc" ]
-  deps = [
-    ":scenic",
-    "//base",
-    "//testing/gtest",
-    "//ui/ozone:platform",
-  ]
 }

@@ -61,18 +61,25 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
     }
 
     @Override
-    public void onUserAccept(String name) {
+    public void onUserDismiss() {}
+
+    @Override
+    public void onUserAcceptCardholderName(String name) {
         AutofillNameFixFlowBridgeJni.get().onUserAccept(
                 mNativeCardNameFixFlowViewAndroid, AutofillNameFixFlowBridge.this, name);
     }
+
+    /* no-op. Legal lines aren't set. */
+    @Override
+    public void onLinkClicked(String url) {}
 
     /**
      * Shows a prompt for name fix flow.
      */
     @CalledByNative
     private void show(WindowAndroid windowAndroid) {
-        mNameFixFlowPrompt = new AutofillNameFixFlowPrompt(
-                mActivity, this, mTitle, mInferredName, mConfirmButtonLabel, mIconId);
+        mNameFixFlowPrompt = AutofillNameFixFlowPrompt.createAsInfobarFixFlowPrompt(
+                mActivity, this, mInferredName, mTitle, mIconId, mConfirmButtonLabel);
 
         if (mNameFixFlowPrompt != null) {
             mNameFixFlowPrompt.show(

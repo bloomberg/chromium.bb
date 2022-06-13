@@ -14,7 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/idempotency.h"
@@ -42,6 +42,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // Wrapper for interacting with the session in a restricted fashion.
   class NET_EXPORT_PRIVATE Handle {
    public:
+    Handle(const Handle&) = delete;
+    Handle& operator=(const Handle&) = delete;
+
     ~Handle();
 
     // Returns true if the stream is still connected.
@@ -173,18 +176,18 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
     int HandleIOComplete(int rv);
 
-    QuicChromiumClientStream* stream_;  // Unowned.
+    raw_ptr<QuicChromiumClientStream> stream_;  // Unowned.
 
     bool may_invoke_callbacks_;  // True when callbacks may be invoked.
 
     // Callback to be invoked when ReadInitialHeaders completes asynchronously.
     CompletionOnceCallback read_headers_callback_;
     // Provided by the owner of this handle when ReadInitialHeaders is called.
-    spdy::Http2HeaderBlock* read_headers_buffer_;
+    raw_ptr<spdy::Http2HeaderBlock> read_headers_buffer_;
 
     // Callback to be invoked when ReadBody completes asynchronously.
     CompletionOnceCallback read_body_callback_;
-    IOBuffer* read_body_buffer_;
+    raw_ptr<IOBuffer> read_body_buffer_;
     int read_body_buffer_len_;
 
     // Callback to be invoked when WriteStreamData or WritevStreamData completes
@@ -211,8 +214,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     base::TimeTicks first_early_hints_time_;
 
     base::WeakPtrFactory<Handle> weak_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(Handle);
   };
 
   QuicChromiumClientStream(
@@ -224,9 +225,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   QuicChromiumClientStream(
       quic::PendingStream* pending,
       quic::QuicSpdyClientSessionBase* session,
-      quic::StreamType type,
       const NetLogWithSource& net_log,
       const NetworkTrafficAnnotationTag& traffic_annotation);
+
+  QuicChromiumClientStream(const QuicChromiumClientStream&) = delete;
+  QuicChromiumClientStream& operator=(const QuicChromiumClientStream&) = delete;
 
   ~QuicChromiumClientStream() override;
 
@@ -309,12 +312,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   void NotifyHandleOfDataAvailable();
 
   NetLogWithSource net_log_;
-  Handle* handle_;
+  raw_ptr<Handle> handle_;
 
   // True when initial headers have been sent.
   bool initial_headers_sent_;
 
-  quic::QuicSpdyClientSessionBase* session_;
+  raw_ptr<quic::QuicSpdyClientSessionBase> session_;
   quic::QuicTransportVersion quic_version_;
 
   // Set to false if this stream should not be migrated to a cellular network
@@ -348,8 +351,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   base::circular_deque<EarlyHints> early_hints_;
 
   base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientStream);
 };
 
 }  // namespace net

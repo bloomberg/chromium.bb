@@ -51,6 +51,7 @@ public:
 
 	deInt64			getInt64			(void)			{ deUint32 upper = getUint32(); return static_cast<deInt64>((deUint64)upper << 32ull | (deUint64)getUint32() ); }
 	deUint64		getUint64			(void)			{ deUint32 upper = getUint32(); return (deUint64)upper << 32ull | (deUint64)getUint32(); }
+	deInt32			getInt32			(void)			{ return static_cast<deInt32>(getUint32());		}
 	deUint32		getUint32			(void)			{ return deRandom_getUint32(&m_rnd);			}
 	deUint16		getUint16			(void)			{ return (deUint16)deRandom_getUint32(&m_rnd);	}
 	deUint8			getUint8			(void)			{ return (deUint8)deRandom_getUint32(&m_rnd);	}
@@ -181,7 +182,12 @@ void Random::shuffle (Iterator first, Iterator last)
 template<typename T>	T			randomScalar	(de::Random& rnd, T minValue, T maxValue);
 template<> inline		float		randomScalar	(de::Random& rnd, float minValue, float maxValue)		{ return rnd.getFloat(minValue, maxValue); }
 template<> inline		deInt32		randomScalar	(de::Random& rnd, deInt32 minValue, deInt32 maxValue)	{ return rnd.getInt(minValue, maxValue); }
-template<> inline		deUint32	randomScalar	(de::Random& rnd, deUint32 minValue, deUint32 maxValue)	{ return minValue + rnd.getUint32() % (maxValue - minValue + 1); }
+template<> inline		deUint32	randomScalar	(de::Random& rnd, deUint32 minValue, deUint32 maxValue)	{ if (minValue == 0 && maxValue == 0xffffffff) return rnd.getUint32();
+																											  return minValue + rnd.getUint32() % (maxValue - minValue + 1); }
+template<> inline		deInt16		randomScalar	(de::Random& rnd, deInt16 minValue, deInt16 maxValue)	{ return (deInt16)rnd.getInt(minValue, maxValue); }
+template<> inline		deUint16	randomScalar	(de::Random& rnd, deUint16 minValue, deUint16 maxValue)	{ return (deUint16)(minValue + rnd.getUint16() % (maxValue - minValue + 1)); }
+template<> inline		deInt8		randomScalar	(de::Random& rnd, deInt8 minValue, deInt8 maxValue)		{ return (deInt8)rnd.getInt(minValue, maxValue); }
+template<> inline		deUint8		randomScalar	(de::Random& rnd, deUint8 minValue, deUint8 maxValue)	{ return (deUint8)(minValue + rnd.getUint8() % (maxValue - minValue + 1)); }
 
 } // de
 

@@ -15,7 +15,6 @@
 #include <windows.devices.enumeration.h>
 #include <wrl.h>
 
-#include "base/macros.h"
 #include "base/threading/thread.h"
 #include "media/base/win/dxgi_device_manager.h"
 #include "media/capture/video/video_capture_device_factory.h"
@@ -25,6 +24,14 @@ namespace media {
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Devices::Enumeration::DeviceInformationCollection;
 
+enum class MFSourceOutcome {
+  kSuccess = 0,
+  // Failed due to an unknown or unspecified reason.
+  kFailed,
+  // Failed to open due to OS-level system permissions.
+  kFailedSystemPermissions,
+};
+
 // Extension of VideoCaptureDeviceFactory to create and manipulate Windows
 // devices, via either DirectShow or MediaFoundation APIs.
 class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
@@ -33,9 +40,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   static bool PlatformSupportsMediaFoundation();
 
   VideoCaptureDeviceFactoryWin();
+
+  VideoCaptureDeviceFactoryWin(const VideoCaptureDeviceFactoryWin&) = delete;
+  VideoCaptureDeviceFactoryWin& operator=(const VideoCaptureDeviceFactoryWin&) =
+      delete;
+
   ~VideoCaptureDeviceFactoryWin() override;
 
-  std::unique_ptr<VideoCaptureDevice> CreateDevice(
+  VideoCaptureErrorOrDevice CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
   void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 
@@ -55,10 +67,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   virtual bool CreateDeviceFilterDirectShow(
       Microsoft::WRL::ComPtr<IMoniker> moniker,
       IBaseFilter** capture_filter);
-  virtual bool CreateDeviceSourceMediaFoundation(const std::string& device_id,
-                                                 VideoCaptureApi capture_api,
-                                                 IMFMediaSource** source_out);
-  virtual bool CreateDeviceSourceMediaFoundation(
+  virtual MFSourceOutcome CreateDeviceSourceMediaFoundation(
+      const std::string& device_id,
+      VideoCaptureApi capture_api,
+      IMFMediaSource** source_out);
+  virtual MFSourceOutcome CreateDeviceSourceMediaFoundation(
       Microsoft::WRL::ComPtr<IMFAttributes> attributes,
       IMFMediaSource** source);
   virtual bool EnumerateDeviceSourcesMediaFoundation(
@@ -104,8 +117,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   // For hardware acceleration in MediaFoundation capture engine
   scoped_refptr<DXGIDeviceManager> dxgi_device_manager_;
   base::WeakPtrFactory<VideoCaptureDeviceFactoryWin> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryWin);
 };
 
 }  // namespace media

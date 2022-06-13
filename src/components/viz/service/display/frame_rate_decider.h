@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -40,7 +41,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   // any preferred setting and should let the platform decide the display's
   // refresh rate.
   static constexpr base::TimeDelta UnspecifiedFrameInterval() {
-    return base::TimeDelta::FromSeconds(0);
+    return base::Seconds(0);
   }
 
   // This object should be created and held for the duration when surface
@@ -53,7 +54,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
     ~ScopedAggregate();
 
    private:
-    FrameRateDecider* const decider_;
+    const raw_ptr<FrameRateDecider> decider_;
   };
 
   // |hw_support_for_multiple_refresh_rates| indicates whether multiple refresh
@@ -106,8 +107,8 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   size_t min_num_of_frames_to_toggle_interval_;
   base::TimeDelta frame_interval_for_sinks_with_no_preference_;
 
-  SurfaceManager* const surface_manager_;
-  Client* const client_;
+  const raw_ptr<SurfaceManager> surface_manager_;
+  const raw_ptr<Client> client_;
   const bool hw_support_for_multiple_refresh_rates_;
   const bool supports_set_frame_rate_;
 };

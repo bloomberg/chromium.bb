@@ -12,20 +12,20 @@ properties-special.js:12 ƒ anonymous(a,b)
     [[Prototype]]: ƒ ()
     [[Scopes]]: Scopes[1]
 properties-special.js:13 ƒ bound ()
-    arguments: (...)
-    caller: (...)
     length: 1
     name: "bound "
+    arguments: (...)
+    caller: (...)
     [[Prototype]]: ƒ ()
     [[TargetFunction]]: ƒ (a,b)
     [[BoundThis]]: Object
     [[BoundArgs]]: Array(1)
 properties-special.js:14 ƒ* anonymous()
-    arguments: (...)
-    caller: (...)
     length: 0
     name: ""
     prototype: Generator {}
+    arguments: (...)
+    caller: (...)
     [[FunctionLocation]]: properties-special.js:14
     [[IsGenerator]]: true
     [[Prototype]]: GeneratorFunction

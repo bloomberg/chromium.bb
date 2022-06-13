@@ -23,18 +23,15 @@ mojom("mojom") {
 }
 
 component("userspace_swap") {
-  configs += [
-    ":chromeos_implementation",
-    "//build/config/linux/nss:system_nss_no_ssl_config",
-  ]
+  configs += [ ":chromeos_implementation" ]
   deps = [
     ":mojom",
     "//base",
-    "//base/util/memory_pressure",
     "//chromeos:chromeos_export",
     "//chromeos/dbus",
     "//chromeos/dbus/constants",
     "//chromeos/memory",
+    "//components/memory_pressure",
     "//crypto",
     "//crypto:platform",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
@@ -56,10 +53,10 @@ component("userspace_swap") {
 
 source_set("unit_tests") {
   testonly = true
-  configs += [ "//build/config/linux/nss:system_nss_no_ssl_config" ]
   deps = [
     ":mojom",
     ":userspace_swap",
+    "//base/allocator:buildflags",
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//mojo/core/embedder",

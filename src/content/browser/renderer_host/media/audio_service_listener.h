@@ -14,7 +14,6 @@
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/service_process_info.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -23,6 +22,10 @@ class CONTENT_EXPORT AudioServiceListener
     : public ServiceProcessHost::Observer {
  public:
   AudioServiceListener();
+
+  AudioServiceListener(const AudioServiceListener&) = delete;
+  AudioServiceListener& operator=(const AudioServiceListener&) = delete;
+
   ~AudioServiceListener() override;
 
   base::ProcessId GetProcessId() const;
@@ -51,8 +54,6 @@ class CONTENT_EXPORT AudioServiceListener
   base::ProcessId process_id_ = base::kNullProcessId;
   bool log_factory_is_set_ = false;
   SEQUENCE_CHECKER(owning_sequence_);
-
-  DISALLOW_COPY_AND_ASSIGN(AudioServiceListener);
 };
 
 }  // namespace content

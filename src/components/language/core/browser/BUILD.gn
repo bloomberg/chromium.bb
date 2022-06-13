@@ -4,12 +4,6 @@
 
 static_library("browser") {
   sources = [
-    "baseline_language_model.cc",
-    "baseline_language_model.h",
-    "fluent_language_model.cc",
-    "fluent_language_model.h",
-    "heuristic_language_model.cc",
-    "heuristic_language_model.h",
     "language_model.cc",
     "language_model.h",
     "language_model_manager.cc",
@@ -22,6 +16,8 @@ static_library("browser") {
     "locale_util.h",
     "pref_names.cc",
     "pref_names.h",
+    "ulp_metrics_logger.cc",
+    "ulp_metrics_logger.h",
     "url_language_histogram.cc",
     "url_language_histogram.h",
   ]
@@ -41,17 +37,16 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "baseline_language_model_unittest.cc",
-    "fluent_language_model_unittest.cc",
-    "heuristic_language_model_unittest.cc",
     "language_prefs_unittest.cc",
     "language_usage_metrics_unittest.cc",
+    "ulp_metrics_logger_unittest.cc",
     "url_language_histogram_unittest.cc",
   ]
   deps = [
     ":browser",
     ":test_support",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",

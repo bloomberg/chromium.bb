@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import { assertEquals,assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {importer} from '../../common/js/importer_common.m.js';
-import {MockChromeStorageAPI} from '../../common/js/mock_chrome.m.js';
-import {MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.m.js';
-import {reportPromise} from '../../common/js/test_error_reporting.m.js';
-import {importerTest} from '../../common/js/test_importer_common.m.js';
-import {TestCallRecorder} from '../../common/js/unittest_util.m.js';
-import {importerHistoryInterfaces} from '../../externs/background/import_history.m.js';
+import {importer} from '../../common/js/importer_common.js';
+import {MockChromeStorageAPI} from '../../common/js/mock_chrome.js';
+import {MockFileEntry,MockFileSystem} from '../../common/js/mock_entry.js';
+import {reportPromise} from '../../common/js/test_error_reporting.js';
+import {importerTest} from '../../common/js/test_importer_common.js';
+import {TestCallRecorder} from '../../common/js/unittest_util.js';
+import {importerHistoryInterfaces} from '../../externs/background/import_history.js';
 
-import {importerHistory} from './import_history.m.js';
-// clang-format on
+import {importerHistory} from './import_history.js';
 
 /** @const {string} */
 const FILE_LAST_MODIFIED = new Date('Dec 4 1968').toString();

@@ -5,21 +5,23 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGL_IMAGE_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGL_IMAGE_CONVERSION_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/khronos/GLES3/gl3.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace blink {
 class Image;
-class IntSize;
 
 // Helper functions for texture uploading and pixel readback.
 class PLATFORM_EXPORT WebGLImageConversion final {
@@ -136,6 +138,8 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                    ImageHtmlDomSource,
                    bool premultiply_alpha,
                    bool ignore_color_space);
+    ImageExtractor(const ImageExtractor&) = delete;
+    ImageExtractor& operator=(const ImageExtractor&) = delete;
 
     const void* ImagePixelData() {
       return image_pixel_locker_ ? image_pixel_locker_->Pixels() : nullptr;
@@ -162,8 +166,6 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     DataFormat image_source_format_;
     AlphaOp alpha_op_;
     unsigned image_source_unpack_alignment_;
-
-    DISALLOW_COPY_AND_ASSIGN(ImageExtractor);
   };
 
   // Computes the components per pixel and bytes per component
@@ -222,7 +224,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                             DataFormat source_format,
                             unsigned source_image_width,
                             unsigned source_image_height,
-                            const IntRect& source_image_sub_rectangle,
+                            const gfx::Rect& source_image_sub_rectangle,
                             int depth,
                             unsigned source_unpack_alignment,
                             int unpack_image_height,
@@ -234,8 +236,8 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // upon success.
   static bool ExtractImageData(const void* image_data,
                                DataFormat source_data_format,
-                               const IntSize& image_data_size,
-                               const IntRect& source_image_sub_rectangle,
+                               const gfx::Size& image_data_size,
+                               const gfx::Rect& source_image_sub_rectangle,
                                int depth,
                                int unpack_image_height,
                                GLenum format,
@@ -273,7 +275,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                          DataFormat source_data_format,
                          unsigned source_data_width,
                          unsigned source_data_height,
-                         const IntRect& source_data_sub_rectangle,
+                         const gfx::Rect& source_data_sub_rectangle,
                          int depth,
                          unsigned source_unpack_alignment,
                          int unpack_image_height,

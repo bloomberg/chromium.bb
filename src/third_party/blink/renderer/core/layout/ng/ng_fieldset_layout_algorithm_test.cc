@@ -366,7 +366,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, ZeroMaxHeight) {
   offset:unplaced size:1000x53
     offset:0,0 size:126x53
       offset:13,0 size:30x30
-      offset:3,30 size:120x0
+      offset:3,30 size:120x20
         offset:10,10 size:100x200
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -802,7 +802,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendFragmentationAutoHeight) {
 
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:176x500
+  offset:unplaced size:176x520
     offset:13,0 size:50x500
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -814,7 +814,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendFragmentationAutoHeight) {
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:176x23
-    offset:3,0 size:170x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -852,7 +851,7 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendFragmentation) {
 
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:176x500
+  offset:unplaced size:176x520
     offset:13,0 size:50x500
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -864,7 +863,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendFragmentation) {
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:176x23
-    offset:3,0 size:170x20
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -1231,12 +1229,9 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoid) {
       #fieldset {
         border:none; margin:0; padding:0px; width: 100px; height: 100px;
       }
-      #legend {
-        padding:0px; margin:0px;
-      }
     </style>
      <fieldset id="fieldset">
-      <legend id="legend" style="width:10px; height:50px;"></legend>
+      <div style="width:10px; height:50px;"></div>
       <div style="break-inside:avoid; width:20px; height:70px;"></div>
     </fieldset>
   )HTML");
@@ -1257,7 +1252,8 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoid) {
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:100x100
-    offset:0,0 size:10x50
+    offset:0,0 size:100x100
+      offset:0,0 size:10x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1284,12 +1280,9 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
       #fieldset {
         border:none; margin:0; padding:0px; width: 100px; height: 100px;
       }
-      #legend {
-        padding:0px; margin:0px;
-      }
     </style>
      <fieldset id="fieldset">
-      <legend id="legend" style="width:10px; height:50px;"></legend>
+      <div style="width:10px; height:50px;"></div>
       <div style="break-inside:avoid; width:20px; height:170px;"></div>
     </fieldset>
   )HTML");
@@ -1310,7 +1303,8 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakInsideAvoidTallBlock) {
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:100x100
-    offset:0,0 size:10x50
+    offset:0,0 size:100x100
+      offset:0,0 size:10x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1373,10 +1367,8 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakInsideAvoid) {
 
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x110
+  offset:unplaced size:1000x100
     offset:0,0 size:20x50
-    offset:0,50 size:100x60
-      offset:0,0 size:10x60
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1386,9 +1378,9 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakInsideAvoid) {
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x0
-    offset:0,0 size:100x0
-      offset:0,0 size:100x0
+  offset:unplaced size:1000x60
+    offset:0,0 size:100x60
+      offset:0,0 size:10x60
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -1399,14 +1391,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakBeforeAvoid) {
       #fieldset {
         border:none; margin:0; padding:0px; width: 100px;
       }
-      #legend {
-        padding:0px; margin:0px;
-      }
     </style>
     <div id="container">
       <div style="width:20px; height:50px;"></div>
       <fieldset id="fieldset">
-        <legend id="legend" style="width:10px; height:25px;"></legend>
+        <div style="width:10px; height:25px;"></div>
         <div style="width:30px; height:25px;"></div>
         <div style="break-before:avoid; width:15px; height:25px;"></div>
       </fieldset>
@@ -1428,10 +1417,11 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, BreakBeforeAvoid) {
 
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x75
+  offset:unplaced size:1000x100
     offset:0,0 size:20x50
-    offset:0,50 size:100x25
-      offset:0,0 size:10x25
+    offset:0,50 size:100x50
+      offset:0,0 size:100x50
+        offset:0,0 size:10x25
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1483,10 +1473,8 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakBeforeAvoid) {
 
   String dump = DumpFragmentTree(fragment.get());
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x125
+  offset:unplaced size:1000x100
     offset:0,0 size:20x90
-    offset:0,90 size:120x35
-      offset:20,0 size:10x25
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1496,9 +1484,9 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakBeforeAvoid) {
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x10
-    offset:0,0 size:120x10
-      offset:10,0 size:100x0
+  offset:unplaced size:1000x45
+    offset:0,0 size:120x45
+      offset:20,0 size:10x25
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -1506,56 +1494,45 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakBeforeAvoid) {
 TEST_F(NGFieldsetLayoutAlgorithmTest, BreakAfterAvoid) {
   SetBodyInnerHTML(R"HTML(
     <style>
-      #fieldset {
-        border:none; margin:0; padding:0px; width: 100px;
+      #multicol {
+        columns:2; column-gap:0; column-fill:auto; width: 200px;
+        height: 100px;
       }
-      #legend {
-        padding:0px; margin:0px;
+      #fieldset {
+        border:none; margin:0; padding:0px; width: 100px; height:50px;
       }
     </style>
     <div id="container">
-      <div style="width:20px; height:50px;"></div>
-      <fieldset id="fieldset">
-        <legend id="legend" style="width:10px; height:25px;"></legend>
-        <div style="break-after:avoid; width:30px; height:25px;"></div>
-        <div style="width:15px; height:25px;"></div>
-      </fieldset>
+      <div id="multicol">
+        <div style="width:20px; height:50px;"></div>
+        <fieldset id="fieldset">
+          <div style="width:10px; height:25px;"></div>
+          <div style="break-after:avoid; width:30px; height:25px;"></div>
+          <div style="width:15px; height:25px; break-after:column;"></div>
+          <div style="width:12px; height:25px;"></div>
+        </fieldset>
+      </div>
     </div>
   )HTML");
 
-  LayoutUnit kFragmentainerSpaceAvailable(100);
-
-  NGBlockNode node(GetLayoutBoxByElementId("container"));
-  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
-      {WritingMode::kHorizontalTb, TextDirection::kLtr},
-      LogicalSize(LayoutUnit(1000), kIndefiniteSize),
-      /* stretch_inline_size_if_auto */ true,
-      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
-
-  scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(node, space);
-  ASSERT_TRUE(fragment->BreakToken());
-
-  String dump = DumpFragmentTree(fragment.get());
+  String dump = DumpFragmentTree(GetElementById("container"));
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x75
-    offset:0,0 size:20x50
-    offset:0,50 size:100x25
-      offset:0,0 size:10x25
-)DUMP";
-  EXPECT_EQ(expectation, dump);
-
-  fragment = NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(
-      node, space, fragment->BreakToken());
-  ASSERT_FALSE(fragment->BreakToken());
-
-  dump = DumpFragmentTree(fragment.get());
-  expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x50
-    offset:0,0 size:100x50
-      offset:0,0 size:100x50
-        offset:0,0 size:30x25
-        offset:0,25 size:15x25
+  offset:unplaced size:1000x100
+    offset:0,0 size:200x100
+      offset:0,0 size:100x100
+        offset:0,0 size:20x50
+        offset:0,50 size:100x50
+          offset:0,0 size:100x50
+            offset:0,0 size:10x25
+      offset:100,0 size:100x100
+        offset:0,0 size:100x0
+          offset:0,0 size:100x0
+            offset:0,0 size:30x25
+            offset:0,25 size:15x25
+      offset:200,0 size:100x100
+        offset:0,0 size:100x0
+          offset:0,0 size:100x0
+            offset:0,0 size:12x25
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
@@ -1596,8 +1573,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakAfterAvoid) {
   String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:1000x100
     offset:0,0 size:20x50
-    offset:0,50 size:100x50
-      offset:0,0 size:10x50
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1607,9 +1582,10 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, LegendBreakAfterAvoid) {
 
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
-  offset:unplaced size:1000x25
-    offset:0,0 size:100x25
-      offset:0,0 size:100x25
+  offset:unplaced size:1000x75
+    offset:0,0 size:100x75
+      offset:0,0 size:10x50
+      offset:0,50 size:100x25
         offset:0,0 size:15x25
 )DUMP";
   EXPECT_EQ(expectation, dump);
@@ -1710,7 +1686,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallLegendLargeBorderFragmentation) {
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x10
-    offset:60,0 size:100x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1767,7 +1742,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation) {
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x10
-    offset:60,0 size:100x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 
@@ -1878,7 +1852,6 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {
   dump = DumpFragmentTree(fragment.get());
   expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
   offset:unplaced size:220x10
-    offset:60,0 size:100x10
 )DUMP";
   EXPECT_EQ(expectation, dump);
 

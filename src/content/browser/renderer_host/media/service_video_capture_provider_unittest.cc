@@ -62,6 +62,11 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
     OverrideVideoCaptureServiceForTesting(&mock_video_capture_service_);
   }
 
+  ServiceVideoCaptureProviderTest(const ServiceVideoCaptureProviderTest&) =
+      delete;
+  ServiceVideoCaptureProviderTest& operator=(
+      const ServiceVideoCaptureProviderTest&) = delete;
+
   ~ServiceVideoCaptureProviderTest() override {
     OverrideVideoCaptureServiceForTesting(nullptr);
   }
@@ -120,7 +125,9 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
                                           std::move(subscription));
               std::move(callback).Run(
                   video_capture::mojom::CreatePushSubscriptionResultCode::
-                      kCreatedWithRequestedSettings,
+                      NewSuccessCode(video_capture::mojom::
+                                         CreatePushSubscriptionSuccessCode::
+                                             kCreatedWithRequestedSettings),
                   requested_settings);
             }));
   }
@@ -143,9 +150,6 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
       video_capture::mojom::VideoSourceProvider::GetSourceInfosCallback>
       service_cb_;
   base::RunLoop wait_for_connection_to_service_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceVideoCaptureProviderTest);
 };
 
 // Tests that if connection to the service is lost during an outstanding call

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_MEDIA_ROUTER_BROWSER_ISSUES_OBSERVER_H_
 #define COMPONENTS_MEDIA_ROUTER_BROWSER_ISSUES_OBSERVER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/media_router/common/issue.h"
 
 namespace media_router {
@@ -18,6 +18,10 @@ class IssueManager;
 class IssuesObserver {
  public:
   explicit IssuesObserver(IssueManager* issue_manager);
+
+  IssuesObserver(const IssuesObserver&) = delete;
+  IssuesObserver& operator=(const IssuesObserver&) = delete;
+
   virtual ~IssuesObserver();
 
   // Registers with |issue_manager_| to start observing for Issues. No-ops if
@@ -34,10 +38,8 @@ class IssuesObserver {
   virtual void OnIssuesCleared() {}
 
  private:
-  IssueManager* const issue_manager_;
+  const raw_ptr<IssueManager> issue_manager_;
   bool initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(IssuesObserver);
 };
 
 }  // namespace media_router

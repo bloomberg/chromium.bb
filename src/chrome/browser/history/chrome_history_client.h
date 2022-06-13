@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_service.h"
@@ -28,6 +28,10 @@ class ChromeHistoryClient : public history::HistoryClient,
                             public bookmarks::BaseBookmarkModelObserver {
  public:
   explicit ChromeHistoryClient(bookmarks::BookmarkModel* bookmark_model);
+
+  ChromeHistoryClient(const ChromeHistoryClient&) = delete;
+  ChromeHistoryClient& operator=(const ChromeHistoryClient&) = delete;
+
   ~ChromeHistoryClient() override;
 
   // history::HistoryClient implementation.
@@ -55,15 +59,13 @@ class ChromeHistoryClient : public history::HistoryClient,
 
   // BookmarkModel instance providing access to bookmarks. May be null during
   // testing, and is null while shutting down.
-  bookmarks::BookmarkModel* bookmark_model_;
+  raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
   // Callback invoked when URLs are removed from BookmarkModel.
   base::RepeatingCallback<void(const std::set<GURL>&)> on_bookmarks_removed_;
 
   // Subscription for notifications of changes to favicons.
   base::CallbackListSubscription favicons_changed_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeHistoryClient);
 };
 
 #endif  // CHROME_BROWSER_HISTORY_CHROME_HISTORY_CLIENT_H_

@@ -32,12 +32,13 @@
 
 namespace {
 
-// preprocessSpirv applies and freezes specializations into constants, and inlines all functions.
-std::vector<uint32_t> preprocessSpirv(
-    std::vector<uint32_t> const &code,
-    VkSpecializationInfo const *specializationInfo,
-    bool optimize)
+// optimizeSpirv() applies and freezes specializations into constants, and runs spirv-opt.
+sw::SpirvBinary optimizeSpirv(const vk::PipelineCache::SpirvBinaryKey &key)
 {
+	const sw::SpirvBinary &code = key.getBinary();
+	const VkSpecializationInfo *specializationInfo = key.getSpecializationInfo();
+	bool optimize = key.getOptimization();
+
 	spvtools::Optimizer opt{ vk::SPIRV_VERSION };
 
 	opt.SetMessageConsumer([](spv_message_level_t level, const char *source, const spv_position_t &position, const char *message) {
@@ -57,14 +58,17 @@ std::vector<uint32_t> preprocessSpirv(
 	if(specializationInfo)
 	{
 		std::unordered_map<uint32_t, std::vector<uint32_t>> specializations;
-		for(auto i = 0u; i < specializationInfo->mapEntryCount; ++i)
+		const uint8_t *specializationData = static_cast<const uint8_t *>(specializationInfo->pData);
+
+		for(uint32_t i = 0; i < specializationInfo->mapEntryCount; i++)
 		{
-			auto const &e = specializationInfo->pMapEntries[i];
-			auto value_ptr =
-			    static_cast<uint32_t const *>(specializationInfo->pData) + e.offset / sizeof(uint32_t);
-			specializations.emplace(e.constantID,
-			                        std::vector<uint32_t>{ value_ptr, value_ptr + e.size / sizeof(uint32_t) });
+			const VkSpecializationMapEntry &entry = specializationInfo->pMapEntries[i];
+			const uint8_t *value_ptr = specializationData + entry.offset;
+			std::vector<uint32_t> value(reinterpret_cast<const uint32_t *>(value_ptr),
+			                            reinterpret_cast<const uint32_t *>(value_ptr + entry.size));
+			specializations.emplace(entry.constantID, std::move(value));
 		}
+
 		opt.RegisterPass(spvtools::CreateSetSpecConstantDefaultValuePass(specializations));
 	}
 
@@ -85,8 +89,9 @@ std::vector<uint32_t> preprocessSpirv(
 	optimizerOptions.set_validator_options(validatorOptions);
 #endif
 
-	std::vector<uint32_t> optimized;
+	sw::SpirvBinary optimized;
 	opt.Run(code.data(), code.size(), &optimized, optimizerOptions);
+	ASSERT(optimized.size() > 0);
 
 	if(false)
 	{
@@ -102,40 +107,137 @@ std::vector<uint32_t> preprocessSpirv(
 	return optimized;
 }
 
-std::shared_ptr<sw::SpirvShader> createShader(
-    const vk::PipelineCache::SpirvShaderKey &key,
-    const vk::ShaderModule *module,
-    bool robustBufferAccess,
-    const std::shared_ptr<vk::dbg::Context> &dbgctx)
-{
-	// Do not optimize the shader if we have a debugger context.
-	// Optimization passes are likely to damage debug information, and reorder
-	// instructions.
-	const bool optimize = !dbgctx;
-
-	auto code = preprocessSpirv(key.getInsns(), key.getSpecializationInfo(), optimize);
-	ASSERT(code.size() > 0);
-
-	// If the pipeline has specialization constants, assume they're unique and
-	// use a new serial ID so the shader gets recompiled.
-	uint32_t codeSerialID = (key.getSpecializationInfo() ? vk::ShaderModule::nextSerialID() : module->getSerialID());
-
-	// TODO(b/119409619): use allocator.
-	return std::make_shared<sw::SpirvShader>(codeSerialID, key.getPipelineStage(), key.getEntryPointName().c_str(),
-	                                         code, key.getRenderPass(), key.getSubpassIndex(), robustBufferAccess, dbgctx);
-}
-
-std::shared_ptr<sw::ComputeProgram> createProgram(vk::Device *device, const vk::PipelineCache::ComputeProgramKey &key)
+std::shared_ptr<sw::ComputeProgram> createProgram(vk::Device *device, std::shared_ptr<sw::SpirvShader> shader, const vk::PipelineLayout *layout)
 {
 	MARL_SCOPED_EVENT("createProgram");
 
-	vk::DescriptorSet::Bindings descriptorSets;  // FIXME(b/129523279): Delay code generation until invoke time.
+	vk::DescriptorSet::Bindings descriptorSets;  // TODO(b/129523279): Delay code generation until dispatch time.
 	// TODO(b/119409619): use allocator.
-	auto program = std::make_shared<sw::ComputeProgram>(device, key.getShader(), key.getLayout(), descriptorSets);
+	auto program = std::make_shared<sw::ComputeProgram>(device, shader, layout, descriptorSets);
 	program->generate();
 	program->finalize("ComputeProgram");
+
 	return program;
 }
+
+class PipelineCreationFeedback
+{
+public:
+	PipelineCreationFeedback(const VkGraphicsPipelineCreateInfo *pCreateInfo)
+	    : pipelineCreationFeedback(GetPipelineCreationFeedback(pCreateInfo->pNext))
+	{
+		pipelineCreationBegins();
+	}
+
+	PipelineCreationFeedback(const VkComputePipelineCreateInfo *pCreateInfo)
+	    : pipelineCreationFeedback(GetPipelineCreationFeedback(pCreateInfo->pNext))
+	{
+		pipelineCreationBegins();
+	}
+
+	~PipelineCreationFeedback()
+	{
+		pipelineCreationEnds();
+	}
+
+	void stageCreationBegins(uint32_t stage)
+	{
+		if(pipelineCreationFeedback)
+		{
+			// Record stage creation begin time
+			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].duration = now();
+		}
+	}
+
+	void cacheHit(uint32_t stage)
+	{
+		if(pipelineCreationFeedback)
+		{
+			pipelineCreationFeedback->pPipelineCreationFeedback->flags |=
+			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT_EXT;
+			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].flags |=
+			    VK_PIPELINE_CREATION_FEEDBACK_APPLICATION_PIPELINE_CACHE_HIT_BIT_EXT;
+		}
+	}
+
+	void stageCreationEnds(uint32_t stage)
+	{
+		if(pipelineCreationFeedback)
+		{
+			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].flags |=
+			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT_EXT;
+			pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].duration =
+			    now() - pipelineCreationFeedback->pPipelineStageCreationFeedbacks[stage].duration;
+		}
+	}
+
+	void pipelineCreationError()
+	{
+		clear();
+		pipelineCreationFeedback = nullptr;
+	}
+
+private:
+	static const VkPipelineCreationFeedbackCreateInfoEXT *GetPipelineCreationFeedback(const void *pNext)
+	{
+		const VkBaseInStructure *extensionCreateInfo = reinterpret_cast<const VkBaseInStructure *>(pNext);
+		while(extensionCreateInfo)
+		{
+			if(extensionCreateInfo->sType == VK_STRUCTURE_TYPE_PIPELINE_CREATION_FEEDBACK_CREATE_INFO_EXT)
+			{
+				return reinterpret_cast<const VkPipelineCreationFeedbackCreateInfoEXT *>(extensionCreateInfo);
+			}
+
+			extensionCreateInfo = extensionCreateInfo->pNext;
+		}
+
+		return nullptr;
+	}
+
+	void pipelineCreationBegins()
+	{
+		if(pipelineCreationFeedback)
+		{
+			clear();
+
+			// Record pipeline creation begin time
+			pipelineCreationFeedback->pPipelineCreationFeedback->duration = now();
+		}
+	}
+
+	void pipelineCreationEnds()
+	{
+		if(pipelineCreationFeedback)
+		{
+			pipelineCreationFeedback->pPipelineCreationFeedback->flags |=
+			    VK_PIPELINE_CREATION_FEEDBACK_VALID_BIT_EXT;
+			pipelineCreationFeedback->pPipelineCreationFeedback->duration =
+			    now() - pipelineCreationFeedback->pPipelineCreationFeedback->duration;
+		}
+	}
+
+	void clear()
+	{
+		if(pipelineCreationFeedback)
+		{
+			// Clear all flags and durations
+			pipelineCreationFeedback->pPipelineCreationFeedback->flags = 0;
+			pipelineCreationFeedback->pPipelineCreationFeedback->duration = 0;
+			for(uint32_t i = 0; i < pipelineCreationFeedback->pipelineStageCreationFeedbackCount; i++)
+			{
+				pipelineCreationFeedback->pPipelineStageCreationFeedbacks[i].flags = 0;
+				pipelineCreationFeedback->pPipelineStageCreationFeedbacks[i].duration = 0;
+			}
+		}
+	}
+
+	uint64_t now()
+	{
+		return std::chrono::time_point_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+	}
+
+	const VkPipelineCreationFeedbackCreateInfoEXT *pipelineCreationFeedback = nullptr;
+};
 
 }  // anonymous namespace
 
@@ -219,35 +321,68 @@ const std::shared_ptr<sw::SpirvShader> GraphicsPipeline::getShader(const VkShade
 	}
 }
 
-void GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocator, const VkGraphicsPipelineCreateInfo *pCreateInfo, PipelineCache *pPipelineCache)
+VkResult GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocator, const VkGraphicsPipelineCreateInfo *pCreateInfo, PipelineCache *pPipelineCache)
 {
-	for(auto pStage = pCreateInfo->pStages; pStage != pCreateInfo->pStages + pCreateInfo->stageCount; pStage++)
+	PipelineCreationFeedback pipelineCreationFeedback(pCreateInfo);
+
+	for(uint32_t stageIndex = 0; stageIndex < pCreateInfo->stageCount; stageIndex++)
 	{
-		if(pStage->flags != 0)
+		const VkPipelineShaderStageCreateInfo &stageInfo = pCreateInfo->pStages[stageIndex];
+
+		pipelineCreationFeedback.stageCreationBegins(stageIndex);
+
+		if(stageInfo.flags != 0)
 		{
 			// Vulkan 1.2: "flags must be 0"
-			UNSUPPORTED("pStage->flags %d", int(pStage->flags));
+			UNSUPPORTED("pStage->flags %d", int(stageInfo.flags));
 		}
 
-		const ShaderModule *module = vk::Cast(pStage->module);
-		const PipelineCache::SpirvShaderKey key(pStage->stage, pStage->pName, module->getCode(),
-		                                        vk::Cast(pCreateInfo->renderPass), pCreateInfo->subpass,
-		                                        pStage->pSpecializationInfo);
-		auto pipelineStage = key.getPipelineStage();
+		auto dbgctx = device->getDebuggerContext();
+		// Do not optimize the shader if we have a debugger context.
+		// Optimization passes are likely to damage debug information, and reorder
+		// instructions.
+		const bool optimize = !dbgctx;
+
+		const ShaderModule *module = vk::Cast(stageInfo.module);
+		const PipelineCache::SpirvBinaryKey key(module->getBinary(), stageInfo.pSpecializationInfo, optimize);
+
+		if((pCreateInfo->flags & VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_EXT) &&
+		   (!pPipelineCache || !pPipelineCache->contains(key)))
+		{
+			pipelineCreationFeedback.pipelineCreationError();
+			return VK_PIPELINE_COMPILE_REQUIRED_EXT;
+		}
+
+		sw::SpirvBinary spirv;
 
 		if(pPipelineCache)
 		{
-			auto shader = pPipelineCache->getOrCreateShader(key, [&] {
-				return createShader(key, module, robustBufferAccess, device->getDebuggerContext());
-			});
-			setShader(pipelineStage, shader);
+			auto onCacheMiss = [&] { return optimizeSpirv(key); };
+			auto onCacheHit = [&] { pipelineCreationFeedback.cacheHit(stageIndex); };
+			spirv = pPipelineCache->getOrOptimizeSpirv(key, onCacheMiss, onCacheHit);
 		}
 		else
 		{
-			auto shader = createShader(key, module, robustBufferAccess, device->getDebuggerContext());
-			setShader(pipelineStage, shader);
+			spirv = optimizeSpirv(key);
+
+			// If the pipeline does not have specialization constants, there's a 1-to-1 mapping between the unoptimized and optimized SPIR-V,
+			// so we should use a 1-to-1 mapping of the identifiers to avoid JIT routine recompiles.
+			if(!key.getSpecializationInfo())
+			{
+				spirv.mapOptimizedIdentifier(key.getBinary());
+			}
 		}
+
+		// TODO(b/201798871): use allocator.
+		auto shader = std::make_shared<sw::SpirvShader>(stageInfo.stage, stageInfo.pName, spirv,
+		                                                vk::Cast(pCreateInfo->renderPass), pCreateInfo->subpass, robustBufferAccess, dbgctx);
+
+		setShader(stageInfo.stage, shader);
+
+		pipelineCreationFeedback.stageCreationEnds(stageIndex);
 	}
+
+	return VK_SUCCESS;
 }
 
 ComputePipeline::ComputePipeline(const VkComputePipelineCreateInfo *pCreateInfo, void *mem, Device *device)
@@ -266,33 +401,72 @@ size_t ComputePipeline::ComputeRequiredAllocationSize(const VkComputePipelineCre
 	return 0;
 }
 
-void ComputePipeline::compileShaders(const VkAllocationCallbacks *pAllocator, const VkComputePipelineCreateInfo *pCreateInfo, PipelineCache *pPipelineCache)
+VkResult ComputePipeline::compileShaders(const VkAllocationCallbacks *pAllocator, const VkComputePipelineCreateInfo *pCreateInfo, PipelineCache *pPipelineCache)
 {
+	PipelineCreationFeedback pipelineCreationFeedback(pCreateInfo);
+	pipelineCreationFeedback.stageCreationBegins(0);
+
 	auto &stage = pCreateInfo->stage;
 	const ShaderModule *module = vk::Cast(stage.module);
 
 	ASSERT(shader.get() == nullptr);
 	ASSERT(program.get() == nullptr);
 
-	const PipelineCache::SpirvShaderKey shaderKey(
-	    stage.stage, stage.pName, module->getCode(), nullptr, 0, stage.pSpecializationInfo);
+	auto dbgctx = device->getDebuggerContext();
+	// Do not optimize the shader if we have a debugger context.
+	// Optimization passes are likely to damage debug information, and reorder
+	// instructions.
+	const bool optimize = !dbgctx;
+
+	const PipelineCache::SpirvBinaryKey shaderKey(module->getBinary(), stage.pSpecializationInfo, optimize);
+
+	if((pCreateInfo->flags & VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_EXT) &&
+	   (!pPipelineCache || !pPipelineCache->contains(shaderKey)))
+	{
+		pipelineCreationFeedback.pipelineCreationError();
+		return VK_PIPELINE_COMPILE_REQUIRED_EXT;
+	}
+
+	sw::SpirvBinary spirv;
+
 	if(pPipelineCache)
 	{
-		shader = pPipelineCache->getOrCreateShader(shaderKey, [&] {
-			return createShader(shaderKey, module, robustBufferAccess, device->getDebuggerContext());
-		});
+		auto onCacheMiss = [&] { return optimizeSpirv(shaderKey); };
+		auto onCacheHit = [&] { pipelineCreationFeedback.cacheHit(0); };
+		spirv = pPipelineCache->getOrOptimizeSpirv(shaderKey, onCacheMiss, onCacheHit);
+	}
+	else
+	{
+		spirv = optimizeSpirv(shaderKey);
 
-		const PipelineCache::ComputeProgramKey programKey(shader.get(), layout);
+		// If the pipeline does not have specialization constants, there's a 1-to-1 mapping between the unoptimized and optimized SPIR-V,
+		// so we should use a 1-to-1 mapping of the identifiers to avoid JIT routine recompiles.
+		if(!shaderKey.getSpecializationInfo())
+		{
+			spirv.mapOptimizedIdentifier(shaderKey.getBinary());
+		}
+	}
+
+	// TODO(b/201798871): use allocator.
+	shader = std::make_shared<sw::SpirvShader>(stage.stage, stage.pName, spirv,
+	                                           nullptr, 0, robustBufferAccess, dbgctx);
+
+	const PipelineCache::ComputeProgramKey programKey(shader->getIdentifier(), layout->identifier);
+
+	if(pPipelineCache)
+	{
 		program = pPipelineCache->getOrCreateComputeProgram(programKey, [&] {
-			return createProgram(device, programKey);
+			return createProgram(device, shader, layout);
 		});
 	}
 	else
 	{
-		shader = createShader(shaderKey, module, robustBufferAccess, device->getDebuggerContext());
-		const PipelineCache::ComputeProgramKey programKey(shader.get(), layout);
-		program = createProgram(device, programKey);
+		program = createProgram(device, shader, layout);
 	}
+
+	pipelineCreationFeedback.stageCreationEnds(0);
+
+	return VK_SUCCESS;
 }
 
 void ComputePipeline::run(uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,

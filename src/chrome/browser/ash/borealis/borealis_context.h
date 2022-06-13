@@ -17,10 +17,12 @@ class GuestOsStabilityMonitor;
 }
 namespace borealis {
 
-class BorealisLifetimeObserver;
-class BorealisGameModeController;
-class BorealisEngagementMetrics;
 class BorealisDiskManager;
+class BorealisEngagementMetrics;
+class BorealisGameModeController;
+class BorealisLifetimeObserver;
+class BorealisPowerController;
+class SelfActivationPermissionGranter;
 
 // An object to track information about the state of the Borealis VM.
 // BorealisContext objects should only be created by the Borealis Context
@@ -47,6 +49,10 @@ class BorealisContext {
   const base::FilePath& disk_path() const { return disk_path_; }
   void set_disk_path(base::FilePath path) { disk_path_ = std::move(path); }
 
+  BorealisDiskManager& get_disk_manager() { return *disk_manager_.get(); }
+  void SetDiskManagerForTesting(
+      std::unique_ptr<BorealisDiskManager> disk_manager);
+
   // Called to signal that this Borealis VM is being unexpectedly shut down.
   // Not to be called during intentional shutdowns.
   void NotifyUnexpectedVmShutdown();
@@ -72,6 +78,10 @@ class BorealisContext {
   std::unique_ptr<BorealisEngagementMetrics> engagement_metrics_;
 
   std::unique_ptr<BorealisDiskManager> disk_manager_;
+
+  std::unique_ptr<BorealisPowerController> power_controller_;
+
+  std::unique_ptr<SelfActivationPermissionGranter> self_activation_granter_;
 };
 
 }  // namespace borealis

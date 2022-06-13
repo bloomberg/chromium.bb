@@ -1,11 +1,12 @@
-int intMin         = -2147483648;
-int intMinMinusOne = -2147483649;
-int intMax         = 2147483647;
-int intMaxPlusOne  = 2147483648;
+// Expect 6 errors
 
-void main() {
-    sk_FragColor.x = half(intMin);
-    sk_FragColor.x = half(intMax);
-    sk_FragColor.x = half(intMinMinusOne);
-    sk_FragColor.x = half(intMaxPlusOne);
-}
+const int intMin         = -2147483648;
+const int intMinMinusOne = -2147483649;                 // error
+const int intMax         = 2147483647;
+const int intMaxPlusOne  = 2147483648;                  // error
+
+short4 s4_neg = short4(-32766, -32767, -32769, -32768); // error -32769
+short4 s4_pos = short4(32765, 32768, 32766, 32767);     // error 32768
+
+int   cast_int   = int(2147483648.);                    // error
+short cast_short = short(32768.);                       // error

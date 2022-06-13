@@ -370,7 +370,7 @@ void ReadOnlySpace::RepairFreeSpacesAfterDeserialization() {
 
 void ReadOnlySpace::ClearStringPaddingIfNeeded() {
   if (V8_ENABLE_THIRD_PARTY_HEAP_BOOL) {
-    // TODO(ulan): Revisit this once third-party heap supports iteration.
+    // TODO(v8:11641): Revisit this once third-party heap supports iteration.
     return;
   }
   if (is_string_padding_cleared_) return;
@@ -642,9 +642,8 @@ HeapObject ReadOnlySpace::TryAllocateLinearlyAligned(
 
   top_ = new_top;
   if (filler_size > 0) {
-    return Heap::PrecedeWithFiller(ReadOnlyRoots(heap()),
-                                   HeapObject::FromAddress(current_top),
-                                   filler_size);
+    return heap()->PrecedeWithFiller(HeapObject::FromAddress(current_top),
+                                     filler_size);
   }
 
   return HeapObject::FromAddress(current_top);
@@ -693,13 +692,10 @@ AllocationResult ReadOnlySpace::AllocateRawUnaligned(int size_in_bytes) {
 
 AllocationResult ReadOnlySpace::AllocateRaw(int size_in_bytes,
                                             AllocationAlignment alignment) {
-#ifdef V8_HOST_ARCH_32_BIT
-  AllocationResult result = alignment != kWordAligned
-                                ? AllocateRawAligned(size_in_bytes, alignment)
-                                : AllocateRawUnaligned(size_in_bytes);
-#else
-  AllocationResult result = AllocateRawUnaligned(size_in_bytes);
-#endif
+  AllocationResult result =
+      USE_ALLOCATION_ALIGNMENT_BOOL && alignment != kTaggedAligned
+          ? AllocateRawAligned(size_in_bytes, alignment)
+          : AllocateRawUnaligned(size_in_bytes);
   HeapObject heap_obj;
   if (!result.IsRetry() && result.To(&heap_obj)) {
     DCHECK(heap()->incremental_marking()->marking_state()->IsBlack(heap_obj));

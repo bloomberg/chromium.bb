@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_V8_MEMORY_V8_MEMORY_TEST_HELPERS_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_V8_MEMORY_V8_MEMORY_TEST_HELPERS_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/performance_manager/public/v8_memory/v8_detailed_memory.h"
 #include "components/performance_manager/v8_memory/v8_detailed_memory_decorator.h"
 
@@ -13,7 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/performance_manager/public/render_process_host_id.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
@@ -213,8 +214,8 @@ class V8MemoryPerformanceManagerTestHarness
       override;
 
  private:
-  content::RenderFrameHost* main_frame_ = nullptr;
-  content::RenderFrameHost* child_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> main_frame_ = nullptr;
+  raw_ptr<content::RenderFrameHost> child_frame_ = nullptr;
   RenderProcessHostId main_process_id_;
   RenderProcessHostId child_process_id_;
 };
@@ -243,6 +244,19 @@ class WebMemoryTestHarness : public GraphTestHarness {
     return AddFrameNodeImpl(url, kDefaultBrowsingInstanceId, bytes, parent,
                             /*opener=*/nullptr, process_.get(), id_attribute,
                             src_attribute);
+  }
+
+  // Creates and adds a new frame node to the graph.
+  FrameNodeImpl* AddFrameNodeWithCanvasMemory(
+      std::string url,
+      Bytes bytes,
+      Bytes canvas_bytes,
+      FrameNodeImpl* parent = nullptr,
+      absl::optional<std::string> id_attribute = absl::nullopt,
+      absl::optional<std::string> src_attribute = absl::nullopt) {
+    return AddFrameNodeImpl(url, kDefaultBrowsingInstanceId, bytes, parent,
+                            /*opener=*/nullptr, process_.get(), id_attribute,
+                            src_attribute, canvas_bytes);
   }
 
   // Creates a frame node as if from window.open and adds it to the graph.
@@ -320,7 +334,8 @@ class WebMemoryTestHarness : public GraphTestHarness {
                                   FrameNodeImpl* opener,
                                   ProcessNodeImpl* process,
                                   absl::optional<std::string> id_attribute,
-                                  absl::optional<std::string> src_attribute);
+                                  absl::optional<std::string> src_attribute,
+                                  Bytes canvas_bytes = absl::nullopt);
   WorkerNodeImpl* AddWorkerNodeImpl(WorkerNode::WorkerType worker_type,
                                     std::string url,
                                     Bytes bytes);
@@ -343,6 +358,13 @@ blink::mojom::PerProcessV8MemoryUsagePtr NewPerProcessV8MemoryUsage(
 void AddIsolateMemoryUsage(blink::ExecutionContextToken token,
                            uint64_t bytes_used,
                            blink::mojom::PerIsolateV8MemoryUsage* isolate);
+
+// Finds the PerContextCanvasMemoryUsage in |isolate| whose token is |token|,
+// or creates it if it does not exist, and sets its bytes_used to |bytes_used|.
+void AddIsolateCanvasMemoryUsage(
+    blink::ExecutionContextToken token,
+    uint64_t bytes_used,
+    blink::mojom::PerIsolateV8MemoryUsage* isolate);
 
 }  // namespace v8_memory
 }  // namespace performance_manager

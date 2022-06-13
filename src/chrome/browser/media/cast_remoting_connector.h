@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -78,6 +79,9 @@ class MediaRouter;
 class CastRemotingConnector final : public base::SupportsUserData::Data,
                                     public media::mojom::RemotingSource {
  public:
+  CastRemotingConnector(const CastRemotingConnector&) = delete;
+  CastRemotingConnector& operator=(const CastRemotingConnector&) = delete;
+
   ~CastRemotingConnector() final;
 
   // Returns the instance of the CastRemotingConnector associated with
@@ -200,7 +204,7 @@ class CastRemotingConnector final : public base::SupportsUserData::Data,
   // remoting if necessary.
   void OnPrefChanged();
 
-  media_router::MediaRouter* const media_router_;
+  const raw_ptr<media_router::MediaRouter> media_router_;
 
   const SessionID tab_id_;
 
@@ -219,7 +223,7 @@ class CastRemotingConnector final : public base::SupportsUserData::Data,
 
   // When non-null, an active remoting session is taking place, with this
   // pointing to the RemotingBridge being used to communicate with the source.
-  RemotingBridge* active_bridge_;
+  raw_ptr<RemotingBridge> active_bridge_;
 
   mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
   mojo::Remote<media::mojom::Remoter> remoter_;
@@ -232,7 +236,7 @@ class CastRemotingConnector final : public base::SupportsUserData::Data,
   // permission, and is reset when the dialog closes.
   CancelPermissionRequestCallback permission_request_cancel_callback_;
 
-  PrefService* const pref_service_;
+  const raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
 
   // Produces weak pointers that are only valid for the current remoting
@@ -243,8 +247,6 @@ class CastRemotingConnector final : public base::SupportsUserData::Data,
   // Key used with the base::SupportsUserData interface to search for an
   // instance of CastRemotingConnector owned by a WebContents.
   static const void* const kUserDataKey;
-
-  DISALLOW_COPY_AND_ASSIGN(CastRemotingConnector);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_CAST_REMOTING_CONNECTOR_H_

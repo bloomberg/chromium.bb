@@ -9,33 +9,33 @@
 
 #include <stdint.h>
 
-enum BC_TEXT_LOC : uint8_t {
-  BC_TEXT_LOC_NONE = 0,
-  BC_TEXT_LOC_ABOVE,
-  BC_TEXT_LOC_BELOW,
-  BC_TEXT_LOC_ABOVEEMBED,
-  BC_TEXT_LOC_BELOWEMBED
+enum class BC_TEXT_LOC : uint8_t {
+  kNone = 0,
+  kAbove,
+  kBelow,
+  kAboveEmbed,
+  kBelowEmbed,
 };
 
-enum BC_CHAR_ENCODING : uint8_t {
-  CHAR_ENCODING_UTF8 = 0,
-  CHAR_ENCODING_UNICODE
+enum class BC_CHAR_ENCODING : uint8_t {
+  kUTF8 = 0,
+  kUnicode,
 };
 
-enum BC_TYPE : int8_t {
-  BC_UNKNOWN = -1,
-  BC_CODE39 = 0,
-  BC_CODABAR,
-  BC_CODE128,
-  BC_CODE128_B,
-  BC_CODE128_C,
-  BC_EAN8,
-  BC_UPCA,
-  BC_EAN13,
-  BC_QR_CODE,
-  BC_PDF417,
-  BC_DATAMATRIX,
-  BC_LAST = BC_DATAMATRIX
+enum class BC_TYPE : int8_t {
+  kUnknown = -1,
+  kCode39 = 0,
+  kCodabar,
+  kCode128,
+  kCode128B,
+  kCode128C,
+  kEAN8,
+  kUPCA,
+  kEAN13,
+  kQRCode,
+  kPDF417,
+  kDataMatrix,
+  kLast = kDataMatrix
 };
 
 void BC_Library_Init();

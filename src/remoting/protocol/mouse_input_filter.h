@@ -6,7 +6,6 @@
 #define REMOTING_PROTOCOL_MOUSE_INPUT_FILTER_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "remoting/protocol/display_size.h"
 #include "remoting/protocol/input_filter.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -21,10 +20,14 @@ class MouseInputFilter : public InputFilter {
  public:
   MouseInputFilter();
   explicit MouseInputFilter(InputStub* input_stub);
+
+  MouseInputFilter(const MouseInputFilter&) = delete;
+  MouseInputFilter& operator=(const MouseInputFilter&) = delete;
+
   ~MouseInputFilter() override;
 
   // Specify the input dimensions (DIPs or pixels) for mouse events.
-  // Deoending on the protocol, the input size can be in either pixels (for
+  // Depending on the protocol, the input size can be in either pixels (for
   // ICE protocol) or DIPs (for webrtc - except for Mac, which is pixels).
   void set_input_size(const int32_t x, const int32_t y);
 
@@ -42,12 +45,12 @@ class MouseInputFilter : public InputFilter {
   void InjectMouseEvent(const protocol::MouseEvent& event) override;
 
  private:
-  int32_t x_input_, y_input_;
-  int32_t x_output_, y_output_;
+  int32_t GetScaledX(int32_t x);
+  int32_t GetScaledY(int32_t y);
 
+  webrtc::DesktopVector input_bounds_;
+  webrtc::DesktopVector output_bounds_;
   webrtc::DesktopVector output_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseInputFilter);
 };
 
 }  // namespace protocol

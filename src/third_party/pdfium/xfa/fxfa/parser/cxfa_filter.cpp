@@ -12,11 +12,11 @@
 namespace {
 
 const CXFA_Node::PropertyData kFilterPropertyData[] = {
-    {XFA_Element::Mdp, 1, 0},           {XFA_Element::Certificates, 1, 0},
-    {XFA_Element::TimeStamp, 1, 0},     {XFA_Element::Handler, 1, 0},
-    {XFA_Element::DigestMethods, 1, 0}, {XFA_Element::Encodings, 1, 0},
-    {XFA_Element::Reasons, 1, 0},       {XFA_Element::AppearanceFilter, 1, 0},
-    {XFA_Element::LockDocument, 1, 0},
+    {XFA_Element::Mdp, 1, {}},           {XFA_Element::Certificates, 1, {}},
+    {XFA_Element::TimeStamp, 1, {}},     {XFA_Element::Handler, 1, {}},
+    {XFA_Element::DigestMethods, 1, {}}, {XFA_Element::Encodings, 1, {}},
+    {XFA_Element::Reasons, 1, {}},       {XFA_Element::AppearanceFilter, 1, {}},
+    {XFA_Element::LockDocument, 1, {}},
 };
 
 const CXFA_Node::AttributeData kFilterAttributeData[] = {
@@ -33,7 +33,7 @@ const CXFA_Node::AttributeData kFilterAttributeData[] = {
 CXFA_Filter::CXFA_Filter(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kTemplate, XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Filter,
                 kFilterPropertyData,

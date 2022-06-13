@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -76,6 +76,10 @@ class KeepAliveDelegateTest : public testing::Test {
   using ChannelError = ::cast_channel::ChannelError;
 
   KeepAliveDelegateTest() {}
+
+  KeepAliveDelegateTest(const KeepAliveDelegateTest&) = delete;
+  KeepAliveDelegateTest& operator=(const KeepAliveDelegateTest&) = delete;
+
   ~KeepAliveDelegateTest() override {}
 
  protected:
@@ -83,15 +87,15 @@ class KeepAliveDelegateTest : public testing::Test {
     inner_delegate_ = new MockCastTransportDelegate;
     logger_ = new Logger();
     keep_alive_ = std::make_unique<KeepAliveDelegate>(
-        &socket_, logger_, base::WrapUnique(inner_delegate_),
-        base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis),
-        base::TimeDelta::FromMilliseconds(kTestLivenessTimeoutMillis));
+        &socket_, logger_, base::WrapUnique(inner_delegate_.get()),
+        base::Milliseconds(kTestPingTimeoutMillis),
+        base::Milliseconds(kTestLivenessTimeoutMillis));
     liveness_timer_ = new MockTimerWithMonitoredReset;
     ping_timer_ = new MockTimerWithMonitoredReset;
     EXPECT_CALL(*liveness_timer_, StopTriggered()).Times(0);
     EXPECT_CALL(*ping_timer_, StopTriggered()).Times(0);
-    keep_alive_->SetTimersForTest(base::WrapUnique(ping_timer_),
-                                  base::WrapUnique(liveness_timer_));
+    keep_alive_->SetTimersForTest(base::WrapUnique(ping_timer_.get()),
+                                  base::WrapUnique(liveness_timer_.get()));
   }
 
   // Runs all pending tasks in the message loop.
@@ -104,12 +108,9 @@ class KeepAliveDelegateTest : public testing::Test {
   MockCastSocket socket_;
   std::unique_ptr<KeepAliveDelegate> keep_alive_;
   scoped_refptr<Logger> logger_;
-  MockCastTransportDelegate* inner_delegate_;
-  MockTimerWithMonitoredReset* liveness_timer_;
-  MockTimerWithMonitoredReset* ping_timer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeepAliveDelegateTest);
+  raw_ptr<MockCastTransportDelegate> inner_delegate_;
+  raw_ptr<MockTimerWithMonitoredReset> liveness_timer_;
+  raw_ptr<MockTimerWithMonitoredReset> ping_timer_;
 };
 
 TEST_F(KeepAliveDelegateTest, TestErrorHandledBeforeStarting) {
@@ -252,17 +253,17 @@ TEST_F(KeepAliveDelegateTest, TestLivenessTimerResetAfterSendingMessage) {
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   // Forward 1s, at time 1, fire ping timer.
   mock_time_task_runner->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis));
+      base::Milliseconds(kTestPingTimeoutMillis));
 
   // Forward 9s, at Time 10, do not fire liveness timer.
   EXPECT_CALL(*inner_delegate_, OnError(_)).Times(0);
-  mock_time_task_runner->FastForwardBy(base::TimeDelta::FromMilliseconds(
-      kTestLivenessTimeoutMillis - kTestPingTimeoutMillis));
+  mock_time_task_runner->FastForwardBy(
+      base::Milliseconds(kTestLivenessTimeoutMillis - kTestPingTimeoutMillis));
 
   // Forward 1s, at time 11s, fire liveness timer.
   EXPECT_CALL(*inner_delegate_, OnError(_));
   mock_time_task_runner->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis));
+      base::Milliseconds(kTestPingTimeoutMillis));
 }
 
 }  // namespace

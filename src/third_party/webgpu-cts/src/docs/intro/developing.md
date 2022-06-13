@@ -10,6 +10,9 @@ After checking out the repository and installing node/npm, run:
 npm ci
 ```
 
+Before uploading, you can run pre-submit checks (`npm test`) to make sure it will pass CI.
+Use `npm run fix` to fix linting issues.
+
 `npm run` will show available npm scripts.
 Some more scripts can be listed using `npx grunt`.
 

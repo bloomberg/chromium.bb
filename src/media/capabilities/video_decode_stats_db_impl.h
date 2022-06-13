@@ -10,6 +10,7 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "components/leveldb_proto/public/proto_database.h"
@@ -46,6 +47,9 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   static std::unique_ptr<VideoDecodeStatsDBImpl> Create(
       base::FilePath db_dir,
       leveldb_proto::ProtoDatabaseProvider* db_provider);
+
+  VideoDecodeStatsDBImpl(const VideoDecodeStatsDBImpl&) = delete;
+  VideoDecodeStatsDBImpl& operator=(const VideoDecodeStatsDBImpl&) = delete;
 
   ~VideoDecodeStatsDBImpl() override;
 
@@ -197,7 +201,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db_;
 
   // For getting wall-clock time. Tests may override via SetClockForTest().
-  const base::Clock* wall_clock_ = nullptr;
+  raw_ptr<const base::Clock> wall_clock_ = nullptr;
 
   // Stores parsed value of |kDefaultWriteTime|.
   base::Time default_write_time_;
@@ -209,8 +213,6 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<VideoDecodeStatsDBImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsDBImpl);
 };
 
 }  // namespace media

@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
-#include "third_party/blink/renderer/core/css/container_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/container_query_data.h"
 #include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -43,14 +43,20 @@
 namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
-  IntSize scroll_offset;
-  void* pointers_or_strings[3];
-  Member<void*> members[18];
+  gfx::Vector2dF scroll_offset;
+  void* pointers_or_strings[4];
+  Member<void*> members[19];
   bool flags[1];
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
-    : NodeRareData(node_layout_data, true), class_list_(nullptr) {}
+    : NodeRareData(ClassType::kElementRareData, node_layout_data),
+      class_list_(nullptr),
+      did_attach_internals_(false),
+      should_force_legacy_layout_for_child_(false),
+      style_should_force_legacy_layout_(false),
+      has_undo_stack_(false),
+      scrollbar_pseudo_element_styles_depend_on_font_metrics_(false) {}
 
 ElementRareData::~ElementRareData() {
   DCHECK(!pseudo_element_data_);
@@ -105,6 +111,7 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(attribute_map_);
   visitor->Trace(attr_node_list_);
   visitor->Trace(element_animations_);
+  visitor->Trace(last_intrinsic_size_);
   visitor->Trace(cssom_wrapper_);
   visitor->Trace(cssom_map_wrapper_);
   visitor->Trace(pseudo_element_data_);
@@ -114,7 +121,7 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(element_internals_);
   visitor->Trace(intersection_observer_data_);
   visitor->Trace(resize_observer_data_);
-  visitor->Trace(container_query_evaluator_);
+  visitor->Trace(container_query_data_);
   NodeRareData::TraceAfterDispatch(visitor);
 }
 

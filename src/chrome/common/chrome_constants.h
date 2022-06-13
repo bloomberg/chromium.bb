@@ -27,6 +27,9 @@ extern const base::FilePath::CharType kHelperProcessExecutablePath[];
 // on Mac.
 extern const base::FilePath::CharType kFrameworkName[];
 extern const base::FilePath::CharType kFrameworkExecutableName[];
+// Suffix added to the helper app name to display alert notifications. Must be
+// kept in sync with the value in alert_helper_params (//chrome/BUILD.gn).
+extern const char kMacHelperSuffixAlerts[];
 #endif  // OS_MAC
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];
@@ -36,7 +39,6 @@ extern const base::FilePath::CharType kStatusTrayWindowClass[];
 
 extern const char kInitialProfile[];
 extern const char kMultiProfileDirPrefix[];
-extern const char kEphemeralGuestProfileDirPrefix[];
 extern const base::FilePath::CharType kGuestProfileDir[];
 extern const base::FilePath::CharType kSystemProfileDir[];
 
@@ -54,6 +56,7 @@ extern const base::FilePath::CharType kGCMStoreDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNetworkPersistentStateFilename[];
+extern const base::FilePath::CharType kNetworkDataDirname[];
 extern const base::FilePath::CharType kNotificationSchedulerStorageDirname[];
 extern const base::FilePath::CharType kOfflinePageArchivesDirname[];
 extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
@@ -72,6 +75,7 @@ extern const base::FilePath::CharType kSingletonLockFilename[];
 extern const base::FilePath::CharType kSingletonSocketFilename[];
 extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 extern const base::FilePath::CharType kThemePackFilename[];
+extern const base::FilePath::CharType kTransportSecurityPersisterFilename[];
 extern const base::FilePath::CharType kTrustTokenFilename[];
 extern const base::FilePath::CharType kVideoTutorialsStorageDirname[];
 extern const base::FilePath::CharType kWebAppDirname[];

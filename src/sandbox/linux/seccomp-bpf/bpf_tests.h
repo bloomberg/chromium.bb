@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/check.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tester_compatibility_delegate.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -104,6 +103,10 @@ class BPFTesterSimpleDelegate : public BPFTesterDelegate {
  public:
   explicit BPFTesterSimpleDelegate(void (*test_function)(void))
       : test_function_(test_function) {}
+
+  BPFTesterSimpleDelegate(const BPFTesterSimpleDelegate&) = delete;
+  BPFTesterSimpleDelegate& operator=(const BPFTesterSimpleDelegate&) = delete;
+
   ~BPFTesterSimpleDelegate() override {}
 
   std::unique_ptr<bpf_dsl::Policy> GetSandboxBPFPolicy() override {
@@ -116,7 +119,6 @@ class BPFTesterSimpleDelegate : public BPFTesterDelegate {
 
  private:
   void (*test_function_)(void);
-  DISALLOW_COPY_AND_ASSIGN(BPFTesterSimpleDelegate);
 };
 
 }  // namespace sandbox

@@ -42,7 +42,6 @@ SimplifiedOperatorReducer::~SimplifiedOperatorReducer() = default;
 
 
 Reduction SimplifiedOperatorReducer::Reduce(Node* node) {
-  DisallowHeapAccessIf no_heap_access(!broker()->is_concurrent_inlining());
   switch (node->opcode()) {
     case IrOpcode::kBooleanNot: {
       HeapObjectMatcher m(node->InputAt(0));
@@ -78,7 +77,7 @@ Reduction SimplifiedOperatorReducer::Reduce(Node* node) {
     case IrOpcode::kChangeInt32ToTagged: {
       Int32Matcher m(node->InputAt(0));
       if (m.HasResolvedValue()) return ReplaceNumber(m.ResolvedValue());
-      if (m.IsChangeTaggedToInt32() || m.IsChangeTaggedSignedToInt32()) {
+      if (m.IsChangeTaggedSignedToInt32()) {
         return Replace(m.InputAt(0));
       }
       break;

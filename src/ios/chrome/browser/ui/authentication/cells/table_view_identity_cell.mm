@@ -13,11 +13,10 @@
 #endif
 
 namespace {
-// Identity view.
-const CGFloat kLeadingMargin = 8.;
-const CGFloat kIdentityViewVerticalMargin = 7.;
 // Checkmark margin.
 const CGFloat kCheckmarkMagin = 26.;
+// Leading margin for the separator.
+const CGFloat kSeparatorMargin = 80;
 }  // namespace
 
 @interface TableViewIdentityCell ()
@@ -26,26 +25,19 @@ const CGFloat kCheckmarkMagin = 26.;
 
 @implementation TableViewIdentityCell
 
-@synthesize identityView = _identityView;
-
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     _identityView = [[IdentityView alloc] initWithFrame:CGRectZero];
     _identityView.translatesAutoresizingMaskIntoConstraints = NO;
-    _identityView.minimumTopMargin = kIdentityViewVerticalMargin;
-    _identityView.minimumBottomMargin = kIdentityViewVerticalMargin;
+    [self.customSeparator.leadingAnchor
+        constraintEqualToAnchor:self.contentView.leadingAnchor
+                       constant:kSeparatorMargin]
+        .active = YES;
     [self.contentView addSubview:_identityView];
-    LayoutSides sideFlags = LayoutSides::kLeading | LayoutSides::kTrailing |
-                            LayoutSides::kBottom | LayoutSides::kTop;
-    ChromeDirectionalEdgeInsets insets =
-        ChromeDirectionalEdgeInsetsMake(0, kLeadingMargin, 0, 0);
-    AddSameConstraintsToSidesWithInsets(_identityView, self.contentView,
-                                        sideFlags, insets);
-    if (@available(iOS 13.4, *)) {
-      [self addInteraction:[[ViewPointerInteraction alloc] init]];
-    }
+    AddSameConstraints(_identityView, self.contentView);
+    [self addInteraction:[[ViewPointerInteraction alloc] init]];
   }
   return self;
 }
@@ -53,12 +45,16 @@ const CGFloat kCheckmarkMagin = 26.;
 - (void)configureCellWithTitle:(NSString*)title
                       subtitle:(NSString*)subtitle
                          image:(UIImage*)image
-                       checked:(BOOL)checked {
+                       checked:(BOOL)checked
+             identityViewStyle:(IdentityViewStyle)identityViewStyle
+                    titleColor:(UIColor*)titleColor {
+  self.identityView.style = identityViewStyle;
   [self.identityView setTitle:title subtitle:subtitle];
   [self.identityView setAvatar:image];
+  self.identityView.titleColor = titleColor;
   self.accessoryType = checked ? UITableViewCellAccessoryCheckmark
                                : UITableViewCellAccessoryNone;
-  if (checked) {
+  if (checked && identityViewStyle != IdentityViewStyleConsistency) {
     self.directionalLayoutMargins =
         NSDirectionalEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
   } else {
@@ -69,6 +65,7 @@ const CGFloat kCheckmarkMagin = 26.;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.accessibilityIdentifier = nil;
+  self.identityView.style = IdentityViewStyleDefault;
 }
 
 @end

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for the debug events writer Python class."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import glob
 import json as json_lib
 import os
@@ -674,8 +670,8 @@ class MultiSetReaderTest(dumping_callback_test_lib.DumpingCallbackTestBase):
           re.sub(r"(tfdbg_events\.\d+)", r"\g<1>1", os.path.basename(src_path)))
       os.rename(src_path, dst_path)
 
-    with self.assertRaisesRegexp(ValueError,
-                                 r"Found multiple \(2\) tfdbg2 runs"):
+    with self.assertRaisesRegex(ValueError,
+                                r"Found multiple \(2\) tfdbg2 runs"):
       debug_events_reader.DebugDataReader(dump_root_0)
 
 

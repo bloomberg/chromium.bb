@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cast/common/channel/message_util.h"
+#include "cast/common/public/cast_streaming_app_ids.h"
 #include "cast/standalone_sender/looping_file_sender.h"
 #include "cast/streaming/capture_recommendations.h"
 #include "cast/streaming/constants.h"
@@ -80,7 +81,7 @@ void LoopingFileCastAgent::OnConnected(SenderSocketFactory* factory,
                MakeSimpleUTF8Message(
                    kReceiverNamespace,
                    StringPrintf(kLaunchMessageTemplate, next_request_id_++,
-                                GetMirroringAppId())));
+                                GetStreamingAppId())));
 }
 
 void LoopingFileCastAgent::OnError(SenderSocketFactory* factory,
@@ -132,8 +133,7 @@ void LoopingFileCastAgent::OnMessage(VirtualConnectionRouter* router,
       HandleReceiverStatus(payload.value());
     } else if (HasType(payload.value(), CastMessageType::kLaunchError)) {
       std::string reason;
-      if (!json::ParseAndValidateString(payload.value()[kMessageKeyReason],
-                                        &reason)) {
+      if (!json::TryParseString(payload.value()[kMessageKeyReason], &reason)) {
         reason = "UNKNOWN";
       }
       OSP_LOG_ERROR
@@ -142,8 +142,7 @@ void LoopingFileCastAgent::OnMessage(VirtualConnectionRouter* router,
       Shutdown();
     } else if (HasType(payload.value(), CastMessageType::kInvalidRequest)) {
       std::string reason;
-      if (!json::ParseAndValidateString(payload.value()[kMessageKeyReason],
-                                        &reason)) {
+      if (!json::TryParseString(payload.value()[kMessageKeyReason], &reason)) {
         reason = "UNKNOWN";
       }
       OSP_LOG_ERROR << "Cast Receiver thinks our request is invalid: "
@@ -152,11 +151,10 @@ void LoopingFileCastAgent::OnMessage(VirtualConnectionRouter* router,
   }
 }
 
-const char* LoopingFileCastAgent::GetMirroringAppId() const {
-  if (connection_settings_ && !connection_settings_->should_include_video) {
-    return kMirroringAudioOnlyAppId;
-  }
-  return kMirroringAppId;
+const char* LoopingFileCastAgent::GetStreamingAppId() const {
+  return connection_settings_ && !connection_settings_->should_include_video
+             ? GetCastStreamingAudioOnlyAppId()
+             : GetCastStreamingAudioVideoAppId();
 }
 
 void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
@@ -167,9 +165,8 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
           : Json::Value();
 
   std::string running_app_id;
-  if (!json::ParseAndValidateString(details[kMessageKeyAppId],
-                                    &running_app_id) ||
-      running_app_id != GetMirroringAppId()) {
+  if (!json::TryParseString(details[kMessageKeyAppId], &running_app_id) ||
+      running_app_id != GetStreamingAppId()) {
     // The mirroring app is not running. If it was just stopped, Shutdown() will
     // tear everything down. If it has been stopped already, Shutdown() is a
     // no-op.
@@ -178,8 +175,7 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
   }
 
   std::string session_id;
-  if (!json::ParseAndValidateString(details[kMessageKeySessionId],
-                                    &session_id) ||
+  if (!json::TryParseString(details[kMessageKeySessionId], &session_id) ||
       session_id.empty()) {
     OSP_LOG_ERROR
         << "Cannot continue: Cast Receiver did not provide a session ID for "
@@ -207,8 +203,8 @@ void LoopingFileCastAgent::HandleReceiverStatus(const Json::Value& status) {
   }
 
   std::string message_destination_id;
-  if (!json::ParseAndValidateString(details[kMessageKeyTransportId],
-                                    &message_destination_id) ||
+  if (!json::TryParseString(details[kMessageKeyTransportId],
+                            &message_destination_id) ||
       message_destination_id.empty()) {
     OSP_LOG_ERROR
         << "Cannot continue: Cast Receiver did not provide a transport ID for "
@@ -264,16 +260,27 @@ void LoopingFileCastAgent::CreateAndStartSession() {
   AudioCaptureConfig audio_config;
   // Opus does best at 192kbps, so we cap that here.
   audio_config.bit_rate = 192 * 1000;
-  VideoCaptureConfig video_config;
-  // The video config is allowed to use whatever is left over after audio.
-  video_config.max_bit_rate =
-      connection_settings_->max_bitrate - audio_config.bit_rate;
+  VideoCaptureConfig video_config = {
+      .codec = connection_settings_->codec,
+      // The video config is allowed to use whatever is left over after audio.
+      .max_bit_rate =
+          connection_settings_->max_bitrate - audio_config.bit_rate};
   // Use default display resolution of 1080P.
   video_config.resolutions.emplace_back(Resolution{1920, 1080});
 
   OSP_VLOG << "Starting session negotiation.";
-  const Error negotiation_error =
-      current_session_->Negotiate({audio_config}, {video_config});
+  Error negotiation_error;
+  if (connection_settings_->use_remoting) {
+    remoting_sender_ = std::make_unique<RemotingSender>(
+        current_session_->rpc_messenger(), AudioCodec::kOpus,
+        connection_settings_->codec, this);
+
+    negotiation_error =
+        current_session_->NegotiateRemoting(audio_config, video_config);
+  } else {
+    negotiation_error =
+        current_session_->Negotiate({audio_config}, {video_config});
+  }
   if (!negotiation_error.ok()) {
     OSP_LOG_ERROR << "Failed to negotiate a session: " << negotiation_error;
   }
@@ -289,13 +296,50 @@ void LoopingFileCastAgent::OnNegotiated(
   }
 
   file_sender_ = std::make_unique<LoopingFileSender>(
-      environment_.get(), connection_settings_->path_to_file.c_str(), session,
-      std::move(senders), connection_settings_->max_bitrate);
+      environment_.get(), connection_settings_.value(), session,
+      std::move(senders), [this]() { shutdown_callback_(); });
+}
+
+void LoopingFileCastAgent::OnRemotingNegotiated(
+    const SenderSession* session,
+    SenderSession::RemotingNegotiation negotiation) {
+  if (negotiation.senders.audio_sender == nullptr &&
+      negotiation.senders.video_sender == nullptr) {
+    OSP_LOG_ERROR << "Missing both audio and video, so exiting...";
+    return;
+  }
+
+  current_negotiation_ =
+      std::make_unique<SenderSession::RemotingNegotiation>(negotiation);
+  if (is_ready_for_remoting_) {
+    StartRemotingSenders();
+  }
 }
 
 void LoopingFileCastAgent::OnError(const SenderSession* session, Error error) {
   OSP_LOG_ERROR << "SenderSession fatal error: " << error;
   Shutdown();
+}
+
+void LoopingFileCastAgent::OnReady() {
+  is_ready_for_remoting_ = true;
+  if (current_negotiation_) {
+    StartRemotingSenders();
+  }
+}
+
+void LoopingFileCastAgent::OnPlaybackRateChange(double rate) {
+  file_sender_->SetPlaybackRate(rate);
+}
+
+void LoopingFileCastAgent::StartRemotingSenders() {
+  OSP_DCHECK(current_negotiation_);
+  file_sender_ = std::make_unique<LoopingFileSender>(
+      environment_.get(), connection_settings_.value(), current_session_.get(),
+      std::move(current_negotiation_->senders),
+      [this]() { shutdown_callback_(); });
+  current_negotiation_.reset();
+  is_ready_for_remoting_ = false;
 }
 
 void LoopingFileCastAgent::Shutdown() {

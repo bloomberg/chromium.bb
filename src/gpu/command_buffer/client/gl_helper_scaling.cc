@@ -15,7 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -88,6 +88,9 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
         rgb_to_plane1_location_(-1),
         rgb_to_plane2_location_(-1) {}
 
+  ShaderProgram(const ShaderProgram&) = delete;
+  ShaderProgram& operator=(const ShaderProgram&) = delete;
+
   // Compile shader program.
   void Setup(const GLchar* vertex_shader_text,
              const GLchar* fragment_shader_text);
@@ -111,8 +114,8 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   friend class base::RefCounted<ShaderProgram>;
   ~ShaderProgram() { gl_->DeleteProgram(program_); }
 
-  GLES2Interface* gl_;
-  GLHelper* helper_;
+  raw_ptr<GLES2Interface> gl_;
+  raw_ptr<GLHelper> helper_;
   const GLHelperScaling::ShaderType shader_;
 
   // A program for copying a source texture into a destination texture.
@@ -136,8 +139,6 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   GLint rgb_to_plane0_location_;
   GLint rgb_to_plane1_location_;
   GLint rgb_to_plane2_location_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
 };
 
 // Implementation of a single stage in a scaler pipeline. If the pipeline has
@@ -563,8 +564,8 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     gl_->ActiveTexture(oldActiveTexture);
   }
 
-  GLES2Interface* gl_;
-  GLHelperScaling* scaler_helper_;
+  raw_ptr<GLES2Interface> gl_;
+  raw_ptr<GLHelperScaling> scaler_helper_;
   GLHelperScaling::ScalerStage spec_;
   GLfloat color_weights_[3][4];  // A vec4 for each plane.
   GLuint intermediate_texture_;

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -52,6 +52,11 @@ using views::test::WaitForMenuClosureAnimation;
 class TestContextMenuController : public ContextMenuController {
  public:
   TestContextMenuController() = default;
+
+  TestContextMenuController(const TestContextMenuController&) = delete;
+  TestContextMenuController& operator=(const TestContextMenuController&) =
+      delete;
+
   ~TestContextMenuController() override = default;
 
   // ContextMenuController:
@@ -65,13 +70,14 @@ class TestContextMenuController : public ContextMenuController {
 
  private:
   bool opened_menu_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };
 
 class EditableComboboxTest : public ViewsTestBase {
  public:
   EditableComboboxTest() { views::test::DisableMenuClosureAnimations(); }
+
+  EditableComboboxTest(const EditableComboboxTest&) = delete;
+  EditableComboboxTest& operator=(const EditableComboboxTest&) = delete;
 
   void SetUp() override;
   void TearDown() override;
@@ -116,23 +122,20 @@ class EditableComboboxTest : public ViewsTestBase {
   void OnContentChanged() { ++change_count_; }
 
   // The widget where the control will appear.
-  Widget* widget_ = nullptr;
+  raw_ptr<Widget> widget_ = nullptr;
 
   // |combobox_| and |dummy_focusable_view_| are allocated in
   // |InitEditableCombobox| and then owned by |widget_|.
-  EditableCombobox* combobox_ = nullptr;
-  View* dummy_focusable_view_ = nullptr;
+  raw_ptr<EditableCombobox> combobox_ = nullptr;
+  raw_ptr<View> dummy_focusable_view_ = nullptr;
 
   // We make |combobox_| a child of another View to test different removal
   // scenarios.
-  View* parent_of_combobox_ = nullptr;
+  raw_ptr<View> parent_of_combobox_ = nullptr;
 
   int change_count_ = 0;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EditableComboboxTest);
 };
 
 void EditableComboboxTest::SetUp() {
@@ -191,6 +194,7 @@ void EditableComboboxTest::InitEditableCombobox(
   combobox_->SetCallback(base::BindRepeating(
       &EditableComboboxTest::OnContentChanged, base::Unretained(this)));
   combobox_->SetID(2);
+  combobox_->SetAccessibleName(u"abc");
   dummy_focusable_view_ = new View();
   dummy_focusable_view_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   dummy_focusable_view_->SetID(3);
@@ -209,9 +213,9 @@ void EditableComboboxTest::InitWidget() {
 
   widget_->Init(std::move(params));
   View* container = widget_->SetContentsView(std::make_unique<View>());
-  container->AddChildView(parent_of_combobox_);
-  parent_of_combobox_->AddChildView(combobox_);
-  container->AddChildView(dummy_focusable_view_);
+  container->AddChildView(parent_of_combobox_.get());
+  parent_of_combobox_->AddChildView(combobox_.get());
+  container->AddChildView(dummy_focusable_view_.get());
   widget_->Show();
 
 #if defined(OS_MAC)
@@ -585,15 +589,9 @@ TEST_F(EditableComboboxTest, ClickOnMenuItemSelectsItAndClosesMenu) {
   EXPECT_EQ(u"item[0]", combobox_->GetText());
 }
 
-// This is failing on Linux (Ozone Wayland). https://crbug.com/1204302.
-#if defined(OS_LINUX)
-#define MAYBE_SpaceIsReflectedInTextfield DISABLED_SpaceIsReflectedInTextfield
-#else
-#define MAYBE_SpaceIsReflectedInTextfield SpaceIsReflectedInTextfield
-#endif
 // This is different from the regular read-only Combobox, where SPACE
 // opens/closes the menu.
-TEST_F(EditableComboboxTest, MAYBE_SpaceIsReflectedInTextfield) {
+TEST_F(EditableComboboxTest, SpaceIsReflectedInTextfield) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
   SendKeyEvent(ui::VKEY_A);
@@ -916,7 +914,7 @@ class ConfigurableComboboxModel final : public ui::ComboboxModel {
   void SetItemCount(int item_count) { item_count_ = item_count; }
 
  private:
-  bool* const destroyed_;
+  const raw_ptr<bool> destroyed_;
   int item_count_ = 0;
 };
 

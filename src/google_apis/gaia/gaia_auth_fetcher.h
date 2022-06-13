@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -90,6 +90,10 @@ class GaiaAuthFetcher {
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  GaiaAuthFetcher(const GaiaAuthFetcher&) = delete;
+  GaiaAuthFetcher& operator=(const GaiaAuthFetcher&) = delete;
+
   virtual ~GaiaAuthFetcher();
 
   // Start a request to revoke |auth_token|.
@@ -367,7 +371,7 @@ class GaiaAuthFetcher {
 
   // These fields are common to GaiaAuthFetcher, same every request.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  GaiaAuthConsumer* const consumer_;
+  const raw_ptr<GaiaAuthConsumer> consumer_;
   std::string source_;
   const GURL oauth2_token_gurl_;
   const GURL oauth2_revoke_gurl_;
@@ -405,8 +409,6 @@ class GaiaAuthFetcher {
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthWithQuote);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthChallengeQuote);
-
-  DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcher);
 };
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_AUTH_FETCHER_H_

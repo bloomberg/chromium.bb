@@ -6,9 +6,10 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/history/media_history_store.h"
@@ -75,10 +76,10 @@ class MediaHistoryKeyedService::StoreHolder {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   scoped_refptr<MediaHistoryStore> local_;
   scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner_;
-  MediaHistoryKeyedService* remote_ = nullptr;
+  raw_ptr<MediaHistoryKeyedService> remote_ = nullptr;
 };
 
 MediaHistoryKeyedService::MediaHistoryKeyedService(Profile* profile)

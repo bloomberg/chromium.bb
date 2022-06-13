@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -16,8 +16,8 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_list_navigator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,7 +57,6 @@
   if (self) {
     _passwordViewController =
         [[PasswordViewController alloc] initWithSearchController:nil];
-    _passwordViewController.contentInsetsAlwaysEqualToSafeArea = YES;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS);
@@ -105,24 +104,17 @@
 #pragma mark - PasswordListNavigator
 
 - (void)openAllPasswordsList {
-  // On iPad, first dismiss the popover before the new view is presented.
-  __weak __typeof(self) weakSelf = self;
-  if (IsIPadIdiom() && self.passwordViewController.presentingViewController) {
-    [self.passwordViewController
-        dismissViewControllerAnimated:true
-                           completion:^{
-                             [weakSelf openAllPasswordsList];
-                           }];
-    return;
-  }
-  [self.delegate openAllPasswordsPicker];
+  __weak id<PasswordCoordinatorDelegate> delegate = self.delegate;
+  [self dismissIfNecessaryThenDoCompletion:^{
+    [delegate openAllPasswordsPicker];
+  }];
 }
 
 - (void)openPasswordSettings {
   __weak id<PasswordCoordinatorDelegate> delegate = self.delegate;
   [self dismissIfNecessaryThenDoCompletion:^{
     [delegate openPasswordSettings];
-    if (IsIPadIdiom()) {
+    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
       // Settings close the popover but don't send a message to reopen it.
       [delegate fallbackCoordinatorDidDismissPopover:self];
     }

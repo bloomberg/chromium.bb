@@ -15,6 +15,10 @@ bool FakeInputMethodContext::DispatchKeyEvent(
   return false;
 }
 
+bool FakeInputMethodContext::IsPeekKeyEvent(const ui::KeyEvent& key_event) {
+  return false;
+}
+
 void FakeInputMethodContext::Reset() {
 }
 
@@ -30,5 +34,8 @@ void FakeInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
 void FakeInputMethodContext::SetSurroundingText(
     const std::u16string& text,
     const gfx::Range& selection_range) {}
+
+void FakeInputMethodContext::SetContentType(TextInputType input_type,
+                                            int input_flags) {}
 
 }  // namespace ui

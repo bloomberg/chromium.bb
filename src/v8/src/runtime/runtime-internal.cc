@@ -7,9 +7,10 @@
 #include "src/api/api.h"
 #include "src/ast/ast-traversal-visitor.h"
 #include "src/ast/prettyprinter.h"
-#include "src/baseline/baseline-osr-inl.h"
+#include "src/baseline/baseline-batch-compiler.h"
 #include "src/baseline/baseline.h"
 #include "src/builtins/builtins.h"
+#include "src/codegen/compiler.h"
 #include "src/common/message-template.h"
 #include "src/debug/debug.h"
 #include "src/execution/arguments-inl.h"
@@ -30,6 +31,12 @@
 #include "src/snapshot/snapshot.h"
 #include "src/strings/string-builder-inl.h"
 #include "src/utils/ostreams.h"
+
+#if V8_ENABLE_WEBASSEMBLY
+// TODO(jkummerow): Drop this when the "SaveAndClearThreadInWasmFlag"
+// short-term mitigation is no longer needed.
+#include "src/trap-handler/trap-handler.h"
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 namespace v8 {
 namespace internal {
@@ -69,6 +76,12 @@ RUNTIME_FUNCTION(Runtime_ReThrow) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   return isolate->ReThrow(args[0]);
+}
+
+RUNTIME_FUNCTION(Runtime_ReThrowWithMessage) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(2, args.length());
+  return isolate->ReThrow(args[0], args[1]);
 }
 
 RUNTIME_FUNCTION(Runtime_ThrowStackOverflow) {
@@ -329,11 +342,12 @@ RUNTIME_FUNCTION(Runtime_StackGuardWithGap) {
   return isolate->stack_guard()->HandleInterrupts();
 }
 
-RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptFromBytecode) {
-  HandleScope scope(isolate);
-  DCHECK_EQ(1, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
+namespace {
+
+void BytecodeBudgetInterruptFromBytecode(Isolate* isolate,
+                                         Handle<JSFunction> function) {
   function->SetInterruptBudget();
+  bool should_mark_for_optimization = function->has_feedback_vector();
   if (!function->has_feedback_vector()) {
     IsCompiledScope is_compiled_scope(
         function->shared().is_compiled_scope(isolate));
@@ -342,31 +356,70 @@ RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptFromBytecode) {
     // Also initialize the invocation count here. This is only really needed for
     // OSR. When we OSR functions with lazy feedback allocation we want to have
     // a non zero invocation count so we can inline functions.
-    function->feedback_vector().set_invocation_count(1);
-    if (FLAG_sparkplug) {
-      if (V8_LIKELY(FLAG_use_osr)) {
-        JavaScriptFrameIterator it(isolate);
-        DCHECK(it.frame()->is_unoptimized());
-        UnoptimizedFrame* frame = UnoptimizedFrame::cast(it.frame());
-        OSRInterpreterFrameToBaseline(isolate, function, frame);
-      } else {
-        OSRInterpreterFrameToBaseline(isolate, function, nullptr);
-      }
-    }
-    return ReadOnlyRoots(isolate).undefined_value();
+    function->feedback_vector().set_invocation_count(1, kRelaxedStore);
   }
-  {
+  if (CanCompileWithBaseline(isolate, function->shared()) &&
+      !function->ActiveTierIsBaseline()) {
+    if (FLAG_baseline_batch_compilation) {
+      isolate->baseline_batch_compiler()->EnqueueFunction(function);
+    } else {
+      IsCompiledScope is_compiled_scope(
+          function->shared().is_compiled_scope(isolate));
+      Compiler::CompileBaseline(isolate, function, Compiler::CLEAR_EXCEPTION,
+                                &is_compiled_scope);
+    }
+  }
+  if (should_mark_for_optimization) {
     SealHandleScope shs(isolate);
     isolate->counters()->runtime_profiler_ticks()->Increment();
     isolate->runtime_profiler()->MarkCandidatesForOptimizationFromBytecode();
-    return ReadOnlyRoots(isolate).undefined_value();
   }
+}
+}  // namespace
+
+RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptWithStackCheckFromBytecode) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
+  TRACE_EVENT0("v8.execute", "V8.BytecodeBudgetInterruptWithStackCheck");
+
+  // Check for stack interrupts here so that we can fold the interrupt check
+  // into bytecode budget interrupts.
+  StackLimitCheck check(isolate);
+  if (check.JsHasOverflowed()) {
+    // We ideally wouldn't actually get StackOverflows here, since we stack
+    // check on bytecode entry, but it's possible that this check fires due to
+    // the runtime function call being what overflows the stack.
+    // if our function entry
+    return isolate->StackOverflow();
+  } else if (check.InterruptRequested()) {
+    Object return_value = isolate->stack_guard()->HandleInterrupts();
+    if (!return_value.IsUndefined(isolate)) {
+      return return_value;
+    }
+  }
+
+  BytecodeBudgetInterruptFromBytecode(isolate, function);
+  return ReadOnlyRoots(isolate).undefined_value();
+}
+
+RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptFromBytecode) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
+  TRACE_EVENT0("v8.execute", "V8.BytecodeBudgetInterrupt");
+
+  BytecodeBudgetInterruptFromBytecode(isolate, function);
+  return ReadOnlyRoots(isolate).undefined_value();
 }
 
 RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptFromCode) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(FeedbackCell, feedback_cell, 0);
+
+  // TODO(leszeks): Consider checking stack interrupts here, and removing
+  // those checks for code that can have budget interrupts.
 
   DCHECK(feedback_cell->value().IsFeedbackVector());
 
@@ -378,12 +431,41 @@ RUNTIME_FUNCTION(Runtime_BytecodeBudgetInterruptFromCode) {
   return ReadOnlyRoots(isolate).undefined_value();
 }
 
+namespace {
+
+#if V8_ENABLE_WEBASSEMBLY
+class SaveAndClearThreadInWasmFlag {
+ public:
+  SaveAndClearThreadInWasmFlag() {
+    if (trap_handler::IsTrapHandlerEnabled()) {
+      if (trap_handler::IsThreadInWasm()) {
+        thread_was_in_wasm_ = true;
+        trap_handler::ClearThreadInWasm();
+      }
+    }
+  }
+  ~SaveAndClearThreadInWasmFlag() {
+    if (thread_was_in_wasm_) {
+      trap_handler::SetThreadInWasm();
+    }
+  }
+
+ private:
+  bool thread_was_in_wasm_{false};
+};
+#else
+class SaveAndClearThreadInWasmFlag {};
+#endif  // V8_ENABLE_WEBASSEMBLY
+
+}  // namespace
+
 RUNTIME_FUNCTION(Runtime_AllocateInYoungGeneration) {
   HandleScope scope(isolate);
   DCHECK_EQ(2, args.length());
   CONVERT_SMI_ARG_CHECKED(size, 0);
   CONVERT_SMI_ARG_CHECKED(flags, 1);
-  bool double_align = AllocateDoubleAlignFlag::decode(flags);
+  AllocationAlignment alignment =
+      AllocateDoubleAlignFlag::decode(flags) ? kDoubleAligned : kTaggedAligned;
   bool allow_large_object_allocation =
       AllowLargeObjectAllocationFlag::decode(flags);
   CHECK(IsAligned(size, kTaggedSize));
@@ -394,11 +476,19 @@ RUNTIME_FUNCTION(Runtime_AllocateInYoungGeneration) {
     CHECK(size <= kMaxRegularHeapObjectSize);
   }
 
+#if V8_ENABLE_WEBASSEMBLY
+  // Short-term mitigation for crbug.com/1236668. When this is called from
+  // WasmGC code, clear the "thread in wasm" flag, which is important in case
+  // any GC needs to happen.
+  // TODO(jkummerow): Find a better fix, likely by replacing the global flag.
+  SaveAndClearThreadInWasmFlag clear_wasm_flag;
+#endif  // V8_ENABLE_WEBASSEMBLY
+
   // TODO(v8:9472): Until double-aligned allocation is fixed for new-space
   // allocations, don't request it.
-  double_align = false;
+  alignment = kTaggedAligned;
 
-  return *isolate->factory()->NewFillerObject(size, double_align,
+  return *isolate->factory()->NewFillerObject(size, alignment,
                                               AllocationType::kYoung,
                                               AllocationOrigin::kGeneratedCode);
 }
@@ -408,7 +498,8 @@ RUNTIME_FUNCTION(Runtime_AllocateInOldGeneration) {
   DCHECK_EQ(2, args.length());
   CONVERT_SMI_ARG_CHECKED(size, 0);
   CONVERT_SMI_ARG_CHECKED(flags, 1);
-  bool double_align = AllocateDoubleAlignFlag::decode(flags);
+  AllocationAlignment alignment =
+      AllocateDoubleAlignFlag::decode(flags) ? kDoubleAligned : kTaggedAligned;
   bool allow_large_object_allocation =
       AllowLargeObjectAllocationFlag::decode(flags);
   CHECK(IsAligned(size, kTaggedSize));
@@ -416,9 +507,8 @@ RUNTIME_FUNCTION(Runtime_AllocateInOldGeneration) {
   if (!allow_large_object_allocation) {
     CHECK(size <= kMaxRegularHeapObjectSize);
   }
-  return *isolate->factory()->NewFillerObject(size, double_align,
-                                              AllocationType::kOld,
-                                              AllocationOrigin::kGeneratedCode);
+  return *isolate->factory()->NewFillerObject(
+      size, alignment, AllocationType::kOld, AllocationOrigin::kGeneratedCode);
 }
 
 RUNTIME_FUNCTION(Runtime_AllocateByteArray) {

@@ -7,11 +7,14 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -48,43 +51,6 @@ struct ModuleScriptFetchTarget {
 
 }  // namespace
 
-void ModuleTreeLinker::Fetch(
-    const KURL& url,
-    const ModuleType& module_type,
-    ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::blink::RequestContextType context_type,
-    network::mojom::RequestDestination destination,
-    const ScriptFetchOptions& options,
-    Modulator* modulator,
-    ModuleScriptCustomFetchType custom_fetch_type,
-    ModuleTreeLinkerRegistry* registry,
-    ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object_fetcher, context_type, destination,
-      modulator, custom_fetch_type, registry, client);
-  registry->AddFetcher(fetcher);
-  fetcher->FetchRoot(url, module_type, options);
-  DCHECK(fetcher->IsFetching());
-}
-
-void ModuleTreeLinker::FetchDescendantsForInlineScript(
-    ModuleScript* module_script,
-    ResourceFetcher* fetch_client_settings_object_fetcher,
-    mojom::blink::RequestContextType context_type,
-    network::mojom::RequestDestination destination,
-    Modulator* modulator,
-    ModuleScriptCustomFetchType custom_fetch_type,
-    ModuleTreeLinkerRegistry* registry,
-    ModuleTreeClient* client) {
-  DCHECK(module_script);
-  ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object_fetcher, context_type, destination,
-      modulator, custom_fetch_type, registry, client);
-  registry->AddFetcher(fetcher);
-  fetcher->FetchRootInline(module_script);
-  DCHECK(fetcher->IsFetching());
-}
-
 ModuleTreeLinker::ModuleTreeLinker(
     ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::blink::RequestContextType context_type,
@@ -92,7 +58,8 @@ ModuleTreeLinker::ModuleTreeLinker(
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
-    ModuleTreeClient* client)
+    ModuleTreeClient* client,
+    base::PassKey<ModuleTreeLinkerRegistry>)
     : fetch_client_settings_object_fetcher_(
           fetch_client_settings_object_fetcher),
       context_type_(context_type),
@@ -175,7 +142,7 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
     }
 #endif
 
-    registry_->ReleaseFinishedFetcher(this);
+    registry_->ReleaseFinishedLinker(this);
 
     // <spec label="IMSGF" step="6">When the appropriate algorithm
     // asynchronously completes with final result, asynchronously complete this
@@ -188,7 +155,8 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 // #fetch-a-module-worker-script-tree.
 void ModuleTreeLinker::FetchRoot(const KURL& original_url,
                                  ModuleType module_type,
-                                 const ScriptFetchOptions& options) {
+                                 const ScriptFetchOptions& options,
+                                 base::PassKey<ModuleTreeLinkerRegistry>) {
 #if DCHECK_IS_ON()
   original_url_ = original_url;
   module_type_ = module_type;
@@ -262,7 +230,9 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
 
 // <specdef
 // href="https://html.spec.whatwg.org/C/#fetch-an-inline-module-script-graph">
-void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
+void ModuleTreeLinker::FetchRootInline(
+    ModuleScript* module_script,
+    base::PassKey<ModuleTreeLinkerRegistry>) {
   DCHECK(module_script);
 #if DCHECK_IS_ON()
   original_url_ = module_script->BaseURL();
@@ -369,14 +339,14 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
-  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
-  v8::HandleScope scope(isolate);
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
     result_ = nullptr;
     AdvanceState(State::kFinished);
     return;
   }
+  ScriptState* script_state = modulator_->GetScriptState();
+  v8::HandleScope scope(script_state->GetIsolate());
 
   // <spec step="2">Let record be module script's record.</spec>
   v8::Local<v8::Module> record = module_script->V8Module();
@@ -409,7 +379,7 @@ void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   // <spec step="5">For each ModuleRequest Record requested of
   // record.[[RequestedModules]],</spec>
   Vector<ModuleRequest> record_requested_modules =
-      modulator_->ModuleRequestsFromModuleRecord(record);
+      ModuleRecord::ModuleRequests(script_state, record);
 
   for (const auto& requested : record_requested_modules) {
     // <spec step="5.1">Let url be the result of resolving a module specifier
@@ -549,8 +519,14 @@ void ModuleTreeLinker::Instantiate() {
 
     // <spec step="5.2">Perform record.Instantiate(). ...</spec>
     AdvanceState(State::kInstantiating);
+
+    ScriptState* script_state = modulator_->GetScriptState();
+    UseCounter::Count(ExecutionContext::From(script_state),
+                      WebFeature::kInstantiateModuleScript);
+
+    ScriptState::Scope scope(script_state);
     ScriptValue instantiation_error =
-        modulator_->InstantiateModule(record, result_->SourceURL());
+        ModuleRecord::Instantiate(script_state, record, result_->SourceURL());
 
     // <spec step="5.2">... If this throws an exception, set result's error to
     // rethrow to that exception.</spec>
@@ -606,7 +582,7 @@ ScriptValue ModuleTreeLinker::FindFirstParseError(
   // <spec step="5.1">Let childSpecifiers be the value of moduleScript's
   // record's [[RequestedModules]] internal slot.</spec>
   Vector<ModuleRequest> child_specifiers =
-      modulator_->ModuleRequestsFromModuleRecord(record);
+      ModuleRecord::ModuleRequests(modulator_->GetScriptState(), record);
 
   for (const auto& module_request : child_specifiers) {
     // <spec step="5.2">Let childURLs be the list obtained by calling resolve a

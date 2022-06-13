@@ -1,3 +1,9 @@
+/*
+ * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .data-grid {
   position: relative;
   border: 1px solid var(--color-details-hairline-light) !important; /* stylelint-disable-line declaration-no-important */
@@ -19,6 +25,7 @@
   left: 0;
   right: 0;
   overflow-x: hidden;
+  background-color: var(--color-background);
 }
 
 .data-grid .header-container {
@@ -55,7 +62,6 @@
   display: none;
 }
 
-.platform-mac .data-grid .corner,
 .data-grid.data-grid-fits-viewport .corner {
   display: none;
 }
@@ -148,12 +154,17 @@
 }
 
 .data-grid th .sort-order-icon-container {
+  background-color: var(--color-background-elevation-1);
   position: absolute;
   top: 1px;
   right: 0;
   bottom: 1px;
   display: flex;
   align-items: center;
+}
+
+.data-grid th:hover .sort-order-icon-container {
+  background-color: var(--color-background-highlight);
 }
 
 .data-grid th .sort-order-icon {
@@ -167,8 +178,13 @@
   display: block;
 }
 
+.data-grid th.sort-ascending,
+.data-grid th.sort-descending {
+  padding-right: 14px;
+}
+
 .data-grid th.sortable:hover {
-  background-color: var(--color-background-elevation-2);
+  background-color: var(--color-background-highlight);
 }
 
 .data-grid .top-filler-td {
@@ -276,7 +292,7 @@
 }
 
 @media (forced-colors: active) {
-  .sort-order-icon-container [is=ui-icon].icon-mask,
+  .sort-order-icon-container [is="ui-icon"].icon-mask,
   .data-grid td.disclosure::before {
     forced-color-adjust: none;
     background-color: ButtonText;
@@ -287,7 +303,7 @@
   }
 
   .data-grid th.sortable:hover *,
-  .data-grid th.sortable:hover .sort-order-icon-container [is=ui-icon].icon-mask,
+  .data-grid th.sortable:hover .sort-order-icon-container [is="ui-icon"].icon-mask,
   .data-grid tr.parent.selected td.disclosure::before,
   .data-grid:focus tr.parent.selected td.disclosure::before,
   .data-grid table.data tr.parent.revealed:hover td.disclosure::before {

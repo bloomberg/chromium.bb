@@ -7,12 +7,13 @@
 #include "base/functional/not_fn.h"
 #include "base/ranges/algorithm.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 
 AllPasswordsBottomSheetHelper::AllPasswordsBottomSheetHelper(
-    password_manager::PasswordStore* store) {
+    password_manager::PasswordStoreInterface* store) {
   DCHECK(store);
-  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(
+      weak_ptr_factory_.GetWeakPtr());
 }
 
 AllPasswordsBottomSheetHelper::~AllPasswordsBottomSheetHelper() = default;

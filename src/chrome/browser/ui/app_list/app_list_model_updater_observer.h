@@ -9,6 +9,10 @@
 
 class ChromeAppListItem;
 
+namespace ash {
+enum class AppListSortOrder;
+}
+
 // An observer interface for AppListModelUpdater to perform additional work on
 // ChromeAppListItem changes.
 class AppListModelUpdaterObserver : public base::CheckedObserver {

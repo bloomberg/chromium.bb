@@ -6,7 +6,6 @@
 #define MEDIA_BASE_OVERLAY_INFO_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "media/base/media_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -20,6 +19,7 @@ struct MEDIA_EXPORT OverlayInfo {
 
   OverlayInfo();
   OverlayInfo(const OverlayInfo&);
+  OverlayInfo& operator=(const OverlayInfo&);
 
   // Convenience functions to return true if and only if this specifies a
   // surface ID / routing token that is not kNoSurfaceID / empty.  I.e., if we

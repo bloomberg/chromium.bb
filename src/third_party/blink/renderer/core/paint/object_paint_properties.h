@@ -114,10 +114,8 @@ class CORE_EXPORT ObjectPaintProperties {
   //         The space created by overflow clip. The translation equals the
   //         offset between the scrolling contents and the scrollable area of
   //         the container, both originated from the top-left corner, so it is
-  //         the sum of scroll origin and scroll offset of the ScrollableArea.
-  //         To use any content offset based on ScrollOrigin() (e.g. LayoutBox
-  //         or InlineBox's PhysicalLocation()) in this space, we should add
-  //         ScrollOrigin() to the offset.
+  //         the sum of scroll position (instead of scroll offset) of the
+  //         ScrollableArea.
   //
   // ... +-[ TransformIsolationNode ]
   //         This serves as a parent to subtree transforms on an element with
@@ -225,7 +223,8 @@ class CORE_EXPORT ObjectPaintProperties {
 
  public:
 #if DCHECK_IS_ON()
-  // Used by FindPropertiesNeedingUpdate.h for verifying state doesn't change.
+  // Used by find_properties_needing_update.h for verifying state doesn't
+  // change.
   void SetImmutable() const { is_immutable_ = true; }
   bool IsImmutable() const { return is_immutable_; }
   void SetMutable() const { is_immutable_ = false; }

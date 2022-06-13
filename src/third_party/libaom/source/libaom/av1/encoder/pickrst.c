@@ -19,17 +19,16 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/binary_codes_writer.h"
+#include "aom_dsp/mathutils.h"
 #include "aom_dsp/psnr.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/system_state.h"
 #include "av1/common/av1_common_int.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/restoration.h"
 
 #include "av1/encoder/av1_quantize.h"
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/mathutils.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
 
@@ -774,12 +773,10 @@ static AOM_INLINE void compute_sgrproj_err(
   int exq[2];
   apply_sgr(ep, dat8, width, height, dat_stride, use_highbitdepth, bit_depth,
             pu_width, pu_height, flt0, flt1, flt_stride);
-  aom_clear_system_state();
   const sgr_params_type *const params = &av1_sgr_params[ep];
   get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
                     use_highbitdepth, flt0, flt_stride, flt1, flt_stride, exq,
                     params);
-  aom_clear_system_state();
   encode_xq(exq, exqd, params);
   *err = finer_search_pixel_proj_error(
       src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth, flt0,
@@ -1247,8 +1244,6 @@ static int64_t compute_score(int wiener_win, int64_t *M, int64_t *H,
   const int plane_off = (WIENER_WIN - wiener_win) >> 1;
   const int wiener_win2 = wiener_win * wiener_win;
 
-  aom_clear_system_state();
-
   a[WIENER_HALFWIN] = b[WIENER_HALFWIN] = WIENER_FILT_STEP;
   for (i = 0; i < WIENER_HALFWIN; ++i) {
     a[i] = a[WIENER_WIN - i - 1] = vfilt[i];
@@ -1547,8 +1542,6 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
     return;
   }
 
-  aom_clear_system_state();
-
   rusi->sse[RESTORE_WIENER] = finer_tile_search_wiener(
       rsc, limits, tile_rect, &rui, reduced_wiener_win);
   rusi->wiener = rui.wiener_info;
@@ -1705,10 +1698,11 @@ static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   assert(!cm->features.all_lossless);
 
-  av1_fill_lr_rates(&x->mode_costs, cm->fc);
+  av1_fill_lr_rates(&x->mode_costs, x->e_mbd.tile_ctx);
 
   int ntiles[2];
   for (int is_uv = 0; is_uv < 2; ++is_uv)
@@ -1726,6 +1720,17 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   memset(rusi, 0, sizeof(*rusi) * ntiles[0]);
   x->rdmult = cpi->rd.RDMULT;
 
+  // Allocate the frame buffer trial_frame_rst, which is used to temporarily
+  // store the loop restored frame.
+  if (aom_realloc_frame_buffer(
+          &cpi->trial_frame_rst, cm->superres_upscaled_width,
+          cm->superres_upscaled_height, seq_params->subsampling_x,
+          seq_params->subsampling_y, seq_params->use_highbitdepth,
+          AOM_RESTORATION_FRAME_BORDER, cm->features.byte_alignment, NULL, NULL,
+          NULL, 0))
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate trial restored frame buffer");
+
   RestSearchCtxt rsc;
   const int plane_start = AOM_PLANE_Y;
   const int plane_end = num_planes > 1 ? AOM_PLANE_V : AOM_PLANE_Y;
@@ -1741,7 +1746,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
     RestorationType best_rtype = RESTORE_NONE;
 
     const int highbd = rsc.cm->seq_params->use_highbitdepth;
-    if (!cpi->sf.lpf_sf.disable_loop_restoration_chroma || !plane) {
+    if ((plane && !cpi->sf.lpf_sf.disable_loop_restoration_chroma) ||
+        (!plane && !cpi->sf.lpf_sf.disable_loop_restoration_luma)) {
       av1_extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
                        rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
                        highbd);

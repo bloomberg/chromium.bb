@@ -13,6 +13,7 @@
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sanitizer_buildflags.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"
@@ -251,10 +252,10 @@ class TOOLS_SANITY_TEST_CONCURRENT_THREAD : public PlatformThread::Delegate {
     // Sleep for a few milliseconds so the two threads are more likely to live
     // simultaneously. Otherwise we may miss the report due to mutex
     // lock/unlock's inside thread creation code in pure-happens-before mode...
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+    PlatformThread::Sleep(Milliseconds(100));
   }
  private:
-  bool *value_;
+  raw_ptr<bool> value_;
 };
 
 class ReleaseStoreThread : public PlatformThread::Delegate {
@@ -267,10 +268,10 @@ class ReleaseStoreThread : public PlatformThread::Delegate {
     // Sleep for a few milliseconds so the two threads are more likely to live
     // simultaneously. Otherwise we may miss the report due to mutex
     // lock/unlock's inside thread creation code in pure-happens-before mode...
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+    PlatformThread::Sleep(Milliseconds(100));
   }
  private:
-  base::subtle::Atomic32 *value_;
+  raw_ptr<base::subtle::Atomic32> value_;
 };
 
 class AcquireLoadThread : public PlatformThread::Delegate {
@@ -279,11 +280,11 @@ class AcquireLoadThread : public PlatformThread::Delegate {
   ~AcquireLoadThread() override = default;
   void ThreadMain() override {
     // Wait for the other thread to make Release_Store
-    PlatformThread::Sleep(TimeDelta::FromMilliseconds(100));
+    PlatformThread::Sleep(Milliseconds(100));
     base::subtle::Acquire_Load(value_);
   }
  private:
-  base::subtle::Atomic32 *value_;
+  raw_ptr<base::subtle::Atomic32> value_;
 };
 
 void RunInParallel(PlatformThread::Delegate *d1, PlatformThread::Delegate *d2) {

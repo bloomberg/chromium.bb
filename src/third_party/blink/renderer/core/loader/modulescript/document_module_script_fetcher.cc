@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -68,7 +68,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
                          TRACE_EVENT_FLAG_FLOW_IN, "not_streamed_reason",
                          not_streamed_reason);
   // TODO(crbug.com/1061857): Pass ScriptStreamer to the client here.
-  const KURL& url = script_resource->GetResponse().CurrentRequestUrl();
+  const KURL& url = script_resource->GetResponse().ResponseUrl();
   // Create an external module script where base_url == source_url.
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
   client_->NotifyFetchFinishedSuccess(ModuleScriptCreationParams(

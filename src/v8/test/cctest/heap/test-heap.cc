@@ -29,15 +29,18 @@
 
 #include <utility>
 
+#include "include/v8-function.h"
 #include "src/api/api-inl.h"
+#include "src/base/strings.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/compilation-cache.h"
 #include "src/codegen/macro-assembler-inl.h"
+#include "src/codegen/script-details.h"
 #include "src/common/globals.h"
 #include "src/debug/debug.h"
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/execution.h"
-#include "src/handles/global-handles.h"
+#include "src/handles/global-handles-inl.h"
 #include "src/heap/combined-heap.h"
 #include "src/heap/factory.h"
 #include "src/heap/gc-tracer.h"
@@ -57,7 +60,7 @@
 #include "src/objects/heap-number-inl.h"
 #include "src/objects/js-array-inl.h"
 #include "src/objects/js-collection-inl.h"
-#include "src/objects/managed.h"
+#include "src/objects/managed-inl.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/slots.h"
 #include "src/objects/stack-frame-info-inl.h"
@@ -159,13 +162,13 @@ static void CheckOddball(Isolate* isolate, Object obj, const char* string) {
   CHECK(obj.IsOddball());
   Handle<Object> handle(obj, isolate);
   Object print_string = *Object::ToString(isolate, handle).ToHandleChecked();
-  CHECK(String::cast(print_string).IsOneByteEqualTo(CStrVector(string)));
+  CHECK(String::cast(print_string).IsOneByteEqualTo(base::CStrVector(string)));
 }
 
 static void CheckSmi(Isolate* isolate, int value, const char* string) {
   Handle<Object> handle(Smi::FromInt(value), isolate);
   Object print_string = *Object::ToString(isolate, handle).ToHandleChecked();
-  CHECK(String::cast(print_string).IsOneByteEqualTo(CStrVector(string)));
+  CHECK(String::cast(print_string).IsOneByteEqualTo(base::CStrVector(string)));
 }
 
 
@@ -174,15 +177,18 @@ static void CheckNumber(Isolate* isolate, double value, const char* string) {
   CHECK(number->IsNumber());
   Handle<Object> print_string =
       Object::ToString(isolate, number).ToHandleChecked();
-  CHECK(String::cast(*print_string).IsOneByteEqualTo(CStrVector(string)));
+  CHECK(String::cast(*print_string).IsOneByteEqualTo(base::CStrVector(string)));
 }
 
-void CheckEmbeddedObjectsAreEqual(Handle<Code> lhs, Handle<Code> rhs) {
+void CheckEmbeddedObjectsAreEqual(Isolate* isolate, Handle<Code> lhs,
+                                  Handle<Code> rhs) {
   int mode_mask = RelocInfo::ModeMask(RelocInfo::FULL_EMBEDDED_OBJECT);
+  PtrComprCageBase cage_base(isolate);
   RelocIterator lhs_it(*lhs, mode_mask);
   RelocIterator rhs_it(*rhs, mode_mask);
   while (!lhs_it.done() && !rhs_it.done()) {
-    CHECK(lhs_it.rinfo()->target_object() == rhs_it.rinfo()->target_object());
+    CHECK_EQ(lhs_it.rinfo()->target_object(cage_base),
+             rhs_it.rinfo()->target_object(cage_base));
 
     lhs_it.next();
     rhs_it.next();
@@ -218,16 +224,11 @@ HEAP_TEST(TestNewSpaceRefsInCopiedCode) {
   masm.GetCode(isolate, &desc);
   Handle<Code> code =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
+  Handle<Code> copy = factory->CopyCode(code);
 
-  Handle<Code> copy;
-  {
-    CodeSpaceMemoryModificationScope modification_scope(isolate->heap());
-    copy = factory->CopyCode(code);
-  }
-
-  CheckEmbeddedObjectsAreEqual(code, copy);
+  CheckEmbeddedObjectsAreEqual(isolate, code, copy);
   CcTest::CollectAllAvailableGarbage();
-  CheckEmbeddedObjectsAreEqual(code, copy);
+  CheckEmbeddedObjectsAreEqual(isolate, code, copy);
 }
 
 static void CheckFindCodeObject(Isolate* isolate) {
@@ -238,16 +239,18 @@ static void CheckFindCodeObject(Isolate* isolate) {
 
   __ nop();  // supported on all architectures
 
+  PtrComprCageBase cage_base(isolate);
+
   CodeDesc desc;
   assm.GetCode(isolate, &desc);
   Handle<Code> code =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
-  CHECK(code->IsCode());
+  CHECK(code->IsCode(cage_base));
 
   HeapObject obj = HeapObject::cast(*code);
   Address obj_addr = obj.address();
 
-  for (int i = 0; i < obj.Size(); i += kTaggedSize) {
+  for (int i = 0; i < obj.Size(cage_base); i += kTaggedSize) {
     Object found = isolate->FindCodeObject(obj_addr + i);
     CHECK_EQ(*code, found);
   }
@@ -255,8 +258,8 @@ static void CheckFindCodeObject(Isolate* isolate) {
   Handle<Code> copy =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   HeapObject obj_copy = HeapObject::cast(*copy);
-  Object not_right =
-      isolate->FindCodeObject(obj_copy.address() + obj_copy.Size() / 2);
+  Object not_right = isolate->FindCodeObject(obj_copy.address() +
+                                             obj_copy.Size(cage_base) / 2);
   CHECK(not_right != *code);
 }
 
@@ -433,7 +436,7 @@ TEST(GarbageCollection) {
 static void VerifyStringAllocation(Isolate* isolate, const char* string) {
   HandleScope scope(isolate);
   Handle<String> s = isolate->factory()
-                         ->NewStringFromUtf8(CStrVector(string))
+                         ->NewStringFromUtf8(base::CStrVector(string))
                          .ToHandleChecked();
   CHECK_EQ(strlen(string), s->length());
   for (int index = 0; index < s->length(); index++) {
@@ -624,7 +627,7 @@ TEST(DeleteWeakGlobalHandle) {
 }
 
 TEST(BytecodeArray) {
-  if (FLAG_never_compact) return;
+  if (!FLAG_compact) return;
   static const uint8_t kRawBytes[] = {0xC3, 0x7E, 0xA5, 0x5A};
   static const int kRawBytesSize = sizeof(kRawBytes);
   static const int32_t kFrameSize = 32;
@@ -729,15 +732,15 @@ static void CheckInternalizedStrings(const char** strings) {
        string = *strings++) {
     HandleScope scope(isolate);
     Handle<String> a =
-        isolate->factory()->InternalizeUtf8String(CStrVector(string));
+        isolate->factory()->InternalizeUtf8String(base::CStrVector(string));
     // InternalizeUtf8String may return a failure if a GC is needed.
     CHECK(a->IsInternalizedString());
     Handle<String> b = factory->InternalizeUtf8String(string);
     CHECK_EQ(*b, *a);
-    CHECK(b->IsOneByteEqualTo(CStrVector(string)));
-    b = isolate->factory()->InternalizeUtf8String(CStrVector(string));
+    CHECK(b->IsOneByteEqualTo(base::CStrVector(string)));
+    b = isolate->factory()->InternalizeUtf8String(base::CStrVector(string));
     CHECK_EQ(*b, *a);
-    CHECK(b->IsOneByteEqualTo(CStrVector(string)));
+    CHECK(b->IsOneByteEqualTo(base::CStrVector(string)));
   }
 }
 
@@ -1018,18 +1021,20 @@ TEST(StringAllocation) {
       non_one_byte[3 * i + 2] = chars[2];
     }
     Handle<String> non_one_byte_sym = factory->InternalizeUtf8String(
-        Vector<const char>(non_one_byte, 3 * length));
+        base::Vector<const char>(non_one_byte, 3 * length));
     CHECK_EQ(length, non_one_byte_sym->length());
     Handle<String> one_byte_sym =
-        factory->InternalizeString(OneByteVector(one_byte, length));
+        factory->InternalizeString(base::OneByteVector(one_byte, length));
     CHECK_EQ(length, one_byte_sym->length());
     CHECK(one_byte_sym->HasHashCode());
     Handle<String> non_one_byte_str =
-        factory->NewStringFromUtf8(Vector<const char>(non_one_byte, 3 * length))
+        factory
+            ->NewStringFromUtf8(
+                base::Vector<const char>(non_one_byte, 3 * length))
             .ToHandleChecked();
     CHECK_EQ(length, non_one_byte_str->length());
     Handle<String> one_byte_str =
-        factory->NewStringFromUtf8(Vector<const char>(one_byte, length))
+        factory->NewStringFromUtf8(base::Vector<const char>(one_byte, length))
             .ToHandleChecked();
     CHECK_EQ(length, one_byte_str->length());
     DeleteArray(non_one_byte);
@@ -1123,7 +1128,7 @@ TEST(TestBytecodeFlushing) {
 
     // This compile will add the code to the compilation cache.
     {
-      v8::HandleScope scope(isolate);
+      v8::HandleScope new_scope(isolate);
       CompileRun(source);
     }
 
@@ -1228,7 +1233,7 @@ UNINITIALIZED_TEST(Regress10843) {
   FLAG_max_semi_space_size = 2;
   FLAG_min_semi_space_size = 2;
   FLAG_max_old_space_size = 8;
-  FLAG_always_compact = true;
+  FLAG_compact_on_every_full_gc = true;
   v8::Isolate::CreateParams create_params;
   create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
   v8::Isolate* isolate = v8::Isolate::New(create_params);
@@ -1342,7 +1347,7 @@ TEST(TestOptimizeAfterBytecodeFlushingCandidate) {
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   Factory* factory = isolate->factory();
-  v8::HandleScope scope(CcTest::isolate());
+  v8::HandleScope outer_scope(CcTest::isolate());
   const char* source =
       "function foo() {"
       "  var x = 42;"
@@ -1468,7 +1473,7 @@ TEST(CompilationCacheCachingBehavior) {
   CompilationCache* compilation_cache = isolate->compilation_cache();
   LanguageMode language_mode = construct_language_mode(FLAG_use_strict);
 
-  v8::HandleScope scope(CcTest::isolate());
+  v8::HandleScope outer_scope(CcTest::isolate());
   const char* raw_source =
       "function foo() {"
       "  var x = 42;"
@@ -1486,10 +1491,10 @@ TEST(CompilationCacheCachingBehavior) {
   // The script should be in the cache now.
   {
     v8::HandleScope scope(CcTest::isolate());
+    ScriptDetails script_details(Handle<Object>(),
+                                 v8::ScriptOriginOptions(true, false));
     MaybeHandle<SharedFunctionInfo> cached_script =
-        compilation_cache->LookupScript(source, Handle<Object>(), 0, 0,
-                                        v8::ScriptOriginOptions(true, false),
-                                        language_mode);
+        compilation_cache->LookupScript(source, script_details, language_mode);
     CHECK(!cached_script.is_null());
   }
 
@@ -1497,10 +1502,10 @@ TEST(CompilationCacheCachingBehavior) {
   {
     CcTest::CollectAllGarbage();
     v8::HandleScope scope(CcTest::isolate());
+    ScriptDetails script_details(Handle<Object>(),
+                                 v8::ScriptOriginOptions(true, false));
     MaybeHandle<SharedFunctionInfo> cached_script =
-        compilation_cache->LookupScript(source, Handle<Object>(), 0, 0,
-                                        v8::ScriptOriginOptions(true, false),
-                                        language_mode);
+        compilation_cache->LookupScript(source, script_details, language_mode);
     CHECK(!cached_script.is_null());
 
     // Progress code age until it's old and ready for GC.
@@ -1517,10 +1522,10 @@ TEST(CompilationCacheCachingBehavior) {
   {
     v8::HandleScope scope(CcTest::isolate());
     // Ensure code aging cleared the entry from the cache.
+    ScriptDetails script_details(Handle<Object>(),
+                                 v8::ScriptOriginOptions(true, false));
     MaybeHandle<SharedFunctionInfo> cached_script =
-        compilation_cache->LookupScript(source, Handle<Object>(), 0, 0,
-                                        v8::ScriptOriginOptions(true, false),
-                                        language_mode);
+        compilation_cache->LookupScript(source, script_details, language_mode);
     CHECK(cached_script.is_null());
   }
 }
@@ -1528,14 +1533,14 @@ TEST(CompilationCacheCachingBehavior) {
 
 static void OptimizeEmptyFunction(const char* name) {
   HandleScope scope(CcTest::i_isolate());
-  EmbeddedVector<char, 256> source;
-  SNPrintF(source,
-           "function %s() { return 0; }"
-           "%%PrepareFunctionForOptimization(%s);"
-           "%s(); %s();"
-           "%%OptimizeFunctionOnNextCall(%s);"
-           "%s();",
-           name, name, name, name, name, name);
+  base::EmbeddedVector<char, 256> source;
+  base::SNPrintF(source,
+                 "function %s() { return 0; }"
+                 "%%PrepareFunctionForOptimization(%s);"
+                 "%s(); %s();"
+                 "%%OptimizeFunctionOnNextCall(%s);"
+                 "%s();",
+                 name, name, name, name, name, name);
   CompileRun(source.begin());
 }
 
@@ -1554,7 +1559,6 @@ int CountNativeContexts() {
 TEST(TestInternalWeakLists) {
   FLAG_always_opt = false;
   FLAG_allow_natives_syntax = true;
-  v8::V8::Initialize();
 
   // Some flags turn Scavenge collections into Mark-sweep collections
   // and hence are incompatible with this test case.
@@ -1587,7 +1591,7 @@ TEST(TestInternalWeakLists) {
 
     // Create a handle scope so no function objects get stuck in the outer
     // handle scope.
-    HandleScope scope(isolate);
+    HandleScope new_scope(isolate);
     OptimizeEmptyFunction("f1");
     OptimizeEmptyFunction("f2");
     OptimizeEmptyFunction("f3");
@@ -1651,8 +1655,6 @@ TEST(TestSizeOfRegExpCode) {
   if (!FLAG_regexp_optimization) return;
   FLAG_stress_concurrent_allocation = false;
 
-  v8::V8::Initialize();
-
   Isolate* isolate = CcTest::i_isolate();
   HandleScope scope(isolate);
 
@@ -1708,7 +1710,6 @@ TEST(TestSizeOfRegExpCode) {
 
 HEAP_TEST(TestSizeOfObjects) {
   FLAG_stress_concurrent_allocation = false;
-  v8::V8::Initialize();
   Isolate* isolate = CcTest::i_isolate();
   Heap* heap = CcTest::heap();
   // Disable LAB, such that calculations with SizeOfObjects() and object size
@@ -1754,7 +1755,7 @@ HEAP_TEST(TestSizeOfObjects) {
 TEST(TestAlignmentCalculations) {
   // Maximum fill amounts are consistent.
   int maximum_double_misalignment = kDoubleSize - kTaggedSize;
-  int max_word_fill = Heap::GetMaximumFillToAlign(kWordAligned);
+  int max_word_fill = Heap::GetMaximumFillToAlign(kTaggedAligned);
   CHECK_EQ(0, max_word_fill);
   int max_double_fill = Heap::GetMaximumFillToAlign(kDoubleAligned);
   CHECK_EQ(maximum_double_misalignment, max_double_fill);
@@ -1765,9 +1766,9 @@ TEST(TestAlignmentCalculations) {
   int fill = 0;
 
   // Word alignment never requires fill.
-  fill = Heap::GetFillToAlign(base, kWordAligned);
+  fill = Heap::GetFillToAlign(base, kTaggedAligned);
   CHECK_EQ(0, fill);
-  fill = Heap::GetFillToAlign(base + kTaggedSize, kWordAligned);
+  fill = Heap::GetFillToAlign(base + kTaggedSize, kTaggedAligned);
   CHECK_EQ(0, fill);
 
   // No fill is required when address is double aligned.
@@ -1786,7 +1787,8 @@ TEST(TestAlignmentCalculations) {
 static HeapObject NewSpaceAllocateAligned(int size,
                                           AllocationAlignment alignment) {
   Heap* heap = CcTest::heap();
-  AllocationResult allocation = heap->new_space()->AllocateRaw(size, alignment);
+  AllocationResult allocation =
+      heap->new_space()->AllocateRawAligned(size, alignment);
   HeapObject obj;
   allocation.To(&obj);
   heap->CreateFillerObjectAt(obj.address(), size, ClearRecordedSlots::kNo);
@@ -1799,7 +1801,7 @@ static Address AlignNewSpace(AllocationAlignment alignment, int offset) {
   int fill = Heap::GetFillToAlign(*top_addr, alignment);
   int allocation = fill + offset;
   if (allocation) {
-    NewSpaceAllocateAligned(allocation, kWordAligned);
+    NewSpaceAllocateAligned(allocation, kTaggedAligned);
   }
   return *top_addr;
 }
@@ -1867,7 +1869,7 @@ static Address AlignOldSpace(AllocationAlignment alignment, int offset) {
   int fill = Heap::GetFillToAlign(*top_addr, alignment);
   int allocation = fill + offset;
   if (allocation) {
-    OldSpaceAllocateAligned(allocation, kWordAligned);
+    OldSpaceAllocateAligned(allocation, kTaggedAligned);
   }
   Address top = *top_addr;
   // Now force the remaining allocation onto the free list.
@@ -1967,12 +1969,13 @@ TEST(TestSizeOfObjectsVsHeapObjectIteratorPrecision) {
   // are correct.
   CcTest::heap()->DisableInlineAllocation();
   HeapObjectIterator iterator(CcTest::heap());
+  PtrComprCageBase cage_base(CcTest::i_isolate());
   intptr_t size_of_objects_1 = CcTest::heap()->SizeOfObjects();
   intptr_t size_of_objects_2 = 0;
   for (HeapObject obj = iterator.Next(); !obj.is_null();
        obj = iterator.Next()) {
-    if (!obj.IsFreeSpace()) {
-      size_of_objects_2 += obj.Size();
+    if (!obj.IsFreeSpace(cage_base)) {
+      size_of_objects_2 += obj.Size(cage_base);
     }
   }
   // Delta must be within 5% of the larger result.
@@ -2509,22 +2512,22 @@ TEST(OptimizedPretenuringAllocationFolding) {
   v8::Local<v8::Context> ctx = CcTest::isolate()->GetCurrentContext();
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array();"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [[{}], [1.1]];"
-              "  }"
-              "  return elements[number_elements-1]"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array();"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [[{}], [1.1]];"
+                 "  }"
+                 "  return elements[number_elements-1]"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2560,22 +2563,22 @@ TEST(OptimizedPretenuringObjectArrayLiterals) {
 
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [{}, {}, {}];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [{}, {}, {}];"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2600,23 +2603,23 @@ TEST(OptimizedPretenuringNestedInObjectProperties) {
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
   // Keep the nested literal alive while its root is freed
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "let number_elements = %d;"
-              "let elements = new Array(number_elements);"
-              "function f() {"
-              "  for (let i = 0; i < number_elements; i++) {"
-              "     let l =  {a: {c: 2.2, d: {e: 3.3}}, b: 1.1}; "
-              "    elements[i] = l.a;"
-              "  }"
-              "  return elements[number_elements-1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "let number_elements = %d;"
+                 "let elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (let i = 0; i < number_elements; i++) {"
+                 "     let l =  {a: {c: 2.2, d: {e: 3.3}}, b: 1.1}; "
+                 "    elements[i] = l.a;"
+                 "  }"
+                 "  return elements[number_elements-1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2640,22 +2643,22 @@ TEST(OptimizedPretenuringMixedInObjectProperties) {
 
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = {a: {c: 2.2, d: {}}, b: 1.1};"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = {a: {c: 2.2, d: {}}, b: 1.1};"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2687,22 +2690,22 @@ TEST(OptimizedPretenuringDoubleArrayProperties) {
 
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = {a: 1.1, b: 2.2};"
-              "  }"
-              "  return elements[i - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = {a: 1.1, b: 2.2};"
+                 "  }"
+                 "  return elements[i - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2726,22 +2729,22 @@ TEST(OptimizedPretenuringDoubleArrayLiterals) {
 
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [1.1, 2.2, 3.3];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [1.1, 2.2, 3.3];"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2764,22 +2767,22 @@ TEST(OptimizedPretenuringNestedMixedArrayLiterals) {
   v8::Local<v8::Context> ctx = CcTest::isolate()->GetCurrentContext();
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [[{}, {}, {}], [1.1, 2.2, 3.3]];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [[{}, {}, {}], [1.1, 2.2, 3.3]];"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2814,22 +2817,22 @@ TEST(OptimizedPretenuringNestedObjectLiterals) {
   v8::Local<v8::Context> ctx = CcTest::isolate()->GetCurrentContext();
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [[{}, {}, {}],[{}, {}, {}]];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [[{}, {}, {}],[{}, {}, {}]];"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2864,22 +2867,22 @@ TEST(OptimizedPretenuringNestedDoubleLiterals) {
   v8::Local<v8::Context> ctx = CcTest::isolate()->GetCurrentContext();
   GrowNewSpaceToMaximumCapacity(CcTest::heap());
 
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "var number_elements = %d;"
-              "var elements = new Array(number_elements);"
-              "function f() {"
-              "  for (var i = 0; i < number_elements; i++) {"
-              "    elements[i] = [[1.1, 1.2, 1.3],[2.1, 2.2, 2.3]];"
-              "  }"
-              "  return elements[number_elements - 1];"
-              "};"
-              "%%PrepareFunctionForOptimization(f);"
-              "f(); gc();"
-              "f(); f();"
-              "%%OptimizeFunctionOnNextCall(f);"
-              "f();",
-              kPretenureCreationCount);
+  base::ScopedVector<char> source(1024);
+  base::SNPrintF(source,
+                 "var number_elements = %d;"
+                 "var elements = new Array(number_elements);"
+                 "function f() {"
+                 "  for (var i = 0; i < number_elements; i++) {"
+                 "    elements[i] = [[1.1, 1.2, 1.3],[2.1, 2.2, 2.3]];"
+                 "  }"
+                 "  return elements[number_elements - 1];"
+                 "};"
+                 "%%PrepareFunctionForOptimization(f);"
+                 "f(); gc();"
+                 "f(); f();"
+                 "%%OptimizeFunctionOnNextCall(f);"
+                 "f();",
+                 kPretenureCreationCount);
 
   v8::Local<v8::Value> res = CompileRun(source.begin());
 
@@ -2960,8 +2963,8 @@ TEST(Regress1465) {
   {
     AlwaysAllocateScopeForTesting always_allocate(CcTest::i_isolate()->heap());
     for (int i = 0; i < transitions_count; i++) {
-      EmbeddedVector<char, 64> buffer;
-      SNPrintF(buffer, "var o = new F; o.prop%d = %d;", i, i);
+      base::EmbeddedVector<char, 64> buffer;
+      base::SNPrintF(buffer, "var o = new F; o.prop%d = %d;", i, i);
       CompileRun(buffer.begin());
     }
     CompileRun("var root = new F;");
@@ -2998,8 +3001,8 @@ static i::Handle<JSObject> GetByName(const char* name) {
 static void AddTransitions(int transitions_count) {
   AlwaysAllocateScopeForTesting always_allocate(CcTest::i_isolate()->heap());
   for (int i = 0; i < transitions_count; i++) {
-    EmbeddedVector<char, 64> buffer;
-    SNPrintF(buffer, "var o = new F; o.prop%d = %d;", i, i);
+    base::EmbeddedVector<char, 64> buffer;
+    base::SNPrintF(buffer, "var o = new F; o.prop%d = %d;", i, i);
     CompileRun(buffer.begin());
   }
 }
@@ -3110,7 +3113,7 @@ TEST(TransitionArrayShrinksDuringAllocToOnePropertyFound) {
 
 
 TEST(ReleaseOverReservedPages) {
-  if (FLAG_never_compact) return;
+  if (!FLAG_compact) return;
   FLAG_trace_gc = true;
   // The optimizer can allocate stuff, messing up the test.
 #ifndef V8_LITE_MODE
@@ -3323,12 +3326,12 @@ TEST(IncrementalMarkingPreservesMonomorphicIC) {
       v8::Utils::OpenHandle(*v8::Local<v8::Function>::Cast(
           CcTest::global()->Get(ctx, v8_str("f")).ToLocalChecked())));
 
-  CheckVectorIC(f, 0, MONOMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::MONOMORPHIC);
 
   heap::SimulateIncrementalMarking(CcTest::heap());
   CcTest::CollectAllGarbage();
 
-  CheckVectorIC(f, 0, MONOMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::MONOMORPHIC);
 }
 
 TEST(IncrementalMarkingPreservesPolymorphicIC) {
@@ -3365,13 +3368,13 @@ TEST(IncrementalMarkingPreservesPolymorphicIC) {
       v8::Utils::OpenHandle(*v8::Local<v8::Function>::Cast(
           CcTest::global()->Get(ctx, v8_str("f")).ToLocalChecked())));
 
-  CheckVectorIC(f, 0, POLYMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::POLYMORPHIC);
 
   // Fire context dispose notification.
   heap::SimulateIncrementalMarking(CcTest::heap());
   CcTest::CollectAllGarbage();
 
-  CheckVectorIC(f, 0, POLYMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::POLYMORPHIC);
 }
 
 TEST(ContextDisposeDoesntClearPolymorphicIC) {
@@ -3408,14 +3411,14 @@ TEST(ContextDisposeDoesntClearPolymorphicIC) {
       v8::Utils::OpenHandle(*v8::Local<v8::Function>::Cast(
           CcTest::global()->Get(ctx, v8_str("f")).ToLocalChecked())));
 
-  CheckVectorIC(f, 0, POLYMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::POLYMORPHIC);
 
   // Fire context dispose notification.
   CcTest::isolate()->ContextDisposedNotification();
   heap::SimulateIncrementalMarking(CcTest::heap());
   CcTest::CollectAllGarbage();
 
-  CheckVectorIC(f, 0, POLYMORPHIC);
+  CheckVectorIC(f, 0, InlineCacheState::POLYMORPHIC);
 }
 
 
@@ -3451,7 +3454,7 @@ void ReleaseStackTraceDataTest(v8::Isolate* isolate, const char* source,
   v8::HandleScope scope(isolate);
   SourceResource* resource = new SourceResource(i::StrDup(source));
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope new_scope(isolate);
     v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
     v8::Local<v8::String> source_string =
         v8::String::NewExternalOneByte(isolate, resource).ToLocalChecked();
@@ -3477,11 +3480,6 @@ void ReleaseStackTraceDataTest(v8::Isolate* isolate, const char* source,
 
 
 UNINITIALIZED_TEST(ReleaseStackTraceData) {
-  if (FLAG_always_opt) {
-    // TODO(ulan): Remove this once the memory leak via code_next_link is fixed.
-    // See: https://codereview.chromium.org/181833004/
-    return;
-  }
 #ifndef V8_LITE_MODE
   // ICs retain objects.
   FLAG_use_ic = false;
@@ -3723,8 +3721,7 @@ TEST(Regress169928) {
   // fill pointer value.
   HeapObject obj;
   AllocationResult allocation = CcTest::heap()->new_space()->AllocateRaw(
-      AllocationMemento::kSize + kTaggedSize,
-      AllocationAlignment::kWordAligned);
+      AllocationMemento::kSize + kTaggedSize, kTaggedAligned);
   CHECK(allocation.To(&obj));
   Address addr_obj = obj.address();
   CcTest::heap()->CreateFillerObjectAt(addr_obj,
@@ -3746,7 +3743,7 @@ TEST(Regress169928) {
 
 TEST(LargeObjectSlotRecording) {
   if (!FLAG_incremental_marking) return;
-  if (FLAG_never_compact) return;
+  if (!FLAG_compact) return;
   ManualGCScope manual_gc_scope;
   FLAG_manual_evacuation_candidates_selection = true;
   CcTest::InitializeVM();
@@ -3954,7 +3951,7 @@ static int SlimAllocationSiteCount(Heap* heap) {
 }
 
 TEST(EnsureAllocationSiteDependentCodesProcessed) {
-  if (FLAG_always_opt || !FLAG_opt) return;
+  if (FLAG_always_opt || !FLAG_opt || !V8_ALLOCATION_SITE_TRACKING_BOOL) return;
   FLAG_allow_natives_syntax = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
@@ -3991,23 +3988,19 @@ TEST(EnsureAllocationSiteDependentCodesProcessed) {
                 ->Get(context.local(), v8_str("bar"))
                 .ToLocalChecked())));
 
-    int dependency_group_count = 0;
-    DependentCode dependency = site->dependent_code();
-    while (dependency != ReadOnlyRoots(heap).empty_weak_fixed_array()) {
-      CHECK(dependency.group() ==
-                DependentCode::kAllocationSiteTransitionChangedGroup ||
-            dependency.group() ==
-                DependentCode::kAllocationSiteTenuringChangedGroup);
-      CHECK_EQ(1, dependency.count());
-      CHECK(dependency.object_at(0)->IsWeak());
-      Code function_bar =
-          Code::cast(dependency.object_at(0)->GetHeapObjectAssumeWeak());
-      CHECK_EQ(bar_handle->code(), function_bar);
-      dependency = dependency.next_link();
-      dependency_group_count++;
-    }
     // Expect a dependent code object for transitioning and pretenuring.
-    CHECK_EQ(2, dependency_group_count);
+    DependentCode dependency = site->dependent_code();
+    CHECK_NE(dependency,
+             DependentCode::empty_dependent_code(ReadOnlyRoots(isolate)));
+    CHECK_EQ(dependency.length(), DependentCode::kSlotsPerEntry);
+    MaybeObject code = dependency.Get(0 + DependentCode::kCodeSlotOffset);
+    CHECK(code->IsWeak());
+    CHECK_EQ(bar_handle->code(),
+             FromCodeT(CodeT::cast(code->GetHeapObjectAssumeWeak())));
+    Smi groups = dependency.Get(0 + DependentCode::kGroupsSlotOffset).ToSmi();
+    CHECK_EQ(static_cast<DependentCode::DependencyGroups>(groups.value()),
+             DependentCode::kAllocationSiteTransitionChangedGroup |
+                 DependentCode::kAllocationSiteTenuringChangedGroup);
   }
 
   // Now make sure that a gc should get rid of the function, even though we
@@ -4018,7 +4011,7 @@ TEST(EnsureAllocationSiteDependentCodesProcessed) {
 
   // The site still exists because of our global handle, but the code is no
   // longer referred to by dependent_code().
-  CHECK(site->dependent_code().object_at(0)->IsCleared());
+  CHECK(site->dependent_code().Get(0)->IsCleared());
 }
 
 void CheckNumberOfAllocations(Heap* heap, const char* source,
@@ -4121,94 +4114,6 @@ TEST(AllocationSiteCreation) {
 
   // No new AllocationSites created on the second invocation.
   CheckNumberOfAllocations(heap, "f9(); ", 0, 0);
-}
-
-TEST(AllocationSiteCreationForIIFE) {
-  // No feedback vectors and hence no allocation sites.
-  // TODO(mythria): Once lazy feedback allocation is enabled by default
-  // re-evaluate if we need any of these tests.
-  if (FLAG_lite_mode || FLAG_lazy_feedback_allocation) return;
-  FLAG_always_opt = false;
-  CcTest::InitializeVM();
-  Isolate* isolate = CcTest::i_isolate();
-  Heap* heap = isolate->heap();
-  HandleScope scope(isolate);
-  i::FLAG_enable_one_shot_optimization = true;
-
-  // No allocation sites within IIFE/top-level
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            (function f4() {
-                              return [ 0, [ 1, 1.1, 1.2,], 1.5, [2.1, 2.2], 3 ];
-                            })();
-                            )",
-                           0, 0);
-
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            l = [ 1, 2, 3, 4];
-                            )",
-                           0, 0);
-
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            a = [];
-                            )",
-                           0, 0);
-
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            (function f4() {
-                              return [];
-                            })();
-                            )",
-                           0, 0);
-
-  // No allocation sites for literals in an iife/top level code even if it has
-  // array subliterals
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            (function f10() {
-                              return {a: [1], b: [2]};
-                            })();
-                            )",
-                           0, 0);
-
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            l = {
-                              a: 1,
-                              b: {
-                                c: [5],
-                              }
-                            };
-                            )",
-                           0, 0);
-
-  // Eagerly create allocation sites for literals within a loop of iife or
-  // top-level code
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            (function f11() {
-                              while(true) {
-                                return {a: [1], b: [2]};
-                              }
-                            })();
-                            )",
-                           1, 2);
-
-  CheckNumberOfAllocations(heap,
-                           R"(
-                            for (i = 0; i < 1; ++i) {
-                              l = {
-                                a: 1,
-                                b: {
-                                  c: [5],
-                                }
-                              };
-                            }
-                            )",
-                           1, 1);
 }
 
 TEST(CellsInOptimizedCodeAreWeak) {
@@ -4410,14 +4315,14 @@ TEST(ObjectsInEagerlyDeoptimizedCodeAreWeak) {
 
 static Handle<JSFunction> OptimizeDummyFunction(v8::Isolate* isolate,
                                                 const char* name) {
-  EmbeddedVector<char, 256> source;
-  SNPrintF(source,
-           "function %s() { return 0; }"
-           "%%PrepareFunctionForOptimization(%s);"
-           "%s(); %s();"
-           "%%OptimizeFunctionOnNextCall(%s);"
-           "%s();",
-           name, name, name, name, name, name);
+  base::EmbeddedVector<char, 256> source;
+  base::SNPrintF(source,
+                 "function %s() { return 0; }"
+                 "%%PrepareFunctionForOptimization(%s);"
+                 "%s(); %s();"
+                 "%%OptimizeFunctionOnNextCall(%s);"
+                 "%s();",
+                 name, name, name, name, name, name);
   CompileRun(source.begin());
   i::Handle<JSFunction> fun = Handle<JSFunction>::cast(
       v8::Utils::OpenHandle(*v8::Local<v8::Function>::Cast(
@@ -4429,9 +4334,9 @@ static Handle<JSFunction> OptimizeDummyFunction(v8::Isolate* isolate,
 
 static int GetCodeChainLength(Code code) {
   int result = 0;
-  while (code.next_code_link().IsCode()) {
+  while (code.next_code_link().IsCodeT()) {
     result++;
-    code = Code::cast(code.next_code_link());
+    code = FromCodeT(CodeT::cast(code.next_code_link()));
   }
   return result;
 }
@@ -4440,6 +4345,7 @@ static int GetCodeChainLength(Code code) {
 TEST(NextCodeLinkIsWeak) {
   FLAG_always_opt = false;
   FLAG_allow_natives_syntax = true;
+  FLAG_stress_concurrent_inlining = false;  // Test needs deterministic timing.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   v8::internal::Heap* heap = CcTest::heap();
@@ -4455,7 +4361,7 @@ TEST(NextCodeLinkIsWeak) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal");
     Handle<JSFunction> immortal =
         OptimizeDummyFunction(CcTest::isolate(), "immortal");
-    CHECK_EQ(immortal->code().next_code_link(), mortal->code());
+    CHECK_EQ(immortal->code().next_code_link(), ToCodeT(mortal->code()));
     code_chain_length_before = GetCodeChainLength(immortal->code());
     // Keep the immortal code and let the mortal code die.
     code = scope.CloseAndEscape(Handle<Code>(immortal->code(), isolate));
@@ -4470,6 +4376,7 @@ TEST(NextCodeLinkIsWeak) {
 TEST(NextCodeLinkInCodeDataContainerIsCleared) {
   FLAG_always_opt = false;
   FLAG_allow_natives_syntax = true;
+  FLAG_stress_concurrent_inlining = false;  // Test needs deterministic timing.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   v8::internal::Heap* heap = CcTest::heap();
@@ -4483,7 +4390,7 @@ TEST(NextCodeLinkInCodeDataContainerIsCleared) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal1");
     Handle<JSFunction> mortal2 =
         OptimizeDummyFunction(CcTest::isolate(), "mortal2");
-    CHECK_EQ(mortal2->code().next_code_link(), mortal1->code());
+    CHECK_EQ(mortal2->code().next_code_link(), ToCodeT(mortal1->code()));
     code_data_container = scope.CloseAndEscape(Handle<CodeDataContainer>(
         mortal2->code().code_data_container(kAcquireLoad), isolate));
     CompileRun("mortal1 = null; mortal2 = null;");
@@ -4518,6 +4425,7 @@ static Handle<Code> DummyOptimizedCode(Isolate* isolate) {
 
 TEST(NextCodeLinkIsWeak2) {
   FLAG_allow_natives_syntax = true;
+  FLAG_stress_concurrent_inlining = false;  // Test needs deterministic timing.
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   v8::internal::Heap* heap = CcTest::heap();
@@ -4525,7 +4433,8 @@ TEST(NextCodeLinkIsWeak2) {
   if (!isolate->use_optimizer()) return;
   HandleScope outer_scope(heap->isolate());
   CcTest::CollectAllAvailableGarbage();
-  Handle<Context> context(Context::cast(heap->native_contexts_list()), isolate);
+  Handle<NativeContext> context(
+      NativeContext::cast(heap->native_contexts_list()), isolate);
   Handle<Code> new_head;
   Handle<Object> old_head(context->get(Context::OPTIMIZED_CODE_LIST), isolate);
   {
@@ -4533,8 +4442,8 @@ TEST(NextCodeLinkIsWeak2) {
     Handle<Code> immortal = DummyOptimizedCode(isolate);
     Handle<Code> mortal = DummyOptimizedCode(isolate);
     mortal->set_next_code_link(*old_head);
-    immortal->set_next_code_link(*mortal);
-    context->set(Context::OPTIMIZED_CODE_LIST, *immortal);
+    immortal->set_next_code_link(ToCodeT(*mortal));
+    context->SetOptimizedCodeListHead(ToCodeT(*immortal));
     new_head = scope.CloseAndEscape(immortal);
   }
   CcTest::CollectAllAvailableGarbage();
@@ -4574,7 +4483,7 @@ TEST(WeakFunctionInConstructor) {
 
   v8::Persistent<v8::Object> garbage;
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope new_scope(isolate);
     const char* source =
         " (function() {"
         "   function hat() { this.x = 5; }"
@@ -4627,7 +4536,7 @@ void CheckWeakness(const char* source) {
   v8::HandleScope scope(isolate);
   v8::Persistent<v8::Object> garbage;
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope new_scope(isolate);
     garbage.Reset(isolate, CompileRun(env.local(), source)
                                .ToLocalChecked()
                                ->ToObject(env.local())
@@ -4847,16 +4756,16 @@ TEST(MonomorphicStaysMonomorphicAfterGC) {
       "};");
   Handle<JSFunction> loadIC = GetFunctionByName(isolate, "loadIC");
   {
-    v8::HandleScope scope(CcTest::isolate());
+    v8::HandleScope new_scope(CcTest::isolate());
     CompileRun("(testIC())");
   }
   CcTest::CollectAllGarbage();
-  CheckIC(loadIC, 0, MONOMORPHIC);
+  CheckIC(loadIC, 0, InlineCacheState::MONOMORPHIC);
   {
-    v8::HandleScope scope(CcTest::isolate());
+    v8::HandleScope new_scope(CcTest::isolate());
     CompileRun("(testIC())");
   }
-  CheckIC(loadIC, 0, MONOMORPHIC);
+  CheckIC(loadIC, 0, InlineCacheState::MONOMORPHIC);
 }
 
 
@@ -4886,16 +4795,16 @@ TEST(PolymorphicStaysPolymorphicAfterGC) {
       "};");
   Handle<JSFunction> loadIC = GetFunctionByName(isolate, "loadIC");
   {
-    v8::HandleScope scope(CcTest::isolate());
+    v8::HandleScope new_scope(CcTest::isolate());
     CompileRun("(testIC())");
   }
   CcTest::CollectAllGarbage();
-  CheckIC(loadIC, 0, POLYMORPHIC);
+  CheckIC(loadIC, 0, InlineCacheState::POLYMORPHIC);
   {
-    v8::HandleScope scope(CcTest::isolate());
+    v8::HandleScope new_scope(CcTest::isolate());
     CompileRun("(testIC())");
   }
-  CheckIC(loadIC, 0, POLYMORPHIC);
+  CheckIC(loadIC, 0, InlineCacheState::POLYMORPHIC);
 }
 
 #ifdef DEBUG
@@ -5406,7 +5315,7 @@ TEST(OldSpaceAllocationCounter) {
 static void CheckLeak(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Isolate* isolate = CcTest::i_isolate();
   Object message(
-      *reinterpret_cast<Address*>(isolate->pending_message_obj_address()));
+      *reinterpret_cast<Address*>(isolate->pending_message_address()));
   CHECK(message.IsTheHole(isolate));
 }
 
@@ -5709,7 +5618,7 @@ TEST(Regress598319) {
       root = isolate->factory()->NewFixedArray(1, AllocationType::kOld);
       {
         // Temporary scope to avoid getting any other objects into the root set.
-        v8::HandleScope scope(CcTest::isolate());
+        v8::HandleScope new_scope(CcTest::isolate());
         Handle<FixedArray> tmp = isolate->factory()->NewFixedArray(
             number_of_objects, AllocationType::kOld);
         root->set(0, *tmp);
@@ -5773,12 +5682,13 @@ TEST(Regress598319) {
     marking->Step(kSmallStepSizeInMs,
                   i::IncrementalMarking::NO_GC_VIA_STACK_GUARD,
                   StepOrigin::kV8);
-    if (page->IsFlagSet(Page::HAS_PROGRESS_BAR) && page->ProgressBar() > 0) {
-      CHECK_NE(page->ProgressBar(), arr.get().Size());
+    ProgressBar& progress_bar = page->ProgressBar();
+    if (progress_bar.IsEnabled() && progress_bar.Value() > 0) {
+      CHECK_NE(progress_bar.Value(), arr.get().Size());
       {
         // Shift by 1, effectively moving one white object across the progress
         // bar, meaning that we will miss marking it.
-        v8::HandleScope scope(CcTest::isolate());
+        v8::HandleScope new_scope(CcTest::isolate());
         Handle<JSArray> js_array = isolate->factory()->NewJSArrayWithElements(
             Handle<FixedArray>(arr.get(), isolate));
         js_array->GetElementsAccessor()->Shift(js_array).Check();
@@ -5794,7 +5704,7 @@ TEST(Regress598319) {
                   i::IncrementalMarking::NO_GC_VIA_STACK_GUARD,
                   StepOrigin::kV8);
     if (marking->IsReadyToOverApproximateWeakClosure()) {
-      SafepointScope scope(heap);
+      SafepointScope safepoint_scope(heap);
       marking->FinalizeIncrementally();
     }
   }
@@ -5884,7 +5794,7 @@ TEST(Regress615489) {
     marking->Step(kStepSizeInMs, i::IncrementalMarking::NO_GC_VIA_STACK_GUARD,
                   StepOrigin::kV8);
     if (marking->IsReadyToOverApproximateWeakClosure()) {
-      SafepointScope scope(heap);
+      SafepointScope safepoint_scope(heap);
       marking->FinalizeIncrementally();
     }
   }
@@ -5947,7 +5857,7 @@ TEST(Regress631969) {
     marking->Step(kStepSizeInMs, i::IncrementalMarking::NO_GC_VIA_STACK_GUARD,
                   StepOrigin::kV8);
     if (marking->IsReadyToOverApproximateWeakClosure()) {
-      SafepointScope scope(heap);
+      SafepointScope safepoint_scope(heap);
       marking->FinalizeIncrementally();
     }
   }
@@ -6127,7 +6037,7 @@ TEST(ContinuousRightTrimFixedArrayInBlackArea) {
     for (int j = 0; j < 10; j++) {
       previous -= kTaggedSize * i;
       isolate->heap()->RightTrimFixedArray(*array, i);
-      HeapObject filler = HeapObject::FromAddress(previous);
+      filler = HeapObject::FromAddress(previous);
       CHECK(filler.IsFreeSpaceOrFiller());
       CHECK(marking_state->IsWhite(filler));
     }
@@ -6225,7 +6135,7 @@ TEST(YoungGenerationLargeObjectAllocationReleaseScavenger) {
   if (!isolate->serializer_enabled()) return;
 
   {
-    HandleScope scope(isolate);
+    HandleScope new_scope(isolate);
     for (int i = 0; i < 10; i++) {
       Handle<FixedArray> array_small = isolate->factory()->NewFixedArray(20000);
       MemoryChunk* chunk = MemoryChunk::FromHeapObject(*array_small);
@@ -6541,7 +6451,7 @@ HEAP_TEST(Regress670675) {
   }
   i::IncrementalMarking* marking = CcTest::heap()->incremental_marking();
   if (marking->IsStopped()) {
-    SafepointScope scope(heap);
+    SafepointScope safepoint_scope(heap);
     marking->Start(i::GarbageCollectionReason::kTesting);
   }
   size_t array_length = 128 * KB;
@@ -6760,7 +6670,7 @@ HEAP_TEST(Regress779503) {
     }
 
     {
-      HandleScope handle_scope(isolate);
+      HandleScope new_scope(isolate);
       // The FixedArray in old space serves as space for slots.
       Handle<FixedArray> fixed_array =
           isolate->factory()->NewFixedArray(kArraySize, AllocationType::kOld);
@@ -6773,8 +6683,7 @@ HEAP_TEST(Regress779503) {
     // currently scavenging.
     heap->delay_sweeper_tasks_for_testing_ = true;
     CcTest::CollectGarbage(OLD_SPACE);
-    CHECK(FLAG_always_promote_young_mc ? !Heap::InYoungGeneration(*byte_array)
-                                       : Heap::InYoungGeneration(*byte_array));
+    CHECK(!Heap::InYoungGeneration(*byte_array));
   }
   // Scavenging and sweeping the same page will crash as slots will be
   // overridden.
@@ -7036,10 +6945,11 @@ TEST(AllocateExternalBackingStore) {
 
 TEST(CodeObjectRegistry) {
   // We turn off compaction to ensure that code is not moving.
-  FLAG_never_compact = true;
+  FLAG_compact = false;
 
   Isolate* isolate = CcTest::i_isolate();
   Heap* heap = isolate->heap();
+  CodePageCollectionMemoryModificationScope code_scope(heap);
 
   Handle<Code> code1;
   HandleScope outer_scope(heap->isolate());
@@ -7216,10 +7126,11 @@ class TestAllocationTracker : public HeapObjectAllocationTracker {
 HEAP_TEST(CodeLargeObjectSpace) {
   Heap* heap = CcTest::heap();
   int size_in_bytes =
-      Heap::MaxRegularHeapObjectSize(AllocationType::kCode) + kTaggedSize;
+      heap->MaxRegularHeapObjectSize(AllocationType::kCode) + kTaggedSize;
   TestAllocationTracker allocation_tracker{size_in_bytes};
   heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
+  CodePageCollectionMemoryModificationScope code_scope(heap);
   HeapObject obj;
   {
     AllocationResult allocation = heap->AllocateRaw(
@@ -7250,10 +7161,11 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
   // Allocate a regular code object.
   {
     int size_in_bytes =
-        Heap::MaxRegularHeapObjectSize(AllocationType::kCode) - kTaggedSize;
+        heap->MaxRegularHeapObjectSize(AllocationType::kCode) - kTaggedSize;
     TestAllocationTracker allocation_tracker{size_in_bytes};
     heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
+    CodePageCollectionMemoryModificationScope code_scope(heap);
     HeapObject obj;
     {
       AllocationResult allocation = heap->AllocateRaw(
@@ -7272,10 +7184,11 @@ UNINITIALIZED_HEAP_TEST(CodeLargeObjectSpace64k) {
   // Allocate a large code object.
   {
     int size_in_bytes =
-        Heap::MaxRegularHeapObjectSize(AllocationType::kCode) + kTaggedSize;
+        heap->MaxRegularHeapObjectSize(AllocationType::kCode) + kTaggedSize;
     TestAllocationTracker allocation_tracker{size_in_bytes};
     heap->AddHeapObjectAllocationTracker(&allocation_tracker);
 
+    CodePageCollectionMemoryModificationScope code_scope(heap);
     HeapObject obj;
     {
       AllocationResult allocation = heap->AllocateRaw(
@@ -7349,7 +7262,7 @@ TEST(IsPendingAllocationLOSpace) {
 }
 
 TEST(Regress10900) {
-  FLAG_always_compact = true;
+  FLAG_compact_on_every_full_gc = true;
   CcTest::InitializeVM();
   Isolate* isolate = CcTest::i_isolate();
   Heap* heap = isolate->heap();
@@ -7372,9 +7285,10 @@ TEST(Regress10900) {
   Handle<Code> code =
       Factory::CodeBuilder(isolate, desc, CodeKind::FOR_TESTING).Build();
   {
-    // Generate multiple code pages.
-    CodeSpaceMemoryModificationScope modification_scope(isolate->heap());
     for (int i = 0; i < 100; i++) {
+      // Generate multiple code pages.
+      CodePageCollectionMemoryModificationScope modification_scope(
+          isolate->heap());
       factory->CopyCode(code);
     }
   }
@@ -7396,7 +7310,7 @@ void GenerateGarbage() {
 }  // anonymous namespace
 
 TEST(Regress11181) {
-  FLAG_always_compact = true;
+  FLAG_compact_on_every_full_gc = true;
   CcTest::InitializeVM();
   TracingFlags::runtime_stats.store(
       v8::tracing::TracingCategoryObserver::ENABLED_BY_NATIVE,
@@ -7404,7 +7318,6 @@ TEST(Regress11181) {
   v8::HandleScope scope(CcTest::isolate());
   GenerateGarbage();
   CcTest::CollectAllAvailableGarbage();
-  TracingFlags::runtime_stats.store(0, std::memory_order_relaxed);
 }
 
 TEST(LongTaskStatsFullAtomic) {

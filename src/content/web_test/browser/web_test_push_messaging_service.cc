@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/time/time.h"
 #include "content/public/browser/permission_type.h"
 #include "content/web_test/browser/web_test_browser_context.h"
@@ -43,8 +43,7 @@ static_assert(sizeof(kAuthentication) == 12,
 const int64_t kTestExpirationWindowInDays = 90;
 
 base::Time GetFutureTime() {
-  return base::Time::Now() +
-         base::TimeDelta::FromDays(kTestExpirationWindowInDays);
+  return base::Time::Now() + base::Days(kTestExpirationWindowInDays);
 }
 
 }  // anonymous namespace

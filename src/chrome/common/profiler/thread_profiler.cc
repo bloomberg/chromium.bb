@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/work_id_provider.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
@@ -121,7 +122,7 @@ class NativeUnwinderCreator {
   }
 
  private:
-  stack_unwinder::Module* const module_;
+  const raw_ptr<stack_unwinder::Module> module_;
   const std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map_;
 };
 
@@ -159,7 +160,7 @@ base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
 
 const base::RepeatingClosure GetApplyPerSampleMetadataCallback(
     CallStackProfileParams::Process process) {
-  if (process != CallStackProfileParams::RENDERER_PROCESS)
+  if (process != CallStackProfileParams::Process::kRenderer)
     return base::RepeatingClosure();
   static const base::SampleMetadata process_backgrounded("ProcessBackgrounded");
   return base::BindRepeating(
@@ -234,7 +235,7 @@ class ThreadProfiler::WorkIdRecorder : public metrics::WorkIdRecorder {
   WorkIdRecorder& operator=(const WorkIdRecorder&) = delete;
 
  private:
-  base::WorkIdProvider* const work_id_provider_;
+  const raw_ptr<base::WorkIdProvider> work_id_provider_;
 };
 
 ThreadProfiler::~ThreadProfiler() {
@@ -251,8 +252,8 @@ std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
   bool is_single_process = command_line->HasSwitch(switches::kSingleProcess) ||
                            command_line->HasSwitch(switches::kInProcessGPU);
   DCHECK(!g_main_thread_instance || is_single_process);
-  auto instance =
-      base::WrapUnique(new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));
+  auto instance = base::WrapUnique(
+      new ThreadProfiler(CallStackProfileParams::Thread::kMain));
   if (!g_main_thread_instance)
     g_main_thread_instance = instance.get();
   return instance;
@@ -282,8 +283,7 @@ void ThreadProfiler::SetAuxUnwinderFactory(
 void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
   // The profiler object is stored in a SequenceLocalStorageSlot on child
   // threads to give it the same lifetime as the threads.
-  static base::NoDestructor<
-      base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>>
+  static base::SequenceLocalStorageSlot<std::unique_ptr<ThreadProfiler>>
       child_thread_profiler_sequence_local_storage;
 
   if (!ThreadProfilerConfiguration::Get()
@@ -291,7 +291,7 @@ void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
     return;
   }
 
-  child_thread_profiler_sequence_local_storage->emplace(
+  child_thread_profiler_sequence_local_storage.emplace(
       new ThreadProfiler(thread, base::ThreadTaskRunnerHandle::Get()));
 }
 
@@ -308,7 +308,7 @@ void ThreadProfiler::SetCollectorForChildProcess(
   if (!ThreadProfilerConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS,
+  DCHECK_NE(CallStackProfileParams::Process::kBrowser,
             GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()));
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(collector));
@@ -352,8 +352,9 @@ ThreadProfiler::ThreadProfiler(
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::GetSamplingProfilerCurrentThreadToken(), sampling_params,
       std::make_unique<CallStackProfileBuilder>(
-          CallStackProfileParams(process_, thread,
-                                 CallStackProfileParams::PROCESS_STARTUP),
+          CallStackProfileParams(
+              process_, thread,
+              CallStackProfileParams::Trigger::kProcessStartup),
           work_id_recorder_.get()),
       CreateCoreUnwindersFactory(),
       GetApplyPerSampleMetadataCallback(process_));
@@ -417,8 +418,9 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
       base::GetSamplingProfilerCurrentThreadToken(),
       ThreadProfilerConfiguration::Get()->GetSamplingParams(),
       std::make_unique<CallStackProfileBuilder>(
-          CallStackProfileParams(process_, thread_,
-                                 CallStackProfileParams::PERIODIC_COLLECTION),
+          CallStackProfileParams(
+              process_, thread_,
+              CallStackProfileParams::Trigger::kPeriodicCollection),
           work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,

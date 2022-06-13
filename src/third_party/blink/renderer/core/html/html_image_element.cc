@@ -26,6 +26,7 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
@@ -400,13 +401,13 @@ bool HTMLImageElement::SupportedImageType(
 // http://picture.responsiveimages.org/#update-source-set
 ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   DCHECK(IsMainThread());
-  Node* parent = parentNode();
   source_ = nullptr;
-  if (!parent || !IsA<HTMLPictureElement>(*parent))
+  auto* picture_parent = DynamicTo<HTMLPictureElement>(parentNode());
+  if (!picture_parent)
     return ImageCandidate();
   HashSet<String> disabled_image_types;
   probe::GetDisabledImageTypes(GetExecutionContext(), &disabled_image_types);
-  for (Node* child = parent->firstChild(); child;
+  for (Node* child = picture_parent->firstChild(); child;
        child = child->nextSibling()) {
     if (child == this)
       return ImageCandidate();
@@ -456,7 +457,7 @@ LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style,
     case LayoutDisposition::kFallbackContent:
       return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
     case LayoutDisposition::kPrimaryContent: {
-      LayoutImage* image = new LayoutImage(this);
+      LayoutImage* image = MakeGarbageCollected<LayoutImage>(this);
       image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
       image->SetImageDevicePixelRatio(image_device_pixel_ratio_);
       return image;
@@ -531,7 +532,8 @@ void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
 
 unsigned HTMLImageElement::width() {
   if (InActiveDocument()) {
-    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+    GetDocument().UpdateStyleAndLayoutForNode(
+        this, DocumentUpdateReason::kJavaScript);
   }
 
   if (!GetLayoutObject()) {
@@ -544,7 +546,7 @@ unsigned HTMLImageElement::width() {
 
     // if the image is available, use its width
     if (ImageResourceContent* image_content = GetImageLoader().GetContent()) {
-      return image_content->IntrinsicSize(kRespectImageOrientation).Width();
+      return image_content->IntrinsicSize(kRespectImageOrientation).width();
     }
   }
 
@@ -553,7 +555,8 @@ unsigned HTMLImageElement::width() {
 
 unsigned HTMLImageElement::height() {
   if (InActiveDocument()) {
-    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+    GetDocument().UpdateStyleAndLayoutForNode(
+        this, DocumentUpdateReason::kJavaScript);
   }
 
   if (!GetLayoutObject()) {
@@ -566,7 +569,7 @@ unsigned HTMLImageElement::height() {
 
     // if the image is available, use its height
     if (ImageResourceContent* image_content = GetImageLoader().GetContent()) {
-      return image_content->IntrinsicSize(kRespectImageOrientation).Height();
+      return image_content->IntrinsicSize(kRespectImageOrientation).height();
     }
   }
 
@@ -672,7 +675,8 @@ void HTMLImageElement::setWidth(unsigned value) {
 }
 
 int HTMLImageElement::x() const {
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;
@@ -684,7 +688,8 @@ int HTMLImageElement::x() const {
 }
 
 int HTMLImageElement::y() const {
-  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
   LayoutObject* r = GetLayoutObject();
   if (!r)
     return 0;
@@ -737,12 +742,12 @@ bool HTMLImageElement::IsInteractiveContent() const {
   return FastHasAttribute(html_names::kUsemapAttr);
 }
 
-FloatSize HTMLImageElement::DefaultDestinationSize(
-    const FloatSize& default_object_size,
+gfx::SizeF HTMLImageElement::DefaultDestinationSize(
+    const gfx::SizeF& default_object_size,
     const RespectImageOrientationEnum respect_orientation) const {
   ImageResourceContent* image_content = CachedImage();
   if (!image_content || !image_content->HasImage())
-    return FloatSize();
+    return gfx::SizeF();
 
   Image* image = image_content->GetImage();
   if (auto* svg_image = DynamicTo<SVGImage>(image))
@@ -752,7 +757,7 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&
       image->HasIntrinsicSize())
     size.Scale(To<LayoutImage>(GetLayoutObject())->ImageDevicePixelRatio());
-  return FloatSize(size);
+  return gfx::SizeF(size);
 }
 
 static bool SourceSizeValue(const Element* element,

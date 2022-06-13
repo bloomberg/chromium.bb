@@ -8,44 +8,19 @@
 #define BASE_STL_UTIL_H_
 
 #include <algorithm>
-#include <deque>
 #include <forward_list>
-#include <functional>
-#include <initializer_list>
 #include <iterator>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
+#include <tuple>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include "base/check.h"
-#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/template_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
 namespace internal {
-
-// Calls erase on iterators of matching elements and returns the number of
-// removed elements.
-template <typename Container, typename Predicate>
-size_t IterateAndEraseIf(Container& container, Predicate pred) {
-  size_t old_size = container.size();
-  for (auto it = container.begin(), last = container.end(); it != last;) {
-    if (pred(*it))
-      it = container.erase(it);
-    else
-      ++it;
-  }
-  return old_size - container.size();
-}
 
 template <typename Iter>
 constexpr bool IsRandomAccessIter =
@@ -53,100 +28,6 @@ constexpr bool IsRandomAccessIter =
                  std::random_access_iterator_tag>::value;
 
 }  // namespace internal
-
-// C++14 implementation of C++17's std::size():
-// http://en.cppreference.com/w/cpp/iterator/size
-template <typename Container>
-constexpr auto size(const Container& c) -> decltype(c.size()) {
-  return c.size();
-}
-
-template <typename T, size_t N>
-constexpr size_t size(const T (&array)[N]) noexcept {
-  return N;
-}
-
-// C++14 implementation of C++17's std::empty():
-// http://en.cppreference.com/w/cpp/iterator/empty
-template <typename Container>
-constexpr auto empty(const Container& c) -> decltype(c.empty()) {
-  return c.empty();
-}
-
-template <typename T, size_t N>
-constexpr bool empty(const T (&array)[N]) noexcept {
-  return false;
-}
-
-template <typename T>
-constexpr bool empty(std::initializer_list<T> il) noexcept {
-  return il.size() == 0;
-}
-
-// C++14 implementation of C++17's std::data():
-// http://en.cppreference.com/w/cpp/iterator/data
-template <typename Container>
-constexpr auto data(Container& c) -> decltype(c.data()) {
-  return c.data();
-}
-
-// std::basic_string::data() had no mutable overload prior to C++17 [1].
-// Hence this overload is provided.
-// Note: str[0] is safe even for empty strings, as they are guaranteed to be
-// null-terminated [2].
-//
-// [1] http://en.cppreference.com/w/cpp/string/basic_string/data
-// [2] http://en.cppreference.com/w/cpp/string/basic_string/operator_at
-template <typename CharT, typename Traits, typename Allocator>
-CharT* data(std::basic_string<CharT, Traits, Allocator>& str) {
-  return std::addressof(str[0]);
-}
-
-template <typename Container>
-constexpr auto data(const Container& c) -> decltype(c.data()) {
-  return c.data();
-}
-
-template <typename T, size_t N>
-constexpr T* data(T (&array)[N]) noexcept {
-  return array;
-}
-
-template <typename T>
-constexpr const T* data(std::initializer_list<T> il) noexcept {
-  return il.begin();
-}
-
-// std::array::data() was not constexpr prior to C++17 [1].
-// Hence these overloads are provided.
-//
-// [1] https://en.cppreference.com/w/cpp/container/array/data
-template <typename T, size_t N>
-constexpr T* data(std::array<T, N>& array) noexcept {
-  return !array.empty() ? &array[0] : nullptr;
-}
-
-template <typename T, size_t N>
-constexpr const T* data(const std::array<T, N>& array) noexcept {
-  return !array.empty() ? &array[0] : nullptr;
-}
-
-// Simplified C++14 implementation of  C++20's std::to_address.
-// Note: This does not consider specializations of pointer_traits<>::to_address,
-// since that member function may only be present in C++20 and later.
-//
-// Reference: https://wg21.link/pointer.conversion#lib:to_address
-template <typename T>
-constexpr T* to_address(T* p) noexcept {
-  static_assert(!std::is_function<T>::value,
-                "Error: T must not be a function type.");
-  return p;
-}
-
-template <typename Ptr>
-constexpr auto to_address(const Ptr& p) noexcept {
-  return to_address(p.operator->());
-}
 
 // Implementation of C++23's std::to_underlying.
 //
@@ -425,167 +306,6 @@ ResultType STLSetIntersection(const Arg1& a1, const Arg2& a2) {
                         a2.begin(), a2.end(),
                         std::inserter(result, result.end()));
   return result;
-}
-
-// Erase/EraseIf are based on C++20's uniform container erasure API:
-// - https://eel.is/c++draft/libraryindex#:erase
-// - https://eel.is/c++draft/libraryindex#:erase_if
-// They provide a generic way to erase elements from a container.
-// The functions here implement these for the standard containers until those
-// functions are available in the C++ standard.
-// For Chromium containers overloads should be defined in their own headers
-// (like standard containers).
-// Note: there is no std::erase for standard associative containers so we don't
-// have it either.
-
-template <typename CharT, typename Traits, typename Allocator, typename Value>
-size_t Erase(std::basic_string<CharT, Traits, Allocator>& container,
-             const Value& value) {
-  auto it = std::remove(container.begin(), container.end(), value);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <typename CharT, typename Traits, typename Allocator, class Predicate>
-size_t EraseIf(std::basic_string<CharT, Traits, Allocator>& container,
-               Predicate pred) {
-  auto it = std::remove_if(container.begin(), container.end(), pred);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <class T, class Allocator, class Value>
-size_t Erase(std::deque<T, Allocator>& container, const Value& value) {
-  auto it = std::remove(container.begin(), container.end(), value);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <class T, class Allocator, class Predicate>
-size_t EraseIf(std::deque<T, Allocator>& container, Predicate pred) {
-  auto it = std::remove_if(container.begin(), container.end(), pred);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <class T, class Allocator, class Value>
-size_t Erase(std::vector<T, Allocator>& container, const Value& value) {
-  auto it = std::remove(container.begin(), container.end(), value);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <class T, class Allocator, class Predicate>
-size_t EraseIf(std::vector<T, Allocator>& container, Predicate pred) {
-  auto it = std::remove_if(container.begin(), container.end(), pred);
-  size_t removed = std::distance(it, container.end());
-  container.erase(it, container.end());
-  return removed;
-}
-
-template <class T, class Allocator, class Predicate>
-size_t EraseIf(std::forward_list<T, Allocator>& container, Predicate pred) {
-  // Note: std::forward_list does not have a size() API, thus we need to use the
-  // O(n) std::distance work-around. However, given that EraseIf is O(n)
-  // already, this should not make a big difference.
-  size_t old_size = std::distance(container.begin(), container.end());
-  container.remove_if(pred);
-  return old_size - std::distance(container.begin(), container.end());
-}
-
-template <class T, class Allocator, class Predicate>
-size_t EraseIf(std::list<T, Allocator>& container, Predicate pred) {
-  size_t old_size = container.size();
-  container.remove_if(pred);
-  return old_size - container.size();
-}
-
-template <class Key, class T, class Compare, class Allocator, class Predicate>
-size_t EraseIf(std::map<Key, T, Compare, Allocator>& container,
-               Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key, class T, class Compare, class Allocator, class Predicate>
-size_t EraseIf(std::multimap<Key, T, Compare, Allocator>& container,
-               Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key, class Compare, class Allocator, class Predicate>
-size_t EraseIf(std::set<Key, Compare, Allocator>& container, Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key, class Compare, class Allocator, class Predicate>
-size_t EraseIf(std::multiset<Key, Compare, Allocator>& container,
-               Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key,
-          class T,
-          class Hash,
-          class KeyEqual,
-          class Allocator,
-          class Predicate>
-size_t EraseIf(std::unordered_map<Key, T, Hash, KeyEqual, Allocator>& container,
-               Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key,
-          class T,
-          class Hash,
-          class KeyEqual,
-          class Allocator,
-          class Predicate>
-size_t EraseIf(
-    std::unordered_multimap<Key, T, Hash, KeyEqual, Allocator>& container,
-    Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key,
-          class Hash,
-          class KeyEqual,
-          class Allocator,
-          class Predicate>
-size_t EraseIf(std::unordered_set<Key, Hash, KeyEqual, Allocator>& container,
-               Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class Key,
-          class Hash,
-          class KeyEqual,
-          class Allocator,
-          class Predicate>
-size_t EraseIf(
-    std::unordered_multiset<Key, Hash, KeyEqual, Allocator>& container,
-    Predicate pred) {
-  return internal::IterateAndEraseIf(container, pred);
-}
-
-template <class T, class Allocator, class Value>
-size_t Erase(std::forward_list<T, Allocator>& container, const Value& value) {
-  // Unlike std::forward_list::remove, this function template accepts
-  // heterogeneous types and does not force a conversion to the container's
-  // value type before invoking the == operator.
-  return EraseIf(container, [&](const T& cur) { return cur == value; });
-}
-
-template <class T, class Allocator, class Value>
-size_t Erase(std::list<T, Allocator>& container, const Value& value) {
-  // Unlike std::list::remove, this function template accepts heterogeneous
-  // types and does not force a conversion to the container's value type before
-  // invoking the == operator.
-  return EraseIf(container, [&](const T& cur) { return cur == value; });
 }
 
 // A helper class to be used as the predicate with |EraseIf| to implement

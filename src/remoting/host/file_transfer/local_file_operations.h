@@ -7,9 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "remoting/host/file_transfer/file_operations.h"
 
 namespace remoting {
@@ -21,6 +20,10 @@ class LocalFileOperations : public FileOperations {
  public:
   explicit LocalFileOperations(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+
+  LocalFileOperations(const LocalFileOperations&) = delete;
+  LocalFileOperations& operator=(const LocalFileOperations&) = delete;
+
   ~LocalFileOperations() override;
 
   // FileOperations implementation.
@@ -29,8 +32,6 @@ class LocalFileOperations : public FileOperations {
 
  private:
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalFileOperations);
 };
 
 }  // namespace remoting

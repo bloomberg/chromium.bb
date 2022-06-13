@@ -15,14 +15,13 @@
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/referrer.h"
@@ -476,14 +475,13 @@ void ServiceWorkerContextClient::SendWorkerStarted(
 void ServiceWorkerContextClient::SetupNavigationPreload(
     int fetch_event_id,
     const blink::WebURL& url,
-    std::unique_ptr<blink::WebFetchEventPreloadHandle> preload_handle) {
+    blink::CrossVariantMojoReceiver<
+        network::mojom::URLLoaderClientInterfaceBase>
+        preload_url_loader_client_receiver) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(context_);
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
-      this, fetch_event_id, GURL(url),
-      blink::mojom::FetchEventPreloadHandle::New(
-          std::move(preload_handle->url_loader),
-          std::move(preload_handle->url_loader_client_receiver)));
+      this, fetch_event_id, url, std::move(preload_url_loader_client_receiver));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }

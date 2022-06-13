@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
@@ -34,6 +34,10 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
                              public EditSearchEngineControllerDelegate {
  public:
   explicit SearchEnginesHandler(Profile* profile);
+
+  SearchEnginesHandler(const SearchEnginesHandler&) = delete;
+  SearchEnginesHandler& operator=(const SearchEnginesHandler&) = delete;
+
   ~SearchEnginesHandler() override;
 
   // ui::TableModelObserver implementation.
@@ -64,6 +68,10 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
 
   // Sets the search engine at the given index to be default. Called from WebUI.
   void HandleSetDefaultSearchEngine(const base::ListValue* args);
+
+  // Activates or deactivates the search engine at the given index. Called from
+  // WebUI.
+  void HandleSetIsActiveSearchEngine(const base::ListValue* args);
 
   // Starts an edit session for the search engine at the given index. If the
   // index is -1, starts editing a new search engine instead of an existing one.
@@ -96,14 +104,12 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   base::DictionaryValue* CreateDictionaryForExtension(
       const extensions::Extension& extension);
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   KeywordEditorController list_controller_;
   std::unique_ptr<EditSearchEngineController> edit_controller_;
   PrefChangeRegistrar pref_change_registrar_;
   base::WeakPtrFactory<SearchEnginesHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SearchEnginesHandler);
 };
 
 }  // namespace settings

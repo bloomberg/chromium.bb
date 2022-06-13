@@ -23,39 +23,31 @@
 namespace tint {
 namespace ast {
 
+// Forward declarations.
+class Expression;
+
 /// An array type. If size is zero then it is a runtime array.
 class Array : public Castable<Array, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param subtype the type of the array elements
-  /// @param size the number of elements in the array. `0` represents a
+  /// @param count the number of elements in the array. nullptr represents a
   /// runtime-sized array.
   /// @param decorations the array decorations
-  Array(ProgramID program_id,
-        const Source& source,
-        Type* subtype,
-        uint32_t size,
-        ast::DecorationList decorations);
+  Array(ProgramID pid,
+        const Source& src,
+        const Type* subtype,
+        const Expression* count,
+        DecorationList decorations);
   /// Move constructor
   Array(Array&&);
   ~Array() override;
 
   /// @returns true if this is a runtime array.
   /// i.e. the size is determined at runtime
-  bool IsRuntimeArray() const { return size_ == 0; }
-
-  /// @returns the array decorations
-  const ast::DecorationList& decorations() const { return decos_; }
-
-  /// @returns the array type
-  Type* type() const { return subtype_; }
-  /// @returns the array size. Size is 0 for a runtime array
-  uint32_t size() const { return size_; }
-
-  /// @returns the name for the type
-  std::string type_name() const override;
+  bool IsRuntimeArray() const { return count == nullptr; }
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -65,12 +57,16 @@ class Array : public Castable<Array, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  Array* Clone(CloneContext* ctx) const override;
+  const Array* Clone(CloneContext* ctx) const override;
 
- private:
-  Type* const subtype_;
-  uint32_t const size_;
-  ast::DecorationList const decos_;
+  /// the array element type
+  const Type* const type;
+
+  /// the array size in elements, or nullptr for a runtime array
+  const Expression* const count;
+
+  /// the array decorations
+  const DecorationList decorations;
 };
 
 }  // namespace ast

@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Root from '../../../../core/root/root.js';
 import * as UI from '../../legacy.js';
+
+import type * as QuickOpen from './quick_open.js';
 
 const UIStrings = {
   /**
   *@description Title of action that opens a file
   */
-  openFile: 'Open File',
+  openFile: 'Open file',
   /**
   *@description Title of command that runs a Quick Open command
   */
@@ -19,15 +20,10 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/quick_open/quick_open-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
-// eslint-disable-next-line rulesdir/es_modules_import
-import type * as QuickOpen from './quick_open.js';
-
 let loadedQuickOpenModule: (typeof QuickOpen|undefined);
 
 async function loadQuickOpenModule(): Promise<typeof QuickOpen> {
   if (!loadedQuickOpenModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('ui/legacy/components/quick_open');
     loadedQuickOpenModule = await import('./quick_open.js');
   }
   return loadedQuickOpenModule;

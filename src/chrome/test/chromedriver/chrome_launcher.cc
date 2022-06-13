@@ -35,7 +35,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_version.h"
@@ -69,6 +68,8 @@
 #include <unistd.h>
 #elif defined(OS_WIN)
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
+
+#include <windows.h>
 #endif
 
 namespace {
@@ -271,8 +272,7 @@ Status WaitForDevToolsAndCheckVersion(
   }
 
   const base::TimeTicks initial = base::TimeTicks::Now();
-  const base::TimeTicks deadline =
-      initial + base::TimeDelta::FromSeconds(wait_time);
+  const base::TimeTicks deadline = initial + base::Seconds(wait_time);
   Status status = client->Init(deadline - initial);
   if (status.IsError())
     return status;
@@ -334,7 +334,7 @@ Status WaitForDevToolsAndCheckVersion(
         return Status(kOk);
       }
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    base::PlatformThread::Sleep(base::Milliseconds(50));
   } while (base::TimeTicks::Now() < deadline);
 
   return Status(kUnknownError, "unable to discover open pages");
@@ -515,12 +515,10 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
 
 #if defined(OS_POSIX)
 
-  bool uses_pipe = false;
   int write_fd;
   int read_fd;
 
   if (capabilities.switches.HasSwitch("remote-debugging-pipe")) {
-    uses_pipe = true;
     Status status = PipeSetUp(&options, &write_fd, &read_fd);
   }
 
@@ -553,6 +551,13 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
         "interpreted incorrectly";
 #endif
 
+#if defined(OS_MAC)
+  // Chrome is a third party process with respect to ChromeDriver. This allows
+  // Chrome to get its own permissions attributed on Mac instead of relying on
+  // ChromeDriver.
+  options.disclaim_responsibility = true;
+#endif  // OS_MAC
+
 #if defined(OS_WIN)
   std::string command_string = base::WideToUTF8(command.GetCommandLineString());
 #else
@@ -572,8 +577,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
   int exit_code;
   base::TerminationStatus chrome_status =
       base::TERMINATION_STATUS_STILL_RUNNING;
-  base::TimeTicks deadline =
-      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(60);
+  base::TimeTicks deadline = base::TimeTicks::Now() + base::Seconds(60);
   while (base::TimeTicks::Now() < deadline) {
     if (!devtools_port) {
       status =
@@ -636,14 +640,13 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
           kChromeDriverProductShortName, kBrowserShortName));
       return failure_status;
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    base::PlatformThread::Sleep(base::Milliseconds(50));
   }
 
   if (status.IsError()) {
     VLOG(0) << "Failed to connect to " << kBrowserShortName
             << ". Attempting to kill it.";
     if (!process.Terminate(0, true)) {
-      int exit_code;
       if (base::GetTerminationStatus(process.Handle(), &exit_code) ==
           base::TERMINATION_STATUS_STILL_RUNNING)
         return Status(kUnknownError,
@@ -675,7 +678,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       VLOG(0) << "Waiting for extension bg page load: "
               << extension_bg_pages[i];
       std::unique_ptr<WebView> web_view;
-      Status status = chrome_desktop->WaitForPageToLoad(
+      status = chrome_desktop->WaitForPageToLoad(
           extension_bg_pages[i], capabilities.extension_load_timeout, &web_view,
           w3c_compliant);
       if (status.IsError()) {
@@ -723,7 +726,8 @@ Status LaunchAndroidChrome(network::mojom::URLLoaderFactory* factory,
       capabilities.android_package, capabilities.android_activity,
       capabilities.android_process, capabilities.android_device_socket,
       capabilities.android_exec_name, switches.ToString(),
-      capabilities.android_use_running_app, &devtools_port);
+      capabilities.android_use_running_app,
+      capabilities.android_keep_app_data_dir, &devtools_port);
   if (status.IsError()) {
     device->TearDown();
     return status;
@@ -814,7 +818,7 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
       VLOG(0) << "Waiting for extension bg page load: "
               << extension_bg_pages[i];
       std::unique_ptr<WebView> web_view;
-      Status status = chrome_impl->WaitForPageToLoad(
+      status = chrome_impl->WaitForPageToLoad(
           extension_bg_pages[i], capabilities.extension_load_timeout, &web_view,
           w3c_compliant);
       if (status.IsError()) {
@@ -889,10 +893,9 @@ Status GetExtensionBackgroundPage(const base::DictionaryValue* manifest,
                                   const std::string& id,
                                   std::string* bg_page) {
   std::string bg_page_name;
-  bool persistent = true;
-  manifest->GetBoolean("background.persistent", &persistent);
-  const base::Value* unused_value;
-  if (manifest->Get("background.scripts", &unused_value))
+  bool persistent =
+      manifest->FindBoolPath("background.persistent").value_or(true);
+  if (manifest->FindPath("background.scripts"))
     bg_page_name = "_generated_background_page.html";
   manifest->GetString("background.page", &bg_page_name);
   if (bg_page_name.empty() || !persistent)
@@ -1191,7 +1194,7 @@ std::string GetTerminationReason(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
       return "exited abnormally";
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
     case base::TERMINATION_STATUS_OOM:

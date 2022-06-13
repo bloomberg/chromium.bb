@@ -50,15 +50,7 @@ WaylandTest::WaylandTest()
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
-  // TODO(1096425): remove this once Ozone is default on Linux. This is required
-  // to be able to run ozone_unittests locally without passing
-  // --enable-features=UseOzonePlatform explicitly. linux-ozone-rel bot does
-  // that automatically through changes done to "variants", which is also
-  // convenient to have locally so that we don't need to worry about that (it's
-  // the Wayland DragAndDrop that relies on the feature).
-  feature_list_.InitWithFeatures(
-      {features::kUseOzonePlatform, ui::kWaylandOverlayDelegation}, {});
-  ASSERT_TRUE(features::IsUsingOzonePlatform());
+  feature_list_.InitWithFeatures(enabled_features_, disabled_features_);
 
   if (DeviceDataManager::HasInstance()) {
     // Another instance may have already been set before.
@@ -71,14 +63,14 @@ void WaylandTest::SetUp() {
   ASSERT_TRUE(connection_->Initialize());
   connection_->event_source()->UseSingleThreadedPollingForTesting();
   screen_ = connection_->wayland_output_manager()->CreateWaylandScreen();
+  connection_->wayland_output_manager()->InitWaylandScreen(screen_.get());
   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 800, 600);
   properties.type = PlatformWindowType::kWindow;
   window_ = WaylandWindow::Create(&delegate_, connection_.get(),
-                                  std::move(properties));
-  window_->set_update_visual_size_immediately(true);
+                                  std::move(properties), true, true);
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 
   window_->Show(false);

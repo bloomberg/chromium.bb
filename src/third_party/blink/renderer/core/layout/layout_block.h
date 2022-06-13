@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
 
@@ -37,11 +37,12 @@ class LineLayoutBox;
 class NGBlockNode;
 class WordMeasurement;
 
-typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
-typedef WTF::HashMap<const LayoutBlock*,
-                     std::unique_ptr<TrackedLayoutBoxListHashSet>>
+typedef HeapLinkedHashSet<Member<LayoutBox>> TrackedLayoutBoxLinkedHashSet;
+typedef HeapHashMap<WeakMember<const LayoutBlock>,
+                    Member<TrackedLayoutBoxLinkedHashSet>>
     TrackedDescendantsMap;
-typedef WTF::HashMap<const LayoutBox*, LayoutBlock*> TrackedContainerMap;
+typedef HeapHashMap<WeakMember<const LayoutBox>, Member<LayoutBlock>>
+    TrackedContainerMap;
 typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { kNewContainingBlock, kSameContainingBlock };
@@ -106,9 +107,10 @@ enum ContainingBlockState { kNewContainingBlock, kSameContainingBlock };
 class CORE_EXPORT LayoutBlock : public LayoutBox {
  protected:
   explicit LayoutBlock(ContainerNode*);
-  ~LayoutBlock() override;
 
  public:
+  void Trace(Visitor*) const override;
+
   LayoutObject* FirstChild() const {
     NOT_DESTROYED();
     DCHECK_EQ(Children(), VirtualChildren());
@@ -150,11 +152,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   const char* GetName() const override;
 
-  virtual const NGPhysicalBoxFragment* CurrentFragment() const {
-    NOT_DESTROYED();
-    return nullptr;
-  }
-
  protected:
   // Insert a child correctly into the tree when |beforeDescendant| isn't a
   // direct child of |this|. This happens e.g. when there's an anonymous block
@@ -175,7 +172,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void RemovePositionedObjects(LayoutObject*,
                                ContainingBlockState = kSameContainingBlock);
 
-  TrackedLayoutBoxListHashSet* PositionedObjects() const {
+  TrackedLayoutBoxLinkedHashSet* PositionedObjects() const {
     NOT_DESTROYED();
     return UNLIKELY(HasPositionedObjects()) ? PositionedObjectsInternal()
                                             : nullptr;
@@ -196,7 +193,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
            PercentHeightDescendantsInternal()->Contains(o);
   }
 
-  TrackedLayoutBoxListHashSet* PercentHeightDescendants() const {
+  TrackedLayoutBoxLinkedHashSet* PercentHeightDescendants() const {
     NOT_DESTROYED();
     return HasPercentHeightDescendants() ? PercentHeightDescendantsInternal()
                                          : nullptr;
@@ -209,6 +206,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                : !PercentHeightDescendantsInternal());
     return has_percent_height_descendants_;
   }
+
+  void AddSvgTextDescendant(LayoutBox& svg_text);
+  void RemoveSvgTextDescendant(LayoutBox& svg_text);
 
   void NotifyScrollbarThicknessChanged() {
     NOT_DESTROYED();
@@ -564,8 +564,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   virtual void RemoveLeftoverAnonymousBlock(LayoutBlock* child);
 
-  TrackedLayoutBoxListHashSet* PositionedObjectsInternal() const;
-  TrackedLayoutBoxListHashSet* PercentHeightDescendantsInternal() const;
+  TrackedLayoutBoxLinkedHashSet* PositionedObjectsInternal() const;
+  TrackedLayoutBoxLinkedHashSet* PercentHeightDescendantsInternal() const;
 
   // Returns true if the positioned movement-only layout succeeded.
   bool TryLayoutDoingPositionedMovementOnly();
@@ -631,6 +631,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   unsigned has_positioned_objects_ : 1;
   unsigned has_percent_height_descendants_ : 1;
+  unsigned has_svg_text_descendants_ : 1;
 
   // When an object ceases to establish a fragmentation context (e.g. the
   // LayoutView when we're no longer printing), we need a deep layout

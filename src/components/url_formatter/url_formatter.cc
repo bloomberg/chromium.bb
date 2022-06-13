@@ -5,12 +5,13 @@
 #include "components/url_formatter/url_formatter.h"
 
 #include <algorithm>
+#include <ostream>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -54,8 +55,8 @@ ComponentResult IDNToUnicodeOneComponent(
 
 class AppendComponentTransform {
  public:
-  AppendComponentTransform() {}
-  virtual ~AppendComponentTransform() {}
+  AppendComponentTransform() = default;
+  virtual ~AppendComponentTransform() = default;
 
   virtual std::u16string Execute(
       const std::string& component_text,
@@ -143,9 +144,11 @@ void AppendFormattedComponent(const std::string& spec,
 
     // Shift all the adjustments made for this component so the offsets are
     // valid for the original string and add them to |adjustments|.
-    for (auto comp_iter = component_transform_adjustments.begin();
-         comp_iter != component_transform_adjustments.end(); ++comp_iter)
-      comp_iter->original_offset += original_component_begin;
+    for (auto& component_transform_adjustment :
+         component_transform_adjustments) {
+      component_transform_adjustment.original_offset +=
+          original_component_begin;
+    }
     if (adjustments) {
       adjustments->insert(adjustments->end(),
                           component_transform_adjustments.begin(),
@@ -387,7 +390,7 @@ struct UIDNAWrapper {
                           << "https://crbug.com/778929.";
   }
 
-  UIDNA* value;
+  raw_ptr<UIDNA> value;
 };
 
 base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
@@ -756,6 +759,10 @@ Skeletons GetSkeletons(const std::u16string& host) {
 TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton,
                                           const SkeletonType type) {
   return g_idn_spoof_checker.Get().LookupSkeletonInTopDomains(skeleton, type);
+}
+
+std::u16string MaybeRemoveDiacritics(const std::u16string& host) {
+  return g_idn_spoof_checker.Get().MaybeRemoveDiacritics(host);
 }
 
 }  // namespace url_formatter

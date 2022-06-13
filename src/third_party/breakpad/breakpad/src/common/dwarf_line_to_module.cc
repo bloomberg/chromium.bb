@@ -100,7 +100,7 @@ void DwarfLineToModule::DefineFile(const string& name, int32_t file_num,
 
   // Find a Module::File object of the given name, and add it to the
   // file table.
-  files_[file_num] = module_->FindFile(full_name);
+  (*files_)[file_num] = module_->FindFile(full_name);
 }
 
 void DwarfLineToModule::AddLine(uint64_t address, uint64_t length,
@@ -122,7 +122,7 @@ void DwarfLineToModule::AddLine(uint64_t address, uint64_t length,
   }
 
   // Find the source file being referred to.
-  Module::File *file = files_[file_num];
+  Module::File *file = (*files_)[file_num];
   if (!file) {
     if (!warned_bad_file_number_) {
       fprintf(stderr, "warning: DWARF line number data refers to "

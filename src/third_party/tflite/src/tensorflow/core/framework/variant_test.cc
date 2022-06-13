@@ -464,10 +464,10 @@ TEST(VariantTest, Tensor) {
 
   Tensor& bar_t = x.emplace<Tensor>(DT_INT64, TensorShape({1}));
   EXPECT_EQ(&bar_t, x.get<Tensor>());
-  bar_t.vec<int64>()(0) = 17;
-  EXPECT_EQ(x.get<Tensor>()->vec<int64>()(0), 17);
-  bar_t.vec<int64>()(0) += 1;
-  EXPECT_EQ(x.get<Tensor>()->vec<int64>()(0), 18);
+  bar_t.vec<int64_t>()(0) = 17;
+  EXPECT_EQ(x.get<Tensor>()->vec<int64_t>()(0), 17);
+  bar_t.vec<int64_t>()(0) += 1;
+  EXPECT_EQ(x.get<Tensor>()->vec<int64_t>()(0), 18);
 }
 
 TEST(VariantTest, NontrivialTensorVariantCopy) {
@@ -589,7 +589,7 @@ TEST(VariantTest, TensorListTest) {
   serialized.ToProto(&data);
   const Variant y_unknown = data;
   EXPECT_EQ(y_unknown.TypeName(), "TensorList");
-  EXPECT_EQ(y_unknown.TypeId(), MakeTypeIndex<VariantTensorDataProto>());
+  EXPECT_EQ(y_unknown.TypeId(), TypeIndex::Make<VariantTensorDataProto>());
   EXPECT_EQ(y_unknown.DebugString(),
             strings::StrCat(
                 "Variant<type: TensorList value: ", data.DebugString(), ">"));

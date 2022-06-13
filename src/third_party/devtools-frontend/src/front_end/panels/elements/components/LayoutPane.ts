@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../../../core/common/common.js';
-import * as Host from '../../../core/host/host.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as SurveyLink from '../../../ui/components/survey_link/survey_link.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 
 import type {BooleanSetting, EnumSetting, Setting} from './LayoutPaneUtils.js';
@@ -13,9 +12,16 @@ import {LayoutElement} from './LayoutPaneUtils.js';
 
 import type {NodeTextData} from './NodeText.js';
 import {NodeText} from './NodeText.js';
+import layoutPaneStyles from '../layoutPane.css.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 
 import * as i18n from '../../../core/i18n/i18n.js';
 const UIStrings = {
+  /**
+  *@description Title of the input to select the overlay color for an element using the color picker
+  */
+  chooseElementOverlayColor: 'Choose the overlay color for this element',
   /**
   *@description Title of the show element button in the Layout pane of the Elements panel
   */
@@ -28,10 +34,6 @@ const UIStrings = {
   *@description Title of a section in the Layout Sidebar pane of the Elements panel
   */
   overlayDisplaySettings: 'Overlay display settings',
-  /**
-  *@description Text of a link to a HaTS survey in the Layout panel
-  */
-  feedback: 'Feedback',
   /**
   *@description Title of a section in Layout sidebar pane
   */
@@ -52,19 +54,23 @@ const UIStrings = {
   *@description Text in the Layout panel, when no flexbox elements are found
   */
   noFlexboxLayoutsFoundOnThisPage: 'No flexbox layouts found on this page',
+  /**
+  *@description Screen reader announcement when opening color picker tool.
+  */
+  colorPickerOpened: 'Color picker opened.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/components/LayoutPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export {LayoutElement};
 
 const {render, html} = LitHtml;
-const getStyleSheets = ComponentHelpers.GetStylesheet.getStyleSheets;
 
 export class SettingChangedEvent extends Event {
+  static readonly eventName = 'settingchanged';
   data: {setting: string, value: string|boolean};
 
   constructor(setting: string, value: string|boolean) {
-    super('settingchanged', {});
+    super(SettingChangedEvent.eventName, {});
     this.data = {setting, value};
   }
 }
@@ -88,6 +94,7 @@ export interface LayoutPaneData {
 }
 
 export class LayoutPane extends HTMLElement {
+  static readonly litTagName = LitHtml.literal`devtools-layout-pane`;
   private readonly shadow = this.attachShadow({mode: 'open'});
   private settings: Readonly<Setting[]> = [];
   private gridElements: Readonly<LayoutElement[]> = [];
@@ -96,9 +103,8 @@ export class LayoutPane extends HTMLElement {
   constructor() {
     super();
     this.shadow.adoptedStyleSheets = [
-      ...getStyleSheets('panels/elements/layoutPane.css', {enableLegacyPatching: false}),
-      // Required for chrome-select styles.
-      ...getStyleSheets('ui/legacy/inspectorCommon.css', {enableLegacyPatching: false}),
+      layoutPaneStyles,
+      inspectorCommonStyles,
     ];
   }
 
@@ -137,19 +143,7 @@ export class LayoutPane extends HTMLElement {
           ${i18nString(UIStrings.grid)}
         </summary>
         <div class="content-section">
-          <div class="feedback-container">
-            <div>
-              <h3 class="content-section-title">${i18nString(UIStrings.overlayDisplaySettings)}</h3>
-            </div>
-            <div class="feedback">
-              <${SurveyLink.SurveyLink.SurveyLink.litTagName} .data=${{
-                trigger: 'devtools-layout-panel',
-                promptText: i18nString(UIStrings.feedback),
-                canShowSurvey: Host.InspectorFrontendHost.InspectorFrontendHostInstance.canShowSurvey,
-                showSurvey: Host.InspectorFrontendHost.InspectorFrontendHostInstance.showSurvey,
-              } as SurveyLink.SurveyLink.SurveyLinkData}></${SurveyLink.SurveyLink.SurveyLink.litTagName}>
-            </div>
-          </div>
+          <h3 class="content-section-title">${i18nString(UIStrings.overlayDisplaySettings)}</h3>
           <div class="select-settings">
             ${this.getEnumSettings().map(setting => this.renderEnumSetting(setting))}
           </div>
@@ -251,6 +245,7 @@ export class LayoutPane extends HTMLElement {
       const target = event.target as HTMLLabelElement;
       const input = target.querySelector('input') as HTMLInputElement;
       input.click();
+      UI.ARIAUtils.alert(i18nString(UIStrings.colorPickerOpened));
       event.preventDefault();
     };
     const onColorLabelKeyDown = (event: KeyboardEvent): void => {
@@ -262,7 +257,7 @@ export class LayoutPane extends HTMLElement {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     return html`<div class="element">
-      <label data-element="true" class="checkbox-label" title=${element.name}>
+      <label data-element="true" class="checkbox-label">
         <input data-input="true" type="checkbox" .checked=${element.enabled} @change=${onElementToggle} />
         <span class="node-text-container" data-label="true" @mouseenter=${onMouseEnter} @mouseleave=${onMouseLeave}>
           <${NodeText.litTagName} .data=${{
@@ -272,7 +267,7 @@ export class LayoutPane extends HTMLElement {
           } as NodeTextData}></${NodeText.litTagName}>
         </span>
       </label>
-      <label @keyup=${onColorLabelKeyUp} @keydown=${onColorLabelKeyDown} tabindex="0" class="color-picker-label" style="background: ${element.color};">
+      <label @keyup=${onColorLabelKeyUp} @keydown=${onColorLabelKeyDown} tabindex="0" title=${i18nString(UIStrings.chooseElementOverlayColor)} class="color-picker-label" style="background: ${element.color};">
         <input @change=${onColorChange} @input=${onColorChange} class="color-picker" type="color" value=${element.color} />
       </label>
       <button tabindex="0" @click=${onElementClick} title=${i18nString(UIStrings.showElementInTheElementsPanel)} class="show-element"></button>

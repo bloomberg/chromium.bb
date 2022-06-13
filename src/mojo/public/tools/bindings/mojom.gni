@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/python.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -71,7 +70,7 @@ enable_scrambled_message_ids =
     enable_mojom_message_id_scrambling &&
     (is_mac || is_win ||
      (is_linux && !is_chromeos_ash && !is_chromecast && !is_chromeos_lacros) ||
-     ((enable_nacl || is_nacl || is_nacl_nonsfi) &&
+     ((enable_nacl || is_nacl) &&
       (target_os != "chromeos" && !chromeos_is_browser_only)))
 
 _mojom_tools_root = "//mojo/public/tools"
@@ -402,6 +401,12 @@ if (enable_scrambled_message_ids) {
 #             should be mapped in generated bindings. This is a string like
 #             "::base::Value" or "std::vector<::base::Value>".
 #
+#         forward_declaration (optional)
+#             A forward declaration of the C++ type, which bindings that don't
+#             need the full type definition can use to reduce the size of
+#             the generated code. This is a string like
+#             "namespace base { class Value; }".
+#
 #         move_only (optional)
 #             A boolean value (default false) which indicates whether the C++
 #             type is move-only. If true, generated bindings will pass the type
@@ -683,8 +688,7 @@ template("mojom") {
       enabled_features += [ "is_win" ]
     }
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(parser_target_name) {
+    action(parser_target_name) {
       script = mojom_parser_script
       inputs = mojom_parser_sources + [ build_metadata_filename ]
       sources = sources_list
@@ -819,8 +823,7 @@ template("mojom") {
       }
     }
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(generator_cpp_message_ids_target_name) {
+    action(generator_cpp_message_ids_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = sources_list
@@ -860,8 +863,7 @@ template("mojom") {
 
     generator_shared_target_name = "${target_name}_shared__generator"
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(generator_shared_target_name) {
+    action(generator_shared_target_name) {
       visibility = [ ":*" ]
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
@@ -981,8 +983,7 @@ template("mojom") {
     generator_mojolpm_proto_target_name =
         "${target_name}_mojolpm_proto_generator"
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(generator_mojolpm_proto_target_name) {
+    action(generator_mojolpm_proto_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
@@ -1198,7 +1199,6 @@ template("mojom") {
       generator_cpp_output_suffixes += [
         "${variant_dash_suffix}-forward.h",
         "${variant_dash_suffix}-import-headers.h",
-        "${variant_dash_suffix}-test-utils.cc",
         "${variant_dash_suffix}-test-utils.h",
         "${variant_dash_suffix}.cc",
         "${variant_dash_suffix}.h",
@@ -1207,7 +1207,7 @@ template("mojom") {
       generator_target_name = "${target_name}${variant_suffix}__generator"
 
       # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-      python2_action(generator_target_name) {
+      action(generator_target_name) {
         visibility = [ ":*" ]
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
@@ -1230,7 +1230,6 @@ template("mojom") {
           outputs += [
             "$root_gen_dir/${base_path}${variant_dash_suffix}-forward.h",
             "$root_gen_dir/${base_path}${variant_dash_suffix}-import-headers.h",
-            "$root_gen_dir/${base_path}${variant_dash_suffix}-test-utils.cc",
             "$root_gen_dir/${base_path}${variant_dash_suffix}-test-utils.h",
             "$root_gen_dir/${base_path}${variant_dash_suffix}.cc",
             "$root_gen_dir/${base_path}${variant_dash_suffix}.h",
@@ -1389,8 +1388,7 @@ template("mojom") {
     write_file(_typemap_config_filename, _rebased_typemap_configs, "json")
     _mojom_target_name = target_name
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(_typemap_validator_target_name) {
+    action(_typemap_validator_target_name) {
       script = "$mojom_generator_root/validate_typemap_config.py"
       inputs = [ _typemap_config_filename ]
       outputs = [ _typemap_stamp_filename ]
@@ -1401,8 +1399,7 @@ template("mojom") {
       ]
     }
 
-    # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-    python2_action(type_mappings_target_name) {
+    action(type_mappings_target_name) {
       inputs =
           mojom_generator_sources + jinja2_sources + [ _typemap_stamp_filename ]
       outputs = [ type_mappings_path ]
@@ -1583,8 +1580,7 @@ template("mojom") {
 
       java_generator_target_name = target_name + "_java__generator"
       if (sources_list != []) {
-        # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-        python2_action(java_generator_target_name) {
+        action(java_generator_target_name) {
           script = mojom_generator_script
           inputs = mojom_generator_sources + jinja2_sources
           sources = sources_list
@@ -1624,8 +1620,7 @@ template("mojom") {
 
       java_srcjar_target_name = target_name + "_java_sources"
 
-      # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-      python2_action(java_srcjar_target_name) {
+      action(java_srcjar_target_name) {
         script = "//build/android/gyp/zip.py"
         inputs = []
         if (output_file_base_paths != []) {
@@ -1686,8 +1681,7 @@ template("mojom") {
     if (sources_list != []) {
       generator_js_target_name = "${target_name}_js__generator"
 
-      # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-      python2_action(generator_js_target_name) {
+      action(generator_js_target_name) {
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = sources_list
@@ -1707,7 +1701,6 @@ template("mojom") {
         foreach(base_path, output_file_base_paths) {
           outputs += [
             "$root_gen_dir/$base_path.js",
-            "$root_gen_dir/$base_path.externs.js",
             "$root_gen_dir/$base_path.m.js",
             "$root_gen_dir/$base_path-lite.js",
             "$root_gen_dir/$base_path.html",
@@ -1928,8 +1921,7 @@ template("mojom") {
       generator_ts_target_name =
           "${target_name}_${dependency_type.name}__ts__generator"
 
-      # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-      python2_action(generator_ts_target_name) {
+      action(generator_ts_target_name) {
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = sources_list
@@ -1996,8 +1988,7 @@ template("mojom") {
           "${target_name}_${dependency_type.name}__js__generator"
       generator_js_target_names += [ generator_js_target_name ]
 
-      # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
-      python2_action(generator_js_target_name) {
+      action(generator_js_target_name) {
         script = "$mojom_generator_root/compile_typescript.py"
         sources = ts_outputs
         outputs = js_outputs

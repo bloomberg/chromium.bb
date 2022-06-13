@@ -13,7 +13,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -24,12 +24,12 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::ListValue;
 
 namespace {
 
@@ -42,6 +42,11 @@ const char kDiscourseContextHeaderName[] = "X-Additional-Discourse-Context";
 class ContextualSearchDelegateTest : public testing::Test {
  public:
   ContextualSearchDelegateTest() {}
+
+  ContextualSearchDelegateTest(const ContextualSearchDelegateTest&) = delete;
+  ContextualSearchDelegateTest& operator=(const ContextualSearchDelegateTest&) =
+      delete;
+
   ~ContextualSearchDelegateTest() override {}
 
  protected:
@@ -297,17 +302,17 @@ class ContextualSearchDelegateTest : public testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<TemplateURLService> template_url_service_;
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
 
   // Will be owned by the delegate.
-  ContextualSearchContext* test_context_;
+  raw_ptr<ContextualSearchContext> test_context_;
 
   // Features to enable
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchDelegateTest);
 };
 
 TEST_F(ContextualSearchDelegateTest, NormalFetchWithXssiEscape) {
@@ -504,12 +509,13 @@ TEST_F(ContextualSearchDelegateTest, ContractSelectionInvalid) {
 }
 
 TEST_F(ContextualSearchDelegateTest, ExtractMentionsStartEnd) {
-  ListValue mentions_list;
-  mentions_list.AppendInteger(1);
-  mentions_list.AppendInteger(2);
+  base::Value mentions_list(base::Value::Type::LIST);
+  mentions_list.Append(1);
+  mentions_list.Append(2);
   int start = 0;
   int end = 0;
-  delegate_->ExtractMentionsStartEnd(mentions_list, &start, &end);
+  delegate_->ExtractMentionsStartEnd(std::move(mentions_list).TakeList(),
+                                     &start, &end);
   EXPECT_EQ(1, start);
   EXPECT_EQ(2, end);
 }

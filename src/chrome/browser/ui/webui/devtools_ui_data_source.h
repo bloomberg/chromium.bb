@@ -10,7 +10,6 @@
 
 #include "content/public/browser/url_data_source.h"
 
-#include "base/macros.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -34,6 +33,10 @@ class DevToolsDataSource : public content::URLDataSource {
 
   explicit DevToolsDataSource(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
+  DevToolsDataSource(const DevToolsDataSource&) = delete;
+  DevToolsDataSource& operator=(const DevToolsDataSource&) = delete;
+
   ~DevToolsDataSource() override;
 
   // content::URLDataSource implementation.
@@ -68,6 +71,9 @@ class DevToolsDataSource : public content::URLDataSource {
   // command-line flag.
   void StartCustomDataRequest(const GURL& url, GotDataCallback callback);
 
+  bool MaybeHandleCustomRequest(const std::string& path,
+                                GotDataCallback* callback);
+
   virtual void StartNetworkRequest(
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -79,20 +85,18 @@ class DevToolsDataSource : public content::URLDataSource {
 
   struct PendingRequest {
     PendingRequest();
+    PendingRequest(const PendingRequest&) = delete;
+    PendingRequest& operator=(const PendingRequest&) = delete;
     PendingRequest(PendingRequest&& other);
     PendingRequest& operator=(PendingRequest&& other) = default;
     ~PendingRequest();
 
     GotDataCallback callback;
     std::unique_ptr<network::SimpleURLLoader> loader;
-
-    DISALLOW_COPY_AND_ASSIGN(PendingRequest);
   };
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::list<PendingRequest> pending_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsDataSource);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_DEVTOOLS_UI_DATA_SOURCE_H_

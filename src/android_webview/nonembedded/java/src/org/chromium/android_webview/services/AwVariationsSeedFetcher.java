@@ -31,6 +31,7 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedFet
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -131,10 +132,12 @@ public class AwVariationsSeedFetcher extends JobService {
         ComponentName thisComponent = new ComponentName(context, AwVariationsSeedFetcher.class);
         PersistableBundle extras = new PersistableBundle(/*capacity=*/1);
         extras.putInt(JOB_REQUEST_COUNT_KEY, 0);
+        boolean requiresCharging =
+                !CommandLine.getInstance().hasSwitch(AwSwitches.FINCH_SEED_NO_CHARGING_REQUIREMENT);
         JobInfo job =
                 new JobInfo.Builder(JOB_ID, thisComponent)
                         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                        .setRequiresCharging(true)
+                        .setRequiresCharging(requiresCharging)
                         .setBackoffCriteria(JOB_INITIAL_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
                         .setExtras(extras)
                         .build();
@@ -182,9 +185,9 @@ public class AwVariationsSeedFetcher extends JobService {
                     return null;
                 }
 
-                // VariationsSeedFetcher returns a negative status code for IOExceptions or other
-                // failures that indicate the HTTP request didn't complete.
-                if (fetchInfo.seedFetchResult < 0) {
+                // VariationsSeedFetcher returns HttpURLConnection.HTTP_OK if and only if it
+                // succeeds.
+                if (fetchInfo.seedFetchResult != HttpURLConnection.HTTP_OK) {
                     int requestCount = mParams.getExtras().getInt(JOB_REQUEST_COUNT_KEY) + 1;
                     mParams.getExtras().putInt(JOB_REQUEST_COUNT_KEY, requestCount);
                     // Limit the retries to JOB_MAX_REQUEST_COUNT.

@@ -39,9 +39,10 @@ const char kUserPolicyRefreshRate[] = "policy.user_refresh_rate";
 const char kCloudManagementEnrollmentMandatory[] =
     "policy.cloud_management_enrollment_mandatory";
 
-// Boolean that specifies whether the cloud policy will override conflicting
-// machine policy.
-const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
+// Integer that sets the minimal limit on the data size in the clipboard to be
+// checked against Data Leak Prevention rules.
+const char kDlpClipboardCheckSizeLimit[] =
+    "policy.dlp_clipboard_check_size_limit";
 
 // Boolean policy preference to enable reporting of data leak prevention events.
 const char kDlpReportingEnabled[] = "policy.dlp_reporting_enabled";
@@ -59,10 +60,6 @@ const char kNativeWindowOcclusionEnabled[] =
 const char kIntensiveWakeUpThrottlingEnabled[] =
     "policy.intensive_wake_up_throttling_enabled";
 
-// Boolean policy preference to disable the User-Agent Client Hints feature.
-const char kUserAgentClientHintsEnabled[] =
-    "policy.user_agent_client_hints_enabled";
-
 // Boolean that controls whether a window spawned from an anchor targeting
 // _blank receives an opener. TODO(crbug.com/898942): Remove this in Chrome 95.
 const char kTargetBlankImpliesNoOpener[] =
@@ -72,6 +69,15 @@ const char kTargetBlankImpliesNoOpener[] =
 // Boolean policy preference to disable the BackForwardCache feature.
 const char kBackForwardCacheEnabled[] = "policy.back_forward_cache_enabled";
 #endif  // defined(OS_ANDROID)
+
+// Boolean policy to force enable WebSQL in third-party contexts.
+const char kWebSQLInThirdPartyContextEnabled[] =
+    "policy.web_sql_in_third_party_context_enabled";
+
+// Boolean policy preference to disable the User-Agent Client Hints
+// updated GREASE algorithm feature.
+const char kUserAgentClientHintsGREASEUpdateEnabled[] =
+    "policy.user_agent_client_hints_grease_update_enabled";
 
 }  // namespace policy_prefs
 }  // namespace policy

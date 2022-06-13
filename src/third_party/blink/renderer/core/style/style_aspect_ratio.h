@@ -5,10 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_ASPECT_RATIO_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_ASPECT_RATIO_H_
 
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
@@ -19,18 +18,18 @@ class StyleAspectRatio {
 
  public:
   // Style data for aspect-ratio: auto || <ratio>
-  StyleAspectRatio(EAspectRatioType type, FloatSize ratio)
+  StyleAspectRatio(EAspectRatioType type, gfx::SizeF ratio)
       : type_(static_cast<unsigned>(type)), ratio_(ratio) {}
 
   // 0/x and x/0 are valid (and computed style needs to serialize them
   // as such), but they are not useful for layout, so we map it to auto here.
   EAspectRatioType GetType() const {
-    if (ratio_.Width() == 0 || ratio_.Height() == 0)
+    if (ratio_.width() == 0 || ratio_.height() == 0)
       return EAspectRatioType::kAuto;
     // Since we do calculations on LayoutUnits, also check that our width/height
     // doesn't convert to zero.
-    if (ratio_.Width() < LayoutUnit::Epsilon() ||
-        ratio_.Height() < LayoutUnit::Epsilon()) {
+    if (ratio_.width() < LayoutUnit::Epsilon() ||
+        ratio_.height() < LayoutUnit::Epsilon()) {
       return EAspectRatioType::kAuto;
     }
     return GetTypeForComputedStyle();
@@ -42,7 +41,7 @@ class StyleAspectRatio {
 
   bool IsAuto() const { return GetType() == EAspectRatioType::kAuto; }
 
-  FloatSize GetRatio() const { return ratio_; }
+  gfx::SizeF GetRatio() const { return ratio_; }
 
   bool operator==(const StyleAspectRatio& o) const {
     return type_ == o.type_ && ratio_ == o.ratio_;
@@ -52,7 +51,7 @@ class StyleAspectRatio {
 
  private:
   unsigned type_ : 2;  // EAspectRatioType
-  FloatSize ratio_;
+  gfx::SizeF ratio_;
 };
 
 }  // namespace blink

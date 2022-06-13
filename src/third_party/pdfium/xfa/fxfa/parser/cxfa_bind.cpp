@@ -14,7 +14,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kBindPropertyData[] = {
-    {XFA_Element::Picture, 1, 0},
+    {XFA_Element::Picture, 1, {}},
 };
 
 const CXFA_Node::AttributeData kBindAttributeData[] = {
@@ -35,8 +35,8 @@ const CXFA_Node::AttributeData kBindAttributeData[] = {
 CXFA_Bind::CXFA_Bind(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                (XFA_XDPPACKET_SourceSet | XFA_XDPPACKET_Template |
-                 XFA_XDPPACKET_Form),
+                {XFA_XDPPACKET::kSourceSet, XFA_XDPPACKET::kTemplate,
+                 XFA_XDPPACKET::kForm},
                 XFA_ObjectType::Node,
                 XFA_Element::Bind,
                 kBindPropertyData,
@@ -47,8 +47,7 @@ CXFA_Bind::CXFA_Bind(CXFA_Document* doc, XFA_PacketType packet)
 
 CXFA_Bind::~CXFA_Bind() = default;
 
-WideString CXFA_Bind::GetPicture() {
-  CXFA_Picture* pPicture =
-      GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
+WideString CXFA_Bind::GetPicture() const {
+  const auto* pPicture = GetChild<CXFA_Picture>(0, XFA_Element::Picture, false);
   return pPicture ? pPicture->JSObject()->GetContent(false) : WideString();
 }

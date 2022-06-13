@@ -145,11 +145,11 @@ std::unique_ptr<base::DictionaryValue> GenerateTouchPoint(
   std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
   point->SetInteger("x", event.x);
   point->SetInteger("y", event.y);
-  point->SetDouble("radiusX", event.radiusX);
-  point->SetDouble("radiusY", event.radiusY);
-  point->SetDouble("rotationAngle", event.rotationAngle);
-  point->SetDouble("force", event.force);
-  point->SetDouble("tangentialPressure", event.tangentialPressure);
+  point->SetDoubleKey("radiusX", event.radiusX);
+  point->SetDoubleKey("radiusY", event.radiusY);
+  point->SetDoubleKey("rotationAngle", event.rotationAngle);
+  point->SetDoubleKey("force", event.force);
+  point->SetDoubleKey("tangentialPressure", event.tangentialPressure);
   point->SetInteger("tiltX", event.tiltX);
   point->SetInteger("tiltY", event.tiltY);
   point->SetInteger("twist", event.twist);
@@ -494,7 +494,7 @@ Status WebViewImpl::CallUserSyncScript(const std::string& frame,
                                        const base::TimeDelta& timeout,
                                        std::unique_ptr<base::Value>* result) {
   base::ListValue sync_args;
-  sync_args.AppendString(script);
+  sync_args.Append(script);
   // Clone needed since Append only accepts Value as an rvalue.
   sync_args.Append(args.Clone());
   return CallFunctionWithTimeout(frame, kExecuteScriptScript, sync_args,
@@ -545,11 +545,12 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
   // Touch events are filtered by the compositor if there are no touch listeners
   // on the page. Wait two frames for the compositor to sync with the main
   // thread to get consistent behavior.
-  base::DictionaryValue params;
-  params.SetString("expression",
-                   "new Promise(x => setTimeout(() => setTimeout(x, 20), 20))");
-  params.SetBoolean("awaitPromise", true);
-  client_->SendCommand("Runtime.evaluate", params);
+  base::DictionaryValue promise_params;
+  promise_params.SetString(
+      "expression",
+      "new Promise(x => setTimeout(() => setTimeout(x, 20), 20))");
+  promise_params.SetBoolean("awaitPromise", true);
+  client_->SendCommand("Runtime.evaluate", promise_params);
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
 
@@ -603,8 +604,8 @@ Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
     params.SetString("button", GetAsString(it->button));
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
-    params.SetDouble("force", it->force);
-    params.SetDouble("tangentialPressure", it->tangentialPressure);
+    params.SetDoubleKey("force", it->force);
+    params.SetDoubleKey("tangentialPressure", it->tangentialPressure);
     params.SetInteger("tiltX", it->tiltX);
     params.SetInteger("tiltY", it->tiltY);
     params.SetInteger("twist", it->twist);
@@ -633,13 +634,13 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   base::DictionaryValue params;
   std::string type = GetAsString(event.type);
   params.SetString("type", type);
-  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  base::ListValue point_list;
   Status status(kOk);
   if (type == "touchStart" || type == "touchMove") {
     std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(event);
-    point_list->Append(std::move(point));
+    point_list.Append(std::move(point));
   }
-  params.Set("touchPoints", std::move(point_list));
+  params.SetKey("touchPoints", std::move(point_list));
   if (async_dispatch_events) {
     status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
                                                    params);
@@ -671,7 +672,7 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
   Status status(kOk);
   size_t touch_count = 1;
   for (const TouchEvent& event : events) {
-    std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+    base::ListValue point_list;
     int32_t current_time =
         (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
     params.SetInteger("timestamp", current_time);
@@ -680,8 +681,8 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     if (type == "touchCancel")
       continue;
 
-    point_list->Append(GenerateTouchPoint(event));
-    params.Set("touchPoints", std::move(point_list));
+    point_list.Append(GenerateTouchPoint(event));
+    params.SetKey("touchPoints", std::move(point_list));
 
     if (async_dispatch_events || touch_count < events.size()) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
@@ -759,7 +760,7 @@ Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
       }
 
       std::unique_ptr<base::ListValue> command_list(new base::ListValue);
-      command_list->AppendString(command);
+      command_list->Append(command);
       params.SetList("commands", std::move(command_list));
     }
 
@@ -794,7 +795,7 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
 
   if (browser_info_->browser_name != "webview") {
     base::ListValue url_list;
-    url_list.AppendString(current_page_url);
+    url_list.Append(current_page_url);
     params.SetKey("urls", url_list.Clone());
     Status status =
         client_->SendCommandAndGetResult("Network.getCookies", params, &result);
@@ -810,7 +811,7 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
   base::ListValue* cookies_tmp;
   if (!result->GetList("cookies", &cookies_tmp))
     return Status(kUnknownError, "DevTools didn't return cookies");
-  cookies->reset(cookies_tmp->DeepCopy());
+  *cookies = cookies_tmp->CreateDeepCopy();
   return Status(kOk);
 }
 
@@ -848,15 +849,14 @@ Status WebViewImpl::AddCookie(const std::string& name,
   if (!sameSite.empty())
     params.SetString("sameSite", sameSite);
   if (expiry >= 0)
-    params.SetDouble("expires", expiry);
+    params.SetDoubleKey("expires", expiry);
 
   std::unique_ptr<base::DictionaryValue> result;
   Status status =
       client_->SendCommandAndGetResult("Network.setCookie", params, &result);
   if (status.IsError())
     return Status(kUnableToSetCookie);
-  bool success;
-  if (!result->GetBoolean("success", &success) || !success)
+  if (!result->FindBoolKey("success").value_or(false))
     return Status(kUnableToSetCookie);
   return Status(kOk);
 }
@@ -883,7 +883,7 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
     // executing the next command, and it will be counted towards its timeout.
     Status new_status = client_->HandleEventsUntil(
         not_pending_navigation,
-        Timeout(base::TimeDelta::FromSeconds(kWaitForNavigationStopSeconds)));
+        Timeout(base::Seconds(kWaitForNavigationStopSeconds)));
     navigation_tracker_->set_timed_out(false);
     if (new_status.IsError())
       status = new_status;
@@ -932,7 +932,7 @@ Status WebViewImpl::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {
   std::unique_ptr<base::DictionaryValue> result;
-  Timeout timeout(base::TimeDelta::FromSeconds(10));
+  Timeout timeout(base::Seconds(10));
   Status status = client_->SendCommandAndGetResultWithTimeout(
       "Page.captureScreenshot", params, &timeout, &result);
   if (status.IsError())
@@ -950,7 +950,7 @@ Status WebViewImpl::PrintToPDF(const base::DictionaryValue& params,
                   "PrintToPDF is only supported in headless mode");
   }
   std::unique_ptr<base::DictionaryValue> result;
-  Timeout timeout(base::TimeDelta::FromSeconds(10));
+  Timeout timeout(base::Seconds(10));
   Status status = client_->SendCommandAndGetResultWithTimeout(
       "Page.printToPDF", params, &timeout, &result);
   if (status.IsError()) {
@@ -1069,7 +1069,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
         std::string fullPath;
         if (!getFileInfoResult->GetString("path", &fullPath))
           return Status(kUnknownError, "DevTools didn't return path");
-        file_list.AppendString(fullPath);
+        file_list.Append(fullPath);
       }
     }
   }
@@ -1084,7 +1084,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
       return Status(kUnknownError,
                     "path is not canonical: " + files[i].AsUTF8Unsafe());
     }
-    file_list.AppendString(files[i].AsUTF8Unsafe());
+    file_list.Append(files[i].AsUTF8Unsafe());
   }
 
   base::DictionaryValue setFilesParams;
@@ -1183,9 +1183,9 @@ Status WebViewImpl::CallAsyncFunctionInternal(
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
   base::ListValue async_args;
-  async_args.AppendString("return (" + function + ").apply(null, arguments);");
+  async_args.Append("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.Clone());
-  async_args.AppendBoolean(is_user_supplied);
+  async_args.Append(is_user_supplied);
   std::unique_ptr<base::Value> tmp;
   Timeout local_timeout(timeout);
   Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
@@ -1207,12 +1207,12 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       "}",
       kJavaScriptError,
       kDocUnloadError);
-  const base::TimeDelta kOneHundredMs = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta kOneHundredMs = base::Milliseconds(100);
 
   while (true) {
     base::ListValue no_args;
     std::unique_ptr<base::Value> query_value;
-    Status status = CallFunction(frame, kQueryResult, no_args, &query_value);
+    status = CallFunction(frame, kQueryResult, no_args, &query_value);
     if (status.IsError()) {
       if (status.code() == kNoSuchFrame)
         return Status(kJavaScriptError, kDocUnloadError);
@@ -1231,8 +1231,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       return Status(static_cast<StatusCode>(status_code), message);
     }
 
-    base::Value* value = NULL;
-    if (result_info->Get("value", &value)) {
+    if (base::Value* value = result_info->FindKey("value")) {
       *result = base::Value::ToUniquePtrValue(value->Clone());
       return Status(kOk);
     }
@@ -1441,8 +1440,8 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
   if (type == "undefined") {
     *result = std::make_unique<base::Value>();
   } else {
-    base::Value* value;
-    if (!temp_result->Get("value", &value))
+    base::Value* value = temp_result->FindKey("value");
+    if (value == nullptr)
       return Status(kUnknownError, "Runtime.evaluate missing 'value'");
     *result = base::Value::ToUniquePtrValue(value->Clone());
   }
@@ -1464,8 +1463,8 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
     dict->GetString("value", &message);
     return Status(static_cast<StatusCode>(status_code), message);
   }
-  const base::Value* unscoped_value;
-  if (!dict->Get("value", &unscoped_value)) {
+  const base::Value* unscoped_value = dict->FindKey("value");
+  if (unscoped_value == nullptr) {
     // Missing 'value' indicates the JavaScript code didn't return a value.
     return Status(kOk);
   }

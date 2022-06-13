@@ -4,7 +4,6 @@
 
 #include "chrome/browser/subresource_redirect/origin_robots_rules.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -12,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -127,6 +127,9 @@ class SubresourceRedirectOriginRobotsRulesTest : public testing::Test {
 
   base::HistogramTester histogram_tester_;
 
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
+
   std::unique_ptr<OriginRobotsRules> origin_robots_rules_;
   std::unique_ptr<RobotsRulesFetcherState> rules_fetcher_state_;
 
@@ -227,9 +230,9 @@ TEST_F(SubresourceRedirectOriginRobotsRulesTest,
   histogram_tester_.ExpectUniqueSample(
       "SubresourceRedirect.RobotsRulesFetcher.ResponseCode",
       net::HTTP_INTERNAL_SERVER_ERROR, 1);
-  EXPECT_THAT(*GetResponseErrorReceived(),
-              testing::Pair(net::HTTP_INTERNAL_SERVER_ERROR,
-                            base::TimeDelta::FromSeconds(120)));
+  EXPECT_THAT(
+      *GetResponseErrorReceived(),
+      testing::Pair(net::HTTP_INTERNAL_SERVER_ERROR, base::Seconds(120)));
   EXPECT_THAT(GetRobotsRulesReceived(), testing::ElementsAre(absl::nullopt));
 
   // Subsequent calls will return the response immediately.

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/url_matcher/substring_set_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher_base.h"
 #include "third_party/re2/src/re2/filtered_re2.h"
@@ -21,8 +21,8 @@ struct RegexRuleInfo {
   RegexRuleInfo(const flat::RegexRule* regex_rule, const re2::RE2* regex);
   RegexRuleInfo(const RegexRuleInfo& info);
   RegexRuleInfo& operator=(const RegexRuleInfo& info);
-  const flat::RegexRule* regex_rule;
-  const re2::RE2* regex;
+  raw_ptr<const flat::RegexRule> regex_rule;
+  raw_ptr<const re2::RE2> regex;
 };
 
 // RegexRulesMatcher deals with matching of regular expression rules. It is an
@@ -54,6 +54,9 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
                     RulesetID ruleset_id,
                     const RegexRulesList* regex_list,
                     const ExtensionMetadataList* metadata_list);
+
+  RegexRulesMatcher(const RegexRulesMatcher&) = delete;
+  RegexRulesMatcher& operator=(const RegexRulesMatcher&) = delete;
 
   // RulesetMatcherBase override:
   ~RegexRulesMatcher() override;
@@ -92,8 +95,8 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
 
   // Pointers to flatbuffer indexed data. Guaranteed to be valid through the
   // lifetime of the object.
-  const RegexRulesList* const regex_list_;
-  const ExtensionMetadataList* const metadata_list_;
+  const raw_ptr<const RegexRulesList> regex_list_;
+  const raw_ptr<const ExtensionMetadataList> metadata_list_;
 
   const bool is_extra_headers_matcher_;
 
@@ -113,8 +116,6 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   // substring of S. Uses the Aho-Corasick algorithm internally. Will be null
   // iff IsEmpty() returns false.
   std::unique_ptr<url_matcher::SubstringSetMatcher> substring_matcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(RegexRulesMatcher);
 };
 
 }  // namespace declarative_net_request

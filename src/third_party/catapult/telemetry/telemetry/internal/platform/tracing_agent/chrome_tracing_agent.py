@@ -60,6 +60,8 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
     if not devtools_clients:
       return False
     for client in devtools_clients:
+      if not client.has_tracing_client:
+        continue
       if client.is_tracing_running:
         raise ChromeTracingStartedError(
             'Tracing is already running on devtools at port %s on platform'
@@ -99,7 +101,7 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
     return True
 
   def RecordClockSyncMarker(self, sync_id,
-                            record_controller_clock_sync_marker_callback):
+                            record_controller_clocksync_marker_callback):
     devtools_clients = (chrome_tracing_devtools_manager
                         .GetActiveDevToolsClients(self._platform_backend))
     if not devtools_clients:
@@ -108,6 +110,8 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
 
     has_clock_synced = False
     for client in devtools_clients:
+      if not client.has_tracing_client:
+        continue
       try:
         timestamp = trace_time.Now()
         client.RecordChromeClockSyncMarker(sync_id)
@@ -120,7 +124,7 @@ class ChromeTracingAgent(tracing_agent.TracingAgent):
     if not has_clock_synced:
       raise ChromeClockSyncError(
           'Failed to issue clock sync to devtools client')
-    record_controller_clock_sync_marker_callback(sync_id, timestamp)
+    record_controller_clocksync_marker_callback(sync_id, timestamp)
     return True
 
   def StopAgentTracing(self):

@@ -10,21 +10,18 @@
 
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/visual_utils.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/tflite-support/src/tensorflow_lite_support/cc/task/core/task_api_factory.h"
-#include "third_party/tflite-support/src/tensorflow_lite_support/cc/task/vision/image_classifier.h"
-#include "third_party/tflite/src/tensorflow/lite/kernels/builtin_op_kernels.h"
-#include "third_party/tflite/src/tensorflow/lite/op_resolver.h"
 
 namespace safe_browsing {
 
@@ -186,13 +183,17 @@ void FlatBufferModelScorer::GetMatchingVisualTargets(
   NOTIMPLEMENTED();
 }
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 void FlatBufferModelScorer::ApplyVisualTfLiteModel(
     const SkBitmap& bitmap,
     base::OnceCallback<void(std::vector<double>)> callback) const {
   DCHECK(content::RenderThread::IsMainThread());
   if (visual_tflite_model_.IsValid()) {
+    base::Time start_post_task_time = base::Time::Now();
     base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives()},
         base::BindOnce(&ApplyVisualTfLiteModelHelper, bitmap,
                        flatbuffer_model_->tflite_metadata()->input_width(),
                        flatbuffer_model_->tflite_metadata()->input_height(),
@@ -200,10 +201,14 @@ void FlatBufferModelScorer::ApplyVisualTfLiteModel(
                                        visual_tflite_model_.data()),
                                    visual_tflite_model_.length())),
         std::move(callback));
+    base::UmaHistogramTimes(
+        "SBClientPhishing.TfLiteModelLoadTime.FlatbufferScorer",
+        base::Time::Now() - start_post_task_time);
   } else {
     std::move(callback).Run(std::vector<double>());
   }
 }
+#endif
 
 int FlatBufferModelScorer::model_version() const {
   return flatbuffer_model_->version();

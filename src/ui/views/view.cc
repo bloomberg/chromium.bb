@@ -13,10 +13,10 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,10 +45,11 @@
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -62,6 +63,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/views_features.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -123,11 +125,14 @@ class ScopedChildrenLock {
  public:
   explicit ScopedChildrenLock(const View* view)
       : reset_(&view->iterating_, true) {}
+
+  ScopedChildrenLock(const ScopedChildrenLock&) = delete;
+  ScopedChildrenLock& operator=(const ScopedChildrenLock&) = delete;
+
   ~ScopedChildrenLock() = default;
 
  private:
   base::AutoReset<bool> reset_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedChildrenLock);
 };
 #else
 class ScopedChildrenLock {
@@ -208,6 +213,14 @@ View::View() {
   SetTargetHandler(this);
   if (kUseDefaultFillLayout)
     default_fill_layout_.emplace(DefaultFillLayout());
+
+  static bool capture_stack_trace =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kViewStackTraces);
+  if (capture_stack_trace) {
+    SetProperty(kViewStackTraceKey,
+                std::make_unique<base::debug::StackTrace>());
+  }
 }
 
 View::~View() {
@@ -239,6 +252,11 @@ View::~View() {
       if (!child->owned_by_client_)
         delete child;
     }
+
+    // Clear `children_` to prevent UAFs from observers and properties that may
+    // end up looking at children(), directly or indirectly, before ~View() goes
+    // out of scope.
+    children_.clear();
   }
 
   for (ViewObserver& observer : observers_)
@@ -273,7 +291,8 @@ void View::ReorderChildView(View* view, int index) {
   DCHECK(i != children_.end());
 
   // If |view| is already at the desired position, there's nothing to do.
-  const bool move_to_end = (index < 0) || (size_t{index} >= children_.size());
+  const bool move_to_end =
+      (index < 0) || (static_cast<size_t>(index) >= children_.size());
   const auto pos = move_to_end ? std::prev(children_.end())
                                : std::next(children_.begin(), index);
   if (i == pos)
@@ -304,9 +323,15 @@ void View::RemoveChildView(View* view) {
   DoRemoveChildView(view, true, false, nullptr);
 }
 
-void View::RemoveAllChildViews(bool delete_children) {
+void View::RemoveAllChildViews() {
   while (!children_.empty())
-    DoRemoveChildView(children_.front(), false, delete_children, nullptr);
+    DoRemoveChildView(children_.front(), false, true, nullptr);
+  UpdateTooltip();
+}
+
+void View::RemoveAllChildViewsWithoutDeleting() {
+  while (!children_.empty())
+    DoRemoveChildView(children_.front(), false, false, nullptr);
   UpdateTooltip();
 }
 
@@ -626,7 +651,7 @@ gfx::Transform View::GetTransform() const {
     return gfx::Transform();
 
   gfx::Transform transform = layer()->transform();
-  gfx::ScrollOffset scroll_offset = layer()->CurrentScrollOffset();
+  gfx::PointF scroll_offset = layer()->CurrentScrollOffset();
   // Offsets for layer-based scrolling are never negative, but the horizontal
   // scroll direction is reversed in RTL via canvas flipping.
   transform.Translate((GetMirrored() ? 1 : -1) * scroll_offset.x(),
@@ -1068,6 +1093,11 @@ void View::Paint(const PaintInfo& parent_paint_info) {
   if (!ShouldPaint())
     return;
 
+  if (!has_run_accessibility_paint_checks_) {
+    RunAccessibilityPaintChecks(this);
+    has_run_accessibility_paint_checks_ = true;
+  }
+
   const gfx::Rect& parent_bounds =
       !parent() ? GetMirroredBounds() : parent()->GetMirroredBounds();
 
@@ -1227,6 +1257,16 @@ const ui::NativeTheme* View::GetNativeTheme() const {
   const Widget* widget = GetWidget();
   if (widget)
     return widget->GetNativeTheme();
+
+  static bool has_crashed_reported = false;
+  // Crash on debug builds and dump without crashing on release builds to ensure
+  // we catch fallthrough to the global NativeTheme instance on all Chromium
+  // builds (crbug.com/1056756).
+  if (!has_crashed_reported) {
+    DCHECK(false);
+    base::debug::DumpWithoutCrashing();
+    has_crashed_reported = true;
+  }
 
   return ui::NativeTheme::GetInstanceForNativeUi();
 }
@@ -2171,39 +2211,40 @@ View::DragInfo* View::GetDragInfo() {
 
 // Focus -----------------------------------------------------------------------
 
-void View::OnFocus() {
-  // TODO(beng): Investigate whether it's possible for us to move this to
-  //             Focus().
-  // By default, we clear the native focus. This ensures that no visible native
-  // view as the focus and that we still receive keyboard inputs.
-  FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->ClearNativeFocus();
-
-  // TODO(beng): Investigate whether it's possible for us to move this to
-  //             Focus().
-  // Notify assistive technologies of the focus change.
-  AXVirtualView* focused_virtual_child =
-      view_accessibility_ ? view_accessibility_->FocusedVirtualChild()
-                          : nullptr;
-  if (focused_virtual_child)
-    focused_virtual_child->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
-  else
-    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
-}
+void View::OnFocus() {}
 
 void View::OnBlur() {}
 
 void View::Focus() {
   OnFocus();
 
+  // TODO(pbos): Investigate if parts of this can run unconditionally.
+  if (!suppress_default_focus_handling_) {
+    // Clear the native focus. This ensures that no visible native view has the
+    // focus and that we still receive keyboard inputs.
+    FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager)
+      focus_manager->ClearNativeFocus();
+
+    // Notify assistive technologies of the focus change.
+    AXVirtualView* const focused_virtual_child =
+        view_accessibility_ ? view_accessibility_->FocusedVirtualChild()
+                            : nullptr;
+    if (focused_virtual_child) {
+      focused_virtual_child->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+    } else {
+      NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+    }
+  }
+
   // If this is the contents root of a |ScrollView|, focus should bring the
   // |ScrollView| to visible rather than resetting its content scroll position.
-  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
-  if (scroll_view)
+  ScrollView* const scroll_view = ScrollView::GetScrollViewForContents(this);
+  if (scroll_view) {
     scroll_view->ScrollViewToVisible();
-  else
+  } else {
     ScrollViewToVisible();
+  }
 
   for (ViewObserver& observer : observers_)
     observer.OnViewFocused(this);
@@ -2423,8 +2464,10 @@ void View::PaintFromPaintRoot(const ui::PaintContext& parent_context) {
   PaintInfo paint_info = PaintInfo::CreateRootPaintInfo(
       parent_context, layer() ? layer()->size() : size());
   Paint(paint_info);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDrawViewBoundsRects))
+  static bool draw_view_bounds_rects =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDrawViewBoundsRects);
+  if (draw_view_bounds_rects)
     PaintDebugRects(paint_info);
 }
 
@@ -2472,7 +2515,7 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
 void View::AddChildViewAtImpl(View* view, int index) {
   CHECK_NE(view, this) << "You cannot add a view as its own child";
   DCHECK_GE(index, 0);
-  DCHECK_LE(size_t{index}, children_.size());
+  DCHECK_LE(static_cast<size_t>(index), children_.size());
 
   // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
   View* parent = view->parent_;
@@ -2960,7 +3003,7 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
                             ? GetDragOperations(event.location())
                             : 0;
   ContextMenuController* context_menu_controller =
-      event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
+      event.IsRightMouseButton() ? context_menu_controller_.get() : nullptr;
   View::DragInfo* drag_info = GetDragInfo();
 
   const bool was_enabled = GetEnabled();

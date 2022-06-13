@@ -10,9 +10,11 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/mac/foundation_util.h"
+#import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -25,7 +27,7 @@ const int kFileTypePopupTag = 1234;
 CFStringRef CreateUTIFromExtension(const base::FilePath::StringType& ext) {
   base::ScopedCFTypeRef<CFStringRef> ext_cf(base::SysUTF8ToCFStringRef(ext));
   return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
-                                               ext_cf.get(), NULL);
+                                               ext_cf.get(), nullptr);
 }
 
 NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
@@ -45,39 +47,116 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
 }
 
 base::scoped_nsobject<NSView> CreateAccessoryView() {
-  static constexpr CGFloat kControlPadding = 2;
-
-  base::scoped_nsobject<NSView> view(
-      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 350, 60)]);
-
-  // Create the label and center it vertically.
+  // The label. Add attributes per-OS to match the labels that macOS uses.
   NSTextField* label = [TextFieldUtils
       labelWithString:l10n_util::GetNSString(
                           IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC)];
-  [label sizeToFit];
-  NSRect label_frame = [label frame];
-  label_frame.origin =
-      NSMakePoint(kControlPadding, NSMidY([view frame]) - NSMidY(label_frame));
-  [label setFrame:label_frame];
-  [view addSubview:label];
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  if (base::mac::IsAtLeastOS10_14())
+    label.textColor = NSColor.secondaryLabelColor;
+  if (base::mac::IsAtLeastOS11())
+    label.font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 
-  // Create the pop-up button, positioning it to the right of the label.
-  // Its X position needs to be slightly below the label's, so that the text
-  // baselines are aligned.
-  base::scoped_nsobject<NSPopUpButton> pop_up_button([[NSPopUpButton alloc]
-      initWithFrame:NSMakeRect(NSWidth(label_frame) + kControlPadding,
-                               NSMinY(label_frame) - 5, 230, 25)
-          pullsDown:NO]);
-  [pop_up_button setTag:kFileTypePopupTag];
-  [view addSubview:pop_up_button.get()];
+  // The popup.
+  NSPopUpButton* popup = [[[NSPopUpButton alloc] initWithFrame:NSZeroRect
+                                                     pullsDown:NO] autorelease];
+  popup.translatesAutoresizingMaskIntoConstraints = NO;
+  popup.tag = kFileTypePopupTag;
 
-  // Resize the containing view to fit the controls.
-  CGFloat total_width = NSMaxX([pop_up_button frame]);
-  NSRect view_frame = [view frame];
-  view_frame.size.width = total_width + kControlPadding;
-  [view setFrame:view_frame];
+  // A view to group the label and popup together. The top-level view used as
+  // the accessory view will be stretched horizontally to match the width of
+  // the dialog, and the label and popup need to be grouped together as one
+  // view to do centering within it, so use a view to group the label and
+  // popup.
+  NSView* group = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
+  group.translatesAutoresizingMaskIntoConstraints = NO;
+  [group addSubview:label];
+  [group addSubview:popup];
 
-  return view;
+  // This top-level view will be forced by the system to have the width of the
+  // save dialog.
+  base::scoped_nsobject<NSView> scoped_view(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  NSView* view = scoped_view.get();
+  view.translatesAutoresizingMaskIntoConstraints = NO;
+  [view addSubview:group];
+
+  NSMutableArray* constraints = [NSMutableArray array];
+
+  // The required constraints for the group, instantiated top-to-bottom:
+  // ┌───────────────────┐
+  // │             ↕︎     │
+  // │ ↔︎ label ↔︎ popup ↔︎ │
+  // │             ↕︎     │
+  // └───────────────────┘
+
+  // Top.
+  [constraints
+      addObject:[popup.topAnchor constraintEqualToAnchor:group.topAnchor
+                                                constant:10]];
+
+  // Leading.
+  [constraints
+      addObject:[label.leadingAnchor constraintEqualToAnchor:group.leadingAnchor
+                                                    constant:10]];
+
+  // Horizontal and vertical baseline between the label and popup.
+  CGFloat labelPopupPadding;
+  if (base::mac::IsAtLeastOS11())
+    labelPopupPadding = 8;
+  else
+    labelPopupPadding = 5;
+  [constraints addObject:[popup.leadingAnchor
+                             constraintEqualToAnchor:label.trailingAnchor
+                                            constant:labelPopupPadding]];
+  [constraints
+      addObject:[popup.firstBaselineAnchor
+                    constraintEqualToAnchor:label.firstBaselineAnchor]];
+
+  // Trailing.
+  [constraints addObject:[group.trailingAnchor
+                             constraintEqualToAnchor:popup.trailingAnchor
+                                            constant:10]];
+
+  // Bottom.
+  [constraints
+      addObject:[group.bottomAnchor constraintEqualToAnchor:popup.bottomAnchor
+                                                   constant:10]];
+
+  // Then the constraints centering the group in the accessory view. Vertical
+  // spacing is fully specified, but as the horizontal size of the accessory
+  // view will be forced to conform to the save dialog, only specify horizontal
+  // centering.
+  // ┌──────────────┐
+  // │      ↕︎       │
+  // │   ↔group↔︎    │
+  // │      ↕︎       │
+  // └──────────────┘
+
+  // Top.
+  [constraints
+      addObject:[group.topAnchor constraintEqualToAnchor:view.topAnchor]];
+
+  // Centering.
+  [constraints addObject:[group.centerXAnchor
+                             constraintEqualToAnchor:view.centerXAnchor]];
+
+  // Bottom.
+  [constraints
+      addObject:[view.bottomAnchor constraintEqualToAnchor:group.bottomAnchor]];
+
+  // Maybe minimum width (through macOS 10.12).
+  if (base::mac::IsAtMostOS10_12()) {
+    // Through macOS 10.12, the file dialog didn't properly constrain the width
+    // of the accessory view. Therefore, add in a "can you please make this at
+    // least so big" constraint in so it doesn't collapse width-wise.
+    [constraints addObject:[view.widthAnchor
+                               constraintGreaterThanOrEqualToConstant:400]];
+  }
+
+  [NSLayoutConstraint activateConstraints:constraints];
+
+  return scoped_view;
 }
 
 NSSavePanel* g_last_created_panel_for_testing = nil;
@@ -108,10 +187,6 @@ NSSavePanel* g_last_created_panel_for_testing = nil;
 @end
 
 @implementation SelectFileDialogDelegate
-
-- (BOOL)panel:(id)sender shouldEnableURL:(NSURL*)url {
-  return [url isFileURL];
-}
 
 - (BOOL)panel:(id)sender validateURL:(NSURL*)url error:(NSError**)outError {
   // Refuse to accept users closing the dialog with a key repeat, since the key
@@ -179,6 +254,14 @@ void SelectFileDialogBridge::Show(
     int file_type_index,
     const base::FilePath::StringType& default_extension,
     PanelEndedCallback initialize_callback) {
+  // Never consider the current WatchHangsInScope as hung. There was most likely
+  // one created in ThreadControllerWithMessagePumpImpl::DoWork(). The current
+  // hang watching deadline is not valid since the user can take unbounded time
+  // to select a file. HangWatching will resume when the next task
+  // or event is pumped in MessagePumpCFRunLoop so there is no need to
+  // reactivate it. You can see the function comments for more details.
+  base::HangWatcher::InvalidateActiveExpectations();
+
   show_callback_ = std::move(initialize_callback);
   type_ = type;
   // Note: we need to retain the dialog as |owning_window_| can be null.
@@ -214,8 +297,9 @@ void SelectFileDialogBridge::Show(
       type_ != SelectFileDialogType::kUploadFolder &&
       type_ != SelectFileDialogType::kExistingFolder) {
     if (file_types) {
-      SetAccessoryView(std::move(file_types), file_type_index,
-                       default_extension);
+      SetAccessoryView(
+          std::move(file_types), file_type_index, default_extension,
+          /*is_save_panel=*/type_ == SelectFileDialogType::kSaveAsFile);
     } else {
       // If no type_ info is specified, anything goes.
       [dialog setAllowsOtherFileTypes:YES];
@@ -288,11 +372,11 @@ void SelectFileDialogBridge::Show(
 void SelectFileDialogBridge::SetAccessoryView(
     SelectFileTypeInfoPtr file_types,
     int file_type_index,
-    const base::FilePath::StringType& default_extension) {
+    const base::FilePath::StringType& default_extension,
+    bool is_save_panel) {
   DCHECK(file_types);
   base::scoped_nsobject<NSView> accessory_view = CreateAccessoryView();
   NSSavePanel* dialog = panel_.get();
-  [dialog setAccessoryView:accessory_view.get()];
 
   NSPopUpButton* popup = [accessory_view viewWithTag:kFileTypePopupTag];
   DCHECK(popup);
@@ -351,8 +435,13 @@ void SelectFileDialogBridge::SetAccessoryView(
   }
 
   if (file_types->include_all_files || file_types->extensions.empty()) {
-    [popup addItemWithTitle:l10n_util::GetNSString(IDS_APP_SAVEAS_ALL_FILES)];
-    [dialog setAllowsOtherFileTypes:YES];
+    dialog.allowsOtherFileTypes = YES;
+    // If "all files" is specified for a save panel, allow the user to add an
+    // alternate non-suggested extension, but don't add it to the popup. It
+    // makes no sense to save as an "all files" file type.
+    if (!is_save_panel) {
+      [popup addItemWithTitle:l10n_util::GetNSString(IDS_APP_SAVEAS_ALL_FILES)];
+    }
   }
 
   extension_dropdown_handler_.reset([[ExtensionDropdownHandler alloc]
@@ -380,6 +469,10 @@ void SelectFileDialogBridge::SetAccessoryView(
     [popup selectItemAtIndex:0];
     [extension_dropdown_handler_ popupAction:popup];
   }
+
+  // There's no need for a popup unless there are at least two choices.
+  if (popup.numberOfItems >= 2)
+    dialog.accessoryView = accessory_view.get();
 }
 
 void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
@@ -390,8 +483,9 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
   std::vector<base::FilePath> paths;
   if (!did_cancel) {
     if (type_ == SelectFileDialogType::kSaveAsFile) {
-      if ([[panel_ URL] isFileURL]) {
-        paths.push_back(base::mac::NSStringToFilePath([[panel_ URL] path]));
+      NSURL* url = [panel_ URL];
+      if ([url isFileURL]) {
+        paths.push_back(base::mac::NSStringToFilePath([url path]));
       }
 
       NSView* accessoryView = [panel_ accessoryView];
@@ -408,7 +502,7 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
       NSArray* urls = [static_cast<NSOpenPanel*>(panel_) URLs];
       for (NSURL* url in urls)
         if ([url isFileURL])
-          paths.push_back(base::FilePath(base::SysNSStringToUTF8([url path])));
+          paths.push_back(base::mac::NSStringToFilePath([url path]));
     }
   }
 

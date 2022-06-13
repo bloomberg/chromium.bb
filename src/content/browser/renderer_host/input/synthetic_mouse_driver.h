@@ -5,15 +5,17 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_MOUSE_DRIVER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_MOUSE_DRIVER_H_
 
-#include "base/macros.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
-#include "content/common/content_export.h"
 
 namespace content {
 
-class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
+class SyntheticMouseDriver : public SyntheticPointerDriver {
  public:
   SyntheticMouseDriver();
+
+  SyntheticMouseDriver(const SyntheticMouseDriver&) = delete;
+  SyntheticMouseDriver& operator=(const SyntheticMouseDriver&) = delete;
+
   ~SyntheticMouseDriver() override;
 
   void DispatchEvent(SyntheticGestureTarget* target,
@@ -44,7 +46,9 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
             float force = 0.5,
             float tangential_pressure = 0.f,
             int tilt_x = 0,
-            int tilt_y = 0) override;
+            int tilt_y = 0,
+            SyntheticPointerActionParams::Button button =
+                SyntheticPointerActionParams::Button::NO_BUTTON) override;
   void Release(int index = 0,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT,
@@ -71,8 +75,6 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   base::TimeTicks last_mouse_click_time_ = base::TimeTicks::Now();
   float last_x_ = 0;
   float last_y_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticMouseDriver);
 };
 
 }  // namespace content

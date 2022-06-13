@@ -10,19 +10,22 @@
 
 #include "components/browsing_data/content/shared_worker_helper.h"
 
+namespace blink {
+class StorageKey;
+}  // namespace blink
+
 namespace content {
 class BrowserContext;
 }
-
-namespace storage {
-class StorageKey;
-}  // namespace storage
 
 namespace browsing_data {
 
 class MockSharedWorkerHelper : public SharedWorkerHelper {
  public:
   explicit MockSharedWorkerHelper(content::BrowserContext* browser_context);
+
+  MockSharedWorkerHelper(const MockSharedWorkerHelper&) = delete;
+  MockSharedWorkerHelper& operator=(const MockSharedWorkerHelper&) = delete;
 
   // Adds some shared worker samples.
   void AddSharedWorkerSamples();
@@ -41,7 +44,7 @@ class MockSharedWorkerHelper : public SharedWorkerHelper {
   void StartFetching(FetchCallback callback) override;
   void DeleteSharedWorker(const GURL& worker,
                           const std::string& name,
-                          const storage::StorageKey& storage_key) override;
+                          const blink::StorageKey& storage_key) override;
 
  private:
   ~MockSharedWorkerHelper() override;
@@ -49,8 +52,6 @@ class MockSharedWorkerHelper : public SharedWorkerHelper {
   FetchCallback callback_;
   std::map<SharedWorkerInfo, bool> workers_;
   std::list<SharedWorkerInfo> response_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSharedWorkerHelper);
 };
 
 }  // namespace browsing_data

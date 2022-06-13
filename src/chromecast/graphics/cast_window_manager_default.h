@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chromecast/graphics/cast_window_manager.h"
 
 namespace chromecast {
@@ -15,6 +14,10 @@ namespace chromecast {
 class CastWindowManagerDefault : public CastWindowManager {
  public:
   CastWindowManagerDefault();
+
+  CastWindowManagerDefault(const CastWindowManagerDefault&) = delete;
+  CastWindowManagerDefault& operator=(const CastWindowManagerDefault&) = delete;
+
   ~CastWindowManagerDefault() override;
 
   // CastWindowManager implementation:
@@ -37,9 +40,6 @@ class CastWindowManagerDefault : public CastWindowManager {
       CastTouchActivityObserver* observer) override;
   void SetEnableRoundedCorners(bool enable) override;
   void NotifyColorInversionEnabled(bool enabled) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastWindowManagerDefault);
 };
 
 }  // namespace chromecast

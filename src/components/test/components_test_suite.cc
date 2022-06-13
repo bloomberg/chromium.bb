@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -33,10 +33,6 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/unittest_test_suite.h"
 #include "ui/gl/test/gl_surface_test_support.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
 #endif
 
 namespace {
@@ -90,7 +86,7 @@ class ComponentsTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_path);
 #else
-    base::PathService::Get(base::DIR_MODULE, &pak_path);
+    base::PathService::Get(base::DIR_ASSETS, &pak_path);
 #endif
 
     base::FilePath ui_test_pak_path;
@@ -99,7 +95,7 @@ class ComponentsTestSuite : public base::TestSuite {
 
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_path.AppendASCII("components_tests_resources.pak"),
-        ui::SCALE_FACTOR_NONE);
+        ui::kScaleFactorNone);
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,
@@ -110,10 +106,6 @@ class ComponentsTestSuite : public base::TestSuite {
     ui::ResourceBundle::CleanupSharedInstance();
     base::TestSuite::Shutdown();
   }
-
-#if defined(OS_WIN)
-  base::win::ScopedCOMInitializer com_initializer_;
-#endif
 };
 
 class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {

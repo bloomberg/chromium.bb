@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/ash/shelf/app_service/exo_app_type_resolver.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/constants/app_types.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/ui/base/window_properties.h"
-#include "components/arc/arc_util.h"
+#include "components/app_restore/app_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "components/exo/permission.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/class_property.h"
 
@@ -30,6 +31,9 @@ void ExoAppTypeResolver::PopulateProperties(
   if (IsLacrosAppId(params.app_id)) {
     out_properties_container.SetProperty(
         aura::client::kAppType, static_cast<int>(ash::AppType::LACROS));
+    // Make sure Lacros is treated as opaque for occlusion tracking purposes.
+    out_properties_container.SetProperty(
+        chromeos::kWindowManagerManagesOpacityKey, true);
     // Lacros is trusted not to abuse window activation, so grant it a
     // non-expiring permission to activate.
     out_properties_container.SetProperty(
@@ -46,19 +50,35 @@ void ExoAppTypeResolver::PopulateProperties(
                                          false);
   }
 
-  int task_id = arc::GetTaskIdFromWindowAppId(params.app_id);
-  if (task_id == arc::kNoTaskId)
+  auto task_id = arc::GetTaskIdFromWindowAppId(params.app_id);
+  auto session_id = arc::GetSessionIdFromWindowAppId(params.app_id);
+
+  // If neither |task_id| nor |session_id| are valid, this is not an ARC window.
+  if (!task_id.has_value() && !session_id.has_value())
     return;
 
   out_properties_container.SetProperty(aura::client::kAppType,
                                        static_cast<int>(ash::AppType::ARC_APP));
-  out_properties_container.SetProperty(full_restore::kWindowIdKey, task_id);
-  int32_t restore_window_id = full_restore::GetArcRestoreWindowId(task_id);
-  out_properties_container.SetProperty(full_restore::kRestoreWindowIdKey,
+
+  if (task_id.has_value())
+    out_properties_container.SetProperty(app_restore::kWindowIdKey, *task_id);
+
+  int32_t restore_window_id = 0;
+  if (task_id.has_value()) {
+    restore_window_id = app_restore::GetArcRestoreWindowIdForTaskId(*task_id);
+  } else {
+    DCHECK(session_id.has_value());
+    out_properties_container.SetProperty(app_restore::kGhostWindowSessionIdKey,
+                                         *session_id);
+    restore_window_id =
+        app_restore::GetArcRestoreWindowIdForSessionId(*session_id);
+  }
+
+  out_properties_container.SetProperty(app_restore::kRestoreWindowIdKey,
                                        restore_window_id);
 
-  if (restore_window_id == full_restore::kParentToHiddenContainer) {
+  if (restore_window_id == app_restore::kParentToHiddenContainer) {
     out_properties_container.SetProperty(
-        full_restore::kParentToHiddenContainerKey, true);
+        app_restore::kParentToHiddenContainerKey, true);
   }
 }

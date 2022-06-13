@@ -47,10 +47,13 @@
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 #import "net/base/mac/url_conversions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
@@ -167,13 +170,13 @@ using autofill::FieldRendererId;
   web::WebFrame* frame =
       web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
   autofill::AutofillJavaScriptFeature::GetInstance()
-      ->ClearAutofilledFieldsForFormName(
-          frame, formName, _lastFormActivityUniqueFormID, fieldIdentifier,
-          _lastFormActivityUniqueFieldID, base::BindOnce(^(NSString*) {
-            if (completionHandler) {
-              completionHandler();
-            }
-          }));
+      ->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
+                                     _lastFormActivityUniqueFieldID,
+                                     base::BindOnce(^(NSString*) {
+                                       if (completionHandler) {
+                                         completionHandler();
+                                       }
+                                     }));
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
@@ -616,23 +619,32 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
-                                  URL:(const GURL&)URL {
+                                  URL:(const GURL&)URL
+                             username:(const std::u16string&)username {
+  CWVPasswordLeakType cwvLeakType = 0;
+  if (password_manager::IsPasswordSaved(leakType)) {
+    cwvLeakType |= CWVPasswordLeakTypeSaved;
+  }
+  if (password_manager::IsPasswordUsedOnOtherSites(leakType)) {
+    cwvLeakType |= CWVPasswordLeakTypeUsedOnOtherSites;
+  }
+  if (password_manager::IsSyncingPasswordsNormally(leakType)) {
+    cwvLeakType |= CWVPasswordLeakTypeSyncingNormally;
+  }
   if ([self.delegate
           respondsToSelector:@selector(autofillController:
                                  notifyUserOfPasswordLeakOnURL:leakType:)]) {
-    CWVPasswordLeakType cwvLeakType = 0;
-    if (password_manager::IsPasswordSaved(leakType)) {
-      cwvLeakType |= CWVPasswordLeakTypeSaved;
-    }
-    if (password_manager::IsPasswordUsedOnOtherSites(leakType)) {
-      cwvLeakType |= CWVPasswordLeakTypeUsedOnOtherSites;
-    }
-    if (password_manager::IsSyncingPasswordsNormally(leakType)) {
-      cwvLeakType |= CWVPasswordLeakTypeSyncingNormally;
-    }
     [self.delegate autofillController:self
         notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(URL)
                              leakType:cwvLeakType];
+  }
+  if ([self.delegate respondsToSelector:@selector
+                     (autofillController:
+                         notifyUserOfPasswordLeakOnURL:leakType:username:)]) {
+    [self.delegate autofillController:self
+        notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(URL)
+                             leakType:cwvLeakType
+                             username:base::SysUTF16ToNSString(username)];
   }
 }
 

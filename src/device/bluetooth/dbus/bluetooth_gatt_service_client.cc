@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "dbus/bus.h"
@@ -33,6 +32,11 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
                                        public dbus::ObjectManager::Interface {
  public:
   BluetoothGattServiceClientImpl() : object_manager_(nullptr) {}
+
+  BluetoothGattServiceClientImpl(const BluetoothGattServiceClientImpl&) =
+      delete;
+  BluetoothGattServiceClientImpl& operator=(
+      const BluetoothGattServiceClientImpl&) = delete;
 
   ~BluetoothGattServiceClientImpl() override {
     object_manager_->UnregisterInterface(
@@ -127,8 +131,6 @@ class BluetoothGattServiceClientImpl : public BluetoothGattServiceClient,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothGattServiceClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattServiceClientImpl);
 };
 
 BluetoothGattServiceClient::BluetoothGattServiceClient() = default;

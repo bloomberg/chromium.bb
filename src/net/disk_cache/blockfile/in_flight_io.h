@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/check.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -31,6 +31,9 @@ class BackgroundIO : public base::RefCountedThreadSafe<BackgroundIO> {
   // (we do NOT invoke the callback), in the worker thead that completed the
   // operation.
   explicit BackgroundIO(InFlightIO* controller);
+
+  BackgroundIO(const BackgroundIO&) = delete;
+  BackgroundIO& operator=(const BackgroundIO&) = delete;
 
   // This method signals the controller that this operation is finished, in the
   // original thread. In practice, this is a RunableMethod that allows
@@ -65,10 +68,9 @@ class BackgroundIO : public base::RefCountedThreadSafe<BackgroundIO> {
 
   // An event to signal when the operation completes.
   base::WaitableEvent io_completed_;
-  InFlightIO* controller_;  // The controller that tracks all operations.
+  raw_ptr<InFlightIO>
+      controller_;              // The controller that tracks all operations.
   base::Lock controller_lock_;  // A lock protecting clearing of controller_.
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundIO);
 };
 
 // This class keeps track of asynchronous IO operations. A single instance
@@ -96,6 +98,10 @@ class BackgroundIO : public base::RefCountedThreadSafe<BackgroundIO> {
 class InFlightIO {
  public:
   InFlightIO();
+
+  InFlightIO(const InFlightIO&) = delete;
+  InFlightIO& operator=(const InFlightIO&) = delete;
+
   virtual ~InFlightIO();
 
   // Blocks the current thread until all IO operations tracked by this object
@@ -135,8 +141,6 @@ class InFlightIO {
 #if DCHECK_IS_ON()
   bool single_thread_ = false;  // True if we only have one thread.
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(InFlightIO);
 };
 
 }  // namespace disk_cache

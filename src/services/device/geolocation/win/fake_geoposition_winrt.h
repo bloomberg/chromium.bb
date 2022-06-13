@@ -11,8 +11,6 @@
 #include <wrl/implements.h>
 #include <memory>
 
-#include "base/macros.h"
-
 namespace device {
 
 struct FakeGeocoordinateData;
@@ -25,6 +23,10 @@ class FakeGeoposition
  public:
   explicit FakeGeoposition(
       std::unique_ptr<FakeGeocoordinateData> position_data);
+
+  FakeGeoposition(const FakeGeoposition&) = delete;
+  FakeGeoposition& operator=(const FakeGeoposition&) = delete;
+
   ~FakeGeoposition() override;
   IFACEMETHODIMP get_Coordinate(
       ABI::Windows::Devices::Geolocation::IGeocoordinate** value) override;
@@ -33,7 +35,6 @@ class FakeGeoposition
 
  private:
   std::unique_ptr<FakeGeocoordinateData> position_data_;
-  DISALLOW_COPY_AND_ASSIGN(FakeGeoposition);
 };
 
 }  // namespace device

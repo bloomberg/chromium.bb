@@ -12,7 +12,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -36,6 +36,10 @@ class NetworkLocationProvider : public LocationProvider,
       const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       const std::string& api_key,
       PositionCache* position_cache);
+
+  NetworkLocationProvider(const NetworkLocationProvider&) = delete;
+  NetworkLocationProvider& operator=(const NetworkLocationProvider&) = delete;
+
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
@@ -65,7 +69,7 @@ class NetworkLocationProvider : public LocationProvider,
 
   // The wifi data provider, acquired via global factories. Valid between
   // StartProvider() and StopProvider(), and checked via IsStarted().
-  WifiDataProviderManager* wifi_data_provider_manager_;
+  raw_ptr<WifiDataProviderManager> wifi_data_provider_manager_;
 
   WifiDataProviderManager::WifiDataUpdateCallback wifi_data_update_callback_;
 
@@ -86,7 +90,7 @@ class NetworkLocationProvider : public LocationProvider,
   // The timestamp for the latest wifi data update.
   base::Time wifi_timestamp_;
 
-  PositionCache* const position_cache_;
+  const raw_ptr<PositionCache> position_cache_;
 
   LocationProvider::LocationProviderUpdateCallback
       location_provider_update_callback_;
@@ -106,8 +110,6 @@ class NetworkLocationProvider : public LocationProvider,
   bool is_awaiting_initial_permission_status_ = true;
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkLocationProvider);
 };
 
 }  // namespace device

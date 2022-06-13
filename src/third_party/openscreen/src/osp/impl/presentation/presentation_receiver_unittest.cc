@@ -138,14 +138,13 @@ TEST_F(PresentationReceiverTest, QueryAvailability) {
 
   msgs::PresentationUrlAvailabilityResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(
-          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                             msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size, Clock::time_point now) {
-            ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
-                buffer, buffer_size, &response);
-            return result;
-          }));
+      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type, const uint8_t* buf,
+                                   size_t buffer_size, Clock::time_point now) {
+        ssize_t result = msgs::DecodePresentationUrlAvailabilityResponse(
+            buf, buffer_size, &response);
+        return result;
+      }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(request.request_id, response.request_id);
   EXPECT_EQ(
@@ -186,14 +185,13 @@ TEST_F(PresentationReceiverTest, StartPresentation) {
                                          ResponseResult::kSuccess);
   msgs::PresentationStartResponse response;
   EXPECT_CALL(mock_callback, OnStreamMessage(_, _, _, _, _, _))
-      .WillOnce(
-          Invoke([&response](uint64_t endpoint_id, uint64_t cid,
-                             msgs::Type message_type, const uint8_t* buffer,
-                             size_t buffer_size, Clock::time_point now) {
-            ssize_t result = msgs::DecodePresentationStartResponse(
-                buffer, buffer_size, &response);
-            return result;
-          }));
+      .WillOnce(Invoke([&response](uint64_t endpoint_id, uint64_t cid,
+                                   msgs::Type message_type, const uint8_t* buf,
+                                   size_t buf_size, Clock::time_point now) {
+        ssize_t result =
+            msgs::DecodePresentationStartResponse(buf, buf_size, &response);
+        return result;
+      }));
   quic_bridge_->RunTasksUntilIdle();
   EXPECT_EQ(msgs::Result::kSuccess, response.result);
   EXPECT_EQ(connection.connection_id(), response.connection_id);

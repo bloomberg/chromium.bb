@@ -56,15 +56,15 @@
 }
 
 .filter-bitset-filter span {
+  color: var(--color-text-primary);
   display: inline-block;
   flex: none;
   margin: auto 2px;
   padding: 3px;
   background: transparent;
-  text-shadow: rgb(255 255 255 / 50%) 0 1px 0; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
   border-radius: 6px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .filter-bitset-filter span:focus-visible {
@@ -72,36 +72,20 @@
 }
 
 .filter-bitset-filter-divider {
-  background-color: #ccc; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background-color: var(--color-details-hairline);
   height: 16px;
   width: 1px;
   margin: auto 2px;
   display: inline-block;
 }
 
-.filter-bitset-filter span.selected,
-.filter-bitset-filter span:hover,
-.filter-bitset-filter span:active {
-  color: #fff; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-  text-shadow: rgb(0 0 0 / 40%) 0 1px 0; /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-}
-
 .filter-bitset-filter span:hover {
-  background: rgb(0 0 0 / 20%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--color-background-elevation-2);
 }
 
-.filter-bitset-filter span.selected {
-  background: rgb(0 0 0 / 30%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
-}
-
+.filter-bitset-filter span.selected,
 .filter-bitset-filter span:active {
-  background: rgb(0 0 0 / 50%); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--color-background-highlight);
 }
 
 .filter-checkbox-filter {
@@ -116,7 +100,7 @@
   position: relative;
 }
 
-.filter-checkbox-filter > [is=dt-checkbox] {
+.filter-checkbox-filter > [is="dt-checkbox"] {
   display: flex;
   margin: auto 0;
 }
@@ -152,6 +136,7 @@
   opacity: 70%;
   height: 16px;
   margin-top: 1px;
+  cursor: pointer;
 }
 
 .filter-cancel-button {
@@ -179,6 +164,7 @@
     forced-color-adjust: none;
     background: ButtonFace;
     box-shadow: var(--legacy-focus-ring-inactive-shadow);
+    color: fieldtext;
   }
 
   .filter-input-container:hover,

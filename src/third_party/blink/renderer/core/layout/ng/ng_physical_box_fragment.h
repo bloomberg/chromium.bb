@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 
 #include "base/dcheck_is_on.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -35,8 +36,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                                const absl::optional<PhysicalRect>
                                    updated_layout_overflow = absl::nullopt);
 
-  using MulticolCollection =
-      HashMap<LayoutBox*, NGMulticolWithPendingOOFs<PhysicalOffset>>;
   using PassKey = base::PassKey<NGPhysicalBoxFragment>;
   NGPhysicalBoxFragment(PassKey,
                         NGBoxFragmentBuilder* builder,
@@ -57,8 +56,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         const PhysicalRect& layout_overflow,
                         bool recalculate_layout_overflow);
 
-  scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
-
   ~NGPhysicalBoxFragment() {
     ink_overflow_.Reset(InkOverflowType());
     if (const_has_fragment_items_)
@@ -72,6 +69,20 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       }
     }
   }
+
+#if DCHECK_IS_ON()
+  class AllowPostLayoutScope {
+    STACK_ALLOCATED();
+
+   public:
+    AllowPostLayoutScope();
+    ~AllowPostLayoutScope();
+    static bool IsAllowed() { return allow_count_; }
+
+   private:
+    static unsigned allow_count_;
+  };
+#endif
 
   const NGPhysicalBoxFragment* PostLayout() const;
 
@@ -164,6 +175,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return *ComputeLayoutOverflowAddress();
   }
 
+  bool HasLayoutOverflow() const { return has_layout_overflow_; }
+
   const NGPhysicalBoxStrut Borders() const {
     if (!has_borders_)
       return NGPhysicalBoxStrut();
@@ -188,44 +201,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     if (!has_inflow_bounds_)
       return absl::nullopt;
     return *ComputeInflowBoundsAddress();
-  }
-
-  bool HasOutOfFlowPositionedFragmentainerDescendants() const {
-    if (!const_has_rare_data_)
-      return false;
-
-    return !ComputeRareDataAddress()
-                ->oof_positioned_fragmentainer_descendants.IsEmpty();
-  }
-
-  base::span<NGPhysicalOOFNodeForFragmentation>
-  OutOfFlowPositionedFragmentainerDescendants() const {
-    if (!const_has_rare_data_)
-      return base::span<NGPhysicalOOFNodeForFragmentation>();
-    Vector<NGPhysicalOOFNodeForFragmentation>& descendants =
-        const_cast<Vector<NGPhysicalOOFNodeForFragmentation>&>(
-            ComputeRareDataAddress()->oof_positioned_fragmentainer_descendants);
-    return {descendants.data(), descendants.size()};
-  }
-
-  bool HasMulticolsWithPendingOOFs() const {
-    if (!const_has_rare_data_)
-      return false;
-
-    return !ComputeRareDataAddress()->multicols_with_pending_oofs.IsEmpty();
-  }
-
-  MulticolCollection MulticolsWithPendingOOFs() const {
-    if (!const_has_rare_data_)
-      return MulticolCollection();
-    return const_cast<MulticolCollection&>(
-        ComputeRareDataAddress()->multicols_with_pending_oofs);
-  }
-
-  NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
-    if (!has_padding_)
-      return NGPixelSnappedPhysicalBoxStrut();
-    return ComputePaddingAddress()->SnapToDevicePixels();
   }
 
   // Return true if this is either a container that establishes an inline
@@ -286,7 +261,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
       const PhysicalOffset& location,
       const NGBlockBreakToken* incoming_break_token,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize) const;
-  LayoutSize PixelSnappedScrolledContentOffset() const;
+  gfx::Vector2d PixelSnappedScrolledContentOffset() const;
   PhysicalSize ScrollSize() const;
 
   NGInkOverflow::Type InkOverflowType() const {
@@ -355,7 +330,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return PhysicalBoxSides(include_border_top_, include_border_right_,
                             include_border_bottom_, include_border_left_);
   }
-  NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
   // Return true if this is the first fragment generated from a node.
   bool IsFirstForNode() const { return is_first_for_node_; }
@@ -368,10 +342,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return has_descendants_for_table_part_;
   }
 
-  // Returns true if we have a descendant within this formatting context, which
-  // is potentially above our block-start edge.
-  bool MayHaveDescendantAboveBlockStart() const {
-    return may_have_descendant_above_block_start_;
+  bool IsFragmentationContextRoot() const {
+    return is_fragmentation_context_root_;
   }
 
 #if DCHECK_IS_ON()
@@ -426,6 +398,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
 #if DCHECK_IS_ON()
   void InvalidateInkOverflow();
+  void AssertFragmentTreeSelf() const;
+  void AssertFragmentTreeChildren(bool allow_destroyed = false) const;
 #endif
 
  private:
@@ -439,11 +413,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
 
   struct RareData {
     RareData(const RareData&);
-    RareData(NGBoxFragmentBuilder*, PhysicalSize size);
+    explicit RareData(NGBoxFragmentBuilder*);
 
-    Vector<NGPhysicalOOFNodeForFragmentation>
-        oof_positioned_fragmentainer_descendants;
-    MulticolCollection multicols_with_pending_oofs;
     const std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
 
     // TablesNG rare data.
@@ -547,6 +518,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
   const unsigned const_has_rare_data_ : 1;
   unsigned is_first_for_node_ : 1;
   unsigned has_descendants_for_table_part_ : 1;
+  unsigned is_fragmentation_context_root_ : 1;
 
   const wtf_size_t const_num_children_;
 

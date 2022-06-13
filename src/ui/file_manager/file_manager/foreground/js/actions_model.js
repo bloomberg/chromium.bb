@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {ActionModelUI} from './ui/action_model_ui.m.js';
-// #import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.m.js';
-// #import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.m.js';
-// #import {VolumeManager} from '../../externs/volume_manager.m.js';
-// #import {MetadataModel} from './metadata/metadata_model.m.js';
-// #import {VolumeManagerCommon} from '../../common/js/volume_manager_types.m.js';
-// #import {util, str, strf} from '../../common/js/util.m.js';
-// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
-// #import {metrics} from '../../common/js/metrics.m.js';
-// #import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// clang-format on
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {dispatchSimpleEvent} from 'chrome://resources/js/cr.m.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
+import {metrics} from '../../common/js/metrics.js';
+import {str, strf, util} from '../../common/js/util.js';
+import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
+import {DriveSyncHandler} from '../../externs/background/drive_sync_handler.js';
+import {VolumeManager} from '../../externs/volume_manager.js';
+
+import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
+import {MetadataModel} from './metadata/metadata_model.js';
+import {ActionModelUI} from './ui/action_model_ui.js';
 
 /**
  * A single action, that can be taken on a set of entries.
  * @interface
  */
-/* #export */ class Action {
+export class Action {
   /**
    * Executes this action on the set of entries.
    */
@@ -199,13 +199,6 @@ class DriveToggleOfflineAction {
      * @const
      */
     this.onExecute_ = onExecute;
-
-    /**
-     * @private {boolean}
-     * @const
-     */
-    this.containsOnlyHosted_ = metadataModel.getCache(entries, ['hosted'])
-                                   .every(metadata => metadata.hosted);
   }
 
   /**
@@ -254,10 +247,9 @@ class DriveToggleOfflineAction {
           return;
         }
         currentEntry = entries.shift();
-        // Skip hosted files if we cannot pin them.
-        if (this.volumeManager_.getDriveConnectionState().canPinHostedFiles ||
-            !this.metadataModel_.getCache([currentEntry], ['hosted'])[0]
-                 .hosted) {
+        // Skip files we cannot pin.
+        if (this.metadataModel_.getCache([currentEntry], ['canPin'])[0]
+                .canPin) {
           chrome.fileManagerPrivate.pinDriveFile(
               currentEntry, this.value_, steps.entryPinned);
         } else {
@@ -317,8 +309,8 @@ class DriveToggleOfflineAction {
    * @override
    */
   canExecute() {
-    return this.volumeManager_.getDriveConnectionState().canPinHostedFiles ||
-        !this.containsOnlyHosted_;
+    return this.metadataModel_.getCache(this.entries_, ['canPin'])
+        .some(metadata => metadata.canPin);
   }
 
   /**
@@ -655,7 +647,7 @@ class CustomAction {
  * Represents a set of actions for a set of entries. Includes actions set
  * locally in JS, as well as those retrieved from the FSP API.
  */
-/* #export */ class ActionsModel extends cr.EventTarget {
+export class ActionsModel extends EventTarget {
   /**
    * @param {!VolumeManager} volumeManager
    * @param {!MetadataModel} metadataModel
@@ -882,7 +874,7 @@ class CustomAction {
       this.initializePromise_ = null;
       reject();
     }
-    cr.dispatchSimpleEvent(this, 'invalidated', true);
+    dispatchSimpleEvent(this, 'invalidated', true);
   }
 
   /**

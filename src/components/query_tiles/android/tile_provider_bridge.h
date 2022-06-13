@@ -6,6 +6,7 @@
 #define COMPONENTS_QUERY_TILES_ANDROID_TILE_PROVIDER_BRIDGE_H_
 
 #include "base/android/jni_android.h"
+#include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
 #include "components/query_tiles/tile_service.h"
 
@@ -25,6 +26,10 @@ class TileProviderBridge : public base::SupportsUserData::Data {
       TileService* tile_service);
 
   explicit TileProviderBridge(TileService* tile_service);
+
+  TileProviderBridge(const TileProviderBridge&) = delete;
+  TileProviderBridge& operator=(const TileProviderBridge&) = delete;
+
   ~TileProviderBridge() override;
 
   // Methods called from Java via JNI.
@@ -42,9 +47,7 @@ class TileProviderBridge : public base::SupportsUserData::Data {
   ScopedJavaGlobalRef<jobject> java_obj_;
 
   // Not owned.
-  TileService* tile_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(TileProviderBridge);
+  raw_ptr<TileService> tile_service_;
 };
 
 }  // namespace query_tiles

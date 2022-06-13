@@ -13,6 +13,14 @@ luci.notifier(
 )
 
 luci.notifier(
+    name = "chrome-lacros-engprod-alerts",
+    on_status_change = True,
+    notify_emails = [
+        "chrome-lacros-engprod-alerts@google.com",
+    ],
+)
+
+luci.notifier(
     name = "chrome-memory-safety",
     on_status_change = True,
     notify_emails = [
@@ -29,6 +37,15 @@ luci.notifier(
 )
 
 luci.notifier(
+    name = "chromium-androidx-packager",
+    on_new_status = ["FAILURE"],
+    notify_emails = [
+        "clank-build-core+androidxfailures@google.com",
+        "clank-library-failures+androidx@google.com",
+    ],
+)
+
+luci.notifier(
     name = "chromium-3pp-packager",
     on_new_status = ["FAILURE"],
     notify_emails = [
@@ -41,14 +58,13 @@ luci.notifier(
     name = "cr-fuchsia",
     on_status_change = True,
     notify_emails = [
-        "cr-fuchsia+bot@chromium.org",
         "chrome-fuchsia-gardener@grotations.appspotmail.com",
     ],
 )
 
 luci.notifier(
     name = "cronet",
-    on_status_change = True,
+    on_occurrence = ["FAILURE", "INFRA_FAILURE"],
     notify_emails = [
         "cronet-sheriff@grotations.appspotmail.com",
     ],
@@ -215,6 +231,14 @@ luci.notifier(
     notify_emails = [
         "pastarmovj@chromium.org",
         "nicolaso@chromium.org",
+    ],
+    on_new_status = ["FAILURE"],
+)
+
+luci.notifier(
+    name = "headless-owners",
+    notify_emails = [
+        "headless-owners@chromium.org",
     ],
     on_new_status = ["FAILURE"],
 )

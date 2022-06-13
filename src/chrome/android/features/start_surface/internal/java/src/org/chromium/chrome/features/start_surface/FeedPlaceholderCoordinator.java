@@ -9,9 +9,11 @@ import android.content.Context;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.start_surface.R;
 
 /** The coordinator to control the feed placeholder view. */
@@ -26,14 +28,24 @@ public class FeedPlaceholderCoordinator {
     public FeedPlaceholderCoordinator(
             Activity activity, ViewGroup parentView, boolean isBackgroundDark) {
         mParentView = parentView;
-        mContext = new ContextThemeWrapper(
-                activity, (isBackgroundDark ? R.style.Dark : R.style.Light));
+        mContext = new ContextThemeWrapper(activity,
+                (isBackgroundDark ? R.style.ThemeOverlay_Feed_Dark
+                                  : R.style.ThemeOverlay_Feed_Light));
     }
 
     public void setUpPlaceholderView() {
         mFeedPlaceholderView = (FeedPlaceholderLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.feed_placeholder_layout, null, false);
+        // Header blank size should be consistent with
+        // R.layout.new_tab_page_snippets_expandable_header_with_menu.
+        mFeedPlaceholderView.setBlankHeaderHeight(mContext.getResources().getDimensionPixelSize(
+                R.dimen.snippets_article_header_menu_size));
         mParentView.addView(mFeedPlaceholderView);
+        MarginLayoutParams lp = (MarginLayoutParams) mFeedPlaceholderView.getLayoutParams();
+        int contentPadding = mContext.getResources().getDimensionPixelSize(
+                R.dimen.content_suggestions_card_modern_padding);
+        lp.setMargins(contentPadding, 0, contentPadding, 0);
+        mFeedPlaceholderView.requestLayout();
     }
 
     public void destroy() {

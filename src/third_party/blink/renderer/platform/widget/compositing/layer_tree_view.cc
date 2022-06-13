@@ -15,8 +15,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -32,6 +32,8 @@
 #include "cc/metrics/web_vital_metrics.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
+#include "cc/trees/paint_holding_reason.h"
+#include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
@@ -88,9 +90,7 @@ void LayerTreeView::Initialize(
     const cc::LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
-    cc::TaskGraphRunner* task_graph_runner,
-    gfx::RenderingPipeline* main_thread_pipeline,
-    gfx::RenderingPipeline* compositor_thread_pipeline) {
+    cc::TaskGraphRunner* task_graph_runner) {
   DCHECK(delegate_);
   const bool is_threaded = !!compositor_thread;
 
@@ -103,8 +103,6 @@ void LayerTreeView::Initialize(
   params.mutator_host = animation_host_.get();
   params.dark_mode_filter = dark_mode_filter_.get();
   params.ukm_recorder_factory = std::make_unique<UkmRecorderFactoryImpl>();
-  params.main_thread_pipeline = main_thread_pipeline;
-  params.compositor_thread_pipeline = compositor_thread_pipeline;
   if (base::ThreadPoolInstance::Get()) {
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
@@ -128,6 +126,7 @@ void LayerTreeView::Disconnect() {
   DCHECK(delegate_);
   // Drop compositor resources immediately, while keeping the compositor alive
   // until after this class is destroyed.
+  layer_tree_host_->WaitForCommitCompletion();
   layer_tree_host_->SetVisible(false);
   layer_tree_host_->ReleaseLayerTreeFrameSink();
   delegate_ = nullptr;
@@ -202,10 +201,11 @@ void LayerTreeView::OnDeferMainFrameUpdatesChanged(bool status) {
   delegate_->OnDeferMainFrameUpdatesChanged(status);
 }
 
-void LayerTreeView::OnDeferCommitsChanged(bool status) {
+void LayerTreeView::OnDeferCommitsChanged(bool status,
+                                          cc::PaintHoldingReason reason) {
   if (!delegate_)
     return;
-  delegate_->OnDeferCommitsChanged(status);
+  delegate_->OnDeferCommitsChanged(status, reason);
 }
 
 void LayerTreeView::BeginMainFrameNotExpectedSoon() {
@@ -275,16 +275,17 @@ void LayerTreeView::DidFailToInitializeLayerTreeFrameSink() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void LayerTreeView::WillCommit() {
+void LayerTreeView::WillCommit(const cc::CommitState&) {
   if (!delegate_)
     return;
   delegate_->WillCommitCompositorFrame();
 }
 
-void LayerTreeView::DidCommit(base::TimeTicks commit_start_time) {
+void LayerTreeView::DidCommit(base::TimeTicks commit_start_time,
+                              base::TimeTicks commit_finish_time) {
   if (!delegate_)
     return;
-  delegate_->DidCommitCompositorFrame(commit_start_time);
+  delegate_->DidCommitCompositorFrame(commit_start_time, commit_finish_time);
   if (web_main_thread_scheduler_)
     web_main_thread_scheduler_->DidCommitFrameToCompositor();
 }
@@ -309,6 +310,9 @@ void LayerTreeView::DidPresentCompositorFrame(
   DCHECK(layer_tree_host_->GetTaskRunnerProvider()
              ->MainThreadTaskRunner()
              ->RunsTasksInCurrentSequence());
+  // Only run callbacks on successful presentations.
+  if (feedback.failed())
+    return;
   while (!presentation_callbacks_.empty()) {
     const auto& front = presentation_callbacks_.begin();
     if (viz::FrameTokenGT(front->first, frame_token))
@@ -406,8 +410,9 @@ void LayerTreeView::AddPresentationCallback(
   }
   std::vector<base::OnceCallback<void(base::TimeTicks)>> callbacks;
   callbacks.push_back(std::move(callback));
-  presentation_callbacks_.push_back({frame_token, std::move(callbacks)});
-  DCHECK_LE(presentation_callbacks_.size(), 25u);
+  presentation_callbacks_.emplace_back(frame_token, std::move(callbacks));
+  DCHECK_LE(presentation_callbacks_.size(),
+            cc::PresentationTimeCallbackBuffer::kMaxBufferSize);
 }
 
 }  // namespace blink

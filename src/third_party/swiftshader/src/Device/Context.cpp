@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "Context.hpp"
+
 #include "Vulkan/VkBuffer.hpp"
 #include "Vulkan/VkDevice.hpp"
 #include "Vulkan/VkImageView.hpp"
@@ -135,23 +136,25 @@ void IndexBuffer::getIndexBuffers(VkPrimitiveTopology topology, uint32_t count, 
 	}
 }
 
-bool Attachments::isColorClamped(int index) const
+VkFormat Attachments::colorFormat(int index) const
 {
-	if(renderTarget[index] && renderTarget[index]->getFormat().isFloatFormat())
-	{
-		return false;
-	}
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
 
-	return true;
+	if(colorBuffer[index])
+	{
+		return colorBuffer[index]->getFormat();
+	}
+	else
+	{
+		return VK_FORMAT_UNDEFINED;
+	}
 }
 
-VkFormat Attachments::renderTargetInternalFormat(int index) const
+VkFormat Attachments::depthFormat() const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	if(renderTarget[index])
+	if(depthBuffer)
 	{
-		return renderTarget[index]->getFormat();
+		return depthBuffer->getFormat();
 	}
 	else
 	{
@@ -248,7 +251,9 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 	if((pCreateInfo->flags &
 	    ~(VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT |
 	      VK_PIPELINE_CREATE_DERIVATIVE_BIT |
-	      VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT)) != 0)
+	      VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT |
+	      VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT_EXT |
+	      VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_EXT)) != 0)
 	{
 		UNSUPPORTED("pCreateInfo->flags %d", int(pCreateInfo->flags));
 	}
@@ -366,8 +371,14 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 				depthClipEnable = depthClipInfo->depthClipEnable != VK_FALSE;
 			}
 			break;
+		case VK_STRUCTURE_TYPE_APPLICATION_INFO:
+			// SwiftShader doesn't interact with application info, but dEQP includes it
+			break;
+		case VK_STRUCTURE_TYPE_MAX_ENUM:
+			// dEQP tests that this value is ignored.
+			break;
 		default:
-			WARN("pCreateInfo->pRasterizationState->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
+			UNSUPPORTED("pCreateInfo->pRasterizationState->pNext sType = %s", vk::Stringify(extensionCreateInfo->sType).c_str());
 			break;
 		}
 
@@ -453,7 +464,7 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 		const vk::RenderPass *renderPass = vk::Cast(pCreateInfo->renderPass);
 		const VkSubpassDescription &subpass = renderPass->getSubpass(pCreateInfo->subpass);
 
-		//  Ignore pDepthStencilState when "the subpass of the render pass the pipeline is created against does not use a depth/stencil attachment"
+		// Ignore pDepthStencilState when "the subpass of the render pass the pipeline is created against does not use a depth/stencil attachment"
 		if(subpass.pDepthStencilAttachment && subpass.pDepthStencilAttachment->attachment != VK_ATTACHMENT_UNUSED)
 		{
 			if(depthStencilState->flags != 0)
@@ -466,7 +477,7 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 			minDepthBounds = depthStencilState->minDepthBounds;
 			maxDepthBounds = depthStencilState->maxDepthBounds;
 
-			depthBufferEnable = (depthStencilState->depthTestEnable != VK_FALSE);
+			depthTestEnable = (depthStencilState->depthTestEnable != VK_FALSE);
 			depthWriteEnable = (depthStencilState->depthWriteEnable != VK_FALSE);
 			depthCompareMode = depthStencilState->depthCompareOp;
 
@@ -510,7 +521,31 @@ GraphicsState::GraphicsState(const Device *device, const VkGraphicsPipelineCreat
 				blendConstants.w = colorBlendState->blendConstants[3];
 			}
 
-			ASSERT(colorBlendState->attachmentCount <= sw::RENDERTARGETS);
+			const VkBaseInStructure *extensionColorBlendInfo = reinterpret_cast<const VkBaseInStructure *>(colorBlendState->pNext);
+			while(extensionColorBlendInfo)
+			{
+				switch(extensionColorBlendInfo->sType)
+				{
+				case VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_ADVANCED_STATE_CREATE_INFO_EXT:
+					{
+						const VkPipelineColorBlendAdvancedStateCreateInfoEXT *colorBlendAdvancedCreateInfo = reinterpret_cast<const VkPipelineColorBlendAdvancedStateCreateInfoEXT *>(extensionColorBlendInfo);
+						ASSERT(colorBlendAdvancedCreateInfo->blendOverlap == VK_BLEND_OVERLAP_UNCORRELATED_EXT);
+						ASSERT(colorBlendAdvancedCreateInfo->dstPremultiplied == VK_TRUE);
+						ASSERT(colorBlendAdvancedCreateInfo->srcPremultiplied == VK_TRUE);
+					}
+					break;
+				case VK_STRUCTURE_TYPE_MAX_ENUM:
+					// dEQP tests that this value is ignored.
+					break;
+				default:
+					UNSUPPORTED("pCreateInfo->colorBlendState->pNext sType = %s", vk::Stringify(extensionColorBlendInfo->sType).c_str());
+					break;
+				}
+
+				extensionColorBlendInfo = extensionColorBlendInfo->pNext;
+			}
+
+			ASSERT(colorBlendState->attachmentCount <= sw::MAX_COLOR_BUFFERS);
 			for(auto i = 0u; i < colorBlendState->attachmentCount; i++)
 			{
 				const VkPipelineColorBlendAttachmentState &attachment = colorBlendState->pAttachments[i];
@@ -581,14 +616,13 @@ bool GraphicsState::isDrawTriangle(bool polygonModeAware) const
 
 bool GraphicsState::depthWriteActive(const Attachments &attachments) const
 {
-	if(!depthBufferActive(attachments)) return false;
-
-	return depthWriteEnable;
+	// "Depth writes are always disabled when depthTestEnable is VK_FALSE."
+	return depthTestActive(attachments) && depthWriteEnable;
 }
 
-bool GraphicsState::depthBufferActive(const Attachments &attachments) const
+bool GraphicsState::depthTestActive(const Attachments &attachments) const
 {
-	return attachments.depthBuffer && depthBufferEnable;
+	return attachments.depthBuffer && depthTestEnable;
 }
 
 bool GraphicsState::stencilActive(const Attachments &attachments) const
@@ -596,9 +630,9 @@ bool GraphicsState::stencilActive(const Attachments &attachments) const
 	return attachments.stencilBuffer && stencilEnable;
 }
 
-bool GraphicsState::depthBoundsTestActive() const
+bool GraphicsState::depthBoundsTestActive(const Attachments &attachments) const
 {
-	return depthBoundsTestEnable;
+	return attachments.depthBuffer && depthBoundsTestEnable;
 }
 
 const GraphicsState GraphicsState::combineStates(const DynamicState &dynamicState) const
@@ -657,24 +691,33 @@ const GraphicsState GraphicsState::combineStates(const DynamicState &dynamicStat
 
 BlendState GraphicsState::getBlendState(int index, const Attachments &attachments, bool fragmentContainsKill) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
+	auto &state = blendState[index];
 
-	BlendState activeBlendState;
+	BlendState activeBlendState = {};
 	activeBlendState.alphaBlendEnable = alphaBlendActive(index, attachments, fragmentContainsKill);
-	activeBlendState.sourceBlendFactor = sourceBlendFactor(index);
-	activeBlendState.destBlendFactor = destBlendFactor(index);
-	activeBlendState.blendOperation = blendOperation(index, attachments);
-	activeBlendState.sourceBlendFactorAlpha = sourceBlendFactorAlpha(index);
-	activeBlendState.destBlendFactorAlpha = destBlendFactorAlpha(index);
-	activeBlendState.blendOperationAlpha = blendOperationAlpha(index, attachments);
+
+	if(activeBlendState.alphaBlendEnable)
+	{
+		vk::Format format = attachments.colorBuffer[index]->getFormat(VK_IMAGE_ASPECT_COLOR_BIT);
+
+		activeBlendState.sourceBlendFactor = blendFactor(state.blendOperation, state.sourceBlendFactor);
+		activeBlendState.destBlendFactor = blendFactor(state.blendOperation, state.destBlendFactor);
+		activeBlendState.blendOperation = blendOperation(state.blendOperation, state.sourceBlendFactor, state.destBlendFactor, format);
+		activeBlendState.sourceBlendFactorAlpha = blendFactor(state.blendOperationAlpha, state.sourceBlendFactorAlpha);
+		activeBlendState.destBlendFactorAlpha = blendFactor(state.blendOperationAlpha, state.destBlendFactorAlpha);
+		activeBlendState.blendOperationAlpha = blendOperation(state.blendOperationAlpha, state.sourceBlendFactorAlpha, state.destBlendFactorAlpha, format);
+	}
+
 	return activeBlendState;
 }
 
 bool GraphicsState::alphaBlendActive(int index, const Attachments &attachments, bool fragmentContainsKill) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
+	auto &state = blendState[index];
 
-	if(!blendState[index].alphaBlendEnable)
+	if(!attachments.colorBuffer[index] || !blendState[index].alphaBlendEnable)
 	{
 		return false;
 	}
@@ -684,331 +727,139 @@ bool GraphicsState::alphaBlendActive(int index, const Attachments &attachments, 
 		return false;
 	}
 
-	bool colorBlend = !(blendOperation(index, attachments) == VK_BLEND_OP_SRC_EXT &&
-	                    sourceBlendFactor(index) == VK_BLEND_FACTOR_ONE);
-	bool alphaBlend = !(blendOperationAlpha(index, attachments) == VK_BLEND_OP_SRC_EXT &&
-	                    sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ONE);
+	vk::Format format = attachments.colorBuffer[index]->getFormat(VK_IMAGE_ASPECT_COLOR_BIT);
+	bool colorBlend = blendOperation(state.blendOperation, state.sourceBlendFactor, state.destBlendFactor, format) != VK_BLEND_OP_SRC_EXT;
+	bool alphaBlend = blendOperation(state.blendOperationAlpha, state.sourceBlendFactorAlpha, state.destBlendFactorAlpha, format) != VK_BLEND_OP_SRC_EXT;
 
 	return colorBlend || alphaBlend;
 }
 
-VkBlendFactor GraphicsState::sourceBlendFactor(int index) const
+VkBlendFactor GraphicsState::blendFactor(VkBlendOp blendOperation, VkBlendFactor blendFactor) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	if(!blendState[index].alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
-
-	switch(blendState[index].blendOperation)
+	switch(blendOperation)
 	{
 	case VK_BLEND_OP_ADD:
 	case VK_BLEND_OP_SUBTRACT:
 	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		return blendState[index].sourceBlendFactor;
+		return blendFactor;
 	case VK_BLEND_OP_MIN:
-		return VK_BLEND_FACTOR_ONE;
 	case VK_BLEND_OP_MAX:
+	case VK_BLEND_OP_MULTIPLY_EXT:
+	case VK_BLEND_OP_SCREEN_EXT:
+	case VK_BLEND_OP_OVERLAY_EXT:
+	case VK_BLEND_OP_DARKEN_EXT:
+	case VK_BLEND_OP_LIGHTEN_EXT:
+	case VK_BLEND_OP_COLORDODGE_EXT:
+	case VK_BLEND_OP_COLORBURN_EXT:
+	case VK_BLEND_OP_HARDLIGHT_EXT:
+	case VK_BLEND_OP_SOFTLIGHT_EXT:
+	case VK_BLEND_OP_DIFFERENCE_EXT:
+	case VK_BLEND_OP_EXCLUSION_EXT:
+	case VK_BLEND_OP_HSL_HUE_EXT:
+	case VK_BLEND_OP_HSL_SATURATION_EXT:
+	case VK_BLEND_OP_HSL_COLOR_EXT:
+	case VK_BLEND_OP_HSL_LUMINOSITY_EXT:
 		return VK_BLEND_FACTOR_ONE;
 	default:
 		ASSERT(false);
+		return blendFactor;
 	}
-
-	return blendState[index].sourceBlendFactor;
 }
 
-VkBlendFactor GraphicsState::destBlendFactor(int index) const
+VkBlendOp GraphicsState::blendOperation(VkBlendOp blendOperation, VkBlendFactor sourceBlendFactor, VkBlendFactor destBlendFactor, vk::Format format) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	if(!blendState[index].alphaBlendEnable) return VK_BLEND_FACTOR_ONE;
-
-	switch(blendState[index].blendOperation)
+	switch(blendOperation)
 	{
 	case VK_BLEND_OP_ADD:
-	case VK_BLEND_OP_SUBTRACT:
-	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		return blendState[index].destBlendFactor;
-	case VK_BLEND_OP_MIN:
-		return VK_BLEND_FACTOR_ONE;
-	case VK_BLEND_OP_MAX:
-		return VK_BLEND_FACTOR_ONE;
-	default:
-		ASSERT(false);
-	}
-
-	return blendState[index].destBlendFactor;
-}
-
-VkBlendOp GraphicsState::blendOperation(int index, const Attachments &attachments) const
-{
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	if(!blendState[index].alphaBlendEnable) return VK_BLEND_OP_SRC_EXT;
-
-	switch(blendState[index].blendOperation)
-	{
-	case VK_BLEND_OP_ADD:
-		if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
+		if(sourceBlendFactor == VK_BLEND_FACTOR_ZERO)
 		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO)
 			{
 				return VK_BLEND_OP_ZERO_EXT;
 			}
-			else
+			else if(destBlendFactor == VK_BLEND_FACTOR_ONE)
 			{
 				return VK_BLEND_OP_DST_EXT;
 			}
 		}
-		else if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ONE)
+		else if(sourceBlendFactor == VK_BLEND_FACTOR_ONE)
 		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO)
 			{
 				return VK_BLEND_OP_SRC_EXT;
 			}
-			else
-			{
-				return VK_BLEND_OP_ADD;
-			}
 		}
-		else
-		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_ADD;
-			}
-		}
+		break;
 	case VK_BLEND_OP_SUBTRACT:
-		if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
+		if(sourceBlendFactor == VK_BLEND_FACTOR_ZERO)
 		{
-			return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
-		}
-		else if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ONE)
-		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_SUBTRACT;
-			}
-		}
-		else
-		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_SUBTRACT;
-			}
-		}
-	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
-		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO)
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO)
 			{
 				return VK_BLEND_OP_ZERO_EXT;
 			}
-			else
+			else if(format.isUnsignedNormalized())
+			{
+				return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
+			}
+		}
+		else if(sourceBlendFactor == VK_BLEND_FACTOR_ONE)
+		{
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO)
+			{
+				return VK_BLEND_OP_SRC_EXT;
+			}
+		}
+		break;
+	case VK_BLEND_OP_REVERSE_SUBTRACT:
+		if(sourceBlendFactor == VK_BLEND_FACTOR_ZERO)
+		{
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO)
+			{
+				return VK_BLEND_OP_ZERO_EXT;
+			}
+			else if(destBlendFactor == VK_BLEND_FACTOR_ONE)
 			{
 				return VK_BLEND_OP_DST_EXT;
 			}
 		}
-		else if(sourceBlendFactor(index) == VK_BLEND_FACTOR_ONE)
-		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
-			{
-				return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
-			}
-			else
-			{
-				return VK_BLEND_OP_REVERSE_SUBTRACT;
-			}
-		}
 		else
 		{
-			if(destBlendFactor(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
+			if(destBlendFactor == VK_BLEND_FACTOR_ZERO && format.isUnsignedNormalized())
 			{
 				return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
 			}
-			else
-			{
-				return VK_BLEND_OP_REVERSE_SUBTRACT;
-			}
 		}
+		break;
 	case VK_BLEND_OP_MIN:
 		return VK_BLEND_OP_MIN;
 	case VK_BLEND_OP_MAX:
 		return VK_BLEND_OP_MAX;
+	case VK_BLEND_OP_MULTIPLY_EXT:
+	case VK_BLEND_OP_SCREEN_EXT:
+	case VK_BLEND_OP_OVERLAY_EXT:
+	case VK_BLEND_OP_DARKEN_EXT:
+	case VK_BLEND_OP_LIGHTEN_EXT:
+	case VK_BLEND_OP_COLORDODGE_EXT:
+	case VK_BLEND_OP_COLORBURN_EXT:
+	case VK_BLEND_OP_HARDLIGHT_EXT:
+	case VK_BLEND_OP_SOFTLIGHT_EXT:
+	case VK_BLEND_OP_DIFFERENCE_EXT:
+	case VK_BLEND_OP_EXCLUSION_EXT:
+	case VK_BLEND_OP_HSL_HUE_EXT:
+	case VK_BLEND_OP_HSL_SATURATION_EXT:
+	case VK_BLEND_OP_HSL_COLOR_EXT:
+	case VK_BLEND_OP_HSL_LUMINOSITY_EXT:
+		return blendOperation;
 	default:
 		ASSERT(false);
 	}
 
-	return blendState[index].blendOperation;
-}
-
-VkBlendFactor GraphicsState::sourceBlendFactorAlpha(int index) const
-{
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	switch(blendState[index].blendOperationAlpha)
-	{
-	case VK_BLEND_OP_ADD:
-	case VK_BLEND_OP_SUBTRACT:
-	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		return blendState[index].sourceBlendFactorAlpha;
-	case VK_BLEND_OP_MIN:
-		return VK_BLEND_FACTOR_ONE;
-	case VK_BLEND_OP_MAX:
-		return VK_BLEND_FACTOR_ONE;
-	default:
-		ASSERT(false);
-	}
-
-	return blendState[index].sourceBlendFactorAlpha;
-}
-
-VkBlendFactor GraphicsState::destBlendFactorAlpha(int index) const
-{
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	switch(blendState[index].blendOperationAlpha)
-	{
-	case VK_BLEND_OP_ADD:
-	case VK_BLEND_OP_SUBTRACT:
-	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		return blendState[index].destBlendFactorAlpha;
-	case VK_BLEND_OP_MIN:
-		return VK_BLEND_FACTOR_ONE;
-	case VK_BLEND_OP_MAX:
-		return VK_BLEND_FACTOR_ONE;
-	default:
-		ASSERT(false);
-	}
-
-	return blendState[index].destBlendFactorAlpha;
-}
-
-VkBlendOp GraphicsState::blendOperationAlpha(int index, const Attachments &attachments) const
-{
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
-
-	switch(blendState[index].blendOperationAlpha)
-	{
-	case VK_BLEND_OP_ADD:
-		if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_ZERO_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_DST_EXT;
-			}
-		}
-		else if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ONE)
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_ADD;
-			}
-		}
-		else
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_ADD;
-			}
-		}
-	case VK_BLEND_OP_SUBTRACT:
-		if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
-		{
-			return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
-		}
-		else if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ONE)
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_SUBTRACT;
-			}
-		}
-		else
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_SRC_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_SUBTRACT;
-			}
-		}
-	case VK_BLEND_OP_REVERSE_SUBTRACT:
-		if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO)
-			{
-				return VK_BLEND_OP_ZERO_EXT;
-			}
-			else
-			{
-				return VK_BLEND_OP_DST_EXT;
-			}
-		}
-		else if(sourceBlendFactorAlpha(index) == VK_BLEND_FACTOR_ONE)
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
-			{
-				return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
-			}
-			else
-			{
-				return VK_BLEND_OP_REVERSE_SUBTRACT;
-			}
-		}
-		else
-		{
-			if(destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ZERO && attachments.isColorClamped(index))
-			{
-				return VK_BLEND_OP_ZERO_EXT;  // Negative, clamped to zero
-			}
-			else
-			{
-				return VK_BLEND_OP_REVERSE_SUBTRACT;
-			}
-		}
-	case VK_BLEND_OP_MIN:
-		return VK_BLEND_OP_MIN;
-	case VK_BLEND_OP_MAX:
-		return VK_BLEND_OP_MAX;
-	default:
-		ASSERT(false);
-	}
-
-	return blendState[index].blendOperationAlpha;
+	return blendOperation;
 }
 
 bool GraphicsState::colorWriteActive(const Attachments &attachments) const
 {
-	for(int i = 0; i < sw::RENDERTARGETS; i++)
+	for(int i = 0; i < sw::MAX_COLOR_BUFFERS; i++)
 	{
 		if(colorWriteActive(i, attachments))
 		{
@@ -1021,15 +872,18 @@ bool GraphicsState::colorWriteActive(const Attachments &attachments) const
 
 int GraphicsState::colorWriteActive(int index, const Attachments &attachments) const
 {
-	ASSERT((index >= 0) && (index < sw::RENDERTARGETS));
+	ASSERT((index >= 0) && (index < sw::MAX_COLOR_BUFFERS));
+	auto &state = blendState[index];
 
-	if(!attachments.renderTarget[index] || attachments.renderTarget[index]->getFormat() == VK_FORMAT_UNDEFINED)
+	if(!attachments.colorBuffer[index] || attachments.colorBuffer[index]->getFormat() == VK_FORMAT_UNDEFINED)
 	{
 		return 0;
 	}
 
-	if(blendOperation(index, attachments) == VK_BLEND_OP_DST_EXT && destBlendFactor(index) == VK_BLEND_FACTOR_ONE &&
-	   (blendOperationAlpha(index, attachments) == VK_BLEND_OP_DST_EXT && destBlendFactorAlpha(index) == VK_BLEND_FACTOR_ONE))
+	vk::Format format = attachments.colorBuffer[index]->getFormat(VK_IMAGE_ASPECT_COLOR_BIT);
+
+	if(blendOperation(state.blendOperation, state.sourceBlendFactor, state.destBlendFactor, format) == VK_BLEND_OP_DST_EXT &&
+	   blendOperation(state.blendOperationAlpha, state.sourceBlendFactorAlpha, state.destBlendFactorAlpha, format) == VK_BLEND_OP_DST_EXT)
 	{
 		return 0;
 	}

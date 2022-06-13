@@ -114,35 +114,6 @@ UIImage* NativeImage(int imageID) {
   return NativeReversableImage(imageID, NO);
 }
 
-UIImage* ResizeImage(UIImage* image,
-                     CGSize targetSize,
-                     ProjectionMode projectionMode) {
-  return ResizeImage(image, targetSize, projectionMode, NO);
-}
-
-UIImage* ResizeImage(UIImage* image,
-                     CGSize targetSize,
-                     ProjectionMode projectionMode,
-                     BOOL opaque) {
-  CGSize revisedTargetSize;
-  CGRect projectTo;
-
-  CalculateProjection([image size], targetSize, projectionMode,
-                      revisedTargetSize, projectTo);
-
-  if (CGRectEqualToRect(projectTo, CGRectZero))
-    return nil;
-
-  // Resize photo. Use UIImage drawing methods because they respect
-  // UIImageOrientation as opposed to CGContextDrawImage().
-  UIGraphicsBeginImageContextWithOptions(revisedTargetSize, opaque,
-                                         image.scale);
-  [image drawInRect:projectTo];
-  UIImage* resizedPhoto = UIGraphicsGetImageFromCurrentImageContext();
-  UIGraphicsEndImageContext();
-  return resizedPhoto;
-}
-
 UIImage* TintImage(UIImage* image, UIColor* color) {
   DCHECK(image);
   DCHECK(image.CGImage);
@@ -186,31 +157,17 @@ UIImage* TintImage(UIImage* image, UIColor* color) {
 }
 
 UIInterfaceOrientation GetInterfaceOrientation(UIWindow* window) {
-#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-  return [[UIApplication sharedApplication] statusBarOrientation];
-#else
   return window.windowScene.interfaceOrientation;
-#endif
 }
 
 UIActivityIndicatorView* GetMediumUIActivityIndicatorView() {
-#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-  return [[UIActivityIndicatorView alloc]
-      initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-#else
   return [[UIActivityIndicatorView alloc]
       initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
-#endif
 }
 
 UIActivityIndicatorView* GetLargeUIActivityIndicatorView() {
-#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
-  return [[UIActivityIndicatorView alloc]
-      initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-#else
   return [[UIActivityIndicatorView alloc]
       initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
-#endif
 }
 
 CGFloat CurrentKeyboardHeight(NSValue* keyboardFrameValue) {

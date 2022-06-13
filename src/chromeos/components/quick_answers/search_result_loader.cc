@@ -12,15 +12,15 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
 using base::Value;
-using network::mojom::URLLoaderFactory;
 
 // The JSON we generate looks like this:
 // {
@@ -77,8 +77,9 @@ std::string BuildSearchRequestPayload(const std::string& selected_text) {
 
 }  // namespace
 
-SearchResultLoader::SearchResultLoader(URLLoaderFactory* url_loader_factory,
-                                       ResultLoaderDelegate* delegate)
+SearchResultLoader::SearchResultLoader(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    ResultLoaderDelegate* delegate)
     : ResultLoader(url_loader_factory, delegate) {}
 
 SearchResultLoader::~SearchResultLoader() = default;
@@ -108,4 +109,4 @@ void SearchResultLoader::ProcessResponse(
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

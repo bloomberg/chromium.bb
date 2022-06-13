@@ -4,12 +4,12 @@
 
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 
-#include "base/stl_util.h"
+#include "base/containers/cxx20_erase.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/save_passwords_consumer.h"
 
@@ -18,7 +18,7 @@
 #endif
 
 // Protocol to observe changes on the Password Store.
-@protocol PasswordStoreObserver<NSObject>
+@protocol PasswordStoreObserver <NSObject>
 
 // The logins in the Password Store changed.
 - (void)loginsDidChange;
@@ -29,7 +29,7 @@ namespace {
 
 // Objective-C bridge to observe changes in the Password Store.
 class PasswordStoreObserverBridge
-    : public password_manager::PasswordStore::Observer {
+    : public password_manager::PasswordStoreInterface::Observer {
  public:
   explicit PasswordStoreObserverBridge(id<PasswordStoreObserver> observer)
       : observer_(observer) {}
@@ -38,18 +38,26 @@ class PasswordStoreObserverBridge
 
  private:
   void OnLoginsChanged(
-      const password_manager::PasswordStoreChangeList& changes) override {
+      password_manager::PasswordStoreInterface* /*store*/,
+      const password_manager::PasswordStoreChangeList& /*changes*/) override {
     [observer_ loginsDidChange];
   }
+
+  void OnLoginsRetained(password_manager::PasswordStoreInterface* /*store*/,
+                        const std::vector<password_manager::PasswordForm>&
+                        /*retained_passwords*/) override {
+    [observer_ loginsDidChange];
+  }
+
   __weak id<PasswordStoreObserver> observer_ = nil;
 };
 
 }  // namespace
 
-@interface PasswordFetcher ()<SavePasswordsConsumerDelegate,
-                              PasswordStoreObserver> {
+@interface PasswordFetcher () <SavePasswordsConsumerDelegate,
+                               PasswordStoreObserver> {
   // The interface for getting and manipulating a user's saved passwords.
-  scoped_refptr<password_manager::PasswordStore> _passwordStore;
+  scoped_refptr<password_manager::PasswordStoreInterface> _passwordStore;
   // A helper object for passing data about saved passwords from a finished
   // password store request to the SavePasswordsCollectionViewController.
   std::unique_ptr<ios::SavePasswordsConsumer> _savedPasswordsConsumer;
@@ -71,7 +79,7 @@ class PasswordStoreObserverBridge
 #pragma mark - Initialization
 
 - (instancetype)initWithPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStore>)
+                    (scoped_refptr<password_manager::PasswordStoreInterface>)
                         passwordStore
                              delegate:(id<PasswordFetcherDelegate>)delegate
                                   URL:(const GURL&)URL {
@@ -98,12 +106,13 @@ class PasswordStoreObserverBridge
 
 - (void)fetchLogins {
   if (_URL.is_empty()) {
-    _passwordStore->GetAutofillableLogins(_savedPasswordsConsumer.get());
+    _passwordStore->GetAutofillableLogins(
+        _savedPasswordsConsumer->GetWeakPtr());
   } else {
-    password_manager::PasswordStore::FormDigest digest = {
+    password_manager::PasswordFormDigest digest = {
         password_manager::PasswordForm::Scheme::kHtml, std::string(), _URL};
     digest.signon_realm = _URL.spec();
-    _passwordStore->GetLogins(digest, _savedPasswordsConsumer.get());
+    _passwordStore->GetLogins(digest, _savedPasswordsConsumer->GetWeakPtr());
   }
 }
 

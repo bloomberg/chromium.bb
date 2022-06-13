@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,15 +17,15 @@
 #include "chromeos/services/machine_learning/public/mojom/text_classifier.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
-using chromeos::machine_learning::mojom::TextClassifier;
-using machine_learning::mojom::TextAnnotationRequestPtr;
-using machine_learning::mojom::TextLanguage;
-using machine_learning::mojom::TextLanguagePtr;
-using machine_learning::mojom::TextSuggestSelectionRequestPtr;
+using ::chromeos::machine_learning::mojom::TextAnnotationRequestPtr;
+using ::chromeos::machine_learning::mojom::TextClassifier;
+using ::chromeos::machine_learning::mojom::TextLanguage;
+using ::chromeos::machine_learning::mojom::TextLanguagePtr;
+using ::chromeos::machine_learning::mojom::TextSuggestSelectionRequestPtr;
 
 TextLanguagePtr DefaultLanguage() {
   return TextLanguage::New("en", /*confidence=*/1);
@@ -71,12 +70,7 @@ class FakeTextClassifier
 
 class LanguageDetectorTest : public testing::Test {
  public:
-  LanguageDetectorTest() : language_detector_(&text_classifier_) {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kQuickAnswersTextAnnotator,
-         chromeos::features::kQuickAnswersTranslation},
-        {});
-  }
+  LanguageDetectorTest() : language_detector_(&text_classifier_) {}
 
   LanguageDetectorTest(const LanguageDetectorTest&) = delete;
   LanguageDetectorTest& operator=(const LanguageDetectorTest&) = delete;
@@ -178,4 +172,4 @@ TEST_F(LanguageDetectorTest, DetectLanguageLowConfidence) {
 }
 
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

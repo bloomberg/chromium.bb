@@ -23,21 +23,25 @@ namespace {
 using WgslGeneratorImplTest = TestHelper;
 
 TEST_F(WgslGeneratorImplTest, EmitExpression_Call_WithoutParams) {
-  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+  Func("my_func", {}, ty.f32(), {Return(1.23f)});
 
   auto* call = Call("my_func");
   WrapInFunction(call);
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(call)) << gen.error();
-  EXPECT_EQ(gen.result(), "my_func()");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "my_func()");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitExpression_Call_WithParams) {
-  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+  Func("my_func",
+       {
+           Param(Sym(), ty.f32()),
+           Param(Sym(), ty.f32()),
+       },
+       ty.f32(), {Return(1.23f)});
   Global("param1", ty.f32(), ast::StorageClass::kPrivate);
   Global("param2", ty.f32(), ast::StorageClass::kPrivate);
 
@@ -46,18 +50,23 @@ TEST_F(WgslGeneratorImplTest, EmitExpression_Call_WithParams) {
 
   GeneratorImpl& gen = Build();
 
-  ASSERT_TRUE(gen.EmitExpression(call)) << gen.error();
-  EXPECT_EQ(gen.result(), "my_func(param1, param2)");
+  std::stringstream out;
+  ASSERT_TRUE(gen.EmitExpression(out, call)) << gen.error();
+  EXPECT_EQ(out.str(), "my_func(param1, param2)");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitStatement_Call) {
-  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+  Func("my_func",
+       {
+           Param(Sym(), ty.f32()),
+           Param(Sym(), ty.f32()),
+       },
+       ty.void_(), ast::StatementList{}, ast::DecorationList{});
   Global("param1", ty.f32(), ast::StorageClass::kPrivate);
   Global("param2", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* call = Call("my_func", "param1", "param2");
-  auto* stmt = create<ast::CallStatement>(call);
+  auto* stmt = CallStmt(call);
   WrapInFunction(stmt);
 
   GeneratorImpl& gen = Build();

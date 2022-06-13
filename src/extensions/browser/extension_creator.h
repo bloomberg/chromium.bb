@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -32,6 +31,9 @@ namespace extensions {
 class ExtensionCreator {
  public:
   ExtensionCreator();
+
+  ExtensionCreator(const ExtensionCreator&) = delete;
+  ExtensionCreator& operator=(const ExtensionCreator&) = delete;
 
   // Settings to specify treatment of special or ignorable error conditions.
   enum RunFlags {
@@ -123,8 +125,6 @@ class ExtensionCreator {
 
   // Type of error that was raised, if any.
   ErrorType error_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionCreator);
 };
 
 }  // namespace extensions

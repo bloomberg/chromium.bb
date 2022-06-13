@@ -31,13 +31,6 @@ TEST_F(ProgramTest, Creation) {
   EXPECT_EQ(program.AST().Functions().size(), 0u);
 }
 
-TEST_F(ProgramTest, ToStrEmitsPreambleAndPostamble) {
-  Program program(std::move(*this));
-  const auto str = program.to_str();
-  auto* const expected = "Module{\n}\n";
-  EXPECT_EQ(str, expected);
-}
-
 TEST_F(ProgramTest, EmptyIsValid) {
   Program program(std::move(*this));
   EXPECT_TRUE(program.IsValid());
@@ -53,7 +46,7 @@ TEST_F(ProgramTest, IDsAreUnique) {
 }
 
 TEST_F(ProgramTest, Assert_GlobalVariable) {
-  Global("var", ty.f32(), ast::StorageClass::kInput);
+  Global("var", ty.f32(), ast::StorageClass::kPrivate);
 
   Program program(std::move(*this));
   EXPECT_TRUE(program.IsValid());
@@ -68,11 +61,11 @@ TEST_F(ProgramTest, Assert_NullGlobalVariable) {
       "internal compiler error");
 }
 
-TEST_F(ProgramTest, Assert_NullConstructedType) {
+TEST_F(ProgramTest, Assert_NullTypeDecl) {
   EXPECT_FATAL_FAILURE(
       {
         ProgramBuilder b;
-        b.AST().AddConstructedType(nullptr);
+        b.AST().AddTypeDecl(nullptr);
       },
       "internal compiler error");
 }
@@ -87,7 +80,7 @@ TEST_F(ProgramTest, Assert_Null_Function) {
 }
 
 TEST_F(ProgramTest, DiagnosticsMove) {
-  Diagnostics().add_error("an error message");
+  Diagnostics().add_error(diag::System::Program, "an error message");
 
   Program program_a(std::move(*this));
   EXPECT_FALSE(program_a.IsValid());
@@ -100,6 +93,17 @@ TEST_F(ProgramTest, DiagnosticsMove) {
   EXPECT_EQ(program_b.Diagnostics().count(), 1u);
   EXPECT_EQ(program_b.Diagnostics().error_count(), 1u);
   EXPECT_EQ(program_b.Diagnostics().begin()->message, "an error message");
+}
+
+TEST_F(ProgramTest, ReuseMovedFromVariable) {
+  Program a(std::move(*this));
+  EXPECT_TRUE(a.IsValid());
+
+  Program b = std::move(a);
+  EXPECT_TRUE(b.IsValid());
+
+  a = std::move(b);
+  EXPECT_TRUE(a.IsValid());
 }
 
 }  // namespace

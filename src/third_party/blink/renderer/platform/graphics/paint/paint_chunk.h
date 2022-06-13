@@ -9,16 +9,19 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/layer_selection_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/graphics/paint/region_capture_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -32,22 +35,24 @@ struct PLATFORM_EXPORT PaintChunk {
   DISALLOW_NEW();
 
   using Id = DisplayItem::Id;
-
   PaintChunk(wtf_size_t begin,
              wtf_size_t end,
+             const DisplayItemClient& client,
              const Id& id,
-             const PropertyTreeStateOrAlias& props)
+             const PropertyTreeStateOrAlias& props,
+             bool effectively_invisible = false)
       : begin_index(begin),
         end_index(end),
         background_color(Color::kTransparent),
         background_color_area(0u),
         id(id),
         properties(props),
-        known_to_be_opaque(false),
-        text_known_to_be_on_opaque_background(false),
-        is_cacheable(id.client.IsCacheable()),
-        client_is_just_created(id.client.IsJustCreated()),
-        is_moved_from_cached_subsequence(false) {}
+        text_known_to_be_on_opaque_background(true),
+        has_text(false),
+        is_cacheable(client.IsCacheable()),
+        client_is_just_created(client.IsJustCreated()),
+        is_moved_from_cached_subsequence(false),
+        effectively_invisible(effectively_invisible) {}
 
   // Move a paint chunk from a cached subsequence.
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
@@ -58,21 +63,19 @@ struct PLATFORM_EXPORT PaintChunk {
         id(other.id),
         properties(other.properties),
         hit_test_data(std::move(other.hit_test_data)),
+        region_capture_data(std::move(other.region_capture_data)),
         layer_selection_data(std::move(other.layer_selection_data)),
         bounds(other.bounds),
         drawable_bounds(other.drawable_bounds),
+        rect_known_to_be_opaque(other.rect_known_to_be_opaque),
         raster_effect_outset(other.raster_effect_outset),
-        known_to_be_opaque(other.known_to_be_opaque),
         text_known_to_be_on_opaque_background(
             other.text_known_to_be_on_opaque_background),
+        has_text(other.has_text),
         is_cacheable(other.is_cacheable),
         client_is_just_created(false),
-        is_moved_from_cached_subsequence(true) {
-#if DCHECK_IS_ON()
-    DCHECK(other.id.client.IsAlive());
-    DCHECK(!other.id.client.IsJustCreated());
-#endif
-  }
+        is_moved_from_cached_subsequence(true),
+        effectively_invisible(other.effectively_invisible) {}
 
   wtf_size_t size() const {
     DCHECK_GE(end_index, begin_index);
@@ -88,9 +91,6 @@ struct PLATFORM_EXPORT PaintChunk {
   bool Matches(const Id& other_id) const {
     if (!is_cacheable || id != other_id)
       return false;
-#if DCHECK_IS_ON()
-    DCHECK(id.client.IsAlive());
-#endif
     // A chunk whose client is just created should not match any cached chunk,
     // even if it's id equals the old chunk's id (which may happen if this
     // chunk's client is just created at the same address of the old chunk's
@@ -114,7 +114,10 @@ struct PLATFORM_EXPORT PaintChunk {
 
   size_t MemoryUsageInBytes() const;
 
+  // The no-argument version is for operator<< which is used in DCHECK and unit
+  // tests. It doesn't output the debug name of the client.
   String ToString() const;
+  String ToString(const PaintArtifact& paint_artifact) const;
 
   // Index of the first drawing in this chunk.
   wtf_size_t begin_index;
@@ -139,6 +142,7 @@ struct PLATFORM_EXPORT PaintChunk {
   RefCountedPropertyTreeState properties;
 
   std::unique_ptr<HitTestData> hit_test_data;
+  std::unique_ptr<RegionCaptureData> region_capture_data;
   std::unique_ptr<LayerSelectionData> layer_selection_data;
 
   // The following fields depend on the display items in this chunk.
@@ -149,27 +153,31 @@ struct PLATFORM_EXPORT PaintChunk {
   // It's in the coordinate space of the containing transform node. This can be
   // larger than |drawble_bounds|, because of non-drawable display items and
   // extra bounds.
-  IntRect bounds;
+  gfx::Rect bounds;
 
   // The total bounds of visual rects of drawable display items in this paint
   // chunk.
-  IntRect drawable_bounds;
+  gfx::Rect drawable_bounds;
+
+  gfx::Rect rect_known_to_be_opaque;
 
   // Some raster effects can exceed |bounds| in the rasterization space. This
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of
   // all clients of items in this chunk.
   RasterEffectOutset raster_effect_outset = RasterEffectOutset::kNone;
 
-  // True if the bounds are filled entirely with opaque contents.
-  bool known_to_be_opaque : 1;
-  // True if all text is known to be on top of an opaque background.
+  // True if all text is known to be on top of opaque backgrounds or there is
+  // not text. Though in theory the value doesn't matter when there is no text,
+  // being true can simplify code.
   bool text_known_to_be_on_opaque_background : 1;
+  bool has_text : 1;
 
   // End of derived data.
   // The following fields are put here to avoid memory gap.
   bool is_cacheable : 1;
   bool client_is_just_created : 1;
   bool is_moved_from_cached_subsequence : 1;
+  bool effectively_invisible : 1;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const PaintChunk&);

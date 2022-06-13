@@ -8,9 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "headless/public/headless_browser.h"
+#include "services/network/network_service.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 
 namespace headless {
@@ -20,16 +23,25 @@ class HeadlessBrowserImpl;
 class HeadlessContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit HeadlessContentBrowserClient(HeadlessBrowserImpl* browser);
+
+  HeadlessContentBrowserClient(const HeadlessContentBrowserClient&) = delete;
+  HeadlessContentBrowserClient& operator=(const HeadlessContentBrowserClient&) =
+      delete;
+
   ~HeadlessContentBrowserClient() override;
 
   // content::ContentBrowserClient implementation:
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-      const content::MainFunctionParams&) override;
+      content::MainFunctionParams parameters) override;
   void OverrideWebkitPrefs(content::WebContents* web_contents,
                            blink::web_pref::WebPreferences* prefs) override;
   void RegisterBrowserInterfaceBindersForFrame(
       content::RenderFrameHost* render_frame_host,
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) override;
+  bool BindAssociatedReceiverFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle* handle) override;
   std::unique_ptr<content::DevToolsManagerDelegate>
   CreateDevToolsManagerDelegate() override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
@@ -81,6 +93,9 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
 #endif
 
+  void OnNetworkServiceCreated(
+      ::network::mojom::NetworkService* network_service) override;
+
  private:
   class StubBadgeService;
 
@@ -88,15 +103,13 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
 
-  HeadlessBrowserImpl* browser_;  // Not owned.
+  raw_ptr<HeadlessBrowserImpl> browser_;  // Not owned.
 
   // We store the callback here because we may call it from the I/O thread.
   HeadlessBrowser::Options::AppendCommandLineFlagsCallback
       append_command_line_flags_callback_;
 
   std::unique_ptr<StubBadgeService> stub_badge_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessContentBrowserClient);
 };
 
 }  // namespace headless

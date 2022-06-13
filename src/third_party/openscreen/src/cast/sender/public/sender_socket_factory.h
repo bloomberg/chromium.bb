@@ -7,6 +7,7 @@
 
 #include <openssl/x509.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -33,6 +34,9 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     virtual void OnError(SenderSocketFactory* factory,
                          const IPEndpoint& endpoint,
                          Error error) = 0;
+
+   protected:
+    virtual ~Client();
   };
 
   enum class DeviceMediaPolicy {

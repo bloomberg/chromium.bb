@@ -4,7 +4,9 @@
 
 #include "testing/fxv8_unittest.h"
 
-#include "fxjs/cfx_v8.h"
+#include <memory>
+
+#include "fxjs/cfx_v8_array_buffer_allocator.h"
 #include "v8/include/v8.h"
 
 void FXV8UnitTest::V8IsolateDeleter::operator()(v8::Isolate* ptr) const {

@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_TURN_SYNC_ON_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_TURN_SYNC_ON_DELEGATE_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/ui/views/profiles/profile_picker_sign_in_flow_controller.h"
+#include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
@@ -23,7 +24,7 @@ class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
                                         public LoginUIService::Observer {
  public:
   ProfilePickerTurnSyncOnDelegate(
-      base::WeakPtr<ProfilePickerSignInFlowController> controller,
+      base::WeakPtr<ProfilePickerSignedInFlowController> controller,
       Profile* profile);
   ~ProfilePickerTurnSyncOnDelegate() override;
   ProfilePickerTurnSyncOnDelegate(const ProfilePickerTurnSyncOnDelegate&) =
@@ -39,7 +40,7 @@ class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
       const std::string& new_email,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
   void ShowEnterpriseAccountConfirmation(
-      const std::string& email,
+      const AccountInfo& account_info,
       DiceTurnSyncOnHelper::SigninChoiceCallback callback) override;
   void ShowSyncConfirmation(
       base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>
@@ -72,9 +73,9 @@ class ProfilePickerTurnSyncOnDelegate : public DiceTurnSyncOnHelper::Delegate,
 
   // Controls the sign-in flow. Is not guaranteed to outlive this object (gets
   // destroyed when the flow window closes).
-  base::WeakPtr<ProfilePickerSignInFlowController> controller_;
+  base::WeakPtr<ProfilePickerSignedInFlowController> controller_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   bool enterprise_account_ = false;
   bool sync_disabled_ = false;
   base::OnceCallback<void(LoginUIService::SyncConfirmationUIClosedResult)>

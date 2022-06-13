@@ -52,7 +52,7 @@ public class CastWebContentsComponent {
     }
 
     /**
-     * Params to start WebContents in activity, fragment or service.
+     * Params to start WebContents in activity or service.
      */
     static class StartParams {
         public final Context context;
@@ -111,32 +111,12 @@ public class CastWebContentsComponent {
         }
     }
 
-    private class FragmentDelegate implements Delegate {
-        private static final String TAG = "CastWebContent_FD";
-
-        @Override
-        public void start(StartParams params) {
-            if (!sendIntent(CastWebContentsIntentUtils.requestStartCastFragment(params.webContents,
-                        params.appId, params.visibilityPriority, mEnableTouchInput, mSessionId,
-                        mIsRemoteControlMode, mTurnOnScreen))) {
-                // No intent receiver to handle SHOW_WEB_CONTENT in fragment
-                startCastActivity(params.context, params.webContents, mEnableTouchInput,
-                        mIsRemoteControlMode, mTurnOnScreen);
-            }
-        }
-
-        @Override
-        public void stop(Context context) {
-            sendStopWebContentEvent();
-        }
-    }
-
     private void startCastActivity(Context context, WebContents webContents, boolean enableTouch,
             boolean isRemoteControlMode, boolean turnOnScreen) {
         Intent intent = CastWebContentsIntentUtils.requestStartCastActivity(
                 context, webContents, enableTouch, isRemoteControlMode, turnOnScreen, mSessionId);
         if (DEBUG) Log.d(TAG, "start activity by intent: " + intent);
-        ResumeIntents.addResumeIntent(mSessionId, intent);
+        sResumeIntent.set(intent);
 
         CastAudioManager audioManager =
                 CastAudioManager.getAudioManager(ContextUtils.getApplicationContext());
@@ -153,7 +133,7 @@ public class CastWebContentsComponent {
         Intent intent = CastWebContentsIntentUtils.requestStopWebContents(mSessionId);
         if (DEBUG) Log.d(TAG, "stop: send STOP_WEB_CONTENT intent: " + intent);
         sendIntentSync(intent);
-        ResumeIntents.removeResumeIntent(mSessionId);
+        sResumeIntent.reset();
     }
 
     private class ServiceDelegate implements Delegate {
@@ -185,6 +165,8 @@ public class CastWebContentsComponent {
             context.unbindService(mConnection);
         }
     }
+
+    public static final Controller<Intent> sResumeIntent = new Controller<Intent>();
 
     private static final String TAG = "CastWebComponent";
     private static final boolean DEBUG = true;
@@ -282,9 +264,6 @@ public class CastWebContentsComponent {
         if (BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE || isHeadless) {
             if (DEBUG) Log.d(TAG, "Creating service delegate...");
             start(params, new ServiceDelegate());
-        } else if (BuildConfig.ENABLE_CAST_FRAGMENT) {
-            if (DEBUG) Log.d(TAG, "Creating fragment delegate...");
-            start(params, new FragmentDelegate());
         } else {
             if (DEBUG) Log.d(TAG, "Creating activity delegate...");
             start(params, new ActivityDelegate());

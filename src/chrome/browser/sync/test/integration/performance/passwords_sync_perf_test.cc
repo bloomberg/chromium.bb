@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/performance/sync_timing_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "content/public/test/browser_test.h"
 #include "testing/perf/perf_result_reporter.h"
 
-using passwords_helper::AddLogin;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
-using passwords_helper::GetPasswordStore;
-using passwords_helper::UpdateLogin;
+using passwords_helper::GetProfilePasswordStoreInterface;
 using sync_timing_helper::TimeUntilQuiescence;
 
 static const int kNumPasswords = 150;
@@ -44,6 +40,9 @@ class PasswordsSyncPerfTest : public SyncTest {
  public:
   PasswordsSyncPerfTest() : SyncTest(TWO_CLIENT), password_number_(0) {}
 
+  PasswordsSyncPerfTest(const PasswordsSyncPerfTest&) = delete;
+  PasswordsSyncPerfTest& operator=(const PasswordsSyncPerfTest&) = delete;
+
   // Adds |num_logins| new unique passwords to |profile|.
   void AddLogins(int profile, int num_logins);
 
@@ -61,26 +60,34 @@ class PasswordsSyncPerfTest : public SyncTest {
   std::string NextPassword();
 
   int password_number_;
-  DISALLOW_COPY_AND_ASSIGN(PasswordsSyncPerfTest);
 };
 
 void PasswordsSyncPerfTest::AddLogins(int profile, int num_logins) {
   for (int i = 0; i < num_logins; ++i) {
-    AddLogin(GetPasswordStore(profile), NextLogin());
+    GetProfilePasswordStoreInterface(profile)->AddLogin(NextLogin());
   }
+  // Don't proceed before all additions happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 void PasswordsSyncPerfTest::UpdateLogins(int profile) {
   std::vector<std::unique_ptr<password_manager::PasswordForm>> logins =
-      passwords_helper::GetLogins(GetPasswordStore(profile));
+      passwords_helper::GetLogins(GetProfilePasswordStoreInterface(profile));
   for (auto& login : logins) {
     login->password_value = base::ASCIIToUTF16(NextPassword());
-    UpdateLogin(GetPasswordStore(profile), *login);
+    GetProfilePasswordStoreInterface(profile)->UpdateLogin(*login);
   }
+  // Don't proceed before all updates happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 void PasswordsSyncPerfTest::RemoveLogins(int profile) {
-  passwords_helper::RemoveLogins(GetPasswordStore(profile));
+  passwords_helper::RemoveLogins(GetProfilePasswordStoreInterface(profile));
+  // Don't proceed before all removals happen on the background thread.
+  // Call GetPasswordCount() because it blocks on the background thread.
+  GetPasswordCount(profile);
 }
 
 password_manager::PasswordForm PasswordsSyncPerfTest::NextLogin() {

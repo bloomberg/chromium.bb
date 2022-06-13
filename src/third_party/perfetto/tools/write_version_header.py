@@ -20,11 +20,10 @@ generates a source header (or in the case of --ts_out a TypeScript file) that
 contains:
 - The version number (e.g. v9.0) obtained parsing the CHANGELOG file.
 - The git HEAD's commit-ish (e.g. 6b330b772b0e973f79c70ba2e9bb2b0110c6715d)
-- The number of CLs from the release tag to HEAD.
 
-The latter is concatenated to the version number to distinguish builds made
-fully from release tags (e.g., v9.0.0) vs builds made from the main branch which
-are N cls ahead of the latest monthly release (e.g., v9.0.42).
+The latter is concatenated to the version number to disambiguate builds made
+from release tags vs builds made from the main branch vs UI builds made from the
+ui-canary/ui-stable branch.
 """
 
 import argparse
@@ -56,30 +55,17 @@ def get_latest_release(changelog_path):
   raise Exception('Failed to fetch Perfetto version from %s' % changelog_path)
 
 
-def get_git_info(last_release_tag):
-  """Returns a tuple ('deadbeef', '1234').
-
-  The first value is the SHA1 of the HEAD. The second is the number of CLs from
-  the passed |last_release_tag| to HEAD."""
+def get_git_sha1(commitish):
+  """Returns the SHA1 of the provided commit-ish"""
   commit_sha1 = SCM_REV_NOT_AVAILABLE
-  commits_since_release = ''
   git_dir = os.path.join(PROJECT_ROOT, '.git')
   if os.path.exists(git_dir):
     try:
-      commit_sha1 = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+      commit_sha1 = subprocess.check_output(['git', 'rev-parse', commitish],
                                             cwd=PROJECT_ROOT).strip().decode()
-      with open(os.devnull, 'wb') as devnull:
-        commits_since_release = subprocess.check_output(
-            [
-                'git', 'rev-list', '--count',
-                'refs/tags/%s..HEAD' % last_release_tag
-            ],
-            cwd=PROJECT_ROOT,
-            stderr=devnull).strip().decode()
     except subprocess.CalledProcessError:
       pass
-
-  return (commit_sha1, commits_since_release)
+  return commit_sha1
 
 
 def write_if_unchanged(path, content):
@@ -95,6 +81,7 @@ def write_if_unchanged(path, content):
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument('--check_git', action='store_true')
   parser.add_argument(
       '--no_git',
       action='store_true',
@@ -105,19 +92,23 @@ def main():
   parser.add_argument('--changelog', help='Path to CHANGELOG.')
   args = parser.parse_args()
 
-  release = get_latest_release(args.changelog)
-  if args.no_git:
-    git_sha1, commits_since_release = (SCM_REV_NOT_AVAILABLE, '')
-  else:
-    git_sha1, commits_since_release = get_git_info(release)
+  if args.check_git:
+    has_git = os.path.exists(os.path.join(PROJECT_ROOT, '.git', 'HEAD'))
+    print('1' if has_git else '0')
+    return 0
 
-  # Try to compute the number of commits since the last release. This can fail
-  # in some environments (e.g. in android builds) because the bots pull only
-  # the main branch and don't pull the whole list of tags.
-  if commits_since_release:
-    version = '%s.%s' % (release, commits_since_release)  # e.g., 'v9.0.42'.
+  release = get_latest_release(args.changelog)
+
+  if args.no_git:
+    head_sha1 = SCM_REV_NOT_AVAILABLE
   else:
+    head_sha1 = get_git_sha1('HEAD')  # SCM_REV_NOT_AVAILABLE on failure.
+
+  if head_sha1 == SCM_REV_NOT_AVAILABLE:
     version = release  # e.g., 'v9.0'.
+  else:
+    sha1_abbrev = head_sha1[:9]
+    version = f'{release}-{sha1_abbrev}'  # e.g., 'v9.0-adeadbeef'.
 
   if args.cpp_out:
     guard = '%s_' % args.cpp_out.upper()
@@ -129,7 +120,7 @@ def main():
     lines.append('#define %s' % guard)
     lines.append('')
     lines.append('#define PERFETTO_VERSION_STRING() "%s"' % version)
-    lines.append('#define PERFETTO_VERSION_SCM_REVISION() "%s"' % git_sha1)
+    lines.append('#define PERFETTO_VERSION_SCM_REVISION() "%s"' % head_sha1)
     lines.append('')
     lines.append('#endif  // %s' % guard)
     lines.append('')
@@ -139,7 +130,7 @@ def main():
   if args.ts_out:
     lines = []
     lines.append('export const VERSION = "%s";' % version)
-    lines.append('export const SCM_REVISION = "%s";' % git_sha1)
+    lines.append('export const SCM_REVISION = "%s";' % head_sha1)
     content = '\n'.join(lines)
     write_if_unchanged(args.ts_out, content)
 

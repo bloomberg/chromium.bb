@@ -14,9 +14,13 @@
 
 #include "dawn_native/CreatePipelineAsyncTask.h"
 
+#include "dawn_native/AsyncTask.h"
 #include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/RenderPipeline.h"
+#include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/tracing/TraceEvent.h"
+#include "utils/WGPUHelpers.h"
 
 namespace dawn_native {
 
@@ -40,9 +44,8 @@ namespace dawn_native {
         ASSERT(mCreateComputePipelineAsyncCallback != nullptr);
 
         if (mPipeline.Get() != nullptr) {
-            mCreateComputePipelineAsyncCallback(
-                WGPUCreatePipelineAsyncStatus_Success,
-                reinterpret_cast<WGPUComputePipeline>(mPipeline.Detach()), "", mUserData);
+            mCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus_Success,
+                                                ToAPI(mPipeline.Detach()), "", mUserData);
         } else {
             mCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus_Error, nullptr,
                                                 mErrorMessage.c_str(), mUserData);
@@ -77,9 +80,8 @@ namespace dawn_native {
         ASSERT(mCreateRenderPipelineAsyncCallback != nullptr);
 
         if (mPipeline.Get() != nullptr) {
-            mCreateRenderPipelineAsyncCallback(
-                WGPUCreatePipelineAsyncStatus_Success,
-                reinterpret_cast<WGPURenderPipeline>(mPipeline.Detach()), "", mUserData);
+            mCreateRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus_Success,
+                                               ToAPI(mPipeline.Detach()), "", mUserData);
         } else {
             mCreateRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus_Error, nullptr,
                                                mErrorMessage.c_str(), mUserData);
@@ -100,4 +102,101 @@ namespace dawn_native {
                                            "Device lost before callback", mUserData);
     }
 
+    CreateComputePipelineAsyncTask::CreateComputePipelineAsyncTask(
+        Ref<ComputePipelineBase> nonInitializedComputePipeline,
+        WGPUCreateComputePipelineAsyncCallback callback,
+        void* userdata)
+        : mComputePipeline(std::move(nonInitializedComputePipeline)),
+          mCallback(callback),
+          mUserdata(userdata) {
+        ASSERT(mComputePipeline != nullptr);
+    }
+
+    void CreateComputePipelineAsyncTask::Run() {
+        const char* eventLabel = utils::GetLabelForTrace(mComputePipeline->GetLabel().c_str());
+        TRACE_EVENT_FLOW_END1(mComputePipeline->GetDevice()->GetPlatform(), General,
+                              "CreateComputePipelineAsyncTask::RunAsync", this, "label",
+                              eventLabel);
+        TRACE_EVENT1(mComputePipeline->GetDevice()->GetPlatform(), General,
+                     "CreateComputePipelineAsyncTask::Run", "label", eventLabel);
+
+        MaybeError maybeError = mComputePipeline->Initialize();
+        std::string errorMessage;
+        if (maybeError.IsError()) {
+            mComputePipeline = nullptr;
+            errorMessage = maybeError.AcquireError()->GetMessage();
+        }
+
+        mComputePipeline->GetDevice()->AddComputePipelineAsyncCallbackTask(
+            mComputePipeline, errorMessage, mCallback, mUserdata);
+    }
+
+    void CreateComputePipelineAsyncTask::RunAsync(
+        std::unique_ptr<CreateComputePipelineAsyncTask> task) {
+        DeviceBase* device = task->mComputePipeline->GetDevice();
+
+        const char* eventLabel =
+            utils::GetLabelForTrace(task->mComputePipeline->GetLabel().c_str());
+
+        // Using "taskPtr = std::move(task)" causes compilation error while it should be supported
+        // since C++14:
+        // https://docs.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-160
+        auto asyncTask = [taskPtr = task.release()] {
+            std::unique_ptr<CreateComputePipelineAsyncTask> innnerTaskPtr(taskPtr);
+            innnerTaskPtr->Run();
+        };
+
+        TRACE_EVENT_FLOW_BEGIN1(device->GetPlatform(), General,
+                                "CreateComputePipelineAsyncTask::RunAsync", task.get(), "label",
+                                eventLabel);
+        device->GetAsyncTaskManager()->PostTask(std::move(asyncTask));
+    }
+
+    CreateRenderPipelineAsyncTask::CreateRenderPipelineAsyncTask(
+        Ref<RenderPipelineBase> nonInitializedRenderPipeline,
+        WGPUCreateRenderPipelineAsyncCallback callback,
+        void* userdata)
+        : mRenderPipeline(std::move(nonInitializedRenderPipeline)),
+          mCallback(callback),
+          mUserdata(userdata) {
+        ASSERT(mRenderPipeline != nullptr);
+    }
+
+    void CreateRenderPipelineAsyncTask::Run() {
+        const char* eventLabel = utils::GetLabelForTrace(mRenderPipeline->GetLabel().c_str());
+        TRACE_EVENT_FLOW_END1(mRenderPipeline->GetDevice()->GetPlatform(), General,
+                              "CreateRenderPipelineAsyncTask::RunAsync", this, "label", eventLabel);
+        TRACE_EVENT1(mRenderPipeline->GetDevice()->GetPlatform(), General,
+                     "CreateRenderPipelineAsyncTask::Run", "label", eventLabel);
+
+        MaybeError maybeError = mRenderPipeline->Initialize();
+        std::string errorMessage;
+        if (maybeError.IsError()) {
+            mRenderPipeline = nullptr;
+            errorMessage = maybeError.AcquireError()->GetMessage();
+        }
+
+        mRenderPipeline->GetDevice()->AddRenderPipelineAsyncCallbackTask(
+            mRenderPipeline, errorMessage, mCallback, mUserdata);
+    }
+
+    void CreateRenderPipelineAsyncTask::RunAsync(
+        std::unique_ptr<CreateRenderPipelineAsyncTask> task) {
+        DeviceBase* device = task->mRenderPipeline->GetDevice();
+
+        const char* eventLabel = utils::GetLabelForTrace(task->mRenderPipeline->GetLabel().c_str());
+
+        // Using "taskPtr = std::move(task)" causes compilation error while it should be supported
+        // since C++14:
+        // https://docs.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-160
+        auto asyncTask = [taskPtr = task.release()] {
+            std::unique_ptr<CreateRenderPipelineAsyncTask> innerTaskPtr(taskPtr);
+            innerTaskPtr->Run();
+        };
+
+        TRACE_EVENT_FLOW_BEGIN1(device->GetPlatform(), General,
+                                "CreateRenderPipelineAsyncTask::RunAsync", task.get(), "label",
+                                eventLabel);
+        device->GetAsyncTaskManager()->PostTask(std::move(asyncTask));
+    }
 }  // namespace dawn_native

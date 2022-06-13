@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
@@ -34,11 +33,6 @@ gfx::NativeWindow CreateWebDialogWidget(views::Widget::InitParams params,
   views::Widget* widget = new views::Widget;
   widget->Init(std::move(params));
 
-  // Observer is needed for ChromeVox extension to send messages between content
-  // and background scripts.
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      view->web_contents());
-
   if (show)
     widget->Show();
   return widget->GetNativeWindow();
@@ -63,6 +57,10 @@ gfx::NativeWindow ShowWebDialogWithParams(
     bool show) {
   views::WebDialogView* view = new views::WebDialogView(
       context, delegate, std::make_unique<ChromeWebContentsHandler>());
+  // If the corner radius is specified, set it to |views::DialogDelegate|.
+  if (extra_params && extra_params->corner_radius)
+    view->set_corner_radius(*(extra_params->corner_radius));
+
   views::Widget::InitParams params;
   if (extra_params)
     params = std::move(*extra_params);

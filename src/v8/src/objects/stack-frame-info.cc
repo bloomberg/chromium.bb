@@ -4,6 +4,7 @@
 
 #include "src/objects/stack-frame-info.h"
 
+#include "src/base/strings.h"
 #include "src/objects/shared-function-info.h"
 #include "src/objects/stack-frame-info-inl.h"
 #include "src/strings/string-builder-inl.h"
@@ -67,7 +68,11 @@ int StackFrameInfo::GetLineNumber(Handle<StackFrameInfo> info) {
   Handle<Script> script;
   if (GetScript(isolate, info).ToHandle(&script)) {
     int position = GetSourcePosition(info);
-    return Script::GetLineNumber(script, position) + 1;
+    int line_number = Script::GetLineNumber(script, position) + 1;
+    if (script->HasSourceURLComment()) {
+      line_number -= script->line_offset();
+    }
+    return line_number;
   }
   return Message::kNoLineNumberInfo;
 }
@@ -83,7 +88,13 @@ int StackFrameInfo::GetColumnNumber(Handle<StackFrameInfo> info) {
 #endif  // V8_ENABLE_WEBASSEMBLY
   Handle<Script> script;
   if (GetScript(isolate, info).ToHandle(&script)) {
-    return Script::GetColumnNumber(script, position) + 1;
+    int column_number = Script::GetColumnNumber(script, position) + 1;
+    if (script->HasSourceURLComment()) {
+      if (Script::GetLineNumber(script, position) == script->line_offset()) {
+        column_number -= script->column_offset();
+      }
+    }
+    return column_number;
   }
   return Message::kNoColumnInfo;
 }
@@ -184,18 +195,18 @@ MaybeHandle<String> FormatEvalOrigin(Isolate* isolate, Handle<Script> script) {
   if (sourceURL->IsString()) return Handle<String>::cast(sourceURL);
 
   IncrementalStringBuilder builder(isolate);
-  builder.AppendCString("eval at ");
+  builder.AppendCStringLiteral("eval at ");
   if (script->has_eval_from_shared()) {
     Handle<SharedFunctionInfo> eval_shared(script->eval_from_shared(), isolate);
     auto eval_name = SharedFunctionInfo::DebugName(eval_shared);
     if (eval_name->length() != 0) {
       builder.AppendString(eval_name);
     } else {
-      builder.AppendCString("<anonymous>");
+      builder.AppendCStringLiteral("<anonymous>");
     }
     if (eval_shared->script().IsScript()) {
       Handle<Script> eval_script(Script::cast(eval_shared->script()), isolate);
-      builder.AppendCString(" (");
+      builder.AppendCStringLiteral(" (");
       if (eval_script->compilation_type() == Script::COMPILATION_TYPE_EVAL) {
         // Eval script originated from another eval.
         Handle<String> str;
@@ -211,19 +222,19 @@ MaybeHandle<String> FormatEvalOrigin(Isolate* isolate, Handle<Script> script) {
           if (Script::GetPositionInfo(eval_script,
                                       Script::GetEvalPosition(isolate, script),
                                       &info, Script::NO_OFFSET)) {
-            builder.AppendCString(":");
+            builder.AppendCharacter(':');
             builder.AppendInt(info.line + 1);
-            builder.AppendCString(":");
+            builder.AppendCharacter(':');
             builder.AppendInt(info.column + 1);
           }
         } else {
-          builder.AppendCString("unknown source");
+          builder.AppendCStringLiteral("unknown source");
         }
       }
-      builder.AppendCString(")");
+      builder.AppendCharacter(')');
     }
   } else {
-    builder.AppendCString("<anonymous>");
+    builder.AppendCStringLiteral("<anonymous>");
   }
   return builder.Finish().ToHandleChecked();
 }
@@ -281,7 +292,7 @@ PrimitiveHeapObject InferMethodNameFromFastObject(Isolate* isolate,
     auto details = descriptors.GetDetails(i);
     if (details.IsDontEnum()) continue;
     Object value;
-    if (details.location() == kField) {
+    if (details.location() == PropertyLocation::kField) {
       auto field_index = FieldIndex::ForPropertyIndex(
           map, details.field_index(), details.representation());
       if (field_index.is_double()) continue;
@@ -378,14 +389,14 @@ Handle<Object> StackFrameInfo::GetMethodName(Handle<StackFrameInfo> info) {
 
   // The static initializer function is not a method, so don't add a
   // class name, just return the function name.
-  if (name->HasOneBytePrefix(CStrVector("<static_fields_initializer>"))) {
+  if (name->HasOneBytePrefix(base::CStrVector("<static_fields_initializer>"))) {
     return name;
   }
 
   // ES2015 gives getters and setters name prefixes which must
   // be stripped to find the property name.
-  if (name->HasOneBytePrefix(CStrVector("get ")) ||
-      name->HasOneBytePrefix(CStrVector("set "))) {
+  if (name->HasOneBytePrefix(base::CStrVector("get ")) ||
+      name->HasOneBytePrefix(base::CStrVector("set "))) {
     name = isolate->factory()->NewProperSubString(name, 4, name->length());
   } else if (name->length() == 0) {
     // The function doesn't have a meaningful "name" property, however
@@ -403,7 +414,7 @@ Handle<Object> StackFrameInfo::GetMethodName(Handle<StackFrameInfo> info) {
   }
 
   if (name->length() != 0) {
-    LookupIterator::Key key(isolate, Handle<Name>::cast(name));
+    PropertyKey key(isolate, Handle<Name>::cast(name));
     LookupIterator it(isolate, receiver, key,
                       LookupIterator::PROTOTYPE_CHAIN_SKIP_INTERCEPTOR);
     if (it.state() == LookupIterator::DATA) {
@@ -570,7 +581,8 @@ void AppendFileLocation(Isolate* isolate, Handle<StackFrameInfo> frame,
   if (!script_name_or_source_url->IsString() && frame->IsEval()) {
     builder->AppendString(
         Handle<String>::cast(StackFrameInfo::GetEvalOrigin(frame)));
-    builder->AppendCString(", ");  // Expecting source position to follow.
+    // Expecting source position to follow.
+    builder->AppendCStringLiteral(", ");
   }
 
   if (IsNonEmptyString(script_name_or_source_url)) {
@@ -579,7 +591,7 @@ void AppendFileLocation(Isolate* isolate, Handle<StackFrameInfo> frame,
     // Source code does not originate from a file and is not native, but we
     // can still get the source position inside the source string, e.g. in
     // an eval string.
-    builder->AppendCString("<anonymous>");
+    builder->AppendCStringLiteral("<anonymous>");
   }
 
   int line_number = StackFrameInfo::GetLineNumber(frame);
@@ -618,7 +630,7 @@ bool StringEndsWithMethodName(Isolate* isolate, Handle<String> subject,
       return false;
     }
 
-    const uc32 subject_char = subject_reader.Get(subject_index);
+    const base::uc32 subject_char = subject_reader.Get(subject_index);
     if (i == pattern_reader.length()) {
       if (subject_char != '.') return false;
     } else if (subject_char != pattern_reader.Get(pattern_index)) {
@@ -654,7 +666,7 @@ void AppendMethodCall(Isolate* isolate, Handle<StackFrameInfo> frame,
     if (IsNonEmptyString(method_name)) {
       Handle<String> method_string = Handle<String>::cast(method_name);
       if (!StringEndsWithMethodName(isolate, function_string, method_string)) {
-        builder->AppendCString(" [as ");
+        builder->AppendCStringLiteral(" [as ");
         builder->AppendString(method_string);
         builder->AppendCharacter(']');
       }
@@ -667,7 +679,7 @@ void AppendMethodCall(Isolate* isolate, Handle<StackFrameInfo> frame,
     if (IsNonEmptyString(method_name)) {
       builder->AppendString(Handle<String>::cast(method_name));
     } else {
-      builder->AppendCString("<anonymous>");
+      builder->AppendCStringLiteral("<anonymous>");
     }
   }
 }
@@ -676,24 +688,24 @@ void SerializeJSStackFrame(Isolate* isolate, Handle<StackFrameInfo> frame,
                            IncrementalStringBuilder* builder) {
   Handle<Object> function_name = StackFrameInfo::GetFunctionName(frame);
   if (frame->IsAsync()) {
-    builder->AppendCString("async ");
+    builder->AppendCStringLiteral("async ");
     if (frame->IsPromiseAll() || frame->IsPromiseAny()) {
-      builder->AppendCString("Promise.");
+      builder->AppendCStringLiteral("Promise.");
       builder->AppendString(Handle<String>::cast(function_name));
-      builder->AppendCString(" (index ");
+      builder->AppendCStringLiteral(" (index ");
       builder->AppendInt(StackFrameInfo::GetSourcePosition(frame));
-      builder->AppendCString(")");
+      builder->AppendCharacter(')');
       return;
     }
   }
   if (frame->IsMethodCall()) {
     AppendMethodCall(isolate, frame, builder);
   } else if (frame->IsConstructor()) {
-    builder->AppendCString("new ");
+    builder->AppendCStringLiteral("new ");
     if (IsNonEmptyString(function_name)) {
       builder->AppendString(Handle<String>::cast(function_name));
     } else {
-      builder->AppendCString("<anonymous>");
+      builder->AppendCStringLiteral("<anonymous>");
     }
   } else if (IsNonEmptyString(function_name)) {
     builder->AppendString(Handle<String>::cast(function_name));
@@ -701,18 +713,12 @@ void SerializeJSStackFrame(Isolate* isolate, Handle<StackFrameInfo> frame,
     AppendFileLocation(isolate, frame, builder);
     return;
   }
-  builder->AppendCString(" (");
+  builder->AppendCStringLiteral(" (");
   AppendFileLocation(isolate, frame, builder);
-  builder->AppendCString(")");
+  builder->AppendCharacter(')');
 }
 
 #if V8_ENABLE_WEBASSEMBLY
-bool IsAnonymousWasmScript(Isolate* isolate, Handle<Object> url) {
-  Handle<String> prefix =
-      isolate->factory()->NewStringFromStaticChars("wasm://wasm/");
-  return StringIndexOf(isolate, Handle<String>::cast(url), prefix) == 0;
-}
-
 void SerializeWasmStackFrame(Isolate* isolate, Handle<StackFrameInfo> frame,
                              IncrementalStringBuilder* builder) {
   Handle<Object> module_name = StackFrameInfo::GetWasmModuleName(frame);
@@ -724,32 +730,32 @@ void SerializeWasmStackFrame(Isolate* isolate, Handle<StackFrameInfo> frame,
     } else {
       builder->AppendString(Handle<String>::cast(module_name));
       if (!function_name->IsNull()) {
-        builder->AppendCString(".");
+        builder->AppendCharacter('.');
         builder->AppendString(Handle<String>::cast(function_name));
       }
     }
-    builder->AppendCString(" (");
+    builder->AppendCStringLiteral(" (");
   }
 
   Handle<Object> url(frame->GetScriptNameOrSourceURL(), isolate);
-  if (IsNonEmptyString(url) && !IsAnonymousWasmScript(isolate, url)) {
+  if (IsNonEmptyString(url)) {
     builder->AppendString(Handle<String>::cast(url));
   } else {
-    builder->AppendCString("<anonymous>");
+    builder->AppendCStringLiteral("<anonymous>");
   }
-  builder->AppendCString(":");
+  builder->AppendCharacter(':');
 
   const int wasm_func_index = frame->GetWasmFunctionIndex();
-  builder->AppendCString("wasm-function[");
+  builder->AppendCStringLiteral("wasm-function[");
   builder->AppendInt(wasm_func_index);
-  builder->AppendCString("]:");
+  builder->AppendCStringLiteral("]:");
 
   char buffer[16];
-  SNPrintF(ArrayVector(buffer), "0x%x",
+  SNPrintF(base::ArrayVector(buffer), "0x%x",
            StackFrameInfo::GetColumnNumber(frame) - 1);
   builder->AppendCString(buffer);
 
-  if (has_name) builder->AppendCString(")");
+  if (has_name) builder->AppendCharacter(')');
 }
 #endif  // V8_ENABLE_WEBASSEMBLY
 

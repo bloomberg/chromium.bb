@@ -5,16 +5,14 @@
 #ifndef GPU_VULKAN_VULKAN_IMPLEMENTATION_H_
 #define GPU_VULKAN_VULKAN_IMPLEMENTATION_H_
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include <memory>
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/semaphore_handle.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -52,6 +50,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
  public:
   explicit VulkanImplementation(bool use_swiftshader = false,
                                 bool allow_protected_memory = false);
+
+  VulkanImplementation(const VulkanImplementation&) = delete;
+  VulkanImplementation& operator=(const VulkanImplementation&) = delete;
 
   virtual ~VulkanImplementation();
 
@@ -147,7 +148,6 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
  private:
   const bool use_swiftshader_;
   const bool allow_protected_memory_;
-  DISALLOW_COPY_AND_ASSIGN(VulkanImplementation);
 };
 
 COMPONENT_EXPORT(VULKAN)

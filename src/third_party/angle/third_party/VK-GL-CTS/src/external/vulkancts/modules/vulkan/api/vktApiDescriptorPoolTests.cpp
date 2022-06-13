@@ -144,6 +144,7 @@ tcu::TestStatus resetDescriptorPoolTest (Context& context, const ResetDescriptor
 
 			for (deUint32 ndx = 0; ndx < params.m_numIterations; ++ndx)
 			{
+				if (ndx % 1024 == 0) context.getTestContext().touchWatchdog();
 				// The test should crash in this loop at some point if there is a memory leak
 				VK_CHECK(vkd.allocateDescriptorSets(device, &descriptorSetInfo, &testSets[0]));
 				if (params.m_freeDescriptorSets)
@@ -218,12 +219,13 @@ tcu::TestStatus outOfPoolMemoryTest (Context& context)
 
 			const Unique<VkDescriptorPool>				descriptorPool(createDescriptorPool(vkd, device, &descriptorPoolCreateInfo));
 
+			VkShaderStageFlags stageFlags = (descriptorType != VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT) ? VK_SHADER_STAGE_ALL : VK_SHADER_STAGE_FRAGMENT_BIT;
 			const VkDescriptorSetLayoutBinding			descriptorSetLayoutBinding =
 			{
 				0u,															// uint32_t              binding;
 				descriptorType,												// VkDescriptorType      descriptorType;
 				params.bindingDescriptorCount,								// uint32_t              descriptorCount;
-				VK_SHADER_STAGE_ALL,										// VkShaderStageFlags    stageFlags;
+				stageFlags,													// VkShaderStageFlags    stageFlags;
 				DE_NULL,													// const VkSampler*      pImmutableSamplers;
 			};
 

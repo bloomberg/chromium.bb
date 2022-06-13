@@ -11,10 +11,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <objidl.h>
-#endif
-
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
@@ -57,6 +53,8 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual void SetFilenames(const std::vector<FileInfo>& file_names) = 0;
   virtual void SetPickledData(const ClipboardFormatType& format,
                               const base::Pickle& data) = 0;
+  virtual void SetCustomData(const FORMATETC& format,
+                             const std::u16string& data) {}
 
   virtual bool GetString(std::u16string* data) const = 0;
   virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
@@ -67,6 +65,9 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual bool GetPickledData(const ClipboardFormatType& format,
                               base::Pickle* data) const = 0;
 
+  virtual void EnumerateCustomData(std::vector<FORMATETC>* formats) const {}
+  virtual bool GetCustomData(const FORMATETC& format,
+                             std::u16string* data) const = 0;
   virtual bool HasString() const = 0;
   virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
   virtual bool HasFile() const = 0;

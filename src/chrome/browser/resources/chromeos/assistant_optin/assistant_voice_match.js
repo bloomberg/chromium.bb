@@ -28,6 +28,25 @@ Polymer({
 
   behaviors: [OobeI18nBehavior, MultiStepBehavior],
 
+  properties: {
+    /**
+     * Indicates whether to use same design for accept/decline buttons.
+     */
+    equalWeightButtons_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The given name of the user, if a child account is in use; otherwise,
+     * this is an empty string.
+     */
+    childName_: {
+      type: String,
+      value: '',
+    },
+  },
+
   /**
    * Whether voice match is the first screen of the flow.
    * @type {boolean}
@@ -111,6 +130,14 @@ Polymer({
   },
 
   /**
+   * Reload the page with the given settings data.
+   */
+  reloadContent(data) {
+    this.equalWeightButtons_ = data['equalWeightButtons'];
+    this.childName_ = data['childName'];
+  },
+
+  /**
    * Reloads voice match flow.
    */
   reloadPage() {
@@ -168,10 +195,10 @@ Polymer({
       this.setUIStep(VoiceMatchUIState.COMPLETED);
     }
 
-    window.setTimeout(function() {
+    window.setTimeout(() => {
       this.$['voice-match-lottie'].setPlay(false);
       this.browserProxy_.userActed(VOICE_MATCH_SCREEN_ID, ['voice-match-done']);
-    }.bind(this), this.doneActionDelayMs_);
+    }, this.doneActionDelayMs_);
   },
 
   /**
@@ -182,9 +209,7 @@ Polymer({
       // If voice match is the first screen, slightly delay showing the content
       // for the lottie animations to load.
       this.fire('loading');
-      window.setTimeout(function() {
-        this.fire('loaded');
-      }.bind(this), 100);
+      window.setTimeout(() => this.fire('loaded'), 100);
     }
 
     this.browserProxy_.screenShown(VOICE_MATCH_SCREEN_ID);
@@ -194,9 +219,36 @@ Polymer({
   },
 
   /**
+   * Returns the text for dialog title.
+   */
+  getDialogTitle_(locale, uiStep, childName) {
+    if (uiStep == VoiceMatchUIState.INTRO) {
+      return childName ?
+          this.i18n('assistantVoiceMatchTitleForChild', childName) :
+          this.i18n('assistantVoiceMatchTitle');
+    } else if (uiStep === VoiceMatchUIState.RECORDING) {
+      return childName ?
+          this.i18n('assistantVoiceMatchRecordingForChild', childName) :
+          this.i18n('assistantVoiceMatchRecording');
+    } else if (uiStep === VoiceMatchUIState.COMPLETED) {
+      return this.i18n('assistantVoiceMatchCompleted');
+    }
+  },
+
+  /**
    * Returns the text for subtitle.
    */
-  getSubtitleMessage_(locale) {
-    return this.i18nAdvanced('assistantVoiceMatchMessage');
+  getSubtitleMessage_(locale, uiStep, childName) {
+    if (uiStep == VoiceMatchUIState.INTRO) {
+      return childName ? this.i18nAdvanced(
+                             'assistantVoiceMatchMessageForChild',
+                             {substitutions: [childName]}) :
+                         this.i18nAdvanced('assistantVoiceMatchMessage');
+    } else if (
+        uiStep === VoiceMatchUIState.RECORDING ||
+        uiStep === VoiceMatchUIState.COMPLETED) {
+      return this.i18nAdvanced(
+          'assistantVoiceMatchFooterForChild', {substitutions: [childName]});
+    }
   },
 });

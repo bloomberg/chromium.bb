@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "Assert.hpp"
 #include "Coroutine.hpp"
 #include "Print.hpp"
 #include "Reactor.hpp"
@@ -138,6 +139,14 @@ TEST(ReactorUnitTests, Trampoline)
 
 TEST(ReactorUnitTests, Uninitialized)
 {
+#if __has_feature(memory_sanitizer)
+	// Building the static C++ code with MemorySanitizer enabled does not
+	// automatically enable MemorySanitizer instrumentation for Reactor
+	// routines. False positives can also be prevented by unpoisoning all
+	// memory writes. This Pragma ensures proper instrumentation is enabled.
+	Pragma(MemorySanitizerInstrumentation, true);
+#endif
+
 	FunctionT<int()> function;
 	{
 		Int a;
@@ -159,7 +168,7 @@ TEST(ReactorUnitTests, Uninitialized)
 
 	auto routine = function(testName().c_str());
 
-	if(!__has_feature(memory_sanitizer) || !REACTOR_ENABLE_MEMORY_SANITIZER_INSTRUMENTATION)
+	if(!__has_feature(memory_sanitizer))
 	{
 		int result = routine();
 		EXPECT_EQ(result, result);  // Anything is fine, just don't crash
@@ -177,6 +186,8 @@ TEST(ReactorUnitTests, Uninitialized)
 		    },
 		    "MemorySanitizer: use-of-uninitialized-value");
 	}
+
+	Pragma(MemorySanitizerInstrumentation, false);
 }
 
 TEST(ReactorUnitTests, Unreachable)
@@ -663,6 +674,57 @@ TEST(ReactorUnitTests, StoreBeforeIndirectStore)
 
 	int result = routine(true);
 	EXPECT_EQ(result, 4);
+}
+
+TEST(ReactorUnitTests, AssertTrue)
+{
+	FunctionT<int()> function;
+	{
+		Int a = 3;
+		Int b = 5;
+
+		Assert(a < b);
+
+		Return(a + b);
+	}
+
+	auto routine = function(testName().c_str());
+
+	int result = routine();
+	EXPECT_EQ(result, 8);
+}
+
+TEST(ReactorUnitTests, AssertFalse)
+{
+	FunctionT<int()> function;
+	{
+		Int a = 3;
+		Int b = 5;
+
+		Assert(a == b);
+
+		Return(a + b);
+	}
+
+	auto routine = function(testName().c_str());
+
+#ifndef NDEBUG
+#	if !defined(__APPLE__)
+	const char *stderrRegex = "AssertFalse";  // stderr should contain the assert's expression, file:line, and function
+#	else
+	const char *stderrRegex = "";  // TODO(b/156389924): On macOS an stderr redirect can cause googletest to fail the capture
+#	endif
+
+	EXPECT_DEATH(
+	    {
+		    int result = routine();
+		    EXPECT_NE(result, result);  // We should never reach this
+	    },
+	    stderrRegex);
+#else
+	int result = routine();
+	EXPECT_EQ(result, 8);
+#endif
 }
 
 TEST(ReactorUnitTests, SubVectorLoadStore)

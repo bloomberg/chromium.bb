@@ -160,6 +160,15 @@ class PrintableObject(object):
 
 
 def AskForData(message):
+  # Try to load the readline module, so that "elaborate line editing" features
+  # such as backspace work for `raw_input` / `input`.
+  try:
+    import readline
+  except ImportError:
+    # The readline module does not exist in all Python distributions, e.g. on
+    # Windows. Fall back to simple input handling.
+    pass
+
   # Use this so that it can be mocked in tests on Python 2 and 3.
   try:
     if sys.version_info.major == 2:
@@ -171,14 +180,12 @@ def AskForData(message):
 
 
 def FileRead(filename, mode='rbU'):
-  # Always decodes output to a Unicode string.
-  # On Python 3 newlines are converted to '\n' by default and 'U' is deprecated.
-  if mode == 'rbU' and sys.version_info.major == 3:
-    mode = 'rb'
-  with open(filename, mode=mode) as f:
+  # mode is ignored now; we always return unicode strings.
+  with open(filename, mode='rb') as f:
     s = f.read()
-    if isinstance(s, bytes):
-      return s.decode('utf-8', 'replace')
+  try:
+    return s.decode('utf-8', 'replace')
+  except (UnicodeDecodeError, AttributeError):
     return s
 
 
@@ -1099,13 +1106,13 @@ def RunEditor(content, git, git_editor=None):
   if '\r' in content:
     print(
         '!! Please remove \\r from your change description !!', file=sys.stderr)
-  fileobj = os.fdopen(file_handle, 'w')
+  fileobj = os.fdopen(file_handle, 'wb')
   # Still remove \r if present.
   content = re.sub('\r?\n', '\n', content)
   # Some editors complain when the file doesn't end in \n.
   if not content.endswith('\n'):
     content += '\n'
-  fileobj.write(content)
+  fileobj.write(content.encode('utf-8'))
   fileobj.close()
 
   try:

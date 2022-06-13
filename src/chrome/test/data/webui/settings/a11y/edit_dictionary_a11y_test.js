@@ -5,9 +5,10 @@
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {LanguagesBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {Router, routes} from 'chrome://settings/settings.js';
-import {FakeLanguageSettingsPrivate} from 'chrome://test/settings/fake_language_settings_private.js';
-import {TestLanguagesBrowserProxy} from 'chrome://test/settings/test_languages_browser_proxy.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
+import {flushTasks} from 'chrome://webui-test/test_util.js';
+
+import {FakeLanguageSettingsPrivate} from '../fake_language_settings_private.js';
+import {TestLanguagesBrowserProxy} from '../test_languages_browser_proxy.js';
 
 const fakeLanguageSettingsPrivate = new FakeLanguageSettingsPrivate();
 const fakeLanugagesProxy = new TestLanguagesBrowserProxy();
@@ -19,16 +20,19 @@ document.body.appendChild(settingsUi);
 
 const settingsMain = settingsUI.$.main;
 assertTrue(!!settingsMain);
-const settingsBasicPage = settingsMain.$$('settings-basic-page');
+const settingsBasicPage =
+    settingsMain.shadowRoot.querySelector('settings-basic-page');
 assertTrue(!!settingsBasicPage);
-const languagesPage = settingsBasicPage.$$('settings-languages-page');
+const languagesPage =
+    settingsBasicPage.shadowRoot.querySelector('settings-languages-page');
 assertTrue(!!languagesPage);
-const dictionaryPage = languagesPage.$$('settings-edit-dictionary-page');
+const dictionaryPage =
+    languagesPage.shadowRoot.querySelector('settings-edit-dictionary-page');
 assertTrue(!!dictionaryPage);
 
 fakeLanguageSettingsPrivate.addSpellcheckWord('one');
-assertTrue(!!dictionaryPage.$$('#list'));
-assertEquals(1, dictionaryPage.$$('#list').items.length);
+assertTrue(!!dictionaryPage.shadowRoot.querySelector('#list'));
+assertEquals(1, dictionaryPage.shadowRoot.querySelector('#list').items.length);
 
 flush();
 flushTasks().then(() => {

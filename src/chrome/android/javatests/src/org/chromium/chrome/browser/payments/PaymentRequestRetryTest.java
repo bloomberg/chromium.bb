@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.RenderTestRule;
@@ -47,7 +48,8 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
             new PaymentRequestTestRule("payment_request_retry.html", this);
 
     @Rule
-    public RenderTestRule mRenderTestRule = RenderTestRule.Builder.withPublicCorpus().build();
+    public RenderTestRule mRenderTestRule =
+            RenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
 
     @Override
     public void onMainActivityStarted() throws TimeoutException {
@@ -72,7 +74,8 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDoNotAllowPaymentAppChange() throws TimeoutException {
+    @CommandLineFlags.Add({"enable-features=" + PaymentFeatureList.PAYMENT_REQUEST_BASIC_CARD})
+    public void testDoNotAllowPaymentAppChange_WithBasicCardEnabled() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
@@ -91,11 +94,36 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
     }
 
+    /** Tests that only the initially selected payment app is available during retry(). */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    @CommandLineFlags.Add({"disable-features=" + PaymentFeatureList.PAYMENT_REQUEST_BASIC_CARD})
+    public void testDoNotAllowPaymentAppChange() throws TimeoutException {
+        // Note that the bobpay app has been added in onMainActivityStarted(), so we will have two
+        // payment apps in total.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "buyWithUrlMethod", mPaymentRequestTestRule.getReadyToPay());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
+        mPaymentRequestTestRule.clickInPaymentMethodAndWait(
+                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getPaymentResponseReady());
+
+        // Confirm that only one payment app is available for retry().
+        mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
+    }
+
     /**
      * Tests that adding new cards is disabled during retry().
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testDoNotAllowAddingCards() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -125,6 +153,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testRetryWithDefaultError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -148,6 +177,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testRetryWithCustomError() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -172,8 +202,8 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments", "RenderTest"})
-    @DisabledTest(message = "crbug.com/980276")
     public void testRetryWithShippingAddressErrors() throws Throwable {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
@@ -223,6 +253,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments", "RenderTest"})
     public void testRetryWithPayerErrors() throws Throwable {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -265,6 +296,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testRetryWithShippingAddressErrorsAndPayerErrors() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -307,6 +339,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testRetryAndPayerDetailChangeEvent() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
@@ -346,6 +379,7 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testRetryAndReselectContactDetail() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());

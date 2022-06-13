@@ -16,3 +16,17 @@ interface ShadowRoot {
 interface ImportMeta {
   url: string;
 }
+
+interface Document {
+  adoptedStyleSheets: CSSStyleSheet[]
+}
+
+declare module '*.css.js' {
+  const styles: CSSStyleSheet;
+  export default styles;
+}
+
+declare module '*.css.legacy.js' {
+  const styles: {cssContent: string};
+  export default styles;
+}

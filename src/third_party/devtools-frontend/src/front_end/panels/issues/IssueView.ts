@@ -2,35 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as MarkdownView from '../../ui/components/markdown_view/markdown_view.js';
-import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ElementsComponents from '../elements/components/components.js';
-import * as Network from '../network/network.js';
+import * as Adorners from '../../ui/components/adorners/adorners.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Root from '../../core/root/root.js';
+import * as Components from './components/components.js';
 
+import {AffectedDirectivesView} from './AffectedDirectivesView.js';
 import {AffectedBlockedByResponseView} from './AffectedBlockedByResponseView.js';
-import {AffectedCookiesView} from './AffectedCookiesView.js';
+import {AffectedCookiesView, AffectedRawCookieLinesView} from './AffectedCookiesView.js';
 import {AffectedDocumentsInQuirksModeView} from './AffectedDocumentsInQuirksModeView.js';
 import {AffectedElementsView} from './AffectedElementsView.js';
 import {AffectedElementsWithLowContrastView} from './AffectedElementsWithLowContrastView.js';
 import {AffectedHeavyAdView} from './AffectedHeavyAdView.js';
 import {AffectedItem, AffectedResourcesView, extractShortPath} from './AffectedResourcesView.js';
 import {AffectedSharedArrayBufferIssueDetailsView} from './AffectedSharedArrayBufferIssueDetailsView.js';
+import {AffectedSourcesView} from './AffectedSourcesView.js';
 import {AffectedTrustedWebActivityIssueDetailsView} from './AffectedTrustedWebActivityIssueDetailsView.js';
 import {CorsIssueDetailsView} from './CorsIssueDetailsView.js';
+import {GenericIssueDetailsView} from './GenericIssueDetailsView.js';
+import {WasmCrossOriginModuleSharingAffectedResourcesView} from './WasmCrossOriginModuleSharingAffectedResourcesView.js';
+import {AttributionReportingIssueDetailsView} from './AttributionReportingIssueDetailsView.js';
 
 import type {AggregatedIssue} from './IssueAggregator.js';
+import type {HiddenIssuesMenuData} from './components/HideIssuesMenu.js';
 
 const UIStrings = {
   /**
@@ -38,50 +42,13 @@ const UIStrings = {
   */
   name: 'Name',
   /**
-  *@description Singular or plural label for number of affected CSP (content security policy,
-  * see https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) directives in issue view.
-  */
-  nDirectives: '{n, plural, =1 {# directive} other {# directives}}',
-  /**
-  *@description Indicates that a CSP error should be treated as a warning
-  */
-  reportonly: 'report-only',
-  /**
   *@description The kind of resolution for a mixed content issue
   */
   blocked: 'blocked',
   /**
-  *@description Tooltip for button linking to the Elements panel
-  */
-  clickToRevealTheViolatingDomNode: 'Click to reveal the violating DOM node in the Elements panel',
-  /**
-  *@description Header for the section listing affected directives
-  */
-  directiveC: 'Directive',
-  /**
-  *@description Label for the column in the element list in the CSS Overview report
-  */
-  element: 'Element',
-  /**
-  *@description Header for the source location column
-  */
-  sourceLocation: 'Source Location',
-  /**
-  *@description Text for the status of something
-  */
-  status: 'Status',
-  /**
-  *@description Text that refers to the resources of the web page
-  */
-  resourceC: 'Resource',
-  /**
   *@description Label for a type of issue that can appear in the Issues view. Noun for singular or plural number of network requests.
   */
   nRequests: '{n, plural, =1 {# request} other {# requests}}',
-  /**
-  *@description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
-  */
-  nSources: '{n, plural, =1 {# source} other {# sources}}',
   /**
   *@description Label for singular or plural number of affected resources in issue view
   */
@@ -105,183 +72,37 @@ const UIStrings = {
   */
   learnMoreS: 'Learn more: {PH1}',
   /**
- *@description The kind of resolution for a mixed content issue
- */
+  *@description The kind of resolution for a mixed content issue
+  */
   automaticallyUpgraded: 'automatically upgraded',
+  /**
+  *@description Menu entry for hiding a particular issue, in the Hide Issues context menu.
+  */
+  hideIssuesLikeThis: 'Hide issues like this',
+  /**
+  *@description Menu entry for unhiding a particular issue, in the Hide Issues context menu.
+  */
+  unhideIssuesLikeThis: 'Unhide issues like this',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssueView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-class AffectedDirectivesView extends AffectedResourcesView {
-  _issue: AggregatedIssue;
-  constructor(parent: IssueView, issue: AggregatedIssue) {
-    super(parent);
-    this._issue = issue;
-  }
-
-  _appendStatus(element: Element, isReportOnly: boolean): void {
-    const status = document.createElement('td');
-    if (isReportOnly) {
-      status.classList.add('affected-resource-report-only-status');
-      status.textContent = i18nString(UIStrings.reportonly);
-    } else {
-      status.classList.add('affected-resource-blocked-status');
-      status.textContent = i18nString(UIStrings.blocked);
-    }
-    element.appendChild(status);
-  }
-
-  protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString {
-    return i18nString(UIStrings.nDirectives, {n: count});
-  }
-
-  _appendViolatedDirective(element: Element, directive: string): void {
-    const violatedDirective = document.createElement('td');
-    violatedDirective.textContent = directive;
-    element.appendChild(violatedDirective);
-  }
-
-  _appendBlockedURL(element: Element, url: string): void {
-    const info = document.createElement('td');
-    info.classList.add('affected-resource-directive-info');
-    info.textContent = url;
-    element.appendChild(info);
-  }
-
-  _appendBlockedElement(element: Element, nodeId: number|undefined, model: SDK.IssuesModel.IssuesModel): void {
-    const elementsPanelLinkComponent = new ElementsComponents.ElementsPanelLink.ElementsPanelLink();
-    if (nodeId) {
-      const violatingNodeId = nodeId;
-      UI.Tooltip.Tooltip.install(elementsPanelLinkComponent, i18nString(UIStrings.clickToRevealTheViolatingDomNode));
-
-      const onElementRevealIconClick: (arg0?: Event|undefined) => void = (): void => {
-        const target = model.getTargetIfNotDisposed();
-        if (target) {
-          Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Element);
-          const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, violatingNodeId);
-          Common.Revealer.reveal(deferredDOMNode);
-        }
-      };
-
-      const onElementRevealIconMouseEnter: (arg0?: Event|undefined) => void = (): void => {
-        const target = model.getTargetIfNotDisposed();
-        if (target) {
-          const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, violatingNodeId);
-          if (deferredDOMNode) {
-            deferredDOMNode.highlight();
-          }
-        }
-      };
-
-      const onElementRevealIconMouseLeave: (arg0?: Event|undefined) => void = (): void => {
-        SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-      };
-
-      elementsPanelLinkComponent
-          .data = {onElementRevealIconClick, onElementRevealIconMouseEnter, onElementRevealIconMouseLeave};
-    }
-
-    const violatingNode = document.createElement('td');
-    violatingNode.classList.add('affected-resource-csp-info-node');
-    violatingNode.appendChild(elementsPanelLinkComponent);
-    element.appendChild(violatingNode);
-  }
-
-  _appendAffectedContentSecurityPolicyDetails(
-      cspIssues: Iterable<IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue>): void {
-    const header = document.createElement('tr');
-    if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.inlineViolationCode) {
-      this.appendColumnTitle(header, i18nString(UIStrings.directiveC));
-      this.appendColumnTitle(header, i18nString(UIStrings.element));
-      this.appendColumnTitle(header, i18nString(UIStrings.sourceLocation));
-      this.appendColumnTitle(header, i18nString(UIStrings.status));
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.urlViolationCode) {
-      this.appendColumnTitle(header, i18nString(UIStrings.resourceC), 'affected-resource-directive-info-header');
-      this.appendColumnTitle(header, i18nString(UIStrings.status));
-      this.appendColumnTitle(header, i18nString(UIStrings.directiveC));
-      this.appendColumnTitle(header, i18nString(UIStrings.sourceLocation));
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.evalViolationCode) {
-      this.appendColumnTitle(header, i18nString(UIStrings.sourceLocation));
-      this.appendColumnTitle(header, i18nString(UIStrings.directiveC));
-      this.appendColumnTitle(header, i18nString(UIStrings.status));
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.trustedTypesSinkViolationCode) {
-      this.appendColumnTitle(header, i18nString(UIStrings.sourceLocation));
-      this.appendColumnTitle(header, i18nString(UIStrings.status));
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.trustedTypesPolicyViolationCode) {
-      this.appendColumnTitle(header, i18nString(UIStrings.sourceLocation));
-      this.appendColumnTitle(header, i18nString(UIStrings.directiveC));
-      this.appendColumnTitle(header, i18nString(UIStrings.status));
-    } else {
-      this.updateAffectedResourceCount(0);
-      return;
-    }
-    this.affectedResources.appendChild(header);
-    let count = 0;
-    for (const cspIssue of cspIssues) {
-      count++;
-      this._appendAffectedContentSecurityPolicyDetail(cspIssue);
-    }
-    this.updateAffectedResourceCount(count);
-  }
-
-  _appendAffectedContentSecurityPolicyDetail(
-      cspIssue: IssuesManager.ContentSecurityPolicyIssue.ContentSecurityPolicyIssue): void {
-    const element = document.createElement('tr');
-    element.classList.add('affected-resource-directive');
-
-    const cspIssueDetails = cspIssue.details();
-    const location = IssuesManager.Issue.toZeroBasedLocation(cspIssueDetails.sourceCodeLocation);
-    const model = cspIssue.model();
-    const maybeTarget = cspIssue.model()?.getTargetIfNotDisposed();
-    if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.inlineViolationCode && model) {
-      this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
-      this._appendBlockedElement(element, cspIssueDetails.violatingNodeId, model);
-      this.appendSourceLocation(element, location, maybeTarget);
-      this._appendStatus(element, cspIssueDetails.isReportOnly);
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.urlViolationCode) {
-      const url = cspIssueDetails.blockedURL ? cspIssueDetails.blockedURL : '';
-      this._appendBlockedURL(element, url);
-      this._appendStatus(element, cspIssueDetails.isReportOnly);
-      this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
-      this.appendSourceLocation(element, location, maybeTarget);
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.evalViolationCode) {
-      this.appendSourceLocation(element, location, maybeTarget);
-      this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
-      this._appendStatus(element, cspIssueDetails.isReportOnly);
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.trustedTypesSinkViolationCode) {
-      this.appendSourceLocation(element, location, maybeTarget);
-      this._appendStatus(element, cspIssueDetails.isReportOnly);
-    } else if (this._issue.code() === IssuesManager.ContentSecurityPolicyIssue.trustedTypesPolicyViolationCode) {
-      this.appendSourceLocation(element, location, maybeTarget);
-      this._appendViolatedDirective(element, cspIssueDetails.violatedDirective);
-      this._appendStatus(element, cspIssueDetails.isReportOnly);
-    } else {
-      return;
-    }
-
-    this.affectedResources.appendChild(element);
-  }
-
-  update(): void {
-    this.clear();
-    this._appendAffectedContentSecurityPolicyDetails(this._issue.getCspIssues());
-  }
-}
-
 class AffectedRequestsView extends AffectedResourcesView {
-  _issue: IssuesManager.Issue.Issue;
-  constructor(parent: IssueView, issue: IssuesManager.Issue.Issue) {
-    super(parent);
-    this._issue = issue;
-  }
-
-  _appendAffectedRequests(affectedRequests: Iterable<Protocol.Audits.AffectedRequest>): void {
+  private appendAffectedRequests(affectedRequests: Iterable<Protocol.Audits.AffectedRequest>): void {
     let count = 0;
     for (const affectedRequest of affectedRequests) {
-      for (const request of this.resolveRequestId(affectedRequest.requestId)) {
-        count++;
-        this._appendNetworkRequest(request);
-      }
+      const element = document.createElement('tr');
+      element.classList.add('affected-resource-request');
+      const category = this.issue.getCategory();
+      const tab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
+      element.appendChild(this.createRequestCell(affectedRequest, {
+        networkTab: tab,
+        additionalOnClickAction() {
+          Host.userMetrics.issuesPanelResourceOpened(category, AffectedItem.Request);
+        },
+      }));
+      this.affectedResources.appendChild(element);
+      count++;
     }
     this.updateAffectedResourceCount(count);
   }
@@ -290,92 +111,43 @@ class AffectedRequestsView extends AffectedResourcesView {
     return i18nString(UIStrings.nRequests, {n: count});
   }
 
-  _appendNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): void {
-    const nameText = Platform.StringUtilities.trimMiddle(request.name(), 100);
-    const nameElement = document.createElement('td');
-    const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
-    nameElement.appendChild(UI.UIUtils.createTextButton(nameText, () => {
-      Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Request);
-      Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
-    }, 'link-style devtools-link'));
-    const element = document.createElement('tr');
-    element.classList.add('affected-resource-request');
-    element.appendChild(nameElement);
-    this.affectedResources.appendChild(element);
-  }
-
   update(): void {
     this.clear();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const unused of this._issue.getBlockedByResponseDetails()) {
+    for (const unused of this.issue.getBlockedByResponseDetails()) {
       // If the issue has blockedByResponseDetails, the corresponding AffectedBlockedByResponseView
       // will take care of displaying the request.
       this.updateAffectedResourceCount(0);
       return;
     }
-    this._appendAffectedRequests(this._issue.requests());
-  }
-}
-
-class AffectedSourcesView extends AffectedResourcesView {
-  _issue: IssuesManager.Issue.Issue;
-  constructor(parent: IssueView, issue: IssuesManager.Issue.Issue) {
-    super(parent);
-    this._issue = issue;
-  }
-
-  _appendAffectedSources(affectedSources: Iterable<Protocol.Audits.SourceCodeLocation>): void {
-    let count = 0;
-    for (const source of affectedSources) {
-      this._appendAffectedSource(source);
-      count++;
+    if (this.issue.getCategory() === IssuesManager.Issue.IssueCategory.MixedContent) {
+      // The AffectedMixedContentView takes care of displaying the resources.
+      this.updateAffectedResourceCount(0);
+      return;
     }
-    this.updateAffectedResourceCount(count);
-  }
-
-  protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString {
-    return i18nString(UIStrings.nSources, {n: count});
-  }
-
-  _appendAffectedSource({url, lineNumber, columnNumber}: Protocol.Audits.SourceCodeLocation): void {
-    const cellElement = document.createElement('td');
-    // TODO(chromium:1072331): Check feasibility of plumping through scriptId for `linkifyScriptLocation`
-    //                         to support source maps and formatted scripts.
-    const linkifierURLOptions = ({columnNumber, lineNumber, tabStop: true} as Components.Linkifier.LinkifyURLOptions);
-    // An element created with linkifyURL can subscribe to the events
-    // 'click' neither 'keydown' if that key is the 'Enter' key.
-    // Also, this element has a context menu, so we should be able to
-    // track when the user use the context menu too.
-    // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
-    const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
-    cellElement.appendChild(anchorElement);
-    const rowElement = document.createElement('tr');
-    rowElement.classList.add('affected-resource-source');
-    rowElement.appendChild(cellElement);
-    this.affectedResources.appendChild(rowElement);
-  }
-
-  update(): void {
-    this.clear();
-    this._appendAffectedSources(this._issue.sources());
+    this.appendAffectedRequests(this.issue.requests());
   }
 }
 
-const issueTypeToNetworkHeaderMap = new Map<IssuesManager.Issue.IssueCategory, Network.NetworkItemView.Tabs>([
-  [IssuesManager.Issue.IssueCategory.SameSiteCookie, Network.NetworkItemView.Tabs.Cookies],
-  [IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy, Network.NetworkItemView.Tabs.Headers],
-  [IssuesManager.Issue.IssueCategory.MixedContent, Network.NetworkItemView.Tabs.Headers],
-]);
+const issueTypeToNetworkHeaderMap =
+    new Map<IssuesManager.Issue.IssueCategory, NetworkForward.UIRequestLocation.UIRequestTabs>([
+      [
+        IssuesManager.Issue.IssueCategory.SameSiteCookie,
+        NetworkForward.UIRequestLocation.UIRequestTabs.Cookies,
+      ],
+      [
+        IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy,
+        NetworkForward.UIRequestLocation.UIRequestTabs.Headers,
+      ],
+      [
+        IssuesManager.Issue.IssueCategory.MixedContent,
+        NetworkForward.UIRequestLocation.UIRequestTabs.Headers,
+      ],
+    ]);
 
 class AffectedMixedContentView extends AffectedResourcesView {
-  _issue: AggregatedIssue;
-  constructor(parent: IssueView, issue: AggregatedIssue) {
-    super(parent);
-    this._issue = issue;
-  }
-
-  _appendAffectedMixedContentDetails(mixedContentIssues: Iterable<IssuesManager.MixedContentIssue.MixedContentIssue>):
-      void {
+  private appendAffectedMixedContentDetails(mixedContentIssues:
+                                                Iterable<IssuesManager.MixedContentIssue.MixedContentIssue>): void {
     const header = document.createElement('tr');
     this.appendColumnTitle(header, i18nString(UIStrings.name));
     this.appendColumnTitle(header, i18nString(UIStrings.restrictionStatus));
@@ -385,15 +157,8 @@ class AffectedMixedContentView extends AffectedResourcesView {
     let count = 0;
     for (const issue of mixedContentIssues) {
       const details = issue.getDetails();
-      if (details.request) {
-        this.resolveRequestId(details.request.requestId).forEach(networkRequest => {
-          this.appendAffectedMixedContent(details, networkRequest);
-          count++;
-        });
-      } else {
-        this.appendAffectedMixedContent(details);
-        count++;
-      }
+      this.appendAffectedMixedContent(details);
+      count++;
     }
     this.updateAffectedResourceCount(count);
   }
@@ -402,33 +167,29 @@ class AffectedMixedContentView extends AffectedResourcesView {
     return i18nString(UIStrings.nResources, {n: count});
   }
 
-  appendAffectedMixedContent(
-      mixedContent: Protocol.Audits.MixedContentIssueDetails,
-      maybeRequest: SDK.NetworkRequest.NetworkRequest|null = null): void {
+  appendAffectedMixedContent(mixedContent: Protocol.Audits.MixedContentIssueDetails): void {
     const element = document.createElement('tr');
     element.classList.add('affected-resource-mixed-content');
-    const filename = extractShortPath(mixedContent.insecureURL);
 
-    const name = document.createElement('td');
-    if (maybeRequest) {
-      const request = maybeRequest;  // re-assignment to make type checker happy
-      const tab = issueTypeToNetworkHeaderMap.get(this._issue.getCategory()) || Network.NetworkItemView.Tabs.Headers;
-      name.appendChild(UI.UIUtils.createTextButton(filename, () => {
-        Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.Request);
-        Network.NetworkPanel.NetworkPanel.selectAndShowRequest(request, tab);
-      }, 'link-style devtools-link'));
+    if (mixedContent.request) {
+      const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
+          NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
+      element.appendChild(this.createRequestCell(mixedContent.request, {
+        networkTab,
+        additionalOnClickAction() {
+          Host.userMetrics.issuesPanelResourceOpened(
+              IssuesManager.Issue.IssueCategory.MixedContent, AffectedItem.Request);
+        },
+      }));
     } else {
-      name.classList.add('affected-resource-mixed-content-info');
-      name.textContent = filename;
+      const filename = extractShortPath(mixedContent.insecureURL);
+      const cell = this.appendIssueDetailCell(element, filename, 'affected-resource-mixed-content-info');
+      cell.title = mixedContent.insecureURL;
     }
-    UI.Tooltip.Tooltip.install(name, mixedContent.insecureURL);
-    element.appendChild(name);
 
-    const status = document.createElement('td');
-    status.classList.add('affected-resource-mixed-content-info');
-    status.textContent = AffectedMixedContentView.translateStatus(mixedContent.resolutionStatus);
-    element.appendChild(status);
-
+    this.appendIssueDetailCell(
+        element, AffectedMixedContentView.translateStatus(mixedContent.resolutionStatus),
+        'affected-resource-mixed-content-info');
     this.affectedResources.appendChild(element);
   }
 
@@ -446,55 +207,73 @@ class AffectedMixedContentView extends AffectedResourcesView {
 
   update(): void {
     this.clear();
-    this._appendAffectedMixedContentDetails(this._issue.getMixedContentIssues());
+    this.appendAffectedMixedContentDetails(this.issue.getMixedContentIssues());
   }
 }
 
 export class IssueView extends UI.TreeOutline.TreeElement {
-  _parent: UI.Widget.VBox;
-  _issue: AggregatedIssue;
-  _description: IssuesManager.MarkdownIssueDescription.IssueDescription;
+  private issue: AggregatedIssue;
+  private description: IssuesManager.MarkdownIssueDescription.IssueDescription;
   toggleOnClick: boolean;
   affectedResources: UI.TreeOutline.TreeElement;
-  _affectedResourceViews: AffectedResourcesView[];
-  _aggregatedIssuesCount: HTMLElement|null;
-  _hasBeenExpandedBefore: boolean;
+  private readonly affectedResourceViews: AffectedResourcesView[];
+  private aggregatedIssuesCount: HTMLElement|null;
+  private issueKindIcon: IconButton.Icon.Icon|null = null;
+  private hasBeenExpandedBefore: boolean;
   private throttle: Common.Throttler.Throttler;
   private needsUpdateOnExpand = true;
+  private hiddenIssuesMenu?: Components.HideIssuesMenu.HideIssuesMenu;
+  private contentCreated: boolean = false;
 
-  constructor(
-      parent: UI.Widget.VBox, issue: AggregatedIssue,
-      description: IssuesManager.MarkdownIssueDescription.IssueDescription) {
+  constructor(issue: AggregatedIssue, description: IssuesManager.MarkdownIssueDescription.IssueDescription) {
     super();
-    this._parent = parent;
-    this._issue = issue;
-    this._description = description;
+    this.issue = issue;
+    this.description = description;
     this.throttle = new Common.Throttler.Throttler(250);
 
     this.toggleOnClick = true;
     this.listItemElement.classList.add('issue');
     this.childrenListElement.classList.add('body');
-    this.childrenListElement.classList.add(IssueView.getBodyCSSClass(this._issue.getKind()));
+    this.childrenListElement.classList.add(IssueView.getBodyCSSClass(this.issue.getKind()));
 
-    this.affectedResources = this._createAffectedResources();
-    this._affectedResourceViews = [
-      new AffectedCookiesView(this, this._issue),
-      new AffectedElementsView(this, this._issue),
-      new AffectedRequestsView(this, this._issue),
-      new AffectedMixedContentView(this, this._issue),
-      new AffectedSourcesView(this, this._issue),
-      new AffectedHeavyAdView(this, this._issue),
-      new AffectedDirectivesView(this, this._issue),
-      new AffectedBlockedByResponseView(this, this._issue),
-      new AffectedSharedArrayBufferIssueDetailsView(this, this._issue),
-      new AffectedElementsWithLowContrastView(this, this._issue),
-      new AffectedTrustedWebActivityIssueDetailsView(this, this._issue),
-      new CorsIssueDetailsView(this, this._issue),
-      new AffectedDocumentsInQuirksModeView(this, this._issue),
+    this.affectedResources = this.createAffectedResources();
+    this.affectedResourceViews = [
+      new AffectedCookiesView(this, this.issue),
+      new AffectedElementsView(this, this.issue),
+      new AffectedRequestsView(this, this.issue),
+      new AffectedMixedContentView(this, this.issue),
+      new AffectedSourcesView(this, this.issue),
+      new AffectedHeavyAdView(this, this.issue),
+      new AffectedDirectivesView(this, this.issue),
+      new AffectedBlockedByResponseView(this, this.issue),
+      new AffectedSharedArrayBufferIssueDetailsView(this, this.issue),
+      new AffectedElementsWithLowContrastView(this, this.issue),
+      new AffectedTrustedWebActivityIssueDetailsView(this, this.issue),
+      new CorsIssueDetailsView(this, this.issue),
+      new GenericIssueDetailsView(this, this.issue),
+      new AffectedDocumentsInQuirksModeView(this, this.issue),
+      new AttributionReportingIssueDetailsView(this, this.issue),
+      new WasmCrossOriginModuleSharingAffectedResourcesView(this, this.issue),
+      new AffectedRawCookieLinesView(this, this.issue),
     ];
+    if (Root.Runtime.experiments.isEnabled('hideIssuesFeature')) {
+      this.hiddenIssuesMenu = new Components.HideIssuesMenu.HideIssuesMenu();
+    }
+    this.aggregatedIssuesCount = null;
+    this.hasBeenExpandedBefore = false;
+  }
 
-    this._aggregatedIssuesCount = null;
-    this._hasBeenExpandedBefore = false;
+  /**
+   * Sets the issue to take the resources from. Assumes that the description
+   * this IssueView was initialized with fits the new issue as well, i.e.
+   * title and issue description will not be updated.
+   */
+  setIssue(issue: AggregatedIssue): void {
+    if (this.issue !== issue) {
+      this.needsUpdateOnExpand = true;
+    }
+    this.issue = issue;
+    this.affectedResourceViews.forEach(view => view.setIssue(issue));
   }
 
   private static getBodyCSSClass(issueKind: IssuesManager.Issue.IssueKind): string {
@@ -509,81 +288,108 @@ export class IssueView extends UI.TreeOutline.TreeElement {
   }
 
   getIssueTitle(): string {
-    return this._description.title;
+    return this.description.title;
   }
 
   onattach(): void {
-    this._appendHeader();
-    this._createBody();
+    if (!this.contentCreated) {
+      this.createContent();
+      return;
+    }
+    this.update();
+  }
+
+  createContent(): void {
+    this.appendHeader();
+    this.createBody();
     this.appendChild(this.affectedResources);
-    for (const view of this._affectedResourceViews) {
+    for (const view of this.affectedResourceViews) {
       this.appendAffectedResource(view);
       view.update();
     }
 
-    this._createReadMoreLinks();
+    this.createReadMoreLinks();
     this.updateAffectedResourceVisibility();
+    this.contentCreated = true;
   }
 
   appendAffectedResource(resource: UI.TreeOutline.TreeElement): void {
     this.affectedResources.appendChild(resource);
   }
 
-  _appendHeader(): void {
+  private appendHeader(): void {
     const header = document.createElement('div');
     header.classList.add('header');
-    const icon = new IconButton.Icon.Icon();
-    const kind = this._issue.getKind();
-    icon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
-    icon.classList.add('leading-issue-icon');
-    this._aggregatedIssuesCount = (document.createElement('span') as HTMLElement);
-    const countAdorner = new ElementsComponents.Adorner.Adorner();
+    this.issueKindIcon = new IconButton.Icon.Icon();
+    this.issueKindIcon.classList.add('leading-issue-icon');
+    this.aggregatedIssuesCount = document.createElement('span');
+    const countAdorner = new Adorners.Adorner.Adorner();
     countAdorner.data = {
       name: 'countWrapper',
-      content: this._aggregatedIssuesCount,
-      category: ElementsComponents.AdornerManager.AdornerCategories.DEFAULT,
+      content: this.aggregatedIssuesCount,
     };
     countAdorner.classList.add('aggregated-issues-count');
-    this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
-    header.appendChild(icon);
-    UI.Tooltip.Tooltip.install(icon, IssueCounter.IssueCounter.getIssueKindDescription(kind));
+    header.appendChild(this.issueKindIcon);
     header.appendChild(countAdorner);
 
     const title = document.createElement('div');
     title.classList.add('title');
-    title.textContent = this._description.title;
+    title.textContent = this.description.title;
     header.appendChild(title);
-
+    if (this.hiddenIssuesMenu) {
+      header.appendChild(this.hiddenIssuesMenu);
+    }
+    this.updateFromIssue();
     this.listItemElement.appendChild(header);
   }
 
   onexpand(): void {
-    Host.userMetrics.issuesPanelIssueExpanded(this._issue.getCategory());
+    Host.userMetrics.issuesPanelIssueExpanded(this.issue.getCategory());
 
     if (this.needsUpdateOnExpand) {
       this.doUpdate();
     }
 
-    if (!this._hasBeenExpandedBefore) {
-      this._hasBeenExpandedBefore = true;
-      for (const view of this._affectedResourceViews) {
+    if (!this.hasBeenExpandedBefore) {
+      this.hasBeenExpandedBefore = true;
+      for (const view of this.affectedResourceViews) {
         view.expandIfOneResource();
       }
     }
   }
 
-  _updateAggregatedIssuesCount(): void {
-    if (this._aggregatedIssuesCount) {
-      this._aggregatedIssuesCount.textContent = `${this._issue.getAggregatedIssuesCount()}`;
+  private updateFromIssue(): void {
+    if (this.issueKindIcon) {
+      const kind = this.issue.getKind();
+      this.issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
+      this.issueKindIcon.title = IssuesManager.Issue.getIssueKindDescription(kind);
+    }
+    if (this.aggregatedIssuesCount) {
+      this.aggregatedIssuesCount.textContent = `${this.issue.getAggregatedIssuesCount()}`;
+    }
+    this.listItemElement.classList.toggle('hidden-issue', this.issue.isHidden());
+    if (this.hiddenIssuesMenu) {
+      const data: HiddenIssuesMenuData = {
+        menuItemLabel: this.issue.isHidden() ? i18nString(UIStrings.unhideIssuesLikeThis) :
+                                               i18nString(UIStrings.hideIssuesLikeThis),
+        menuItemAction: () => {
+          const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
+          const values = setting.get();
+          values[this.issue.code()] = this.issue.isHidden() ? IssuesManager.IssuesManager.IssueStatus.Unhidden :
+                                                              IssuesManager.IssuesManager.IssueStatus.Hidden;
+          setting.set(values);
+        },
+      };
+      this.hiddenIssuesMenu.data = data;
     }
   }
 
   updateAffectedResourceVisibility(): void {
-    const noResources = this._affectedResourceViews.every(view => view.isEmpty());
+    const noResources = this.affectedResourceViews.every(view => view.isEmpty());
     this.affectedResources.hidden = noResources;
   }
 
-  _createAffectedResources(): UI.TreeOutline.TreeElement {
+  private createAffectedResources(): UI.TreeOutline.TreeElement {
     const wrapper = new UI.TreeOutline.TreeElement();
     wrapper.setCollapsible(false);
     wrapper.setExpandable(true);
@@ -595,23 +401,27 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     return wrapper;
   }
 
-  _createBody(): void {
+  private createBody(): void {
     const messageElement = new UI.TreeOutline.TreeElement();
     messageElement.setCollapsible(false);
     messageElement.selectable = false;
     const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
-    markdownComponent.data = {tokens: this._description.markdown};
+    markdownComponent.data = {tokens: this.description.markdown};
     messageElement.listItemElement.appendChild(markdownComponent);
     this.appendChild(messageElement);
   }
 
-  _createReadMoreLinks(): void {
+  private createReadMoreLinks(): void {
+    if (this.description.links.length === 0) {
+      return;
+    }
+
     const linkWrapper = new UI.TreeOutline.TreeElement();
     linkWrapper.setCollapsible(false);
     linkWrapper.listItemElement.classList.add('link-wrapper');
 
     const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
-    for (const description of this._description.links) {
+    for (const description of this.description.links) {
       const link = UI.Fragment.html`<x-link class="link devtools-link" tabindex="0" href=${description.link}>${
                        i18nString(UIStrings.learnMoreS, {PH1: description.linkTitle})}</x-link>` as UI.XLink.XLink;
       const linkIcon = new IconButton.Icon.Icon();
@@ -619,7 +429,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
       linkIcon.classList.add('link-icon');
       link.prepend(linkIcon);
       link.addEventListener('x-link-invoke', () => {
-        Host.userMetrics.issuesPanelResourceOpened(this._issue.getCategory(), AffectedItem.LearnMore);
+        Host.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), AffectedItem.LearnMore);
       });
 
       const linkListItem = linkList.createChild('li');
@@ -630,15 +440,23 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
   private doUpdate(): void {
     if (this.expanded) {
-      this._affectedResourceViews.forEach(view => view.update());
+      this.affectedResourceViews.forEach(view => view.update());
       this.updateAffectedResourceVisibility();
     }
     this.needsUpdateOnExpand = !this.expanded;
-    this._updateAggregatedIssuesCount();
+    this.updateFromIssue();
   }
 
   update(): void {
     this.throttle.schedule(async () => this.doUpdate());
+  }
+
+  getIssueKind(): IssuesManager.Issue.IssueKind {
+    return this.issue.getKind();
+  }
+
+  isForHiddenIssue(): boolean {
+    return this.issue.isHidden();
   }
 
   toggle(expand?: boolean): void {

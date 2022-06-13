@@ -6,7 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_PASSWORD_SYNC_BRIDGE_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -35,8 +35,11 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   PasswordSyncBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       PasswordStoreSync* password_store_sync,
-      const base::RepeatingClosure& sync_enabled_or_disabled_cb,
-      ForceInitialSyncCycle force_initial_sync = ForceInitialSyncCycle(false));
+      const base::RepeatingClosure& sync_enabled_or_disabled_cb);
+
+  PasswordSyncBridge(const PasswordSyncBridge&) = delete;
+  PasswordSyncBridge& operator=(const PasswordSyncBridge&) = delete;
+
   ~PasswordSyncBridge() override;
 
   // Notifies the bridge of changes to the password database. Callers are
@@ -76,7 +79,7 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   std::set<FormPrimaryKey> GetUnsyncedPasswordsStorageKeys();
 
   // Password store responsible for persistence.
-  PasswordStoreSync* const password_store_sync_;
+  const raw_ptr<PasswordStoreSync> password_store_sync_;
 
   base::RepeatingClosure sync_enabled_or_disabled_cb_;
 
@@ -85,8 +88,6 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
   bool is_processing_remote_sync_changes_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordSyncBridge);
 };
 
 }  // namespace password_manager

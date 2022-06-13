@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -24,6 +23,8 @@ namespace ui {
 class TestClipboard : public Clipboard {
  public:
   TestClipboard();
+  TestClipboard(const TestClipboard&) = delete;
+  TestClipboard& operator=(const TestClipboard&) = delete;
   ~TestClipboard() override;
 
   // Creates and associates a TestClipboard with the current thread. When no
@@ -37,7 +38,11 @@ class TestClipboard : public Clipboard {
   // Clipboard overrides.
   void OnPreShutdown() override;
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
-  uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
+  const ClipboardSequenceNumberToken& GetSequenceNumber(
+      ClipboardBuffer buffer) const override;
+  std::vector<std::u16string> GetStandardFormats(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -45,9 +50,6 @@ class TestClipboard : public Clipboard {
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
                           std::vector<std::u16string>* types) const override;
-  std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const override;
   void ReadText(ClipboardBuffer buffer,
                 const DataTransferEndpoint* data_dst,
                 std::u16string* result) const override;
@@ -69,9 +71,6 @@ class TestClipboard : public Clipboard {
   void ReadPng(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                ReadPngCallback callback) const override;
-  void ReadImage(ClipboardBuffer buffer,
-                 const DataTransferEndpoint* data_dst,
-                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const std::u16string& type,
                       const DataTransferEndpoint* data_dst,
@@ -90,12 +89,9 @@ class TestClipboard : public Clipboard {
 #if defined(USE_OZONE)
   bool IsSelectionBufferAvailable() const override;
 #endif  // defined(USE_OZONE)
-  void WritePortableRepresentations(
+  void WritePortableAndPlatformRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,
-      std::unique_ptr<DataTransferEndpoint> data_src) override;
-  void WritePlatformRepresentations(
-      ClipboardBuffer buffer,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
       std::unique_ptr<DataTransferEndpoint> data_src) override;
   void WriteText(const char* text_data, size_t text_len) override;
@@ -123,18 +119,18 @@ class TestClipboard : public Clipboard {
     DataStore& operator=(const DataStore& other);
     ~DataStore();
     void Clear();
-    void SetDataSource(std::unique_ptr<DataTransferEndpoint> data_src);
+    void SetDataSource(std::unique_ptr<DataTransferEndpoint> new_data_src);
     DataTransferEndpoint* GetDataSource() const;
-    uint64_t sequence_number = 0;
+    ClipboardSequenceNumberToken sequence_number;
     base::flat_map<ClipboardFormatType, std::string> data;
     std::string url_title;
     std::string html_src_url;
-    SkBitmap image;
+    std::vector<uint8_t> png;
     std::vector<ui::FileInfo> filenames;
     std::unique_ptr<DataTransferEndpoint> data_src;
   };
 
-  // The non-const versions increment the sequence number as a side effect.
+  // The non-const versions update the sequence number as a side effect.
   const DataStore& GetStore(ClipboardBuffer buffer) const;
   const DataStore& GetDefaultStore() const;
   DataStore& GetStore(ClipboardBuffer buffer);
@@ -143,8 +139,6 @@ class TestClipboard : public Clipboard {
   ClipboardBuffer default_store_buffer_;
   mutable base::flat_map<ClipboardBuffer, DataStore> stores_;
   base::Time last_modified_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClipboard);
 };
 
 }  // namespace ui

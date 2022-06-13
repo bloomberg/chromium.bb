@@ -41,19 +41,14 @@ GrBackendFormat GrContext_Base::defaultBackendFormat(SkColorType skColorType,
 }
 
 GrBackendFormat GrContext_Base::compressedBackendFormat(SkImage::CompressionType c) const {
-    const GrCaps* caps = this->caps();
-
-    GrBackendFormat format = caps->getBackendFormatFromCompressionType(c);
-
-    SkASSERT(!format.isValid() || caps->isFormatTexturable(format));
-    return format;
+    return fThreadSafeProxy->compressedBackendFormat(c);
 }
 
 sk_sp<GrContextThreadSafeProxy> GrContext_Base::threadSafeProxy() { return fThreadSafeProxy; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 sk_sp<const GrCaps> GrBaseContextPriv::refCaps() const {
-    return fContext->refCaps();
+    return this->context()->refCaps();
 }
 
 GrContextOptions::ShaderErrorHandler* GrBaseContextPriv::getShaderErrorHandler() const {

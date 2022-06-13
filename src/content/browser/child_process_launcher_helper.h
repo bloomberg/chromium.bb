@@ -8,12 +8,11 @@
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/zygote/zygote_buildflags.h"
@@ -192,6 +191,8 @@ class ChildProcessLauncherHelper :
   void DumpProcessStack(const base::Process& process);
 #endif  // OS_ANDROID
 
+  std::string GetProcessType();
+
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncherHelper>;
 
@@ -201,8 +202,6 @@ class ChildProcessLauncherHelper :
 
   base::CommandLine* command_line() { return command_line_.get(); }
   int child_process_id() const { return child_process_id_; }
-
-  std::string GetProcessType();
 
   static void ForceNormalProcessTerminationSync(
       ChildProcessLauncherHelper::Process process);

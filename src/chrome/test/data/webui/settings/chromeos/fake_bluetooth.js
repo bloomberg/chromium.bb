@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 
 /**
@@ -139,11 +139,29 @@ cr.define('settings', function() {
 
     /** @override */
     startDiscovery: function(callback) {
+      assertTrue(
+          this.adapterState_.available && this.adapterState_.powered,
+          'Adapter should be available and powered on before discovering.');
+      assertFalse(
+          this.adapterState_.discovering, 'Adapter is already discovering.');
+      this.simulateAdapterStateChangedForTest({
+        available: true,
+        powered: true,
+        discovering: true,
+      });
       callback();
     },
 
     /** @override */
-    stopDiscovery: assertNotReached,
+    stopDiscovery: function(callback) {
+      assertTrue(this.adapterState_.discovering, 'Adapter is not discovering.');
+      this.simulateAdapterStateChangedForTest({
+        available: true,
+        powered: true,
+        discovering: false,
+      });
+      callback();
+    },
 
     /** @override */
     onAdapterStateChanged: new FakeChromeEvent(),

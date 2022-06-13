@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_handler.h"
@@ -35,14 +34,17 @@ extern const char kErrorWildcardHostsNotAllowed[];
 class ExternallyConnectableHandler : public ManifestHandler {
  public:
   ExternallyConnectableHandler();
+
+  ExternallyConnectableHandler(const ExternallyConnectableHandler&) = delete;
+  ExternallyConnectableHandler& operator=(const ExternallyConnectableHandler&) =
+      delete;
+
   ~ExternallyConnectableHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternallyConnectableHandler);
 };
 
 // The parsed form of the externally_connectable manifest entry.
@@ -59,6 +61,10 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
       bool allow_all_urls,
       std::vector<InstallWarning>* install_warnings,
       std::u16string* error);
+
+  ExternallyConnectableInfo(const ExternallyConnectableInfo&) = delete;
+  ExternallyConnectableInfo& operator=(const ExternallyConnectableInfo&) =
+      delete;
 
   ~ExternallyConnectableInfo() override;
 
@@ -87,9 +93,6 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
                             const std::vector<std::string>& ids,
                             bool all_ids,
                             bool accepts_tls_channel_id);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExternallyConnectableInfo);
 };
 
 }  // namespace extensions

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chromecast/media/api/cma_backend_factory.h"
 
 namespace chromecast {
@@ -24,6 +23,10 @@ class CmaBackendFactoryImpl : public CmaBackendFactory {
   // dependencies are removed from the internal implemenation.
   explicit CmaBackendFactoryImpl(
       MediaPipelineBackendManager* media_pipeline_backend_manager);
+
+  CmaBackendFactoryImpl(const CmaBackendFactoryImpl&) = delete;
+  CmaBackendFactoryImpl& operator=(const CmaBackendFactoryImpl&) = delete;
+
   ~CmaBackendFactoryImpl() override;
 
   std::unique_ptr<CmaBackend> CreateBackend(
@@ -36,8 +39,6 @@ class CmaBackendFactoryImpl : public CmaBackendFactory {
 
  private:
   media::MediaPipelineBackendManager* const media_pipeline_backend_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(CmaBackendFactoryImpl);
 };
 
 }  // namespace media

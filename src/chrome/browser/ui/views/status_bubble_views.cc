@@ -10,9 +10,11 @@
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -33,9 +35,9 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/rrect_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -71,22 +73,20 @@ constexpr int kTextHorizPadding = 5;
 
 // Delays before we start hiding or showing the bubble after we receive a
 // show or hide request.
-constexpr auto kShowDelay = base::TimeDelta::FromMilliseconds(80);
-constexpr auto kHideDelay = base::TimeDelta::FromMilliseconds(250);
+constexpr auto kShowDelay = base::Milliseconds(80);
+constexpr auto kHideDelay = base::Milliseconds(250);
 
 // How long each fade should last for.
-constexpr auto kShowFadeDuration = base::TimeDelta::FromMilliseconds(120);
-constexpr auto kHideFadeDuration = base::TimeDelta::FromMilliseconds(200);
+constexpr auto kShowFadeDuration = base::Milliseconds(120);
+constexpr auto kHideFadeDuration = base::Milliseconds(200);
 constexpr int kFramerate = 25;
 
 // How long each expansion step should take.
-constexpr auto kMinExpansionStepDuration =
-    base::TimeDelta::FromMilliseconds(20);
-constexpr auto kMaxExpansionStepDuration =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr auto kMinExpansionStepDuration = base::Milliseconds(20);
+constexpr auto kMaxExpansionStepDuration = base::Milliseconds(150);
 
 // How long to delay before destroying an unused status bubble widget.
-constexpr auto kDestroyPopupDelay = base::TimeDelta::FromSeconds(10);
+constexpr auto kDestroyPopupDelay = base::Seconds(10);
 
 const gfx::FontList& GetFont() {
   return views::style::GetFont(views::style::CONTEXT_LABEL,
@@ -116,7 +116,7 @@ class StatusBubbleViews::StatusViewAnimation
   // gfx::AnimationDelegate:
   void AnimationEnded(const Animation* animation) override;
 
-  StatusView* status_view_;
+  raw_ptr<StatusView> status_view_;
 
   // Start and end opacities for the current transition - note that as a
   // fade-in can easily turn into a fade out, opacity_start_ is sometimes
@@ -219,7 +219,7 @@ class StatusBubbleViews::StatusView : public views::View {
   std::unique_ptr<StatusViewAnimation> animation_;
 
   // The status bubble that manages the popup widget and this view.
-  StatusBubbleViews* status_bubble_;
+  raw_ptr<StatusBubbleViews> status_bubble_;
 
   // The currently-displayed text.
   views::Label* text_;
@@ -307,8 +307,9 @@ void StatusView::HideInstantly() {
   destroy_popup_timer_.Stop();
   // This isn't done in the constructor as tests may change the task runner
   // after the fact.
-  destroy_popup_timer_.SetTaskRunner(status_bubble_->task_runner_);
-  destroy_popup_timer_.Start(FROM_HERE, kDestroyPopupDelay, status_bubble_,
+  destroy_popup_timer_.SetTaskRunner(status_bubble_->task_runner_.get());
+  destroy_popup_timer_.Start(FROM_HERE, kDestroyPopupDelay,
+                             status_bubble_.get(),
                              &StatusBubbleViews::DestroyPopup);
 }
 
@@ -620,10 +621,10 @@ class StatusBubbleViews::StatusViewExpander
   void AnimationEnded(const gfx::Animation* animation) override;
 
   // The status bubble that manages the popup widget and this object.
-  StatusBubbleViews* status_bubble_;
+  raw_ptr<StatusBubbleViews> status_bubble_;
 
   // Change the bounds and text of this view.
-  StatusView* status_view_;
+  raw_ptr<StatusView> status_view_;
 
   // Text elided (if needed) to fit maximum status bar width.
   std::u16string expanded_text_;
@@ -864,7 +865,7 @@ void StatusBubbleViews::SetURL(const GURL& url) {
           FROM_HERE,
           base::BindOnce(&StatusBubbleViews::ExpandBubble,
                          expand_timer_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
+          base::Milliseconds(kExpandHoverDelayMS));
     }
     // An URL is always treated as a left-to-right string. On right-to-left UIs
     // we need to explicitly mark the URL as LTR to make sure it is displayed

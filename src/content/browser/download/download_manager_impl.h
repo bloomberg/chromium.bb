@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner_helpers.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_job.h"
@@ -70,6 +70,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
   explicit DownloadManagerImpl(BrowserContext* browser_context);
+
+  DownloadManagerImpl(const DownloadManagerImpl&) = delete;
+  DownloadManagerImpl& operator=(const DownloadManagerImpl&) = delete;
+
   ~DownloadManagerImpl() override;
 
   // Implementation functions (not part of the DownloadManager interface).
@@ -132,8 +136,8 @@ class CONTENT_EXPORT DownloadManagerImpl
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
-      override;
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices,
+      const download::DownloadItemRerouteInfo& reroute_info) override;
   void PostInitialization(DownloadInitializationDependency dependency) override;
   bool IsManagerInitialized() override;
   int InProgressCount() override;
@@ -169,6 +173,11 @@ class CONTENT_EXPORT DownloadManagerImpl
       net::CertStatus cert_status,
       int frame_tree_node_id,
       bool from_download_cross_origin_redirect);
+
+  // DownloadItemImplDelegate overrides.
+  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
+      override;
+  std::string GetApplicationClientIdForFileScanning() const override;
 
  private:
   using DownloadSet = std::set<download::DownloadItem*>;
@@ -237,7 +246,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool ShouldOpenDownload(download::DownloadItemImpl* item,
                           ShouldOpenDownloadCallback callback) override;
   void CheckForFileRemoval(download::DownloadItemImpl* download_item) override;
-  std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
       const GURL& site_url) override;
@@ -249,8 +257,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void ReportBytesWasted(download::DownloadItemImpl* download) override;
   void BindWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
-  download::QuarantineConnectionCallback GetQuarantineConnectionCallback()
-      override;
   std::unique_ptr<download::DownloadItemRenameHandler>
   GetRenameHandlerForDownload(
       download::DownloadItemImpl* download_item) override;
@@ -338,10 +344,10 @@ class CONTENT_EXPORT DownloadManagerImpl
       in_progress_download_observer_;
 
   // The current active browser context.
-  BrowserContext* browser_context_;
+  raw_ptr<BrowserContext> browser_context_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
-  DownloadManagerDelegate* delegate_;
+  raw_ptr<DownloadManagerDelegate> delegate_;
 
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
 
@@ -383,8 +389,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   std::set<uint32_t> pending_disk_access_query_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadManagerImpl);
 };
 
 }  // namespace content

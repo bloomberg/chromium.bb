@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_H_
 #define CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/variations/platform_field_trials.h"
 
 class PrefService;
@@ -17,11 +17,15 @@ class FeatureList;
 class ChromeBrowserFieldTrials : public variations::PlatformFieldTrials {
  public:
   explicit ChromeBrowserFieldTrials(PrefService* local_state);
+
+  ChromeBrowserFieldTrials(const ChromeBrowserFieldTrials&) = delete;
+  ChromeBrowserFieldTrials& operator=(const ChromeBrowserFieldTrials&) = delete;
+
   ~ChromeBrowserFieldTrials() override;
 
   // variations::PlatformFieldTrials:
-  void SetupFieldTrials() override;
-  void SetupFeatureControllingFieldTrials(
+  void SetUpFieldTrials() override;
+  void SetUpFeatureControllingFieldTrials(
       bool has_seed,
       const base::FieldTrial::EntropyProvider* low_entropy_provider,
       base::FeatureList* feature_list) override;
@@ -33,9 +37,7 @@ class ChromeBrowserFieldTrials : public variations::PlatformFieldTrials {
   void InstantiateDynamicTrials();
 
   // Weak pointer to the local state prefs store.
-  PrefService* const local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserFieldTrials);
+  const raw_ptr<PrefService> local_state_;
 };
 
 #endif  // CHROME_BROWSER_CHROME_BROWSER_FIELD_TRIALS_H_

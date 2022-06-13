@@ -20,9 +20,14 @@ class SecureBoxPublicKey;
 
 enum class TrustedVaultRegistrationStatus {
   kSuccess,
+  // Used when member corresponding to authentication factor already exists and
+  // local keys that were sent as part of the request aren't stale.
+  kAlreadyRegistered,
   // Used when trusted vault request can't be completed successfully due to
   // vault key being outdated or device key being not registered.
   kLocalDataObsolete,
+  // Used when request isn't sent due to access token fetching failure.
+  kAccessTokenFetchingFailure,
   // Used for all network, http and protocol errors.
   kOtherError
 };
@@ -37,6 +42,8 @@ enum class TrustedVaultDownloadKeysStatus {
   // At least one of the key proofs isn't valid or unable to verify them using
   // latest local trusted vault key (e.g. it's too old).
   kKeyProofsVerificationFailed,
+  // Used when request isn't sent due to access token fetching failure.
+  kAccessTokenFetchingFailure,
   // Used for all network, http and protocol errors, when no statuses above
   // fits.
   kOtherError
@@ -49,7 +56,7 @@ enum class TrustedVaultRecoverabilityStatus {
   kDegraded
 };
 
-enum class AuthenticationFactorType { kPhysicalDevice };
+enum class AuthenticationFactorType { kPhysicalDevice, kUnspecified };
 
 struct TrustedVaultKeyAndVersion {
   TrustedVaultKeyAndVersion(const std::vector<uint8_t>& key, int version);
@@ -67,6 +74,12 @@ class TrustedVaultConnection {
  public:
   using RegisterAuthenticationFactorCallback =
       base::OnceCallback<void(TrustedVaultRegistrationStatus)>;
+  // If registration request was successful without local keys, it means only
+  // constant key exists server-side and it's exposed as
+  // |vault_key_and_version|.
+  using RegisterDeviceWithoutKeysCallback = base::OnceCallback<void(
+      TrustedVaultRegistrationStatus,
+      const TrustedVaultKeyAndVersion& /*vault_key_and_version*/)>;
   using DownloadNewKeysCallback =
       base::OnceCallback<void(TrustedVaultDownloadKeysStatus,
                               const std::vector<std::vector<uint8_t>>& /*keys*/,
@@ -92,18 +105,26 @@ class TrustedVaultConnection {
 
   // Asynchronously attempts to register the authentication factor on the
   // trusted vault server to allow further vault server API calls using this
-  // authentication factor. If |last_trusted_vault_key_and_version| is
-  // absl::nullopt, registration attempt with constant key will be made. Calls
-  // |callback| upon completion, unless the returned object is destroyed
-  // earlier. Caller should hold returned request object until |callback| call
-  // or until request needs to be cancelled.
+  // authentication factor. Calls |callback| upon completion, unless the
+  // returned object is destroyed earlier. Caller should hold returned request
+  // object until |callback| call or until request needs to be cancelled.
+  // |trusted_vault_keys| must be ordered by version and must not be empty.
   virtual std::unique_ptr<Request> RegisterAuthenticationFactor(
       const CoreAccountInfo& account_info,
-      const absl::optional<TrustedVaultKeyAndVersion>&
-          last_trusted_vault_key_and_version,
+      const std::vector<std::vector<uint8_t>>& trusted_vault_keys,
+      int last_trusted_vault_key_version,
       const SecureBoxPublicKey& authentication_factor_public_key,
       AuthenticationFactorType authentication_factor_type,
+      absl::optional<int> authentication_factor_type_hint,
       RegisterAuthenticationFactorCallback callback) WARN_UNUSED_RESULT = 0;
+
+  // Special version of the above for the case where the caller has no local
+  // keys available. Attempts to register the device using constant key. May
+  // succeed only if constant key is the only key known server-side.
+  virtual std::unique_ptr<Request> RegisterDeviceWithoutKeys(
+      const CoreAccountInfo& account_info,
+      const SecureBoxPublicKey& device_public_key,
+      RegisterDeviceWithoutKeysCallback callback) WARN_UNUSED_RESULT = 0;
 
   // Asynchronously attempts to download new vault keys (e.g. keys with version
   // greater than the on in |last_trusted_vault_key_and_version|) from the
@@ -111,15 +132,14 @@ class TrustedVaultConnection {
   // |callback| call or until request needs to be cancelled.
   virtual std::unique_ptr<Request> DownloadNewKeys(
       const CoreAccountInfo& account_info,
-      const absl::optional<TrustedVaultKeyAndVersion>&
-          last_trusted_vault_key_and_version,
+      const TrustedVaultKeyAndVersion& last_trusted_vault_key_and_version,
       std::unique_ptr<SecureBoxKeyPair> device_key_pair,
       DownloadNewKeysCallback callback) WARN_UNUSED_RESULT = 0;
 
-  // Asynchronously attempts to retrieve degraded recoverability status from the
+  // Asynchronously attempts to download degraded recoverability status from the
   // trusted vault server. Caller should hold returned request object until
   // |callback| call or until request needs to be cancelled.
-  virtual std::unique_ptr<Request> RetrieveIsRecoverabilityDegraded(
+  virtual std::unique_ptr<Request> DownloadIsRecoverabilityDegraded(
       const CoreAccountInfo& account_info,
       IsRecoverabilityDegradedCallback callback) WARN_UNUSED_RESULT = 0;
 };

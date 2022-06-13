@@ -11,6 +11,9 @@ for more details on the presubmit API built into depot_tools.
 import os.path
 
 
+USE_PYTHON3 = True
+
+
 def CommonChecks(input_api, output_api):
   generating_files = input_api.AffectedFiles(
       file_filter=lambda x: os.path.basename(x.LocalPath()) in [
@@ -34,10 +37,7 @@ def CommonChecks(input_api, output_api):
   with input_api.temporary_directory() as temp_dir:
     commands = []
     if generating_files:
-      python_executable = input_api.python_executable
-      # TODO(penghuang): Remove it when python3 is used by default.
-      if python_executable != 'vpython3':
-        python_executable = 'vpython3'
+      python_executable = input_api.python3_executable
       commands.append(input_api.Command(name='generate_bindings',
                                         cmd=[python_executable,
                                              'generate_bindings.py',

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Intent;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -11,6 +13,8 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
@@ -47,9 +51,13 @@ public class Starter extends EmptyTabObserver implements UserData {
     @Nullable
     private AssistantDependencies mDependencies;
 
+    /** A helper to show and hide the onboarding. */
+    @Nullable
+    private AssistantOnboardingHelper mOnboardingHelper;
+
     /**
-     * A field to temporarily hold a startup request's trigger context while the tab is being
-     * initialized.
+     * A field to temporarily hold a startup request's trigger context while the tab is
+     * being initialized.
      */
     @Nullable
     private TriggerContext mPendingTriggerContext;
@@ -85,6 +93,8 @@ public class Starter extends EmptyTabObserver implements UserData {
         StarterJni.get().start(mNativeStarter, Starter.this, triggerContext.getExperimentIds(),
                 triggerContext.getParameters().keySet().toArray(new String[0]),
                 triggerContext.getParameters().values().toArray(new String[0]),
+                triggerContext.getDeviceOnlyParameters().keySet().toArray(new String[0]),
+                triggerContext.getDeviceOnlyParameters().values().toArray(new String[0]),
                 triggerContext.getInitialUrl());
     }
 
@@ -224,8 +234,9 @@ public class Starter extends EmptyTabObserver implements UserData {
     }
 
     @CalledByNative
-    private void showOnboarding(AssistantDependencies dependencies, boolean useDialogOnboarding,
-            String experimentIds, String[] parameterKeys, String[] parameterValues) {
+    private void showOnboarding(AssistantOnboardingHelper onboardingHelper,
+            boolean useDialogOnboarding, String experimentIds, String[] parameterKeys,
+            String[] parameterValues) {
         if (!AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             safeNativeOnOnboardingFinished(
                     /* shown = */ false, 3 /* AssistantOnboardingResult.ACCEPTED*/);
@@ -237,13 +248,13 @@ public class Starter extends EmptyTabObserver implements UserData {
         for (int i = 0; i < parameterKeys.length; i++) {
             parameters.put(parameterKeys[i], parameterValues[i]);
         }
-        dependencies.showOnboarding(useDialogOnboarding, experimentIds, parameters,
+        onboardingHelper.showOnboarding(useDialogOnboarding, experimentIds, parameters,
                 result -> safeNativeOnOnboardingFinished(true, result));
     }
 
     @CalledByNative
-    private void hideOnboarding(AssistantDependencies dependencies) {
-        dependencies.hideOnboarding();
+    private void hideOnboarding(AssistantOnboardingHelper onboardingHelper) {
+        onboardingHelper.hideOnboarding();
     }
 
     private void safeNativeOnOnboardingFinished(boolean shown, int result) {
@@ -270,19 +281,44 @@ public class Starter extends EmptyTabObserver implements UserData {
                 Profile.getLastUsedRegularProfile());
     }
 
-    @CalledByNative
-    private @Nullable AssistantDependencies getOrCreateDependencies() {
-        if (mDependencies != null) return mDependencies;
+    private AutofillAssistantModuleEntry getModuleOrThrow() {
         if (!getFeatureModuleInstalled()) {
             throw new RuntimeException(
-                    "failed to create dependencies: feature module not installed");
+                    "Failed to create dependencies: Feature module not installed");
         }
 
-        AutofillAssistantModuleEntry module =
-                AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled();
-        mDependencies =
-                AutofillAssistantFacade.createDependencies(TabUtils.getActivity(mTab), module);
-        return mDependencies;
+        return AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled();
+    }
+
+    /**
+     * Returns and optionally refreshes the dependencies and the onboarding helper. Since the
+     * onboarding helper gets invalidated when the dependencies are invalidated we use the same
+     * method to refresh them.
+     * */
+    @CalledByNative
+    private @Nullable Object[] getOrCreateDependenciesAndOnboardingHelper() {
+        if (mDependencies == null) {
+            AutofillAssistantModuleEntry module = getModuleOrThrow();
+            mDependencies =
+                    AutofillAssistantFacade.createDependencies(TabUtils.getActivity(mTab), module);
+            mOnboardingHelper = module.createOnboardingHelper(mDependencies);
+        }
+
+        return new Object[] {mDependencies, mOnboardingHelper};
+    }
+
+    @CalledByNative
+    private boolean getIsTabCreatedByGSA() {
+        // This can fail for certain tabs (e.g., hidden background tabs).
+        if (TabUtils.getActivity(mTab) == null) {
+            return false;
+        }
+        Intent intent = TabUtils.getActivity(mTab).getIntent();
+        if (intent == null) {
+            // This should never happen, this is just a failsafe.
+            return false;
+        }
+        return IntentHandler.determineExternalIntentSource(intent) == ExternalAppId.GSA;
     }
 
     @NativeMethods
@@ -297,6 +333,8 @@ public class Starter extends EmptyTabObserver implements UserData {
                 long nativeStarterAndroid, Starter caller, boolean isInteractable);
         void onActivityAttachmentChanged(long nativeStarterAndroid, Starter caller);
         void start(long nativeStarterAndroid, Starter caller, String experimentIds,
-                String[] parameterNames, String[] parameterValues, String initialUrl);
+                String[] parameterNames, String[] parameterValues,
+                String[] deviceOnlyParameterNames, String[] deviceOnlyParameterValues,
+                String initialUrl);
     }
 }

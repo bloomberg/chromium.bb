@@ -13,7 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -24,12 +24,14 @@
 #include "components/download/public/common/download_destination_observer.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_rename_progress_update.h"
 #include "components/download/public/common/download_job.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -60,7 +62,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
                 ui::PageTransition transition_type,
                 bool has_user_gesture,
                 const std::string& remote_address,
-                base::Time start_time);
+                base::Time start_time,
+                ::network::mojom::CredentialsMode credentials_mode,
+                const absl::optional<net::IsolationInfo>& isolation_info,
+                int64_t range_request_from,
+                int64_t range_request_to);
     RequestInfo();
     explicit RequestInfo(const RequestInfo& other);
     explicit RequestInfo(const GURL& url);
@@ -104,6 +110,18 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
     // Time the download was started.
     base::Time start_time;
+
+    // The credentials mode of the request.
+    ::network::mojom::CredentialsMode credentials_mode =
+        ::network::mojom::CredentialsMode::kInclude;
+
+    // Isolation info for the request.
+    absl::optional<net::IsolationInfo> isolation_info;
+
+    // Range request offsets. Used only for explicitly download part of the
+    // content.
+    int64_t range_request_from = kInvalidRange;
+    int64_t range_request_to = kInvalidRange;
   };
 
   // Information about the current state of the download destination.
@@ -196,7 +214,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       base::Time last_access_time,
       bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      const DownloadItemRerouteInfo& reroute_info,
       absl::optional<DownloadSchedule> download_schedule,
+      int64_t range_request_from,
+      int64_t range_request_to,
       std::unique_ptr<DownloadEntry> download_entry);
 
   // Constructing for a regular download.
@@ -214,6 +235,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
                    const std::string& mime_type,
                    DownloadJob::CancelRequestCallback cancel_request_callback);
 
+  DownloadItemImpl(const DownloadItemImpl&) = delete;
+  DownloadItemImpl& operator=(const DownloadItemImpl&) = delete;
+
   ~DownloadItemImpl() override;
 
   // DownloadItem
@@ -222,6 +246,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void UpdateObservers() override;
   void ValidateDangerousDownload() override;
   void ValidateMixedContentDownload() override;
+  void AcceptIncognitoWarning() override;
   void StealDangerousDownload(bool need_removal,
                               AcquireFileCallback callback) override;
   void Pause() override;
@@ -275,8 +300,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   DownloadFile* GetDownloadFile() override;
   DownloadItemRenameHandler* GetRenameHandler() override;
+  const DownloadItemRerouteInfo& GetRerouteInfo() const override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
+  bool ShouldShowIncognitoWarning() const override;
   DownloadDangerType GetDangerType() const override;
   MixedContentStatus GetMixedContentStatus() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
@@ -301,6 +328,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   bool IsParallelDownload() const override;
   DownloadCreationType GetDownloadCreationType() const override;
   const absl::optional<DownloadSchedule>& GetDownloadSchedule() const override;
+  ::network::mojom::CredentialsMode GetCredentialsMode() const override;
+  const absl::optional<net::IsolationInfo>& GetIsolationInfo() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
   void OnAsyncScanningCompleted(DownloadDangerType danger_type) override;
@@ -384,6 +413,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Gets the approximate memory usage of this item.
   size_t GetApproximateMemoryUsage() const;
+
+  std::pair<int64_t, int64_t> GetRangeRequestOffset() const;
 
  private:
   // Fine grained states of a download.
@@ -597,6 +628,15 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // DownloadItem::Completed().
   void OnDownloadCompleting();
 
+  // Called by |rename_handler_| to update state variables when necessary.
+  // This may update |destination_info_.target_file_path| as confirmed by
+  // rerouted location to be reflected in the UI/UX, and attach other reroute
+  // specific metadata into |reroute_info_| to be persisted into the databases.
+  // However, this will not transition the internal |state_|, because the
+  // |rename_handler_| will eventually run OnDownloadRenamedToFinalName() on
+  // completion.
+  void OnRenameHandlerUpdate(const DownloadItemRenameProgressUpdate& update);
+
   void OnDownloadRenamedToFinalName(DownloadInterruptReason reason,
                                     const base::FilePath& full_path);
 
@@ -746,6 +786,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // The current state of this download.
   DownloadInternalState state_ = INITIAL_INTERNAL;
 
+  // A flag for indicating whether user has accepted incognito warning or not
+  bool incognito_warning_accepted_ = false;
+
   // Current danger type for the download.
   DownloadDangerType danger_type_ = DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
 
@@ -753,7 +796,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Our delegate.
-  DownloadItemImplDelegate* delegate_ = nullptr;
+  raw_ptr<DownloadItemImplDelegate> delegate_ = nullptr;
 
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_ = false;
@@ -865,12 +908,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // A handler for renaming and helping with display the item.
   std::unique_ptr<DownloadItemRenameHandler> rename_handler_;
+  // Metadata specific to the rename handler.
+  DownloadItemRerouteInfo reroute_info_;
 
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };
 
 }  // namespace download

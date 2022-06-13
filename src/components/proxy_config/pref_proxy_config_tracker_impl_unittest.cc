@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -15,6 +16,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "net/base/proxy_string_util.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -106,7 +108,7 @@ class PrefProxyConfigTrackerImplTest : public testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  TestProxyConfigService* delegate_service_; // weak
+  raw_ptr<TestProxyConfigService> delegate_service_;  // weak
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   net::ProxyConfigWithAnnotation fixed_config_;
   std::unique_ptr<PrefProxyConfigTrackerImpl> proxy_config_tracker_;
@@ -135,8 +137,8 @@ TEST_F(PrefProxyConfigTrackerImplTest, DynamicPrefOverrides) {
   EXPECT_EQ(net::ProxyConfig::ProxyRules::Type::PROXY_LIST,
             actual_config.value().proxy_rules().type);
   EXPECT_EQ(actual_config.value().proxy_rules().single_proxies.Get(),
-            net::ProxyServer::FromURI("http://example.com:3128",
-                                      net::ProxyServer::SCHEME_HTTP));
+            net::ProxyUriToProxyServer("http://example.com:3128",
+                                       net::ProxyServer::SCHEME_HTTP));
 
   pref_service_->SetManagedPref(
       proxy_config::prefs::kProxy,

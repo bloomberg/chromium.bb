@@ -12,9 +12,9 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -198,7 +198,7 @@ FeatureInfo::FeatureInfo(
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
+#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
@@ -206,7 +206,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::P010);
@@ -278,6 +278,11 @@ void FeatureInfo::InitializeForTesting(ContextType context_type) {
 }
 
 bool IsGL_REDSupportedOnFBOs() {
+#if defined(OS_MAC)
+  // The glTexImage2D call below can hang on Mac so skip this since it's only
+  // really needed to workaround a Mesa issue. See https://crbug.com/1158744.
+  return true;
+#else
   DCHECK(glGetError() == GL_NO_ERROR);
   // Skia uses GL_RED with frame buffers, unfortunately, Mesa claims to support
   // GL_EXT_texture_rg, but it doesn't support it on frame buffers.  To fix
@@ -309,6 +314,7 @@ bool IsGL_REDSupportedOnFBOs() {
   DCHECK(glGetError() == GL_NO_ERROR);
 
   return result;
+#endif  // defined(OS_MAC)
 }
 
 void FeatureInfo::EnableCHROMIUMTextureStorageImage() {
@@ -987,7 +993,19 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_sized_texture_filterable_internal_format.AddValue(
         GL_BGRA8_EXT);
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
-    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRX_8888);
+#if defined(OS_MAC)
+    // TODO(sugoi): Remove this once crbug.com/1276529 is fixed.
+    // On Mac OS, DrawingBuffer is using an IOSurface as its backing storage,
+    // this allows WebGL-rendered canvases to be composited by the OS rather
+    // than Chrome. Currently, this causes an issue on MacOS with SwANGLE when
+    // alpha is false, so disable that case for now so that we go through
+    // emulation.
+    if (!gl_version_info_->is_angle_swiftshader)
+#endif
+    {
+      feature_flags_.gpu_memory_buffer_formats.Add(
+          gfx::BufferFormat::BGRX_8888);
+    }
   }
 
   // On desktop, all devices support BGRA render buffers (note that on desktop
@@ -1537,6 +1555,7 @@ void FeatureInfo::InitializeFeatures() {
     // TODO(shrekshao): gpu_memory_buffer_formats is not used by WebGL
     // So didn't expose all buffer formats here.
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_16);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RG_1616);
   }
 
   if (enable_es3 && gfx::HasExtension(extensions, "GL_EXT_window_rectangles")) {
@@ -1622,11 +1641,6 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.ext_debug_marker = true;
     AddExtensionString("GL_EXT_debug_marker");
   }
-
-  // UnpremultiplyAndDitherCopyCHROMIUM is only implemented on the full decoder.
-  feature_flags_.unpremultiply_and_dither_copy = !is_passthrough_cmd_decoder_;
-  if (feature_flags_.unpremultiply_and_dither_copy)
-    AddExtensionString("GL_CHROMIUM_unpremultiply_and_dither_copy");
 
   // On D3D, there is only one ref, mask, and writemask setting which applies
   // to both FRONT and BACK faces. This restriction is always applied to WebGL.

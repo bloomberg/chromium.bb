@@ -31,14 +31,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_CUE_H_
 
 #include "third_party/blink/renderer/core/html/track/text_track_cue.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 
 class Document;
-class DoubleOrAutoKeyword;
 class ExecutionContext;
 class V8UnionAutoKeywordOrDouble;
 class VTTCue;
@@ -53,7 +52,7 @@ struct VTTDisplayParameters {
  public:
   VTTDisplayParameters();
 
-  FloatPoint position;
+  gfx::PointF position;
   double size;
   CSSValueID direction;
   CSSValueID text_align;
@@ -119,22 +118,12 @@ class CORE_EXPORT VTTCue final : public TextTrackCue {
   bool snapToLines() const { return snap_to_lines_; }
   void setSnapToLines(bool);
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8UnionAutoKeywordOrDouble* line() const;
   void setLine(const V8UnionAutoKeywordOrDouble* position);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void line(DoubleOrAutoKeyword&) const;
-  void setLine(const DoubleOrAutoKeyword&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8UnionAutoKeywordOrDouble* position() const;
   void setPosition(const V8UnionAutoKeywordOrDouble* position,
                    ExceptionState& exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void position(DoubleOrAutoKeyword&) const;
-  void setPosition(const DoubleOrAutoKeyword&, ExceptionState&);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   double size() const { return cue_size_; }
   void setSize(double, ExceptionState&);

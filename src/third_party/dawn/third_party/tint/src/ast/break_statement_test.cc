@@ -24,7 +24,7 @@ using BreakStatementTest = TestHelper;
 
 TEST_F(BreakStatementTest, Creation_WithSource) {
   auto* stmt = create<BreakStatement>(Source{Source::Location{20, 2}});
-  auto src = stmt->source();
+  auto src = stmt->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -32,12 +32,6 @@ TEST_F(BreakStatementTest, Creation_WithSource) {
 TEST_F(BreakStatementTest, IsBreak) {
   auto* stmt = create<BreakStatement>();
   EXPECT_TRUE(stmt->Is<BreakStatement>());
-}
-
-TEST_F(BreakStatementTest, ToStr) {
-  auto* stmt = create<BreakStatement>();
-  EXPECT_EQ(str(stmt), R"(Break{}
-)");
 }
 
 }  // namespace

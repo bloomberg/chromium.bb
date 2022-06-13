@@ -6,14 +6,12 @@
 
 #include "core/fxge/dib/cfx_imagestretcher.h"
 
-#include <climits>
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/cstretchengine.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -36,12 +34,13 @@ FXDIB_Format GetStretchedFormat(const CFX_DIBBase& src) {
 
 }  // namespace
 
-CFX_ImageStretcher::CFX_ImageStretcher(ScanlineComposerIface* pDest,
-                                       const RetainPtr<CFX_DIBBase>& pSource,
-                                       int dest_width,
-                                       int dest_height,
-                                       const FX_RECT& bitmap_rect,
-                                       const FXDIB_ResampleOptions& options)
+CFX_ImageStretcher::CFX_ImageStretcher(
+    ScanlineComposerIface* pDest,
+    const RetainPtr<const CFX_DIBBase>& pSource,
+    int dest_width,
+    int dest_height,
+    const FX_RECT& bitmap_rect,
+    const FXDIB_ResampleOptions& options)
     : m_pDest(pDest),
       m_pSource(pSource),
       m_ResampleOptions(options),
@@ -93,7 +92,7 @@ bool CFX_ImageStretcher::Continue(PauseIndicatorIface* pPause) {
   return ContinueStretch(pPause);
 }
 
-RetainPtr<CFX_DIBBase> CFX_ImageStretcher::source() {
+RetainPtr<const CFX_DIBBase> CFX_ImageStretcher::source() {
   return m_pSource;
 }
 

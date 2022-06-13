@@ -27,6 +27,11 @@
 // Adds |fakeIdentity| to the fake identity service.
 + (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
+// Maps |capabilities| to the |fakeIdentity|.
+// Must be called after |addFakeIdentity|.
++ (void)setCapabilities:(NSDictionary*)capabilities
+            forIdentity:(FakeChromeIdentity*)fakeIdentity;
+
 // Removes |fakeIdentity| from the fake chrome identity service asynchronously
 // to simulate identity removal from the device.
 + (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
@@ -42,14 +47,19 @@
 // Checks that no identity is signed in.
 + (BOOL)isSignedOut;
 
-// Returns a matcher for an identity picker cell for |email|.
-+ (id<GREYMatcher>)identityCellMatcherForEmail:(NSString*)email;
-
-// Checks if any identity is currently authenticated.
-+ (BOOL)isAuthenticated;
+// Checks whether there is a primary identity.
++ (BOOL)hasPrimaryIdentity;
 
 // Signs out the current user.
 + (void)signOut;
+
+// Triggers the reauth dialog. This is done by sending ShowSigninCommand to
+// SceneController, without any UI interaction to open the dialog.
++ (void)triggerReauthDialogWithFakeIdentity:(FakeChromeIdentity*)identity;
+
+// Triggers the web sign-in consistency dialog. This is done by calling
+// directly the current SceneController.
++ (void)triggerConsistencyPromoSigninDialog;
 
 @end
 

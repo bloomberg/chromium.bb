@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -205,10 +206,10 @@ static bool PointInFrameContentIfVisible(Document& document,
   document.UpdateStyleAndLayout(DocumentUpdateReason::kHitTest);
 
   auto* scrollable_area = frame_view->LayoutViewport();
-  IntRect visible_frame_rect(IntPoint(),
-                             scrollable_area->VisibleContentRect().Size());
-  visible_frame_rect.Scale(1 / frame->PageZoomFactor());
-  if (!visible_frame_rect.Contains(RoundedIntPoint(point_in_frame)))
+  gfx::Rect visible_frame_rect(scrollable_area->VisibleContentRect().size());
+  visible_frame_rect =
+      gfx::ScaleToRoundedRect(visible_frame_rect, 1 / frame->PageZoomFactor());
+  if (!visible_frame_rect.Contains(ToRoundedPoint(point_in_frame)))
     return false;
 
   point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());

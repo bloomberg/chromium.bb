@@ -73,7 +73,7 @@ void WebViewTranslateClient::RevertTranslation() {
 
 bool WebViewTranslateClient::RequestTranslationOffer() {
   if (translate_manager_.CanManuallyTranslate()) {
-    translate_manager_.InitiateManualTranslation();
+    translate_manager_.ShowTranslateUI();
     return true;
   } else {
     return false;
@@ -131,11 +131,6 @@ bool WebViewTranslateClient::IsTranslatableURL(const GURL& url) {
 
 bool WebViewTranslateClient::IsAutofillAssistantRunning() const {
   return false;
-}
-
-void WebViewTranslateClient::ShowReportLanguageDetectionErrorUI(
-    const GURL& report_url) {
-  NOTREACHED();
 }
 
 }  // namespace ios_web_view

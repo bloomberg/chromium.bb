@@ -184,6 +184,7 @@ namespace dawn_native { namespace d3d12 {
         uint64_t bytesEvicted;
         DAWN_TRY_ASSIGN(bytesEvicted,
                         EnsureCanMakeResident(allocationSize, GetMemorySegmentInfo(memorySegment)));
+        DAWN_UNUSED(bytesEvicted);
 
         return {};
     }
@@ -298,6 +299,7 @@ namespace dawn_native { namespace d3d12 {
                                                          ID3D12Pageable** allocations) {
         uint64_t bytesEvicted;
         DAWN_TRY_ASSIGN(bytesEvicted, EnsureCanMakeResident(sizeToMakeResident, segment));
+        DAWN_UNUSED(bytesEvicted);
 
         // Note that MakeResident is a synchronous function and can add a significant
         // overhead to command recording. In the future, it may be possible to decrease this
@@ -349,7 +351,6 @@ namespace dawn_native { namespace d3d12 {
     // Places an artifical cap on Dawn's budget so we can test in a predictable manner. If used,
     // this function must be called before any resources have been created.
     void ResidencyManager::RestrictBudgetForTesting(uint64_t artificialBudgetCap) {
-        ASSERT(mVideoMemoryInfo.local.lruCache.empty());
         ASSERT(mVideoMemoryInfo.nonLocal.lruCache.empty());
         ASSERT(!mRestrictBudgetForTesting);
 

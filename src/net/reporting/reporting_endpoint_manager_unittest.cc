@@ -9,7 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "net/base/backoff_entry.h"
+#include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
 #include "net/reporting/reporting_cache.h"
@@ -17,6 +19,7 @@
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -31,6 +34,10 @@ class TestReportingCache : public ReportingCache {
   TestReportingCache(const url::Origin& expected_origin,
                      const std::string& expected_group)
       : expected_origin_(expected_origin), expected_group_(expected_group) {}
+
+  TestReportingCache(const TestReportingCache&) = delete;
+  TestReportingCache& operator=(const TestReportingCache&) = delete;
+
   ~TestReportingCache() override = default;
 
   void SetEndpoint(const ReportingEndpoint& reporting_endpoint) {
@@ -48,7 +55,8 @@ class TestReportingCache : public ReportingCache {
   }
 
   // Everything below is NOTREACHED.
-  void AddReport(const NetworkIsolationKey& network_isolation_key,
+  void AddReport(const absl::optional<base::UnguessableToken>& reporting_source,
+                 const NetworkIsolationKey& network_isolation_key,
                  const GURL& url,
                  const std::string& user_agent,
                  const std::string& group_name,
@@ -71,6 +79,11 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
     return {};
   }
+  std::vector<const ReportingReport*> GetReportsToDeliverForSource(
+      const base::UnguessableToken& reporting_source) override {
+    NOTREACHED();
+    return {};
+  }
   void ClearReportsPending(
       const std::vector<const ReportingReport*>& reports) override {
     NOTREACHED();
@@ -79,20 +92,41 @@ class TestReportingCache : public ReportingCache {
       const std::vector<const ReportingReport*>& reports) override {
     NOTREACHED();
   }
+  base::flat_map<url::Origin, std::vector<ReportingEndpoint>>
+  GetV1ReportingEndpointsByOrigin() const override {
+    NOTREACHED();
+    return base::flat_map<url::Origin, std::vector<ReportingEndpoint>>();
+  }
   void IncrementEndpointDeliveries(const ReportingEndpointGroupKey& group_key,
                                    const GURL& url,
                                    int reports_delivered,
                                    bool successful) override {
     NOTREACHED();
   }
+  void SetExpiredSource(
+      const base::UnguessableToken& reporting_source) override {
+    NOTREACHED();
+  }
+  const base::flat_set<base::UnguessableToken>& GetExpiredSources()
+      const override {
+    NOTREACHED();
+    return expired_sources_;
+  }
+  void RemoveReports(
+      const std::vector<const ReportingReport*>& reports) override {
+    NOTREACHED();
+  }
   void RemoveReports(const std::vector<const ReportingReport*>& reports,
-                     ReportingReport::Outcome outcome) override {
+                     bool delivery_success) override {
     NOTREACHED();
   }
-  void RemoveAllReports(ReportingReport::Outcome outcome) override {
-    NOTREACHED();
-  }
+  void RemoveAllReports() override { NOTREACHED(); }
   size_t GetFullReportCountForTesting() const override {
+    NOTREACHED();
+    return 0;
+  }
+  size_t GetReportCountWithStatusForTesting(
+      ReportingReport::Status status) const override {
     NOTREACHED();
     return 0;
   }
@@ -108,6 +142,12 @@ class TestReportingCache : public ReportingCache {
       const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       std::vector<ReportingEndpointGroup> parsed_header) override {
+    NOTREACHED();
+  }
+  void OnParsedReportingEndpointsHeader(
+      const base::UnguessableToken& reporting_source,
+      const IsolationInfo& isolation_info,
+      std::vector<ReportingEndpoint> endpoints) override {
     NOTREACHED();
   }
   std::set<url::Origin> GetAllOrigins() const override {
@@ -127,6 +167,10 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
   }
   void RemoveEndpointsForUrl(const GURL& url) override { NOTREACHED(); }
+  void RemoveSourceAndEndpoints(
+      const base::UnguessableToken& reporting_source) override {
+    NOTREACHED();
+  }
   void AddClientsLoadedFromStore(
       std::vector<ReportingEndpoint> loaded_endpoints,
       std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups)
@@ -142,6 +186,12 @@ class TestReportingCache : public ReportingCache {
     return 0;
   }
   void Flush() override { NOTREACHED(); }
+  ReportingEndpoint GetV1EndpointForTesting(
+      const base::UnguessableToken& reporting_source,
+      const std::string& endpoint_name) const override {
+    NOTREACHED();
+    return ReportingEndpoint();
+  }
   ReportingEndpoint GetEndpointForTesting(
       const ReportingEndpointGroupKey& group_key,
       const GURL& url) const override {
@@ -167,6 +217,10 @@ class TestReportingCache : public ReportingCache {
     NOTREACHED();
     return 0;
   }
+  size_t GetReportingSourceCountForTesting() const override {
+    NOTREACHED();
+    return 0;
+  }
   void SetEndpointForTesting(const ReportingEndpointGroupKey& group_key,
                              const GURL& url,
                              OriginSubdomains include_subdomains,
@@ -175,6 +229,17 @@ class TestReportingCache : public ReportingCache {
                              int weight) override {
     NOTREACHED();
   }
+  void SetV1EndpointForTesting(const ReportingEndpointGroupKey& group_key,
+                               const base::UnguessableToken& reporting_source,
+                               const IsolationInfo& isolation_info,
+                               const GURL& url) override {
+    NOTREACHED();
+  }
+  IsolationInfo GetIsolationInfoForEndpoint(
+      const ReportingEndpoint& endpoint) const override {
+    NOTREACHED();
+    return IsolationInfo();
+  }
 
  private:
   const url::Origin expected_origin_;
@@ -182,8 +247,7 @@ class TestReportingCache : public ReportingCache {
 
   std::map<NetworkIsolationKey, std::vector<ReportingEndpoint>>
       reporting_endpoints_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestReportingCache);
+  base::flat_set<base::UnguessableToken> expired_sources_;
 };
 
 class ReportingEndpointManagerTest : public testing::Test {
@@ -250,8 +314,8 @@ TEST_F(ReportingEndpointManagerTest, Endpoint) {
 TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   ASSERT_EQ(2.0, policy_.endpoint_backoff_policy.multiply_factor);
 
-  base::TimeDelta initial_delay = base::TimeDelta::FromMilliseconds(
-      policy_.endpoint_backoff_policy.initial_delay_ms);
+  base::TimeDelta initial_delay =
+      base::Milliseconds(policy_.endpoint_backoff_policy.initial_delay_ms);
 
   SetEndpoint(kEndpoint);
 
@@ -374,7 +438,7 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
 
   // Advance the current time far enough to clear out the primary endpoint's
   // backoff clock.  This should bring the primary endpoint back into play.
-  clock_.Advance(base::TimeDelta::FromMinutes(2));
+  clock_.Advance(base::Minutes(2));
   ReportingEndpoint endpoint3 =
       endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint3);

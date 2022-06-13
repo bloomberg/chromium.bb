@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
@@ -49,12 +49,11 @@ MojoCdmService::~MojoCdmService() {
 }
 
 void MojoCdmService::Initialize(CdmFactory* cdm_factory,
-                                const std::string& key_system,
                                 const CdmConfig& cdm_config,
                                 InitializeCB init_cb) {
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory->Create(
-      key_system, cdm_config,
+      cdm_config,
       base::BindRepeating(&MojoCdmService::OnSessionMessage, weak_this),
       base::BindRepeating(&MojoCdmService::OnSessionClosed, weak_this),
       base::BindRepeating(&MojoCdmService::OnSessionKeysChange, weak_this),
@@ -220,10 +219,11 @@ void MojoCdmService::OnSessionExpirationUpdate(const std::string& session_id,
   }
 }
 
-void MojoCdmService::OnSessionClosed(const std::string& session_id) {
+void MojoCdmService::OnSessionClosed(const std::string& session_id,
+                                     CdmSessionClosedReason reason) {
   DVLOG(2) << __func__;
   if (client_) {
-    client_->OnSessionClosed(session_id);
+    client_->OnSessionClosed(session_id, reason);
   }
 }
 

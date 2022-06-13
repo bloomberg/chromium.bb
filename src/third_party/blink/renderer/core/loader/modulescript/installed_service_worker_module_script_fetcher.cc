@@ -5,14 +5,13 @@
 #include "third_party/blink/renderer/core/loader/modulescript/installed_service_worker_module_script_fetcher.h"
 
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -71,8 +70,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
         script_data->GetResponseAddressSpace(),
         ParseContentSecurityPolicyHeaders(
             script_data->GetContentSecurityPolicyResponseHeaders()),
-        script_data->CreateOriginTrialTokens().get(),
-        mojom::blink::kAppCacheNoCacheId);
+        script_data->CreateOriginTrialTokens().get());
   }
 
   // TODO(sasebree) De-duplicate similar logic that lives in

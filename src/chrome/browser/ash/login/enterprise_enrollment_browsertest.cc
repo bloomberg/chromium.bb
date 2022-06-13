@@ -4,9 +4,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -24,7 +24,6 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/enrollment_status.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -34,12 +33,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
-using testing::_;
-using testing::Invoke;
-using testing::InvokeWithoutArgs;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 constexpr char kPartitionAttribute[] = ".partition";
@@ -93,8 +87,6 @@ constexpr char kAdDomainJoinUnlockedConfig[] = R"!!!(
 constexpr char kEnrollmentUI[] = "enterprise-enrollment";
 constexpr char kAdDialog[] = "step-ad-join";
 
-const test::UIPath kBackButton = {kEnrollmentUI, "step-signin",
-                                  "signin-back-button"};
 const test::UIPath kAdRetryButton = {kEnrollmentUI, "adRetryButton"};
 const test::UIPath kWebview = {kEnrollmentUI, "step-signin", "signin-frame"};
 
@@ -157,6 +149,10 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
  public:
   EnterpriseEnrollmentTestBase() = default;
 
+  EnterpriseEnrollmentTestBase(const EnterpriseEnrollmentTestBase&) = delete;
+  EnterpriseEnrollmentTestBase& operator=(const EnterpriseEnrollmentTestBase&) =
+      delete;
+
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
     enrollment_screen()->OnLoginDone(
@@ -181,9 +177,7 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
 
   // Setup the enrollment screen.
   void ShowEnrollmentScreen() {
-    LoginDisplayHost* host = LoginDisplayHost::default_host();
-    ASSERT_TRUE(host != nullptr);
-    host->StartWizard(EnrollmentScreenView::kScreenId);
+    host()->StartWizard(EnrollmentScreenView::kScreenId);
     OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
     ASSERT_TRUE(enrollment_screen() != nullptr);
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
@@ -199,21 +193,27 @@ class EnterpriseEnrollmentTestBase : public OobeBaseTest {
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTestBase);
+  LoginDisplayHost* host() {
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
+    EXPECT_NE(host, nullptr);
+    return host;
+  }
 };
 
 class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
  public:
   EnterpriseEnrollmentTest() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
+  EnterpriseEnrollmentTest(const EnterpriseEnrollmentTest&) = delete;
+  EnterpriseEnrollmentTest& operator=(const EnterpriseEnrollmentTest&) = delete;
 };
 
 class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
  public:
   ActiveDirectoryJoinTest() = default;
+
+  ActiveDirectoryJoinTest(const ActiveDirectoryJoinTest&) = delete;
+  ActiveDirectoryJoinTest& operator=(const ActiveDirectoryJoinTest&) = delete;
 
   void SetUp() override {
     mock_authpolicy_client_ = new MockAuthPolicyClient();
@@ -415,8 +415,6 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
  private:
   // Owned by the AuthPolicyClient global instance.
   MockAuthPolicyClient* mock_authpolicy_client_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
 };
 
 // Shows the enrollment screen and simulates an enrollment complete event. We
@@ -498,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
   // Cancel button is enabled when the authenticator is ready. Do it manually
   // instead of waiting for it.
   test::ExecuteOobeJS("$('enterprise-enrollment').isCancelDisabled = false");
-  test::OobeJS().ClickOnPath(kBackButton);
+  host()->HandleAccelerator(LoginAcceleratorAction::kCancelScreenAction);
 
   // Simulate navigating over the enrollment screen a second time.
   ShowEnrollmentScreen();
@@ -690,4 +688,4 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   CheckPossibleConfiguration(kAdDomainJoinUnlockedConfig);
 }
 
-}  // namespace chromeos
+}  // namespace ash

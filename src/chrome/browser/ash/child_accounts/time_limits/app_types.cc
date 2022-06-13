@@ -22,7 +22,9 @@ std::string AppTypeToString(apps::mojom::AppType app_type) {
       return "Arc";
     case apps::mojom::AppType::kWeb:
       return "Web";
+    case apps::mojom::AppType::kChromeApp:
     case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
       return "Extension";
     case apps::mojom::AppType::kBuiltIn:
       return "Built in";
@@ -110,10 +112,8 @@ AppLimit::AppLimit(AppRestriction restriction,
       last_updated_(last_updated) {
   DCHECK_EQ(restriction_ == AppRestriction::kBlocked,
             daily_limit_ == absl::nullopt);
-  DCHECK(daily_limit_ == absl::nullopt ||
-         daily_limit >= base::TimeDelta::FromHours(0));
-  DCHECK(daily_limit_ == absl::nullopt ||
-         daily_limit <= base::TimeDelta::FromHours(24));
+  DCHECK(daily_limit_ == absl::nullopt || daily_limit >= base::Hours(0));
+  DCHECK(daily_limit_ == absl::nullopt || daily_limit <= base::Hours(24));
 }
 
 AppLimit::AppLimit(const AppLimit&) = default;
@@ -140,7 +140,7 @@ absl::optional<AppActivity::ActiveTime> AppActivity::ActiveTime::Merge(
 
 // static
 const base::TimeDelta AppActivity::ActiveTime::kActiveTimeMergePrecision =
-    base::TimeDelta::FromSeconds(1);
+    base::Seconds(1);
 
 AppActivity::ActiveTime::ActiveTime(base::Time start, base::Time end)
     : active_from_(start), active_to_(end) {
@@ -185,7 +185,7 @@ void AppActivity::ActiveTime::set_active_to(base::Time active_to) {
 
 AppActivity::AppActivity(AppState app_state)
     : app_state_(app_state),
-      running_active_time_(base::TimeDelta::FromSeconds(0)),
+      running_active_time_(base::Seconds(0)),
       last_updated_time_ticks_(base::TimeTicks::Now()) {}
 AppActivity::AppActivity(AppState app_state,
                          base::TimeDelta running_active_time)
@@ -222,7 +222,7 @@ void AppActivity::SetAppInactive(base::Time timestamp) {
 
 void AppActivity::ResetRunningActiveTime(base::Time timestamp) {
   CaptureOngoingActivity(timestamp);
-  running_active_time_ = base::TimeDelta::FromMinutes(0);
+  running_active_time_ = base::Minutes(0);
 }
 
 base::TimeDelta AppActivity::RunningActiveTime() const {

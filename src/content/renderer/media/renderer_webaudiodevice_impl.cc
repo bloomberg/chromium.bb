@@ -24,12 +24,12 @@
 #include "media/base/silent_sink_suspender.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
-#include "third_party/blink/public/web/modules/media/audio/web_audio_device_factory.h"
+#include "third_party/blink/public/web/modules/media/audio/audio_device_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
 
+using blink::AudioDeviceFactory;
 using blink::WebAudioDevice;
-using blink::WebAudioDeviceFactory;
 using blink::WebAudioLatencyHint;
 using blink::WebLocalFrame;
 using blink::WebVector;
@@ -77,8 +77,8 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
           hardware_params.sample_rate(), hardware_params.frames_per_buffer());
     case media::AudioLatency::LATENCY_EXACT_MS:
       return media::AudioLatency::GetExactBufferSize(
-          base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
-          hardware_params.sample_rate(), hardware_params.frames_per_buffer(),
+          base::Seconds(latency_hint.Seconds()), hardware_params.sample_rate(),
+          hardware_params.frames_per_buffer(),
           hardware_capabilities.min_frames_per_buffer,
           hardware_capabilities.max_frames_per_buffer,
           media::limits::kMaxWebAudioBufferSize);
@@ -103,8 +103,8 @@ media::AudioParameters GetOutputDeviceParameters(
     const blink::LocalFrameToken& frame_token,
     const base::UnguessableToken& session_id,
     const std::string& device_id) {
-  return WebAudioDeviceFactory::GetOutputDeviceInfo(frame_token,
-                                                    {session_id, device_id})
+  return AudioDeviceFactory::GetOutputDeviceInfo(frame_token,
+                                                 {session_id, device_id})
       .output_params();
 }
 
@@ -153,7 +153,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
                          hardware_params.AsHumanReadableString().c_str()));
 
   const media::AudioLatency::LatencyType latency =
-      WebAudioDeviceFactory::GetSourceLatencyType(
+      AudioDeviceFactory::GetSourceLatencyType(
           GetLatencyHintSourceType(latency_hint_.Category()));
 
   const int output_buffer_size =
@@ -188,7 +188,7 @@ void RendererWebAudioDeviceImpl::Start() {
   if (sink_)
     return;  // Already started.
 
-  sink_ = WebAudioDeviceFactory::NewAudioRendererSink(
+  sink_ = AudioDeviceFactory::NewAudioRendererSink(
       GetLatencyHintSourceType(latency_hint_.Category()), frame_token_,
       media::AudioSinkParameters(session_id_, std::string()));
 
@@ -196,8 +196,7 @@ void RendererWebAudioDeviceImpl::Start() {
   // since it has special connotations for Blink and garbage collection. Timeout
   // value chosen to be highly unlikely in the normal case.
   webaudio_suspender_ = std::make_unique<media::SilentSinkSuspender>(
-      this, base::TimeDelta::FromSeconds(30), sink_params_, sink_,
-      GetSuspenderTaskRunner());
+      this, base::Seconds(30), sink_params_, sink_, GetSuspenderTaskRunner());
   sink_->Initialize(sink_params_, webaudio_suspender_.get());
 
   sink_->Start();
@@ -258,13 +257,6 @@ int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
   CHECK_EQ(dest->channels(), sink_params_.channels());
   for (int i = 0; i < dest->channels(); ++i)
     web_audio_dest_data_[i] = dest->channel(i);
-
-  if (!delay.is_zero()) {  // Zero values are send at the first call.
-    // Substruct the bus duration to get hardware delay.
-    delay -=
-        media::AudioTimestampHelper::FramesToTime(dest->frames(), SampleRate());
-  }
-  DCHECK_GE(delay, base::TimeDelta());
 
   client_callback_->Render(
       web_audio_dest_data_, dest->frames(), delay.InSecondsF(),

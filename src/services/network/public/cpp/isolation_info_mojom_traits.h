@@ -11,6 +11,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/cpp/schemeful_site_mojom_traits.h"
 #include "services/network/public/mojom/isolation_info.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/origin.h"
 
@@ -44,8 +45,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     return input.frame_origin();
   }
 
-  static bool opaque_and_non_transient(const net::IsolationInfo& input) {
-    return input.opaque_and_non_transient();
+  static const absl::optional<base::UnguessableToken>& nonce(
+      const net::IsolationInfo& input) {
+    return input.nonce_;
   }
 
   static const net::SiteForCookies& site_for_cookies(

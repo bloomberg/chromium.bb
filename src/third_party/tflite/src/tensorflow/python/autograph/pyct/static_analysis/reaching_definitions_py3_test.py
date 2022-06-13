@@ -15,10 +15,6 @@
 # ==============================================================================
 """Tests for reaching_definitions module, that only run in Python 3."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.python.autograph.pyct.static_analysis import reaching_definitions_test
 from tensorflow.python.platform import test
 
@@ -78,7 +74,7 @@ class ReachingDefinitionsAnalyzerTest(
 
     self.assertSameDef(local_body[1].test, local_body[2].value.elts[0])
 
-    # Note: the function name is is visible inside the function body. But it's
+    # Note: the function name is visible inside the function body. But it's
     # a closure variable, not a local.
     #
     # Example:

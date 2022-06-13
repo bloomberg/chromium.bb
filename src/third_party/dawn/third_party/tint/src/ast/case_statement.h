@@ -18,63 +18,48 @@
 #include <vector>
 
 #include "src/ast/block_statement.h"
-#include "src/ast/int_literal.h"
+#include "src/ast/int_literal_expression.h"
 
 namespace tint {
 namespace ast {
 
 /// A list of case literals
-using CaseSelectorList = std::vector<IntLiteral*>;
+using CaseSelectorList = std::vector<const IntLiteralExpression*>;
 
 /// A case statement
 class CaseStatement : public Castable<CaseStatement, Statement> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source information
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param selectors the case selectors
   /// @param body the case body
-  CaseStatement(ProgramID program_id,
-                const Source& source,
+  CaseStatement(ProgramID pid,
+                const Source& src,
                 CaseSelectorList selectors,
-                BlockStatement* body);
+                const BlockStatement* body);
   /// Move constructor
   CaseStatement(CaseStatement&&);
   ~CaseStatement() override;
 
-  /// @returns the case selectors, empty if none set
-  const CaseSelectorList& selectors() const { return selectors_; }
   /// @returns true if this is a default statement
-  bool IsDefault() const { return selectors_.empty(); }
-
-  /// @returns the case body
-  const BlockStatement* body() const { return body_; }
-  /// @returns the case body
-  BlockStatement* body() { return body_; }
+  bool IsDefault() const { return selectors.empty(); }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  CaseStatement* Clone(CloneContext* ctx) const override;
+  const CaseStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The case selectors, empty if none set
+  const CaseSelectorList selectors;
 
- private:
-  CaseStatement(const CaseStatement&) = delete;
-
-  CaseSelectorList const selectors_;
-  BlockStatement* const body_;
+  /// The case body
+  const BlockStatement* const body;
 };
 
 /// A list of case statements
-using CaseStatementList = std::vector<CaseStatement*>;
+using CaseStatementList = std::vector<const CaseStatement*>;
 
 }  // namespace ast
 }  // namespace tint

@@ -9,24 +9,28 @@
 load("//lib/branches.star", "branches")
 
 lucicfg.check_version(
-    min = "1.27.0",
+    min = "1.30.9",
     message = "Update depot_tools",
 )
-
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
 
 # Tell lucicfg what files it is allowed to touch
 lucicfg.config(
     config_dir = "generated",
     tracked_files = [
-        "cr-buildbucket-dev.cfg",
-        "luci-logdog-dev.cfg",
-        "luci-milo-dev.cfg",
-        "luci-scheduler-dev.cfg",
-        "realms-dev.cfg",
+        "luci/chops-weetbix-dev.cfg",
+        "luci/cr-buildbucket-dev.cfg",
+        "luci/luci-logdog-dev.cfg",
+        "luci/luci-milo-dev.cfg",
+        "luci/luci-scheduler-dev.cfg",
+        "luci/realms-dev.cfg",
     ],
     fail_on_warnings = True,
+)
+
+# Just copy chops-weetbix-dev.cfg to generated outputs.
+lucicfg.emit(
+    dest = "luci/chops-weetbix-dev.cfg",
+    data = io.read_file("chops-weetbix-dev.cfg"),
 )
 
 branches.exec("//dev/dev.star")

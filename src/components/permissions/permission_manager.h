@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_PERMISSIONS_PERMISSION_MANAGER_H_
 #define COMPONENTS_PERMISSIONS_PERMISSION_MANAGER_H_
 
+#include <map>
 #include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -39,6 +40,10 @@ class PermissionManager : public KeyedService,
                          ContentSettingsTypeHash>;
   PermissionManager(content::BrowserContext* browser_context,
                     PermissionContextMap permission_contexts);
+
+  PermissionManager(const PermissionManager&) = delete;
+  PermissionManager& operator=(const PermissionManager&) = delete;
+
   ~PermissionManager() override;
 
   // Converts from |url|'s actual origin to the "canonical origin" that should
@@ -60,16 +65,30 @@ class PermissionManager : public KeyedService,
   // ContentSettingsType enum. The methods which take PermissionType values
   // are for the content::PermissionControllerDelegate overrides and shouldn't
   // be used from chrome/.
-
+  // Deprecated. Use `RequestPermissionFromCurrentDocument` instead.
   void RequestPermission(ContentSettingsType permission,
                          content::RenderFrameHost* render_frame_host,
                          const GURL& requesting_origin,
                          bool user_gesture,
                          base::OnceCallback<void(ContentSetting)> callback);
+  // Deprecated. Use `RequestPermissionsFromCurrentDocument` instead.
   void RequestPermissions(
       const std::vector<ContentSettingsType>& permissions,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
+      bool user_gesture,
+      base::OnceCallback<void(const std::vector<ContentSetting>&)> callback);
+  void RequestPermissionFromCurrentDocument(
+      ContentSettingsType permission,
+      content::RenderFrameHost* render_frame_host,
+      bool user_gesture,
+      base::OnceCallback<void(ContentSetting)> callback);
+  // Requests the given `permission` on behalf of the last committed document in
+  // `render_frame_host`, also performing additional checks such as Permission
+  // Policy.
+  void RequestPermissionsFromCurrentDocument(
+      const std::vector<ContentSettingsType>& permissions,
+      content::RenderFrameHost* render_frame_host,
       bool user_gesture,
       base::OnceCallback<void(const std::vector<ContentSetting>&)> callback);
 
@@ -83,10 +102,18 @@ class PermissionManager : public KeyedService,
   // TODO(raymes): Currently we still pass the |requesting_origin| as a separate
   // parameter because we can't yet guarantee that it matches the last committed
   // origin of the RenderFrameHost. See crbug.com/698985.
+  // Deprecated. Use `GetPermissionStatusForCurrentDocument` instead.
   PermissionResult GetPermissionStatusForFrame(
       ContentSettingsType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin);
+
+  // Returns the status for the given `permission` on behalf of the last
+  // committed document in `render_frame_host`, also performing additional
+  // checks such as Permission Policy.
+  PermissionResult GetPermissionStatusForCurrentDocument(
+      ContentSettingsType permission,
+      content::RenderFrameHost* render_frame_host);
 
   // content::PermissionControllerDelegate implementation.
   void RequestPermission(
@@ -184,7 +211,7 @@ class PermissionManager : public KeyedService,
   // permissions::Observer:
   void OnPermissionChanged(const ContentSettingsPattern& primary_pattern,
                            const ContentSettingsPattern& secondary_pattern,
-                           ContentSettingsType content_type) override;
+                           ContentSettingsTypeSet content_type_set) override;
 
   PermissionResult GetPermissionStatusHelper(
       ContentSettingsType permission,
@@ -196,7 +223,7 @@ class PermissionManager : public KeyedService,
       const url::Origin& origin,
       ContentSettingsType permission);
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   PendingRequestsMap pending_requests_;
   PendingRequestLocalId::Generator request_local_id_generator_;
@@ -219,8 +246,6 @@ class PermissionManager : public KeyedService,
   url::Origin devtools_global_overrides_origin_;
 
   bool is_shutting_down_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionManager);
 };
 
 }  // namespace permissions

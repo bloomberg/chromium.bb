@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -25,6 +25,10 @@ class WebContents;
 // to the infobar manager for |web_contents|.
 class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
+  AlternateNavInfoBarDelegate(const AlternateNavInfoBarDelegate&) = delete;
+  AlternateNavInfoBarDelegate& operator=(const AlternateNavInfoBarDelegate&) =
+      delete;
+
   ~AlternateNavInfoBarDelegate() override;
 
   // Creates the delegate for omnibox navigations that have suggested URLs.
@@ -55,7 +59,7 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
   static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<AlternateNavInfoBarDelegate> delegate);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   const std::u16string text_;
 
   // The autocomplete match to be used when deleting the corresponding shortcut.
@@ -70,8 +74,6 @@ class AlternateNavInfoBarDelegate : public infobars::InfoBarDelegate {
   // navigation link, this will be removed from history.
   // For search navigations this is the search URL.
   const GURL original_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlternateNavInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_

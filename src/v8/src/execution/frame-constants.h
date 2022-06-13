@@ -204,6 +204,22 @@ class BuiltinFrameConstants : public TypedFrameConstants {
   DEFINE_TYPED_FRAME_SIZES(2);
 };
 
+class BuiltinWasmWrapperConstants : public TypedFrameConstants {
+ public:
+  // This slot contains the number of slots at the top of the frame that need to
+  // be scanned by the GC.
+  static constexpr int kGCScanSlotCountOffset =
+      TYPED_FRAME_PUSHED_VALUE_OFFSET(0);
+};
+
+class ReturnPromiseOnSuspendFrameConstants
+    : public BuiltinWasmWrapperConstants {
+ public:
+  static constexpr int kParamCountOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(1);
+  static constexpr int kSpillAreaSize =
+      -(kParamCountOffset - TypedFrameConstants::kFixedFrameSizeFromFp);
+};
+
 class ConstructFrameConstants : public TypedFrameConstants {
  public:
   // FP-relative.
@@ -283,7 +299,9 @@ class BuiltinExitFrameConstants : public ExitFrameConstants {
   static constexpr int kPaddingOffset = kArgcOffset + 1 * kSystemPointerSize;
   static constexpr int kFirstArgumentOffset =
       kPaddingOffset + 1 * kSystemPointerSize;
-  static constexpr int kNumExtraArgsWithReceiver = 5;
+  static constexpr int kNumExtraArgsWithoutReceiver = 4;
+  static constexpr int kNumExtraArgsWithReceiver =
+      kNumExtraArgsWithoutReceiver + 1;
 };
 
 // Unoptimized frames are used for interpreted and baseline-compiled JavaScript
@@ -403,6 +421,8 @@ inline static int FrameSlotToFPOffset(int slot) {
 #include "src/execution/mips/frame-constants-mips.h"
 #elif V8_TARGET_ARCH_MIPS64
 #include "src/execution/mips64/frame-constants-mips64.h"
+#elif V8_TARGET_ARCH_LOONG64
+#include "src/execution/loong64/frame-constants-loong64.h"
 #elif V8_TARGET_ARCH_S390
 #include "src/execution/s390/frame-constants-s390.h"
 #elif V8_TARGET_ARCH_RISCV64

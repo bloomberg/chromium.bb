@@ -144,11 +144,14 @@ inline void WienerVertical(const int16_t* wiener_buffer, const int width,
 // Thus in libaom's computation, an offset of 128 is needed for filter[3].
 template <int bitdepth, typename Pixel>
 void WienerFilter_C(
-    const RestorationUnitInfo& restoration_info, const void* const source,
-    const ptrdiff_t stride, const void* const top_border,
-    const ptrdiff_t top_border_stride, const void* const bottom_border,
+    const RestorationUnitInfo& LIBGAV1_RESTRICT restoration_info,
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_border,
+    const ptrdiff_t top_border_stride,
+    const void* LIBGAV1_RESTRICT const bottom_border,
     const ptrdiff_t bottom_border_stride, const int width, const int height,
-    RestorationBuffer* const restoration_buffer, void* const dest) {
+    RestorationBuffer* LIBGAV1_RESTRICT const restoration_buffer,
+    void* LIBGAV1_RESTRICT const dest) {
   constexpr int kCenterTap = kWienerFilterTaps / 2;
   const int16_t* const number_leading_zero_coefficients =
       restoration_info.wiener_info.number_leading_zero_coefficients;
@@ -867,11 +870,14 @@ inline void BoxFilterProcessPass2(const RestorationUnitInfo& restoration_info,
 
 template <int bitdepth, typename Pixel>
 void SelfGuidedFilter_C(
-    const RestorationUnitInfo& restoration_info, const void* const source,
-    const ptrdiff_t stride, const void* const top_border,
-    const ptrdiff_t top_border_stride, const void* const bottom_border,
+    const RestorationUnitInfo& LIBGAV1_RESTRICT restoration_info,
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_border,
+    const ptrdiff_t top_border_stride,
+    const void* LIBGAV1_RESTRICT const bottom_border,
     const ptrdiff_t bottom_border_stride, const int width, const int height,
-    RestorationBuffer* const restoration_buffer, void* const dest) {
+    RestorationBuffer* LIBGAV1_RESTRICT const restoration_buffer,
+    void* LIBGAV1_RESTRICT const dest) {
   const int index = restoration_info.sgr_proj_info.index;
   const int radius_pass_0 = kSgrProjParams[index][0];  // 2 or 0
   const int radius_pass_1 = kSgrProjParams[index][2];  // 1 or 0

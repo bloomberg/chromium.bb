@@ -21,27 +21,36 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::DisableValidationDecoration);
 namespace tint {
 namespace ast {
 
-DisableValidationDecoration::DisableValidationDecoration(
-    ProgramID program_id,
-    DisabledValidation validation)
-    : Base(program_id), validation_(validation) {}
+DisableValidationDecoration::DisableValidationDecoration(ProgramID pid,
+                                                         DisabledValidation val)
+    : Base(pid), validation(val) {}
 
 DisableValidationDecoration::~DisableValidationDecoration() = default;
 
-std::string DisableValidationDecoration::Name() const {
-  switch (validation_) {
+std::string DisableValidationDecoration::InternalName() const {
+  switch (validation) {
     case DisabledValidation::kFunctionHasNoBody:
       return "disable_validation__function_has_no_body";
     case DisabledValidation::kBindingPointCollision:
       return "disable_validation__binding_point_collision";
+    case DisabledValidation::kIgnoreStorageClass:
+      return "disable_validation__ignore_storage_class";
+    case DisabledValidation::kEntryPointParameter:
+      return "disable_validation__entry_point_parameter";
+    case DisabledValidation::kIgnoreConstructibleFunctionParameter:
+      return "disable_validation__ignore_constructible_function_parameter";
+    case DisabledValidation::kIgnoreStrideDecoration:
+      return "disable_validation__ignore_stride";
+    case DisabledValidation::kIgnoreInvalidPointerArgument:
+      return "disable_validation__ignore_invalid_pointer_argument";
   }
   return "<invalid>";
 }
 
-DisableValidationDecoration* DisableValidationDecoration::Clone(
+const DisableValidationDecoration* DisableValidationDecoration::Clone(
     CloneContext* ctx) const {
   return ctx->dst->ASTNodes().Create<DisableValidationDecoration>(
-      ctx->dst->ID(), validation_);
+      ctx->dst->ID(), validation);
 }
 
 }  // namespace ast

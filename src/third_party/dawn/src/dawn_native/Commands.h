@@ -36,6 +36,7 @@ namespace dawn_native {
         BeginComputePass,
         BeginOcclusionQuery,
         BeginRenderPass,
+        ClearBuffer,
         CopyBufferToBuffer,
         CopyBufferToTexture,
         CopyTextureToBuffer,
@@ -63,6 +64,7 @@ namespace dawn_native {
         SetBindGroup,
         SetIndexBuffer,
         SetVertexBuffer,
+        WriteBuffer,
         WriteTimestamp,
     };
 
@@ -89,6 +91,8 @@ namespace dawn_native {
         wgpu::StoreOp stencilStoreOp;
         float clearDepth;
         uint32_t clearStencil;
+        bool depthReadOnly;
+        bool stencilReadOnly;
     };
 
     struct BeginRenderPassCmd {
@@ -193,6 +197,12 @@ namespace dawn_native {
         uint32_t count;
     };
 
+    struct ClearBufferCmd {
+        Ref<BufferBase> buffer;
+        uint64_t offset;
+        uint64_t size;
+    };
+
     struct InsertDebugMarkerCmd {
         uint32_t length;
     };
@@ -250,6 +260,12 @@ namespace dawn_native {
 
     struct SetVertexBufferCmd {
         VertexBufferSlot slot;
+        Ref<BufferBase> buffer;
+        uint64_t offset;
+        uint64_t size;
+    };
+
+    struct WriteBufferCmd {
         Ref<BufferBase> buffer;
         uint64_t offset;
         uint64_t size;

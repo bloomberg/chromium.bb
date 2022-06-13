@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_ARC_ACCESSIBILITY_ACCESSIBILITY_INFO_DATA_WRAPPER_H_
 #define CHROME_BROWSER_ASH_ARC_ACCESSIBILITY_ACCESSIBILITY_INFO_DATA_WRAPPER_H_
 
-#include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "ash/components/arc/mojom/accessibility_helper.mojom.h"
 
 #include <string>
 #include <vector>
@@ -44,7 +44,7 @@ class AccessibilityInfoDataWrapper {
   virtual bool IsAccessibilityFocusableContainer() const = 0;
   virtual void PopulateAXRole(ui::AXNodeData* out_data) const = 0;
   virtual void PopulateAXState(ui::AXNodeData* out_data) const = 0;
-  virtual void Serialize(ui::AXNodeData* out_data) const = 0;
+  virtual void Serialize(ui::AXNodeData* out_data) const;
   virtual std::string ComputeAXName(bool do_recursive) const = 0;
   virtual void GetChildren(
       std::vector<AccessibilityInfoDataWrapper*>* children) const = 0;

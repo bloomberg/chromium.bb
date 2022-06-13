@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import type * as Workspace from '../../models/workspace/workspace.js'; // eslint-disable-line no-unused-vars
-import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js'; // eslint-disable-line no-unused-vars
+import type * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from '../snippets/snippets.js';
 
@@ -25,16 +22,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SnippetsPlugin.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class SnippetsPlugin extends Plugin {
-  _textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor;
-  _uiSourceCode: Workspace.UISourceCode.UISourceCode;
-  constructor(
-      textEditor: SourceFrame.SourcesTextEditor.SourcesTextEditor, uiSourceCode: Workspace.UISourceCode.UISourceCode) {
-    super();
-    this._textEditor = textEditor;
-    this._uiSourceCode = uiSourceCode;
-  }
 
+export class SnippetsPlugin extends Plugin {
   static accepts(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {
     return Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
   }

@@ -80,10 +80,6 @@ struct CYCLIC_REFRESH {
    */
   int8_t *map;
   /*!
-   * Map of the last q a block was coded at.
-   */
-  uint8_t *last_coded_q_map;
-  /*!
    * Threshold applied to the projected rate of the coding block,
    * when deciding whether block should be refreshed.
    */
@@ -111,6 +107,7 @@ struct CYCLIC_REFRESH {
   int qindex_delta[3];
   double weight_segment;
   int apply_cyclic_refresh;
+  int skip_over4x4;
   /*!\endcond */
 };
 

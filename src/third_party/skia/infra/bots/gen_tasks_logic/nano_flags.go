@@ -31,10 +31,10 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 		if b.extraConfig("BonusConfigs") {
 			configs = []string{
 				"f16",
-				"srgb",
-				"esrgb",
-				"narrow",
-				"enarrow",
+				"srgb-rgba",
+				"srgb-f16",
+				"narrow-rgba",
+				"narrow-f16",
 			}
 		}
 
@@ -61,6 +61,8 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			if b.os("iOS") || b.model("Nexus7", "Pixel3a", "Pixel5") {
 				sampleCount = 0
 			}
+		} else if b.matchGpu("AppleM1") {
+			sampleCount = 4
 		} else if b.matchGpu("Intel") {
 			// MSAA doesn't work well on Intel GPUs chromium:527565, chromium:983926
 			sampleCount = 0
@@ -68,38 +70,44 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			glPrefix = "gles"
 		}
 
-		configs = append(configs, glPrefix, glPrefix+"srgb")
+		configs = append(configs, glPrefix, "srgb-"+glPrefix)
 
 		if b.os("Ubuntu18") && b.noExtraConfig() {
 			configs = append(configs, glPrefix+"reducedshaders")
 		}
-		// glnarrow/glesnarrow tests the case of color converting *all* content
+		// narrow-gl/gles tests the case of color converting *all* content
 		// It hangs on the AndroidOne (Mali400)  skia:10669
-		if (!b.gpu("Mali400MP2")) {
-			configs = append(configs, glPrefix+"narrow")
+		if !b.gpu("Mali400MP2") {
+			configs = append(configs, "narrow-"+glPrefix)
 		}
 
 		// skia:10644 The fake ES2 config is used to compare highest available ES version to
 		// when we're limited to ES2. We could consider adding a MSAA fake config as well.
 		if b.os("Android") && glPrefix == "gles" {
 			// These only support ES2. No point in running twice.
-			if (!b.gpu("Mali400MP2", "Tegra3")) {
+			if !b.gpu("Mali400MP2", "Tegra3") {
 				configs = append(configs, "glesfakev2")
 			}
 		}
 
 		if sampleCount > 0 {
 			configs = append(configs, fmt.Sprintf("%smsaa%d", glPrefix, sampleCount))
+			if b.gpu("QuadroP400", "MaliG77", "AppleM1") {
+				configs = append(configs, fmt.Sprintf("%sdmsaa", glPrefix))
+			}
 		}
 
 		// We want to test both the OpenGL config and the GLES config on Linux Intel:
 		// GL is used by Chrome, GLES is used by ChromeOS.
 		if b.matchGpu("Intel") && b.isLinux() {
-			configs = append(configs, "gles", "glessrgb")
+			configs = append(configs, "gles", "srgb-gles")
 		}
 
 		if b.extraConfig("CommandBuffer") {
-			configs = []string{"commandbuffer"}
+			configs = []string{"cmdbuffer_es2"}
+			if !b.matchGpu("Intel") {
+				configs = append(configs, "cmdbuffer_es2_dmsaa")
+			}
 		}
 
 		if b.extraConfig("Vulkan") {
@@ -114,6 +122,9 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 				if !b.matchGpu("Intel") {
 					configs = append(configs, "vkmsaa8")
 				}
+			}
+			if b.gpu("QuadroP400", "MaliG77") {
+				configs = append(configs, "vkdmsaa")
 			}
 		}
 		if b.extraConfig("Metal") {
@@ -149,10 +160,21 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			// Just run GLES for now - maybe add gles_msaa4 in the future
 			configs = []string{"gles"}
 		}
+		if b.extraConfig("SwiftShader") {
+			configs = []string{"gles", "glesdmsaa"}
+		}
 	}
 
 	args = append(args, "--config")
 	args = append(args, configs...)
+
+	// Use 4 internal msaa samples on mobile and AppleM1, otherwise 8.
+	args = append(args, "--internalSamples")
+	if b.os("Android") || b.os("iOS") || b.matchGpu("AppleM1") {
+		args = append(args, "4")
+	} else {
+		args = append(args, "8")
+	}
 
 	// By default, we test with GPU threading enabled, unless specifically
 	// disabled.
@@ -243,6 +265,13 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 		match = append(match, "~^path_text_clipped_uncached$")
 	}
 
+	if b.model("Wembley") {
+		// These tests spin forever on the Wembley.
+		match = append(match, "~^create_backend_texture")
+		match = append(match, "~^draw_coverage")
+		match = append(match, "~^compositing_images")
+	}
+
 	if b.model(DONT_REDUCE_OPS_TASK_SPLITTING_MODELS...) {
 		args = append(args, "--dontReduceOpsTaskSplitting", "true")
 	}
@@ -259,7 +288,7 @@ func (b *taskBuilder) nanobenchFlags(doUpload bool) {
 			"--dmsaaStatsDump")
 		// Don't collect stats on the skps generated from vector content. We want these to actually
 		// trigger dmsaa.
-		match = append(match, "~svg", "~chalkboard", "~motionmark", "~ccpr")
+		match = append(match, "~svg", "~chalkboard", "~motionmark")
 	}
 
 	// We do not need or want to benchmark the decodes of incomplete images.

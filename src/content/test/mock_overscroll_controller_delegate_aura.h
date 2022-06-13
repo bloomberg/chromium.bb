@@ -5,7 +5,7 @@
 #ifndef CONTENT_TEST_MOCK_OVERSCROLL_CONTROLLER_DELEGATE_AURA_H_
 #define CONTENT_TEST_MOCK_OVERSCROLL_CONTROLLER_DELEGATE_AURA_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/test/mock_overscroll_observer.h"
@@ -21,6 +21,12 @@ class MockOverscrollControllerDelegateAura
       public MockOverscrollObserver {
  public:
   MockOverscrollControllerDelegateAura(RenderWidgetHostViewAura* rwhva);
+
+  MockOverscrollControllerDelegateAura(
+      const MockOverscrollControllerDelegateAura&) = delete;
+  MockOverscrollControllerDelegateAura& operator=(
+      const MockOverscrollControllerDelegateAura&) = delete;
+
   ~MockOverscrollControllerDelegateAura() override;
 
   // OverscrollControllerDelegate:
@@ -41,12 +47,11 @@ class MockOverscrollControllerDelegateAura
  private:
   void OnOverscrollEnd();
 
-  RenderWidgetHostViewAura* rwhva_;
+  raw_ptr<RenderWidgetHostViewAura> rwhva_;
   scoped_refptr<MessageLoopRunner> update_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> end_message_loop_runner_;
   bool seen_update_;
   bool overscroll_ended_;
-  DISALLOW_COPY_AND_ASSIGN(MockOverscrollControllerDelegateAura);
 };
 
 }  // namespace content

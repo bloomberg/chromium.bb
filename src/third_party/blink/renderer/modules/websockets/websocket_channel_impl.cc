@@ -61,10 +61,9 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/websockets/inspector_websocket_events.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -74,6 +73,7 @@
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "v8/include/v8.h"
 
@@ -262,10 +262,7 @@ WebSocketChannelImpl::WebSocketChannelImpl(
           mojo::SimpleWatcher::ArmingPolicy::MANUAL,
           execution_context->GetTaskRunner(TaskType::kNetworking)),
       file_reading_task_runner_(
-          execution_context->GetTaskRunner(TaskType::kFileReading)) {
-  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
-    scope->EnsureFetcher();
-}
+          execution_context->GetTaskRunner(TaskType::kFileReading)) {}
 
 WebSocketChannelImpl::~WebSocketChannelImpl() = default;
 
@@ -321,13 +318,13 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   // the browser process. Fail asynchronously, to match the behaviour when we
   // are throttled by the network service.
   if (connection_count_tracker_handle_.IncrementAndCheckStatus() ==
-      ConnectionCountTrackerHandle::CountStatus::SHOULD_NOT_CONNECT) {
+      ConnectionCountTrackerHandle::CountStatus::kShouldNotConnect) {
     StringBuilder message;
     message.Append("WebSocket connection to '");
     message.Append(url.GetString());
     message.Append("' failed: Insufficient resources");
     execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageSource::kNetwork,
         mojom::blink::ConsoleMessageLevel::kError, message.ToString()));
     execution_context_->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(FROM_HERE,
@@ -341,11 +338,16 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
       connector.BindNewPipeAndPassReceiver(
           execution_context_->GetTaskRunner(TaskType::kWebSocket)));
 
+  absl::optional<base::UnguessableToken> devtools_token;
+  probe::WillCreateWebSocket(execution_context_, identifier_, url, protocol,
+                             &devtools_token);
+
   connector->Connect(
       url, protocols, GetBaseFetchContext()->GetSiteForCookies(),
       execution_context_->UserAgent(),
       handshake_client_receiver_.BindNewPipeAndPassRemote(
-          execution_context_->GetTaskRunner(TaskType::kWebSocket)));
+          execution_context_->GetTaskRunner(TaskType::kWebSocket)),
+      /*throttling_profile_id=*/devtools_token);
   handshake_client_receiver_.set_disconnect_with_reason_handler(
       WTF::Bind(&WebSocketChannelImpl::OnConnectionError,
                 WrapWeakPersistent(this), FROM_HERE));
@@ -366,7 +368,6 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
       "WebSocketCreate", InspectorWebSocketCreateEvent::Data,
       execution_context_, identifier_, url, protocol);
-  probe::DidCreateWebSocket(execution_context_, identifier_, url, protocol);
   return true;
 }
 
@@ -384,7 +385,7 @@ WebSocketChannel::SendResult WebSocketChannelImpl::Send(
     did_attempt_to_send = true;
     if (MaybeSendSynchronously(
             network::mojom::blink::WebSocketMessageType::TEXT, &data)) {
-      return SendResult::SENT_SYNCHRONOUSLY;
+      return SendResult::kSentSynchronously;
     }
   }
 
@@ -401,7 +402,7 @@ WebSocketChannel::SendResult WebSocketChannelImpl::Send(
   // that the callback was fired re-entrantly, which would be bad.
   DCHECK(!messages_.empty());
 
-  return SendResult::CALLBACK_WILL_BE_CALLED;
+  return SendResult::kCallbackWillBeCalled;
 }
 
 void WebSocketChannelImpl::Send(
@@ -438,7 +439,7 @@ WebSocketChannel::SendResult WebSocketChannelImpl::Send(
     did_attempt_to_send = true;
     if (MaybeSendSynchronously(
             network::mojom::blink::WebSocketMessageType::BINARY, &message)) {
-      return SendResult::SENT_SYNCHRONOUSLY;
+      return SendResult::kSentSynchronously;
     }
   }
 
@@ -453,7 +454,7 @@ WebSocketChannel::SendResult WebSocketChannelImpl::Send(
   // that the callback was fired re-entrantly, which would be bad.
   DCHECK(!messages_.empty());
 
-  return SendResult::CALLBACK_WILL_BE_CALLED;
+  return SendResult::kCallbackWillBeCalled;
 }
 
 void WebSocketChannelImpl::Close(int code, const String& reason) {
@@ -464,6 +465,8 @@ void WebSocketChannelImpl::Close(int code, const String& reason) {
       code == kCloseEventCodeNotSpecified ? kCloseEventCodeNoStatusRcvd : code);
   messages_.push_back(Message(code_to_send, reason));
   ProcessSendQueue();
+  // Make the page back/forward cache-able.
+  feature_handle_for_scheduler_.reset();
 }
 
 void WebSocketChannelImpl::Fail(const String& reason,
@@ -487,7 +490,7 @@ void WebSocketChannelImpl::Fail(const String& reason,
   }
 
   execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-      mojom::ConsoleMessageSource::kJavaScript, level, message,
+      mojom::ConsoleMessageSource::kNetwork, level, message,
       std::move(location)));
   // |reason| is only for logging and should not be provided for scripts,
   // hence close reason must be empty in tearDownFailedConnection.
@@ -768,8 +771,8 @@ WebSocketChannelImpl::ConnectionCountTrackerHandle::IncrementAndCheckStatus() {
   const size_t old_count =
       g_connection_count.fetch_add(1, std::memory_order_relaxed);
   return old_count >= kMaxWebSocketsPerRenderProcess
-             ? CountStatus::SHOULD_NOT_CONNECT
-             : CountStatus::OKAY_TO_CONNECT;
+             ? CountStatus::kShouldNotConnect
+             : CountStatus::kOkayToConnect;
 }
 
 void WebSocketChannelImpl::ConnectionCountTrackerHandle::Decrement() {

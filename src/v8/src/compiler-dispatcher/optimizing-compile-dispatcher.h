@@ -30,7 +30,6 @@ class V8_EXPORT_PRIVATE OptimizingCompileDispatcher {
         input_queue_capacity_(FLAG_concurrent_recompilation_queue_length),
         input_queue_length_(0),
         input_queue_shift_(0),
-        blocked_jobs_(0),
         ref_count_(0),
         recompilation_delay_(FLAG_concurrent_recompilation_delay) {
     input_queue_ = NewArray<OptimizedCompilationJob*>(input_queue_capacity_);
@@ -42,7 +41,7 @@ class V8_EXPORT_PRIVATE OptimizingCompileDispatcher {
   void Flush(BlockingBehavior blocking_behavior);
   // Takes ownership of |job|.
   void QueueForOptimization(OptimizedCompilationJob* job);
-  void Unblock();
+  void AwaitCompileTasks();
   void InstallOptimizedFunctions();
 
   inline bool IsQueueAvailable() {
@@ -54,6 +53,15 @@ class V8_EXPORT_PRIVATE OptimizingCompileDispatcher {
 
   // This method must be called on the main thread.
   bool HasJobs();
+
+  // Whether to finalize and thus install the optimized code.  Defaults to true.
+  // Only set to false for testing (where finalization is then manually
+  // requested using %FinalizeOptimization).
+  bool finalize() const { return finalize_; }
+  void set_finalize(bool finalize) {
+    CHECK(!HasJobs());
+    finalize_ = finalize;
+  }
 
  private:
   class CompileTask;
@@ -89,8 +97,6 @@ class V8_EXPORT_PRIVATE OptimizingCompileDispatcher {
   // different threads.
   base::Mutex output_queue_mutex_;
 
-  int blocked_jobs_;
-
   std::atomic<int> ref_count_;
   base::Mutex ref_count_mutex_;
   base::ConditionVariable ref_count_zero_;
@@ -101,6 +107,8 @@ class V8_EXPORT_PRIVATE OptimizingCompileDispatcher {
   // Since flags might get modified while the background thread is running, it
   // is not safe to access them directly.
   int recompilation_delay_;
+
+  bool finalize_ = true;
 };
 }  // namespace internal
 }  // namespace v8

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -39,6 +38,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
   // method.
   struct DiscoveryFilter {
     DiscoveryFilter();
+
+    DiscoveryFilter(const DiscoveryFilter&) = delete;
+    DiscoveryFilter& operator=(const DiscoveryFilter&) = delete;
+
     ~DiscoveryFilter();
 
     // Copy content of |filter| into this filter
@@ -48,9 +51,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
     std::unique_ptr<int16_t> rssi;
     std::unique_ptr<uint16_t> pathloss;
     std::unique_ptr<std::string> transport;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DiscoveryFilter);
   };
 
   // Represent an error sent through DBus.
@@ -135,6 +135,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
     virtual void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
                                         const std::string& property_name) {}
   };
+
+  BluetoothAdapterClient(const BluetoothAdapterClient&) = delete;
+  BluetoothAdapterClient& operator=(const BluetoothAdapterClient&) = delete;
 
   ~BluetoothAdapterClient() override;
 
@@ -238,9 +241,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
 
  protected:
   BluetoothAdapterClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterClient);
 };
 
 }  // namespace bluez

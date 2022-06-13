@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
@@ -26,10 +24,18 @@ class EulaScreen : public BaseScreen {
     ACCEPTED_WITH_USAGE_STATS_REPORTING,
     // The user accepted EULA, and disabled usage stats reporting.
     ACCEPTED_WITHOUT_USAGE_STATS_REPORTING,
+    // Eula already accepted, skip screen
+    ALREADY_ACCEPTED,
+    // Eula already accepted, skip screen (demo mode)
+    ALREADY_ACCEPTED_DEMO_MODE,
     // The usage did not accept EULA - they clicked back button instead.
     BACK,
     // Eula screen is skipped.
     NOT_APPLICABLE,
+    // Eula screen is skipped. EULA and Chrome & Chrome OS terms of service
+    // are added to the consolidated consent screen.
+    NOT_APPLICABLE_CONSOLIDATED_CONSENT_REGULAR,
+    NOT_APPLICABLE_CONSOLIDATED_CONSENT_DEMO,
   };
 
   // This enum is tied directly to a UMA enum defined in
@@ -51,6 +57,10 @@ class EulaScreen : public BaseScreen {
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
+
+  EulaScreen(const EulaScreen&) = delete;
+  EulaScreen& operator=(const EulaScreen&) = delete;
+
   ~EulaScreen() override;
 
   // Returns URL of the OEM EULA page that should be displayed using current
@@ -95,8 +105,6 @@ class EulaScreen : public BaseScreen {
   EulaView* view_;
 
   ScreenExitCallback exit_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(EulaScreen);
 };
 
 }  // namespace ash
@@ -105,6 +113,12 @@ class EulaScreen : public BaseScreen {
 // source migration is finished.
 namespace chromeos {
 using ::ash::EulaScreen;
+}
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::EulaScreen;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_EULA_SCREEN_H_

@@ -7,6 +7,7 @@
 #include "fxjs/cjs_runtimestub.h"
 
 #ifdef PDF_ENABLE_V8
+#include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fxjs/cfxjs_engine.h"
 #include "fxjs/cjs_runtime.h"
 #ifdef PDF_ENABLE_XFA

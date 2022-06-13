@@ -19,10 +19,10 @@
 class GrResourceProvider;
 
 // GrArenas matches the lifetime of a single frame. It is created and held on the
-// GrSurfaceFillContext's RenderTargetProxy with the first call to get an arena. Each GrOpsTask
-// takes a ref on it to keep the arenas alive. When the first GrOpsTask's onExecute() is
-// completed, the arena ref on the GrSurfaceFillContext's RenderTargetProxy is nulled out so that
-// any new GrOpsTasks will create and ref a new set of arenas.
+// SurfaceFillContext's RenderTargetProxy with the first call to get an arena. Each OpsTask
+// takes a ref on it to keep the arenas alive. When the first OpsTask's onExecute() is
+// completed, the arena ref on the SurfaceFillContext's RenderTargetProxy is nulled out so that
+// any new OpsTasks will create and ref a new set of arenas.
 class GrArenas : public SkNVRefCnt<GrArenas> {
 public:
     SkArenaAlloc* arenaAlloc() {
@@ -141,8 +141,8 @@ protected:
     // The basic knowledge version is used for DDL where we know the type of proxy we are going to
     // use, but we don't have access to the GPU yet to instantiate it.
     //
-    // The minimal knowledge version is used for CCPR where we are generating an atlas but we do not
-    // know the final size until flush time.
+    // The minimal knowledge version is used for when we are generating an atlas but we do not know
+    // the final size until we have finished adding to it.
     GrRenderTargetProxy(LazyInstantiateCallback&&,
                         const GrBackendFormat&,
                         SkISize,
@@ -186,7 +186,7 @@ private:
     //
     // In the current world we end the RT proxy at 12 bytes. Technically any padding between 0-4
     // will work, but we use 4 to be more explicit about getting it to 16 byte alignment.
-    char               fDummyPadding[4];
+    char               fPadding[4];
 
     using INHERITED = GrSurfaceProxy;
 };

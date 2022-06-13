@@ -6,6 +6,8 @@
 
 #include "core/fxcodec/flate/flatemodule.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -16,6 +18,7 @@
 #include "core/fxcodec/scanlinedecoder.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
+#include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/numerics/safe_conversions.h"
@@ -290,13 +293,16 @@ uint8_t PathPredictor(int a, int b, int c) {
   return (uint8_t)c;
 }
 
-void PNG_PredictLine(uint8_t* pDestData,
-                     const uint8_t* pSrcData,
-                     const uint8_t* pLastLine,
+void PNG_PredictLine(pdfium::span<uint8_t> dest_span,
+                     pdfium::span<const uint8_t> src_span,
+                     pdfium::span<const uint8_t> last_span,
                      int bpc,
                      int nColors,
                      int nPixels) {
-  const uint32_t row_size = CalculatePitch8(bpc, nColors, nPixels).ValueOrDie();
+  uint8_t* pDestData = dest_span.data();
+  const uint8_t* pSrcData = src_span.data();
+  const uint8_t* pLastLine = last_span.data();
+  const uint32_t row_size = CalculatePitch8OrDie(bpc, nColors, nPixels);
   const uint32_t BytesPerPixel = (bpc * nColors + 7) / 8;
   uint8_t tag = pSrcData[0];
   if (tag == 0) {
@@ -601,14 +607,14 @@ class FlateScanlineDecoder : public ScanlineDecoder {
   ~FlateScanlineDecoder() override;
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
   uint32_t GetSrcOffset() override;
 
  protected:
   std::unique_ptr<z_stream, FlateDeleter> m_pFlate;
   const pdfium::span<const uint8_t> m_SrcBuf;
-  std::unique_ptr<uint8_t, FxFreeDeleter> const m_pScanline;
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_Scanline;
 };
 
 FlateScanlineDecoder::FlateScanlineDecoder(pdfium::span<const uint8_t> src_span,
@@ -622,13 +628,16 @@ FlateScanlineDecoder::FlateScanlineDecoder(pdfium::span<const uint8_t> src_span,
                       height,
                       nComps,
                       bpc,
-                      CalculatePitch8(bpc, nComps, width).ValueOrDie()),
+                      CalculatePitch8OrDie(bpc, nComps, width)),
       m_SrcBuf(src_span),
-      m_pScanline(FX_Alloc(uint8_t, m_Pitch)) {}
+      m_Scanline(m_Pitch) {}
 
-FlateScanlineDecoder::~FlateScanlineDecoder() = default;
+FlateScanlineDecoder::~FlateScanlineDecoder() {
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
+}
 
-bool FlateScanlineDecoder::v_Rewind() {
+bool FlateScanlineDecoder::Rewind() {
   m_pFlate.reset(FlateInit());
   if (!m_pFlate)
     return false;
@@ -637,9 +646,9 @@ bool FlateScanlineDecoder::v_Rewind() {
   return true;
 }
 
-uint8_t* FlateScanlineDecoder::v_GetNextLine() {
-  FlateOutput(m_pFlate.get(), m_pScanline.get(), m_Pitch);
-  return m_pScanline.get();
+pdfium::span<uint8_t> FlateScanlineDecoder::GetNextLine() {
+  FlateOutput(m_pFlate.get(), m_Scanline.data(), m_Pitch);
+  return m_Scanline;
 }
 
 uint32_t FlateScanlineDecoder::GetSrcOffset() {
@@ -660,8 +669,8 @@ class FlatePredictorScanlineDecoder final : public FlateScanlineDecoder {
   ~FlatePredictorScanlineDecoder() override;
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
 
  private:
   void GetNextLineWithPredictedPitch();
@@ -700,41 +709,44 @@ FlatePredictorScanlineDecoder::FlatePredictorScanlineDecoder(
   m_BitsPerComponent = BitsPerComponent;
   m_Columns = Columns;
   m_PredictPitch =
-      CalculatePitch8(m_BitsPerComponent, m_Colors, m_Columns).ValueOrDie();
+      CalculatePitch8OrDie(m_BitsPerComponent, m_Colors, m_Columns);
   m_LastLine.resize(m_PredictPitch);
   m_PredictBuffer.resize(m_PredictPitch);
   m_PredictRaw.resize(m_PredictPitch + 1);
 }
 
-FlatePredictorScanlineDecoder::~FlatePredictorScanlineDecoder() = default;
+FlatePredictorScanlineDecoder::~FlatePredictorScanlineDecoder() {
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
+}
 
-bool FlatePredictorScanlineDecoder::v_Rewind() {
-  if (!FlateScanlineDecoder::v_Rewind())
+bool FlatePredictorScanlineDecoder::Rewind() {
+  if (!FlateScanlineDecoder::Rewind())
     return false;
 
   m_LeftOver = 0;
   return true;
 }
 
-uint8_t* FlatePredictorScanlineDecoder::v_GetNextLine() {
+pdfium::span<uint8_t> FlatePredictorScanlineDecoder::GetNextLine() {
   if (m_Pitch == m_PredictPitch)
     GetNextLineWithPredictedPitch();
   else
     GetNextLineWithoutPredictedPitch();
-  return m_pScanline.get();
+  return m_Scanline;
 }
 
 void FlatePredictorScanlineDecoder::GetNextLineWithPredictedPitch() {
   switch (m_Predictor) {
     case PredictorType::kPng:
       FlateOutput(m_pFlate.get(), m_PredictRaw.data(), m_PredictPitch + 1);
-      PNG_PredictLine(m_pScanline.get(), m_PredictRaw.data(), m_LastLine.data(),
-                      m_BitsPerComponent, m_Colors, m_Columns);
-      memcpy(m_LastLine.data(), m_pScanline.get(), m_PredictPitch);
+      PNG_PredictLine(m_Scanline, m_PredictRaw, m_LastLine, m_BitsPerComponent,
+                      m_Colors, m_Columns);
+      memcpy(m_LastLine.data(), m_Scanline.data(), m_PredictPitch);
       break;
     case PredictorType::kFlate:
-      FlateOutput(m_pFlate.get(), m_pScanline.get(), m_Pitch);
-      TIFF_PredictLine(m_pScanline.get(), m_PredictPitch, m_bpc, m_nComps,
+      FlateOutput(m_pFlate.get(), m_Scanline.data(), m_Pitch);
+      TIFF_PredictLine(m_Scanline.data(), m_PredictPitch, m_bpc, m_nComps,
                        m_OutputWidth);
       break;
     default:
@@ -747,7 +759,7 @@ void FlatePredictorScanlineDecoder::GetNextLineWithoutPredictedPitch() {
   size_t bytes_to_go = m_Pitch;
   size_t read_leftover = m_LeftOver > bytes_to_go ? bytes_to_go : m_LeftOver;
   if (read_leftover) {
-    memcpy(m_pScanline.get(), &m_PredictBuffer[m_PredictPitch - m_LeftOver],
+    memcpy(m_Scanline.data(), &m_PredictBuffer[m_PredictPitch - m_LeftOver],
            read_leftover);
     m_LeftOver -= read_leftover;
     bytes_to_go -= read_leftover;
@@ -756,9 +768,8 @@ void FlatePredictorScanlineDecoder::GetNextLineWithoutPredictedPitch() {
     switch (m_Predictor) {
       case PredictorType::kPng:
         FlateOutput(m_pFlate.get(), m_PredictRaw.data(), m_PredictPitch + 1);
-        PNG_PredictLine(m_PredictBuffer.data(), m_PredictRaw.data(),
-                        m_LastLine.data(), m_BitsPerComponent, m_Colors,
-                        m_Columns);
+        PNG_PredictLine(m_PredictBuffer, m_PredictRaw, m_LastLine,
+                        m_BitsPerComponent, m_Colors, m_Columns);
         memcpy(m_LastLine.data(), m_PredictBuffer.data(), m_PredictPitch);
         break;
       case PredictorType::kFlate:
@@ -772,7 +783,7 @@ void FlatePredictorScanlineDecoder::GetNextLineWithoutPredictedPitch() {
     }
     size_t read_bytes =
         m_PredictPitch > bytes_to_go ? bytes_to_go : m_PredictPitch;
-    memcpy(m_pScanline.get() + m_Pitch - bytes_to_go, m_PredictBuffer.data(),
+    memcpy(m_Scanline.data() + m_Pitch - bytes_to_go, m_PredictBuffer.data(),
            read_bytes);
     m_LeftOver += m_PredictPitch - read_bytes;
     bytes_to_go -= read_bytes;
@@ -850,10 +861,11 @@ uint32_t FlateModule::FlateOrLZWDecode(
 }
 
 // static
-bool FlateModule::Encode(const uint8_t* src_buf,
-                         uint32_t src_size,
+bool FlateModule::Encode(pdfium::span<const uint8_t> src_span,
                          std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                          uint32_t* dest_size) {
+  const uint8_t* src_buf = src_span.data();
+  uint32_t src_size = src_span.size();
   *dest_size = src_size + src_size / 1000 + 12;
   dest_buf->reset(FX_Alloc(uint8_t, *dest_size));
   unsigned long temp_size = *dest_size;

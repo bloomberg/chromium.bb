@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -43,6 +42,10 @@ class TestCallbackReceiver {
   using TupleOfNonReferenceArgs = std::tuple<std::decay_t<CallbackArgs>...>;
 
   TestCallbackReceiver() = default;
+
+  TestCallbackReceiver(const TestCallbackReceiver&) = delete;
+  TestCallbackReceiver& operator=(const TestCallbackReceiver&) = delete;
+
   ~TestCallbackReceiver() = default;
 
   // Whether the |callback| was already called.
@@ -89,8 +92,6 @@ class TestCallbackReceiver {
   bool was_called_ = false;
   base::RunLoop wait_for_callback_loop_;
   absl::optional<TupleOfNonReferenceArgs> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCallbackReceiver);
 };
 
 template <class Value>

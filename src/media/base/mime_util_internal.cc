@@ -140,10 +140,6 @@ static MimeUtil::ParsedCodecResult MakeDefaultParsedCodecResult() {
 
 MimeUtil::MimeUtil() {
 #if defined(OS_ANDROID)
-  // When the unified media pipeline is enabled, we need support for both GPU
-  // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
-  // When the Android pipeline is used, we only need access to MediaCodec.
-  platform_info_.has_platform_decoders = HasPlatformDecoderSupport();
 #if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
   platform_info_.has_platform_dv_decoder =
       MediaCodecUtil::IsDolbyVisionDecoderAvailable();
@@ -158,7 +154,7 @@ MimeUtil::MimeUtil() {
 #endif
   platform_info_.has_platform_opus_decoder =
       MediaCodecUtil::IsOpusDecoderAvailable();
-#endif
+#endif  // defined(OS_ANDROID)
 
   InitializeMimeTypeMaps();
 }
@@ -168,51 +164,51 @@ MimeUtil::~MimeUtil() = default;
 AudioCodec MimeUtilToAudioCodec(MimeUtil::Codec codec) {
   switch (codec) {
     case MimeUtil::PCM:
-      return kCodecPCM;
+      return AudioCodec::kPCM;
     case MimeUtil::MP3:
-      return kCodecMP3;
+      return AudioCodec::kMP3;
     case MimeUtil::AC3:
-      return kCodecAC3;
+      return AudioCodec::kAC3;
     case MimeUtil::EAC3:
-      return kCodecEAC3;
+      return AudioCodec::kEAC3;
     case MimeUtil::MPEG2_AAC:
     case MimeUtil::MPEG4_AAC:
     case MimeUtil::MPEG4_XHE_AAC:
-      return kCodecAAC;
+      return AudioCodec::kAAC;
     case MimeUtil::MPEG_H_AUDIO:
-      return kCodecMpegHAudio;
+      return AudioCodec::kMpegHAudio;
     case MimeUtil::VORBIS:
-      return kCodecVorbis;
+      return AudioCodec::kVorbis;
     case MimeUtil::OPUS:
-      return kCodecOpus;
+      return AudioCodec::kOpus;
     case MimeUtil::FLAC:
-      return kCodecFLAC;
+      return AudioCodec::kFLAC;
     default:
       break;
   }
-  return kUnknownAudioCodec;
+  return AudioCodec::kUnknown;
 }
 
 VideoCodec MimeUtilToVideoCodec(MimeUtil::Codec codec) {
   switch (codec) {
     case MimeUtil::AV1:
-      return kCodecAV1;
+      return VideoCodec::kAV1;
     case MimeUtil::H264:
-      return kCodecH264;
+      return VideoCodec::kH264;
     case MimeUtil::HEVC:
-      return kCodecHEVC;
+      return VideoCodec::kHEVC;
     case MimeUtil::VP8:
-      return kCodecVP8;
+      return VideoCodec::kVP8;
     case MimeUtil::VP9:
-      return kCodecVP9;
+      return VideoCodec::kVP9;
     case MimeUtil::THEORA:
-      return kCodecTheora;
+      return VideoCodec::kTheora;
     case MimeUtil::DOLBY_VISION:
-      return kCodecDolbyVision;
+      return VideoCodec::kDolbyVision;
     default:
       break;
   }
-  return kUnknownVideoCodec;
+  return VideoCodec::kUnknown;
 }
 
 SupportsType MimeUtil::AreSupportedCodecs(
@@ -470,7 +466,7 @@ bool MimeUtil::ParseVideoCodecString(const std::string& mime_type,
   *out_level = parsed_results[0].video_level;
   *out_color_space = parsed_results[0].video_color_space;
 
-  if (*out_codec == kUnknownVideoCodec) {
+  if (*out_codec == VideoCodec::kUnknown) {
     DVLOG(3) << __func__ << " Codec string " << codec_id
              << " is not a VIDEO codec.";
     return false;
@@ -504,7 +500,7 @@ bool MimeUtil::ParseAudioCodecString(const std::string& mime_type,
   *out_is_ambiguous = parsed_results[0].is_ambiguous;
   *out_codec = MimeUtilToAudioCodec(parsed_results[0].codec);
 
-  if (*out_codec == kUnknownAudioCodec) {
+  if (*out_codec == AudioCodec::kUnknown) {
     DVLOG(3) << __func__ << " Codec string " << codec_id
              << " is not an AUDIO codec.";
     return false;
@@ -553,10 +549,6 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
   DVLOG(3) << __func__;
   DCHECK_NE(mime_type_lower_case, "");
 
-  // Encrypted block support is never available without platform decoders.
-  if (is_encrypted && !platform_info.has_platform_decoders)
-    return false;
-
   // NOTE: We do not account for Media Source Extensions (MSE) within these
   // checks since it has its own isTypeSupported() which will handle platform
   // specific codec rejections.  See http://crbug.com/587303.
@@ -588,14 +580,11 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
     case FLAC:
     case VORBIS:
       // These codecs are always supported; via a platform decoder (when used
-      // with MSE/EME), a software decoder (the unified pipeline), or with
-      // MediaPlayer.
-      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
+      // with MSE/EME) or with a software decoder (the unified pipeline).
       return true;
 
     case MPEG4_XHE_AAC:
-      // xHE-AAC is only supported via MediaCodec.
-      return platform_info.has_platform_decoders;
+      return true;
 
     case MPEG_H_AUDIO:
       return false;
@@ -611,18 +600,14 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
         return false;
       }
 
-      DCHECK(!is_encrypted || platform_info.has_platform_decoders);
       return true;
 
     case H264:
-      // When content is not encrypted we fall back to MediaPlayer, thus we
-      // always support H264. For EME we need MediaCodec.
-      return !is_encrypted || platform_info.has_platform_decoders;
+      return true;
 
     case HEVC:
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-      return platform_info.has_platform_decoders &&
-             platform_info.has_platform_hevc_decoder;
+      return platform_info.has_platform_hevc_decoder;
 #else
       return false;
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
@@ -774,7 +759,7 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
     out_result->codec = itr->second;
 
     // Even "simple" video codecs should have an associated profile.
-    if (MimeUtilToVideoCodec(out_result->codec) != kUnknownVideoCodec) {
+    if (MimeUtilToVideoCodec(out_result->codec) != VideoCodec::kUnknown) {
       switch (out_result->codec) {
         case Codec::VP8:
           out_result->video_profile = VP8PROFILE_ANY;
@@ -875,12 +860,12 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
   DCHECK_NE(codec, INVALID_CODEC);
 
   VideoCodec video_codec = MimeUtilToVideoCodec(codec);
-  if (video_codec != kUnknownVideoCodec &&
+  if (video_codec != VideoCodec::kUnknown &&
       // Theora and VP8 do not have profiles/levels.
-      video_codec != kCodecTheora && video_codec != kCodecVP8 &&
+      video_codec != VideoCodec::kTheora && video_codec != VideoCodec::kVP8 &&
       // TODO(dalecurtis): AV1 has levels, but they aren't supported yet;
       // http://crbug.com/784993
-      video_codec != kCodecAV1) {
+      video_codec != VideoCodec::kAV1) {
     DCHECK_NE(video_profile, VIDEO_CODEC_PROFILE_UNKNOWN);
     DCHECK_GT(video_level, 0);
   }
@@ -911,7 +896,7 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
   }
 
   AudioCodec audio_codec = MimeUtilToAudioCodec(codec);
-  if (audio_codec != kUnknownAudioCodec) {
+  if (audio_codec != AudioCodec::kUnknown) {
     AudioCodecProfile audio_profile = AudioCodecProfile::kUnknown;
     if (codec == MPEG4_XHE_AAC)
       audio_profile = AudioCodecProfile::kXHE_AAC;
@@ -920,7 +905,7 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
       return IsNotSupported;
   }
 
-  if (video_codec != kUnknownVideoCodec) {
+  if (video_codec != VideoCodec::kUnknown) {
     if (!IsSupportedVideoType(
             {video_codec, video_profile, video_level, color_space})) {
       return IsNotSupported;

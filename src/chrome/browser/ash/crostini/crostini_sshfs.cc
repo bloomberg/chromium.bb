@@ -8,15 +8,19 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_manager_factory.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/file_system/external_mount_points.h"
 
@@ -56,41 +60,47 @@ void CrostiniSshfs::UnmountCrostiniFiles(const ContainerId& container_id,
         file_manager::util::GetCrostiniMountDirectory(profile_),
         base::BindOnce(&CrostiniSshfs::OnRemoveSshfsCrostiniVolume,
                        weak_ptr_factory_.GetWeakPtr(), container_id,
-                       std::move(callback)));
+                       std::move(callback), base::Time::Now()));
   } else {
-    OnRemoveSshfsCrostiniVolume(container_id, std::move(callback), true);
+    OnRemoveSshfsCrostiniVolume(container_id, std::move(callback),
+                                base::Time::Now(), true);
   }
 }
 
 void CrostiniSshfs::OnRemoveSshfsCrostiniVolume(
     const ContainerId& container_id,
     MountCrostiniFilesCallback callback,
+    base::Time started,
     bool success) {
   container_shutdown_observer_.Reset();
   SetSshfsMounted(container_id, false);
+  base::UmaHistogramTimes("Crostini.Sshfs.Unmount.TimeTaken",
+                          base::Time::Now() - started);
+  base::UmaHistogramBoolean("Crostini.Sshfs.Unmount.Result", success);
   std::move(callback).Run(success);
 }
 
 void CrostiniSshfs::MountCrostiniFiles(const ContainerId& container_id,
-                                       MountCrostiniFilesCallback callback) {
+                                       MountCrostiniFilesCallback callback,
+                                       bool background) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (in_progress_mount_) {
     // A run is already in progress, wait until it finishes.
-    pending_requests_.emplace(container_id, std::move(callback));
+    pending_requests_.emplace(container_id, std::move(callback), background);
     return;
   }
-  in_progress_mount_ =
-      std::make_unique<InProgressMount>(container_id, std::move(callback));
+  in_progress_mount_ = std::make_unique<InProgressMount>(
+      container_id, std::move(callback), background);
 
   if (IsSshfsMounted(container_id)) {
     // Already mounted so skip straight to reporting success.
-    Finish(true);
+    Finish(CrostiniSshfsResult::kSuccess);
     return;
   }
 
   if (container_id != ContainerId::GetDefault()) {
     LOG(ERROR) << "Unable to mount files for non-default container";
-    Finish(false);
+    Finish(CrostiniSshfsResult::kNotDefaultContainer);
     return;
   }
 
@@ -98,7 +108,7 @@ void CrostiniSshfs::MountCrostiniFiles(const ContainerId& container_id,
   absl::optional<ContainerInfo> info = manager->GetContainerInfo(container_id);
   if (!info) {
     LOG(ERROR) << "Unable to mount files for a container that's not running";
-    Finish(false);
+    Finish(CrostiniSshfsResult::kContainerNotRunning);
     return;
   }
 
@@ -115,7 +125,7 @@ void CrostiniSshfs::OnGetContainerSshKeys(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
     LOG(ERROR) << "Unable to get container ssh keys";
-    Finish(false);
+    Finish(CrostiniSshfsResult::kGetSshKeysFailed);
     return;
   }
 
@@ -124,13 +134,12 @@ void CrostiniSshfs::OnGetContainerSshKeys(
       manager->GetContainerInfo(in_progress_mount_->container_id);
   if (!info) {
     LOG(ERROR) << "Got ssh keys for a container that's not running. Aborting.";
-    Finish(false);
+    Finish(CrostiniSshfsResult::kGetContainerInfoFailed);
     return;
   }
 
   // Add ourselves as an observer so we can continue once the path is mounted.
-  auto* dmgr = chromeos::disks::DiskMountManager::GetInstance();
-  disk_mount_observer_.Observe(dmgr);
+  auto* dmgr = ash::disks::DiskMountManager::GetInstance();
 
   // Call to sshfs to mount.
   in_progress_mount_->source_path = base::StringPrintf(
@@ -142,22 +151,15 @@ void CrostiniSshfs::OnGetContainerSshKeys(
                   file_manager::util::GetCrostiniMountOptions(
                       hostname, host_private_key, container_public_key),
                   chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+                  chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+                  base::BindOnce(&CrostiniSshfs::OnMountEvent,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniSshfs::OnMountEvent(
-    chromeos::disks::DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+    const ash::disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Ignore any other mount/unmount events.
-  if (event != chromeos::disks::DiskMountManager::MountEvent::MOUNTING ||
-      mount_info.source_path != in_progress_mount_->source_path) {
-    return;
-  }
-
-  // Got our mount event, so stop listening for more.
-  disk_mount_observer_.Reset();
 
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     LOG(ERROR) << "Error mounting crostini container: error_code=" << error_code
@@ -165,8 +167,17 @@ void CrostiniSshfs::OnMountEvent(
                << ", mount_path=" << mount_info.mount_path
                << ", mount_type=" << mount_info.mount_type
                << ", mount_condition=" << mount_info.mount_condition;
-    Finish(false);
-    return;
+    switch (error_code) {
+      case chromeos::MountError::MOUNT_ERROR_INTERNAL:
+        Finish(CrostiniSshfsResult::kMountErrorInternal);
+        return;
+      case chromeos::MountError::MOUNT_ERROR_MOUNT_PROGRAM_FAILED:
+        Finish(CrostiniSshfsResult::kMountErrorProgramFailed);
+        return;
+      default:
+        Finish(CrostiniSshfsResult::kMountErrorOther);
+        return;
+    }
   }
 
   base::FilePath mount_path = base::FilePath(mount_info.mount_path);
@@ -193,26 +204,58 @@ void CrostiniSshfs::OnMountEvent(
   auto* manager = CrostiniManagerFactory::GetForProfile(profile_);
   container_shutdown_observer_.Observe(manager);
   SetSshfsMounted(in_progress_mount_->container_id, true);
-  Finish(true);
+  Finish(CrostiniSshfsResult::kSuccess);
 }
 
-void CrostiniSshfs::Finish(bool success) {
+void CrostiniSshfs::Finish(CrostiniSshfsResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(in_progress_mount_);
   auto callback = std::move(in_progress_mount_->callback);
-  std::move(callback).Run(success);
+  base::UmaHistogramTimes("Crostini.Sshfs.Mount.TimeTaken",
+                          base::Time::Now() - in_progress_mount_->started);
+  if (in_progress_mount_->background) {
+    base::UmaHistogramEnumeration("Crostini.Sshfs.Mount.Result.Background",
+                                  result);
+  } else {
+    base::UmaHistogramEnumeration("Crostini.Sshfs.Mount.Result.UserVisible",
+                                  result);
+  }
+
+  std::move(callback).Run(result == CrostiniSshfsResult::kSuccess);
   in_progress_mount_.reset();
   if (!pending_requests_.empty()) {
     auto next = std::move(pending_requests_.front());
     pending_requests_.pop();
-    MountCrostiniFiles(next.first, std::move(next.second));
+    MountCrostiniFiles(next.container_id, std::move(next.callback),
+                       next.background);
   }
 }
 
 CrostiniSshfs::InProgressMount::InProgressMount(
     const ContainerId& container,
-    MountCrostiniFilesCallback callback)
-    : container_id(container), callback(std::move(callback)) {}
+    MountCrostiniFilesCallback callback,
+    bool background)
+    : container_id(container),
+      callback(std::move(callback)),
+      started(base::Time::Now()),
+      background(background) {}
+CrostiniSshfs::InProgressMount::InProgressMount(
+    InProgressMount&& other) noexcept = default;
+CrostiniSshfs::InProgressMount& CrostiniSshfs::InProgressMount::operator=(
+    CrostiniSshfs::InProgressMount&& other) noexcept = default;
 CrostiniSshfs::InProgressMount::~InProgressMount() = default;
+
+CrostiniSshfs::PendingRequest::PendingRequest(
+    const ContainerId& container_id,
+    MountCrostiniFilesCallback callback,
+    bool background)
+    : container_id(container_id),
+      callback(std::move(callback)),
+      background(background) {}
+CrostiniSshfs::PendingRequest::PendingRequest(PendingRequest&& other) noexcept =
+    default;
+CrostiniSshfs::PendingRequest& CrostiniSshfs::PendingRequest::operator=(
+    CrostiniSshfs::PendingRequest&& other) noexcept = default;
+CrostiniSshfs::PendingRequest::~PendingRequest() = default;
 
 }  // namespace crostini

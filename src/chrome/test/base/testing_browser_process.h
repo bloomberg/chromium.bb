@@ -15,11 +15,13 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
@@ -34,7 +36,6 @@ class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;
 class SystemNotificationHelper;
-class WatchDogThread;
 
 namespace content {
 class NotificationService;
@@ -85,7 +86,6 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory()
       override;
   network::NetworkQualityTracker* network_quality_tracker() override;
-  WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
   variations::VariationsService* variations_service() override;
@@ -144,7 +144,12 @@ class TestingBrowserProcess : public BrowserProcess {
   resource_coordinator::TabManager* GetTabManager() override;
   resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
       override;
+#if !defined(OS_ANDROID)
+  SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
+#endif
   BuildState* GetBuildState() override;
+  breadcrumbs::BreadcrumbPersistentStorageManager*
+  GetBreadcrumbPersistentStorageManager() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
@@ -158,10 +163,10 @@ class TestingBrowserProcess : public BrowserProcess {
           service);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
-  void SetNotificationPlatformBridge(
-      std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
+#endif
   void SetSystemNotificationHelper(
       std::unique_ptr<SystemNotificationHelper> system_notification_helper);
   void SetShuttingDown(bool is_shutting_down);
@@ -185,7 +190,11 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<network::TestNetworkQualityTracker>
       test_network_quality_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
+
+#if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
+#endif
+
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
   std::unique_ptr<SystemNotificationHelper> system_notification_helper_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
@@ -210,7 +219,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   // The following objects are not owned by TestingBrowserProcess:
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService> local_state_ = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   std::unique_ptr<TestingBrowserProcessPlatformPart> platform_part_;
@@ -228,6 +237,7 @@ class TestingBrowserProcess : public BrowserProcess {
       resource_coordinator_parts_;
 
 #if !defined(OS_ANDROID)
+  std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
   BuildState build_state_;
 #endif
 };

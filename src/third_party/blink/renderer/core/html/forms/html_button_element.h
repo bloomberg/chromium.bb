@@ -41,8 +41,12 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
   bool WillRespondToMouseClickEvents() override;
 
+  void DispatchBlurEvent(Element*,
+                         mojom::blink::FocusType,
+                         InputDeviceCapabilities*) override;
+
  private:
-  enum Type { SUBMIT, RESET, BUTTON };
+  enum Type { kSubmit, kReset, kButton };
 
   const AtomicString& FormControlType() const override;
 
@@ -78,8 +82,8 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
   int DefaultTabIndex() const override;
 
-  Type type_;
-  bool is_activated_submit_;
+  Type type_ = kSubmit;
+  bool is_activated_submit_ = false;
 };
 
 }  // namespace blink

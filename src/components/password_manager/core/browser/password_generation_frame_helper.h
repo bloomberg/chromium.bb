@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/common/signatures.h"
 #include "url/gurl.h"
 
@@ -33,6 +33,11 @@ class PasswordGenerationFrameHelper {
  public:
   PasswordGenerationFrameHelper(PasswordManagerClient* client,
                                 PasswordManagerDriver* driver);
+
+  PasswordGenerationFrameHelper(const PasswordGenerationFrameHelper&) = delete;
+  PasswordGenerationFrameHelper& operator=(
+      const PasswordGenerationFrameHelper&) = delete;
+
   virtual ~PasswordGenerationFrameHelper();
 
   // Instructs the PasswordRequirementsService to fetch requirements for
@@ -73,13 +78,11 @@ class PasswordGenerationFrameHelper {
 
   // The PasswordManagerClient instance associated with this instance. Must
   // outlive this instance.
-  PasswordManagerClient* client_;
+  raw_ptr<PasswordManagerClient> client_;
 
   // The PasswordManagerDriver instance associated with this instance. Must
   // outlive this instance.
-  PasswordManagerDriver* driver_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationFrameHelper);
+  raw_ptr<PasswordManagerDriver> driver_;
 };
 
 }  // namespace password_manager

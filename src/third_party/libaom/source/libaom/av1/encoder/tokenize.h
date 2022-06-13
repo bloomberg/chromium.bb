@@ -51,6 +51,8 @@ typedef struct {
 } TokenList;
 
 typedef struct {
+  // Number of tile tokens for which memory is allocated.
+  unsigned int tokens_allocated;
   // tile_tok[i][j] is a pointer to the buffer storing palette tokens of the ith
   // tile row, jth tile column.
   TokenExtra *tile_tok[MAX_TILE_ROWS][MAX_TILE_COLS];
@@ -117,22 +119,27 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
 }
 
 // Allocate memory for token related info.
-static AOM_INLINE void alloc_token_info(AV1_COMMON *cm, TokenInfo *token_info) {
+static AOM_INLINE void alloc_token_info(AV1_COMMON *cm, TokenInfo *token_info,
+                                        unsigned int tokens_required) {
   int mi_rows_aligned_to_sb =
       ALIGN_POWER_OF_TWO(cm->mi_params.mi_rows, cm->seq_params->mib_size_log2);
   int sb_rows = mi_rows_aligned_to_sb >> cm->seq_params->mib_size_log2;
-  const int num_planes = av1_num_planes(cm);
-  unsigned int tokens =
-      get_token_alloc(cm->mi_params.mb_rows, cm->mi_params.mb_cols,
-                      MAX_SB_SIZE_LOG2, num_planes);
-  CHECK_MEM_ERROR(
-      cm, token_info->tile_tok[0][0],
-      (TokenExtra *)aom_calloc(tokens, sizeof(*token_info->tile_tok[0][0])));
+  token_info->tokens_allocated = tokens_required;
+
+  CHECK_MEM_ERROR(cm, token_info->tile_tok[0][0],
+                  (TokenExtra *)aom_calloc(
+                      tokens_required, sizeof(*token_info->tile_tok[0][0])));
 
   CHECK_MEM_ERROR(
       cm, token_info->tplist[0][0],
       (TokenList *)aom_calloc(sb_rows * MAX_TILE_ROWS * MAX_TILE_COLS,
                               sizeof(*token_info->tplist[0][0])));
+}
+
+// Check if memory allocation has been done for token related info.
+static AOM_INLINE bool is_token_info_allocated(const TokenInfo *token_info) {
+  return ((token_info->tile_tok[0][0] != NULL) &&
+          (token_info->tplist[0][0] != NULL));
 }
 
 // Free memory from token related variables.
@@ -142,6 +149,8 @@ static AOM_INLINE void free_token_info(TokenInfo *token_info) {
 
   aom_free(token_info->tplist[0][0]);
   token_info->tplist[0][0] = NULL;
+
+  token_info->tokens_allocated = 0;
 }
 
 #ifdef __cplusplus

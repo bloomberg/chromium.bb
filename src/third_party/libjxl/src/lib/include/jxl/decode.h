@@ -1,16 +1,7 @@
-/* Copyright (c) the JPEG XL Project
+/* Copyright (c) the JPEG XL Project Authors. All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
  */
 
 /** @file decode.h
@@ -130,15 +121,19 @@ typedef enum {
    */
   JXL_DEC_SUCCESS = 0,
 
-  /** An error occured, for example invalid input file or out of memory.
+  /** An error occurred, for example invalid input file or out of memory.
    * TODO(lode): add function to get error information from decoder.
    */
   JXL_DEC_ERROR = 1,
 
-  /** The decoder needs more input bytes to continue. In the next
-   * JxlDecoderProcessInput call, next_in and avail_in must point to more
-   * bytes to continue. If *avail_in is not 0, the new bytes must be appended to
-   * the *avail_in last previous bytes.
+  /** The decoder needs more input bytes to continue. Before the next
+   * JxlDecoderProcessInput call, more input data must be set, by calling
+   * JxlDecoderReleaseInput (if input was set previously) and then calling
+   * JxlDecoderSetInput. JxlDecoderReleaseInput returns how many bytes are
+   * not yet processed, before a next call to JxlDecoderProcessInput all
+   * unprocessed bytes must be provided again (the address need not match, but
+   * the contents must), and more bytes must be concatenated after the
+   * unprocessed bytes.
    */
   JXL_DEC_NEED_MORE_INPUT = 2,
 
@@ -155,6 +150,8 @@ typedef enum {
    * requested and it is possible to decode a DC image from the codestream and
    * the DC out buffer was not yet set. This event re-occurs for new frames
    * if there are multiple animation frames.
+   * DEPRECATED: the DC feature in this form will be removed. You can use
+   * JxlDecoderFlushImage for progressive rendering.
    */
   JXL_DEC_NEED_DC_OUT_BUFFER = 4,
 
@@ -195,8 +192,6 @@ typedef enum {
    * frame, decoded. This event can only happen if the image has a preview
    * frame encoded. This event occurs max once for the codestream and always
    * later than JXL_DEC_COLOR_ENCODING and before JXL_DEC_FRAME.
-   * This event is different than JXL_DEC_PREVIEW_HEADER because the latter only
-   * outputs the dimensions of the preview image.
    */
   JXL_DEC_PREVIEW_IMAGE = 0x200,
 
@@ -221,6 +216,8 @@ typedef enum {
    * status only indicates we're past this point in the codestream. This event
    * occurs max once per frame and always later than JXL_DEC_FRAME_HEADER
    * and other header events and earlier than full resolution pixel data.
+   * DEPRECATED: the DC feature in this form will be removed. You can use
+   * JxlDecoderFlushImage for progressive rendering.
    */
   JXL_DEC_DC_IMAGE = 0x800,
 
@@ -242,6 +239,37 @@ typedef enum {
    */
   JXL_DEC_JPEG_RECONSTRUCTION = 0x2000,
 } JxlDecoderStatus;
+
+/** Rewinds decoder to the beginning. The same input must be given again from
+ * the beginning of the file and the decoder will emit events from the beginning
+ * again. When rewinding (as opposed to JxlDecoderReset), the decoder can keep
+ * state about the image, which it can use to skip to a requested frame more
+ * efficiently with JxlDecoderSkipFrames. After rewind,
+ * JxlDecoderSubscribeEvents can be used again, and it is feasible to leave out
+ * events that were already handled before, such as JXL_DEC_BASIC_INFO and
+ * JXL_DEC_COLOR_ENCODING, since they will provide the same information as
+ * before.
+ * @param dec decoder object
+ */
+JXL_EXPORT void JxlDecoderRewind(JxlDecoder* dec);
+
+/** Makes the decoder skip the next `amount` frames. It still needs to process
+ * the input, but will not output the frame events. It can be more efficient
+ * when skipping frames, and even more so when using this after
+ * JxlDecoderRewind. If the decoder is already processing a frame (could
+ * have emitted JXL_DEC_FRAME but not yet JXL_DEC_FULL_IMAGE), it starts
+ * skipping from the next frame. If the amount is larger than the amount of
+ * frames remaining in the image, all remaining frames are skipped. Calling this
+ * function multiple times adds the amount to skip to the already existing
+ * amount.
+ * A frame here is defined as a frame that without skipping emits events such as
+ * JXL_DEC_FRAME and JXL_FULL_IMAGE, frames that are internal to the file format
+ * but are not rendered as part of an animation, or are not the final still
+ * frame of a still image, are not counted.
+ * @param dec decoder object
+ * @param amount the amount of frames to skip
+ */
+JXL_EXPORT void JxlDecoderSkipFrames(JxlDecoder* dec, size_t amount);
 
 /**
  * Get the default pixel format for this decoder.
@@ -277,8 +305,8 @@ JxlDecoderSetParallelRunner(JxlDecoder* dec, JxlParallelRunner parallel_runner,
  * Returns a hint indicating how many more bytes the decoder is expected to
  * need to make JxlDecoderGetBasicInfo available after the next
  * JxlDecoderProcessInput call. This is a suggested large enough value for
- * the *avail_in parameter, but it is not guaranteed to be an upper bound nor
- * a lower bound.
+ * the amount of bytes to provide in the next JxlDecoderSetInput call, but it is
+ * not guaranteed to be an upper bound nor a lower bound.
  * Can be used before the first JxlDecoderProcessInput call, and is correct
  * the first time in most cases. If not, JxlDecoderSizeHintBasicInfo can be
  * called again to get an updated hint.
@@ -325,6 +353,8 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderSubscribeEvents(JxlDecoder* dec,
  *
  * By default, this option is disabled, and the decoder automatically corrects
  * the orientation.
+ *
+ * This function must be called at the beginning, before decoding is performed.
  *
  * @see JxlBasicInfo for the orientation field, and @see JxlOrientation for the
  * possible values.
@@ -503,7 +533,7 @@ typedef enum {
  * check whether the information is available through the return value.
  * @return JXL_DEC_SUCCESS if the data is available and returned,
  *    JXL_DEC_NEED_MORE_INPUT if not yet available, JXL_DEC_ERROR in case
- *    the encuded structured color profile does not exist in the codestream.
+ *    the encoded structured color profile does not exist in the codestream.
  */
 JXL_EXPORT JxlDecoderStatus JxlDecoderGetColorAsEncodedProfile(
     const JxlDecoder* dec, const JxlPixelFormat* format,
@@ -556,6 +586,47 @@ JxlDecoderGetICCProfileSize(const JxlDecoder* dec, const JxlPixelFormat* format,
 JXL_EXPORT JxlDecoderStatus JxlDecoderGetColorAsICCProfile(
     const JxlDecoder* dec, const JxlPixelFormat* format,
     JxlColorProfileTarget target, uint8_t* icc_profile, size_t size);
+
+/** Sets the color profile to use for JXL_COLOR_PROFILE_TARGET_DATA for the
+ * special case when the decoder has a choice. This only has effect for a JXL
+ * image where uses_original_profile is false, and the original color profile is
+ * encoded as an ICC color profile rather than a JxlColorEncoding with known
+ * enum values. In most other cases (uses uses_original_profile is true, or the
+ * color profile is already given as a JxlColorEncoding), this setting is
+ * ignored and the decoder uses a profile related to the image.
+ * No matter what, the JXL_COLOR_PROFILE_TARGET_DATA must still be queried to
+ * know the actual data format of the decoded pixels after decoding.
+ *
+ * The intended use case of this function is for cases where you are using
+ * a color management system to parse the original ICC color profile
+ * (JXL_COLOR_PROFILE_TARGET_ORIGINAL), from this you know that the ICC
+ * profile represents one of the color profiles supported by JxlColorEncoding
+ * (such as sRGB, PQ or HLG): in that case it is beneficial (but not necessary)
+ * to use JxlDecoderSetPreferredColorProfile to match the parsed profile. The
+ * JXL decoder has no color management system built in, but can convert XYB
+ * color to any of the ones supported by JxlColorEncoding.
+ *
+ * Can only be set after the JXL_DEC_COLOR_ENCODING event occurred and before
+ * any other event occurred, and can affect the result of
+ * JXL_COLOR_PROFILE_TARGET_DATA (but not of JXL_COLOR_PROFILE_TARGET_ORIGINAL),
+ * so should be used after getting JXL_COLOR_PROFILE_TARGET_ORIGINAL but before
+ * getting JXL_COLOR_PROFILE_TARGET_DATA. The color_encoding must be grayscale
+ * if num_color_channels from the basic info is 1, RGB if num_color_channels
+ * from the basic info is 3.
+ *
+ * If JxlDecoderSetPreferredColorProfile is not used, then for images for which
+ * uses_original_profile is false and with ICC color profile, the decoder will
+ * choose linear sRGB for color images, linear grayscale for grayscale images.
+ * This function only sets a preference, since for other images the decoder has
+ * no choice what color profile to use, it is determined by the image.
+ *
+ * @param dec decoder object
+ * @param color_encoding the default color encoding to set
+ * @return JXL_DEC_SUCCESS if the preference was set successfully, JXL_DEC_ERROR
+ *    otherwise.
+ */
+JXL_EXPORT JxlDecoderStatus JxlDecoderSetPreferredColorProfile(
+    JxlDecoder* dec, const JxlColorEncoding* color_encoding);
 
 /**
  * Returns the minimum size in bytes of the preview image output pixel buffer
@@ -611,7 +682,7 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderGetFrameHeader(const JxlDecoder* dec,
  *
  * @param dec decoder object
  * @param name buffer to copy the name into
- * @param size size of the name buffer in bytes, includig zero termination
+ * @param size size of the name buffer in bytes, including zero termination
  *    character, so this must be at least JxlFrameHeader.name_length + 1.
  * @return JXL_DEC_SUCCESS if the value is available,
  *    JXL_DEC_NEED_MORE_INPUT if not yet available, JXL_DEC_ERROR in case
@@ -630,8 +701,11 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderGetFrameName(const JxlDecoder* dec,
  * @param size output value, buffer size in bytes
  * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
  *    information not available yet.
+ *
+ * DEPRECATED: the DC feature in this form will be removed. You can use
+ * JxlDecoderFlushImage for progressive rendering.
  */
-JXL_EXPORT JxlDecoderStatus JxlDecoderDCOutBufferSize(
+JXL_EXPORT JXL_DEPRECATED JxlDecoderStatus JxlDecoderDCOutBufferSize(
     const JxlDecoder* dec, const JxlPixelFormat* format, size_t* size);
 
 /**
@@ -648,8 +722,11 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderDCOutBufferSize(
  * @param size size of buffer in bytes
  * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
  * size too small.
+ *
+ * DEPRECATED: the DC feature in this form will be removed. You can use
+ * JxlDecoderFlushImage for progressive rendering.
  */
-JXL_EXPORT JxlDecoderStatus JxlDecoderSetDCOutBuffer(
+JXL_EXPORT JXL_DEPRECATED JxlDecoderStatus JxlDecoderSetDCOutBuffer(
     JxlDecoder* dec, const JxlPixelFormat* format, void* buffer, size_t size);
 
 /**
@@ -665,6 +742,142 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderSetDCOutBuffer(
  */
 JXL_EXPORT JxlDecoderStatus JxlDecoderImageOutBufferSize(
     const JxlDecoder* dec, const JxlPixelFormat* format, size_t* size);
+
+/**
+ * Sets the buffer to write the full resolution image to. This can be set when
+ * the JXL_DEC_FRAME event occurs, must be set when the
+ * JXL_DEC_NEED_IMAGE_OUT_BUFFER event occurs, and applies only for the current
+ * frame. The size of the buffer must be at least as large as given by
+ * JxlDecoderImageOutBufferSize. The buffer follows the format described by
+ * JxlPixelFormat. The buffer is owned by the caller.
+ *
+ * @param dec decoder object
+ * @param format format of the pixels. Object owned by user and its contents
+ * are copied internally.
+ * @param buffer buffer type to output the pixel data to
+ * @param size size of buffer in bytes
+ * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
+ * size too small.
+ */
+JXL_EXPORT JxlDecoderStatus JxlDecoderSetImageOutBuffer(
+    JxlDecoder* dec, const JxlPixelFormat* format, void* buffer, size_t size);
+
+/**
+ * Callback function type for JxlDecoderSetImageOutCallback. @see
+ * JxlDecoderSetImageOutCallback for usage.
+ *
+ * The callback may be called simultaneously by different threads when using a
+ * threaded parallel runner, on different pixels.
+ *
+ * @param opaque optional user data, as given to JxlDecoderSetImageOutCallback.
+ * @param x horizontal position of leftmost pixel of the pixel data.
+ * @param y vertical position of the pixel data.
+ * @param num_pixels amount of pixels included in the pixel data, horizontally.
+ * This is not the same as xsize of the full image, it may be smaller.
+ * @param pixels pixel data as a horizontal stripe, in the format passed to
+ * JxlDecoderSetImageOutCallback. The memory is not owned by the user, and is
+ * only valid during the time the callback is running.
+ */
+typedef void (*JxlImageOutCallback)(void* opaque, size_t x, size_t y,
+                                    size_t num_pixels, const void* pixels);
+
+/**
+ * Sets pixel output callback. This is an alternative to
+ * JxlDecoderSetImageOutBuffer. This can be set when the JXL_DEC_FRAME event
+ * occurs, must be set when the JXL_DEC_NEED_IMAGE_OUT_BUFFER event occurs, and
+ * applies only for the current frame. Only one of JxlDecoderSetImageOutBuffer
+ * or JxlDecoderSetImageOutCallback may be used for the same frame, not both at
+ * the same time.
+ *
+ * The callback will be called multiple times, to receive the image
+ * data in small chunks. The callback receives a horizontal stripe of pixel
+ * data, 1 pixel high, xsize pixels wide, called a scanline. The xsize here is
+ * not the same as the full image width, the scanline may be a partial section,
+ * and xsize may differ between calls. The user can then process and/or copy the
+ * partial scanline to an image buffer. The callback may be called
+ * simultaneously by different threads when using a threaded parallel runner, on
+ * different pixels.
+ *
+ * If JxlDecoderFlushImage is not used, then each pixel will be visited exactly
+ * once by the different callback calls, during processing with one or more
+ * JxlDecoderProcessInput calls. These pixels are decoded to full detail, they
+ * are not part of a lower resolution or lower quality progressive pass, but the
+ * final pass.
+ *
+ * If JxlDecoderFlushImage is used, then in addition each pixel will be visited
+ * zero or one times during the blocking JxlDecoderFlushImage call. Pixels
+ * visited as a result of JxlDecoderFlushImage may represent a lower resolution
+ * or lower quality intermediate progressive pass of the image. Any visited
+ * pixel will be of a quality at least as good or better than previous visits of
+ * this pixel. A pixel may be visited zero times if it cannot be decoded yet
+ * or if it was already decoded to full precision (this behavior is not
+ * guaranteed).
+ *
+ * @param dec decoder object
+ * @param format format of the pixels. Object owned by user and its contents
+ * are copied internally.
+ * @param callback the callback function receiving partial scanlines of pixel
+ * data.
+ * @param opaque optional user data, which will be passed on to the callback,
+ * may be NULL.
+ * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
+ * JxlDecoderSetImageOutBuffer already set.
+ */
+JXL_EXPORT JxlDecoderStatus
+JxlDecoderSetImageOutCallback(JxlDecoder* dec, const JxlPixelFormat* format,
+                              JxlImageOutCallback callback, void* opaque);
+
+/**
+ * Returns the minimum size in bytes of an extra channel pixel buffer for the
+ * given format. This is the buffer for JxlDecoderSetExtraChannelBuffer.
+ * Requires the basic image information is available in the decoder.
+ *
+ * @param dec decoder object
+ * @param format format of the pixels. The num_channels value is ignored and is
+ * always treated to be 1.
+ * @param size output value, buffer size in bytes
+ * @param index which extra channel to get, matching the index used in @see
+ * JxlDecoderGetExtraChannelInfo. Must be smaller than num_extra_channels in the
+ * associated JxlBasicInfo.
+ * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
+ *    information not available yet or invalid index.
+ */
+JXL_EXPORT JxlDecoderStatus JxlDecoderExtraChannelBufferSize(
+    const JxlDecoder* dec, const JxlPixelFormat* format, size_t* size,
+    uint32_t index);
+
+/**
+ * Sets the buffer to write an extra channel to. This can be set when
+ * the JXL_DEC_FRAME or JXL_DEC_NEED_IMAGE_OUT_BUFFER event occurs, and applies
+ * only for the current frame. The size of the buffer must be at least as large
+ * as given by JxlDecoderExtraChannelBufferSize. The buffer follows the format
+ * described by JxlPixelFormat, but where num_channels is 1. The buffer is owned
+ * by the caller. The amount of extra channels is given by the
+ * num_extra_channels field in the associated JxlBasicInfo, and the information
+ * of individual extra channels can be queried with @see
+ * JxlDecoderGetExtraChannelInfo. To get multiple extra channels, this function
+ * must be called multiple times, once for each wanted index. Not all images
+ * have extra channels. The alpha channel is an extra channel and can be gotten
+ * as part of the color channels when using an RGBA pixel buffer with
+ * JxlDecoderSetImageOutBuffer, but additionally also can be gotten separately
+ * as extra channel. The color channels themselves cannot be gotten this way.
+ *
+ *
+ * @param dec decoder object
+ * @param format format of the pixels. Object owned by user and its contents
+ * are copied internally. The num_channels value is ignored and is always
+ * treated to be 1.
+ * @param buffer buffer type to output the pixel data to
+ * @param size size of buffer in bytes
+ * @param index which extra channel to get, matching the index used in @see
+ * JxlDecoderGetExtraChannelInfo. Must be smaller than num_extra_channels in the
+ * associated JxlBasicInfo.
+ * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
+ * size too small or invalid index.
+ */
+JXL_EXPORT JxlDecoderStatus
+JxlDecoderSetExtraChannelBuffer(JxlDecoder* dec, const JxlPixelFormat* format,
+                                void* buffer, size_t size, uint32_t index);
 
 /**
  * Sets output buffer for reconstructed JPEG codestream.
@@ -701,99 +914,13 @@ JXL_EXPORT JxlDecoderStatus JxlDecoderSetJPEGBuffer(JxlDecoder* dec,
 JXL_EXPORT size_t JxlDecoderReleaseJPEGBuffer(JxlDecoder* dec);
 
 /**
- * Sets the buffer to write the full resolution image to. This can be set when
- * the JXL_DEC_FRAME event occurs, must be set when the
- * JXL_DEC_NEED_IMAGE_OUT_BUFFER event occurs, and applies only for the current
- * frame. The size of the buffer must be at least as large as given by
- * JxlDecoderImageOutBufferSize. The buffer follows the format described by
- * JxlPixelFormat. The buffer is owned by the caller.
- *
- * @param dec decoder object
- * @param format format of the pixels. Object owned by user and its contents
- * are copied internally.
- * @param buffer buffer type to output the pixel data to
- * @param size size of buffer in bytes
- * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
- * size too small.
- */
-JXL_EXPORT JxlDecoderStatus JxlDecoderSetImageOutBuffer(
-    JxlDecoder* dec, const JxlPixelFormat* format, void* buffer, size_t size);
-
-/**
- * Callback function type for JxlDecoderSetImageOutCallback. @see
- * JxlDecoderSetImageOutCallback for usage.
- *
- * The callback bay be called simultaneously by different threads when using a
- * threaded parallel runner, on different pixels.
- *
- * @param opaque optional user data, as given to JxlDecoderSetImageOutCallback.
- * @param x horizontal position of leftmost pixel of the pixel data.
- * @param y vertical position of the pixel data.
- * @param num_pixels amount of pixels included in the pixel data, horizontally.
- * This is not the same as xsize of the full image, it may be smaller.
- * @param pixels pixel data as a horizontal stripe, in the format passed to
- * JxlDecoderSetImageOutCallback. The memory is not owned by the user, and is
- * only valid during the time the callback is running.
- */
-typedef void (*JxlImageOutCallback)(void* opaque, size_t x, size_t y,
-                                    size_t num_pixels, const void* pixels);
-
-/**
- * Sets pixel output callback. This is an alternative to
- * JxlDecoderSetImageOutBuffer. This can be set when the JXL_DEC_FRAME event
- * occurs, must be set when the JXL_DEC_NEED_IMAGE_OUT_BUFFER event occurs, and
- * applies only for the current frame. Only one of JxlDecoderSetImageOutBuffer
- * or JxlDecoderSetImageOutCallback may be used for the same frame, not both at
- * the same time.
- *
- * The callback will be called multiple times, to receive the image
- * data in small chunks. The callback receives a horizontal stripe of pixel
- * data, 1 pixel high, xsize pixels wide, called a scanline. The xsize here is
- * not the same as the full image width, the scanline may be a partial section,
- * and xsize may differ between calls. The user can then process and/or copy the
- * partial scanline to an image buffer. The callback bay be called
- * simultaneously by different threads when using a threaded parallel runner, on
- * different pixels.
- *
- * If JxlDecoderFlushImage is not used, then each pixel will be visited exactly
- * once by the different callback calls, during processing with one or more
- * JxlDecoderProcessInput calls. These pixels are decoded to full detail, they
- * are not part of a lower resolution or lower quality progressive pass, but the
- * final pass.
- *
- * If JxlDecoderFlushImage is used, then in addition each pixel will be visited
- * zero or one times during the blocking JxlDecoderFlushImage call. Pixels
- * visited as a result of JxlDecoderFlushImage may represent a lower resolution
- * or lower quality intermediate progressive pass of the image. Any visited
- * pixel will be of a quality at least as good or better than previous visits of
- * this pixel. A pixel may be visited zero times if it cannot be decoded yet
- * or if it was already decoded to full precision (this behavior is not
- * guaranteed).
- *
- * @param dec decoder object
- * @param format format of the pixels. Object owned by user and its contents
- * are copied internally.
- * @param callback the callback function receiving partial scanlines of pixel
- * data.
- * @param opaque optional user data, which will be passed on to the callback,
- * may be NULL.
- * @return JXL_DEC_SUCCESS on success, JXL_DEC_ERROR on error, such as
- * JxlDecoderSetImageOutBuffer already set.
- */
-JXL_EXPORT JxlDecoderStatus
-JxlDecoderSetImageOutCallback(JxlDecoder* dec, const JxlPixelFormat* format,
-                              JxlImageOutCallback callback, void* opaque);
-
-/* TODO(lode): add way to output extra channels */
-
-/**
  * Outputs progressive step towards the decoded image so far when only partial
  * input was received. If the flush was successful, the buffer set with
  * JxlDecoderSetImageOutBuffer will contain partial image data.
  *
  * Can be called when JxlDecoderProcessInput returns JXL_DEC_NEED_MORE_INPUT,
- * after the JXL_DEC_FRAME event already occured and before the
- * JXL_DEC_FULL_IMAGE event occured for a frame.
+ * after the JXL_DEC_FRAME event already occurred and before the
+ * JXL_DEC_FULL_IMAGE event occurred for a frame.
  *
  * @param dec decoder object
  * @return JXL_DEC_SUCCESS if image data was flushed to the output buffer, or

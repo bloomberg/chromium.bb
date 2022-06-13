@@ -27,11 +27,11 @@ limitations under the License.
 #include "absl/strings/str_cat.h"
 #include "absl/types/optional.h"
 #include "tensorflow/compiler/jit/flags.h"
-#include "tensorflow/compiler/jit/graphcycles/graphcycles.h"
 #include "tensorflow/compiler/jit/mark_for_compilation_pass.h"
 #include "tensorflow/compiler/jit/shape_inference_helpers.h"
 #include "tensorflow/compiler/jit/xla_cluster_util.h"
 #include "tensorflow/compiler/tf2xla/const_analysis.h"
+#include "tensorflow/compiler/xla/service/graphcycles/graphcycles.h"
 #include "tensorflow/compiler/xla/status_macros.h"
 #include "tensorflow/core/common_runtime/device_factory.h"
 #include "tensorflow/core/common_runtime/function.h"
@@ -65,8 +65,8 @@ const char* const kXlaHostTransferSequencerAttr =
 const char* const kXlaHasReferenceVarsAttr = "_XlaHasReferenceVars";
 
 void SortControlInputs(GraphDef* gdef) {
-  int64 num_nodes = gdef->node_size();
-  for (int64 i = 0; i < num_nodes; ++i) {
+  int64_t num_nodes = gdef->node_size();
+  for (int64_t i = 0; i < num_nodes; ++i) {
     NodeDef* node = gdef->mutable_node(i);
     // Stable sort control inputs and leave the order of data inputs unchanged.
     std::stable_sort(node->mutable_input()->begin(),
@@ -141,9 +141,6 @@ struct OutputInputTensorPairHasher {
 // everything to use it.
 static const char* const kArgOp = "_Arg";
 static const char* const kRetValOp = "_Retval";
-static const char* const kHostComputeOp = "XlaHostCompute";
-static const char* const kSendFromHostOp = "_XlaSendFromHost";
-static const char* const kRecvAtHostOp = "_XlaRecvAtHost";
 
 class Encapsulator {
  public:
@@ -486,9 +483,7 @@ Status Encapsulator::Subgraph::RecordArg(
     Status s = builder.Finalize(&arg_def);
     if (!s.ok()) return s;
 
-    Node* arg = graph_->AddNode(arg_def, &s);
-    if (!s.ok()) return s;
-
+    TF_ASSIGN_OR_RETURN(Node * arg, graph_->AddNode(arg_def));
     src_arg_pairs->push_back({src_node, arg});
     args_.push_back(arg);
   }
@@ -531,9 +526,7 @@ Status Encapsulator::Subgraph::RecordResult(
     builder.Input(src_image->name(), src_slot, dtype);
     Status s = builder.Finalize(&ret_def);
     if (!s.ok()) return s;
-    Node* ret = graph_->AddNode(ret_def, &s);
-    if (!s.ok()) return s;
-
+    TF_ASSIGN_OR_RETURN(Node * ret, graph_->AddNode(ret_def));
     graph_->AddEdge(src_image, src_slot, ret, 0);
   }
   return Status::OK();
@@ -550,8 +543,7 @@ Status Encapsulator::Subgraph::MakeSequencingNode(const string& subgraph_name,
     Status s = builder.Finalize(&seq_def);
     if (!s.ok()) return s;
 
-    sequencer_ = graph_out->AddNode(seq_def, &s);
-    if (!s.ok()) return s;
+    TF_ASSIGN_OR_RETURN(sequencer_, graph_out->AddNode(seq_def));
   }
   return Status::OK();
 }
@@ -663,9 +655,7 @@ Status Encapsulator::Subgraph::ReplaceFunctionDef(
 Status Encapsulator::Subgraph::AddFunctionCallNode(
     const std::unordered_map<const Node*, Node*>& node_images,
     Graph* graph_out) {
-  Status s;
-  call_node_ = graph_out->AddNode(call_node_def_, &s);
-  if (!s.ok()) return s;
+  TF_ASSIGN_OR_RETURN(call_node_, graph_out->AddNode(call_node_def_));
 
   // Copy the assigned device and the key_annotation over.
   call_node_->set_assigned_device_name(device_);
@@ -1132,7 +1122,8 @@ static Status GetArgTypes(const Graph& graph, DataTypeVector* types) {
     if (n->type_string() == kArgOp) {
       int index;
       TF_RETURN_IF_ERROR(GetNodeAttr(n->attrs(), "index", &index));
-      if (index < 0 || index >= types->size()) {
+      const int num_types = types->size();
+      if (index < 0 || index >= num_types) {
         return errors::InvalidArgument("Invalid argument number");
       }
       (*types)[index] = n->output_type(0);
@@ -1149,7 +1140,8 @@ static Status RenumberArguments(Graph* graph,
     if (n->type_string() == kArgOp) {
       int index;
       TF_RETURN_IF_ERROR(GetNodeAttr(n->attrs(), "index", &index));
-      if (index < 0 || index >= permutation.size()) {
+      const int permutation_size = permutation.size();
+      if (index < 0 || index >= permutation_size) {
         return errors::InvalidArgument("Invalid argument number");
       }
       n->AddAttr("index", permutation[index]);
@@ -1164,6 +1156,18 @@ Status EncapsulateSubgraphsPass::Run(
   if (VLOG_IS_ON(1)) {
     DumpGraphToFile("encapsulate_subgraphs_before", **options.graph,
                     options.flib_def);
+  }
+
+  // TODO(b/195757077): Remove this once there is a better way to disable
+  // GraphOptimizationPasses that are not needed due to MLIR bridge.
+  for (Node* n : (*options.graph)->nodes()) {
+    // Skip the pass if we found TPUExecute or TPUExecuteAndUpdateVariables ops
+    // in the graph, which indicates the graph is produced by TPU TF-XLA bridge
+    // and doesn't require auto clustering.
+    if (n->type_string() == "TPUExecute" ||
+        n->type_string() == "TPUExecuteAndUpdateVariables") {
+      return Status::OK();
+    }
   }
 
   std::unique_ptr<Graph> graph_out;
@@ -1304,20 +1308,20 @@ Status EncapsulateSubgraphsPass::Run(
           kXlaClusterAttr, **options.graph, rewrite_subgraph,
           /*reuse_existing_functions=*/false, &graph_out, library),
       "EncapsulateSubgraphsPass failed");
-
   if (VLOG_IS_ON(1)) {
     DumpGraphToFile("encapsulate_subgraphs_after", *graph_out,
                     options.flib_def);
   }
 
   *options.graph = std::move(graph_out);
+
   TF_ASSIGN_OR_RETURN(absl::flat_hash_set<Node*> ref_related_nodes,
                       GetNodesRelatedToRefVariables(**options.graph, flr));
   for (Node* node : (*options.graph)->nodes()) {
     bool has_ref_vars = ref_related_nodes.contains(node);
     node->AddAttr(kXlaHasReferenceVarsAttr, has_ref_vars);
     VLOG(3) << "Has ref vars = " << has_ref_vars
-            << ", node: " << node->def().SerializeAsString();
+            << ", node: " << node->def().DebugString();
   }
   return Status::OK();
 }

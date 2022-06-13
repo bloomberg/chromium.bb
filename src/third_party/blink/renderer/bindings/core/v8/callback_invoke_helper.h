@@ -29,15 +29,15 @@ enum class CallbackInvokeHelperMode {
 // functions and IDL callback interfaces.  This class implements the following
 // algorithms of Web IDL.
 //
-// https://heycam.github.io/webidl/#call-a-user-objects-operation
+// https://webidl.spec.whatwg.org/#call-a-user-objects-operation
 // 3.11. Callback interfaces
 // To call a user object's operation
 //
-// https://heycam.github.io/webidl/#invoke-a-callback-function
+// https://webidl.spec.whatwg.org/#invoke-a-callback-function
 // 3.12. Invoking callback functions
 // To invoke a callback function type value
 //
-// https://heycam.github.io/webidl/#construct-a-callback-function
+// https://webidl.spec.whatwg.org/#construct-a-callback-function
 // 3.12. Invoking callback functions
 // To construct a callback functions type value
 template <class CallbackBase,
@@ -68,11 +68,11 @@ class CallbackInvokeHelper final {
   template <typename IDLReturnType, typename ReturnType>
   v8::Maybe<ReturnType> Result() {
     DCHECK(!aborted_);
-    ExceptionState exception_state(callback_->GetIsolate(),
-                                   ExceptionState::kExecutionContext,
+    v8::Isolate* isolate = callback_->GetIsolate();
+    ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                    class_like_name_, property_name_);
     auto&& result = NativeValueTraits<IDLReturnType>::NativeValue(
-        callback_->GetIsolate(), result_, exception_state);
+        isolate, result_, exception_state);
     if (exception_state.HadException())
       return v8::Nothing<ReturnType>();
     return v8::Just<ReturnType>(result);

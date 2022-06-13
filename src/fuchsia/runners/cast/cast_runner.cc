@@ -42,12 +42,14 @@ static constexpr const char* kServices[] = {
     "fuchsia.input.virtualkeyboard.ControllerCreator",
     "fuchsia.intl.PropertyProvider",
     "fuchsia.logger.LogSink",
+    "fuchsia.media.AudioDeviceEnumerator",
+    "fuchsia.media.ProfileProvider",
     "fuchsia.media.SessionAudioConsumerFactory",
     "fuchsia.media.drm.PlayReady",
     "fuchsia.media.drm.Widevine",
     "fuchsia.mediacodec.CodecFactory",
     "fuchsia.memorypressure.Provider",
-    "fuchsia.net.NameLookup",
+    "fuchsia.net.name.Lookup",
     "fuchsia.net.interfaces.State",
     "fuchsia.posix.socket.Provider",
     "fuchsia.process.Launcher",
@@ -176,7 +178,7 @@ void SetCdmParamsForMainContext(fuchsia::web::CreateContextParams* params) {
 
 // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
 // used to route fuchsia.web.FrameHost capabilities cleanly.
-class FrameHostComponent : public fuchsia::sys::ComponentController {
+class FrameHostComponent final : public fuchsia::sys::ComponentController {
  public:
   // Creates a FrameHostComponent with lifetime managed by |controller_request|.
   // Returns the incoming service directory, in case the CastRunner needs to use
@@ -209,11 +211,11 @@ class FrameHostComponent : public fuchsia::sys::ComponentController {
     binding_.Bind(std::move(controller_request));
     binding_.set_error_handler([this](zx_status_t) { Kill(); });
   }
-  ~FrameHostComponent() final = default;
+  ~FrameHostComponent() override = default;
 
   // fuchsia::sys::ComponentController interface.
-  void Kill() final { delete this; }
-  void Detach() final {
+  void Kill() override { delete this; }
+  void Detach() override {
     binding_.Close(ZX_ERR_NOT_SUPPORTED);
     delete this;
   }
@@ -228,8 +230,8 @@ class FrameHostComponent : public fuchsia::sys::ComponentController {
 
 // TODO(crbug.com/1120914): Remove this once Component Framework v2 can be
 // used to route chromium.cast.DataReset capabilities cleanly.
-class DataResetComponent : public fuchsia::sys::ComponentController,
-                           public chromium::cast::DataReset {
+class DataResetComponent final : public fuchsia::sys::ComponentController,
+                                 public chromium::cast::DataReset {
  public:
   // Creates a DataResetComponent with lifetime managed by |controller_request|.
   static void Start(base::OnceCallback<bool()> delete_persistent_data,
@@ -254,17 +256,17 @@ class DataResetComponent : public fuchsia::sys::ComponentController,
     binding_.Bind(std::move(controller_request));
     binding_.set_error_handler([this](zx_status_t) { Kill(); });
   }
-  ~DataResetComponent() final = default;
+  ~DataResetComponent() override = default;
 
   // fuchsia::sys::ComponentController interface.
-  void Kill() final { delete this; }
-  void Detach() final {
+  void Kill() override { delete this; }
+  void Detach() override {
     binding_.Close(ZX_ERR_NOT_SUPPORTED);
     delete this;
   }
 
   // chromium::cast::DataReset interface.
-  void DeletePersistentData(DeletePersistentDataCallback callback) final {
+  void DeletePersistentData(DeletePersistentDataCallback callback) override {
     if (!delete_persistent_data_) {
       // Repeated requests to DeletePersistentData are not supported.
       binding_.Close(ZX_ERR_NOT_SUPPORTED);
@@ -566,7 +568,9 @@ fuchsia::web::CreateContextParams CastRunner::GetMainContextParams() {
   fuchsia::web::CreateContextParams params = GetCommonContextParams();
   *params.mutable_features() |=
       fuchsia::web::ContextFeatureFlags::NETWORK |
-      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS;
+      fuchsia::web::ContextFeatureFlags::LEGACYMETRICS |
+      fuchsia::web::ContextFeatureFlags::KEYBOARD |
+      fuchsia::web::ContextFeatureFlags::VIRTUAL_KEYBOARD;
   EnsureSoftwareVideoDecodersAreDisabled(params.mutable_features());
   params.set_remote_debugging_port(CastRunner::kRemoteDebuggingPort);
 
@@ -623,8 +627,6 @@ CastRunner::GetIsolatedContextParamsForCastStreaming() {
 absl::optional<fuchsia::web::CreateContextParams>
 CastRunner::GetContextParamsForAppConfig(
     chromium::cast::ApplicationConfig* app_config) {
-  absl::optional<fuchsia::web::CreateContextParams> params;
-
   if (IsAppConfigForCastStreaming(*app_config)) {
     // TODO(crbug.com/1082821): Remove this once the CastStreamingReceiver
     // Component has been implemented.

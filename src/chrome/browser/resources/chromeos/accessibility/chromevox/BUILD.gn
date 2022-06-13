@@ -63,14 +63,15 @@ chromevox_modules = [
   "background/math_handler.js",
   "background/pointer_handler.js",
   "background/output/output.js",
+  "background/output/output_ancestry_info.js",
   "background/output/output_format_parser.js",
   "background/output/output_format_tree.js",
+  "background/output/output_role_info.js",
   "background/output/output_types.js",
   "background/panel_command.js",
   "background/phonetic_data.js",
   "background/prefs.js",
   "background/smart_sticky_mode.js",
-  "background/tabs_api_handler.js",
   "background/user_action_monitor.js",
   "braille/bluetooth_braille_display_manager.js",
   "braille/bluetooth_braille_display_ui.js",
@@ -113,6 +114,7 @@ chromevox_modules = [
   "panel/panel_menu.js",
   "panel/panel_menu_item.js",
   "third_party/tamachiyomi/ja_phonetic_data.js",
+  "third_party/tamachiyomi/ja_phonetic_map.js",
 ]
 
 # ES6 modules.
@@ -125,6 +127,7 @@ chromevox_es6_modules = [
   "background/live_regions.js",
   "background/media_automation_handler.js",
   "background/range_automation_handler.js",
+  "background/page_load_sound_handler.js",
 ]
 
 # Closure library modules needed by chromevox.
@@ -191,10 +194,10 @@ run_jsbundler("chromevox_copied_files") {
     "images/chromevox-19.png",
     "images/chromevox-48.png",
     "images/chromevox.svg",
-    "images/close-19.png",
-    "images/close-hover-19.png",
-    "images/options-19.png",
-    "images/options-hover-19.png",
+    "images/close-36.png",
+    "images/close-hover-36.png",
+    "images/options-36.png",
+    "images/options-hover-36.png",
     "images/triangle-6.png",
     "injected/api.js",
     "learn_mode/kbexplorer.html",

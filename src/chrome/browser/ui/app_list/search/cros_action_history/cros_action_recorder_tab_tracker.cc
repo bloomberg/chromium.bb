@@ -12,7 +12,9 @@ namespace app_list {
 
 CrOSActionRecorderTabTracker::CrOSActionRecorderTabTracker(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<CrOSActionRecorderTabTracker>(
+          *web_contents) {}
 
 // A tab should be skipped if it is empty, blank or default page.
 bool CrOSActionRecorderTabTracker::ShouldSkip() {
@@ -26,8 +28,11 @@ bool CrOSActionRecorderTabTracker::ShouldSkip() {
 //   (2) Preloading is counted as a navigation of a new tab.
 void CrOSActionRecorderTabTracker::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->IsInMainFrame() ||
+      !navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() || ShouldSkip()) {
     return;
   }
@@ -77,6 +82,6 @@ void CrOSActionRecorderTabTracker::DidOpenRequestedURL(
        {url.spec(), -2}});
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(CrOSActionRecorderTabTracker)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CrOSActionRecorderTabTracker);
 
 }  // namespace app_list

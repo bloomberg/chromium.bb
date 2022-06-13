@@ -30,14 +30,13 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    InProcessBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch(
         data_reduction_proxy::switches::kEnableDataReductionProxy);
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/echoheader?Save-Data"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/echoheader?Save-Data")));
     EXPECT_EQ(
         expected_header_value,
         content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
@@ -45,8 +44,8 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
   }
 
   void VerifySaveDataAPI(bool expected_header_set) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 test_server_.GetURL("/net_info.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), test_server_.GetURL("/net_info.html")));
     EXPECT_EQ(expected_header_set, RunScriptExtractBool("getSaveData()"));
   }
 

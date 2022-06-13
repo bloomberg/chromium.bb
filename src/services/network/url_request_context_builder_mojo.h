@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -40,6 +39,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
     : public net::URLRequestContextBuilder {
  public:
   URLRequestContextBuilderMojo();
+
+  URLRequestContextBuilderMojo(const URLRequestContextBuilderMojo&) = delete;
+  URLRequestContextBuilderMojo& operator=(const URLRequestContextBuilderMojo&) =
+      delete;
+
   ~URLRequestContextBuilderMojo() override;
 
   // Sets Mojo factory used to create ProxyResolvers. If not set, falls back to
@@ -74,7 +78,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
 
   mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
       mojo_proxy_resolver_factory_;
-  DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilderMojo);
 };
 
 }  // namespace network

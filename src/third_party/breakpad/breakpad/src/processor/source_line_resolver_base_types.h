@@ -40,13 +40,17 @@
 
 #include <stdio.h>
 
+#include <deque>
 #include <map>
+#include <memory>
 #include <string>
 
 #include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/processor/source_line_resolver_base.h"
 #include "google_breakpad/processor/stack_frame.h"
 #include "processor/cfi_frame_info.h"
+#include "processor/linked_ptr.h"
+#include "processor/range_map.h"
 #include "processor/windows_frame_info.h"
 
 #ifndef PROCESSOR_SOURCE_LINE_RESOLVER_BASE_TYPES_H__
@@ -64,6 +68,43 @@ class SourceLineResolverBase::AutoFileCloser {
 
  private:
   FILE* file_;
+};
+
+struct SourceLineResolverBase::InlineOrigin {
+  InlineOrigin() {}
+  InlineOrigin(bool has_file_id, int32_t source_file_id, const string& name)
+      : has_file_id(has_file_id),
+        source_file_id(source_file_id),
+        name(name) {}
+  // If it's old format, source file id is set, otherwise not useful.
+  bool has_file_id;
+  int32_t source_file_id;
+  string name;
+};
+
+struct SourceLineResolverBase::Inline {
+  // A vector of (address, size) pair for a INLINE record.
+  using InlineRanges = std::vector<std::pair<MemAddr, MemAddr>>;
+  Inline() {}
+  Inline(bool has_call_site_file_id,
+         int32_t inline_nest_level,
+         int32_t call_site_line,
+         int32_t call_site_file_id,
+         int32_t origin_id,
+         InlineRanges inline_ranges)
+      : has_call_site_file_id(has_call_site_file_id),
+        inline_nest_level(inline_nest_level),
+        call_site_line(call_site_line),
+        call_site_file_id(call_site_file_id),
+        origin_id(origin_id),
+        inline_ranges(inline_ranges) {}
+  // If it's new format, call site file id is set, otherwise not useful.
+  bool has_call_site_file_id;
+  int32_t inline_nest_level;
+  int32_t call_site_line;
+  int32_t call_site_file_id;
+  int32_t origin_id;
+  InlineRanges inline_ranges;
 };
 
 struct SourceLineResolverBase::Line {
@@ -142,7 +183,9 @@ class SourceLineResolverBase::Module {
 
   // Looks up the given relative address, and fills the StackFrame struct
   // with the result.
-  virtual void LookupAddress(StackFrame* frame) const = 0;
+  virtual void LookupAddress(
+      StackFrame* frame,
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frames) const = 0;
 
   // If Windows stack walking information is available covering ADDRESS,
   // return a WindowsFrameInfo structure describing it. If the information

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMMANDS_H_
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/image/image.h"
@@ -35,11 +36,16 @@ class DownloadCommands {
     ANNOTATE,                  // Open an app to annotate the image.
     DEEP_SCAN,                 // Send file to Safe Browsing for deep scanning.
     BYPASS_DEEP_SCANNING,      // Bypass the prompt to deep scan.
+    MAX
   };
 
   // |model| must outlive DownloadCommands.
   // TODO(shaktisahu): Investigate if model lifetime is shorter than |this|.
-  explicit DownloadCommands(DownloadUIModel* model);
+  explicit DownloadCommands(base::WeakPtr<DownloadUIModel> model);
+
+  DownloadCommands(const DownloadCommands&) = delete;
+  DownloadCommands& operator=(const DownloadCommands&) = delete;
+
   virtual ~DownloadCommands();
 
   bool IsCommandEnabled(Command command) const;
@@ -48,7 +54,7 @@ class DownloadCommands {
   void ExecuteCommand(Command command);
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+    defined(OS_MAC) || defined(OS_FUCHSIA)
   bool IsDownloadPdf() const;
   bool CanOpenPdfInSystemViewer() const;
   Browser* GetBrowser() const;
@@ -63,11 +69,9 @@ class DownloadCommands {
       DownloadCommandsTest,
       GetLearnMoreURLForInterruptedDownload_ContainsContext);
 
-  DownloadUIModel* model_;
+  base::WeakPtr<DownloadUIModel> model_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadCommands);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMMANDS_H_

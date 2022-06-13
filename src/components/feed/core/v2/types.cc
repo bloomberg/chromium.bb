@@ -4,14 +4,16 @@
 
 #include "components/feed/core/v2/types.h"
 
+#include <ostream>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/json/values_util.h"
 #include "base/pickle.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/v2/public/types.h"
 
 // Note: This file contains implementation for both types.h and public/types.h.
@@ -42,9 +44,9 @@ bool UnpickleNetworkResponseInfo(base::PickleIterator& iterator,
         iterator.ReadString(&value.bless_nonce) &&
         iterator.ReadString(&base_request_url)))
     return false;
-  value.fetch_duration = base::TimeDelta::FromMilliseconds(fetch_duration_ms);
-  value.fetch_time = base::TimeDelta::FromMilliseconds(fetch_time_ms) +
-                     base::Time::UnixEpoch();
+  value.fetch_duration = base::Milliseconds(fetch_duration_ms);
+  value.fetch_time =
+      base::Milliseconds(fetch_time_ms) + base::Time::UnixEpoch();
   value.base_request_url = GURL(base_request_url);
   return true;
 }
@@ -153,9 +155,9 @@ DebugStreamData& DebugStreamData::operator=(const DebugStreamData&) = default;
 
 base::Value PersistentMetricsDataToValue(const PersistentMetricsData& data) {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetKey("day_start", util::TimeToValue(data.current_day_start));
+  dict.SetKey("day_start", base::TimeToValue(data.current_day_start));
   dict.SetKey("time_spent_in_feed",
-              util::TimeDeltaToValue(data.accumulated_time_spent_in_feed));
+              base::TimeDeltaToValue(data.accumulated_time_spent_in_feed));
   return dict;
 }
 
@@ -164,12 +166,12 @@ PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value) {
   if (!value.is_dict())
     return result;
   absl::optional<base::Time> day_start =
-      util::ValueToTime(value.FindKey("day_start"));
+      base::ValueToTime(value.FindKey("day_start"));
   if (!day_start)
     return result;
   result.current_day_start = *day_start;
   absl::optional<base::TimeDelta> time_spent_in_feed =
-      util::ValueToTimeDelta(value.FindKey("time_spent_in_feed"));
+      base::ValueToTimeDelta(value.FindKey("time_spent_in_feed"));
   if (time_spent_in_feed) {
     result.accumulated_time_spent_in_feed = *time_spent_in_feed;
   }
@@ -205,6 +207,54 @@ bool ContentIdSet::IsEmpty() const {
 }
 bool ContentIdSet::operator==(const ContentIdSet& rhs) const {
   return content_ids_ == rhs.content_ids_;
+}
+std::ostream& operator<<(std::ostream& s, const ContentIdSet& id_set) {
+  s << "{";
+  for (int64_t id : id_set.values()) {
+    s << id << ", ";
+  }
+  s << "}";
+  return s;
+}
+
+LaunchResult::LaunchResult(LoadStreamStatus load_stream_status,
+                           feedwire::DiscoverLaunchResult launch_result)
+    : load_stream_status(load_stream_status), launch_result(launch_result) {}
+LaunchResult::LaunchResult(const LaunchResult& other) = default;
+LaunchResult::~LaunchResult() = default;
+LaunchResult& LaunchResult::operator=(const LaunchResult& other) = default;
+
+LoggingParameters::LoggingParameters() = default;
+LoggingParameters::~LoggingParameters() = default;
+LoggingParameters::LoggingParameters(const LoggingParameters&) = default;
+LoggingParameters::LoggingParameters(LoggingParameters&&) = default;
+LoggingParameters& LoggingParameters::operator=(const LoggingParameters&) =
+    default;
+
+bool LoggingParameters::operator==(const LoggingParameters& rhs) const {
+  return std::tie(email, client_instance_id, logging_enabled,
+                  view_actions_enabled) ==
+         std::tie(rhs.email, rhs.client_instance_id, logging_enabled,
+                  view_actions_enabled);
+}
+
+LoggingParameters FromProto(const feedui::LoggingParameters& proto) {
+  LoggingParameters result;
+  result.email = proto.email();
+  result.client_instance_id = proto.client_instance_id();
+  result.logging_enabled = proto.logging_enabled();
+  result.view_actions_enabled = proto.view_actions_enabled();
+  result.root_event_id = proto.root_event_id();
+  return result;
+}
+
+void ToProto(const LoggingParameters& logging_parameters,
+             feedui::LoggingParameters& proto) {
+  proto.set_email(logging_parameters.email);
+  proto.set_client_instance_id(logging_parameters.client_instance_id);
+  proto.set_logging_enabled(logging_parameters.logging_enabled);
+  proto.set_view_actions_enabled(logging_parameters.view_actions_enabled);
+  proto.set_root_event_id(logging_parameters.root_event_id);
 }
 
 }  // namespace feed

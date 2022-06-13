@@ -6,6 +6,7 @@
  */
 
 #define SK_OPTS_NS skslc_standalone
+#include "src/core/SkOpts.h"
 #include "src/opts/SkChecksum_opts.h"
 #include "src/opts/SkVM_opts.h"
 
@@ -13,13 +14,13 @@
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLDehydrator.h"
 #include "src/sksl/SkSLFileOutputStream.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
 #include "src/sksl/codegen/SkSLVMCodeGenerator.h"
-#include "src/sksl/ir/SkSLEnum.h"
+#include "src/sksl/codegen/SkVMDebugTrace.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
 
 #include "spirv-tools/libspirv.hpp"
 
@@ -92,7 +93,8 @@ static SkSL::String base_name(const SkSL::String& fpPath, const char* prefix, co
 // The passed-in Settings object will be updated accordingly. Any number of options can be provided.
 static bool detect_shader_settings(const SkSL::String& text,
                                    SkSL::Program::Settings* settings,
-                                   const SkSL::ShaderCapsClass** caps) {
+                                   const SkSL::ShaderCaps** caps,
+                                   std::unique_ptr<SkSL::SkVMDebugTrace>* debugTrace) {
     using Factory = SkSL::ShaderCapsFactory;
 
     // Find a matching comment and isolate the name portion.
@@ -116,10 +118,6 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_addAndTrueCaps = Factory::AddAndTrueToLoopCondition();
                     *caps = s_addAndTrueCaps.get();
                 }
-                if (settingsText.consumeSuffix(" BlendModesFailRandomlyForAllZeroVec")) {
-                    static auto s_blendZeroCaps = Factory::BlendModesFailRandomlyForAllZeroVec();
-                    *caps = s_blendZeroCaps.get();
-                }
                 if (settingsText.consumeSuffix(" CannotUseFractForNegativeValues")) {
                     static auto s_negativeFractCaps = Factory::CannotUseFractForNegativeValues();
                     *caps = s_negativeFractCaps.get();
@@ -140,25 +138,9 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_emulateAbsIntCaps = Factory::EmulateAbsIntFunction();
                     *caps = s_emulateAbsIntCaps.get();
                 }
-                if (settingsText.consumeSuffix(" FragCoordsOld")) {
-                    static auto s_fragCoordsOld = Factory::FragCoordsOld();
-                    *caps = s_fragCoordsOld.get();
-                }
-                if (settingsText.consumeSuffix(" FragCoordsNew")) {
-                    static auto s_fragCoordsNew = Factory::FragCoordsNew();
-                    *caps = s_fragCoordsNew.get();
-                }
-                if (settingsText.consumeSuffix(" GeometryShaderExtensionString")) {
-                    static auto s_geometryExtCaps = Factory::GeometryShaderExtensionString();
-                    *caps = s_geometryExtCaps.get();
-                }
-                if (settingsText.consumeSuffix(" GeometryShaderSupport")) {
-                    static auto s_geometryShaderCaps = Factory::GeometryShaderSupport();
-                    *caps = s_geometryShaderCaps.get();
-                }
-                if (settingsText.consumeSuffix(" GSInvocationsExtensionString")) {
-                    static auto s_gsInvocationCaps = Factory::GSInvocationsExtensionString();
-                    *caps = s_gsInvocationCaps.get();
+                if (settingsText.consumeSuffix(" FramebufferFetchSupport")) {
+                    static auto s_fbFetchSupport = Factory::FramebufferFetchSupport();
+                    *caps = s_fbFetchSupport.get();
                 }
                 if (settingsText.consumeSuffix(" IncompleteShortIntPrecision")) {
                     static auto s_incompleteShortIntCaps = Factory::IncompleteShortIntPrecision();
@@ -172,9 +154,10 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_negativeAtanCaps = Factory::MustForceNegatedAtanParamToFloat();
                     *caps = s_negativeAtanCaps.get();
                 }
-                if (settingsText.consumeSuffix(" NoGSInvocationsSupport")) {
-                    static auto s_noGSInvocations = Factory::NoGSInvocationsSupport();
-                    *caps = s_noGSInvocations.get();
+                if (settingsText.consumeSuffix(" MustForceNegatedLdexpParamToMultiply")) {
+                    static auto s_negativeLdexpCaps =
+                            Factory::MustForceNegatedLdexpParamToMultiply();
+                    *caps = s_negativeLdexpCaps.get();
                 }
                 if (settingsText.consumeSuffix(" RemovePowWithConstantExponent")) {
                     static auto s_powCaps = Factory::RemovePowWithConstantExponent();
@@ -184,9 +167,17 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_rewriteLoopCaps = Factory::RewriteDoWhileLoops();
                     *caps = s_rewriteLoopCaps.get();
                 }
+                if (settingsText.consumeSuffix(" RewriteSwitchStatements")) {
+                    static auto s_rewriteSwitchCaps = Factory::RewriteSwitchStatements();
+                    *caps = s_rewriteSwitchCaps.get();
+                }
                 if (settingsText.consumeSuffix(" RewriteMatrixVectorMultiply")) {
                     static auto s_rewriteMatVecMulCaps = Factory::RewriteMatrixVectorMultiply();
                     *caps = s_rewriteMatVecMulCaps.get();
+                }
+                if (settingsText.consumeSuffix(" RewriteMatrixComparisons")) {
+                    static auto s_rewriteMatrixComparisons = Factory::RewriteMatrixComparisons();
+                    *caps = s_rewriteMatrixComparisons.get();
                 }
                 if (settingsText.consumeSuffix(" ShaderDerivativeExtensionString")) {
                     static auto s_derivativeCaps = Factory::ShaderDerivativeExtensionString();
@@ -208,20 +199,30 @@ static bool detect_shader_settings(const SkSL::String& text,
                     static auto s_version450CoreCaps = Factory::Version450Core();
                     *caps = s_version450CoreCaps.get();
                 }
-                if (settingsText.consumeSuffix(" FlipY")) {
-                    settings->fFlipY = true;
+                if (settingsText.consumeSuffix(" AllowNarrowingConversions")) {
+                    settings->fAllowNarrowingConversions = true;
                 }
                 if (settingsText.consumeSuffix(" ForceHighPrecision")) {
                     settings->fForceHighPrecision = true;
                 }
+                if (settingsText.consumeSuffix(" NoES2Restrictions")) {
+                    settings->fEnforceES2Restrictions = false;
+                }
                 if (settingsText.consumeSuffix(" NoInline")) {
                     settings->fInlineThreshold = 0;
+                }
+                if (settingsText.consumeSuffix(" NoTraceVarInSkVMDebugTrace")) {
+                    settings->fAllowTraceVarInSkVMDebugTrace = false;
                 }
                 if (settingsText.consumeSuffix(" InlineThresholdMax")) {
                     settings->fInlineThreshold = INT_MAX;
                 }
                 if (settingsText.consumeSuffix(" Sharpen")) {
                     settings->fSharpenTextures = true;
+                }
+                if (settingsText.consumeSuffix(" SkVMDebugTrace")) {
+                    settings->fOptimize = false;
+                    *debugTrace = std::make_unique<SkSL::SkVMDebugTrace>();
                 }
 
                 if (settingsText.empty()) {
@@ -274,20 +275,18 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
 
     SkSL::ProgramKind kind;
     const SkSL::String& inputPath = args[1];
-    if (inputPath.endsWith(".vert")) {
+    if (inputPath.ends_with(".vert")) {
         kind = SkSL::ProgramKind::kVertex;
-    } else if (inputPath.endsWith(".frag") || inputPath.endsWith(".sksl")) {
+    } else if (inputPath.ends_with(".frag") || inputPath.ends_with(".sksl")) {
         kind = SkSL::ProgramKind::kFragment;
-    } else if (inputPath.endsWith(".geom")) {
-        kind = SkSL::ProgramKind::kGeometry;
-    } else if (inputPath.endsWith(".fp")) {
-        kind = SkSL::ProgramKind::kFragmentProcessor;
-    } else if (inputPath.endsWith(".rtcf")) {
+    } else if (inputPath.ends_with(".rtb")) {
+        kind = SkSL::ProgramKind::kRuntimeBlender;
+    } else if (inputPath.ends_with(".rtcf")) {
         kind = SkSL::ProgramKind::kRuntimeColorFilter;
-    } else if (inputPath.endsWith(".rts")) {
+    } else if (inputPath.ends_with(".rts")) {
         kind = SkSL::ProgramKind::kRuntimeShader;
     } else {
-        printf("input filename must end in '.vert', '.frag', '.geom', '.fp', '.rtcf', "
+        printf("input filename must end in '.vert', '.frag', '.rtb', '.rtcf', "
                "'.rts', or '.sksl'\n");
         return ResultCode::kInputError;
     }
@@ -301,12 +300,21 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
     }
 
     SkSL::Program::Settings settings;
-    const SkSL::ShaderCapsClass* caps = &SkSL::standaloneCaps;
+    auto standaloneCaps = SkSL::ShaderCapsFactory::Standalone();
+    const SkSL::ShaderCaps* caps = standaloneCaps.get();
+    std::unique_ptr<SkSL::SkVMDebugTrace> debugTrace;
     if (honorSettings) {
-        if (!detect_shader_settings(text, &settings, &caps)) {
+        if (!detect_shader_settings(text, &settings, &caps, &debugTrace)) {
             return ResultCode::kInputError;
         }
     }
+
+    // This tells the compiler where the rt-flip uniform will live should it be required. For
+    // testing purposes we don't care where that is, but the compiler will report an error if we
+    // leave them at their default invalid values, or if the offset overlaps another uniform.
+    settings.fRTFlipOffset  = 16384;
+    settings.fRTFlipSet     = 0;
+    settings.fRTFlipBinding = 0;
 
     const SkSL::String& outputPath = args[2];
     auto emitCompileError = [&](SkSL::FileOutputStream& out, const char* errorText) {
@@ -339,13 +347,24 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
         return ResultCode::kSuccess;
     };
 
-    if (outputPath.endsWith(".spirv")) {
+    auto compileProgramForSkVM = [&](const auto& writeFn) -> ResultCode {
+        if (kind == SkSL::ProgramKind::kVertex) {
+            printf("%s: SkVM does not support vertex programs\n", outputPath.c_str());
+            return ResultCode::kOutputError;
+        }
+        if (kind == SkSL::ProgramKind::kFragment) {
+            // Handle .sksl and .frag programs as runtime shaders.
+            kind = SkSL::ProgramKind::kRuntimeShader;
+        }
+        return compileProgram(writeFn);
+    };
+
+    if (outputPath.ends_with(".spirv")) {
         return compileProgram(
                 [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
                     return compiler.toSPIRV(program, out);
                 });
-    } else if (outputPath.endsWith(".asm.frag") || outputPath.endsWith(".asm.vert") ||
-               outputPath.endsWith(".asm.geom")) {
+    } else if (outputPath.ends_with(".asm.frag") || outputPath.ends_with(".asm.vert")) {
         return compileProgram(
                 [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
                     // Compile program to SPIR-V assembly in a string-stream.
@@ -365,51 +384,38 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                     out.write(disassembly.data(), disassembly.size());
                     return true;
                 });
-    } else if (outputPath.endsWith(".glsl")) {
+    } else if (outputPath.ends_with(".glsl")) {
         return compileProgram(
                 [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
                     return compiler.toGLSL(program, out);
                 });
-    } else if (outputPath.endsWith(".metal")) {
+    } else if (outputPath.ends_with(".metal")) {
         return compileProgram(
                 [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
                     return compiler.toMetal(program, out);
                 });
-    } else if (outputPath.endsWith(".h")) {
-        settings.fReplaceSettings = false;
-        settings.fPermitInvalidStaticTests = true;
+    } else if (outputPath.ends_with(".hlsl")) {
         return compileProgram(
-                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
-                    return compiler.toH(program, base_name(inputPath.c_str(), "Gr", ".fp"), out);
+                [](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
+                    return compiler.toHLSL(program, out);
                 });
-    } else if (outputPath.endsWith(".dsl.cpp")) {
-        settings.fReplaceSettings = false;
-        settings.fPermitInvalidStaticTests = true;
-        return compileProgram(
-                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
-                    return compiler.toDSLCPP(program, base_name(inputPath.c_str(), "Gr", ".fp"),
-                                             out);
-                });
-    } else if (outputPath.endsWith(".cpp")) {
-        settings.fReplaceSettings = false;
-        settings.fPermitInvalidStaticTests = true;
-        return compileProgram(
-                [&](SkSL::Compiler& compiler, SkSL::Program& program, SkSL::OutputStream& out) {
-                    return compiler.toCPP(program, base_name(inputPath.c_str(), "Gr", ".fp"), out);
-                });
-    } else if (outputPath.endsWith(".skvm")) {
-        return compileProgram(
-                [](SkSL::Compiler&, SkSL::Program& program, SkSL::OutputStream& out) {
+    } else if (outputPath.ends_with(".skvm")) {
+        return compileProgramForSkVM(
+                [&](SkSL::Compiler&, SkSL::Program& program, SkSL::OutputStream& out) {
                     skvm::Builder builder{skvm::Features{}};
-                    if (!SkSL::testingOnly_ProgramToSkVMShader(program, &builder)) {
+                    if (!SkSL::testingOnly_ProgramToSkVMShader(program, &builder,
+                                                               debugTrace.get())) {
                         return false;
                     }
 
                     std::unique_ptr<SkWStream> redirect = as_SkWStream(out);
+                    if (debugTrace) {
+                        debugTrace->dump(redirect.get());
+                    }
                     builder.done().dump(redirect.get());
                     return true;
                 });
-    } else if (outputPath.endsWith(".stage")) {
+    } else if (outputPath.ends_with(".stage")) {
         return compileProgram(
                 [](SkSL::Compiler&, SkSL::Program& program, SkSL::OutputStream& out) {
                     class Callbacks : public SkSL::PipelineStage::Callbacks {
@@ -422,13 +428,17 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
 
                         String declareUniform(const SkSL::VarDeclaration* decl) override {
                             fOutput += decl->description();
-                            return decl->var().name();
+                            return String(decl->var().name());
                         }
 
                         void defineFunction(const char* decl,
                                             const char* body,
                                             bool /*isMain*/) override {
                             fOutput += String(decl) + "{" + body + "}";
+                        }
+
+                        void declareFunction(const char* decl) override {
+                            fOutput += String(decl) + ";";
                         }
 
                         void defineStruct(const char* definition) override {
@@ -439,26 +449,39 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
                             fOutput += declaration;
                         }
 
-                        String sampleChild(int index, String coords, String color) override {
-                            String result = "sample(child_" + SkSL::to_string(index);
-                            if (!coords.empty()) {
-                                result += ", " + coords;
-                            }
-                            if (!color.empty()) {
-                                result += ", " + color;
-                            }
-                            result += ")";
-                            return result;
+                        String sampleShader(int index, String coords) override {
+                            return "child_" + SkSL::to_string(index) + ".eval(" + coords + ")";
+                        }
+
+                        String sampleColorFilter(int index, String color) override {
+                            return "child_" + SkSL::to_string(index) + ".eval(" + color + ")";
+                        }
+
+                        String sampleBlender(int index, String src, String dst) override {
+                            return "child_" + SkSL::to_string(index) + ".eval(" + src + ", " +
+                                   dst + ")";
                         }
 
                         String fOutput;
                     };
+                    // The .stage output looks almost like valid SkSL, but not quite.
+                    // The PipelineStageGenerator bridges the gap between the SkSL in `program`,
+                    // and the C++ FP builder API (see GrSkSLFP). In that API, children don't need
+                    // to be declared (so they don't emit declarations here). Children are sampled
+                    // by index, not name - so all children here are just "child_N".
+                    // The input color and coords have names in the original SkSL (as parameters to
+                    // main), but those are ignored here. References to those variables become
+                    // "_coords" and "_inColor". At runtime, those variable names are irrelevant
+                    // when the new SkSL is emitted inside the FP - references to those variables
+                    // are replaced with strings from EmitArgs, and might be varyings or differently
+                    // named parameters.
                     Callbacks callbacks;
-                    SkSL::PipelineStage::ConvertProgram(program, "_coords", "_inColor", &callbacks);
+                    SkSL::PipelineStage::ConvertProgram(program, "_coords", "_inColor",
+                                                        "_canvasColor", &callbacks);
                     out.writeString(GrShaderUtils::PrettyPrint(callbacks.fOutput));
                     return true;
                 });
-    } else if (outputPath.endsWith(".dehydrated.sksl")) {
+    } else if (outputPath.ends_with(".dehydrated.sksl")) {
         SkSL::FileOutputStream out(outputPath);
         SkSL::Compiler compiler(caps);
         if (!out.isValid()) {
@@ -487,8 +510,8 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
             return ResultCode::kOutputError;
         }
     } else {
-        printf("expected output path to end with one of: .glsl, .metal, .spirv, .asm.frag, .skvm, "
-               ".stage, .asm.vert, .asm.geom, .cpp, .h (got '%s')\n", outputPath.c_str());
+        printf("expected output path to end with one of: .glsl, .metal, .hlsl, .spirv, .asm.frag, "
+               ".skvm, .stage, .asm.vert, .dehydrated.sksl (got '%s')\n", outputPath.c_str());
         return ResultCode::kConfigurationError;
     }
     return ResultCode::kSuccess;
@@ -499,7 +522,7 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
  */
 ResultCode processWorklist(const char* worklistPath) {
     SkSL::String inputPath(worklistPath);
-    if (!inputPath.endsWith(".worklist")) {
+    if (!inputPath.ends_with(".worklist")) {
         printf("expected .worklist file, found: %s\n\n", worklistPath);
         show_usage();
         return ResultCode::kConfigurationError;

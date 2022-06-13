@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,9 @@ SystemAppBackgroundTaskInfo::SystemAppBackgroundTaskInfo(
     bool open_immediately)
     : period(period), url(url), open_immediately(open_immediately) {}
 
+// static
+const char SystemAppBackgroundTask::kBackgroundStartDelayHistogramName[];
+
 SystemAppBackgroundTask::SystemAppBackgroundTask(
     Profile* profile,
     const SystemAppBackgroundTaskInfo& info)
@@ -45,13 +49,11 @@ SystemAppBackgroundTask::~SystemAppBackgroundTask() = default;
 
 void SystemAppBackgroundTask::StartTask() {
   if (open_immediately_ ||
-      period_ <
-          base::TimeDelta::FromSeconds(kInitialWaitForBackgroundTasksSeconds)) {
-    timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kInitialWaitForBackgroundTasksSeconds),
-        base::BindOnce(&SystemAppBackgroundTask::MaybeOpenPage,
-                       weak_ptr_factory_.GetWeakPtr()));
+      period_ < base::Seconds(kInitialWaitForBackgroundTasksSeconds)) {
+    timer_->Start(FROM_HERE,
+                  base::Seconds(kInitialWaitForBackgroundTasksSeconds),
+                  base::BindOnce(&SystemAppBackgroundTask::MaybeOpenPage,
+                                 weak_ptr_factory_.GetWeakPtr()));
     state_ = INITIAL_WAIT;
   } else if (period_) {
     timer_->Start(FROM_HERE, period_.value(),
@@ -76,13 +78,12 @@ void SystemAppBackgroundTask::MaybeOpenPage() {
 
   base::TimeDelta polling_duration = (now - polling_since_time_);
 
-  if (polling_duration <
-          base::TimeDelta::FromSeconds(kIdlePollMaxTimeToWaitSeconds) &&
+  if (polling_duration < base::Seconds(kIdlePollMaxTimeToWaitSeconds) &&
       idle_state == ui::IDLE_STATE_ACTIVE) {
     // We've gone through some weird clock adjustment (daylight savings?) that's
     // sent us back in time. We don't know what's going on, so zero the polling
     // time and stop polling.
-    if (polling_duration < base::TimeDelta::FromSeconds(0) && period_) {
+    if (polling_duration < base::Seconds(0) && period_) {
       timer_->Start(FROM_HERE, period_.value(),
                     base::BindOnce(&SystemAppBackgroundTask::MaybeOpenPage,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -91,8 +92,7 @@ void SystemAppBackgroundTask::MaybeOpenPage() {
       return;
     }
     // Poll
-    timer_->Start(FROM_HERE,
-                  base::TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
+    timer_->Start(FROM_HERE, base::Seconds(kIdlePollIntervalSeconds),
                   base::BindOnce(&SystemAppBackgroundTask::MaybeOpenPage,
                                  weak_ptr_factory_.GetWeakPtr()));
     state_ = WAIT_IDLE;
@@ -104,6 +104,10 @@ void SystemAppBackgroundTask::MaybeOpenPage() {
                   base::BindOnce(&SystemAppBackgroundTask::MaybeOpenPage,
                                  weak_ptr_factory_.GetWeakPtr()));
   }
+
+  base::UmaHistogramLongTimes(kBackgroundStartDelayHistogramName,
+                              polling_duration);
+
   polling_since_time_ = base::Time();
   state_ = WAIT_PERIOD;
   NavigateBackgroundPage();

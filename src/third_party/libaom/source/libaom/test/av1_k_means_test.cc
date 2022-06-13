@@ -23,7 +23,6 @@
 #include "aom_ports/mem.h"
 #include "test/acm_random.h"
 #include "av1/encoder/palette.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -86,7 +85,7 @@ void AV1KmeansTest1::SetUp() {
   }
 }
 
-void AV1KmeansTest1::TearDown() { libaom_test::ClearSystemState(); }
+void AV1KmeansTest1::TearDown() {}
 
 void AV1KmeansTest1::RunCheckOutput(av1_calc_indices_dim1_func test_impl,
                                     BLOCK_SIZE bsize, int k) {
@@ -194,7 +193,7 @@ void AV1KmeansTest2::SetUp() {
   }
 }
 
-void AV1KmeansTest2::TearDown() { libaom_test::ClearSystemState(); }
+void AV1KmeansTest2::TearDown() {}
 
 void AV1KmeansTest2::RunCheckOutput(av1_calc_indices_dim2_func test_impl,
                                     BLOCK_SIZE bsize, int k) {

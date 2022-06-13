@@ -265,34 +265,34 @@ from previous Chrome versions.
 ### Count Histograms
 
 [histogram_macros.h](https://cs.chromium.org/chromium/src/base/metrics/histogram_macros.h)
-provides macros for some common count types such as memory or elapsed time, in
+provides macros for some common count types, such as memory or elapsed time, in
 addition to general count macros. These have reasonable default values; you
 seldom need to choose the number of buckets or histogram min. However, you still
 need to choose the histogram max (use the advice below).
 
-If none of the default macros work well for you, please thoughtfully choose
-a min, max, and bucket count for your histogram using the advice below.
+If none of the default macros work well for you, please thoughtfully choose a
+min, max, and bucket count for your histogram using the advice below.
 
 #### Count Histograms: Choosing Min and Max
 
-For histogram max, choose a value such that very few emissions to the histogram
-exceed the max. If a metric emission is above the max value, it will get put
-into an "overflow" bucket. If this bucket is too large, it can be difficult to
-compute statistics. One rule of thumb is at most 1% of samples should be in the
+For the max, choose a value such that very few histogram samples exceed the max.
+If a sample is greater than or equal to the max value, it is put in an
+"overflow" bucket. If this bucket is too large, it can be difficult to compute
+statistics. One rule of thumb is that at most 1% of samples should be in the
 overflow bucket (and ideally, less). This allows analysis of the 99th
 percentile. Err on the side of too large a range versus too short a range.
-(Remember that if you choose poorly, you'll have to wait for another release
-cycle to fix it.)
+Remember that if you choose poorly, you'll have to wait for another release
+cycle to fix it.
 
-For histogram min, if you care about all possible values (zero and above),
-choose a min of 1. All histograms have an underflow bucket for emitted zeros,
-so a min of 1 is appropriate. Otherwise, choose the min appropriate for your
-particular situation.
+For the min, use 1 if you care about all possible values (zero and above). All
+histograms have an underflow bucket for emitted zeros, so a min of 1 is
+appropriate. Otherwise, choose the min appropriate for your particular
+situation.
 
 #### Count Histograms: Choosing Number of Buckets
 
 Choose the smallest number of buckets that give you the granularity you need. By
-default, count histogram bucket sizes scale exponentially so you can get fine
+default, count histogram bucket sizes scale exponentially, so you can get fine
 granularity when the numbers are small yet still reasonable resolution for
 larger numbers. The macros default to 50 buckets (or 100 buckets for histograms
 with wide ranges), which is appropriate for most purposes. Because histograms
@@ -413,16 +413,19 @@ Here are some guidelines for common scenarios:
 *   If the histogram is not in use now, but might be useful in the far future,
     remove it.
 *   If the histogram is not in use now, but might be useful in the near
-    future, pick ~3 months or ~2 milestones ahead.
+    future, pick ~3 months (also ~3 milestones) ahead.
 *   If the histogram is actively in use now and is useful in the short term,
-    pick 3-6 months or 2-4 milestones ahead.
+    pick 3-6 months (3-6 milestones) ahead.
 *   If the histogram is actively in use and seems useful for an indefinite time,
     pick 1 year.
 
-We also have a tool that automatically extends expiry dates. The 80% more
-frequently accessed histograms are pushed out every Tuesday, to 6 months from
-the date of the run. Googlers can view the [design
-doc](https://docs.google.com/document/d/1IEAeBF9UnYQMDfyh2gdvE7WlUKsfIXIZUw7qNoU89A4).
+We also have a tool that automatically extends expiry dates. The most frequently
+accessed histograms, currently 99%, have their expirations automatically
+extended every Tuesday to 6 months from the date of the run. Googlers can view
+the [design
+doc](https://docs.google.com/document/d/1IEAeBF9UnYQMDfyh2gdvE7WlUKsfIXIZUw7qNoU89A4)
+of the program that does this.  The bottom line is: If the histogram is being
+checked, it should be extended without developer interaction.
 
 #### How to extend an expired histogram {#extending}
 
@@ -600,10 +603,11 @@ histogram expiry bugs don't fall through the cracks.
 There are two ways in which components may be associated with a histogram. The
 first and recommended way is to add a tag to a histogram or histogram suffix,
 e.g. <component>UI&gt;Shell</component>. The second way is to specify an OWNERS
-file as a secondary owner for a histogram. If the OWNERS file contains a
-component, then the component is associated with the histogram. If the specified
-OWNERS file doesn't have a component, but an OWNERS file in a parent directory
-does, then the parent directory's component is used.
+file as a secondary owner for a histogram. If the OWNERS file has an adjacent
+DIR_METADATA file that contains a component, then that component is associated
+with the histogram. If there isn't a parallel DIR_METADATA file with such a
+component, but a parent directory has one, then the parent directory's component
+is used.
 
 ### Cleaning Up Histogram Entries
 
@@ -684,10 +688,12 @@ This example defines metadata for 12 (= 3 x 4) concrete histograms, such as
 </histogram>
 ```
 
-Note that each token `<variant>` defines what text should be substituted for it,
-both in the histogram name and in the summary text. As shorthand, a `<variant>`
-that omits the `summary` attribute substitutes the value of the `name` attribute
-in the histogram's `<summary>` text as well.
+Each token `<variant>` defines what text should be substituted for it, 
+both in the histogram name and in the summary text. The name part gets 
+substituted into the histogram name; the summary part gets substituted in 
+the summary field (the histogram description). As shorthand, a
+`<variant>` that omits the `summary` attribute substitutes the value of
+the `name` attribute in the histogram's `<summary>` text as well.
 
 *** promo
 Tip: You can declare an optional token by listing an empty name: `<variant
@@ -728,7 +734,7 @@ Tip: You can run `print_histogram_names.py --diff` to enumerate all the
 histogram names that are generated by a particular CL. For example, this can be
 run (from the repo root) as:
 ```
-./tools/metrics/histograms/print_histogram_names.py --diff origin/master
+./tools/metrics/histograms/print_histogram_names.py --diff origin/main
 ```
 ***
 

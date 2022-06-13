@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -25,17 +24,19 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   class Factory : public CanvasRenderingContextFactory {
    public:
     Factory() = default;
+
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+
     ~Factory() override = default;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
         const CanvasContextCreationAttributesCore&) override;
-    CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContextImageBitmap;
+    CanvasRenderingContext::CanvasRenderingAPI GetRenderingAPI()
+        const override {
+      return CanvasRenderingContext::CanvasRenderingAPI::kBitmaprenderer;
     }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   ImageBitmapRenderingContext(CanvasRenderingContextHost*,
@@ -45,18 +46,10 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
 
   // CanvasRenderingContext implementation
-  ContextType GetContextType() const override {
-    return CanvasRenderingContext::kContextImageBitmap;
-  }
   ImageBitmap* TransferToImageBitmap(ScriptState*) override;
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   V8RenderingContext* AsV8RenderingContext() final;
   V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  void SetCanvasGetContextResult(RenderingContext&) final;
-  void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   ~ImageBitmapRenderingContext() override;
 };

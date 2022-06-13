@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/geolocation_provider.h"
@@ -37,6 +37,12 @@ class PublicIpAddressLocationNotifier
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       network::NetworkConnectionTracker* network_connection_tracker,
       const std::string& api_key);
+
+  PublicIpAddressLocationNotifier(const PublicIpAddressLocationNotifier&) =
+      delete;
+  PublicIpAddressLocationNotifier& operator=(
+      const PublicIpAddressLocationNotifier&) = delete;
+
   ~PublicIpAddressLocationNotifier() override;
 
   using QueryNextPositionCallback =
@@ -96,7 +102,7 @@ class PublicIpAddressLocationNotifier
 
   // Used to listen to network connection changes.
   // Must outlive this object.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 
   // Used to make calls to the Maps geolocate API.
   // Empty unless a call is currently in progress.
@@ -111,8 +117,6 @@ class PublicIpAddressLocationNotifier
 
   // Weak references to |this| for posted tasks.
   base::WeakPtrFactory<PublicIpAddressLocationNotifier> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PublicIpAddressLocationNotifier);
 };
 
 }  // namespace device

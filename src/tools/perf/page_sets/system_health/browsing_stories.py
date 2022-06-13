@@ -109,7 +109,7 @@ class _ArticleBrowsingStory(_BrowsingStory):
     # Scroll main page if needed before we start browsing articles.
     if self.SCROLL_BEFORE_BROWSE:
       self._ScrollMainPage(action_runner)
-    for i in xrange(self.ITEMS_TO_VISIT):
+    for i in range(self.ITEMS_TO_VISIT):
       self._NavigateToItem(action_runner, i)
       self._AfterNavigate(action_runner)
       self._ReadNextArticle(action_runner)
@@ -245,7 +245,7 @@ class FacebookMobileStory2019(_ArticleBrowsingStory):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     # Facebook loads content dynamically. So keep trying to scroll till we find
     # the elements. Retry 5 times waiting a bit each time.
-    for _ in xrange(5):
+    for _ in range(5):
       action_runner.RepeatableBrowserDrivenScroll(
           repeat_count=self.MAIN_PAGE_SCROLL_REPEAT)
       result = action_runner.EvaluateJavaScript(
@@ -361,7 +361,7 @@ class RedditMobileStory2019(_ArticleBrowsingStory):
 
     # Add one to the items to visit since we are going to skip the ad and we
     # want to still visit the same amount of articles.
-    for i in xrange(self.ITEMS_TO_VISIT + 1):
+    for i in range(self.ITEMS_TO_VISIT + 1):
       # Skip the ad disguised as an article.
       if i == 1:
         continue
@@ -585,7 +585,7 @@ class _MediaBrowsingStory(_BrowsingStory):
 
   def _DidLoadDocument(self, action_runner):
     index = self.ITEM_SELECTOR_INDEX
-    for _ in xrange(self.ITEMS_TO_VISIT):
+    for _ in range(self.ITEMS_TO_VISIT):
       self._NavigateToItem(action_runner, index)
       self._ViewMediaItem(action_runner, index)
       if self.INCREMENT_INDEX_AFTER_EACH_ITEM:
@@ -621,7 +621,7 @@ class ImgurMobileStory2019(_MediaBrowsingStory):
     # button click it to enable further scroll. This button would only be added
     # after we scrolled a bit. So can't wait for this button at the start.
     accepted_continue = False
-    for _ in xrange(15):
+    for _ in range(15):
       result = action_runner.EvaluateJavaScript(
           'document.querySelectorAll(".Button-tertiary").length')
       if result and not accepted_continue:
@@ -707,6 +707,65 @@ class YouTubeDesktopStory2019(_MediaBrowsingStory):
   ITEM_SELECTOR_INDEX = 3
   PLATFORM_SPECIFIC = True
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+
+class PhotoshopDesktopStory2021(_MediaBrowsingStory):
+  """Photoshop desktop story,
+  Measure the time it takes to open a shared Photoshop file.
+  """
+  NAME = 'browse:tools:photoshop:2021'
+  URL = 'https://photoshop.adobe.com/id/urn:aaid:sc:EU:1856a1e7-f397-4616-b399-9cd3b3d8c029'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2021, story_tags.WEBASSEMBLY, story_tags.WEBGL]
+
+  # This map translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'Doc.open':
+          'telemetry:reported_by_page:benchmark_begin',
+      'Doc.open complete':
+          'telemetry:reported_by_page:benchmark_end',
+      'open document end':
+          'telemetry:reported_by_page:time_to_interactive'
+    };
+  '''
+
+  # Patch performance.mark to get notified about page events.
+  PERFORMANCE_MARK_PATCH = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported[label]);
+          observed.add(reported[label]);
+        }
+      }
+    })();
+  '''
+
+  # Page event queries.
+  FINISHED_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(PhotoshopDesktopStory2021, self).__init__(story_set,
+                                                    take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_mark}}''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_mark=self.PERFORMANCE_MARK_PATCH)
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.WaitForJavaScriptCondition(self.FINISHED_EVENT)
 
 
 class AutoCADDesktopStory2021(_MediaBrowsingStory):
@@ -1713,8 +1772,17 @@ class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
   '''
 
   def __init__(self, story_set, take_memory_measurement):
-    super(GoogleSheetsDesktopStory, self).__init__(story_set,
-        take_memory_measurement)
+    # TODO(crbug.com/1256844): Disable the ForceSynchronousHTMLParsing and
+    # LoaderDataPipeTuning experiments, because they cause failures and
+    # flakiness for this story as-recorded in 2019.
+    extra_browser_args = [
+        '--disable-features=ForceSynchronousHTMLParsing,LoaderDataPipeTuning'
+    ]
+
+    super(GoogleSheetsDesktopStory,
+          self).__init__(story_set,
+                         take_memory_measurement,
+                         extra_browser_args=extra_browser_args)
     self.script_to_evaluate_on_commit = js_template.Render(
         '''{{@events_reported_by_page}}
         {{@performance_mark}}
@@ -1832,9 +1900,14 @@ class _InfiniteScrollStory(system_health_story.SystemHealthStory):
   MAX_SCROLL_RETRIES = 3
   TIME_TO_WAIT_BEFORE_STARTING_IN_SECONDS = 5
 
-  def __init__(self, story_set, take_memory_measurement):
-    super(_InfiniteScrollStory, self).__init__(story_set,
-        take_memory_measurement)
+  def __init__(self,
+               story_set,
+               take_memory_measurement,
+               extra_browser_args=None):
+    super(_InfiniteScrollStory,
+          self).__init__(story_set,
+                         take_memory_measurement,
+                         extra_browser_args=extra_browser_args)
     self.script_to_evaluate_on_commit = '''
         window.WebSocket = undefined;
         window.Worker = undefined;
@@ -1954,6 +2027,17 @@ class TumblrStory2018(_InfiniteScrollStory):
       story_tags.HEALTH_CHECK, story_tags.INFINITE_SCROLL,
       story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018
   ]
+
+  def __init__(self, story_set, take_memory_measurement):
+    # TODO(crbug.com/1256844): Disable the ForceSynchronousHTMLParsing and
+    # LoaderDataPipeTuning experiments, because they cause failures and
+    # flakiness for this story as-recorded in 2018.
+    extra_browser_args = [
+        '--disable-features=ForceSynchronousHTMLParsing,LoaderDataPipeTuning'
+    ]
+    super(TumblrStory2018, self).__init__(story_set,
+                                          take_memory_measurement,
+                                          extra_browser_args=extra_browser_args)
 
   def _Login(self, action_runner):
     tumblr_login.LoginDesktopAccount(action_runner, 'tumblr')

@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
@@ -48,6 +47,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/scheme_host_port.h"
+#include "url/url_constants.h"
 
 using ::net::test::IsError;
 using ::net::test::IsOk;
@@ -82,6 +83,10 @@ class MockClientSocketHandleFactory {
             nullptr /* websocket_endpoint_lock_manager */),
         pool_(1, 1, &common_connect_job_params_) {}
 
+  MockClientSocketHandleFactory(const MockClientSocketHandleFactory&) = delete;
+  MockClientSocketHandleFactory& operator=(
+      const MockClientSocketHandleFactory&) = delete;
+
   // The created socket expects |expect_written| to be written to the socket,
   // and will respond with |return_to_read|. The test will fail if the expected
   // text is not written, or if all the bytes are not read.
@@ -92,7 +97,7 @@ class MockClientSocketHandleFactory {
     auto socket_handle = std::make_unique<ClientSocketHandle>();
     socket_handle->Init(
         ClientSocketPool::GroupId(
-            HostPortPair("a", 80), ClientSocketPool::SocketType::kHttp,
+            url::SchemeHostPort(url::kHttpScheme, "a", 80),
             PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
             SecureDnsPolicy::kAllow),
         scoped_refptr<ClientSocketPool::SocketParams>(),
@@ -106,8 +111,6 @@ class MockClientSocketHandleFactory {
   WebSocketMockClientSocketFactoryMaker socket_factory_maker_;
   const CommonConnectJobParams common_connect_job_params_;
   MockTransportClientSocketPool pool_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockClientSocketHandleFactory);
 };
 
 class TestConnectDelegate : public WebSocketStream::ConnectDelegate {

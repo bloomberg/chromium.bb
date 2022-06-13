@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_system_helper.h"
@@ -23,6 +24,9 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
   static std::unique_ptr<AudioSystem> CreateInstance();
 
   explicit AudioSystemImpl(AudioManager* audio_manager);
+
+  AudioSystemImpl(const AudioSystemImpl&) = delete;
+  AudioSystemImpl& operator=(const AudioSystemImpl&) = delete;
 
   // AudioSystem implementation.
   void GetInputStreamParameters(const std::string& device_id,
@@ -54,9 +58,7 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
       base::OnceCallback<void(Args...)> callback);
 
   THREAD_CHECKER(thread_checker_);
-  AudioManager* const audio_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioSystemImpl);
+  const raw_ptr<AudioManager> audio_manager_;
 };
 
 }  // namespace media

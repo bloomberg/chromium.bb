@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -21,12 +21,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/background/ntp_custom_background_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -82,8 +83,7 @@ ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
-      cookies_remover_(nullptr),
-      ntp_service_(InstantServiceFactory::GetForProfile(profile)) {
+      cookies_remover_(nullptr) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(profile_);
 }
@@ -203,18 +203,20 @@ void ProfileResetter::ResetHomepage() {
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
   std::string homepage;
-  bool homepage_is_ntp, show_home_button;
 
   if (master_settings_->GetHomepage(&homepage))
     prefs->SetString(prefs::kHomePage, homepage);
 
-  if (master_settings_->GetHomepageIsNewTab(&homepage_is_ntp))
-    prefs->SetBoolean(prefs::kHomePageIsNewTabPage, homepage_is_ntp);
+  absl::optional<bool> homepage_is_ntp =
+      master_settings_->GetHomepageIsNewTab();
+  if (homepage_is_ntp.has_value())
+    prefs->SetBoolean(prefs::kHomePageIsNewTabPage, *homepage_is_ntp);
   else
     prefs->ClearPref(prefs::kHomePageIsNewTabPage);
 
-  if (master_settings_->GetShowHomeButton(&show_home_button))
-    prefs->SetBoolean(prefs::kShowHomeButton, show_home_button);
+  absl::optional<bool> show_home_button = master_settings_->GetShowHomeButton();
+  if (show_home_button.has_value())
+    prefs->SetBoolean(prefs::kShowHomeButton, *show_home_button);
   else
     prefs->ClearPref(prefs::kShowHomeButton);
   MarkAsDone(HOMEPAGE);
@@ -341,7 +343,8 @@ void ProfileResetter::ResetShortcuts() {
 }
 
 void ProfileResetter::ResetNtpCustomizations() {
-  ntp_service_->ResetToDefault();
+  NtpCustomBackgroundService::ResetProfilePrefs(profile_);
+  NewTabPageUI::ResetProfilePrefs(profile_->GetPrefs());
   MarkAsDone(NTP_CUSTOMIZATIONS);
 }
 

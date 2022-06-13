@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_data_transfer_notifier.h"
 
-#include "ash/public/cpp/window_tree_host_lookup.h"
 #include "base/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/clipboard_bubble.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_clipboard_bubble_constants.h"
 #include "ui/aura/window_tree_host.h"
@@ -17,6 +17,14 @@
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/public/cpp/window_tree_host_lookup.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_browser_helper_lacros.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 namespace policy {
 
 namespace {
@@ -24,8 +32,7 @@ namespace {
 // The name of the bubble.
 constexpr char kBubbleName[] = "ClipboardDlpBubble";
 
-constexpr base::TimeDelta kBubbleBoundsAnimationTime =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kBubbleBoundsAnimationTime = base::Milliseconds(250);
 
 bool IsRectContainedByAnyDisplay(const gfx::Rect& rect) {
   const std::vector<display::Display>& displays =
@@ -41,8 +48,14 @@ void CalculateAndSetWidgetBounds(views::Widget* widget,
                                  const gfx::Size& bubble_size) {
   display::Screen* screen = display::Screen::GetScreen();
   display::Display display = screen->GetPrimaryDisplay();
-  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* host = ash::GetWindowTreeHostForDisplay(display.id());
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* host = dlp::GetActiveWindowTreeHost();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  DCHECK(host);
   ui::TextInputClient* text_input_client =
       host->GetInputMethod()->GetTextInputClient();
 
@@ -65,9 +78,10 @@ void CalculateAndSetWidgetBounds(views::Widget* widget,
         display::Screen::GetScreen()->GetCursorScreenPoint());
   }
 
-  const gfx::Rect widget_bounds =
+  gfx::Rect widget_bounds =
       gfx::Rect(caret_bounds.x(), caret_bounds.y(), bubble_size.width(),
                 bubble_size.height());
+  widget_bounds.AdjustToFit(display.work_area());
 
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
   if (widget->GetWindowBoundsInScreen().size() != gfx::Size()) {
@@ -92,6 +106,11 @@ views::Widget::InitParams GetWidgetInitParams() {
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.parent = nullptr;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // WaylandPopups in Lacros need a context window to allow custom positioning.
+  // Here, we pass the active Lacros window as context for the bubble widget.
+  params.context = dlp::GetActiveAuraWindow();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   return params;
 }
 
@@ -168,7 +187,7 @@ void DlpDataTransferNotifier::ResizeAndShowWidget(const gfx::Size& bubble_size,
   widget_->Show();
 
   widget_closing_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_duration_ms),
+      FROM_HERE, base::Milliseconds(timeout_duration_ms),
       base::BindOnce(&DlpDataTransferNotifier::CloseWidget,
                      base::Unretained(this),
                      widget_.get(),  // Safe as DlpClipboardNotificationHelper

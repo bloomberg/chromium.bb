@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/menu/tab_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
@@ -51,8 +51,7 @@
 
 - (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (TableViewURLItem*)item
-                                                      fromView:(UIView*)view
-    API_AVAILABLE(ios(13.0)) {
+                                                      fromView:(UIView*)view {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider = ^(
@@ -67,9 +66,9 @@
     // Record that this context menu was shown to the user.
     RecordMenuShown(MenuScenario::kRecentTabsEntry);
 
-    ActionFactory* actionFactory =
-        [[ActionFactory alloc] initWithBrowser:strongSelf.browser
-                                      scenario:MenuScenario::kRecentTabsEntry];
+    BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
+        initWithBrowser:strongSelf.browser
+               scenario:MenuScenario::kRecentTabsEntry];
 
     NSMutableArray<UIMenuElement*>* menuElements =
         [[NSMutableArray alloc] init];
@@ -94,9 +93,11 @@
     [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
 
     [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                    [weakSelf.contextMenuDelegate shareURL:item.URL
-                                                     title:item.title
-                                                  fromView:view];
+                    [weakSelf.contextMenuDelegate
+                        shareURL:item.URL
+                           title:item.title
+                        scenario:ActivityScenario::RecentTabsEntry
+                        fromView:view];
                   }]];
 
     return [UIMenu menuWithTitle:@"" children:menuElements];
@@ -110,7 +111,7 @@
 
 - (UIContextMenuConfiguration*)
     contextMenuConfigurationForHeaderWithSectionIdentifier:
-        (NSInteger)sectionIdentifier API_AVAILABLE(ios(13.0)) {
+        (NSInteger)sectionIdentifier {
   __weak __typeof(self) weakSelf = self;
 
   UIContextMenuActionProvider actionProvider =
@@ -126,8 +127,7 @@
         RecordMenuShown(MenuScenario::kRecentTabsHeader);
 
         ActionFactory* actionFactory = [[ActionFactory alloc]
-            initWithBrowser:strongSelf.browser
-                   scenario:MenuScenario::kRecentTabsHeader];
+            initWithScenario:MenuScenario::kRecentTabsHeader];
 
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];

@@ -17,11 +17,13 @@
 #include "include/core/SkSize.h"
 #include "include/core/SkString.h"
 #include "include/private/SkTArray.h"
+#include "src/core/SkCanvasPriv.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/effects/GrTextureEffect.h"
+#include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #include "tools/Resources.h"
 #include "tools/gpu/TestOps.h"
 
@@ -82,14 +84,19 @@ protected:
         SkASSERT(fBitmap.dimensions() == kImageSize);
     }
 
-    DrawResult onDraw(GrRecordingContext* context, GrSurfaceDrawContext* surfaceDrawContext,
-                      SkCanvas* canvas, SkString* errorMsg) override {
-        GrMipmapped mipmapped = (fMipmapMode != MipmapMode::kNone) ? GrMipmapped::kYes
-                                                                   : GrMipmapped::kNo;
-        if (mipmapped == GrMipmapped::kYes && !context->priv().caps()->mipmapSupport()) {
+    DrawResult onDraw(GrRecordingContext* rContext, SkCanvas* canvas, SkString* errorMsg) override {
+        auto sdc = SkCanvasPriv::TopDeviceSurfaceDrawContext(canvas);
+        if (!sdc) {
+            *errorMsg = kErrorMsg_DrawSkippedGpuOnly;
             return DrawResult::kSkip;
         }
-        auto view = std::get<0>(GrMakeCachedBitmapProxyView(context, fBitmap, mipmapped));
+
+        GrMipmapped mipmapped = (fMipmapMode != MipmapMode::kNone) ? GrMipmapped::kYes
+                                                                   : GrMipmapped::kNo;
+        if (mipmapped == GrMipmapped::kYes && !rContext->priv().caps()->mipmapSupport()) {
+            return DrawResult::kSkip;
+        }
+        auto view = std::get<0>(GrMakeCachedBitmapProxyView(rContext, fBitmap, mipmapped));
         if (!view) {
             *errorMsg = "Failed to create proxy.";
             return DrawResult::kFail;
@@ -122,7 +129,7 @@ protected:
         SkBitmap subsetBmp;
         fBitmap.extractSubset(&subsetBmp, texelSubset);
         subsetBmp.setImmutable();
-        auto subsetView = std::get<0>(GrMakeCachedBitmapProxyView(context, subsetBmp, mipmapped));
+        auto subsetView = std::get<0>(GrMakeCachedBitmapProxyView(rContext, subsetBmp, mipmapped));
 
         SkRect localRect = SkRect::Make(fBitmap.bounds()).makeOutset(kDrawPad, kDrawPad);
 
@@ -137,7 +144,7 @@ protected:
                 for (int mx = 0; mx < GrSamplerState::kWrapModeCount; ++mx) {
                     auto wmx = static_cast<Wrap>(mx);
 
-                    const auto& caps = *context->priv().caps();
+                    const auto& caps = *rContext->priv().caps();
 
                     GrSamplerState sampler(wmx, wmy, fFilter, fMipmapMode);
 
@@ -157,12 +164,12 @@ protected:
                     // Throw a translate in the local matrix just to test having something other
                     // than identity. Compensate with an offset local rect.
                     static constexpr SkVector kT = {-100, 300};
-                    if (auto op = sk_gpu_test::test_ops::MakeRect(context,
+                    if (auto op = sk_gpu_test::test_ops::MakeRect(rContext,
                                                                   std::move(fp1),
                                                                   drawRect,
                                                                   localRect.makeOffset(kT),
                                                                   SkMatrix::Translate(-kT))) {
-                        surfaceDrawContext->addDrawOp(std::move(op));
+                        sdc->addDrawOp(std::move(op));
                     }
 
                     x += localRect.width() + kTestPad;
@@ -178,9 +185,9 @@ protected:
                                                      subsetTextureMatrix,
                                                      sampler,
                                                      caps);
-                    if (auto op = sk_gpu_test::test_ops::MakeRect(context, std::move(fp2), drawRect,
-                                                                  localRect)) {
-                        surfaceDrawContext->addDrawOp(std::move(op));
+                    if (auto op = sk_gpu_test::test_ops::MakeRect(rContext, std::move(fp2),
+                                                                  drawRect, localRect)) {
+                        sdc->addDrawOp(std::move(op));
                     }
 
                     if (mx < GrSamplerState::kWrapModeCount - 1) {
@@ -207,9 +214,9 @@ protected:
     }
 
 private:
-    static constexpr SkISize kImageSize = {128, 88};
-    static constexpr SkScalar kDrawPad = 10.f;
-    static constexpr SkScalar kTestPad = 10.f;
+    inline static constexpr SkISize kImageSize = {128, 88};
+    inline static constexpr SkScalar kDrawPad = 10.f;
+    inline static constexpr SkScalar kTestPad = 10.f;
     SkBitmap fBitmap;
     Filter fFilter;
     MipmapMode fMipmapMode;

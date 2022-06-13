@@ -79,23 +79,15 @@ pd_0xf00800a4: dd 0xf00800a4
 
 SECTION .text
 
-%macro REPX 2-*
-    %xdefine %%f(x) %1
-%rep %0 - 1
-    %rotate 1
-    %%f(%1)
-%endrep
-%endmacro
-
-DECLARE_REG_TMP 4, 9, 7, 11, 12, 13, 14 ; ring buffer pointers
+DECLARE_REG_TMP 8, 7, 9, 11, 12, 13, 14 ; ring buffer pointers
 
 INIT_YMM avx2
-cglobal wiener_filter7_8bpc, 5, 15, 16, -384*12-16, dst, dst_stride, left, lpf, \
-                                                    lpf_stride, w, edge, flt, h
-    mov           fltq, fltmp
-    mov          edged, r8m
+cglobal wiener_filter7_8bpc, 4, 15, 16, -384*12-16, dst, stride, left, lpf, \
+                                                    w, h, edge, flt
+    mov           fltq, r6mp
+    movifnidn       hd, hm
+    mov          edged, r7m
     mov             wd, wm
-    mov             hd, r6m
     vbroadcasti128  m6, [wiener_shufA]
     vpbroadcastb   m11, [fltq+ 0] ; x0 x0
     vbroadcasti128  m7, [wiener_shufB]
@@ -106,38 +98,39 @@ cglobal wiener_filter7_8bpc, 5, 15, 16, -384*12-16, dst, dst_stride, left, lpf, 
     vbroadcasti128  m9, [sgr_shuf+6]
     add           lpfq, wq
     vpbroadcastd   m10, [pw_m16380]
-    lea             t1, [rsp+wq*2+16]
     vpbroadcastd   m14, [fltq+16] ; y0 y1
     add           dstq, wq
     vpbroadcastd   m15, [fltq+20] ; y2 y3
+    lea             t1, [rsp+wq*2+16]
+    psllw          m14, 5
     neg             wq
+    psllw          m15, 5
     test         edgeb, 4 ; LR_HAVE_TOP
     jz .no_top
     call .h_top
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     mov             t6, t1
     mov             t5, t1
     add             t1, 384*2
     call .h_top
-    lea             r7, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
     mov             t4, t1
     add             t1, 384*2
-    mov      [rsp+8*1], lpf_strideq
-    add             r7, lpf_strideq
-    mov      [rsp+8*0], r7 ; below
+    add            r10, strideq
+    mov          [rsp], r10 ; below
     call .h
     mov             t3, t1
     mov             t2, t1
     dec             hd
     jz .v1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     mov             t2, t1
     dec             hd
     jz .v2
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     dec             hd
@@ -150,19 +143,18 @@ cglobal wiener_filter7_8bpc, 5, 15, 16, -384*12-16, dst, dst_stride, left, lpf, 
     jnz .main_loop
     test         edgeb, 8 ; LR_HAVE_BOTTOM
     jz .v3
-    mov           lpfq, [rsp+8*0]
+    mov           lpfq, [rsp]
     call .hv_bottom
-    add           lpfq, [rsp+8*1]
+    add           lpfq, strideq
     call .hv_bottom
 .v1:
     call .v
     RET
 .no_top:
-    lea             r7, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    lea             r7, [r7+lpf_strideq*2]
-    mov      [rsp+8*0], r7
+    lea            r10, [r10+strideq*2]
+    mov          [rsp], r10
     call .h
     mov             t6, t1
     mov             t5, t1
@@ -171,13 +163,13 @@ cglobal wiener_filter7_8bpc, 5, 15, 16, -384*12-16, dst, dst_stride, left, lpf, 
     mov             t2, t1
     dec             hd
     jz .v1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     mov             t2, t1
     dec             hd
     jz .v2
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     dec             hd
@@ -276,7 +268,7 @@ cglobal wiener_filter7_8bpc, 5, 15, 16, -384*12-16, dst, dst_stride, left, lpf, 
     ret
 ALIGN function_align
 .hv:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     mov            r10, wq
     test         edgeb, 1 ; LR_HAVE_LEFT
     jz .hv_extend_left
@@ -357,9 +349,7 @@ ALIGN function_align
     mova            m3, [t3+r10*2+32]
     mova            m5, [t5+r10*2+32]
     paddw           m5, [t1+r10*2+32]
-    psrad           m0, 11
-    psrad           m4, 11
-    packssdw        m0, m4
+    packuswb        m0, m4
     paddw           m4, m1, [t6+r10*2+32]
     mova [t0+r10*2+32], m1
     punpcklwd       m1, m2, m3
@@ -372,9 +362,9 @@ ALIGN function_align
     pmaddwd         m4, m14
     paddd           m1, m3
     paddd           m2, m4
-    psrad           m1, 11
-    psrad           m2, 11
-    packssdw        m1, m2
+    packuswb        m1, m2
+    psrlw           m0, 8
+    psrlw           m1, 8
     packuswb        m0, m1
     mova    [dstq+r10], m0
     add            r10, 32
@@ -386,7 +376,7 @@ ALIGN function_align
     mov             t2, t1
     mov             t1, t0
     mov             t0, t6
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 .v:
     mov            r10, wq
@@ -423,9 +413,10 @@ ALIGN function_align
     paddd           m2, m6
     paddd           m1, m5
     paddd           m3, m7
-    REPX {psrad x, 11}, m0, m2, m1, m3
-    packssdw        m0, m2
-    packssdw        m1, m3
+    packuswb        m0, m2
+    packuswb        m1, m3
+    psrlw           m0, 8
+    psrlw           m1, 8
     packuswb        m0, m1
     mova    [dstq+r10], m0
     add            r10, 32
@@ -435,15 +426,15 @@ ALIGN function_align
     mov             t4, t3
     mov             t3, t2
     mov             t2, t1
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 
-cglobal wiener_filter5_8bpc, 5, 13, 16, 384*8+16, dst, dst_stride, left, lpf, \
-                                                  lpf_stride, w, edge, flt, h
-    mov           fltq, fltmp
-    mov          edged, r8m
+cglobal wiener_filter5_8bpc, 4, 13, 16, 384*8+16, dst, stride, left, lpf, \
+                                                  w, h, edge, flt
+    mov           fltq, r6mp
+    movifnidn       hd, hm
+    mov          edged, r7m
     mov             wd, wm
-    mov             hd, r6m
     vbroadcasti128  m6, [wiener_shufB]
     vpbroadcastd   m12, [fltq+ 2]
     vbroadcasti128  m7, [wiener_shufC]
@@ -453,31 +444,32 @@ cglobal wiener_filter5_8bpc, 5, 13, 16, 384*8+16, dst, dst_stride, left, lpf, \
     add           lpfq, wq
     vpbroadcastd    m9, [pw_m16380]
     vpbroadcastd   m10, [pw_2056]
-    lea             t1, [rsp+wq*2+16]
     mova           m11, [wiener_l_shuf]
     vpbroadcastd   m14, [fltq+16] ; __ y1
     add           dstq, wq
     vpbroadcastd   m15, [fltq+20] ; y2 y3
+    lea             t1, [rsp+wq*2+16]
+    psllw          m14, 5
     neg             wq
+    psllw          m15, 5
     test         edgeb, 4 ; LR_HAVE_TOP
     jz .no_top
     call .h_top
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     mov             t4, t1
     add             t1, 384*2
     call .h_top
-    lea             r7, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
     mov             t3, t1
     add             t1, 384*2
-    mov      [rsp+8*1], lpf_strideq
-    add             r7, lpf_strideq
-    mov      [rsp+8*0], r7 ; below
+    add            r10, strideq
+    mov          [rsp], r10 ; below
     call .h
     mov             t2, t1
     dec             hd
     jz .v1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     dec             hd
@@ -490,25 +482,24 @@ cglobal wiener_filter5_8bpc, 5, 13, 16, 384*8+16, dst, dst_stride, left, lpf, \
     jnz .main_loop
     test         edgeb, 8 ; LR_HAVE_BOTTOM
     jz .v2
-    mov           lpfq, [rsp+8*0]
+    mov           lpfq, [rsp]
     call .hv_bottom
-    add           lpfq, [rsp+8*1]
+    add           lpfq, strideq
     call .hv_bottom
 .end:
     RET
 .no_top:
-    lea             r7, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    lea             r7, [r7+lpf_strideq*2]
-    mov      [rsp+8*0], r7
+    lea            r10, [r10+strideq*2]
+    mov          [rsp], r10
     call .h
     mov             t4, t1
     mov             t3, t1
     mov             t2, t1
     dec             hd
     jz .v1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     add             t1, 384*2
     call .h
     dec             hd
@@ -526,7 +517,7 @@ cglobal wiener_filter5_8bpc, 5, 13, 16, 384*8+16, dst, dst_stride, left, lpf, \
     mov             t4, t3
     mov             t3, t2
     mov             t2, t1
-    add           dstq, dst_strideq
+    add           dstq, strideq
 .v1:
     call .v
     jmp .end
@@ -591,7 +582,7 @@ cglobal wiener_filter5_8bpc, 5, 13, 16, 384*8+16, dst, dst_stride, left, lpf, \
     ret
 ALIGN function_align
 .hv:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     mov            r10, wq
     test         edgeb, 1 ; LR_HAVE_LEFT
     jz .hv_extend_left
@@ -661,9 +652,7 @@ ALIGN function_align
     mova            m2, [t3+r10*2+32]
     paddw           m2, [t1+r10*2+32]
     mova            m3, [t2+r10*2+32]
-    psrad           m0, 11
-    psrad           m4, 11
-    packssdw        m0, m4
+    packuswb        m0, m4
     paddw           m4, m1, [t4+r10*2+32]
     mova [t0+r10*2+32], m1
     punpcklwd       m1, m2, m3
@@ -676,9 +665,9 @@ ALIGN function_align
     pmaddwd         m4, m14
     paddd           m1, m3
     paddd           m2, m4
-    psrad           m1, 11
-    psrad           m2, 11
-    packssdw        m1, m2
+    packuswb        m1, m2
+    psrlw           m0, 8
+    psrlw           m1, 8
     packuswb        m0, m1
     mova    [dstq+r10], m0
     add            r10, 32
@@ -688,7 +677,7 @@ ALIGN function_align
     mov             t2, t1
     mov             t1, t0
     mov             t0, t4
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 .v:
     mov            r10, wq
@@ -720,73 +709,69 @@ ALIGN function_align
     paddd           m2, m6
     paddd           m1, m5
     paddd           m3, m7
-    REPX {psrad x, 11}, m0, m2, m1, m3
-    packssdw        m0, m2
-    packssdw        m1, m3
+    packuswb        m0, m2
+    packuswb        m1, m3
+    psrlw           m0, 8
+    psrlw           m1, 8
     packuswb        m0, m1
     mova    [dstq+r10], m0
     add            r10, 32
     jl .v_loop
     ret
 
-cglobal sgr_filter_5x5_8bpc, 5, 13, 16, 400*24+16, dst, dst_stride, left, lpf, \
-                                                   lpf_stride, w, edge, params, h
+cglobal sgr_filter_5x5_8bpc, 4, 13, 16, 400*24+16, dst, stride, left, lpf, \
+                                                   w, h, edge, params
 %define base r12-sgr_x_by_x_avx2-256*4
     lea            r12, [sgr_x_by_x_avx2+256*4]
-    mov        paramsq, paramsmp
+    mov        paramsq, r6mp
     mov             wd, wm
-    mov          edged, r8m
-    mov             hd, r6m
+    movifnidn       hd, hm
+    mov          edged, r7m
     vbroadcasti128  m8, [base+sgr_shuf+0]
-    add           lpfq, wq
     vbroadcasti128  m9, [base+sgr_shuf+8]
-    lea             t1, [rsp+wq*2+20]
+    add           lpfq, wq
     vbroadcasti128 m10, [base+sgr_shuf+2]
     add           dstq, wq
     vbroadcasti128 m11, [base+sgr_shuf+6]
     lea             t3, [rsp+wq*4+16+400*12]
     vpbroadcastd   m12, [paramsq+0] ; s0
-    neg             wq
-    vpbroadcastd   m13, [base+pd_0xf00800a4]
     pxor            m6, m6
     vpbroadcastw    m7, [paramsq+8] ; w0
+    lea             t1, [rsp+wq*2+20]
+    vpbroadcastd   m13, [base+pd_0xf00800a4]
+    neg             wq
     vpbroadcastd   m14, [base+pd_34816]  ; (1 << 11) + (1 << 15)
     psllw           m7, 4
     vpbroadcastd   m15, [base+pd_m4096]
-    lea            r10, [lpfq+lpf_strideq*4]
-    mov      [rsp+8*1], lpf_strideq
-    add            r10, lpf_strideq
-    mov      [rsp+8*0], r10 ; below
     test         edgeb, 4 ; LR_HAVE_TOP
     jz .no_top
     call .h_top
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     mov             t2, t1
     call .top_fixup
     add             t1, 400*6
     call .h_top
-    lea            r10, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    add            r10, lpf_strideq
-    mov      [rsp+8*0], r10 ; below
+    add            r10, strideq
+    mov          [rsp], r10 ; below
     mov             t0, t2
     dec             hd
     jz .height1
     or           edged, 16
     call .h
 .main:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv
     call .prep_n
     sub             hd, 2
     jl .extend_bottom
 .main_loop:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     test            hd, hd
     jz .odd_height
     call .h
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv
     call .n0
     call .n1
@@ -794,9 +779,9 @@ cglobal sgr_filter_5x5_8bpc, 5, 13, 16, 400*24+16, dst, dst_stride, left, lpf, \
     jge .main_loop
     test         edgeb, 8 ; LR_HAVE_BOTTOM
     jz .extend_bottom
-    mov           lpfq, [rsp+8*0]
+    mov           lpfq, [rsp]
     call .h_top
-    add           lpfq, [rsp+8*1]
+    add           lpfq, strideq
     call .hv_bottom
 .end:
     call .n0
@@ -819,11 +804,10 @@ cglobal sgr_filter_5x5_8bpc, 5, 13, 16, 400*24+16, dst, dst_stride, left, lpf, \
     call .v
     jmp .end
 .no_top:
-    lea            r10, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    lea            r10, [r10+lpf_strideq*2]
-    mov      [rsp+8*0], r10
+    lea            r10, [r10+strideq*2]
+    mov          [rsp], r10
     call .h
     lea             t2, [t1+400*6]
     call .top_fixup
@@ -1003,7 +987,7 @@ ALIGN function_align
     paddusw         m4, m13
     paddusw         m5, m13
     psrad           m3, m4, 20           ; min(z, 255) - 256
-    vpgatherdd      m2, [r12+m3*4], m4
+    vpgatherdd      m2, [r12+m3*4], m4   ; x
     psrad           m4, m5, 20
     vpgatherdd      m3, [r12+m4*4], m5
     pmulld          m0, m2
@@ -1063,7 +1047,7 @@ ALIGN function_align
     paddusw         m4, m13
     paddusw         m5, m13
     psrad           m3, m4, 20           ; min(z, 255) - 256
-    vpgatherdd      m2, [r12+m3*4], m4
+    vpgatherdd      m2, [r12+m3*4], m4   ; x
     psrad           m4, m5, 20
     vpgatherdd      m3, [r12+m4*4], m5
     pmulld          m0, m2
@@ -1096,12 +1080,9 @@ ALIGN function_align
     pslld           m3, 2
     paddd           m2, m0                ; ab 565
     paddd           m3, m1
-    ; a = 4096 - (ab & 4095) = -(ab | ~4095), so by
-    ; using OR instead of AND for the masking we get
-    ; the subtraction for free (with a negated result)
-    por             m0, m15, m2           ; -a
-    psrld           m2, 12                ;  b
-    por             m1, m15, m3
+    pandn           m0, m15, m2           ; a
+    psrld           m2, 12                ; b
+    pandn           m1, m15, m3
     psrld           m3, 12
     mova [t3+r10*4+400*4+ 0], m0
     mova [t3+r10*4+400*8+ 0], m2
@@ -1126,11 +1107,11 @@ ALIGN function_align
     pslld           m3, 2
     paddd           m2, m0
     paddd           m3, m1
-    por             m0, m15, m2
+    pandn           m0, m15, m2
     psrld           m2, 12
-    por             m1, m15, m3
+    pandn           m1, m15, m3
     psrld           m3, 12
-    paddd           m4, m0, [t3+r10*4+400*4+ 0] ; -a
+    paddd           m4, m0, [t3+r10*4+400*4+ 0] ; a
     paddd           m5, m1, [t3+r10*4+400*4+32]
     mova [t3+r10*4+400*4+ 0], m0
     mova [t3+r10*4+400*4+32], m1
@@ -1140,16 +1121,14 @@ ALIGN function_align
     mova [t3+r10*4+400*8+32], m3
     pmovzxbd        m2, [dstq+r10+0]
     pmovzxbd        m3, [dstq+r10+8]
-    pmaddwd         m4, m2 ; -a * src
+    pmaddwd         m4, m2 ; a * src
     pmaddwd         m5, m3
     packssdw        m2, m3
-    psubd           m0, m4 ; a * src + b + (1 << 8)
+    psubd           m0, m4 ; b - a * src + (1 << 8)
     psubd           m1, m5
-    psrld           m0, 9
-    psrld           m1, 9
+    psrad           m0, 9
+    psrad           m1, 9
     packssdw        m0, m1
-    psllw           m1, m2, 4
-    psubw           m0, m1
     pmulhrsw        m0, m7
     paddw           m0, m2
     vextracti128   xm1, m0, 1
@@ -1158,7 +1137,7 @@ ALIGN function_align
     mova    [dstq+r10], xm0
     add            r10, 16
     jl .n0_loop
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 ALIGN function_align
 .n1: ; neighbor + output (odd rows)
@@ -1166,18 +1145,16 @@ ALIGN function_align
 .n1_loop:
     pmovzxbd        m2, [dstq+r10+0]
     pmovzxbd        m3, [dstq+r10+8]
-    pmaddwd         m4, m2, [t3+r10*4+400*4+ 0] ; -a * src
+    pmaddwd         m4, m2, [t3+r10*4+400*4+ 0] ; a * src
     pmaddwd         m5, m3, [t3+r10*4+400*4+32]
     mova            m0, [t3+r10*4+400*8+ 0]     ; b
     mova            m1, [t3+r10*4+400*8+32]
     packssdw        m2, m3
-    psubd           m0, m4                      ; a * src + b + (1 << 7)
+    psubd           m0, m4                      ; b - a * src + (1 << 7)
     psubd           m1, m5
-    psrld           m0, 8
-    psrld           m1, 8
+    psrad           m0, 8
+    psrad           m1, 8
     packssdw        m0, m1
-    psllw           m1, m2, 4
-    psubw           m0, m1
     pmulhrsw        m0, m7
     paddw           m0, m2
     vextracti128   xm1, m0, 1
@@ -1186,44 +1163,43 @@ ALIGN function_align
     mova    [dstq+r10], xm0
     add            r10, 16
     jl .n1_loop
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 
-cglobal sgr_filter_3x3_8bpc, 5, 15, 15, -400*28-16, dst, dst_stride, left, lpf, \
-                                                    lpf_stride, w, edge, params, h
+cglobal sgr_filter_3x3_8bpc, 4, 15, 15, -400*28-16, dst, stride, left, lpf, \
+                                                    w, h, edge, params
 %define base r14-sgr_x_by_x_avx2-256*4
-    mov        paramsq, paramsmp
-    mov          edged, r8m
+    mov        paramsq, r6mp
     mov             wd, wm
-    mov             hd, r6m
+    movifnidn       hd, hm
+    mov          edged, r7m
     lea            r14, [sgr_x_by_x_avx2+256*4]
     vbroadcasti128  m8, [base+sgr_shuf+2]
     add           lpfq, wq
     vbroadcasti128  m9, [base+sgr_shuf+4]
-    lea             t1, [rsp+wq*2+20]
-    vbroadcasti128 m10, [base+sgr_shuf+6]
     add           dstq, wq
-    vpbroadcastd   m11, [paramsq+ 4] ; s1
+    vbroadcasti128 m10, [base+sgr_shuf+6]
     lea             t3, [rsp+wq*4+16+400*12]
+    vpbroadcastd   m11, [paramsq+ 4] ; s1
+    pxor            m6, m6
+    vpbroadcastw    m7, [paramsq+10] ; w1
+    lea             t1, [rsp+wq*2+20]
     vpbroadcastd   m12, [base+pd_0xf00801c7]
     neg             wq
-    vpbroadcastw    m7, [paramsq+10] ; w1
-    pxor            m6, m6
     vpbroadcastd   m13, [base+pd_34816] ; (1 << 11) + (1 << 15)
     psllw           m7, 4
     vpbroadcastd   m14, [base+pd_m4096]
     test         edgeb, 4 ; LR_HAVE_TOP
     jz .no_top
     call .h_top
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     mov             t2, t1
     add             t1, 400*6
     call .h_top
-    lea             t4, [lpfq+lpf_strideq*4]
+    lea             t4, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    add             t4, lpf_strideq
-    mov      [rsp+8*0], t4 ; below
+    add             t4, strideq
+    mov          [rsp], t4 ; below
     mov             t0, t2
     call .hv
 .main:
@@ -1231,23 +1207,23 @@ cglobal sgr_filter_3x3_8bpc, 5, 15, 15, -400*28-16, dst, dst_stride, left, lpf, 
     add             t3, 400*4
     dec             hd
     jz .height1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv
     call .prep_n
     dec             hd
     jz .extend_bottom
 .main_loop:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv
     call .n
     dec             hd
     jnz .main_loop
     test         edgeb, 8 ; LR_HAVE_BOTTOM
     jz .extend_bottom
-    mov           lpfq, [rsp+8*0]
+    mov           lpfq, [rsp]
     call .hv_bottom
     call .n
-    add           lpfq, [rsp+8*1]
+    add           lpfq, strideq
     call .hv_bottom
 .end:
     call .n
@@ -1265,11 +1241,10 @@ cglobal sgr_filter_3x3_8bpc, 5, 15, 15, -400*28-16, dst, dst_stride, left, lpf, 
     call .v
     jmp .end
 .no_top:
-    lea             t4, [lpfq+lpf_strideq*4]
+    lea             t4, [lpfq+strideq*4]
     mov           lpfq, dstq
-    mov      [rsp+8*1], lpf_strideq
-    lea             t4, [t4+lpf_strideq*2]
-    mov      [rsp+8*0], t4
+    lea             t4, [t4+strideq*2]
+    mov          [rsp], t4
     call .h
     lea             t0, [t1+400*6]
     mov             t2, t1
@@ -1509,31 +1484,29 @@ ALIGN function_align
     paddd           m5, m5
     psubd           m5, m4
     mova [t5+r10*4+32], m5
-    por             m4, m14, m0
+    pandn           m4, m14, m0
     psrld           m0, 12
     paddd           m3, m5
-    por             m5, m14, m2
+    pandn           m5, m14, m2
     psrld           m2, 12
-    paddd           m4, m5                ; -a
-    por             m5, m14, m1
+    paddd           m4, m5                ; a
+    pandn           m5, m14, m1
     psrld           m1, 12
-    paddd           m0, m2                ;  b + (1 << 8)
-    por             m2, m14, m3
+    paddd           m0, m2                ; b + (1 << 8)
+    pandn           m2, m14, m3
     psrld           m3, 12
     paddd           m5, m2
     pmovzxbd        m2, [dstq+r10+0]
     paddd           m1, m3
     pmovzxbd        m3, [dstq+r10+8]
-    pmaddwd         m4, m2                ; -a * src
+    pmaddwd         m4, m2                ; a * src
     pmaddwd         m5, m3
     packssdw        m2, m3
-    psubd           m0, m4                ; a * src + b + (1 << 8)
+    psubd           m0, m4                ; b - a * src + (1 << 8)
     psubd           m1, m5
-    psrld           m0, 9
-    psrld           m1, 9
+    psrad           m0, 9
+    psrad           m1, 9
     packssdw        m0, m1
-    psllw           m1, m2, 4
-    psubw           m0, m1
     pmulhrsw        m0, m7
     paddw           m0, m2
     vextracti128   xm1, m0, 1
@@ -1545,58 +1518,58 @@ ALIGN function_align
     mov            r10, t5
     mov             t5, t4
     mov             t4, r10
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 
-cglobal sgr_filter_mix_8bpc, 5, 13, 16, 400*56+8, dst, dst_stride, left, lpf, \
-                                                  lpf_stride, w, edge, params, h
+cglobal sgr_filter_mix_8bpc, 4, 13, 16, 400*56+8, dst, stride, left, lpf, \
+                                                  w, h, edge, params
 %define base r12-sgr_x_by_x_avx2-256*4
     lea            r12, [sgr_x_by_x_avx2+256*4]
-    mov        paramsq, paramsmp
+    mov        paramsq, r6mp
     mov             wd, wm
-    mov          edged, r8m
-    mov             hd, r6m
+    movifnidn       hd, hm
+    mov          edged, r7m
     vbroadcasti128  m9, [base+sgr_shuf+0]
-    add           lpfq, wq
     vbroadcasti128 m10, [base+sgr_shuf+8]
-    lea             t1, [rsp+wq*2+12]
+    add           lpfq, wq
     vbroadcasti128 m11, [base+sgr_shuf+2]
-    add           dstq, wq
     vbroadcasti128 m12, [base+sgr_shuf+6]
-    lea             t3, [rsp+wq*4+400*24+8]
+    add           dstq, wq
     vpbroadcastd   m15, [paramsq+8] ; w0 w1
-    neg             wq
+    lea             t3, [rsp+wq*4+400*24+8]
     vpbroadcastd   m13, [paramsq+0] ; s0
     pxor            m7, m7
     vpbroadcastd   m14, [paramsq+4] ; s1
+    lea             t1, [rsp+wq*2+12]
+    neg             wq
     psllw          m15, 2 ; to reuse existing pd_m4096 register for rounding
     test         edgeb, 4 ; LR_HAVE_TOP
     jz .no_top
     call .h_top
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     mov             t2, t1
     call mangle(private_prefix %+ _sgr_filter_5x5_8bpc_avx2).top_fixup
     add             t1, 400*12
     call .h_top
-    lea            r10, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    add            r10, lpf_strideq
+    add            r10, strideq
     mov          [rsp], r10 ; below
     call .hv0
 .main:
     dec             hd
     jz .height1
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv1
     call .prep_n
     sub             hd, 2
     jl .extend_bottom
 .main_loop:
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv0
     test            hd, hd
     jz .odd_height
-    add           lpfq, dst_strideq
+    add           lpfq, strideq
     call .hv1
     call .n0
     call .n1
@@ -1606,7 +1579,7 @@ cglobal sgr_filter_mix_8bpc, 5, 13, 16, 400*56+8, dst, dst_stride, left, lpf, \
     jz .extend_bottom
     mov           lpfq, [rsp]
     call .hv0_bottom
-    add           lpfq, lpf_strideq
+    add           lpfq, strideq
     call .hv1_bottom
 .end:
     call .n0
@@ -1631,9 +1604,9 @@ cglobal sgr_filter_mix_8bpc, 5, 13, 16, 400*56+8, dst, dst_stride, left, lpf, \
     call .v1
     jmp .end
 .no_top:
-    lea            r10, [lpfq+lpf_strideq*4]
+    lea            r10, [lpfq+strideq*4]
     mov           lpfq, dstq
-    lea            r10, [r10+lpf_strideq*2]
+    lea            r10, [r10+strideq*2]
     mov          [rsp], r10
     call .h
     lea             t2, [t1+400*12]
@@ -1908,7 +1881,7 @@ ALIGN function_align
     vpgatherdd      m2, [r12+m3*4], m6
     psrad           m6, m7, 20
     vpgatherdd      m3, [r12+m6*4], m7
-    vpbroadcastd    m6, [base+pd_34816]
+    vpbroadcastd    m6, [base+pd_34816]  ; x3
     pmulld          m0, m2
     vpbroadcastd    m7, [base+pd_m4096]
     pmulld          m1, m3
@@ -1918,12 +1891,12 @@ ALIGN function_align
     pand            m7, m1
     por             m0, m2               ; a3 | (b3 << 12)
     por             m7, m3
-    paddw          m1, m8, [t2+r10*2+400*0]
-    paddd          m2, m4, [t2+r10*2+400*2]
-    paddd          m3, m5, [t2+r10*2+400*4]
-    paddw          m1, [t1+r10*2+400*0]
-    paddd          m2, [t1+r10*2+400*2]
-    paddd          m3, [t1+r10*2+400*4]
+    paddw           m1, m8, [t2+r10*2+400*0]
+    paddd           m2, m4, [t2+r10*2+400*2]
+    paddd           m3, m5, [t2+r10*2+400*4]
+    paddw           m1, [t1+r10*2+400*0]
+    paddd           m2, [t1+r10*2+400*2]
+    paddd           m3, [t1+r10*2+400*4]
     mova [t2+r10*2+400*0], m8
     mova [t2+r10*2+400*2], m4
     mova [t2+r10*2+400*4], m5
@@ -1949,7 +1922,7 @@ ALIGN function_align
     paddusw         m2, m4
     paddusw         m3, m4
     psrad           m5, m2, 20           ; min(z5, 255) - 256
-    vpgatherdd      m4, [r12+m5*4], m2
+    vpgatherdd      m4, [r12+m5*4], m2   ; x5
     psrad           m2, m3, 20
     vpgatherdd      m5, [r12+m2*4], m3
     pmulld          m0, m4
@@ -2006,7 +1979,7 @@ ALIGN function_align
     paddusw         m4, m2
     paddusw         m5, m2
     psrad           m3, m4, 20           ; min(z3, 255) - 256
-    vpgatherdd      m2, [r12+m3*4], m4
+    vpgatherdd      m2, [r12+m3*4], m4   ; x3
     psrad           m4, m5, 20
     vpgatherdd      m3, [r12+m4*4], m5
     pmulld          m0, m2
@@ -2023,7 +1996,7 @@ ALIGN function_align
     mova [t3+r10*4+400*8+ 8], m2
     mova [t3+r10*4+400*0+ 8], m3
     mova [t3+r10*4+400*0+40], m4
-    paddw           m2, m2 ; cc5
+    paddw           m2, m2               ; cc5
     paddd           m3, m3
     paddd           m4, m4
     mova [t1+r10*2+400*0], m2
@@ -2066,7 +2039,7 @@ ALIGN function_align
     paddusw         m4, m2
     paddusw         m5, m2
     psrad           m3, m4, 20           ; min(z3, 255) - 256
-    vpgatherdd      m2, [r12+m3*4], m4
+    vpgatherdd      m2, [r12+m3*4], m4   ; x3
     psrad           m4, m5, 20
     vpgatherdd      m3, [r12+m4*4], m5
     vpbroadcastd    m4, [base+pd_34816]
@@ -2112,7 +2085,7 @@ ALIGN function_align
     paddusw         m2, m4
     paddusw         m3, m4
     psrad           m5, m2, 20           ; min(z5, 255) - 256
-    vpgatherdd      m4, [r12+m5*4], m2
+    vpgatherdd      m4, [r12+m5*4], m2   ; x5
     psrad           m2, m3, 20
     vpgatherdd      m5, [r12+m2*4], m3
     pmulld          m0, m4
@@ -2154,7 +2127,7 @@ ALIGN function_align
     paddd           m3, m3                ; ab3[ 0] 222
     psubd           m2, m4                ; ab3[-1] 343
     mova [t3+r10*4+400*20], m3
-    por             m0, m6, m1            ; a5 565
+    pandn           m0, m6, m1            ; a5 565
     mova [t3+r10*4+400*24], m2
     psrld           m1, 12                ; b5 565
     mova [t3+r10*4+400*12], m0
@@ -2175,11 +2148,11 @@ ALIGN function_align
     paddd           m0, m4
     pslld           m4, 2
     paddd           m4, m0
-    por             m0, m6, m4
+    pandn           m0, m6, m4
     psrld           m4, 12
-    paddd           m2, m0, [t3+r10*4+400*12] ; -a5
+    paddd           m2, m0, [t3+r10*4+400*12] ; a5
     mova [t3+r10*4+400*12], m0
-    paddd           m0, m4, [t3+r10*4+400*16] ;  b5 + (1 << 8)
+    paddd           m0, m4, [t3+r10*4+400*16] ; b5 + (1 << 8)
     mova [t3+r10*4+400*16], m4
     mova            m3, [t3+r10*4+400*4+0]
     paddd           m3, [t3+r10*4+400*4+8]
@@ -2192,34 +2165,31 @@ ALIGN function_align
     psubd           m5, m3                    ; ab3[ 1] 343
     mova [t3+r10*4+400*24], m5
     paddd           m4, m5                    ; ab3[ 0] 222 + ab3[ 1] 343
-    por             m3, m6, m1
+    pandn           m3, m6, m1
     psrld           m1, 12
-    por             m5, m6, m4
+    pandn           m5, m6, m4
     psrld           m4, 12
-    paddd           m3, m5                    ; -a3
-    paddd           m1, m4                    ;  b3 + (1 << 8)
+    paddd           m3, m5                    ; a3
+    paddd           m1, m4                    ; b3 + (1 << 8)
     pmovzxbd        m4, [dstq+r10]
-    pmaddwd         m2, m4                    ; -a5 * src
-    pmaddwd         m3, m4                    ; -a3 * src
-    pslld           m4, 13
-    psubd           m0, m4
-    psubd           m1, m4
-    psubd           m0, m2                    ; a5 * src + b5 + (1 << 8)
-    psubd           m1, m3                    ; a3 * src + b3 + (1 << 8)
+    pmaddwd         m2, m4                    ; a5 * src
+    pmaddwd         m3, m4                    ; a3 * src
+    psubd           m0, m2                    ; b5 - a5 * src + (1 << 8)
+    psubd           m1, m3                    ; b3 - a3 * src + (1 << 8)
     psrld           m0, 9
     pslld           m1, 7
     pblendw         m0, m1, 0xaa
     pmaddwd         m0, m15
-    psubd           m4, m6
-    paddd           m0, m4
+    psubd           m0, m6
     psrad           m0, 13
+    paddd           m0, m4
     vextracti128   xm1, m0, 1
     packssdw       xm0, xm1
     packuswb       xm0, xm0
     movq    [dstq+r10], xm0
     add            r10, 8
     jl .n0_loop
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
 ALIGN function_align
 .n1: ; neighbor + output (odd rows)
@@ -2236,9 +2206,9 @@ ALIGN function_align
     psubd           m5, m3                    ; ab3[ 1] 343
     mova [t3+r10*4+400*28], m5
     paddd           m4, m5                    ; ab3[ 0] 222 + ab3[ 1] 343
-    por             m3, m6, m1
+    pandn           m3, m6, m1
     psrld           m1, 12
-    por             m5, m6, m4
+    pandn           m5, m6, m4
     psrld           m4, 12
     paddd           m3, m5                    ; -a3
     paddd           m1, m4                    ;  b3 + (1 << 8)
@@ -2246,25 +2216,22 @@ ALIGN function_align
     pmaddwd         m2, m4, [t3+r10*4+400*12] ; -a5 * src
     mova            m0, [t3+r10*4+400*16]     ;  b5 + (1 << 7)
     pmaddwd         m3, m4                    ; -a3 * src
-    pslld           m4, 12
-    psubd           m0, m4
-    paddd           m4, m4
-    psubd           m1, m4
     psubd           m0, m2                    ; a5 * src + b5 + (1 << 7)
     psubd           m1, m3                    ; a3 * src + b3 + (1 << 8)
     psrld           m0, 8
     pslld           m1, 7
     pblendw         m0, m1, 0xaa
     pmaddwd         m0, m15
-    psubd           m4, m6
-    paddd           m0, m4
+    psubd           m0, m6
     psrad           m0, 13
+    paddd           m0, m4
     vextracti128   xm1, m0, 1
     packssdw       xm0, xm1
     packuswb       xm0, xm0
     movq    [dstq+r10], xm0
     add            r10, 8
     jl .n1_loop
-    add           dstq, dst_strideq
+    add           dstq, strideq
     ret
+
 %endif ; ARCH_X86_64

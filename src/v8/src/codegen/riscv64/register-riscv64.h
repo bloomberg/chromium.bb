@@ -13,15 +13,34 @@ namespace v8 {
 namespace internal {
 
 // clang-format off
+
 #define GENERAL_REGISTERS(V)                                            \
   V(zero_reg)  V(ra)  V(sp)  V(gp)  V(tp)  V(t0)  V(t1)  V(t2)          \
   V(fp)  V(s1)  V(a0)  V(a1)  V(a2)  V(a3)  V(a4)  V(a5)                \
   V(a6)  V(a7)  V(s2)  V(s3)  V(s4)  V(s5)  V(s6)  V(s7)  V(s8)  V(s9)  \
   V(s10)  V(s11)  V(t3)  V(t4)  V(t5)  V(t6)
 
+// s3: scratch register s4: scratch register 2  used in code-generator-riscv64
+// s6: roots in Javascript code s7: context register
+// s11: PtrComprCageBaseRegister
+// t3 t5 : scratch register used in scratch_register_list
+// t6 : call reg.
+// t0 t1 t2 t4:caller saved scratch register can be used in macroassembler and
+// builtin-riscv64
+#define ALWAYS_ALLOCATABLE_GENERAL_REGISTERS(V)  \
+             V(a0)  V(a1)  V(a2)  V(a3) \
+             V(a4)  V(a5)  V(a6)  V(a7)  V(t0)  \
+             V(t1)  V(t2)  V(t4)  V(s7)  V(s8) V(s9) V(s10)
+
+#ifdef V8_COMPRESS_POINTERS_IN_SHARED_CAGE
+#define MAYBE_ALLOCATABLE_GENERAL_REGISTERS(V)
+#else
+#define MAYBE_ALLOCATABLE_GENERAL_REGISTERS(V) V(s11)
+#endif
+
 #define ALLOCATABLE_GENERAL_REGISTERS(V)  \
-  V(a0)  V(a1)  V(a2)  V(a3)              \
-  V(a4)  V(a5)  V(a6)  V(a7)  V(t0)  V(t1) V(t2) V(s7) V(t4)
+  ALWAYS_ALLOCATABLE_GENERAL_REGISTERS(V) \
+  MAYBE_ALLOCATABLE_GENERAL_REGISTERS(V)
 
 #define DOUBLE_REGISTERS(V)                                       \
   V(ft0)  V(ft1)  V(ft2)  V(ft3)  V(ft4)  V(ft5)  V(ft6)  V(ft7)  \
@@ -30,16 +49,21 @@ namespace internal {
   V(fs8) V(fs9) V(fs10) V(fs11) V(ft8) V(ft9) V(ft10) V(ft11)
 
 #define FLOAT_REGISTERS DOUBLE_REGISTERS
-#define SIMD128_REGISTERS(V)                               \
-  V(w0)  V(w1)  V(w2)  V(w3)  V(w4)  V(w5)  V(w6)  V(w7)   \
-  V(w8)  V(w9)  V(w10) V(w11) V(w12) V(w13) V(w14) V(w15)  \
-  V(w16) V(w17) V(w18) V(w19) V(w20) V(w21) V(w22) V(w23)  \
-  V(w24) V(w25) V(w26) V(w27) V(w28) V(w29) V(w30) V(w31)
+#define VECTOR_REGISTERS(V)                               \
+  V(v0)  V(v1)  V(v2)  V(v3)  V(v4)  V(v5)  V(v6)  V(v7)  \
+  V(v8)  V(v9)  V(v10) V(v11) V(v12) V(v13) V(v14) V(v15) \
+  V(v16) V(v17) V(v18) V(v19) V(v20) V(v21) V(v22) V(v23) \
+  V(v24) V(v25) V(v26) V(v27) V(v28) V(v29) V(v30) V(v31)
 
-#define ALLOCATABLE_DOUBLE_REGISTERS(V)                                   \
-  V(ft0)  V(ft1)  V(ft2) V(ft3)                                           \
-  V(ft4)  V(ft5) V(ft6) V(ft7) V(fa0) V(fa1) V(fa2) V(fa3) V(fa4) V(fa5)  \
-  V(fa6) V(fa7)
+#define UNALLOACTABLE_VECTOR_REGISTERS(V)                 \
+  V(v9)  V(v10) V(v11) V(v12) V(v13) V(v14) V(v15)        \
+  V(v18) V(v19) V(v20) V(v21) V(v22) V(v23)               \
+  V(v24) V(v25)
+
+#define ALLOCATABLE_DOUBLE_REGISTERS(V)                              \
+  V(ft1)  V(ft2) V(ft3) V(ft4)  V(ft5) V(ft6) V(ft7) V(ft8)          \
+  V(ft9)  V(ft10) V(ft11) V(fa0) V(fa1) V(fa2) V(fa3) V(fa4) V(fa5)  \
+  V(fa6)  V(fa7)
 
 // Returns the number of padding slots needed for stack pointer alignment.
 constexpr int ArgumentPaddingSlots(int argument_count) {
@@ -72,8 +96,8 @@ const int kNumJSCallerSaved = 12;
 const RegList kCalleeSaved = 1 << 8 |   // fp/s0
                              1 << 9 |   // s1
                              1 << 18 |  // s2
-                             1 << 19 |  // s3
-                             1 << 20 |  // s4
+                             1 << 19 |  // s3 scratch register
+                             1 << 20 |  // s4 scratch register 2
                              1 << 21 |  // s5
                              1 << 22 |  // s6 (roots in Javascript code)
                              1 << 23 |  // s7 (cp in Javascript code)
@@ -237,6 +261,19 @@ enum DoubleRegisterCode {
       kDoubleAfterLast
 };
 
+enum VRegisterCode {
+#define REGISTER_CODE(R) kVRCode_##R,
+  VECTOR_REGISTERS(REGISTER_CODE)
+#undef REGISTER_CODE
+      kVRAfterLast
+};
+class VRegister : public RegisterBase<VRegister, kVRAfterLast> {
+  friend class RegisterBase;
+
+ public:
+  explicit constexpr VRegister(int code) : RegisterBase(code) {}
+};
+
 // Coprocessor register.
 class FPURegister : public RegisterBase<FPURegister, kDoubleAfterLast> {
  public:
@@ -255,25 +292,24 @@ class FPURegister : public RegisterBase<FPURegister, kDoubleAfterLast> {
     return FPURegister::from_code(code() + 1);
   }
 
+  // FIXME(riscv64): In Rvv, Vector regs is different from Float Regs. But in
+  // this cl, in order to facilitate modification, it is assumed that the vector
+  // register and floating point register are shared.
+  VRegister toV() const {
+    DCHECK(base::IsInRange(code(), 0, kVRAfterLast - 1));
+    // FIXME(riscv): Because V0 is a special mask reg, so can't allocate it.
+    // And v8 is unallocated so we replace v0 with v8
+    if (code() == 0) {
+      return VRegister(8);
+    }
+    return VRegister(code());
+  }
+
  private:
   friend class RegisterBase;
   explicit constexpr FPURegister(int code) : RegisterBase(code) {}
 };
 
-enum MSARegisterCode {
-#define REGISTER_CODE(R) kMsaCode_##R,
-  SIMD128_REGISTERS(REGISTER_CODE)
-#undef REGISTER_CODE
-      kMsaAfterLast
-};
-
-// MIPS SIMD (MSA) register
-// TODO(RISCV): Remove MIPS MSA registers.
-//              https://github.com/v8-riscv/v8/issues/429
-class MSARegister : public RegisterBase<MSARegister, kMsaAfterLast> {
-  friend class RegisterBase;
-  explicit constexpr MSARegister(int code) : RegisterBase(code) {}
-};
 
 // A few double registers are reserved: one as a scratch register and one to
 //  hold 0.0.
@@ -285,6 +321,8 @@ using FloatRegister = FPURegister;
 
 using DoubleRegister = FPURegister;
 
+using Simd128Register = VRegister;
+
 #define DECLARE_DOUBLE_REGISTER(R) \
   constexpr DoubleRegister R = DoubleRegister::from_code(kDoubleCode_##R);
 DOUBLE_REGISTERS(DECLARE_DOUBLE_REGISTER)
@@ -292,15 +330,12 @@ DOUBLE_REGISTERS(DECLARE_DOUBLE_REGISTER)
 
 constexpr DoubleRegister no_dreg = DoubleRegister::no_reg();
 
-// SIMD registers.
-using Simd128Register = MSARegister;
+#define DECLARE_VECTOR_REGISTER(R) \
+  constexpr VRegister R = VRegister::from_code(kVRCode_##R);
+VECTOR_REGISTERS(DECLARE_VECTOR_REGISTER)
+#undef DECLARE_VECTOR_REGISTER
 
-#define DECLARE_SIMD128_REGISTER(R) \
-  constexpr Simd128Register R = Simd128Register::from_code(kMsaCode_##R);
-SIMD128_REGISTERS(DECLARE_SIMD128_REGISTER)
-#undef DECLARE_SIMD128_REGISTER
-
-const Simd128Register no_msareg = Simd128Register::no_reg();
+const VRegister no_msareg = VRegister::no_reg();
 
 // Register aliases.
 // cp is assumed to be a callee saved register.
@@ -309,14 +344,14 @@ constexpr Register cp = s7;
 constexpr Register kScratchReg = s3;
 constexpr Register kScratchReg2 = s4;
 
-constexpr DoubleRegister kScratchDoubleReg = fs11;
+constexpr DoubleRegister kScratchDoubleReg = ft0;
 
 constexpr DoubleRegister kDoubleRegZero = fs9;
 
 // Define {RegisterName} methods for the register types.
 DEFINE_REGISTER_NAMES(Register, GENERAL_REGISTERS)
 DEFINE_REGISTER_NAMES(FPURegister, DOUBLE_REGISTERS)
-DEFINE_REGISTER_NAMES(MSARegister, SIMD128_REGISTERS)
+DEFINE_REGISTER_NAMES(VRegister, VECTOR_REGISTERS)
 
 // Give alias names to registers for calling conventions.
 constexpr Register kReturnRegister0 = a0;
@@ -325,7 +360,6 @@ constexpr Register kReturnRegister2 = a2;
 constexpr Register kJSFunctionRegister = a1;
 constexpr Register kContextRegister = s7;
 constexpr Register kAllocateSizeRegister = a1;
-constexpr Register kSpeculationPoisonRegister = a7;
 constexpr Register kInterpreterAccumulatorRegister = a0;
 constexpr Register kInterpreterBytecodeOffsetRegister = t0;
 constexpr Register kInterpreterBytecodeArrayRegister = t1;
@@ -345,6 +379,16 @@ constexpr Register kWasmInstanceRegister = a0;
 constexpr Register kWasmCompileLazyFuncIndexRegister = t0;
 
 constexpr DoubleRegister kFPReturnRegister0 = fa0;
+constexpr VRegister kSimd128ScratchReg = v26;
+constexpr VRegister kSimd128ScratchReg2 = v27;
+constexpr VRegister kSimd128ScratchReg3 = v8;
+constexpr VRegister kSimd128RegZero = v25;
+
+#ifdef V8_COMPRESS_POINTERS_IN_SHARED_CAGE
+constexpr Register kPtrComprCageBaseRegister = s11;  // callee save
+#else
+constexpr Register kPtrComprCageBaseRegister = kRootRegister;
+#endif
 
 }  // namespace internal
 }  // namespace v8

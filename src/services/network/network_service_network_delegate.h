@@ -6,13 +6,18 @@
 #define SERVICES_NETWORK_NETWORK_SERVICE_NETWORK_DELEGATE_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate_impl.h"
+#include "net/cookies/same_party_context.h"
 #include "services/network/network_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace net {
+class SiteForCookies;
+}  // namespace net
 
 namespace network {
 
@@ -27,6 +32,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
       bool validate_referrer_policy_on_initial_request,
       mojo::PendingRemote<mojom::ProxyErrorClient> proxy_error_client_remote,
       NetworkContext* network_context);
+
+  NetworkServiceNetworkDelegate(const NetworkServiceNetworkDelegate&) = delete;
+  NetworkServiceNetworkDelegate& operator=(
+      const NetworkServiceNetworkDelegate&) = delete;
+
   ~NetworkServiceNetworkDelegate() override;
 
   void set_enable_referrers(bool enable_referrers) {
@@ -38,9 +48,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   int OnBeforeURLRequest(net::URLRequest* request,
                          net::CompletionOnceCallback callback,
                          GURL* new_url) override;
-  int OnBeforeStartTransaction(net::URLRequest* request,
-                               net::CompletionOnceCallback callback,
-                               net::HttpRequestHeaders* headers) override;
+  int OnBeforeStartTransaction(
+      net::URLRequest* request,
+      const net::HttpRequestHeaders& headers,
+      OnBeforeStartTransactionCallback callback) override;
   int OnHeadersReceived(
       net::URLRequest* request,
       net::CompletionOnceCallback callback,
@@ -55,8 +66,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
                    bool started,
                    int net_error) override;
   void OnPACScriptError(int line_number, const std::u16string& error) override;
-  bool OnCanGetCookies(const net::URLRequest& request,
-                       bool allowed_from_caller) override;
+  bool OnAnnotateAndMoveUserBlockedCookies(
+      const net::URLRequest& request,
+      net::CookieAccessResultList& maybe_included_cookies,
+      net::CookieAccessResultList& excluded_cookies,
+      bool allowed_from_caller) override;
   bool OnCanSetCookie(const net::URLRequest& request,
                       const net::CanonicalCookie& cookie,
                       net::CookieOptions* options,
@@ -64,7 +78,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   bool OnForcePrivacyMode(
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const absl::optional<url::Origin>& top_frame_origin) const override;
+      const absl::optional<url::Origin>& top_frame_origin,
+      net::SamePartyContext::Type same_party_context_type) const override;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const net::URLRequest& request,
       const GURL& target_url,
@@ -100,12 +115,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   bool enable_referrers_;
   bool validate_referrer_policy_on_initial_request_;
   mojo::Remote<mojom::ProxyErrorClient> proxy_error_client_;
-  NetworkContext* network_context_;
+  raw_ptr<NetworkContext> network_context_;
 
   mutable base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegate);
 };
 
 }  // namespace network

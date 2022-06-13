@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/core/grappler/optimizers/data/inject_prefetch.h"
 
+#include "tensorflow/core/data/dataset_utils.h"
 #include "tensorflow/core/framework/model.h"
 #include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/grappler/clusters/cluster.h"
@@ -30,15 +31,40 @@ namespace tensorflow {
 namespace grappler {
 namespace {
 
-constexpr char kLegacyAutotune[] = "legacy_autotune";
 constexpr char kPrefetchDataset[] = "PrefetchDataset";
-
-constexpr std::array<const char*, 7> kAsyncDatasetOps = {
-    "ExperimentalMapAndBatchDataset", "MapAndBatchDataset",
-    "ParallelInterleaveDatasetV2",    "ParallelInterleaveDatasetV3",
-    "ParallelInterleaveDatasetV4",    "ParallelMapDataset",
-    "ParallelMapDatasetV2",
+constexpr std::array<const char*, 7> kDatasetsToSkip = {
+    "AssertNextDataset",        "ExperimentalAssertNextDataset",
+    "OptionsDataset",           "ModelDataset",
+    "OptimizeDataset",          "MaxIntraOpParallelismDataset",
+    "PrivateThreadPoolDataset",
 };
+
+// This function returns false if the last dataset after skipping all the
+// non-user defined datasets, such as OptionsDataset, is a PrefetchDataset; true
+// otherwise.
+bool ShouldInjectPrefetch(const NodeDef* last_node,
+                          const MutableGraphView& graph) {
+  // Skip all datasets that could be chained by tf.data to the user defined
+  // pipeline because of optimization, etc.
+  while (last_node != nullptr &&
+         absl::c_any_of(kDatasetsToSkip, [last_node](const char* dataset) {
+           return data::MatchesAnyVersion(dataset, last_node->op());
+         })) {
+    last_node = graph_utils::GetInputNode(*last_node, graph);
+  }
+  if (last_node == nullptr) {
+    VLOG(1) << "The optimization inject_prefetch is not applied because graph "
+               "rewrite failed to find a dataset node.";
+    return false;
+  }
+  if (last_node->op() == kPrefetchDataset) {
+    VLOG(1)
+        << "The optimization inject_prefetch is not applied because the "
+           "last transformation of the input pipeline is already `prefetch`.";
+    return false;
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -47,61 +73,94 @@ Status InjectPrefetch::OptimizeAndCollectStats(Cluster* cluster,
                                                GraphDef* output,
                                                OptimizationStats* stats) {
   *output = item.graph;
+  if (!autotune_) {
+    VLOG(1) << "The optimization inject_prefetch is not applied if autotune is "
+               "off.";
+    return Status::OK();
+  }
   MutableGraphView graph(output);
 
-  std::vector<const NodeDef*> async_datasets;
-  for (const NodeDef& node : item.graph.node()) {
-    for (const auto& async_dataset_op : kAsyncDatasetOps) {
-      if (node.op() == async_dataset_op) {
-        async_datasets.push_back(&node);
-        break;
-      }
-    }
+  // If the GrapplerItem is derived from a FunctionDef, we don't optimize it.
+  if (graph_utils::IsItemDerivedFromFunctionDef(item, graph)) {
+    return Status::OK();
   }
 
-  if (async_datasets.empty()) return Status::OK();
+  if (item.fetch.size() != 1) {
+    return errors::InvalidArgument(
+        "Expected only one fetch node but there were ", item.fetch.size(), ": ",
+        absl::StrJoin(item.fetch, ", "));
+  }
 
-  // Add a const node with value kAutotune
+  NodeDef* sink_node = graph.GetNode(item.fetch.at(0));
+  NodeDef* last_node = graph_utils::GetInputNode(*sink_node, graph);
+  if (!ShouldInjectPrefetch(last_node, graph)) {
+    return Status::OK();
+  }
+
+  // Insert `prefetch(AUTOTUNE)` after the last node.
+  NodeDef prefetch_node;
+  graph_utils::SetUniqueGraphNodeName(
+      strings::StrCat("inject/prefetch_", last_node->name()), graph.graph(),
+      &prefetch_node);
+  prefetch_node.set_op(kPrefetchDataset);
+  // `input_dataset` input
+  *prefetch_node.mutable_input()->Add() = last_node->name();
+  // `buffer_size` input
   NodeDef* autotune_value =
       graph_utils::AddScalarConstNode(data::model::kAutotune, &graph);
+  *prefetch_node.mutable_input()->Add() = autotune_value->name();
 
-  for (const NodeDef* async_dataset_node : async_datasets) {
-    NodeDef prefetch_node;
-    graph_utils::SetUniqueGraphNodeName(
-        strings::StrCat("inject/prefetch_", async_dataset_node->name()),
-        graph.graph(), &prefetch_node);
-    prefetch_node.set_op("PrefetchDataset");
-    // `input_dataset` input
-    *prefetch_node.mutable_input()->Add() = async_dataset_node->name();
-    // `buffer_size` input
-    *prefetch_node.mutable_input()->Add() = autotune_value->name();
+  // Set `output_types` and `output_shapes` attributes by copying the relevant
+  // attrs from the input node. If we fail to set the attributes, we abort the
+  // rewrite.
+  if (!graph_utils::CopyShapesAndTypesAttrs(*last_node, &prefetch_node))
+    return Status::OK();
 
-    for (const auto& attr_name : {"output_types", "output_shapes"}) {
-      graph_utils::CopyAttribute(attr_name, *async_dataset_node,
-                                 &prefetch_node);
-    }
+  TF_RETURN_IF_ERROR(
+      graph_utils::SetMetadataName(prefetch_node.name(), &prefetch_node));
 
-    auto* added_node = graph.AddNode(std::move(prefetch_node));
-    TF_RETURN_IF_ERROR(
-        graph.UpdateFanouts(async_dataset_node->name(), added_node->name()));
-  }
+  auto* added_node = graph.AddNode(std::move(prefetch_node));
+  TF_RETURN_IF_ERROR(
+      graph.UpdateFanouts(last_node->name(), added_node->name()));
 
-  for (NodeDef& node : *output->mutable_node()) {
-    if (node.op() == kPrefetchDataset) {
-      (*node.mutable_attr())[kLegacyAutotune].set_b(false);
-      stats->num_changes++;
-    }
-  }
-
+  stats->num_changes++;
   return Status::OK();
 }
 
-void InjectPrefetch::Feedback(Cluster* cluster, const GrapplerItem& item,
-                              const GraphDef& optimize_output, double result) {
-  // no-op
+Status InjectPrefetchEligible::OptimizeAndCollectStats(
+    Cluster* cluster, const GrapplerItem& item, GraphDef* output,
+    OptimizationStats* stats) {
+  *output = item.graph;
+  if (!autotune_) {
+    VLOG(1) << "The optimization inject_prefetch_eligible is not applied if "
+               "autotune is off.";
+    return Status::OK();
+  }
+  MutableGraphView graph(output);
+
+  // If the GrapplerItem is derived from a FunctionDef, we don't optimize it.
+  if (graph_utils::IsItemDerivedFromFunctionDef(item, graph)) {
+    return Status::OK();
+  }
+
+  if (item.fetch.size() != 1) {
+    return errors::InvalidArgument(
+        "Expected only one fetch node but there were ", item.fetch.size(), ": ",
+        absl::StrJoin(item.fetch, ", "));
+  }
+
+  NodeDef* sink_node = graph.GetNode(item.fetch.at(0));
+  NodeDef* last_node = graph_utils::GetInputNode(*sink_node, graph);
+  if (!ShouldInjectPrefetch(last_node, graph)) {
+    return Status::OK();
+  }
+
+  stats->num_changes++;
+  return Status::OK();
 }
 
 REGISTER_GRAPH_OPTIMIZER_AS(InjectPrefetch, "inject_prefetch");
+REGISTER_GRAPH_OPTIMIZER_AS(InjectPrefetchEligible, "inject_prefetch_eligible");
 
 }  // namespace grappler
 }  // namespace tensorflow

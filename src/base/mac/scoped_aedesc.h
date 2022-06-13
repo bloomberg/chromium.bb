@@ -7,8 +7,6 @@
 
 #import <CoreServices/CoreServices.h>
 
-#include "base/macros.h"
-
 namespace base {
 namespace mac {
 
@@ -26,6 +24,9 @@ class ScopedAEDesc {
     AECreateDesc(typeNull, NULL, 0, &desc_);
   }
 
+  ScopedAEDesc(const ScopedAEDesc&) = delete;
+  ScopedAEDesc& operator=(const ScopedAEDesc&) = delete;
+
   ~ScopedAEDesc() {
     AEDisposeDesc(&desc_);
   }
@@ -42,8 +43,6 @@ class ScopedAEDesc {
 
  private:
   AEDescType desc_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAEDesc);
 };
 
 }  // namespace mac

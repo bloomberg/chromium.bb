@@ -30,6 +30,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
+#include "bsf.h"
 #include "encode.h"
 #include "internal.h"
 
@@ -532,7 +533,7 @@ retry:
         return AVERROR_UNKNOWN;
     }
 
-    ret = av_new_packet(pkt, rpkt->len);
+    ret = ff_get_encode_buffer(avctx, pkt, rpkt->len, 0);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate packet.\n");
         rav1e_packet_unref(rpkt);
@@ -612,7 +613,7 @@ static const AVClass class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_librav1e_encoder = {
+const AVCodec ff_librav1e_encoder = {
     .name           = "librav1e",
     .long_name      = NULL_IF_CONFIG_SMALL("librav1e AV1"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -624,7 +625,8 @@ AVCodec ff_librav1e_encoder = {
     .priv_class     = &class,
     .defaults       = librav1e_defaults,
     .pix_fmts       = librav1e_pix_fmts,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS |
+                      AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP | FF_CODEC_CAP_AUTO_THREADS,
     .wrapper_name   = "librav1e",
 };

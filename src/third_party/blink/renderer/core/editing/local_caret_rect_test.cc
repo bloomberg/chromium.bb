@@ -40,8 +40,10 @@ class ParameterizedLocalCaretRectTest
     return RuntimeEnabledFeatures::LayoutNGEnabled();
   }
 
-  LocalCaretRect LocalCaretRectOf(const Position& position) {
-    return LocalCaretRectOfPosition(PositionWithAffinity(position));
+  LocalCaretRect LocalCaretRectOf(
+      const Position& position,
+      EditingBoundaryCrossingRule rule = kCanCrossEditingBoundary) {
+    return LocalCaretRectOfPosition(PositionWithAffinity(position), rule);
   }
 };
 
@@ -172,6 +174,26 @@ TEST_P(ParameterizedLocalCaretRectTest, RtlText) {
   EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), PhysicalRect(0, 0, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 3), TextAffinity::kDownstream)));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, ClampingAndRounding) {
+  // crbug.com/1228620
+  LoadAhem();
+  SetBodyContent(R"HTML(
+      <style>
+      #root {
+        margin-left: 0.6px;
+        width: 150.6px;
+        text-align: right;
+        font: 30px/30px Ahem;
+      }
+      </style>
+      <div id=root>def</div>)HTML");
+  const Node* text = GetElementById("root")->firstChild();
+  EXPECT_EQ(
+      LocalCaretRect(text->GetLayoutObject(), PhysicalRect(149, 0, 1, 30)),
+      LocalCaretRectOfPosition(
+          PositionWithAffinity(Position(text, 3), TextAffinity::kDownstream)));
 }
 
 TEST_P(ParameterizedLocalCaretRectTest, OverflowTextLtr) {
@@ -861,9 +883,9 @@ TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretBoundsOfWithShadowDOM) {
   Element* body = GetDocument().body();
   Element* one = body->QuerySelector("#one");
 
-  IntRect bounds_in_dom_tree = AbsoluteCaretBoundsOf(
+  gfx::Rect bounds_in_dom_tree = AbsoluteCaretBoundsOf(
       CreateVisiblePosition(Position(one, 0)).ToPositionWithAffinity());
-  IntRect bounds_in_flat_tree =
+  gfx::Rect bounds_in_flat_tree =
       AbsoluteCaretBoundsOf(CreateVisiblePosition(PositionInFlatTree(one, 0))
                                 .ToPositionWithAffinity());
 
@@ -876,7 +898,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AbsoluteSelectionBoundsOfWithImage) {
   SetBodyContent("<div>foo<img></div>");
 
   Node* node = GetDocument().QuerySelector("img");
-  IntRect rect = AbsoluteSelectionBoundsOf(VisiblePosition::Create(
+  gfx::Rect rect = AbsoluteSelectionBoundsOf(VisiblePosition::Create(
       PositionWithAffinity(Position::LastPositionInNode(*node))));
   EXPECT_FALSE(rect.IsEmpty());
 }
@@ -1136,6 +1158,203 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterIneditableInline) {
             LocalCaretRectOfPosition(PositionWithAffinity(position)));
 }
 
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtBeginningOfNonEditable) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
+      "span { padding-left: 15px }");
+  SetBodyContent(
+      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
+  const Element* div = GetDocument().QuerySelector("div");
+  const Node* text = div->firstChild()->firstChild();
+
+  const Position& position = Position::FirstPositionInNode(*div);
+  EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), PhysicalRect(25, 0, 1, 10)),
+            LocalCaretRectOf(position, kCanCrossEditingBoundary));
+  EXPECT_EQ(LocalCaretRect(div->GetLayoutObject(), PhysicalRect(10, 0, 1, 10)),
+            LocalCaretRectOf(position, kCannotCrossEditingBoundary));
+}
+
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest,
+       LocalCaretAtBeginningOfNonEditableInFlatTree) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
+      "span { padding-left: 15px }");
+  const char* body_content =
+      "<div contenteditable><div id='host'>"
+      "<span slot='#one'>foo1</span><span>foo3</span></div></div>";
+  const char* shadow_content =
+      "<slot name=#one></slot>"
+      "<span contenteditable='false' id='foo2'>foo2</span>";
+  SetBodyContent(body_content);
+  SetShadowContent(shadow_content, "host");
+  const Element* target = GetDocument().getElementById("host");
+  const Node* foo1 = target->firstChild()->firstChild();
+
+  const Position& position = Position::FirstPositionInNode(*target);
+  EXPECT_EQ(LocalCaretRect(foo1->GetLayoutObject(), PhysicalRect(25, 0, 1, 10)),
+            LocalCaretRectOf(position, kCanCrossEditingBoundary));
+  EXPECT_EQ(
+      LocalCaretRect(target->GetLayoutObject(), PhysicalRect(10, 0, 1, 10)),
+      LocalCaretRectOf(position, kCannotCrossEditingBoundary));
+
+  const PositionInFlatTree& position_in_flat_tree =
+      PositionInFlatTree::FirstPositionInNode(*target);
+  EXPECT_EQ(LocalCaretRect(foo1->GetLayoutObject(), PhysicalRect(25, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                PositionInFlatTreeWithAffinity(position_in_flat_tree),
+                kCanCrossEditingBoundary));
+  EXPECT_EQ(
+      LocalCaretRect(target->GetLayoutObject(), PhysicalRect(10, 0, 1, 10)),
+      LocalCaretRectOfPosition(
+          PositionInFlatTreeWithAffinity(position_in_flat_tree),
+          kCannotCrossEditingBoundary));
+}
+
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest, LocalCaretAtEndOfNonEditable) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "div { width: 70px; padding: 10px; font: 10px/10px Ahem }"
+      "span { padding: 15px }");
+  SetBodyContent(
+      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
+  const Element* div = GetDocument().QuerySelector("div");
+  const Node* text = div->firstChild()->firstChild();
+
+  const Position& position = Position::LastPositionInNode(*div);
+  EXPECT_EQ(
+      LocalCaretRect(text->GetLayoutObject(), PhysicalRect(55, 10, 1, 10)),
+      LocalCaretRectOf(position, kCanCrossEditingBoundary));
+  // TODO(jfernandez): It should be 89, but LayoutBox::LocalCaretRect is buggy
+  // and it adds the padding-left twice.
+  // TODO(jfernandez): We might avoid using LayoutBox::LocalCaretRect when using
+  // LayoutNG
+  EXPECT_EQ(LocalCaretRect(div->GetLayoutObject(), PhysicalRect(99, 10, 1, 10)),
+            LocalCaretRectOf(position, kCannotCrossEditingBoundary));
+}
+
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest,
+       LocalCaretAtEndOfNonEditableInFlatTree) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "div { width: 70px; padding: 10px; font: 10px/10px Ahem }"
+      "span { padding: 15px }");
+  const char* body_content =
+      "<div contenteditable><div id='host'>"
+      "<span slot='#one'>foo1</span><span>foo3</span></div></div>";
+  const char* shadow_content =
+      "<slot name=#one></slot>"
+      "<span contenteditable='false' id='foo2'>foo2</span>";
+  SetBodyContent(body_content);
+  auto* shadow_root = SetShadowContent(shadow_content, "host");
+  const Element* target = GetDocument().getElementById("host");
+  const Node* foo2 = shadow_root->getElementById("foo2")->firstChild();
+
+  // TODO(jfernandez): It should be 89, but LayoutBox::LocalCaretRect is buggy
+  // and it adds the padding-left twice.
+  // TODO(jfernandez): As a matter of fact, 69 would be better result IMHO,
+  // positioning the caret at the end of the non-editable area.
+  // TODO(jfernandez): We might avoid using LayoutBox::LocalCaretRect when using
+  // LayoutNG
+  const Position& position = Position::LastPositionInNode(*target);
+  EXPECT_EQ(
+      LocalCaretRect(target->GetLayoutObject(), PhysicalRect(99, 10, 1, 10)),
+      LocalCaretRectOf(position, kCanCrossEditingBoundary));
+  EXPECT_EQ(
+      LocalCaretRect(target->GetLayoutObject(), PhysicalRect(99, 10, 1, 10)),
+      LocalCaretRectOf(position, kCannotCrossEditingBoundary));
+
+  const PositionInFlatTree& position_in_flat_tree =
+      PositionInFlatTree::LastPositionInNode(*target);
+  EXPECT_EQ(
+      LocalCaretRect(foo2->GetLayoutObject(), PhysicalRect(50, 20, 1, 10)),
+      LocalCaretRectOfPosition(
+          PositionInFlatTreeWithAffinity(position_in_flat_tree),
+          kCanCrossEditingBoundary));
+  // TODO(jfernandez): It should be 89, but LayoutBox::LocalCaretRect is buggy
+  // and it adds the padding-left twice.
+  // TODO(jfernandez): We might avoid using LayoutBox::LocalCaretRect when using
+  // LayoutNG
+  EXPECT_EQ(
+      LocalCaretRect(target->GetLayoutObject(), PhysicalRect(99, 10, 1, 10)),
+      LocalCaretRectOfPosition(
+          PositionInFlatTreeWithAffinity(position_in_flat_tree),
+          kCannotCrossEditingBoundary));
+}
+
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretAtEndOfNonEditable) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 5px; }"
+      "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
+      "span { padding-left: 15px }");
+  SetBodyContent(
+      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
+
+  const Element* div = GetDocument().QuerySelector("div");
+  const Position& position = Position::LastPositionInNode(*div);
+  EXPECT_EQ("60,5 1x10",
+            AbsoluteCaretBoundsOf(PositionWithAffinity(position), nullptr,
+                                  kCanCrossEditingBoundary)
+                .ToString());
+  // TODO(jfernandez): It should be 84, but LayoutBox::LocalCaretRect is buggy
+  // and it adds the padding-left twice.
+  // TODO(jfernandez): As a matter of fact, 69 would be better result IMHO,
+  // positioning the caret at the end of the non-editable area.
+  // TODO(jfernandez): We might avoid using LayoutBox::LocalCaretRect when using
+  // LayoutNG
+  EXPECT_EQ("94,5 1x10",
+            AbsoluteCaretBoundsOf(PositionWithAffinity(position), nullptr,
+                                  kCannotCrossEditingBoundary)
+                .ToString());
+}
+
+// http://crbug.com/688015
+TEST_P(ParameterizedLocalCaretRectTest, AbsoluteCaretAtBeginningOfNonEditable) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 5px; }"
+      "div { width: 70px; padding-left: 10px; font: 10px/10px Ahem }"
+      "span { padding-left: 15px }");
+  SetBodyContent(
+      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
+
+  const Element* div = GetDocument().QuerySelector("div");
+  const Position& position = Position::FirstPositionInNode(*div);
+  EXPECT_EQ("30,5 1x10",
+            AbsoluteCaretBoundsOf(PositionWithAffinity(position), nullptr,
+                                  kCanCrossEditingBoundary)
+                .ToString());
+  EXPECT_EQ("15,5 1x10",
+            AbsoluteCaretBoundsOf(PositionWithAffinity(position), nullptr,
+                                  kCannotCrossEditingBoundary)
+                .ToString());
+}
+
 // https://crbug.com/1155399
 TEST_P(ParameterizedLocalCaretRectTest, OptionWithDisplayContents) {
   LoadAhem();
@@ -1160,6 +1379,144 @@ TEST_P(ParameterizedLocalCaretRectTest, OptionWithDisplayContents) {
        {Position(body, 1), Position::LastPositionInNode(*body),
         Position::AfterNode(*body)})
     EXPECT_EQ(end, LocalCaretRectOfPosition(PositionWithAffinity(p)));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, TextCombineOneTextNode) {
+  if (!LayoutNGEnabled())
+    return;
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  font: 100px/110px Ahem;"
+      "  writing-mode: vertical-rl;"
+      "}"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML("<div>a<tcy id=target>01234</tcy>b</div>");
+  //   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+  //     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
+  //       LayoutNGBlockFlow {DIV} at (0,0) size 110x300
+  //         LayoutText {#text} at (5,0) size 100x100
+  //           text run at (5,0) width 100: "a"
+  //         LayoutInline {TCY} at (5,100) size 100x100
+  //           LayoutNGTextCombine (anonymous) at (5,100) size 100x100
+  //             LayoutText {#text} at (-5,0) size 110x100
+  //               text run at (0,0) width 500: "01234"
+  //         LayoutText {#text} at (5,200) size 100x100
+  //           text run at (5,200) width 100: "b"
+  const auto& target = *GetElementById("target");
+  const auto& text_a = *To<Text>(target.previousSibling());
+  const auto& text_01234 = *To<Text>(target.firstChild());
+  const auto& text_b = *To<Text>(target.nextSibling());
+
+  // text_a
+  EXPECT_EQ(
+      LocalCaretRect(text_a.GetLayoutObject(), PhysicalRect(5, 0, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_a, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_a.GetLayoutObject(), PhysicalRect(5, 100, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_a, 1))));
+
+  // text_01234
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(0, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(17, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 1))));
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(39, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 2))));
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(61, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 3))));
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(83, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 4))));
+  EXPECT_EQ(
+      LocalCaretRect(text_01234.GetLayoutObject(), PhysicalRect(99, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_01234, 5))));
+
+  // text_b
+  EXPECT_EQ(
+      LocalCaretRect(text_b.GetLayoutObject(), PhysicalRect(5, 200, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_b, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_b.GetLayoutObject(), PhysicalRect(5, 299, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_b, 1))));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, TextCombineTwoTextNodes) {
+  if (!LayoutNGEnabled())
+    return;
+  ScopedLayoutNGTextCombineForTest enable_layout_ng_text_combine(true);
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "  font: 100px/110px Ahem;"
+      "  writing-mode: vertical-rl;"
+      "}"
+      "tcy { text-combine-upright: all; }");
+  SetBodyInnerHTML("<div>a<tcy id=target>012<!-- -->34</tcy>b</div>");
+  //   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
+  //     LayoutNGBlockFlow {BODY} at (8,8) size 784x584
+  //       LayoutNGBlockFlow {DIV} at (0,0) size 110x300
+  //         LayoutText {#text} at (5,0) size 100x100
+  //           text run at (5,0) width 100: "a"
+  //         LayoutInline {TCY} at (5,100) size 100x100
+  //           LayoutNGTextCombine (anonymous) at (5,100) size 100x100
+  //             LayoutText {#text} at (-5,0) size 66x100
+  //               text run at (0,0) width 300: "012"
+  //             LayoutText {#text} at (61,0) size 44x100
+  //               text run at (300,0) width 200: "34"
+  //         LayoutText {#text} at (5,200) size 100x100
+  //           text run at (5,200) width 100: "b"
+  const auto& target = *GetElementById("target");
+  const auto& text_a = *To<Text>(target.previousSibling());
+  const auto& text_012 = *To<Text>(target.firstChild());
+  const auto& text_34 = *To<Text>(target.lastChild());
+  const auto& text_b = *To<Text>(target.nextSibling());
+
+  // text_a
+  EXPECT_EQ(
+      LocalCaretRect(text_a.GetLayoutObject(), PhysicalRect(5, 0, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_a, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_a.GetLayoutObject(), PhysicalRect(5, 100, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_a, 1))));
+
+  // text_012
+  EXPECT_EQ(
+      LocalCaretRect(text_012.GetLayoutObject(), PhysicalRect(0, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_012, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_012.GetLayoutObject(), PhysicalRect(17, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_012, 1))));
+  EXPECT_EQ(
+      LocalCaretRect(text_012.GetLayoutObject(), PhysicalRect(39, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_012, 2))));
+  EXPECT_EQ(
+      LocalCaretRect(text_012.GetLayoutObject(), PhysicalRect(61, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_012, 3))));
+
+  // text_34
+  EXPECT_EQ(
+      LocalCaretRect(text_34.GetLayoutObject(), PhysicalRect(61, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_34, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_34.GetLayoutObject(), PhysicalRect(83, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_34, 1))));
+  EXPECT_EQ(
+      LocalCaretRect(text_34.GetLayoutObject(), PhysicalRect(99, 0, 1, 100)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_34, 2))));
+
+  // text_b
+  EXPECT_EQ(
+      LocalCaretRect(text_b.GetLayoutObject(), PhysicalRect(5, 200, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_b, 0))));
+  EXPECT_EQ(
+      LocalCaretRect(text_b.GetLayoutObject(), PhysicalRect(5, 299, 100, 1)),
+      LocalCaretRectOfPosition(PositionWithAffinity(Position(text_b, 1))));
 }
 
 }  // namespace blink

@@ -174,6 +174,7 @@ if (pdf_bundle_freetype) {
       "//third_party/freetype/src/src/base/ftbase.h",
       "//third_party/freetype/src/src/base/ftbitmap.c",
       "//third_party/freetype/src/src/base/ftdebug.c",
+      "//third_party/freetype/src/src/base/ftfstype.c",
       "//third_party/freetype/src/src/base/ftglyph.c",
       "//third_party/freetype/src/src/base/ftinit.c",
       "//third_party/freetype/src/src/base/ftmm.c",
@@ -193,7 +194,6 @@ if (pdf_bundle_freetype) {
     if (pdf_use_skia || pdf_use_skia_paths) {
       sources += [
         "//third_party/freetype/src/include/freetype/ftsynth.h",
-        "//third_party/freetype/src/src/base/ftfstype.c",
         "//third_party/freetype/src/src/base/fttype1.c",
       ]
     }
@@ -370,7 +370,12 @@ group("libopenjpeg2") {
 
 config("fx_libopenjpeg_warnings") {
   visibility = [ ":*" ]
-  if (is_win && !is_clang && target_cpu == "x86") {
+  if (is_clang) {
+    cflags = [
+      # Various files convert MAX_INT to double and similar without casting.
+      "-Wno-implicit-int-float-conversion",
+    ]
+  } else if (is_win && target_cpu == "x86") {
     cflags = [
       # Signed/unsigned comparisons.
       "/wd4018",
@@ -504,8 +509,7 @@ if (pdf_enable_xfa_tiff) {
       ":pdfium_third_party_config",
     ]
     if (is_win) {
-      # Need to undefine the macro since it is redefined in
-      # tif_ojpeg.c and tif_jpeg.c.
+      # Need to undefine the macro since it is redefined in tif_jpeg.c.
       configs -= [ "//build/config/win:lean_and_mean" ]
     }
     deps = [
@@ -534,7 +538,6 @@ if (pdf_enable_xfa_tiff) {
       "libtiff/tif_luv.c",
       "libtiff/tif_lzw.c",
       "libtiff/tif_next.c",
-      "libtiff/tif_ojpeg.c",
       "libtiff/tif_open.c",
       "libtiff/tif_packbits.c",
       "libtiff/tif_pixarlog.c",
@@ -548,7 +551,6 @@ if (pdf_enable_xfa_tiff) {
       "libtiff/tif_version.c",
       "libtiff/tif_warning.c",
       "libtiff/tif_write.c",
-      "libtiff/tif_zip.c",
       "libtiff/tiffiop.h",
       "libtiff/tiffvers.h",
     ]
@@ -596,6 +598,8 @@ source_set("pdfium_base") {
     "base/check_op.h",
     "base/compiler_specific.h",
     "base/containers/adapters.h",
+    "base/containers/contains.h",
+    "base/cxx17_backports.h",
     "base/debug/alias.cc",
     "base/debug/alias.h",
     "base/immediate_crash.h",
@@ -614,11 +618,14 @@ source_set("pdfium_base") {
     "base/numerics/safe_math_arm_impl.h",
     "base/numerics/safe_math_clang_gcc_impl.h",
     "base/numerics/safe_math_shared_impl.h",
-    "base/optional.h",
     "base/span.h",
-    "base/stl_util.h",
     "base/sys_byteorder.h",
     "base/template_util.h",
+  ]
+
+  public_deps = [
+    "../core/fxcrt:unowned_ptr",
+    "//third_party/abseil-cpp:absl",
   ]
 
   if (is_win) {

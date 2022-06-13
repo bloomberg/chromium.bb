@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
@@ -51,6 +50,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
  public:
   BluetoothDiscoveryFilter();
   BluetoothDiscoveryFilter(BluetoothTransport transport);
+
+  BluetoothDiscoveryFilter(const BluetoothDiscoveryFilter&) = delete;
+  BluetoothDiscoveryFilter& operator=(const BluetoothDiscoveryFilter&) = delete;
+
   ~BluetoothDiscoveryFilter();
 
   struct DEVICE_BLUETOOTH_EXPORT DeviceInfoFilter {
@@ -106,8 +109,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
   absl::optional<uint16_t> pathloss_;
   BluetoothTransport transport_;
   base::flat_set<DeviceInfoFilter> device_filters_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDiscoveryFilter);
 };
 
 }  // namespace device

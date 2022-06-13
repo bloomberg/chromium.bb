@@ -19,8 +19,6 @@ buildflag_header("buildflags") {
 }
 
 blink_core_sources("animation") {
-  configs += [ "//build/config/compiler:noshadowing" ]
-
   sources = [
     "animatable.cc",
     "animatable.h",
@@ -58,6 +56,8 @@ blink_core_sources("animation") {
     "css/css_animation_data.h",
     "css/css_animation_update.cc",
     "css/css_animation_update.h",
+    "css/css_animation_update_scope.cc",
+    "css/css_animation_update_scope.h",
     "css/css_animations.cc",
     "css/css_animations.h",
     "css/css_keyframe_effect_model.cc",
@@ -110,6 +110,8 @@ blink_core_sources("animation") {
     "css_interpolation_type.h",
     "css_interpolation_types_map.cc",
     "css_interpolation_types_map.h",
+    "css_intrinsic_length_interpolation_type.cc",
+    "css_intrinsic_length_interpolation_type.h",
     "css_length_interpolation_type.cc",
     "css_length_interpolation_type.h",
     "css_length_list_interpolation_type.cc",

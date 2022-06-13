@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
@@ -68,7 +69,7 @@ class CloudSpeechRecognitionClientUnitTest : public testing::Test {
   void SetUp() override;
 
  protected:
-  void OnRecognitionEvent(const std::string& result, const bool is_final);
+  void OnRecognitionEvent(media::SpeechRecognitionResult result);
 
   void InjectDummyAudio();
 
@@ -164,10 +165,9 @@ void CloudSpeechRecognitionClientUnitTest::SetUp() {
 }
 
 void CloudSpeechRecognitionClientUnitTest::OnRecognitionEvent(
-    const std::string& result,
-    const bool is_final) {
-  results_.push(result);
-  is_final_ = is_final;
+    media::SpeechRecognitionResult result) {
+  results_.push(result.transcription);
+  is_final_ = result.is_final;
 }
 
 void CloudSpeechRecognitionClientUnitTest::InjectDummyAudio() {
@@ -210,7 +210,6 @@ void CloudSpeechRecognitionClientUnitTest::InitializeUpstreamPipeIfNecessary() {
 
 std::string CloudSpeechRecognitionClientUnitTest::ConsumeChunkedUploadData(
     uint32_t expected_num_bytes) {
-  std::string result;
   InitializeUpstreamPipeIfNecessary();
 
   EXPECT_TRUE(upstream_data_pipe_.is_valid());
@@ -321,7 +320,6 @@ void CloudSpeechRecognitionClientUnitTest::ProvideMockStringResponseDownstream(
     }
 
     FAIL() << "Mojo write failed unexpectedly with result:" << result;
-    return;
   }
 
   // Flush the mojo pipe.
@@ -479,7 +477,7 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, StreamReset) {
   // Fast forward by 325 total seconds to trigger a reset.
   for (int i = 0; i < 13; i++) {
     InjectDummyAudio();
-    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(25));
+    task_environment_.FastForwardBy(base::Seconds(25));
   }
 
   ASSERT_EQ(2, speech_recognition_service_impl_->GetNumPending());
@@ -507,7 +505,7 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, StreamResetAfterPause) {
       GetDownstreamRequest()->request.url.spec();
 
   // Fast forward by 35 seconds to trigger a reset.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(35));
+  task_environment_.FastForwardBy(base::Seconds(35));
   InjectDummyAudio();
   ASSERT_EQ(2, speech_recognition_service_impl_->GetNumPending());
 

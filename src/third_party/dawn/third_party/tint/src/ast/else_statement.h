@@ -27,51 +27,33 @@ namespace ast {
 class ElseStatement : public Castable<ElseStatement, Statement> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source information
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param condition the else condition
   /// @param body the else body
-  ElseStatement(ProgramID program_id,
-                const Source& source,
-                Expression* condition,
-                BlockStatement* body);
+  ElseStatement(ProgramID pid,
+                const Source& src,
+                const Expression* condition,
+                const BlockStatement* body);
   /// Move constructor
   ElseStatement(ElseStatement&&);
   ~ElseStatement() override;
-
-  /// @returns the else condition or nullptr if none set
-  Expression* condition() const { return condition_; }
-  /// @returns true if the else has a condition
-  bool HasCondition() const { return condition_ != nullptr; }
-
-  /// @returns the else body
-  const BlockStatement* body() const { return body_; }
-  /// @returns the else body
-  BlockStatement* body() { return body_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  ElseStatement* Clone(CloneContext* ctx) const override;
+  const ElseStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The else condition or nullptr if none set
+  const Expression* const condition;
 
- private:
-  ElseStatement(const ElseStatement&) = delete;
-
-  Expression* const condition_;
-  BlockStatement* const body_;
+  /// The else body
+  const BlockStatement* const body;
 };
 
 /// A list of else statements
-using ElseStatementList = std::vector<ElseStatement*>;
+using ElseStatementList = std::vector<const ElseStatement*>;
 
 }  // namespace ast
 }  // namespace tint

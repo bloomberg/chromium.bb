@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
@@ -19,6 +18,11 @@ class TestChromeBrowserStateManager : public ios::ChromeBrowserStateManager {
   explicit TestChromeBrowserStateManager(const base::FilePath& user_data_dir);
   explicit TestChromeBrowserStateManager(
       std::unique_ptr<ChromeBrowserState> browser_state);
+
+  TestChromeBrowserStateManager(const TestChromeBrowserStateManager&) = delete;
+  TestChromeBrowserStateManager& operator=(
+      const TestChromeBrowserStateManager&) = delete;
+
   ~TestChromeBrowserStateManager() override;
 
   // ChromeBrowserStateManager:
@@ -35,8 +39,6 @@ class TestChromeBrowserStateManager : public ios::ChromeBrowserStateManager {
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<ChromeBrowserState> browser_state_;
   BrowserStateInfoCache browser_state_info_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserStateManager);
 };
 
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_TEST_CHROME_BROWSER_STATE_MANAGER_H_

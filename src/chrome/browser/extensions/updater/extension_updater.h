@@ -15,8 +15,8 @@
 #include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -29,6 +29,7 @@
 
 class PrefService;
 class Profile;
+class ScopedProfileKeepAlive;
 
 namespace extensions {
 
@@ -95,10 +96,13 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   class ScopedSkipScheduledCheckForTest {
    public:
     ScopedSkipScheduledCheckForTest();
-    ~ScopedSkipScheduledCheckForTest();
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedSkipScheduledCheckForTest);
+    ScopedSkipScheduledCheckForTest(const ScopedSkipScheduledCheckForTest&) =
+        delete;
+    ScopedSkipScheduledCheckForTest& operator=(
+        const ScopedSkipScheduledCheckForTest&) = delete;
+
+    ~ScopedSkipScheduledCheckForTest();
   };
 
   // Holds a pointer to the passed |service|, using it for querying installed
@@ -187,8 +191,13 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
     bool install_immediately = false;
     bool awaiting_update_service = false;
     FinishedCallback callback;
+    // Prevents the destruction of the Profile* while an update check is in
+    // progress.
+    // TODO(crbug.com/1191460): Find a way to pass the keepalive to UpdateClient
+    // instead of holding it here.
+    std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive;
     // The ids of extensions that have in-progress update checks.
-    std::set<ExtensionId> in_progress_ids_;
+    std::set<ExtensionId> in_progress_ids;
   };
 
   // Ensure that we have a valid ExtensionDownloader instance referenced by
@@ -285,7 +294,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   bool alive_ = false;
 
   // Pointer back to the service that owns this ExtensionUpdater.
-  ExtensionServiceInterface* service_ = nullptr;
+  raw_ptr<ExtensionServiceInterface> service_ = nullptr;
 
   // A closure passed into the ExtensionUpdater to teach it how to construct
   // new ExtensionDownloader instances.
@@ -299,16 +308,16 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // created through a |KeyedServiceFactory| singleton, thus |update_service_|
   // will be freed by the same factory singleton before the browser is
   // shutdown.
-  UpdateService* update_service_ = nullptr;
+  raw_ptr<UpdateService> update_service_ = nullptr;
 
   base::TimeDelta frequency_;
   bool will_check_soon_ = false;
 
-  ExtensionPrefs* extension_prefs_ = nullptr;
-  PrefService* prefs_ = nullptr;
-  Profile* profile_ = nullptr;
+  raw_ptr<ExtensionPrefs> extension_prefs_ = nullptr;
+  raw_ptr<PrefService> prefs_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
 
-  ExtensionRegistry* registry_ = nullptr;
+  raw_ptr<ExtensionRegistry> registry_ = nullptr;
 
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_ = 0;
@@ -320,7 +329,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // when we receive NOTIFICATION_CRX_INSTALLER_DONE.
   std::map<CrxInstaller*, FetchedCRXFile> running_crx_installs_;
 
-  ExtensionCache* extension_cache_ = nullptr;
+  raw_ptr<ExtensionCache> extension_cache_ = nullptr;
 
   base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_{this};
 };

@@ -23,6 +23,7 @@
 #include "fxbarcode/pdf417/BC_PDF417HighLevelEncoder.h"
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_string.h"
 #include "third_party/bigint/BigIntegerLibrary.hh"
 
 namespace {
@@ -76,7 +77,7 @@ bool IsText(wchar_t ch) {
 }  // namespace
 
 // static
-Optional<WideString> CBC_PDF417HighLevelEncoder::EncodeHighLevel(
+absl::optional<WideString> CBC_PDF417HighLevelEncoder::EncodeHighLevel(
     WideStringView msg) {
   const ByteString bytes = FX_UTF8Encode(msg);
   size_t len = bytes.GetLength();
@@ -85,7 +86,7 @@ Optional<WideString> CBC_PDF417HighLevelEncoder::EncodeHighLevel(
   for (size_t i = 0; i < len; i++) {
     wchar_t ch = bytes[i] & 0xff;
     if (ch == '?' && bytes[i] != '?')
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     result += ch;
   }
@@ -114,10 +115,10 @@ Optional<WideString> CBC_PDF417HighLevelEncoder::EncodeHighLevel(
         textSubMode = EncodeText(result, p, t, textSubMode, &sb);
         p += t;
       } else {
-        Optional<size_t> b =
+        absl::optional<size_t> b =
             DetermineConsecutiveBinaryCount(result, bytes.raw_span(), p);
         if (!b.has_value())
-          return pdfium::nullopt;
+          return absl::nullopt;
 
         size_t b_value = b.value();
         if (b_value == 0)
@@ -351,7 +352,8 @@ size_t CBC_PDF417HighLevelEncoder::DetermineConsecutiveTextCount(
   return idx - startpos;
 }
 
-Optional<size_t> CBC_PDF417HighLevelEncoder::DetermineConsecutiveBinaryCount(
+absl::optional<size_t>
+CBC_PDF417HighLevelEncoder::DetermineConsecutiveBinaryCount(
     WideString msg,
     pdfium::span<const uint8_t> bytes,
     size_t startpos) {
@@ -382,7 +384,7 @@ Optional<size_t> CBC_PDF417HighLevelEncoder::DetermineConsecutiveBinaryCount(
       return idx - startpos;
     ch = msg[idx];
     if (bytes[idx] == 63 && ch != '?')
-      return {};
+      return absl::nullopt;
     idx++;
   }
   return idx - startpos;

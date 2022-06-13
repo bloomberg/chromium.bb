@@ -5,8 +5,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
+#include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/sync/test/integration/user_events_helper.h"
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUserEventsSyncTest,
   syncer::UserEventService* event_service =
       browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
   event_service->RecordUserEvent(user_events_helper::CreateTestEvent(
-      base::Time() + base::TimeDelta::FromMicroseconds(1)));
+      base::Time() + base::Microseconds(1)));
 
   // Set up sync on the second client.
   ASSERT_TRUE(GetClient(kDecryptingClientId)

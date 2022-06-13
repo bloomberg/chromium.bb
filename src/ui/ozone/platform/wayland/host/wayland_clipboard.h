@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/public/platform_clipboard.h"
@@ -57,6 +58,7 @@ class WaylandClipboard : public PlatformClipboard {
   bool IsSelectionBufferAvailable() const override;
 
  private:
+  friend class WaylandClipboardTest;
   // Get the wl::Clipboard instance owning a given |buffer|. Can return null in
   // case |buffer| is unsupported. E.g: primary selection is not available.
   wl::Clipboard* GetClipboard(ClipboardBuffer buffer);

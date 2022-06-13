@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -29,6 +29,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -382,7 +383,8 @@ void FastInkHost::SubmitCompositorFrame() {
 
   viz::TransferableResource transferable_resource;
   transferable_resource.id = id_generator_.GenerateNextId();
-  transferable_resource.format = viz::RGBA_8888;
+  transferable_resource.format =
+      SK_B32_SHIFT ? viz::RGBA_8888 : viz::BGRA_8888;
   transferable_resource.filter = GL_LINEAR;
   transferable_resource.size = buffer_size_;
   transferable_resource.mailbox_holder = gpu::MailboxHolder(

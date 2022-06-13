@@ -8,6 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 
+USE_PYTHON3 = True
 _PLATFORMS = ['android', 'chromeos', 'linux', 'mac', 'win']
 
 def _CheckChange(input_api, output_api):
@@ -24,7 +25,8 @@ def _CheckChange(input_api, output_api):
             stderr=input_api.subprocess.PIPE).communicate()
         if output or error:
           results.append(output_api.PresubmitError(
-              files_config_path + " syntax error: \n" + output + error))
+              files_config_path + " syntax error: \n" + bytes.decode(output) +
+              bytes.decode(error)))
   return results
 
 def CheckChangeOnUpload(input_api, output_api):

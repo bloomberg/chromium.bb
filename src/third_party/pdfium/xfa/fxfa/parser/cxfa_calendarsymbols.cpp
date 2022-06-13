@@ -12,10 +12,10 @@
 namespace {
 
 const CXFA_Node::PropertyData kCalendarSymbolsPropertyData[] = {
-    {XFA_Element::EraNames, 1, 0},
-    {XFA_Element::DayNames, 2, 0},
-    {XFA_Element::MeridiemNames, 1, 0},
-    {XFA_Element::MonthNames, 2, 0},
+    {XFA_Element::EraNames, 1, {}},
+    {XFA_Element::DayNames, 2, {}},
+    {XFA_Element::MeridiemNames, 1, {}},
+    {XFA_Element::MonthNames, 2, {}},
 };
 
 const CXFA_Node::AttributeData kCalendarSymbolsAttributeData[] = {
@@ -29,7 +29,7 @@ CXFA_CalendarSymbols::CXFA_CalendarSymbols(CXFA_Document* doc,
                                            XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_LocaleSet,
+                XFA_XDPPACKET::kLocaleSet,
                 XFA_ObjectType::Node,
                 XFA_Element::CalendarSymbols,
                 kCalendarSymbolsPropertyData,

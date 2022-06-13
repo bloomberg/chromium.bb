@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/buildflag.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
@@ -73,6 +74,11 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
       std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate);
+
+  ProfileOAuth2TokenService(const ProfileOAuth2TokenService&) = delete;
+  ProfileOAuth2TokenService& operator=(const ProfileOAuth2TokenService&) =
+      delete;
+
   ~ProfileOAuth2TokenService() override;
 
   // Overridden from OAuth2AccessTokenManager::Delegate.
@@ -272,7 +278,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // ID is empty.
   void RecreateDeviceIdIfNeeded();
 
-  PrefService* user_prefs_;
+  raw_ptr<PrefService> user_prefs_;
 
   std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate_;
 
@@ -290,8 +296,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_H_

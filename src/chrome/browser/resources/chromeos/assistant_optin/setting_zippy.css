@@ -50,3 +50,35 @@ cr-expand-button {
 .indent {
   padding: 0 0 6px 36px;
 }
+
+#container[cardStyle] {
+  border-radius: 8px;
+  box-shadow: var(--cr-elevation-1);
+  margin: 10px 10px 10px 0;
+  padding: 20px 0 20px 16px;
+}
+
+#container[cardStyle] .sub-title {
+  font-family: var(--oobe-header-font-family);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+#container[cardStyle] #description {
+  line-height: 20px;
+  padding: 0;
+}
+
+#container[cardStyle] .icon {
+  background: var(--google-blue-50);
+  border-radius: 50%;
+  height: 40px;
+  margin-inline-end: 16px;
+  margin-top: 4px;
+  min-width: 40px;
+}
+
+#container[cardStyle] .icon-view {
+  margin: 10px;
+}

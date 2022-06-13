@@ -61,12 +61,16 @@ void WebTestPermissionManager::RequestPermission(
     bool user_gesture,
     base::OnceCallback<void(blink::mojom::PermissionStatus)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (render_frame_host->IsNestedWithinFencedFrame()) {
+    std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
+    return;
+  }
 
   std::move(callback).Run(
       GetPermissionStatus(permission, requesting_origin,
                           WebContents::FromRenderFrameHost(render_frame_host)
                               ->GetLastCommittedURL()
-                              .GetOrigin()));
+                              .DeprecatedGetOriginAsURL()));
 }
 
 void WebTestPermissionManager::RequestPermissions(
@@ -77,13 +81,18 @@ void WebTestPermissionManager::RequestPermissions(
     base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)>
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (render_frame_host->IsNestedWithinFencedFrame()) {
+    std::move(callback).Run(std::vector<blink::mojom::PermissionStatus>(
+        permissions.size(), blink::mojom::PermissionStatus::DENIED));
+    return;
+  }
 
   std::vector<blink::mojom::PermissionStatus> result;
   result.reserve(permissions.size());
   const GURL& embedding_origin =
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL()
-          .GetOrigin();
+          .DeprecatedGetOriginAsURL();
   for (const auto& permission : permissions) {
     result.push_back(
         GetPermissionStatus(permission, requesting_origin, embedding_origin));
@@ -138,11 +147,13 @@ WebTestPermissionManager::GetPermissionStatusForFrame(
     PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin) {
+  if (render_frame_host->IsNestedWithinFencedFrame())
+    return blink::mojom::PermissionStatus::DENIED;
   return GetPermissionStatus(
       permission, requesting_origin,
       content::WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL()
-          .GetOrigin());
+          .DeprecatedGetOriginAsURL());
 }
 
 WebTestPermissionManager::SubscriptionId
@@ -158,7 +169,8 @@ WebTestPermissionManager::SubscribePermissionStatusChange(
   if (render_frame_host) {
     WebContents* web_contents =
         WebContents::FromRenderFrameHost(render_frame_host);
-    embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+    embedding_origin =
+        web_contents->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   }
 
   auto subscription = std::make_unique<Subscription>();
@@ -191,8 +203,8 @@ void WebTestPermissionManager::SetPermission(
     const GURL& embedding_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  PermissionDescription description(permission, url.GetOrigin(),
-                                    embedding_url.GetOrigin());
+  PermissionDescription description(permission, url.DeprecatedGetOriginAsURL(),
+                                    embedding_url.DeprecatedGetOriginAsURL());
 
   {
     base::AutoLock lock(permissions_lock_);

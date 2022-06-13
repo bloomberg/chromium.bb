@@ -33,11 +33,11 @@ struct Particles {
 
 [[binding(0), group(0)]] var<uniform> params : SimParams;
 
-[[binding(1), group(0)]] var<storage> particlesA : [[access(read_write)]] Particles;
+[[binding(1), group(0)]] var<storage, read_write> particlesA : Particles;
 
-[[binding(2), group(0)]] var<storage> particlesB : [[access(read_write)]] Particles;
+[[binding(2), group(0)]] var<storage, read_write> particlesB : Particles;
 
-[[stage(compute)]]
+[[stage(compute), workgroup_size(1)]]
 fn comp_main([[builtin(global_invocation_id)]] gl_GlobalInvocationID : vec3<u32>) {
   var index : u32 = gl_GlobalInvocationID.x;
   if ((index >= 5u)) {
@@ -52,32 +52,22 @@ fn comp_main([[builtin(global_invocation_id)]] gl_GlobalInvocationID : vec3<u32>
   var cVelCount : i32 = 0;
   var pos : vec2<f32>;
   var vel : vec2<f32>;
-  {
-    var i : u32 = 0u;
-    loop {
-      if (!((i < 5u))) {
-        break;
-      }
-      if ((i == index)) {
-        continue;
-      }
-      pos = particlesA.particles[i].pos.xy;
-      vel = particlesA.particles[i].vel.xy;
-      if ((distance(pos, vPos) < params.rule1Distance)) {
-        cMass = (cMass + pos);
-        cMassCount = (cMassCount + 1);
-      }
-      if ((distance(pos, vPos) < params.rule2Distance)) {
-        colVel = (colVel - (pos - vPos));
-      }
-      if ((distance(pos, vPos) < params.rule3Distance)) {
-        cVel = (cVel + vel);
-        cVelCount = (cVelCount + 1);
-      }
-
-      continuing {
-        i = (i + 1u);
-      }
+  for(var i : u32 = 0u; (i < 5u); i = (i + 1u)) {
+    if ((i == index)) {
+      continue;
+    }
+    pos = particlesA.particles[i].pos.xy;
+    vel = particlesA.particles[i].vel.xy;
+    if ((distance(pos, vPos) < params.rule1Distance)) {
+      cMass = (cMass + pos);
+      cMassCount = (cMassCount + 1);
+    }
+    if ((distance(pos, vPos) < params.rule2Distance)) {
+      colVel = (colVel - (pos - vPos));
+    }
+    if ((distance(pos, vPos) < params.rule3Distance)) {
+      cVel = (cVel + vel);
+      cVelCount = (cVelCount + 1);
     }
   }
   if ((cMassCount > 0)) {

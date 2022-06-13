@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2021 Google Inc.
  *
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
@@ -28,14 +28,50 @@ class ColrV1GM : public GM {
 public:
 
   // TODO(drott): Consolidate test fonts.
-  enum ColrV1TestFont {
+  enum ColrV1TestType {
     kSkiaSampleFont,
-    kColorFontsRepoSampleFont
+    kColorFontsRepoGradients,
+    kColorFontsRepoScaling,
+    kColorFontsRepoExtendMode,
+    kColorFontsRepoRotate,
+    kColorFontsRepoSkew,
+    kColorFontsRepoTransform,
+    kColorFontsRepoClipBox,
+    kColorFontsRepoComposite,
+    kColorFontsRepoForeground
   };
 
-  ColrV1GM(ColrV1TestFont useTestFont, SkScalar skewX, SkScalar rotateDeg) : fSkewX(skewX), fRotateDeg(rotateDeg), fTestFont(useTestFont) { }
+  ColrV1GM(ColrV1TestType testType, SkScalar skewX, SkScalar rotateDeg)
+          : fSkewX(skewX), fRotateDeg(rotateDeg), fTestType(testType) {}
 
 protected:
+    static SkString testTypeToString(ColrV1TestType testType) {
+        switch (testType) {
+            case kSkiaSampleFont:
+                return SkString("skia");
+            case kColorFontsRepoGradients:
+                return SkString("gradients");
+            case kColorFontsRepoScaling:
+                return SkString("scaling");
+            case kColorFontsRepoExtendMode:
+                return SkString("extend_mode");
+            case kColorFontsRepoRotate:
+                return SkString("rotate");
+            case kColorFontsRepoSkew:
+                return SkString("skew");
+            case kColorFontsRepoTransform:
+                return SkString("transform");
+            case kColorFontsRepoClipBox:
+                return SkString("clipbox");
+            case kColorFontsRepoComposite:
+                return SkString("composite");
+            case kColorFontsRepoForeground:
+                return SkString("foreground");
+        }
+        SkASSERT(false); /* not reached */
+        return SkString();
+    }
+
     struct EmojiFont {
         sk_sp<SkTypeface> fTypeface;
         std::vector<uint16_t> fGlyphs;
@@ -43,18 +79,51 @@ protected:
     } fEmojiFont;
 
     void onOnceBeforeDraw() override {
-        if (fTestFont == kSkiaSampleFont) {
+        if (fTestType == kSkiaSampleFont) {
             fEmojiFont.fTypeface = MakeResourceAsTypeface("fonts/colrv1_samples.ttf");
             fEmojiFont.fGlyphs = {19, 33, 34, 35, 20, 21, 22, 23, 24, 25};
-        } else {
-            fEmojiFont.fTypeface = MakeResourceAsTypeface("fonts/more_samples-glyf_colr_1.ttf");
-            fEmojiFont.fGlyphs = {5, 6, 7, 8};
+            return;
+        }
+
+        fEmojiFont.fTypeface = MakeResourceAsTypeface("fonts/more_samples-glyf_colr_1.ttf");
+
+        switch (fTestType) {
+            case kSkiaSampleFont:
+                SkASSERT(false);
+                break;
+            case kColorFontsRepoGradients:
+                fEmojiFont.fGlyphs = {2, 5, 6, 7, 8, 55};
+                break;
+            case kColorFontsRepoScaling:
+                fEmojiFont.fGlyphs = {9, 10, 11, 12, 13, 14};
+                break;
+            case kColorFontsRepoExtendMode:
+                fEmojiFont.fGlyphs = {15, 16, 17, 18, 19, 20};
+                break;
+            case kColorFontsRepoRotate:
+                fEmojiFont.fGlyphs = {21, 22, 23, 24};
+                break;
+            case kColorFontsRepoSkew:
+                fEmojiFont.fGlyphs = {25, 26, 27, 28, 29, 30};
+                break;
+            case kColorFontsRepoTransform:
+                fEmojiFont.fGlyphs = {31, 32, 33, 34};
+                break;
+            case kColorFontsRepoClipBox:
+                fEmojiFont.fGlyphs = {35, 36, 37, 38, 39};
+                break;
+            case kColorFontsRepoComposite:
+                fEmojiFont.fGlyphs = {40, 41, 42, 43, 44, 45, 46};
+                break;
+            case kColorFontsRepoForeground:
+                fEmojiFont.fGlyphs = {47, 48, 49, 50, 51, 52, 53, 54};
+                break;
         }
     }
 
     SkString onShortName() override {
         SkString gm_name = SkStringPrintf("colrv1_%s_samples",
-                                          fTestFont == kSkiaSampleFont ? "skia" : "color_repo");
+                                          testTypeToString(fTestType).c_str());
         if (fSkewX) {
             gm_name.append("_skew");
         }
@@ -85,15 +154,20 @@ protected:
 
         SkFontMetrics metrics;
         SkScalar y = 0;
+        std::vector<SkColor> paint_colors = {
+                SK_ColorBLACK, SK_ColorGREEN, SK_ColorRED, SK_ColorBLUE};
+        auto paint_color_iterator = paint_colors.begin();
         for (SkScalar textSize : { 12, 18, 30, 120 }) {
             font.setSize(textSize);
             font.getMetrics(&metrics);
             y += -metrics.fAscent;
+            paint.setColor(*paint_color_iterator);
             canvas->drawSimpleText(fEmojiFont.fGlyphs.data(),
                                    fEmojiFont.bytesize(),
                                    SkTextEncoding::kGlyphID,
                                    10, y, font, paint);
             y += metrics.fDescent + metrics.fLeading;
+            paint_color_iterator++;
         }
         return DrawResult::kOk;
     }
@@ -102,13 +176,22 @@ private:
     using INHERITED = GM;
     SkScalar fSkewX;
     SkScalar fRotateDeg;
-    ColrV1TestFont fTestFont;
+    ColrV1TestType fTestType;
 };
 
 DEF_GM(return new ColrV1GM(ColrV1GM::kSkiaSampleFont, 0.f, 0.f);)
 DEF_GM(return new ColrV1GM(ColrV1GM::kSkiaSampleFont, -0.5f, 0.f);)
 DEF_GM(return new ColrV1GM(ColrV1GM::kSkiaSampleFont, 0.f, 20.f);)
 DEF_GM(return new ColrV1GM(ColrV1GM::kSkiaSampleFont, -0.5f, 20.f);)
-DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoSampleFont, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoGradients, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoScaling, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoExtendMode, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoRotate, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoSkew, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoTransform, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoClipBox, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoClipBox, -0.5f, 20.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoComposite, 0.f, 0.f);)
+DEF_GM(return new ColrV1GM(ColrV1GM::kColorFontsRepoForeground, 0.f, 0.f);)
 
 }  // namespace skiagm

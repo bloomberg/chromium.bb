@@ -5,7 +5,6 @@
 #ifndef REMOTING_CLIENT_JNI_JNI_OAUTH_TOKEN_GETTER_H_
 #define REMOTING_CLIENT_JNI_JNI_OAUTH_TOKEN_GETTER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/base/oauth_token_getter.h"
@@ -28,6 +27,10 @@ class JniOAuthTokenGetter : public OAuthTokenGetter {
   };
 
   JniOAuthTokenGetter();
+
+  JniOAuthTokenGetter(const JniOAuthTokenGetter&) = delete;
+  JniOAuthTokenGetter& operator=(const JniOAuthTokenGetter&) = delete;
+
   ~JniOAuthTokenGetter() override;
 
   // OAuthTokenGetter overrides.
@@ -41,7 +44,6 @@ class JniOAuthTokenGetter : public OAuthTokenGetter {
 
   base::WeakPtr<JniOAuthTokenGetter> weak_ptr_;
   base::WeakPtrFactory<JniOAuthTokenGetter> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(JniOAuthTokenGetter);
 };
 
 }  // namespace remoting

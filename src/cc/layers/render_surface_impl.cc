@@ -29,7 +29,7 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace cc {
 
@@ -158,6 +158,10 @@ bool RenderSurfaceImpl::HasCopyRequest() const {
 
 viz::SubtreeCaptureId RenderSurfaceImpl::SubtreeCaptureId() const {
   return OwningEffectNode()->subtree_capture_id;
+}
+
+gfx::Size RenderSurfaceImpl::SubtreeSize() const {
+  return OwningEffectNode()->subtree_size;
 }
 
 bool RenderSurfaceImpl::ShouldCacheRenderSurface() const {
@@ -391,9 +395,15 @@ RenderSurfaceImpl::CreateRenderPass() {
   pass->backdrop_filter_bounds = BackdropFilterBounds();
   pass->generate_mipmap = TrilinearFiltering();
   pass->subtree_capture_id = SubtreeCaptureId();
+  // The subtree size may be slightly larger than our content rect during
+  // some animations, so we clamp it here.
+  pass->subtree_size = SubtreeSize();
+  pass->subtree_size.SetToMin(content_rect().size());
   pass->cache_render_pass = ShouldCacheRenderSurface();
   pass->has_damage_from_contributing_content =
       HasDamageFromeContributingContent();
+  pass->shared_element_resource_id =
+      OwningEffectNode()->shared_element_resource_id;
   return pass;
 }
 
@@ -403,6 +413,12 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   gfx::Rect unoccluded_content_rect =
       occlusion_in_content_space().GetUnoccludedContentRect(content_rect());
   if (unoccluded_content_rect.IsEmpty())
+    return;
+
+  // If this render surface has a valid |shared_element_resource_id| then its
+  // being used to produce live content. Its content will be drawn to its
+  // actual position in the Viz process.
+  if (OwningEffectNode()->shared_element_resource_id.IsValid())
     return;
 
   const PropertyTrees* property_trees = layer_tree_impl_->property_trees();

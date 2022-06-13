@@ -5,7 +5,6 @@
 #ifndef BASE_CPU_AFFINITY_POSIX_H_
 #define BASE_CPU_AFFINITY_POSIX_H_
 
-#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -17,7 +16,14 @@ enum class CpuAffinityMode {
   kDefault,
   // Restrict execution to LITTLE cores only. Only has an effect on platforms
   // where we detect presence of big.LITTLE-like CPU architectures.
-  kLittleCoresOnly
+  kLittleCoresOnly,
+  // Restrict execution to big cores only. Only has an effect on platforms
+  // where we detect presence of big.LITTLE-like CPU architectures.
+  kBigCoresOnly,
+  // Restrict execution to bigger cores only. Only has an effect on platforms
+  // where we detect presence of big.LITTLE-like CPU architectures. If there
+  // are no bigger cores but there are big cores it will return an empty set.
+  kBiggerCoresOnly,
 };
 
 // Sets or clears restrictions on the CPU affinity of the specified thread.
@@ -32,6 +38,9 @@ BASE_EXPORT bool SetProcessCpuAffinityMode(ProcessHandle process_handle,
 
 // Return true if the current architecture has big or bigger cores.
 BASE_EXPORT bool HasBigCpuCores();
+
+// Return true if the current architecture has bigger cores.
+BASE_EXPORT bool HasBiggerCpuCores();
 
 // For architectures with big cores, return the affinity mode that matches
 // the CPU affinity of the current thread. If no affinity mode exactly matches,

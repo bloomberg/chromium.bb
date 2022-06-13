@@ -9,7 +9,6 @@ import * as Protocol from '../../generated/protocol.js';
 import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 
-
 const UIStrings = {
   /**
   *@description Label for the link for Mixed Content Issues
@@ -65,10 +64,9 @@ export class MixedContentIssue extends Issue {
     }
   }
 
-  static fromInspectorIssue(
-      issuesModel: SDK.IssuesModel.IssuesModel,
-      inspectorDetails: Protocol.Audits.InspectorIssueDetails): MixedContentIssue[] {
-    const mixedContentDetails = inspectorDetails.mixedContentIssueDetails;
+  static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue):
+      MixedContentIssue[] {
+    const mixedContentDetails = inspectorIssue.details.mixedContentIssueDetails;
     if (!mixedContentDetails) {
       console.warn('Mixed content issue without details received.');
       return [];

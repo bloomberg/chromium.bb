@@ -9,8 +9,27 @@
 namespace base {
 namespace internal {
 
-void PCScan::Initialize(WantedWriteProtectionMode wpmode) {
-  PCScanInternal::Instance().Initialize(wpmode);
+void PCScan::Initialize(InitConfig config) {
+  PCScanInternal::Instance().Initialize(config);
+}
+
+bool PCScan::IsInitialized() {
+  return PCScanInternal::Instance().is_initialized();
+}
+
+void PCScan::Disable() {
+  auto& instance = PCScan::Instance();
+  instance.scheduler().scheduling_backend().DisableScheduling();
+}
+
+bool PCScan::IsEnabled() {
+  auto& instance = PCScan::Instance();
+  return instance.scheduler().scheduling_backend().is_scheduling_enabled();
+}
+
+void PCScan::Reenable() {
+  auto& instance = PCScan::Instance();
+  instance.scheduler().scheduling_backend().EnableScheduling();
 }
 
 void PCScan::RegisterScannableRoot(Root* root) {
@@ -19,6 +38,10 @@ void PCScan::RegisterScannableRoot(Root* root) {
 
 void PCScan::RegisterNonScannableRoot(Root* root) {
   PCScanInternal::Instance().RegisterNonScannableRoot(root);
+}
+
+void PCScan::RegisterNewSuperPage(Root* root, uintptr_t super_page_base) {
+  PCScanInternal::Instance().RegisterNewSuperPage(root, super_page_base);
 }
 
 void PCScan::PerformScan(InvocationMode invocation_mode) {
@@ -51,6 +74,10 @@ bool PCScan::IsStackScanningEnabled() {
   return PCScanInternal::Instance().IsStackScanningEnabled();
 }
 
+void PCScan::EnableImmediateFreeing() {
+  PCScanInternal::Instance().EnableImmediateFreeing();
+}
+
 void PCScan::NotifyThreadCreated(void* stack_top) {
   PCScanInternal::Instance().NotifyThreadCreated(stack_top);
 }
@@ -68,12 +95,16 @@ void PCScan::UninitForTesting() {
   ReinitPCScanMetadataAllocatorForTesting();          // IN-TEST
 }
 
-void PCScan::ReinitForTesting(WantedWriteProtectionMode wpmode) {
-  PCScanInternal::Instance().ReinitForTesting(wpmode);  // IN-TEST
+void PCScan::ReinitForTesting(InitConfig config) {
+  PCScanInternal::Instance().ReinitForTesting(config);  // IN-TEST
 }
 
 void PCScan::FinishScanForTesting() {
   PCScanInternal::Instance().FinishScanForTesting();  // IN-TEST
+}
+
+void PCScan::RegisterStatsReporter(StatsReporter* reporter) {
+  PCScanInternal::Instance().RegisterStatsReporter(reporter);
 }
 
 PCScan PCScan::instance_ CONSTINIT;

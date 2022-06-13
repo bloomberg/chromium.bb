@@ -7,8 +7,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/lite_video/lite_video_features.h"
-#include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -56,7 +54,7 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
                         .HostNoBrackets();
   committed_origin_ = navigation_handle->GetWebContents()
                           ->GetLastCommittedURL()
-                          .GetOrigin()
+                          .DeprecatedGetOriginAsURL()
                           .spec();
   return CONTINUE_OBSERVING;
 }
@@ -99,12 +97,6 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
       data_reduction_proxy_bytes_saved +=
           received_data_length * origin_save_data_savings / 100;
     }
-    if (auto* lite_video_observer = LiteVideoObserver::FromWebContents(
-            content::WebContents::FromRenderFrameHost(rfh))) {
-      DCHECK(lite_video::features::IsLiteVideoEnabled());
-      data_reduction_proxy_bytes_saved +=
-          lite_video_observer->GetAndClearEstimatedDataSavingBytes();
-    }
 
     data_reduction_proxy_settings->data_reduction_proxy_service()
         ->UpdateDataUseForHost(
@@ -118,7 +110,6 @@ void DataSaverSiteBreakdownMetricsObserver::OnResourceDataUseObserved(
             received_data_length,
             received_data_length + data_reduction_proxy_bytes_saved,
             data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-            data_reduction_proxy::VIA_DATA_REDUCTION_PROXY,
             std::string() /* mime_type */, true /*is_user_traffic*/,
             data_use_measurement::DataUseUserData::OTHER, 0);
   }
@@ -169,8 +160,7 @@ void DataSaverSiteBreakdownMetricsObserver::OnNewDeferredResourceCounts(
       ->UpdateContentLengths(
           0, savings_to_report,
           data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
-          data_reduction_proxy::HTTPS, std::string() /* mime_type */,
-          true /*is_user_traffic*/,
+          std::string() /* mime_type */, true /*is_user_traffic*/,
           data_use_measurement::DataUseUserData::OTHER, 0);
 }
 

@@ -15,8 +15,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "weblayer/browser/background_download_service_factory.h"
 #include "weblayer/browser/browser_context_impl.h"
-#include "weblayer/browser/download_service_factory.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/public/download_delegate.h"
@@ -42,7 +42,7 @@ void BackgroundFetchDelegateImpl::MarkJobComplete(const std::string& job_id) {
     // requested in a short span of time, so make sure the completed state is
     // reflected in the UI after a brief delay. See
     // https://developer.android.com/training/notify-user/build-notification#Updating
-    static constexpr auto kDelay = base::TimeDelta::FromMilliseconds(1500);
+    static constexpr auto kDelay = base::Milliseconds(1500);
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BackgroundFetchDelegateImpl::DoUpdateUi,
@@ -77,8 +77,9 @@ void BackgroundFetchDelegateImpl::UpdateUI(
     client->OnUIUpdated(job_id);
 }
 
-download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
-  return DownloadServiceFactory::GetForBrowserContext(context());
+download::BackgroundDownloadService*
+BackgroundFetchDelegateImpl::GetDownloadService() {
+  return BackgroundDownloadServiceFactory::GetForBrowserContext(context());
 }
 
 void BackgroundFetchDelegateImpl::OnJobDetailsCreated(

@@ -53,7 +53,8 @@ namespace dawn_native { namespace metal {
         }
 
         id<MTLTexture> nativeTexture = reinterpret_cast<id<MTLTexture>>(next.texture.ptr);
-        return new Texture(ToBackend(GetDevice()), descriptor, nativeTexture);
+
+        return Texture::CreateWrapping(ToBackend(GetDevice()), descriptor, nativeTexture).Detach();
     }
 
     MaybeError OldSwapChain::OnBeforePresent(TextureViewBase*) {
@@ -72,7 +73,10 @@ namespace dawn_native { namespace metal {
         return swapchain;
     }
 
-    SwapChain::~SwapChain() {
+    SwapChain::~SwapChain() = default;
+
+    void SwapChain::DestroyImpl() {
+        SwapChainBase::DestroyImpl();
         DetachFromSurface();
     }
 
@@ -80,12 +84,12 @@ namespace dawn_native { namespace metal {
         ASSERT(GetSurface()->GetType() == Surface::Type::MetalLayer);
 
         if (previousSwapChain != nullptr) {
-            // TODO(cwallez@chromium.org): figure out what should happen when surfaces are used by
+            // TODO(crbug.com/dawn/269): figure out what should happen when surfaces are used by
             // multiple backends one after the other. It probably needs to block until the backend
             // and GPU are completely finished with the previous swapchain.
-            if (previousSwapChain->GetBackendType() != wgpu::BackendType::Metal) {
-                return DAWN_VALIDATION_ERROR("metal::SwapChain cannot switch between APIs");
-            }
+            DAWN_INVALID_IF(previousSwapChain->GetBackendType() != wgpu::BackendType::Metal,
+                            "Metal SwapChain cannot switch backend types from %s to %s.",
+                            previousSwapChain->GetBackendType(), wgpu::BackendType::Metal);
 
             previousSwapChain->DetachFromSurface();
         }
@@ -131,9 +135,8 @@ namespace dawn_native { namespace metal {
 
         TextureDescriptor textureDesc = GetSwapChainBaseTextureDescriptor(this);
 
-        // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
-        mTexture = AcquireRef(
-            new Texture(ToBackend(GetDevice()), &textureDesc, [*mCurrentDrawable texture]));
+        mTexture = Texture::CreateWrapping(ToBackend(GetDevice()), &textureDesc,
+                                           [*mCurrentDrawable texture]);
         // TODO(dawn:723): change to not use AcquireRef for reentrant object creation.
         return mTexture->APICreateView();
     }

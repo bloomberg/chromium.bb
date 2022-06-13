@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -21,6 +20,10 @@ namespace {
 class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
   CastTestWindowDelegate() : key_code_(ui::VKEY_UNKNOWN) {}
+
+  CastTestWindowDelegate(const CastTestWindowDelegate&) = delete;
+  CastTestWindowDelegate& operator=(const CastTestWindowDelegate&) = delete;
+
   ~CastTestWindowDelegate() override {}
 
   // Overridden from TestWindowDelegate:
@@ -32,8 +35,6 @@ class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   ui::KeyboardCode key_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastTestWindowDelegate);
 };
 
 class TestWindow {
@@ -44,13 +45,14 @@ class TestWindow {
     window_.SetBounds(gfx::Rect(0, 0, 1280, 720));
   }
 
+  TestWindow(const TestWindow&) = delete;
+  TestWindow& operator=(const TestWindow&) = delete;
+
   aura::Window* window() { return &window_; }
 
  private:
   CastTestWindowDelegate delegate_;
   aura::Window window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
 
 }  // namespace

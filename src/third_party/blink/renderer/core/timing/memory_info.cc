@@ -32,7 +32,6 @@
 
 #include <limits>
 
-#include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -43,10 +42,8 @@
 
 namespace blink {
 
-static constexpr base::TimeDelta kTwentyMinutes =
-    base::TimeDelta::FromMinutes(20);
-static constexpr base::TimeDelta kFiftyMs =
-    base::TimeDelta::FromMilliseconds(50);
+static constexpr base::TimeDelta kTwentyMinutes = base::Minutes(20);
+static constexpr base::TimeDelta kFiftyMs = base::Milliseconds(50);
 
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
@@ -63,6 +60,8 @@ class HeapSizeCache {
 
  public:
   HeapSizeCache() : clock_(base::DefaultTickClock::GetInstance()) {}
+  HeapSizeCache(const HeapSizeCache&) = delete;
+  HeapSizeCache& operator=(const HeapSizeCache&) = delete;
 
   void GetCachedHeapSize(HeapInfo& info, MemoryInfo::Precision precision) {
     MaybeUpdate(precision);
@@ -86,8 +85,8 @@ class HeapSizeCache {
     // avoid exposing precise GC timings.
     base::TimeTicks now = clock_->NowTicks();
     base::TimeDelta delta_allowed =
-        precision == MemoryInfo::Precision::Bucketized ? kTwentyMinutes
-                                                       : kFiftyMs;
+        precision == MemoryInfo::Precision::kBucketized ? kTwentyMinutes
+                                                        : kFiftyMs;
     if (!last_update_time_.has_value() ||
         now - last_update_time_.value() >= delta_allowed) {
       Update(precision);
@@ -97,7 +96,7 @@ class HeapSizeCache {
 
   void Update(MemoryInfo::Precision precision) {
     GetHeapSize(info_);
-    if (precision == MemoryInfo::Precision::Precise)
+    if (precision == MemoryInfo::Precision::kPrecise)
       return;
 
     info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
@@ -109,7 +108,6 @@ class HeapSizeCache {
   const base::TickClock* clock_;
 
   HeapInfo info_;
-  DISALLOW_COPY_AND_ASSIGN(HeapSizeCache);
 };
 
 // We quantize the sizes to make it more difficult for an attacker to see

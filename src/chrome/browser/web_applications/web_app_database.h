@@ -8,11 +8,12 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
@@ -83,7 +84,7 @@ class WebAppDatabase {
                      const absl::optional<syncer::ModelError>& error);
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
-  AbstractWebAppDatabaseFactory* const database_factory_;
+  const raw_ptr<AbstractWebAppDatabaseFactory> database_factory_;
   ReportErrorCallback error_callback_;
 
   // Database is opened if store is created and all data read.

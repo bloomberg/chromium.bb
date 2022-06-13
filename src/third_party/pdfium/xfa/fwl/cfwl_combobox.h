@@ -37,8 +37,8 @@ class CFWL_ComboBox final : public CFWL_Widget {
   // CFWL_Widget
   void Trace(cppgc::Visitor* visitor) const override;
   FWL_Type GetClassID() const override;
-  void ModifyStylesEx(uint32_t dwStylesExAdded,
-                      uint32_t dwStylesExRemoved) override;
+  void ModifyStyleExts(uint32_t dwStyleExtsAdded,
+                       uint32_t dwStyleExtsRemoved) override;
   void SetStates(uint32_t dwStates) override;
   void RemoveStates(uint32_t dwStates) override;
   void Update() override;
@@ -61,29 +61,29 @@ class CFWL_ComboBox final : public CFWL_Widget {
   void SetEditText(const WideString& wsText);
   WideString GetEditText() const;
 
-  void OpenDropDownList(bool bActivate);
-
   bool EditCanUndo() const { return m_pEdit->CanUndo(); }
   bool EditCanRedo() const { return m_pEdit->CanRedo(); }
   bool EditUndo() { return m_pEdit->Undo(); }
   bool EditRedo() { return m_pEdit->Redo(); }
   bool EditCanCopy() const { return m_pEdit->HasSelection(); }
   bool EditCanCut() const {
-    if (m_pEdit->GetStylesEx() & FWL_STYLEEXT_EDT_ReadOnly)
+    if (m_pEdit->GetStyleExts() & FWL_STYLEEXT_EDT_ReadOnly)
       return false;
     return EditCanCopy();
   }
   bool EditCanSelectAll() const { return m_pEdit->GetTextLength() > 0; }
-  Optional<WideString> EditCopy() const { return m_pEdit->Copy(); }
-  Optional<WideString> EditCut() { return m_pEdit->Cut(); }
+  absl::optional<WideString> EditCopy() const { return m_pEdit->Copy(); }
+  absl::optional<WideString> EditCut() { return m_pEdit->Cut(); }
   bool EditPaste(const WideString& wsPaste) { return m_pEdit->Paste(wsPaste); }
   void EditSelectAll() { m_pEdit->SelectAll(); }
   void EditDelete() { m_pEdit->ClearText(); }
   void EditDeSelect() { m_pEdit->ClearSelection(); }
 
   CFX_RectF GetBBox() const;
-  void EditModifyStylesEx(uint32_t dwStylesExAdded, uint32_t dwStylesExRemoved);
-  void ShowDropList(bool bActivate);
+  void EditModifyStyleExts(uint32_t dwStyleExtsAdded,
+                           uint32_t dwStyleExtsRemoved);
+  void ShowDropDownList();
+  void HideDropDownList();
 
   CFWL_ComboEdit* GetComboEdit() const { return m_pEdit; }
 
@@ -94,7 +94,7 @@ class CFWL_ComboBox final : public CFWL_Widget {
   explicit CFWL_ComboBox(CFWL_App* pApp);
 
   bool IsDropDownStyle() const {
-    return !!(m_Properties.m_dwStyleExes & FWL_STYLEEXT_CMB_DropDown);
+    return !!(GetStyleExts() & FWL_STYLEEXT_CMB_DropDown);
   }
   void MatchEditText();
   void SyncEditText(int32_t iListItem);
@@ -108,8 +108,10 @@ class CFWL_ComboBox final : public CFWL_Widget {
   void OnLButtonUp(CFWL_MessageMouse* pMsg);
   bool IsDropListVisible() const { return m_pListBox->IsVisible(); }
   void OnLButtonDown(CFWL_MessageMouse* pMsg);
-  void OnFocusChanged(CFWL_Message* pMsg, bool bSet);
+  void OnFocusGained();
+  void OnFocusLost();
   void OnKey(CFWL_MessageKey* pMsg);
+  void RepaintInflatedListBoxRect();
 
   CFX_RectF m_ClientRect;
   CFX_RectF m_ContentRect;
@@ -117,7 +119,7 @@ class CFWL_ComboBox final : public CFWL_Widget {
   cppgc::Member<CFWL_ComboEdit> const m_pEdit;
   cppgc::Member<CFWL_ComboList> const m_pListBox;
   int32_t m_iCurSel = -1;
-  int32_t m_iBtnState = CFWL_PartState_Normal;
+  Mask<CFWL_PartState> m_iBtnState = CFWL_PartState::kNormal;
 };
 
 #endif  // XFA_FWL_CFWL_COMBOBOX_H_

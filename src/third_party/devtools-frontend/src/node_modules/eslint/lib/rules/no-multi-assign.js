@@ -16,12 +16,20 @@ module.exports = {
 
         docs: {
             description: "disallow use of chained assignment expressions",
-            category: "Stylistic Issues",
             recommended: false,
             url: "https://eslint.org/docs/rules/no-multi-assign"
         },
 
-        schema: [],
+        schema: [{
+            type: "object",
+            properties: {
+                ignoreNonDeclaration: {
+                    type: "boolean",
+                    default: false
+                }
+            },
+            additionalProperties: false
+        }],
 
         messages: {
             unexpectedChain: "Unexpected chained assignment."
@@ -33,15 +41,24 @@ module.exports = {
         //--------------------------------------------------------------------------
         // Public
         //--------------------------------------------------------------------------
+        const options = context.options[0] || {
+            ignoreNonDeclaration: false
+        };
+        const selectors = [
+            "VariableDeclarator > AssignmentExpression.init",
+            "PropertyDefinition > AssignmentExpression.value"
+        ];
+
+        if (!options.ignoreNonDeclaration) {
+            selectors.push("AssignmentExpression > AssignmentExpression.right");
+        }
 
         return {
-            AssignmentExpression(node) {
-                if (["AssignmentExpression", "VariableDeclarator"].indexOf(node.parent.type) !== -1) {
-                    context.report({
-                        node,
-                        messageId: "unexpectedChain"
-                    });
-                }
+            [selectors](node) {
+                context.report({
+                    node,
+                    messageId: "unexpectedChain"
+                });
             }
         };
 

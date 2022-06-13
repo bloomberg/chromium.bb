@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -56,10 +54,13 @@ enum ModelTypeEntityChange {
 class TwoClientAutofillProfileSyncTest : public SyncTest {
  public:
   TwoClientAutofillProfileSyncTest() : SyncTest(TWO_CLIENT) {}
-  ~TwoClientAutofillProfileSyncTest() override {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillProfileSyncTest);
+  TwoClientAutofillProfileSyncTest(const TwoClientAutofillProfileSyncTest&) =
+      delete;
+  TwoClientAutofillProfileSyncTest& operator=(
+      const TwoClientAutofillProfileSyncTest&) = delete;
+
+  ~TwoClientAutofillProfileSyncTest() override {}
 };
 
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,

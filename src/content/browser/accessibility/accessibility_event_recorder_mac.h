@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENT_RECORDER_MAC_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENT_RECORDER_MAC_H_
 
-#include "content/browser/accessibility/accessibility_event_recorder.h"
-
 #include "base/mac/scoped_cftyperef.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/common/content_export.h"
 
 @class BrowserAccessibilityCocoa;
 
@@ -22,6 +22,11 @@ class CONTENT_EXPORT AccessibilityEventRecorderMac
   AccessibilityEventRecorderMac(BrowserAccessibilityManager* manager,
                                 base::ProcessId pid,
                                 const AXTreeSelector& selector);
+
+  AccessibilityEventRecorderMac(const AccessibilityEventRecorderMac&) = delete;
+  AccessibilityEventRecorderMac& operator=(
+      const AccessibilityEventRecorderMac&) = delete;
+
   ~AccessibilityEventRecorderMac() override;
 
   // Callback executed every time we receive an event notification.
@@ -36,19 +41,12 @@ class CONTENT_EXPORT AccessibilityEventRecorderMac
   // observer.
   void AddNotification(NSString* notification);
 
-  // Convenience function to get the value of an AX attribute from
-  // an AXUIElementRef as a string.
-  std::string GetAXAttributeValue(AXUIElementRef element,
-                                  NSString* attribute_name);
-
   // The AXUIElement for the Chrome application.
   base::ScopedCFTypeRef<AXUIElementRef> application_;
 
   // The AXObserver we use to monitor AX notifications.
   base::ScopedCFTypeRef<AXObserverRef> observer_ref_;
   CFRunLoopSourceRef observer_run_loop_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityEventRecorderMac);
 };
 
 }  // namespace content

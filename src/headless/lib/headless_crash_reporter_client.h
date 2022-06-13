@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 
@@ -17,6 +16,11 @@ namespace headless {
 class HeadlessCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   HeadlessCrashReporterClient();
+
+  HeadlessCrashReporterClient(const HeadlessCrashReporterClient&) = delete;
+  HeadlessCrashReporterClient& operator=(const HeadlessCrashReporterClient&) =
+      delete;
+
   ~HeadlessCrashReporterClient() override;
 
   void set_crash_dumps_dir(const base::FilePath& dir) {
@@ -47,8 +51,6 @@ class HeadlessCrashReporterClient : public crash_reporter::CrashReporterClient {
 
  private:
   base::FilePath crash_dumps_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(HeadlessCrashReporterClient);
 };
 
 }  // namespace headless

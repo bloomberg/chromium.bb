@@ -31,7 +31,7 @@ struct OpenURLParams;
 
 // A delegate API used by Navigator to notify its embedder of navigation
 // related events.
-class CONTENT_EXPORT NavigatorDelegate {
+class NavigatorDelegate {
  public:
   // Called when a navigation started. The same NavigationHandle will be
   // provided for events related to the same navigation.
@@ -59,6 +59,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Handles post-navigation tasks in navigation BEFORE the entry has been
   // committed to the NavigationController.
   virtual void DidNavigateMainFramePreCommit(
+      FrameTreeNode* frame_tree_node,
       bool navigation_is_within_page) = 0;
 
   // Handles post-navigation tasks in navigation AFTER the entry has been
@@ -67,12 +68,10 @@ class CONTENT_EXPORT NavigatorDelegate {
   // NavigationController's last committed entry is for this navigation.
   virtual void DidNavigateMainFramePostCommit(
       RenderFrameHostImpl* render_frame_host,
-      const LoadCommittedDetails& details,
-      const mojom::DidCommitProvisionalLoadParams& params) = 0;
+      const LoadCommittedDetails& details) = 0;
   virtual void DidNavigateAnyFramePostCommit(
       RenderFrameHostImpl* render_frame_host,
-      const LoadCommittedDetails& details,
-      const mojom::DidCommitProvisionalLoadParams& params) = 0;
+      const LoadCommittedDetails& details) = 0;
 
   // Notification to the Navigator embedder that navigation state has
   // changed. This method corresponds to
@@ -85,7 +84,8 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // Returns whether to continue a navigation that needs to transfer to a
   // different process between the load start and commit.
-  virtual bool ShouldTransferNavigation(bool is_main_frame_navigation) = 0;
+  virtual bool ShouldAllowRendererInitiatedCrossProcessNavigation(
+      bool is_main_frame_navigation) = 0;
 
   // Returns the overridden user agent string if it's set.
   virtual const blink::UserAgentOverride& GetUserAgentOverride() = 0;
@@ -131,6 +131,13 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void RegisterExistingOriginToPreventOptInIsolation(
       const url::Origin& origin,
       NavigationRequest* navigation_request_to_exclude) = 0;
+
+  // Returns true if activation navigations are disallowed in the
+  // Navigator.
+  // TODO(https://crbug.com/1234857): Remove this. This is a temporary
+  // workaround to avoid breaking features that must be taught to deal with
+  // activation navigations.
+  virtual bool IsActivationNavigationDisallowedForBug1234857() = 0;
 };
 
 }  // namespace content

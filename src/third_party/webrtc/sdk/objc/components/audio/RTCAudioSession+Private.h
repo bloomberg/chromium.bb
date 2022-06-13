@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
      */
     @property(nonatomic, readonly) int activationCount;
 
-/** The number of times |beginWebRTCSession| was called without a balanced call
- *  to |endWebRTCSession|.
+/** The number of times `beginWebRTCSession` was called without a balanced call
+ *  to `endWebRTCSession`.
  */
 @property(nonatomic, readonly) int webRTCSessionCount;
 
@@ -57,21 +57,27 @@ NS_ASSUME_NONNULL_BEGIN
 /** Configure the audio session for WebRTC. This call will fail if the session
  *  is already configured. On other failures, we will attempt to restore the
  *  previously used audio session configuration.
- *  |lockForConfiguration| must be called first.
+ *  `lockForConfiguration` must be called first.
  *  Successful calls to configureWebRTCSession must be matched by calls to
- *  |unconfigureWebRTCSession|.
+ *  `unconfigureWebRTCSession`.
  */
 - (BOOL)configureWebRTCSession:(NSError **)outError;
 
 /** Unconfigures the session for WebRTC. This will attempt to restore the
- *  audio session to the settings used before |configureWebRTCSession| was
+ *  audio session to the settings used before `configureWebRTCSession` was
  *  called.
- *  |lockForConfiguration| must be called first.
+ *  `lockForConfiguration` must be called first.
  */
 - (BOOL)unconfigureWebRTCSession:(NSError **)outError;
 
 /** Returns a configuration error with the given description. */
 - (NSError *)configurationErrorWithDescription:(NSString *)description;
+
+/** Notifies the reciever that a playout glitch was detected. */
+- (void)notifyDidDetectPlayoutGlitch:(int64_t)totalNumberOfGlitches;
+
+/** Notifies the reciever that there was an error when starting an audio unit. */
+- (void)notifyAudioUnitStartFailedWithError:(OSStatus)error;
 
 // Properties and methods for tests.
 - (void)notifyDidBeginInterruption;
@@ -83,7 +89,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)notifyDidChangeCanPlayOrRecord:(BOOL)canPlayOrRecord;
 - (void)notifyDidStartPlayOrRecord;
 - (void)notifyDidStopPlayOrRecord;
-- (void)notifyDidDetectPlayoutGlitch:(int64_t)totalNumberOfGlitches;
 
 @end
 

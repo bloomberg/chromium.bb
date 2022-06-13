@@ -1,3 +1,9 @@
+/*
+ * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 .data-grid {
   border: none;
 }
@@ -49,13 +55,12 @@
 }
 
 .data-grid td .percent-value {
-  color: var(--color-text-secondary);
-  width: 45px;
+  width: 6ex;
   display: inline-block;
 }
 
-.data-grid:focus tr.selected span.percent-value {
-  color: var(--color-text-secondary-selected);
+.data-grid tr:not(.selected) td .percent-value {
+  color: var(--color-text-secondary);
 }
 
 @media (forced-colors: active) {

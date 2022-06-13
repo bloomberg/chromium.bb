@@ -8,5 +8,5 @@ Tests that exporting works.
 
 ++++++++ testExportJson
 
-# of audits (json): 155
+# of audits (json): 152
 

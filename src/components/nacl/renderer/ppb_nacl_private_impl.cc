@@ -19,15 +19,15 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/files/file.h"
+#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_host_messages.h"
@@ -183,16 +183,6 @@ static const PP_NaClFileInfo kInvalidNaClFileInfo = {
     0,  // token_hi
 };
 
-int GetRoutingID(PP_Instance instance) {
-  // Check that we are on the main renderer thread.
-  DCHECK(content::RenderThread::Get());
-  content::RendererPpapiHost* host =
-      content::RendererPpapiHost::GetForPPInstance(instance);
-  if (!host)
-    return 0;
-  return host->GetRoutingIDForWidget(instance);
-}
-
 int GetFrameRoutingID(PP_Instance instance) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
@@ -241,6 +231,9 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
  public:
   ManifestServiceProxy(PP_Instance pp_instance, NaClAppProcessType process_type)
       : pp_instance_(pp_instance), process_type_(process_type) {}
+
+  ManifestServiceProxy(const ManifestServiceProxy&) = delete;
+  ManifestServiceProxy& operator=(const ManifestServiceProxy&) = delete;
 
   ~ManifestServiceProxy() override {}
 
@@ -329,7 +322,6 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
 
   PP_Instance pp_instance_;
   NaClAppProcessType process_type_;
-  DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
 
 std::unique_ptr<blink::WebAssociatedURLLoader> CreateAssociatedURLLoader(
@@ -421,13 +413,12 @@ void PPBNaClPrivate::LaunchSelLdr(
 
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
-  int routing_id = GetRoutingID(instance);
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   content::PepperPluginInstance* plugin_instance =
       content::PepperPluginInstance::Get(instance);
   DCHECK(plugin_instance);
-  if (!routing_id || !load_manager || !plugin_instance) {
+  if (!load_manager || !plugin_instance) {
     if (nexe_file_info->handle != PP_kInvalidFileHandle) {
       base::File closer(nexe_file_info->handle);
     }
@@ -478,7 +469,7 @@ void PPBNaClPrivate::LaunchSelLdr(
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
           NaClLaunchParams(instance_info.url.spec(), nexe_for_transit,
                            nexe_file_info->token_lo, nexe_file_info->token_hi,
-                           resource_prefetch_request_list, routing_id,
+                           resource_prefetch_request_list,
                            GetFrameRoutingID(instance), perm_bits,
                            PP_ToBool(uses_nonsfi_mode), process_type),
           &launch_result, &error_message_string))) {
@@ -718,8 +709,8 @@ void GetNexeFd(PP_Instance instance,
   cache_info.sandbox_isa = GetSandboxArch();
   cache_info.extra_flags = GetCpuFeatures();
 
-  g_pnacl_resource_host.Get()->RequestNexeFd(GetRoutingID(instance), instance,
-                                             cache_info, std::move(callback));
+  g_pnacl_resource_host.Get()->RequestNexeFd(instance, cache_info,
+                                             std::move(callback));
 }
 
 void LogTranslationFinishedUMA(const std::string& uma_suffix,
@@ -1302,7 +1293,7 @@ class ProgressEventRateLimiter {
                       int64_t total_bytes_received,
                       int64_t total_bytes_to_be_received) {
     base::Time now = base::Time::Now();
-    if (now - last_event_ > base::TimeDelta::FromMilliseconds(10)) {
+    if (now - last_event_ > base::Milliseconds(10)) {
       DispatchProgressEvent(instance_,
                             ProgressEvent(PP_NACL_EVENT_PROGRESS,
                                           url,

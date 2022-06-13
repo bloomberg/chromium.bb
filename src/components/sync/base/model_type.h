@@ -11,12 +11,12 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "components/sync/base/enum_set.h"
+#include "base/containers/enum_set.h"
 
 namespace base {
 class ListValue;
 class Value;
-}
+}  // namespace base
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -129,17 +129,20 @@ enum ModelType {
   OS_PRIORITY_PREFERENCES,
   // Commit only sharing message object.
   SHARING_MESSAGE,
+  // A workspace desk saved by user. Chrome OS only.
+  WORKSPACE_DESK,
+  // WebAuthn credentials. Commented out because this type is currently only
+  // used by the server and Play Services, not Chrome itself.
+  // (crbug.com/1223853)
+  // WEBAUTHN_CREDENTIAL,
 
-  // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
   // real user types. By convention, we prefix them with 'PROXY_' to distinguish
   // them from normal protocol types.
-
+  //
   // Tab sync. This is a placeholder type, so that Sessions can be implicitly
   // enabled for history sync and tabs sync.
   PROXY_TABS,
-  FIRST_PROXY_TYPE = PROXY_TABS,
-  LAST_PROXY_TYPE = PROXY_TABS,
   LAST_USER_MODEL_TYPE = PROXY_TABS,
 
   // ---- Control Types ----
@@ -152,8 +155,9 @@ enum ModelType {
 };
 
 using ModelTypeSet =
-    EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
-using FullModelTypeSet = EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
+    base::EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>;
+using FullModelTypeSet =
+    base::EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE>;
 using ModelTypeNameMap = std::map<ModelType, const char*>;
 
 constexpr int GetNumModelTypes() {
@@ -226,7 +230,8 @@ enum class ModelTypeForHistograms {
   kOsPriorityPreferences = 47,
   kSharingMessage = 48,
   kAutofillWalletOffer = 49,
-  kMaxValue = kAutofillWalletOffer
+  kWorkspaceDesk = 50,
+  kMaxValue = kWorkspaceDesk
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -248,7 +253,7 @@ constexpr ModelTypeSet ProtocolTypes() {
       DEVICE_INFO, PRIORITY_PREFERENCES, SUPERVISED_USER_SETTINGS, APP_LIST,
       ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI, USER_CONSENTS,
       SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS,
-      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
+      OS_PREFERENCES, OS_PRIORITY_PREFERENCES, SHARING_MESSAGE, WORKSPACE_DESK);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -295,13 +300,6 @@ constexpr ModelTypeSet PriorityUserTypes() {
       // their sync data, the browser offers a theme customization bubble which
       // should appear soon after opening the browser.
       THEMES);
-}
-
-// Proxy types are placeholder types for handling implicitly enabling real
-// types. They do not exist at the server, and are simply used for
-// UI/Configuration logic.
-constexpr ModelTypeSet ProxyTypes() {
-  return ModelTypeSet::FromRange(FIRST_PROXY_TYPE, LAST_PROXY_TYPE);
 }
 
 // Returns a list of all control types.
@@ -424,9 +422,6 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
 // Returns true if |model_type| is a real datatype
 bool IsRealDataType(ModelType model_type);
 
-// Returns true if |model_type| is a proxy type
-bool IsProxyType(ModelType model_type);
-
 // Returns true if |model_type| is an act-once type. Act once types drop
 // entities after applying them. Drops are deletes that are not synced to other
 // clients.
@@ -440,12 +435,6 @@ bool IsTypeWithServerGeneratedRoot(ModelType model_type);
 // Returns true if root folder for |model_type| is created on the client when
 // that type is initially synced.
 bool IsTypeWithClientGeneratedRoot(ModelType model_type);
-
-// Returns true if |model_type| supports parent-child hierarchy or entries.
-bool TypeSupportsHierarchy(ModelType model_type);
-
-// Returns true if |model_type| supports ordering of sibling entries.
-bool TypeSupportsOrdering(ModelType model_type);
 
 }  // namespace syncer
 

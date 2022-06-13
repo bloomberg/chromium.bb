@@ -7,9 +7,7 @@
 
 #include <bitset>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -20,16 +18,15 @@ enum class PermissionsPolicyFeature;
 
 class ExecutionContext;
 class LocalDOMWindow;
-class LocalFrame;
 
 class CORE_EXPORT Deprecation final {
   DISALLOW_NEW();
 
  public:
   Deprecation();
+  Deprecation(const Deprecation&) = delete;
+  Deprecation& operator=(const Deprecation&) = delete;
 
-  static void WarnOnDeprecatedProperties(const LocalFrame*,
-                                         CSSPropertyID unresolved_property);
   void ClearSuppression();
 
   void MuteForInspector();
@@ -49,24 +46,15 @@ class CORE_EXPORT Deprecation final {
 
   static String DeprecationMessage(WebFeature);
 
-  // Note: this is only public for tests.
-  bool IsSuppressed(CSSPropertyID unresolved_property);
-
  private:
-  void Suppress(CSSPropertyID unresolved_property);
   void SetReported(WebFeature feature);
   bool GetReported(WebFeature feature) const;
-  // CSSPropertyIDs that aren't deprecated return an empty string.
-  static String DeprecationMessage(CSSPropertyID unresolved_property);
 
   // To minimize the report/console spam from frames coming and going, report
   // each deprecation at most once per page load per renderer process.
   std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>
       features_deprecation_bits_;
-  std::bitset<kNumCSSPropertyIDs> css_property_deprecation_bits_;
   unsigned mute_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(Deprecation);
 };
 
 }  // namespace blink

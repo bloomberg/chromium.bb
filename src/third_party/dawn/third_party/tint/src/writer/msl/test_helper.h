@@ -21,34 +21,12 @@
 
 #include "gtest/gtest.h"
 #include "src/program_builder.h"
-#include "src/transform/msl.h"
+#include "src/writer/msl/generator.h"
 #include "src/writer/msl/generator_impl.h"
 
 namespace tint {
 namespace writer {
 namespace msl {
-
-/// Enables verification of MSL shaders by running the Metal compiler and
-/// checking no errors are reported.
-/// @param xcrun_path the path to the `xcrun` executable
-void EnableMSLValidation(const char* xcrun_path);
-
-/// The return structure of Compile()
-struct CompileResult {
-  /// Status is an enumerator of status codes from Compile()
-  enum class Status { kSuccess, kFailed, kVerificationNotEnabled };
-  /// The resulting status of the compilation
-  Status status;
-  /// Output of the Metal compiler
-  std::string output;
-  /// The MSL source that was compiled
-  std::string msl;
-};
-
-/// Compile attempts to compile the shader with xcrun if found on PATH.
-/// @param program the MSL program
-/// @return the result of the compile
-CompileResult Compile(Program* program);
 
 /// Helper class for testing
 template <typename BASE>
@@ -80,10 +58,11 @@ class TestHelperBase : public BASE, public ProgramBuilder {
 
   /// Builds the program, runs the program through the transform::Msl sanitizer
   /// and returns a GeneratorImpl from the sanitized program.
+  /// @param options The MSL generator options.
   /// @note The generator is only built once. Multiple calls to Build() will
   /// return the same GeneratorImpl without rebuilding.
   /// @return the built generator
-  GeneratorImpl& SanitizeAndBuild() {
+  GeneratorImpl& SanitizeAndBuild(const Options& options = {}) {
     if (gen_) {
       return *gen_;
     }
@@ -97,7 +76,10 @@ class TestHelperBase : public BASE, public ProgramBuilder {
           << diag::Formatter().format(program->Diagnostics());
     }();
 
-    auto result = transform::Msl().Run(program.get());
+    auto result = Sanitize(
+        program.get(), options.buffer_size_ubo_index, options.fixed_sample_mask,
+        options.emit_vertex_point_size, options.disable_workgroup_init,
+        options.array_length_from_uniform);
     [&]() {
       ASSERT_TRUE(result.program.IsValid())
           << diag::Formatter().format(result.program.Diagnostics());
@@ -105,20 +87,6 @@ class TestHelperBase : public BASE, public ProgramBuilder {
     *program = std::move(result.program);
     gen_ = std::make_unique<GeneratorImpl>(program.get());
     return *gen_;
-  }
-
-  /// Validate generates MSL code for the current contents of `program` and
-  /// passes the output of the generator to the XCode SDK Metal compiler.
-  ///
-  /// If the Metal compiler finds problems, then any GTest test case that
-  /// invokes this function test will fail.
-  /// This function does nothing, if the Metal compiler path has not been
-  /// configured by calling `EnableMSLValidation()`.
-  void Validate() {
-    auto res = Compile(program.get());
-    if (res.status == CompileResult::Status::kFailed) {
-      FAIL() << "MSL Validation failed.\n\n" << res.msl << "\n\n" << res.output;
-    }
   }
 
   /// The program built with a call to Build()

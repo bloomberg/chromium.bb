@@ -38,6 +38,7 @@ interface ViewportSize {
 
 export interface ResetData {
   viewportSize: ViewportSize;
+  viewportSizeForMediaQueries?: ViewportSize;
   deviceScaleFactor: number;
   pageScaleFactor: number;
   pageZoomFactor: number;
@@ -51,6 +52,7 @@ export interface ResetData {
 // Old logic is kept temporarily while the tools are being migrated.
 export class Overlay {
   protected viewportSize = {width: 800, height: 600};
+  protected viewportSizeForMediaQueries?: ViewportSize;
   protected deviceScaleFactor = 1;
   protected emulationScaleFactor = 1;
   protected pageScaleFactor = 1;
@@ -102,6 +104,7 @@ export class Overlay {
   reset(resetData?: ResetData) {
     if (resetData) {
       this.viewportSize = resetData.viewportSize;
+      this.viewportSizeForMediaQueries = resetData.viewportSizeForMediaQueries;
       this.deviceScaleFactor = resetData.deviceScaleFactor;
       this.pageScaleFactor = resetData.pageScaleFactor;
       this.pageZoomFactor = resetData.pageZoomFactor;

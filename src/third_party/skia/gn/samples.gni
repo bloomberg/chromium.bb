@@ -29,7 +29,6 @@ samples_sources = [
   "$_samplecode/SampleComplexClip.cpp",
   "$_samplecode/SampleCowboy.cpp",
   "$_samplecode/SampleCusp.cpp",
-  "$_samplecode/SampleDegenerateQuads.cpp",
   "$_samplecode/SampleDegenerateTwoPtRadials.cpp",
   "$_samplecode/SampleEffects.cpp",
   "$_samplecode/SampleEmboss.cpp",
@@ -54,7 +53,6 @@ samples_sources = [
   "$_samplecode/SamplePathClip.cpp",
   "$_samplecode/SamplePathEffects.cpp",
   "$_samplecode/SamplePathOverstroke.cpp",
-  "$_samplecode/SamplePathTessellators.cpp",
   "$_samplecode/SamplePathText.cpp",
   "$_samplecode/SamplePolyToPoly.cpp",
   "$_samplecode/SampleQuadStroker.cpp",
@@ -73,7 +71,6 @@ samples_sources = [
   "$_samplecode/SampleStrokeRect.cpp",
   "$_samplecode/SampleStrokeVerb.cpp",
   "$_samplecode/SampleTextBox.cpp",
-  "$_samplecode/SampleTextEffects.cpp",
   "$_samplecode/SampleTextureUpload.cpp",
   "$_samplecode/SampleThinAA.cpp",
   "$_samplecode/SampleTiming.cpp",
@@ -84,3 +81,10 @@ samples_sources = [
   "$_samplecode/SampleXfermodesBlur.cpp",
   "$_samplecode/vertexdump.cpp",
 ]
+
+skgpu_v1_samples_sources = [
+  "$_samplecode/SampleDegenerateQuads.cpp",
+  "$_samplecode/SamplePathTessellators.cpp",
+]
+
+samples_sources += skgpu_v1_samples_sources

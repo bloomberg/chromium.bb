@@ -6,9 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -127,10 +128,10 @@ class ExtensionActionViewControllerUnitTest : public BrowserWithTestWindowTest {
 
  private:
   // The ExtensionService associated with the primary profile.
-  extensions::ExtensionService* extension_service_ = nullptr;
+  raw_ptr<extensions::ExtensionService> extension_service_ = nullptr;
 
   // ToolbarActionsModel associated with the main profile.
-  ToolbarActionsModel* toolbar_model_ = nullptr;
+  raw_ptr<ToolbarActionsModel> toolbar_model_ = nullptr;
 
   std::unique_ptr<ExtensionActionTestHelper> test_util_;
 
@@ -362,6 +363,12 @@ class ExtensionActionViewControllerGrayscaleTest
   };
 
   ExtensionActionViewControllerGrayscaleTest() {}
+
+  ExtensionActionViewControllerGrayscaleTest(
+      const ExtensionActionViewControllerGrayscaleTest&) = delete;
+  ExtensionActionViewControllerGrayscaleTest& operator=(
+      const ExtensionActionViewControllerGrayscaleTest&) = delete;
+
   ~ExtensionActionViewControllerGrayscaleTest() override = default;
 
   void RunGrayscaleTest(PermissionType permission_type);
@@ -373,8 +380,6 @@ class ExtensionActionViewControllerGrayscaleTest
       content::WebContents* web_contents,
       scoped_refptr<const extensions::Extension> extensions,
       PermissionType permission_type);
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewControllerGrayscaleTest);
 };
 
 void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(

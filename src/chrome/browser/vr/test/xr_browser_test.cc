@@ -53,19 +53,19 @@ XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {
 XrBrowserTestBase::~XrBrowserTestBase() = default;
 
 base::FilePath::StringType UTF8ToWideIfNecessary(std::string input) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   return base::UTF8ToWide(input);
 #else
   return input;
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 }
 
 std::string WideToUTF8IfNecessary(base::FilePath::StringType input) {
-#ifdef OS_WIN
+#if defined(OS_WIN)
   return base::WideToUTF8(input);
 #else
   return input;
-#endif  // OS_Win
+#endif  // defined(OS_WIN)
 }
 
 // Returns an std::string consisting of the given path relative to the test
@@ -183,7 +183,7 @@ content::WebContents* XrBrowserTestBase::GetCurrentWebContents() {
 void XrBrowserTestBase::LoadFileAndAwaitInitialization(
     const std::string& test_name) {
   GURL url = GetUrlForFile(test_name);
-  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   ASSERT_TRUE(PollJavaScriptBoolean("isInitializationComplete()",
                                     kPollTimeoutMedium,
                                     GetCurrentWebContents()))
@@ -217,7 +217,7 @@ bool XrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
     return false;
   }
 
-  bool result;
+  bool result = false;
   DLOG(INFO) << "Run JavaScript: " << js_expression;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
@@ -400,10 +400,8 @@ void XrBrowserTestBase::EndTest(content::WebContents* web_contents) {
       FAIL() << "JavaScript testharness failed with reason: "
              << RunJavaScriptAndExtractStringOrFail("resultString",
                                                     web_contents);
-      break;
     case XrBrowserTestBase::TestStatus::STATUS_RUNNING:
       FAIL() << "Attempted to end test in C++ without finishing in JavaScript.";
-      break;
     default:
       FAIL() << "Received unknown test status.";
   }

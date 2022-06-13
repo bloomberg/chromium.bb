@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+licenses(["notice"])
 
 cc_library(
     name = "types",
@@ -24,7 +25,6 @@ cc_library(
         "atomic_boolean.h",
         "atomic_reference.h",
         "condition_variable.h",
-        "count_down_latch.h",
         "log_message.h",
         "multi_thread_executor.h",
         "mutex.h",
@@ -35,14 +35,15 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         "//base",
+        "//absl/base:core_headers",
+        "//absl/synchronization",
+        "//absl/time",
         "//platform/api:platform",
         "//platform/api:types",
         "//platform/base",
         "//platform/base:util",
+        "//platform/impl/shared:count_down_latch",
         "//platform/impl/shared:posix_mutex",
-        "//absl/base:core_headers",
-        "//absl/synchronization",
-        "//absl/time",
         "//thread",
     ],
 )
@@ -67,16 +68,18 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = [
         ":types",
+        "//absl/base:core_headers",
+        "//absl/container:flat_hash_map",
+        "//absl/container:flat_hash_set",
+        "//absl/strings",
+        "//absl/strings:str_format",
+        "//absl/synchronization",
         "//platform/api:comm",
         "//platform/base",
         "//platform/base:cancellation_flag",
         "//platform/base:logging",
         "//platform/base:test_util",
-        "//absl/base:core_headers",
-        "//absl/container:flat_hash_map",
-        "//absl/container:flat_hash_set",
-        "//absl/strings",
-        "//absl/synchronization",
+        "//platform/impl/shared:count_down_latch",
         "//webrtc/api:create_peerconnection_factory",  #buildcleaner: keep
         "//webrtc/api:libjingle_peerconnection_api",
         "//webrtc/api/task_queue:default_task_queue_factory",
@@ -91,9 +94,9 @@ cc_library(
     ],
     visibility = ["//visibility:private"],
     deps = [
+        "//absl/strings",
         "//platform/api:types",
         "//platform/base",
-        "//absl/strings",
         "//openssl:crypto",
     ],
 )
@@ -105,21 +108,24 @@ cc_library(
         "platform.cc",
     ],
     visibility = [
+        "//analytics:__subpackages__",
         "//core:__subpackages__",
         "//platform:__subpackages__",
+        "//proto/analytics:__subpackages__",
     ],
     deps = [
         ":comm",
         ":crypto",  # build_cleaner: keep
         ":types",
-        "//platform/api:comm",
-        "//platform/api:platform",
-        "//platform/api:types",
-        "//platform/base:test_util",
-        "//platform/impl/shared:file",
         "//absl/base:core_headers",
         "//absl/memory",
         "//absl/strings",
         "//absl/time",
+        "//platform/api:comm",
+        "//platform/api:platform",
+        "//platform/api:types",
+        "//platform/base:test_util",
+        "//platform/impl/shared:count_down_latch",
+        "//platform/impl/shared:file",
     ],
 )

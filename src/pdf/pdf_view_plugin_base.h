@@ -9,27 +9,37 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
+#include "base/values.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/paint_manager.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
+#include "pdf/preview_mode_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
-
-namespace base {
-class Value;
-}  // namespace base
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
 class WebInputEvent;
+struct WebPrintPresetOptions;
 }  // namespace blink
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
 
 namespace chrome_pdf {
 
@@ -48,9 +58,40 @@ struct AccessibilityViewportInfo;
 // Common base to share code between the two plugin implementations,
 // `OutOfProcessInstance` (Pepper) and `PdfViewWebPlugin` (Blink).
 class PdfViewPluginBase : public PDFEngine::Client,
-                          public PaintManager::Client {
+                          public PaintManager::Client,
+                          public PreviewModeClient::Client {
  public:
   using PDFEngine::Client::ScheduleTaskOnMainThread;
+
+  // Do not save files with over 100 MB. This cap should be kept in sync with
+  // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
+  static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
+
+  // Print Preview base URL.
+  static constexpr base::StringPiece kChromePrintHost = "chrome://print/";
+
+  // Untrusted Print Preview base URL.
+  static constexpr base::StringPiece kChromeUntrustedPrintHost =
+      "chrome-untrusted://print/";
+
+  enum class AccessibilityState {
+    kOff = 0,  // Off.
+    kPending,  // Enabled but waiting for doc to load.
+    kLoaded,   // Fully loaded.
+  };
+
+  enum class DocumentLoadState {
+    kLoading = 0,
+    kComplete,
+    kFailed,
+  };
+
+  // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.js.
+  enum class SaveRequestType {
+    kAnnotation = 0,
+    kOriginal = 1,
+    kEdited = 2,
+  };
 
   PdfViewPluginBase(const PdfViewPluginBase& other) = delete;
   PdfViewPluginBase& operator=(const PdfViewPluginBase& other) = delete;
@@ -69,6 +110,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
                              const float* x,
                              const float* y,
                              const float* zoom) override;
+  void UpdateTickMarks(const std::vector<gfx::Rect>& tickmarks) override;
+  void NotifyNumberOfFindResultsChanged(int total, bool final_result) override;
   void NotifyTouchSelectionOccurred() override;
   void GetDocumentPassword(
       base::OnceCallback<void(const std::string&)> callback) override;
@@ -79,19 +122,32 @@ class PdfViewPluginBase : public PDFEngine::Client,
              const std::string& bcc,
              const std::string& subject,
              const std::string& body) override;
+  void Print() override;
+  void SubmitForm(const std::string& url,
+                  const void* data,
+                  int length) override;
   std::unique_ptr<UrlLoader> CreateUrlLoader() override;
   void DocumentLoadComplete() override;
   void DocumentLoadFailed() override;
+  void DocumentHasUnsupportedFeature(const std::string& feature) override;
   void DocumentLoadProgress(uint32_t available, uint32_t doc_size) override;
-  void FormTextFieldFocusChange(bool in_focus) override;
+  void FormFieldFocusChange(PDFEngine::FocusFieldType type) override;
+  bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() override;
   void SetIsSelecting(bool is_selecting) override;
+  void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
+  void EnteredEditMode() override;
   void DocumentFocusChanged(bool document_has_focus) override;
+  void SetLinkUnderCursor(const std::string& link_under_cursor) override;
 
-  // PaintManager::Client
+  // PaintManager::Client:
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                std::vector<PaintReadyRect>& ready,
                std::vector<gfx::Rect>& pending) override;
+
+  // PreviewModeClient::Client:
+  void PreviewDocumentLoadComplete() override;
+  void PreviewDocumentLoadFailed() override;
 
   // Enable accessibility for PDF plugin.
   void EnableAccessibility();
@@ -99,23 +155,33 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Handle invoked accessibility actions.
   void HandleAccessibilityAction(const AccessibilityActionData& action_data);
 
+  // Gets the content restrictions based on the permissions which `engine_` has.
+  int GetContentRestrictions() const;
+
+  // Gets the accessibility doc info based on the information from `engine_`.
+  AccessibilityDocInfo GetAccessibilityDocInfo() const;
+
+  bool GetDidCallStartLoadingForTesting() const {
+    return did_call_start_loading_;
+  }
+
+  bool UnsupportedFeatureIsReportedForTesting(const std::string& feature) const;
+
+  bool GetNotifiedBrowserAboutUnsupportedFeatureForTesting() const {
+    return notified_browser_about_unsupported_feature_;
+  }
+
+  void InitializeEngineForTesting(std::unique_ptr<PDFiumEngine> engine);
+
+  void set_full_frame_for_testing(bool full_frame) { full_frame_ = full_frame; }
+
+  DocumentLoadState document_load_state_for_testing() const {
+    return document_load_state_;
+  }
+
+  bool edit_mode_for_testing() const { return edit_mode_; }
+
  protected:
-  // Do not save files with over 100 MB. This cap should be kept in sync with
-  // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
-  static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
-
-  enum class AccessibilityState {
-    kOff = 0,  // Off.
-    kPending,  // Enabled but waiting for doc to load.
-    kLoaded,   // Fully loaded.
-  };
-
-  enum class DocumentLoadState {
-    kLoading = 0,
-    kComplete,
-    kFailed,
-  };
-
   struct BackgroundPart {
     gfx::Rect location;
     uint32_t color;
@@ -124,21 +190,37 @@ class PdfViewPluginBase : public PDFEngine::Client,
   PdfViewPluginBase();
   ~PdfViewPluginBase() override;
 
-  // Initializes the main `PDFiumEngine`. Any existing engine will be replaced.
-  void InitializeEngine(PDFiumFormFiller::ScriptOption script_option);
+  // Performs initialization common to all implementations of this plugin.
+  // `engine` should be an appropriately-configured PDF engine, and
+  // `embedder_origin` should be the origin of the plugin's embedder. The other
+  // parameters come from the corresponding plugin attributes.
+  void InitializeBase(std::unique_ptr<PDFiumEngine> engine,
+                      base::StringPiece embedder_origin,
+                      base::StringPiece src_url,
+                      base::StringPiece original_url,
+                      bool full_frame,
+                      SkColor background_color,
+                      bool has_edits);
+
+  // Creates a new `PDFiumEngine`.
+  virtual std::unique_ptr<PDFiumEngine> CreateEngine(
+      PDFEngine::Client* client,
+      PDFiumFormFiller::ScriptOption script_option);
 
   // Destroys the main `PDFiumEngine`. Subclasses should call this method in
   // their destructor to ensure the engine is destroyed first.
   void DestroyEngine();
 
+  // Destroys the `PDFiumEngine` used for Print Preview. Subclasses should call
+  // this method in their destructor to ensure the engine is destroyed first.
+  void DestroyPreviewEngine();
+
   const PDFiumEngine* engine() const { return engine_.get(); }
   PDFiumEngine* engine() { return engine_.get(); }
 
-  PaintManager& paint_manager() { return paint_manager_; }
-
   // Starts loading `url`. If `is_print_preview` is `true`, load for print
   // preview instead of normal PDF viewing.
-  void LoadUrl(const std::string& url, bool is_print_preview);
+  void LoadUrl(base::StringPiece url, bool is_print_preview);
 
   // Gets a weak pointer with a lifetime matching the derived class.
   virtual base::WeakPtr<PdfViewPluginBase> GetWeakPtr() = 0;
@@ -147,12 +229,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // frame's origin.
   virtual std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() = 0;
 
-  // Handles `LoadUrl()` result.
-  virtual void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) = 0;
-
-  // Handles `LoadUrl()` result for print preview.
-  virtual void DidOpenPreview(std::unique_ptr<UrlLoader> loader,
-                              int32_t result) = 0;
+  // Rewrites the request URL just before sending to the URL loader.
+  //
+  // TODO(crbug.com/1238829): This is a workaround for Pepper not supporting
+  // chrome-untrusted://print/ URLs.
+  virtual std::string RewriteRequestUrl(base::StringPiece url) const;
 
   bool HandleInputEvent(const blink::WebInputEvent& event);
 
@@ -163,6 +244,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // guaranteed to be received in the order that they are sent. This method is
   // non-blocking.
   virtual void SendMessage(base::Value message) = 0;
+
+  // Invokes the "SaveAs" dialog.
+  virtual void SaveAs() = 0;
 
   void SaveToBuffer(const std::string& token);
 
@@ -189,10 +273,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Returns the plugin-specific image data buffer.
   virtual Image GetPluginImageData() const;
 
-  // Updates the geometry of the plugin and its image data if the view's
-  // size or scale has changed.
-  void UpdateGeometryOnViewChanged(const gfx::Rect& new_view_rect,
-                                   float new_device_scale);
+  // Updates the geometry of the plugin and its image data if the plugin rect
+  // or the device scale has changed. `new_plugin_rect` must be in device
+  // pixels (with the device scale applied).
+  void UpdateGeometryOnPluginRectChanged(const gfx::Rect& new_plugin_rect,
+                                         float new_device_scale);
 
   // A helper of OnGeometryChanged() which updates the available area and
   // the background parts, and notifies the PDF engine of geometry changes.
@@ -202,23 +287,25 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // aren't painted by the PDF engine).
   void CalculateBackgroundParts();
 
-  // Repaints the plugin contents based on the current scroll position.
-  void UpdateScroll();
-
-  // Bound the given scroll position to the document.
-  gfx::PointF BoundScrollPositionToDocument(const gfx::PointF& scroll_position);
+  // Updates the scroll position, which is in CSS pixels relative to the
+  // top-left corner.
+  void UpdateScroll(const gfx::PointF& scroll_position);
 
   // Computes document width/height in device pixels, based on current zoom and
   // device scale
   int GetDocumentPixelWidth() const;
   int GetDocumentPixelHeight() const;
 
+  // Common `pdf::mojom::PdfListener` implementations.
+  void SetCaretPosition(const gfx::PointF& position);
+  void MoveRangeSelectionExtent(const gfx::PointF& extent);
+  void SetSelectionBounds(const gfx::PointF& base, const gfx::PointF& extent);
+
   // Sets the text input type for this plugin based on `in_focus`.
-  virtual void SetFormFieldInFocus(bool in_focus) = 0;
+  virtual void SetFormTextFieldInFocus(bool in_focus) = 0;
 
   // Sets the accessibility information about the PDF document in the renderer.
-  virtual void SetAccessibilityDocInfo(
-      const AccessibilityDocInfo& doc_info) = 0;
+  virtual void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) = 0;
 
   // Sets the accessibility information about the given `page_index` in the
   // renderer.
@@ -240,38 +327,80 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sets the accessibility information about the current viewport in the
   // renderer.
   virtual void SetAccessibilityViewportInfo(
-      const AccessibilityViewportInfo& viewport_info) = 0;
+      AccessibilityViewportInfo viewport_info) = 0;
 
-  static constexpr bool IsSaveDataSizeValid(size_t size) {
-    return size > 0 && size <= kMaximumSavedFileSize;
-  }
+  // Find handlers.
+  bool StartFind(const std::string& text, bool case_sensitive);
+  void SelectFindResult(bool forward);
+  void StopFind();
+
+  // Notify the plugin container about the total matches for a find request.
+  virtual void NotifyFindResultsChanged(int total, bool final_result) = 0;
+
+  // Notify the frame about the tickmarks for the find request.
+  virtual void NotifyFindTickmarks(const std::vector<gfx::Rect>& tickmarks) = 0;
+
+  // Returns the print preset options for the document.
+  blink::WebPrintPresetOptions GetPrintPresetOptions();
+
+  // Begins a print session with the given `print_params`. A call to
+  // `PrintPages()` can only be made after after a successful call to
+  // `PrintBegin()`. Returns the number of pages required for the print output.
+  // A returned value of 0 indicates failure.
+  int PrintBegin(const blink::WebPrintParams& print_params);
+
+  // Prints the pages specified by `page_numbers` using the parameters passed to
+  // `PrintBegin()` Returns a vector of bytes containing the printed output. An
+  // empty returned value indicates failure.
+  std::vector<uint8_t> PrintPages(const std::vector<int>& page_numbers);
+
+  // Ends the print session. Further calls to `PrintPages()` will fail.
+  void PrintEnd();
 
   // Disables browser commands because of restrictions on how the data is to be
   // used (i.e. can't copy/print). `content_restrictions` should have its bits
   // set by `chrome_pdf::ContentRestriction` enum values.
   virtual void SetContentRestrictions(int content_restrictions) = 0;
 
-  // Sends start/stop loading notifications to the plugin's render frame.
-  // TODO(crbug.com/702993): Evaluate whether these methods are needed when the
-  // plugin is moved into a renderer process.
-  virtual void DidStartLoading() = 0;
-  virtual void DidStopLoading() = 0;
+  // Informs the embedder whether the plugin can handle save commands
+  // internally.
+  virtual void SetPluginCanSave(bool can_save) = 0;
 
-  // Performs tasks necessary when the document is loaded in print preview mode.
-  virtual void OnPrintPreviewLoaded() = 0;
+  // Sends start/stop loading notifications to the plugin's render frame.
+  virtual void PluginDidStartLoading() = 0;
+  virtual void PluginDidStopLoading() = 0;
+
+  // Requests the plugin's render frame to set up a print dialog for the
+  // document.
+  virtual void InvokePrintDialog() = 0;
+
+  // Notifies the embedder about a new link under the cursor.
+  // TODO(crbug.com/702993): This is only needed by `OutOfProcessInstance`.
+  // Remove this method when that class ceases to exist.
+  virtual void NotifyLinkUnderCursor() {}
+
+  // Notifies the embedder of the top-left and bottom-right coordinates of the
+  // current selection.
+  virtual void NotifySelectionChanged(const gfx::PointF& left,
+                                      int left_height,
+                                      const gfx::PointF& right,
+                                      int right_height) = 0;
+
+  // Notifies the user about unsupported feature if the PDF Viewer occupies the
+  // full frame.
+  virtual void NotifyUnsupportedFeature() = 0;
 
   // Records user actions.
   virtual void UserMetricsRecordAction(const std::string& action) = 0;
-
-  void set_url(const std::string& url) { url_ = url; }
 
   ui::mojom::CursorType cursor_type() const { return cursor_type_; }
   void set_cursor_type(ui::mojom::CursorType cursor_type) {
     cursor_type_ = cursor_type;
   }
 
+  const std::string& link_under_cursor() const { return link_under_cursor_; }
+
   bool full_frame() const { return full_frame_; }
-  void set_full_frame(bool full_frame) { full_frame_ = full_frame; }
 
   SkBitmap& mutable_image_data() { return image_data_; }
 
@@ -281,10 +410,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   const gfx::Rect& plugin_rect() const { return plugin_rect_; }
 
-  void SetBackgroundColor(SkColor background_color) {
-    background_color_ = background_color;
-  }
-
   // Sets the new zoom scale.
   void SetZoom(double scale);
 
@@ -292,33 +417,36 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   float device_scale() const { return device_scale_; }
 
-  void set_scroll_position(const gfx::Point& scroll_position) {
-    scroll_position_ = scroll_position;
-  }
-
-  bool stop_scrolling() const { return stop_scrolling_; }
-
-  DocumentLoadState document_load_state() const { return document_load_state_; }
-  void set_document_load_state(DocumentLoadState state) {
-    document_load_state_ = state;
-  }
-
   AccessibilityState accessibility_state() const {
     return accessibility_state_;
   }
 
-  bool edit_mode() const { return edit_mode_; }
-  void set_edit_mode(bool edit_mode) { edit_mode_ = edit_mode; }
+  static constexpr bool IsSaveDataSizeValid(size_t size) {
+    return size > 0 && size <= kMaximumSavedFileSize;
+  }
+
+  static base::Value::DictStorage DictFromRect(const gfx::Rect& rect);
 
  private:
+  // Converts a scroll offset (which is relative to a UI direction-dependent
+  // scroll origin) to a scroll position (which is always relative to the
+  // top-left corner).
+  gfx::PointF GetScrollPositionFromOffset(
+      const gfx::Vector2dF& scroll_offset) const;
+
   // Message handlers.
   void HandleDisplayAnnotationsMessage(const base::Value& message);
   void HandleGetNamedDestinationMessage(const base::Value& message);
   void HandleGetPasswordCompleteMessage(const base::Value& message);
   void HandleGetSelectedTextMessage(const base::Value& message);
   void HandleGetThumbnailMessage(const base::Value& message);
+  void HandleLoadPreviewPageMessage(const base::Value& message);
+  void HandlePrintMessage(const base::Value& /*message*/);
+  void HandleResetPrintPreviewModeMessage(const base::Value& message);
   void HandleRotateClockwiseMessage(const base::Value& /*message*/);
   void HandleRotateCounterclockwiseMessage(const base::Value& /*message*/);
+  void HandleSaveMessage(const base::Value& message);
+  void HandleSaveAttachmentMessage(const base::Value& message);
   void HandleSelectAllMessage(const base::Value& /*message*/);
   void HandleSetBackgroundColorMessage(const base::Value& message);
   void HandleSetReadOnlyMessage(const base::Value& message);
@@ -326,6 +454,14 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void HandleStopScrollingMessage(const base::Value& /*message*/);
   void HandleUpdateScrollMessage(const base::Value& message);
   void HandleViewportMessage(const base::Value& message);
+
+  // Sends start/stop loading notifications to the plugin's render frame
+  // depending on `did_call_start_loading_`.
+  void DidStartLoading();
+  void DidStopLoading();
+
+  // Saves the document to a file.
+  void SaveToFile(const std::string& token);
 
   // Paints the given invalid area of the plugin to the given graphics device.
   // PaintManager::Client::OnPaint() should be its only caller.
@@ -355,6 +491,8 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Starts loading accessibility information.
   void LoadAccessibility();
 
+  void ResetRecentlySentFindUpdate(int32_t /*unused_but_required*/);
+
   // Records metrics about the document metadata.
   void RecordDocumentMetrics();
 
@@ -371,6 +509,37 @@ class PdfViewPluginBase : public PDFEngine::Client,
                              int32_t max,
                              uint32_t bucket_count);
 
+  // Handles `LoadUrl()` result.
+  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result);
+
+  // Handles `LoadUrl()` result for print preview.
+  void DidOpenPreview(std::unique_ptr<UrlLoader> loader, int32_t result);
+
+  // Handles `Open()` result for `form_loader_`.
+  void DidFormOpen(int32_t result);
+
+  // Performs tasks necessary when the document is loaded in print preview mode.
+  void OnPrintPreviewLoaded();
+
+  // Reduces the document to 1 page and appends `print_preview_page_count_` - 1
+  // blank pages to the document for print preview.
+  void AppendBlankPrintPreviewPages();
+
+  // Process the preview page data information. `src_url` specifies the preview
+  // page data location. The `src_url` is in the format:
+  // chrome-untrusted://print/id/page_number/print.pdf
+  // `dest_page_index` specifies the blank page index that needs to be replaced
+  // with the new page data.
+  void ProcessPreviewPageInfo(const std::string& src_url, int dest_page_index);
+  // Load the next available preview page into the blank page.
+  void LoadAvailablePreviewPage();
+
+  // Called after a preview page has loaded or failed to load.
+  void LoadNextPreviewPage();
+
+  // Converts `frame_coordinates` to PDF coordinates.
+  gfx::Point FrameToPdfCoordinates(const gfx::PointF& frame_coordinates) const;
+
   std::unique_ptr<PDFiumEngine> engine_;
   PaintManager paint_manager_{this};
 
@@ -379,6 +548,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // The current cursor type.
   ui::mojom::CursorType cursor_type_ = ui::mojom::CursorType::kPointer;
+
+  // The URL currently under the cursor.
+  std::string link_under_cursor_;
 
   // True if the plugin occupies the entire frame (not embedded).
   bool full_frame_ = false;
@@ -428,12 +600,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // True if we request a new bitmap rendering.
   bool needs_reraster_ = true;
 
-  // The scroll position in CSS pixels.
-  gfx::Point scroll_position_;
+  // The UI direction.
+  base::i18n::TextDirection ui_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
-  // The scroll position for the last raster, before any transformations are
-  // applied.
-  gfx::PointF scroll_position_at_last_raster_;
+  // The scroll offset for the last raster in CSS pixels, before any
+  // transformations are applied.
+  gfx::Vector2dF scroll_offset_at_last_raster_;
 
   // If this is true, then don't scroll the plugin in response to the messages
   // from DidChangeView() or HandleUpdateScrollMessage(). This will be true when
@@ -454,6 +626,11 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // The current state of document load.
   DocumentLoadState document_load_state_ = DocumentLoadState::kLoading;
 
+  // If true, the render frame has been notified that we're starting a network
+  // request so that it can start the throbber. It will be notified again once
+  // the document finishes loading.
+  bool did_call_start_loading_ = false;
+
   // The current state of accessibility.
   AccessibilityState accessibility_state_ = AccessibilityState::kOff;
 
@@ -461,8 +638,63 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // reconstructing the tree for new document layouts.
   int32_t next_accessibility_page_index_ = 0;
 
+  // Whether an update to the number of find results found was sent less than
+  // `kFindResultCooldownMs` milliseconds ago.
+  bool recently_sent_find_update_ = false;
+
+  // Stores the tickmarks to be shown for the current find results.
+  std::vector<gfx::Rect> tickmarks_;
+
+  // Keeps track of which unsupported features have been reported to avoid
+  // spamming the metrics if a feature shows up many times per document.
+  base::flat_set<std::string> unsupported_features_reported_;
+
+  // Indicates whether the browser has been notified about an unsupported
+  // feature once, which helps prevent the infobar from going up more than once.
+  bool notified_browser_about_unsupported_feature_ = false;
+
   // Whether the document is in edit mode.
   bool edit_mode_ = false;
+
+  // Used for submitting forms.
+  std::unique_ptr<UrlLoader> form_loader_;
+
+  // Assigned a value only between `PrintBegin()` and `PrintEnd()` calls.
+  absl::optional<blink::WebPrintParams> print_params_;
+
+  // For identifying actual print operations to avoid double logging of UMA.
+  bool print_pages_called_;
+
+  // The PreviewModeClient used for print preview. Will be passed to
+  // `preview_engine_`.
+  std::unique_ptr<PreviewModeClient> preview_client_;
+
+  // This engine is used to render the individual preview page data. This is
+  // used only in print preview mode. This will use `PreviewModeClient`
+  // interface which has very limited access to the pp::Instance.
+  std::unique_ptr<PDFiumEngine> preview_engine_;
+
+  DocumentLoadState preview_document_load_state_ = DocumentLoadState::kComplete;
+
+  // True if the plugin is loaded in print preview, otherwise false.
+  bool is_print_preview_ = false;
+
+  // Number of pages in print preview mode for non-PDF source, 0 if print
+  // previewing a PDF, and -1 if not in print preview mode.
+  int print_preview_page_count_ = -1;
+
+  // Number of pages loaded in print preview mode for non-PDF source. Always
+  // less than or equal to `print_preview_page_count_`.
+  int print_preview_loaded_page_count_ = -1;
+
+  // Used to manage loaded print preview page information. A `PreviewPageInfo`
+  // consists of data source URL string and the page index in the destination
+  // document.
+  // The URL string embeds a page number that can be found with
+  // ExtractPrintPreviewPageIndex(). This page number is always greater than 0.
+  // The page index is always in the range of [0, print_preview_page_count_).
+  using PreviewPageInfo = std::pair<std::string, int>;
+  base::queue<PreviewPageInfo> preview_pages_info_;
 };
 
 }  // namespace chrome_pdf

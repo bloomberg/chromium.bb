@@ -12,8 +12,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
-#include "base/observer_list.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -63,6 +62,10 @@ class PasswordManager : public PasswordManagerInterface {
   static void RegisterLocalPrefs(PrefRegistrySimple* registry);
 
   explicit PasswordManager(PasswordManagerClient* client);
+
+  PasswordManager(const PasswordManager&) = delete;
+  PasswordManager& operator=(const PasswordManager&) = delete;
+
   ~PasswordManager() override;
 
   // FormSubmissionObserver:
@@ -149,6 +152,7 @@ class PasswordManager : public PasswordManagerInterface {
   // |value| is the current value of the field.
   void OnUserModifiedNonPasswordField(PasswordManagerDriver* driver,
                                       autofill::FieldRendererId renderer_id,
+                                      const std::u16string& field_name,
                                       const std::u16string& value);
 
   // Handles user input and decides whether to show manual fallback for password
@@ -189,7 +193,6 @@ class PasswordManager : public PasswordManagerInterface {
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
-
 #endif  // defined(UNIT_TEST)
 
 #if !defined(OS_IOS)
@@ -209,6 +212,10 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Returns true if a form manager is processing a password update.
   bool IsFormManagerPendingPasswordUpdate() const;
+
+  // Saves the current submitted password to the disk. Password manager must
+  // have a submitted manager.
+  void SaveSubmittedManager();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(
@@ -351,7 +358,7 @@ class PasswordManager : public PasswordManagerInterface {
   std::unique_ptr<PasswordFormManager> owned_submitted_form_manager_;
 
   // The embedder-level client. Must outlive this class.
-  PasswordManagerClient* const client_;
+  const raw_ptr<PasswordManagerClient> client_;
 
   // Records all visible forms seen during a page load, in all frames of the
   // page. When the page stops loading, the password manager checks if one of
@@ -374,8 +381,6 @@ class PasswordManager : public PasswordManagerInterface {
   LeakDetectionDelegate leak_delegate_;
 
   absl::optional<PossibleUsernameData> possible_username_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
 
 }  // namespace password_manager

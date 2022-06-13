@@ -21,7 +21,6 @@
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
-#include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_test_util.h"
@@ -342,8 +341,8 @@ class CleanerTestBase : public ::testing::Test {
     }
 
     int exit_code = -1;
-    bool exited_within_timeout = process.WaitForExitWithTimeout(
-        base::TimeDelta::FromMinutes(10), &exit_code);
+    bool exited_within_timeout =
+        process.WaitForExitWithTimeout(base::Minutes(10), &exit_code);
     EXPECT_TRUE(exited_within_timeout);
     EXPECT_EQ(expected_exit_code, exit_code);
     if (!exited_within_timeout || expected_exit_code != exit_code)
@@ -602,12 +601,6 @@ class CleanerScanningModeTest
 
   void SetUp() override {
     CleanerTestBase::SetUp();
-
-    // TODO(crbug.com/1210601): All uses of MockChromePromptResponder are
-    // failing on Windows 7. Disable this test suite until the problem can be
-    // investigated.
-    if (base::win::GetVersion() < base::win::Version::WIN8)
-      GTEST_SKIP() << "Skipping on Win7: crbug.com/1210601";
 
     command_line_ =
         BuildCommandLine(kCleanerExecutable, ExecutionMode::kScanning);

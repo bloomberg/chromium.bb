@@ -30,58 +30,23 @@ REGISTER_KERNEL_BUILDER(Name("Shape")
 REGISTER_KERNEL_BUILDER(Name("Shape")
                             .Device(DEVICE_CPU)
                             .HostMemory("output")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeOp<int64>);
-
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                               \
-  REGISTER_KERNEL_BUILDER(Name("Shape")                          \
-                              .Device(DEVICE_SYCL)               \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int32>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeOp<int32>);                       \
-  REGISTER_KERNEL_BUILDER(Name("Shape")                          \
-                              .Device(DEVICE_SYCL)               \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int64>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeOp<int64>);
-
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-TF_CALL_bool(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
-
-REGISTER_KERNEL_BUILDER(Name("Shape")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("input")
-                            .HostMemory("output")
-                            .TypeConstraint<int32>("T")
-                            .TypeConstraint<int32>("out_type"),
-                        ShapeOp<int32>);
-REGISTER_KERNEL_BUILDER(Name("Shape")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("input")
-                            .HostMemory("output")
-                            .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeOp<int64>);
-#endif  // TENSORFLOW_USE_SYCL
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeOp<int64_t>);
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-#define REGISTER_GPU_KERNEL(type)                                \
-  REGISTER_KERNEL_BUILDER(Name("Shape")                          \
-                              .Device(DEVICE_GPU)                \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int32>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeOp<int32>);                       \
-  REGISTER_KERNEL_BUILDER(Name("Shape")                          \
-                              .Device(DEVICE_GPU)                \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int64>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeOp<int64>);
+#define REGISTER_GPU_KERNEL(type)                                  \
+  REGISTER_KERNEL_BUILDER(Name("Shape")                            \
+                              .Device(DEVICE_GPU)                  \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int32>("out_type")   \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeOp<int32>);                         \
+  REGISTER_KERNEL_BUILDER(Name("Shape")                            \
+                              .Device(DEVICE_GPU)                  \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeOp<int64_t>);
 
 TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
 TF_CALL_bool(REGISTER_GPU_KERNEL);
@@ -103,10 +68,47 @@ REGISTER_KERNEL_BUILDER(Name("Shape")
                             .HostMemory("input")
                             .HostMemory("output")
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeOp<int64>);
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeOp<int64_t>);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
+
+#define REGISTER_DEFAULT_KERNEL(type)                              \
+  REGISTER_KERNEL_BUILDER(Name("Shape")                            \
+                              .Device(DEVICE_DEFAULT)              \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int32>("out_type")   \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeOp<int32>);                         \
+  REGISTER_KERNEL_BUILDER(Name("Shape")                            \
+                              .Device(DEVICE_DEFAULT)              \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeOp<int64_t>);
+
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_bool(REGISTER_DEFAULT_KERNEL);
+TF_CALL_variant(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
+
+// A special GPU kernel for int32.
+// TODO(b/25387198): Also enable int32 in device memory. This kernel
+// registration requires all int32 inputs and outputs to be in host memory.
+REGISTER_KERNEL_BUILDER(Name("Shape")
+                            .Device(DEVICE_DEFAULT)
+                            .HostMemory("input")
+                            .HostMemory("output")
+                            .TypeConstraint<int32>("T")
+                            .TypeConstraint<int32>("out_type"),
+                        ShapeOp<int32>);
+REGISTER_KERNEL_BUILDER(Name("Shape")
+                            .Device(DEVICE_DEFAULT)
+                            .HostMemory("input")
+                            .HostMemory("output")
+                            .TypeConstraint<int32>("T")
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeOp<int64_t>);
 
 // ShapeN ---------------------------------------
 REGISTER_KERNEL_BUILDER(Name("ShapeN")
@@ -117,23 +119,23 @@ REGISTER_KERNEL_BUILDER(Name("ShapeN")
 REGISTER_KERNEL_BUILDER(Name("ShapeN")
                             .Device(DEVICE_CPU)
                             .HostMemory("output")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeNOp<int64>);
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeNOp<int64_t>);
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-#define REGISTER_GPU_KERNEL(type)                                \
-  REGISTER_KERNEL_BUILDER(Name("ShapeN")                         \
-                              .Device(DEVICE_GPU)                \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int32>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeNOp<int32>);                      \
-  REGISTER_KERNEL_BUILDER(Name("ShapeN")                         \
-                              .Device(DEVICE_GPU)                \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int64>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeNOp<int64>)
+#define REGISTER_GPU_KERNEL(type)                                  \
+  REGISTER_KERNEL_BUILDER(Name("ShapeN")                           \
+                              .Device(DEVICE_GPU)                  \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int32>("out_type")   \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeNOp<int32>);                        \
+  REGISTER_KERNEL_BUILDER(Name("ShapeN")                           \
+                              .Device(DEVICE_GPU)                  \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeNOp<int64_t>)
 
 TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
 TF_CALL_bool(REGISTER_GPU_KERNEL);
@@ -154,73 +156,49 @@ REGISTER_KERNEL_BUILDER(Name("ShapeN")
                             .HostMemory("input")
                             .HostMemory("output")
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeNOp<int64>);
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeNOp<int64_t>);
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                               \
-  REGISTER_KERNEL_BUILDER(Name("ShapeN")                         \
-                              .Device(DEVICE_SYCL)               \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int32>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeNOp<int32>);                      \
-  REGISTER_KERNEL_BUILDER(Name("ShapeN")                         \
-                              .Device(DEVICE_SYCL)               \
-                              .HostMemory("output")              \
-                              .TypeConstraint<int64>("out_type") \
-                              .TypeConstraint<type>("T"),        \
-                          ShapeNOp<int64>)
+#define REGISTER_DEFAULT_KERNEL(type)                              \
+  REGISTER_KERNEL_BUILDER(Name("ShapeN")                           \
+                              .Device(DEVICE_DEFAULT)              \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int32>("out_type")   \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeNOp<int32>);                        \
+  REGISTER_KERNEL_BUILDER(Name("ShapeN")                           \
+                              .Device(DEVICE_DEFAULT)              \
+                              .HostMemory("output")                \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .TypeConstraint<type>("T"),          \
+                          ShapeNOp<int64_t>)
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-TF_CALL_bool(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_bool(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
 
+// A special GPU kernel for int32.
+// TODO(b/25387198): Also enable int32 in device memory. This kernel
+// registration requires all int32 inputs and outputs to be in host memory.
 REGISTER_KERNEL_BUILDER(Name("ShapeN")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .HostMemory("input")
                             .HostMemory("output")
                             .TypeConstraint<int32>("T")
                             .TypeConstraint<int32>("out_type"),
                         ShapeNOp<int32>);
 REGISTER_KERNEL_BUILDER(Name("ShapeN")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .HostMemory("input")
                             .HostMemory("output")
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type"),
-                        ShapeNOp<int64>);
-#endif  // TENSORFLOW_USE_SYCL
+                            .TypeConstraint<int64_t>("out_type"),
+                        ShapeNOp<int64_t>);
 
 // Rank ------------------------------------------
 REGISTER_KERNEL_BUILDER(Name("Rank").Device(DEVICE_CPU).HostMemory("output"),
                         RankOp);
-
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                       \
-  REGISTER_KERNEL_BUILDER(Name("Rank")                   \
-                              .Device(DEVICE_SYCL)       \
-                              .TypeConstraint<type>("T") \
-                              .HostMemory("output"),     \
-                          RankOp);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
-
-REGISTER_KERNEL_BUILDER(Name("Rank")
-                            .Device(DEVICE_SYCL)
-                            .TypeConstraint<int32>("T")
-                            .HostMemory("input")
-                            .HostMemory("output"),
-                        RankOp);
-
-REGISTER_KERNEL_BUILDER(Name("Rank")
-                            .Device(DEVICE_SYCL)
-                            .TypeConstraint<bool>("T")
-                            .HostMemory("input")
-                            .HostMemory("output"),
-                        RankOp);
-#endif  // TENSORFLOW_USE_SYCL
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 #define REGISTER_GPU_KERNEL(type)                        \
@@ -252,6 +230,33 @@ REGISTER_KERNEL_BUILDER(Name("Rank")
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
+#define REGISTER_DEFAULT_KERNEL(type)                    \
+  REGISTER_KERNEL_BUILDER(Name("Rank")                   \
+                              .Device(DEVICE_DEFAULT)    \
+                              .TypeConstraint<type>("T") \
+                              .HostMemory("output"),     \
+                          RankOp);
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_variant(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
+
+// A special GPU kernel for int32 and bool.
+// TODO(b/25387198): Also enable int32 in device memory. This kernel
+// registration requires all int32 inputs and outputs to be in host memory.
+REGISTER_KERNEL_BUILDER(Name("Rank")
+                            .Device(DEVICE_DEFAULT)
+                            .TypeConstraint<int32>("T")
+                            .HostMemory("input")
+                            .HostMemory("output"),
+                        RankOp);
+
+REGISTER_KERNEL_BUILDER(Name("Rank")
+                            .Device(DEVICE_DEFAULT)
+                            .TypeConstraint<bool>("T")
+                            .HostMemory("input")
+                            .HostMemory("output"),
+                        RankOp);
+
 // Size ------------------------------------------
 REGISTER_KERNEL_BUILDER(Name("Size")
                             .Device(DEVICE_CPU)
@@ -261,23 +266,23 @@ REGISTER_KERNEL_BUILDER(Name("Size")
 REGISTER_KERNEL_BUILDER(Name("Size")
                             .Device(DEVICE_CPU)
                             .HostMemory("output")
-                            .TypeConstraint<int64>("out_type"),
-                        SizeOp<int64>);
+                            .TypeConstraint<int64_t>("out_type"),
+                        SizeOp<int64_t>);
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-#define REGISTER_GPU_KERNEL(type)                                \
-  REGISTER_KERNEL_BUILDER(Name("Size")                           \
-                              .Device(DEVICE_GPU)                \
-                              .TypeConstraint<type>("T")         \
-                              .TypeConstraint<int32>("out_type") \
-                              .HostMemory("output"),             \
-                          SizeOp<int32>);                        \
-  REGISTER_KERNEL_BUILDER(Name("Size")                           \
-                              .Device(DEVICE_GPU)                \
-                              .TypeConstraint<type>("T")         \
-                              .TypeConstraint<int64>("out_type") \
-                              .HostMemory("output"),             \
-                          SizeOp<int64>);
+#define REGISTER_GPU_KERNEL(type)                                  \
+  REGISTER_KERNEL_BUILDER(Name("Size")                             \
+                              .Device(DEVICE_GPU)                  \
+                              .TypeConstraint<type>("T")           \
+                              .TypeConstraint<int32>("out_type")   \
+                              .HostMemory("output"),               \
+                          SizeOp<int32>);                          \
+  REGISTER_KERNEL_BUILDER(Name("Size")                             \
+                              .Device(DEVICE_GPU)                  \
+                              .TypeConstraint<type>("T")           \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .HostMemory("output"),               \
+                          SizeOp<int64_t>);
 TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
 TF_CALL_bool(REGISTER_GPU_KERNEL);
 TF_CALL_variant(REGISTER_GPU_KERNEL);
@@ -296,46 +301,48 @@ REGISTER_KERNEL_BUILDER(Name("Size")
 REGISTER_KERNEL_BUILDER(Name("Size")
                             .Device(DEVICE_GPU)
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type")
+                            .TypeConstraint<int64_t>("out_type")
                             .HostMemory("input")
                             .HostMemory("output"),
-                        SizeOp<int64>);
+                        SizeOp<int64_t>);
 
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                               \
-  REGISTER_KERNEL_BUILDER(Name("Size")                           \
-                              .Device(DEVICE_SYCL)               \
-                              .TypeConstraint<type>("T")         \
-                              .TypeConstraint<int32>("out_type") \
-                              .HostMemory("output"),             \
-                          SizeOp<int32>);                        \
-  REGISTER_KERNEL_BUILDER(Name("Size")                           \
-                              .Device(DEVICE_SYCL)               \
-                              .TypeConstraint<type>("T")         \
-                              .TypeConstraint<int64>("out_type") \
-                              .HostMemory("output"),             \
-                          SizeOp<int64>);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-TF_CALL_bool(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
+#define REGISTER_DEFAULT_KERNEL(type)                              \
+  REGISTER_KERNEL_BUILDER(Name("Size")                             \
+                              .Device(DEVICE_DEFAULT)              \
+                              .TypeConstraint<type>("T")           \
+                              .TypeConstraint<int32>("out_type")   \
+                              .HostMemory("output"),               \
+                          SizeOp<int32>);                          \
+  REGISTER_KERNEL_BUILDER(Name("Size")                             \
+                              .Device(DEVICE_DEFAULT)              \
+                              .TypeConstraint<type>("T")           \
+                              .TypeConstraint<int64_t>("out_type") \
+                              .HostMemory("output"),               \
+                          SizeOp<int64_t>);
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_bool(REGISTER_DEFAULT_KERNEL);
+TF_CALL_variant(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
 
+// A special GPU kernel for int32.
+// TODO(b/25387198): Also enable int32 in device memory. This kernel
+// registration requires all int32 inputs and outputs to be in host memory.
 REGISTER_KERNEL_BUILDER(Name("Size")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .TypeConstraint<int32>("T")
                             .TypeConstraint<int32>("out_type")
                             .HostMemory("input")
                             .HostMemory("output"),
                         SizeOp<int32>);
 REGISTER_KERNEL_BUILDER(Name("Size")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("out_type")
+                            .TypeConstraint<int64_t>("out_type")
                             .HostMemory("input")
                             .HostMemory("output"),
-                        SizeOp<int64>);
-#endif  // TENSORFLOW_USE_SYCL
+                        SizeOp<int64_t>);
 
 // ExpandDims ------------------------------------
 REGISTER_KERNEL_BUILDER(Name("ExpandDims")
@@ -346,23 +353,23 @@ REGISTER_KERNEL_BUILDER(Name("ExpandDims")
 REGISTER_KERNEL_BUILDER(Name("ExpandDims")
                             .Device(DEVICE_CPU)
                             .HostMemory("dim")
-                            .TypeConstraint<int64>("Tdim"),
-                        ExpandDimsOp<int64>);
+                            .TypeConstraint<int64_t>("Tdim"),
+                        ExpandDimsOp<int64_t>);
 
 #if GOOGLE_CUDA || TENSORFLOW_USE_ROCM
-#define REGISTER_GPU_KERNEL(type)                            \
-  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                 \
-                              .Device(DEVICE_GPU)            \
-                              .TypeConstraint<type>("T")     \
-                              .TypeConstraint<int32>("Tdim") \
-                              .HostMemory("dim"),            \
-                          ExpandDimsOp<int32>);              \
-  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                 \
-                              .Device(DEVICE_GPU)            \
-                              .TypeConstraint<type>("T")     \
-                              .TypeConstraint<int64>("Tdim") \
-                              .HostMemory("dim"),            \
-                          ExpandDimsOp<int64>);
+#define REGISTER_GPU_KERNEL(type)                              \
+  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                   \
+                              .Device(DEVICE_GPU)              \
+                              .TypeConstraint<type>("T")       \
+                              .TypeConstraint<int32>("Tdim")   \
+                              .HostMemory("dim"),              \
+                          ExpandDimsOp<int32>);                \
+  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                   \
+                              .Device(DEVICE_GPU)              \
+                              .TypeConstraint<type>("T")       \
+                              .TypeConstraint<int64_t>("Tdim") \
+                              .HostMemory("dim"),              \
+                          ExpandDimsOp<int64_t>);
 TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
 TF_CALL_bool(REGISTER_GPU_KERNEL);
 #undef REGISTER_GPU_KERNEL
@@ -378,33 +385,32 @@ REGISTER_KERNEL_BUILDER(Name("ExpandDims")
 REGISTER_KERNEL_BUILDER(Name("ExpandDims")
                             .Device(DEVICE_GPU)
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("Tdim")
+                            .TypeConstraint<int64_t>("Tdim")
                             .HostMemory("input")
                             .HostMemory("dim")
                             .HostMemory("output"),
-                        ExpandDimsOp<int64>);
+                        ExpandDimsOp<int64_t>);
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#ifdef TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                           \
-  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                 \
-                              .Device(DEVICE_SYCL)           \
-                              .TypeConstraint<type>("T")     \
-                              .TypeConstraint<int32>("Tdim") \
-                              .HostMemory("dim"),            \
-                          ExpandDimsOp<int32>);              \
-  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                 \
-                              .Device(DEVICE_SYCL)           \
-                              .TypeConstraint<type>("T")     \
-                              .TypeConstraint<int64>("Tdim") \
-                              .HostMemory("dim"),            \
-                          ExpandDimsOp<int64>);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-TF_CALL_bool(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
+#define REGISTER_DEFAULT_KERNEL(type)                          \
+  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                   \
+                              .Device(DEVICE_DEFAULT)          \
+                              .TypeConstraint<type>("T")       \
+                              .TypeConstraint<int32>("Tdim")   \
+                              .HostMemory("dim"),              \
+                          ExpandDimsOp<int32>);                \
+  REGISTER_KERNEL_BUILDER(Name("ExpandDims")                   \
+                              .Device(DEVICE_DEFAULT)          \
+                              .TypeConstraint<type>("T")       \
+                              .TypeConstraint<int64_t>("Tdim") \
+                              .HostMemory("dim"),              \
+                          ExpandDimsOp<int64_t>);
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_bool(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
 
 REGISTER_KERNEL_BUILDER(Name("ExpandDims")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .TypeConstraint<int32>("T")
                             .TypeConstraint<int32>("Tdim")
                             .HostMemory("input")
@@ -412,14 +418,13 @@ REGISTER_KERNEL_BUILDER(Name("ExpandDims")
                             .HostMemory("output"),
                         ExpandDimsOp<int32>);
 REGISTER_KERNEL_BUILDER(Name("ExpandDims")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .TypeConstraint<int32>("T")
-                            .TypeConstraint<int64>("Tdim")
+                            .TypeConstraint<int64_t>("Tdim")
                             .HostMemory("input")
                             .HostMemory("dim")
                             .HostMemory("output"),
-                        ExpandDimsOp<int64>);
-#endif  // TENSORFLOW_USE_SYCL
+                        ExpandDimsOp<int64_t>);
 
 // Squeeze ---------------------------------------
 REGISTER_KERNEL_BUILDER(Name("Squeeze").Device(DEVICE_CPU), SqueezeOp);
@@ -444,22 +449,23 @@ REGISTER_KERNEL_BUILDER(Name("Squeeze")
                         SqueezeOp);
 #endif  // GOOGLE_CUDA || TENSORFLOW_USE_ROCM
 
-#if TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                                   \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("Squeeze").Device(DEVICE_SYCL).TypeConstraint<type>("T"), \
+#define REGISTER_DEFAULT_KERNEL(type)                                   \
+  REGISTER_KERNEL_BUILDER(                                              \
+      Name("Squeeze").Device(DEVICE_DEFAULT).TypeConstraint<type>("T"), \
       SqueezeOp);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-TF_CALL_bool(REGISTER_SYCL_KERNEL);
-#undef REGISTER_SYCL_KERNEL
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_DEFAULT_KERNEL);
+TF_CALL_bool(REGISTER_DEFAULT_KERNEL);
+#undef REGISTER_DEFAULT_KERNEL
 
+// A special GPU kernel for int32.
+// TODO(b/25387198): Also enable int32 in device memory. This kernel
+// registration requires all int32 inputs and outputs to be in host memory.
 REGISTER_KERNEL_BUILDER(Name("Squeeze")
-                            .Device(DEVICE_SYCL)
+                            .Device(DEVICE_DEFAULT)
                             .TypeConstraint<int32>("T")
                             .HostMemory("input")
                             .HostMemory("output"),
                         SqueezeOp);
-#endif  // TENSORFLOW_USE_SYCL
 
 class EnsureShapeOp : public OpKernel {
  public:
@@ -496,31 +502,6 @@ class EnsureShapeOp : public OpKernel {
 // those of the identity op, since the ops have the same device type
 // constraints.
 REGISTER_KERNEL_BUILDER(Name("EnsureShape").Device(DEVICE_CPU), EnsureShapeOp);
-
-#if TENSORFLOW_USE_SYCL
-#define REGISTER_SYCL_KERNEL(type)                                       \
-  REGISTER_KERNEL_BUILDER(                                               \
-      Name("EnsureShape").Device(DEVICE_SYCL).TypeConstraint<type>("T"), \
-      EnsureShapeOp)
-
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
-
-#undef REGISTER_SYCL_KERNEL
-
-#define REGISTER_SYCL_HOST_KERNEL(type)                   \
-  REGISTER_KERNEL_BUILDER(Name("EnsureShape")             \
-                              .Device(DEVICE_SYCL)        \
-                              .HostMemory("input")        \
-                              .HostMemory("output")       \
-                              .TypeConstraint<type>("T"), \
-                          EnsureShapeOp)
-
-REGISTER_SYCL_HOST_KERNEL(int32);
-REGISTER_SYCL_HOST_KERNEL(bool);
-
-#undef REGISTER_SYCL_HOST_KERNEL
-
-#endif  // TENSORFLOW_USE_SYCL
 
 #define REGISTER_GPU_KERNEL(type)                                       \
   REGISTER_KERNEL_BUILDER(                                              \

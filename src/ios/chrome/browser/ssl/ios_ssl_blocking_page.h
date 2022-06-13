@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #include "net/ssl/ssl_info.h"
@@ -27,6 +26,9 @@ class SSLErrorUI;
 class IOSSSLBlockingPage
     : public security_interstitials::IOSSecurityInterstitialPage {
  public:
+  IOSSSLBlockingPage(const IOSSSLBlockingPage&) = delete;
+  IOSSSLBlockingPage& operator=(const IOSSSLBlockingPage&) = delete;
+
   ~IOSSSLBlockingPage() override;
 
   // Creates an SSL blocking page. If the blocking page isn't shown, the caller
@@ -46,14 +48,14 @@ class IOSSSLBlockingPage
  protected:
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;
-  void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) const override;
+  void PopulateInterstitialStrings(base::Value* load_time_data) const override;
 
  private:
-  void HandleScriptCommand(const base::DictionaryValue& message,
-                           const GURL& origin_url,
-                           bool user_is_interacting,
-                           web::WebFrame* sender_frame) override;
+  void HandleCommand(
+      security_interstitials::SecurityInterstitialCommand command,
+      const GURL& origin_url,
+      bool user_is_interacting,
+      web::WebFrame* sender_frame) override;
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error.
   static bool IsOverridable(int options_mask);
@@ -65,8 +67,6 @@ class IOSSSLBlockingPage
   std::unique_ptr<security_interstitials::IOSBlockingPageControllerClient>
       controller_;
   std::unique_ptr<security_interstitials::SSLErrorUI> ssl_error_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSSSLBlockingPage);
 };
 
 #endif  // IOS_CHROME_BROWSER_SSL_IOS_SSL_BLOCKING_PAGE_H_

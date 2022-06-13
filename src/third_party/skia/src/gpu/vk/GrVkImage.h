@@ -13,25 +13,54 @@
 #include "include/gpu/vk/GrVkTypes.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/GrVkTypesPriv.h"
+#include "src/gpu/GrAttachment.h"
 #include "src/gpu/GrBackendSurfaceMutableStateImpl.h"
 #include "src/gpu/GrManagedResource.h"
+#include "src/gpu/GrRefCnt.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/vk/GrVkDescriptorSet.h"
+
+#include <cinttypes>
 
 class GrVkGpu;
-class GrVkTexture;
+class GrVkImageView;
 
-class GrVkImage : SkNoncopyable {
+class GrVkImage : public GrAttachment {
 private:
     class Resource;
 
 public:
-    GrVkImage(const GrVkGpu* gpu,
-              const GrVkImageInfo& info,
-              sk_sp<GrBackendSurfaceMutableStateImpl> mutableState,
-              GrBackendObjectOwnership ownership,
-              bool forSecondaryCB = false);
+    static sk_sp<GrVkImage> MakeStencil(GrVkGpu* gpu,
+                                        SkISize dimensions,
+                                        int sampleCnt,
+                                        VkFormat format);
 
-    virtual ~GrVkImage();
+    static sk_sp<GrVkImage> MakeMSAA(GrVkGpu* gpu,
+                                     SkISize dimensions,
+                                     int numSamples,
+                                     VkFormat format,
+                                     GrProtected isProtected,
+                                     GrMemoryless memoryless);
+
+    static sk_sp<GrVkImage> MakeTexture(GrVkGpu* gpu,
+                                        SkISize dimensions,
+                                        VkFormat format,
+                                        uint32_t mipLevels,
+                                        GrRenderable renderable,
+                                        int numSamples,
+                                        SkBudgeted budgeted,
+                                        GrProtected isProtected);
+
+    static sk_sp<GrVkImage> MakeWrapped(GrVkGpu* gpu,
+                                        SkISize dimensions,
+                                        const GrVkImageInfo&,
+                                        sk_sp<GrBackendSurfaceMutableStateImpl>,
+                                        UsageFlags attachmentUsages,
+                                        GrWrapOwnership,
+                                        GrWrapCacheable,
+                                        bool forSecondaryCB = false);
+
+    ~GrVkImage() override;
 
     VkImage image() const {
         // Should only be called when we have a real fResource object, i.e. never when being used as
@@ -47,13 +76,15 @@ public:
     }
     const GrVkImageInfo& vkImageInfo() const { return fInfo; }
     VkFormat imageFormat() const { return fInfo.fFormat; }
-    GrBackendFormat getBackendFormat() const {
+    GrBackendFormat backendFormat() const override {
+        bool usesDRMModifier =
+                this->vkImageInfo().fImageTiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT;
         if (fResource && this->ycbcrConversionInfo().isValid()) {
             SkASSERT(this->imageFormat() == this->ycbcrConversionInfo().fFormat);
-            return GrBackendFormat::MakeVk(this->ycbcrConversionInfo());
+            return GrBackendFormat::MakeVk(this->ycbcrConversionInfo(), usesDRMModifier);
         }
         SkASSERT(this->imageFormat() != VK_FORMAT_UNDEFINED);
-        return GrBackendFormat::MakeVk(this->imageFormat());
+        return GrBackendFormat::MakeVk(this->imageFormat(), usesDRMModifier);
     }
     uint32_t mipLevels() const { return fInfo.fLevelCount; }
     const GrVkYcbcrConversionInfo& ycbcrConversionInfo() const {
@@ -66,6 +97,20 @@ public:
     bool supportsInputAttachmentUsage() const {
         return fInfo.fImageUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     }
+
+    const GrVkImageView* framebufferView() const { return fFramebufferView.get(); }
+    const GrVkImageView* textureView() const { return fTextureView.get(); }
+
+    // So that we don't need to rewrite descriptor sets each time, we keep cached input descriptor
+    // sets on the attachment and simply reuse those descriptor sets for this attachment only. These
+    // calls will fail if the attachment does not support being used as an input attachment. These
+    // calls do not ref the GrVkDescriptorSet so they called will need to manually ref them if they
+    // need to be kept alive.
+    gr_rp<const GrVkDescriptorSet> inputDescSetForBlending(GrVkGpu* gpu);
+    // Input descripotr set used when needing to read a resolve attachment to load data into a
+    // discardable msaa attachment.
+    gr_rp<const GrVkDescriptorSet> inputDescSetForMSAALoad(GrVkGpu* gpu);
+
     const Resource* resource() const {
         SkASSERT(fResource);
         return fResource;
@@ -164,16 +209,62 @@ public:
     void setCurrentQueueFamilyToGraphicsQueue(GrVkGpu* gpu);
 #endif
 
-protected:
+private:
+    static sk_sp<GrVkImage> Make(GrVkGpu* gpu,
+                                 SkISize dimensions,
+                                 UsageFlags attachmentUsages,
+                                 int sampleCnt,
+                                 VkFormat format,
+                                 uint32_t mipLevels,
+                                 VkImageUsageFlags vkUsageFlags,
+                                 GrProtected isProtected,
+                                 GrMemoryless,
+                                 SkBudgeted);
+
+    GrVkImage(GrVkGpu* gpu,
+              SkISize dimensions,
+              UsageFlags supportedUsages,
+              const GrVkImageInfo&,
+              sk_sp<GrBackendSurfaceMutableStateImpl> mutableState,
+              sk_sp<const GrVkImageView> framebufferView,
+              sk_sp<const GrVkImageView> textureView,
+              SkBudgeted);
+
+    GrVkImage(GrVkGpu* gpu,
+              SkISize dimensions,
+              UsageFlags supportedUsages,
+              const GrVkImageInfo&,
+              sk_sp<GrBackendSurfaceMutableStateImpl> mutableState,
+              sk_sp<const GrVkImageView> framebufferView,
+              sk_sp<const GrVkImageView> textureView,
+              GrBackendObjectOwnership,
+              GrWrapCacheable,
+              bool forSecondaryCB);
+
+    void init(GrVkGpu*, bool forSecondaryCB);
+
+    void onRelease() override;
+    void onAbandon() override;
+
     void releaseImage();
     bool hasResource() const { return fResource; }
 
-    GrVkImageInfo                    fInfo;
-    uint32_t                         fInitialQueueFamily;
-    sk_sp<GrBackendSurfaceMutableStateImpl> fMutableState;
-    bool                             fIsBorrowed;
+    GrVkGpu* getVkGpu() const;
 
-private:
+    GrVkImageInfo                           fInfo;
+    uint32_t                                fInitialQueueFamily;
+    sk_sp<GrBackendSurfaceMutableStateImpl> fMutableState;
+
+    sk_sp<const GrVkImageView>              fFramebufferView;
+    sk_sp<const GrVkImageView>              fTextureView;
+
+    bool fIsBorrowed;
+
+    // Descriptor set used when this is used as an input attachment for reading the dst in blending.
+    gr_rp<const GrVkDescriptorSet> fCachedBlendingInputDescSet;
+    // Descriptor set used when this is used as an input attachment for loading an msaa attachment.
+    gr_rp<const GrVkDescriptorSet> fCachedMSAALoadInputDescSet;
+
     class Resource : public GrTextureResource {
     public:
         explicit Resource(const GrVkGpu* gpu)
@@ -186,14 +277,13 @@ private:
         Resource(const GrVkGpu* gpu, VkImage image, const GrVkAlloc& alloc, VkImageTiling tiling)
             : fGpu(gpu)
             , fImage(image)
-            , fAlloc(alloc)
-            , fImageTiling(tiling) {}
+            , fAlloc(alloc) {}
 
         ~Resource() override {}
 
 #ifdef SK_TRACE_MANAGED_RESOURCES
         void dumpInfo() const override {
-            SkDebugf("GrVkImage: %d (%d refs)\n", fImage, this->getRefCnt());
+            SkDebugf("GrVkImage: %" PRIdPTR " (%d refs)\n", (intptr_t)fImage, this->getRefCnt());
         }
 #endif
 
@@ -207,7 +297,6 @@ private:
         const GrVkGpu* fGpu;
         VkImage        fImage;
         GrVkAlloc      fAlloc;
-        VkImageTiling  fImageTiling;
 
         using INHERITED = GrTextureResource;
     };

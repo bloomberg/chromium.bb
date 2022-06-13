@@ -96,8 +96,9 @@ TEST(NtpTimeConverterTest, ConvertsToNtpTimeAndBack) {
     ASSERT_GT(converted_back_time_point, last_converted_back_time_point);
     last_converted_back_time_point = converted_back_time_point;
 
-    ASSERT_NEAR(t.time_since_epoch().count(),
-                converted_back_time_point.time_since_epoch().count(),
+    ASSERT_NEAR(static_cast<double>(t.time_since_epoch().count()),
+                static_cast<double>(
+                    converted_back_time_point.time_since_epoch().count()),
                 1 /* tick */);
   }
 }

@@ -223,10 +223,22 @@ source_set("unittests") {
     "base/udp_packet_unittest.cc",
   ]
 
+  deps = [
+    ":platform",
+    ":test",
+    "../third_party/abseil",
+    "../third_party/boringssl",
+    "../third_party/googletest:gmock",
+    "../third_party/googletest:gtest",
+    "../util",
+  ]
+
   # The socket integration tests assume that you can Bind with UDP sockets,
   # which is simply not true when we are built inside of Chromium.
   if (!build_with_chromium) {
     sources += [ "api/socket_integration_unittest.cc" ]
+
+    deps += [ ":standalone_impl" ]
   }
 
   # The unit tests in impl/ assume the standalone implementation is being used.
@@ -250,14 +262,4 @@ source_set("unittests") {
       ]
     }
   }
-
-  deps = [
-    ":platform",
-    ":test",
-    "../third_party/abseil",
-    "../third_party/boringssl",
-    "../third_party/googletest:gmock",
-    "../third_party/googletest:gtest",
-    "../util",
-  ]
 }

@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/url_matcher/url_matcher.h"
-#include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
+#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
 
 namespace extensions {
 
@@ -25,6 +25,10 @@ class EventFilter {
  public:
   typedef int MatcherID;
   EventFilter();
+
+  EventFilter(const EventFilter&) = delete;
+  EventFilter& operator=(const EventFilter&) = delete;
+
   ~EventFilter();
 
   // Adds an event matcher that will be used in calls to MatchEvent(). Returns
@@ -47,7 +51,7 @@ class EventFilter {
   // event matchers that matched the event.
   // TODO(koz): Add a std::string* parameter for retrieving error messages.
   std::set<MatcherID> MatchEvent(const std::string& event_name,
-                                 const EventFilteringInfo& event_info,
+                                 const mojom::EventFilteringInfo& event_info,
                                  int routing_id) const;
 
   int GetMatcherCountForEventForTesting(const std::string& event_name) const;
@@ -65,6 +69,10 @@ class EventFilter {
         std::unique_ptr<EventMatcher> event_matcher,
         url_matcher::URLMatcher* url_matcher,
         const url_matcher::URLMatcherConditionSet::Vector& condition_sets);
+
+    EventMatcherEntry(const EventMatcherEntry&) = delete;
+    EventMatcherEntry& operator=(const EventMatcherEntry&) = delete;
+
     ~EventMatcherEntry();
 
     // Prevents the removal of condition sets when this class is destroyed. We
@@ -81,9 +89,7 @@ class EventFilter {
     std::unique_ptr<EventMatcher> event_matcher_;
     // The id sets in |url_matcher_| that this EventMatcher owns.
     std::vector<url_matcher::URLMatcherConditionSet::ID> condition_set_ids_;
-    url_matcher::URLMatcher* url_matcher_;
-
-    DISALLOW_COPY_AND_ASSIGN(EventMatcherEntry);
+    raw_ptr<url_matcher::URLMatcher> url_matcher_;
   };
 
   // Maps from a matcher id to an event matcher entry.
@@ -119,8 +125,6 @@ class EventFilter {
 
   // Maps from event matcher ids to the name of the event they match on.
   std::map<MatcherID, std::string> id_to_event_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventFilter);
 };
 
 }  // namespace extensions

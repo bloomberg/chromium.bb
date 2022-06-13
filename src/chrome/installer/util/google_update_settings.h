@@ -11,10 +11,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -23,7 +22,7 @@
 #include "components/metrics/client_info.h"
 
 namespace installer {
-class ChannelInfo;
+class AdditionalParameters;
 class InstallationState;
 }  // namespace installer
 
@@ -70,6 +69,10 @@ class GoogleUpdateSettings {
     // to the platform -- i.e. on Windows, it will be a Win32 HRESULT.
     int last_extra_code;
   };
+
+  GoogleUpdateSettings() = delete;
+  GoogleUpdateSettings(const GoogleUpdateSettings&) = delete;
+  GoogleUpdateSettings& operator=(const GoogleUpdateSettings&) = delete;
 
   // Returns true if this install is system-wide, false if it is per-user.
   static bool IsSystemInstall();
@@ -176,8 +179,7 @@ class GoogleUpdateSettings {
   // - Unconditionally clear a legacy "-stage:" modifier.
   static void UpdateInstallStatus(bool system_install,
                                   installer::ArchiveType archive_type,
-                                  int install_return_code,
-                                  const std::wstring& product_guid);
+                                  int install_return_code);
 
   // Sets the InstallerProgress value in the registry so that Google Update can
   // provide informative user feedback. |path| is the full path to the app's
@@ -204,7 +206,7 @@ class GoogleUpdateSettings {
   // Returns true if |value| is modified.
   static bool UpdateGoogleUpdateApKey(installer::ArchiveType archive_type,
                                       int install_return_code,
-                                      installer::ChannelInfo* value);
+                                      installer::AdditionalParameters* value);
 
   // Returns the effective update policy for |app_guid| as dictated by
   // Group Policy settings.  |is_overridden|, if non-nullptr, is populated with
@@ -281,9 +283,6 @@ class GoogleUpdateSettings {
   // nothing to |experiment_labels|. This will return true if the label did not
   // exist, or was successfully read.
   static bool ReadExperimentLabels(std::wstring* experiment_labels);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_SETTINGS_H_

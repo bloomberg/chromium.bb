@@ -14,6 +14,7 @@
 
 #include "tests/DawnTest.h"
 
+#include "common/Math.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/TestUtils.h"
 #include "utils/WGPUHelpers.h"
@@ -45,12 +46,12 @@ namespace {
 
 class BufferZeroInitTest : public DawnTest {
   protected:
-    std::vector<const char*> GetRequiredExtensions() override {
-        std::vector<const char*> requiredExtensions = {};
-        if (SupportsExtensions({"timestamp_query"})) {
-            requiredExtensions.push_back("timestamp_query");
+    std::vector<const char*> GetRequiredFeatures() override {
+        std::vector<const char*> requiredFeatures = {};
+        if (SupportsFeatures({"timestamp-query"})) {
+            requiredFeatures.push_back("timestamp-query");
         }
-        return requiredExtensions;
+        return requiredFeatures;
     }
 
   public:
@@ -91,7 +92,8 @@ class BufferZeroInitTest : public DawnTest {
         descriptor.size = size;
         descriptor.format = format;
         descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc |
-                           wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::Storage;
+                           wgpu::TextureUsage::RenderAttachment |
+                           wgpu::TextureUsage::StorageBinding;
         wgpu::Texture texture = device.CreateTexture(&descriptor);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -168,8 +170,8 @@ class BufferZeroInitTest : public DawnTest {
                                        const std::vector<uint32_t>& expectedBufferData) {
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.layout = nullptr;
-        pipelineDescriptor.computeStage.module = module;
-        pipelineDescriptor.computeStage.entryPoint = "main";
+        pipelineDescriptor.compute.module = module;
+        pipelineDescriptor.compute.entryPoint = "main";
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDescriptor);
 
         const uint64_t bufferSize = expectedBufferData.size() * sizeof(uint32_t);
@@ -200,8 +202,10 @@ class BufferZeroInitTest : public DawnTest {
         EXPECT_PIXEL_RGBA8_EQ(kExpectedColor, outputTexture, 0u, 0u);
     }
 
-    wgpu::RenderPipeline CreateRenderPipelineForTest(const char* vertexShader,
-                                                     uint32_t vertexBufferCount = 1u) {
+    wgpu::RenderPipeline CreateRenderPipelineForTest(
+        const char* vertexShader,
+        uint32_t vertexBufferCount = 1u,
+        wgpu::VertexFormat vertexFormat = wgpu::VertexFormat::Float32x4) {
         constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
 
         wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, vertexShader);
@@ -213,16 +217,16 @@ class BufferZeroInitTest : public DawnTest {
             })");
 
         ASSERT(vertexBufferCount <= 1u);
-        utils::ComboRenderPipelineDescriptor2 descriptor;
+        utils::ComboRenderPipelineDescriptor descriptor;
         descriptor.vertex.module = vsModule;
         descriptor.cFragment.module = fsModule;
         descriptor.primitive.topology = wgpu::PrimitiveTopology::PointList;
         descriptor.vertex.bufferCount = vertexBufferCount;
-        descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
+        descriptor.cBuffers[0].arrayStride = Align(utils::VertexFormatSize(vertexFormat), 4);
         descriptor.cBuffers[0].attributeCount = 1;
-        descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+        descriptor.cAttributes[0].format = vertexFormat;
         descriptor.cTargets[0].format = kColorAttachmentFormat;
-        return device.CreateRenderPipeline2(&descriptor);
+        return device.CreateRenderPipeline(&descriptor);
     }
 
     void ExpectLazyClearSubmitAndCheckOutputs(wgpu::CommandEncoder encoder,
@@ -425,16 +429,16 @@ class BufferZeroInitTest : public DawnTest {
         // As long as the comptue shader is executed once, the pixel color of outImage will be set
         // to red.
         const char* computeShader = R"(
-            [[group(0), binding(0)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+            [[group(0), binding(0)]] var outImage : texture_storage_2d<rgba8unorm, write>;
 
-            [[stage(compute)]] fn main() {
+            [[stage(compute), workgroup_size(1)]] fn main() {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(1.0, 0.0, 0.0, 1.0));
             })";
 
         wgpu::ComputePipelineDescriptor pipelineDescriptor;
         pipelineDescriptor.layout = nullptr;
-        pipelineDescriptor.computeStage.module = utils::CreateShaderModule(device, computeShader);
-        pipelineDescriptor.computeStage.entryPoint = "main";
+        pipelineDescriptor.compute.module = utils::CreateShaderModule(device, computeShader);
+        pipelineDescriptor.compute.entryPoint = "main";
         wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDescriptor);
 
         // Clear the color of outputTexture to green.
@@ -957,7 +961,7 @@ TEST_P(BufferZeroInitTest, Copy2DTextureToBuffer) {
 // the first use of the buffer and the texture is a 2D array texture.
 TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
     // TODO(crbug.com/dawn/593): This test uses glTextureView() which is not supported on OpenGL ES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGLES());
 
     constexpr wgpu::Extent3D kTextureSize = {64u, 4u, 3u};
 
@@ -989,7 +993,7 @@ TEST_P(BufferZeroInitTest, Copy2DArrayTextureToBuffer) {
 // uniform buffer.
 TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
     constexpr uint32_t kBoundBufferSize = 16u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
@@ -997,9 +1001,9 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
             value : vec4<u32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UBO;
-        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+        [[group(0), binding(1)]] var outImage : texture_storage_2d<rgba8unorm, write>;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             if (all(ubo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
@@ -1028,17 +1032,17 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
 // read-only storage buffer.
 TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
     constexpr uint32_t kBoundBufferSize = 16u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct SSBO {
             value : vec4<u32>;
         };
-        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
-        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+        [[group(0), binding(0)]] var<storage, read> ssbo : SSBO;
+        [[group(0), binding(1)]] var outImage : texture_storage_2d<rgba8unorm, write>;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             if (all(ssbo.value == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
             } else {
@@ -1067,17 +1071,17 @@ TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
 // storage buffer.
 TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
     constexpr uint32_t kBoundBufferSize = 32u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
         [[block]] struct SSBO {
             value : array<vec4<u32>, 2>;
         };
-        [[group(0), binding(0)]] var<storage> ssbo : [[access(read_write)]] SSBO;
-        [[group(0), binding(1)]] var outImage : [[access(write)]] texture_storage_2d<rgba8unorm>;
+        [[group(0), binding(0)]] var<storage, read_write> ssbo : SSBO;
+        [[group(0), binding(1)]] var outImage : texture_storage_2d<rgba8unorm, write>;
 
-        [[stage(compute)]] fn main() {
+        [[stage(compute), workgroup_size(1)]] fn main() {
             if (all(ssbo.value[0] == vec4<u32>(0u, 0u, 0u, 0u)) &&
                 all(ssbo.value[1] == vec4<u32>(0u, 0u, 0u, 0u))) {
                 textureStore(outImage, vec2<i32>(0, 0), vec4<f32>(0.0, 1.0, 0.0, 1.0));
@@ -1124,6 +1128,115 @@ TEST_P(BufferZeroInitTest, SetVertexBuffer) {
     {
         constexpr uint64_t kVertexBufferOffset = 16u;
         TestBufferZeroInitAsVertexBuffer(kVertexBufferOffset);
+    }
+}
+
+// Test for crbug.com/dawn/837.
+// Test that the padding after a buffer allocation is initialized to 0.
+// This test makes an unaligned vertex buffer which should be padded in the backend
+// allocation. It then tries to index off the end of the vertex buffer in an indexed
+// draw call. A backend which implements robust buffer access via clamping should
+// still see zeros at the end of the buffer.
+TEST_P(BufferZeroInitTest, PaddingInitialized) {
+    DAWN_SUPPRESS_TEST_IF(IsANGLE());  // TODO(crbug.com/dawn/1084).
+    DAWN_SUPPRESS_TEST_IF(IsLinux() && IsVulkan() && IsNvidia());  // TODO(crbug.com/dawn/1214).
+
+    constexpr wgpu::TextureFormat kColorAttachmentFormat = wgpu::TextureFormat::RGBA8Unorm;
+    // A small sub-4-byte format means a single vertex can fit entirely within the padded buffer,
+    // touching some of the padding. Test a small format, as well as larger formats.
+    for (wgpu::VertexFormat vertexFormat :
+         {wgpu::VertexFormat::Unorm8x2, wgpu::VertexFormat::Float16x2,
+          wgpu::VertexFormat::Float32x2}) {
+        wgpu::RenderPipeline renderPipeline =
+            CreateRenderPipelineForTest(R"(
+            struct VertexOut {
+                [[location(0)]] color : vec4<f32>;
+                [[builtin(position)]] position : vec4<f32>;
+            };
+
+            [[stage(vertex)]] fn main([[location(0)]] pos : vec2<f32>) -> VertexOut {
+                var output : VertexOut;
+                if (all(pos == vec2<f32>(0.0, 0.0))) {
+                    output.color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+                } else {
+                    output.color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
+                }
+                output.position = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+                return output;
+            })",
+                                        /* vertexBufferCount */ 1u, vertexFormat);
+
+        // Create an index buffer the indexes off the end of the vertex buffer.
+        wgpu::Buffer indexBuffer =
+            utils::CreateBufferFromData<uint32_t>(device, wgpu::BufferUsage::Index, {1});
+
+        const uint32_t vertexFormatSize = utils::VertexFormatSize(vertexFormat);
+
+        // Create an 8-bit texture to use to initialize buffer contents.
+        wgpu::TextureDescriptor initTextureDesc = {};
+        initTextureDesc.size = {vertexFormatSize + 4, 1, 1};
+        initTextureDesc.format = wgpu::TextureFormat::R8Unorm;
+        initTextureDesc.usage = wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst;
+        wgpu::ImageCopyTexture zeroTextureSrc =
+            utils::CreateImageCopyTexture(device.CreateTexture(&initTextureDesc), 0, {0, 0, 0});
+        {
+            wgpu::TextureDataLayout layout =
+                utils::CreateTextureDataLayout(0, wgpu::kCopyStrideUndefined);
+            std::vector<uint8_t> data(initTextureDesc.size.width);
+            queue.WriteTexture(&zeroTextureSrc, data.data(), data.size(), &layout,
+                               &initTextureDesc.size);
+        }
+
+        for (uint32_t extraBytes : {0, 1, 2, 3, 4}) {
+            // Create a vertex buffer to hold a single vertex attribute.
+            // Uniform usage is added to force even more padding on D3D12.
+            // The buffer is internally padded and allocated as a larger buffer.
+            const uint32_t vertexBufferSize = vertexFormatSize + extraBytes;
+            for (uint32_t vertexBufferOffset = 0; vertexBufferOffset <= vertexBufferSize;
+                 vertexBufferOffset += 4u) {
+                wgpu::Buffer vertexBuffer = CreateBuffer(
+                    vertexBufferSize, wgpu::BufferUsage::Vertex | wgpu::BufferUsage::Uniform |
+                                          wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst);
+
+                // "Fully" initialize the buffer with a copy from an 8-bit texture, touching
+                // everything except the padding. From the point-of-view of the API, all
+                // |vertexBufferSize| bytes are initialized. Note: Uses CopyTextureToBuffer because
+                // it does not require 4-byte alignment.
+                {
+                    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+                    wgpu::ImageCopyBuffer dst =
+                        utils::CreateImageCopyBuffer(vertexBuffer, 0, wgpu::kCopyStrideUndefined);
+                    wgpu::Extent3D extent = {vertexBufferSize, 1, 1};
+                    encoder.CopyTextureToBuffer(&zeroTextureSrc, &dst, &extent);
+
+                    wgpu::CommandBuffer commandBuffer = encoder.Finish();
+                    EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commandBuffer));
+                }
+
+                wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+
+                wgpu::Texture colorAttachment =
+                    CreateAndInitializeTexture({1, 1, 1}, kColorAttachmentFormat);
+                utils::ComboRenderPassDescriptor renderPassDescriptor(
+                    {colorAttachment.CreateView()});
+
+                wgpu::RenderPassEncoder renderPass = encoder.BeginRenderPass(&renderPassDescriptor);
+
+                renderPass.SetVertexBuffer(0, vertexBuffer, vertexBufferOffset);
+                renderPass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
+
+                renderPass.SetPipeline(renderPipeline);
+                renderPass.DrawIndexed(1);
+                renderPass.EndPass();
+
+                wgpu::CommandBuffer commandBuffer = encoder.Finish();
+
+                EXPECT_LAZY_CLEAR(0u, queue.Submit(1, &commandBuffer));
+
+                constexpr RGBA8 kExpectedPixelValue = {0, 255, 0, 255};
+                EXPECT_PIXEL_RGBA8_EQ(kExpectedPixelValue, colorAttachment, 0, 0);
+            }
+        }
     }
 }
 
@@ -1178,7 +1291,7 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDrawIndexedIndirect) {
 // DispatchIndirect.
 TEST_P(BufferZeroInitTest, IndirectBufferForDispatchIndirect) {
     // TODO(crbug.com/dawn/661): Diagnose and fix this backend validation failure on GLES.
-    DAWN_SKIP_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
+    DAWN_SUPPRESS_TEST_IF(IsOpenGLES() && IsBackendValidationEnabled());
 
     // Bind the whole buffer as an indirect buffer.
     {
@@ -1196,14 +1309,17 @@ TEST_P(BufferZeroInitTest, IndirectBufferForDispatchIndirect) {
 // Test the buffer will be lazily initialized correctly when its first use is in resolveQuerySet
 TEST_P(BufferZeroInitTest, ResolveQuerySet) {
     // Timestamp query is not supported on OpenGL
-    DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_TEST_UNSUPPORTED_IF(IsOpenGL());
 
-    // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
-    // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsAMD());
+    // TODO(crbug.com/dawn/545): Crash occurs if we only call WriteTimestamp in a command encoder
+    // without any copy commands on Metal on AMD GPU.
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
-    // Skip if timestamp extension is not supported on device
-    DAWN_SKIP_TEST_IF(!SupportsExtensions({"timestamp_query"}));
+    // Skip if timestamp feature is not supported on device
+    DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp-query"}));
+
+    // crbug.com/dawn/940: Does not work on Mac 11.0+. Backend validation changed.
+    DAWN_TEST_UNSUPPORTED_IF(IsMacOS() && !IsMacOS(10));
 
     constexpr uint64_t kBufferSize = 16u;
     constexpr wgpu::BufferUsage kBufferUsage =
@@ -1247,9 +1363,9 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
     // destinationOffset > 0 and destinationOffset + 8 * queryCount <= kBufferSize
     {
         constexpr uint32_t kQueryCount = 1;
-        constexpr uint64_t kDestinationOffset = 8u;
+        constexpr uint64_t kDestinationOffset = 256u;
 
-        wgpu::Buffer destination = CreateBuffer(kBufferSize, kBufferUsage);
+        wgpu::Buffer destination = CreateBuffer(kBufferSize + kDestinationOffset, kBufferUsage);
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
         encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, kDestinationOffset);

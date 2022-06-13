@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
@@ -125,7 +125,11 @@ void DevToolsFrontEndObserver::WebContentsDestroyed() {
 
 void DevToolsFrontEndObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted())
     return;
 
   if (url_ != navigation_handle->GetURL()) {
@@ -192,78 +196,78 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void CreateNativeUIInspectionSession(const std::string& url);
   void OnFrontEndFinished();
 
-  InspectUI* const inspect_ui_;
+  const raw_ptr<InspectUI> inspect_ui_;
 
   base::WeakPtrFactory<InspectMessageHandler> weak_factory_{this};
 };
 
 void InspectMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInitUICommand,
       base::BindRepeating(&InspectMessageHandler::HandleInitUICommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectCommand,
       base::BindRepeating(&InspectMessageHandler::HandleInspectCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectFallbackCommand,
       base::BindRepeating(&InspectMessageHandler::HandleInspectFallbackCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiActivateCommand,
       base::BindRepeating(&InspectMessageHandler::HandleActivateCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiCloseCommand,
       base::BindRepeating(&InspectMessageHandler::HandleCloseCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPauseCommand,
       base::BindRepeating(&InspectMessageHandler::HandlePauseCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiDiscoverUsbDevicesEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsDiscoverUsbDevicesEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPortForwardingEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsPortForwardingEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiPortForwardingConfigCommand,
       base::BindRepeating(
           &InspectMessageHandler::HandlePortForwardingConfigCommand,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiDiscoverTCPTargetsEnabledCommand,
       base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
                           base::Unretained(this),
                           &prefs::kDevToolsDiscoverTCPTargetsEnabled[0]));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiLaunchUIDevToolsCommand,
       base::BindRepeating(&InspectMessageHandler::HandleLaunchUIDevToolsCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiTCPDiscoveryConfigCommand,
       base::BindRepeating(
           &InspectMessageHandler::HandleTCPDiscoveryConfigCommand,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiOpenNodeFrontendCommand,
       base::BindRepeating(&InspectMessageHandler::HandleOpenNodeFrontendCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiReloadCommand,
       base::BindRepeating(&InspectMessageHandler::HandleReloadCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiOpenCommand,
       base::BindRepeating(&InspectMessageHandler::HandleOpenCommand,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       kInspectUiInspectBrowser,
       base::BindRepeating(&InspectMessageHandler::HandleInspectBrowserCommand,
                           base::Unretained(this)));
@@ -277,10 +281,26 @@ static bool ParseStringArgs(const base::ListValue* args,
                             std::string* arg0,
                             std::string* arg1,
                             std::string* arg2 = 0) {
-  int arg_size = args->GetSize();
-  return (!arg0 || (arg_size > 0 && args->GetString(0, arg0))) &&
-         (!arg1 || (arg_size > 1 && args->GetString(1, arg1))) &&
-         (!arg2 || (arg_size > 2 && args->GetString(2, arg2)));
+  int arg_size = args->GetList().size();
+  if (arg0) {
+    if (arg_size < 1 || !args->GetList()[0].is_string()) {
+      return false;
+    }
+    *arg0 = args->GetList()[0].GetString();
+  }
+  if (arg1) {
+    if (arg_size < 2 || !args->GetList()[1].is_string()) {
+      return false;
+    }
+    *arg1 = args->GetList()[1].GetString();
+  }
+  if (arg2) {
+    if (arg_size < 3 || !args->GetList()[2].is_string()) {
+      return false;
+    }
+    *arg2 = args->GetList()[2].GetString();
+  }
+  return true;
 }
 
 void InspectMessageHandler::HandleInspectCommand(const base::ListValue* args) {
@@ -352,9 +372,9 @@ void InspectMessageHandler::HandleBooleanPrefChanged(
   if (!profile)
     return;
 
-  bool enabled;
-  if (args->GetSize() == 1 && args->GetBoolean(0, &enabled))
-    profile->GetPrefs()->SetBoolean(pref_name, enabled);
+  const auto& list = args->GetList();
+  if (list.size() == 1 && list[0].is_bool())
+    profile->GetPrefs()->SetBoolean(pref_name, list[0].GetBool());
 }
 
 void InspectMessageHandler::HandlePortForwardingConfigCommand(
@@ -363,9 +383,11 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
   if (!profile)
     return;
 
-  const base::DictionaryValue* dict_src;
-  if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
-    profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
+  if (args->GetList().size() == 1) {
+    const base::Value& src = args->GetList()[0];
+    if (src.is_dict())
+      profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, src);
+  }
 }
 
 void InspectMessageHandler::HandleTCPDiscoveryConfigCommand(
@@ -374,9 +396,9 @@ void InspectMessageHandler::HandleTCPDiscoveryConfigCommand(
   if (!profile)
     return;
 
-  const base::ListValue* list_src;
-  if (args->GetSize() == 1 && args->GetList(0, &list_src))
-    profile->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, *list_src);
+  base::Value::ConstListView args_list = args->GetList();
+  if (args_list.size() == 1u && args_list[0].is_list())
+    profile->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, args_list[0]);
 }
 
 void InspectMessageHandler::HandleOpenNodeFrontendCommand(
@@ -678,32 +700,30 @@ void InspectUI::SetPortForwardingDefaults() {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
-  bool default_set;
-  if (!GetPrefValue(prefs::kDevToolsPortForwardingDefaultSet)->
-      GetAsBoolean(&default_set) || default_set) {
+  auto default_set =
+      GetPrefValue(prefs::kDevToolsPortForwardingDefaultSet)->GetIfBool();
+  if (!default_set || default_set.value())
     return;
-  }
 
   // This is the first chrome://inspect invocation on a fresh profile or after
   // upgrade from a version that did not have kDevToolsPortForwardingDefaultSet.
   prefs->SetBoolean(prefs::kDevToolsPortForwardingDefaultSet, true);
 
-  bool enabled;
+  auto enabled =
+      GetPrefValue(prefs::kDevToolsPortForwardingEnabled)->GetIfBool();
   const base::DictionaryValue* config;
-  if (!GetPrefValue(prefs::kDevToolsPortForwardingEnabled)->
-        GetAsBoolean(&enabled) ||
-      !GetPrefValue(prefs::kDevToolsPortForwardingConfig)->
-        GetAsDictionary(&config)) {
+  if (!enabled || !GetPrefValue(prefs::kDevToolsPortForwardingConfig)
+                       ->GetAsDictionary(&config)) {
     return;
   }
 
   // Do nothing if user already took explicit action.
-  if (enabled || !config->DictEmpty())
+  if (enabled.value() || !config->DictEmpty())
     return;
 
   base::DictionaryValue default_config;
-  default_config.SetString(kInspectUiPortForwardingDefaultPort,
-                           kInspectUiPortForwardingDefaultLocation);
+  default_config.SetStringPath(kInspectUiPortForwardingDefaultPort,
+                               kInspectUiPortForwardingDefaultLocation);
   prefs->Set(prefs::kDevToolsPortForwardingConfig, default_config);
 }
 
@@ -732,7 +752,7 @@ scoped_refptr<content::DevToolsAgentHost> InspectUI::FindTarget(
 }
 
 void InspectUI::PopulateTargets(const std::string& source,
-                                const base::ListValue& targets) {
+                                const base::Value& targets) {
   web_ui()->CallJavascriptFunctionUnsafe("populateTargets", base::Value(source),
                                          targets);
 }

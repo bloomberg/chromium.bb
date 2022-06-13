@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 
 class Profile;
 class Browser;
@@ -29,14 +29,14 @@ class WebAppDialogManager;
 // this class serves a wide range of Web Applications <-> Browser purposes.
 class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
  public:
-  static WebAppUiManagerImpl* Get(Profile* profile);
+  static WebAppUiManagerImpl* Get(WebAppProvider* provider);
 
   explicit WebAppUiManagerImpl(Profile* profile);
   WebAppUiManagerImpl(const WebAppUiManagerImpl&) = delete;
   WebAppUiManagerImpl& operator=(const WebAppUiManagerImpl&) = delete;
   ~WebAppUiManagerImpl() override;
 
-  void SetSubsystems(AppRegistryController* app_registry_controller,
+  void SetSubsystems(WebAppSyncBridge* sync_bridge,
                      OsIntegrationManager* os_integration_manager) override;
   void Start() override;
   void Shutdown() override;
@@ -52,6 +52,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
                                    const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
+  bool IsAppInQuickLaunchBar(const AppId& app_id) const override;
   bool IsInAppWindow(content::WebContents* web_contents,
                      const AppId* app_id) const override;
   void NotifyOnAssociatedAppChanged(content::WebContents* web_contents,
@@ -64,6 +65,16 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
                               bool shortcut_created) override;
   content::WebContents* NavigateExistingWindow(const AppId& app_id,
                                                const GURL& url) override;
+  void ShowWebAppIdentityUpdateDialog(
+      const std::string& app_id,
+      bool title_change,
+      bool icon_change,
+      const std::u16string& old_title,
+      const std::u16string& new_title,
+      const SkBitmap& old_icon,
+      const SkBitmap& new_icon,
+      content::WebContents* web_contents,
+      web_app::AppIdentityDialogCallback callback) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
@@ -93,13 +104,15 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void OnShortcutLocationGathered(const AppId& from_app,
                                   const AppId& app_id,
                                   ShortcutLocations locations);
+  void InstallOsHooksForReplacementApp(const AppId& app_id,
+                                       ShortcutLocations locations);
 
   std::unique_ptr<WebAppDialogManager> dialog_manager_;
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
-  AppRegistryController* app_registry_controller_ = nullptr;
-  OsIntegrationManager* os_integration_manager_ = nullptr;
+  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
+  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;

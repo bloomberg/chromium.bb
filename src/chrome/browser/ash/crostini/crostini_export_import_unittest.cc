@@ -10,8 +10,8 @@
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/test/base/testing_profile.h"
@@ -130,6 +130,9 @@ class CrostiniExportImportTest : public testing::Test {
     fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
   }
 
+  CrostiniExportImportTest(const CrostiniExportImportTest&) = delete;
+  CrostiniExportImportTest& operator=(const CrostiniExportImportTest&) = delete;
+
   ~CrostiniExportImportTest() override {
     chromeos::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
@@ -192,9 +195,6 @@ class CrostiniExportImportTest : public testing::Test {
   base::FilePath tarball_;
 
   content::BrowserTaskEnvironment task_environment_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
 };
 
 TEST_F(CrostiniExportImportTest, TestNotAllowed) {

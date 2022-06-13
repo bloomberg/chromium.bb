@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_dialog_data.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -141,7 +142,8 @@ SharingUiController::GetDevices() const {
 }
 
 bool SharingUiController::HasSendFailed() const {
-  return send_result_ != SharingSendMessageResult::kSuccessful;
+  return send_result_ != SharingSendMessageResult::kSuccessful &&
+         send_result_ != SharingSendMessageResult::kCancelled;
 }
 
 void SharingUiController::MaybeShowErrorDialog() {
@@ -168,24 +170,28 @@ SharingDialogData SharingUiController::CreateDialogData(
   return data;
 }
 
+bool SharingUiController::ShouldShowLoadingIcon() const {
+  return true;
+}
+
 base::OnceClosure SharingUiController::SendMessageToDevice(
     const syncer::DeviceInfo& device,
     absl::optional<base::TimeDelta> response_timeout,
     chrome_browser_sharing::SharingMessage sharing_message,
     absl::optional<SharingMessageSender::ResponseCallback> custom_callback) {
-  last_dialog_id_++;
-  is_loading_ = true;
   send_result_ = SharingSendMessageResult::kSuccessful;
   target_device_name_ = device.client_name();
-  UpdateIcon();
+  if (ShouldShowLoadingIcon()) {
+    last_dialog_id_++;
+    is_loading_ = true;
+    UpdateIcon();
+  }
 
   SharingMessageSender::ResponseCallback response_callback = base::BindOnce(
       &SharingUiController::OnResponse, weak_ptr_factory_.GetWeakPtr(),
       last_dialog_id_, std::move(custom_callback));
   return sharing_service_->SendMessageToDevice(
-      device,
-      response_timeout.value_or(
-          base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
+      device, response_timeout.value_or(kSharingMessageTTL),
       std::move(sharing_message), std::move(response_callback));
 }
 
@@ -238,9 +244,11 @@ void SharingUiController::OnResponse(
   if (dialog_id != last_dialog_id_)
     return;
 
-  is_loading_ = false;
   send_result_ = result;
-  UpdateIcon();
+  if (ShouldShowLoadingIcon()) {
+    is_loading_ = false;
+    UpdateIcon();
+  }
 }
 
 void SharingUiController::OnAppsReceived(

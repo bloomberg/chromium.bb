@@ -11,6 +11,7 @@
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "quic/core/crypto/certificate_view.h"
 #include "quic/core/crypto/quic_crypto_proof.h"
 #include "quic/core/quic_versions.h"
 #include "quic/platform/api/quic_export.h"
@@ -145,10 +146,13 @@ class QUIC_EXPORT_PRIVATE ProofSource {
                         std::unique_ptr<Callback> callback) = 0;
 
   // Returns the certificate chain for |hostname| in leaf-first order.
+  //
+  // Sets *cert_matched_sni to true if the certificate matched the given
+  // hostname, false if a default cert not matching the hostname was used.
   virtual QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
-      const QuicSocketAddress& client_address,
-      const std::string& hostname) = 0;
+      const QuicSocketAddress& client_address, const std::string& hostname,
+      bool* cert_matched_sni) = 0;
 
   // Computes a signature using the private key of the certificate for
   // |hostname|. The value in |in| is signed using the algorithm specified by
@@ -165,6 +169,15 @@ class QUIC_EXPORT_PRIVATE ProofSource {
       uint16_t signature_algorithm,
       absl::string_view in,
       std::unique_ptr<SignatureCallback> callback) = 0;
+
+  // Return the list of TLS signature algorithms that is acceptable by the
+  // ComputeTlsSignature method. If the entire BoringSSL's default list of
+  // supported signature algorithms are acceptable, return an empty list.
+  //
+  // If returns a non-empty list, ComputeTlsSignature will only be called with a
+  // algorithm in the list.
+  virtual absl::InlinedVector<uint16_t, 8> SupportedTlsSignatureAlgorithms()
+      const = 0;
 
   class QUIC_EXPORT_PRIVATE DecryptCallback {
    public:
@@ -197,7 +210,12 @@ class QUIC_EXPORT_PRIVATE ProofSource {
     // returns the encrypted ticket. The resulting value must not be larger than
     // MaxOverhead bytes larger than |in|. If encryption fails, this method
     // returns an empty vector.
-    virtual std::vector<uint8_t> Encrypt(absl::string_view in) = 0;
+    //
+    // If |encryption_key| is nonempty, this method should use it for minting
+    // TLS resumption tickets.  If it is empty, this method may use an
+    // internally cached encryption key, if available.
+    virtual std::vector<uint8_t> Encrypt(absl::string_view in,
+                                         absl::string_view encryption_key) = 0;
 
     // Decrypt takes an encrypted ticket |in|, decrypts it, and calls
     // |callback->Run| with the decrypted ticket, which must not be larger than
@@ -231,13 +249,19 @@ class QUIC_EXPORT_PRIVATE ProofSourceHandleCallback {
   // |chain| the certificate chain in leaf-first order.
   // |handshake_hints| (optional) handshake hints that can be used by
   //      SSL_set_handshake_hints.
+  // |ticket_encryption_key| (optional) encryption key to be used for minting
+  //      TLS resumption tickets.
+  // |cert_matched_sni| is true if the certificate matched the SNI hostname,
+  //      false if a non-matching default cert was used.
+  // |delayed_ssl_config| contains SSL configs to be applied on the SSL object.
   //
   // When called asynchronously(is_sync=false), this method will be responsible
   // to continue the handshake from where it left off.
-  virtual void OnSelectCertificateDone(bool ok,
-                                       bool is_sync,
-                                       const ProofSource::Chain* chain,
-                                       absl::string_view handshake_hints) = 0;
+  virtual void OnSelectCertificateDone(
+      bool ok, bool is_sync, const ProofSource::Chain* chain,
+      absl::string_view handshake_hints,
+      absl::string_view ticket_encryption_key, bool cert_matched_sni,
+      QuicDelayedSSLConfig delayed_ssl_config) = 0;
 
   // Called when a ProofSourceHandle::ComputeSignature operation completes.
   virtual void OnComputeSignatureDone(
@@ -245,6 +269,10 @@ class QUIC_EXPORT_PRIVATE ProofSourceHandleCallback {
       bool is_sync,
       std::string signature,
       std::unique_ptr<ProofSource::Details> details) = 0;
+
+  // Return true iff ProofSourceHandle::ComputeSignature won't be called later.
+  // The handle can use this function to release resources promptly.
+  virtual bool WillNotCallComputeSignature() const = 0;
 };
 
 // ProofSourceHandle is an interface by which a TlsServerHandshaker can obtain
@@ -264,12 +292,16 @@ class QUIC_EXPORT_PRIVATE ProofSourceHandle {
  public:
   virtual ~ProofSourceHandle() = default;
 
-  // Cancel the pending operation, if any.
-  // Once called, any completion method on |callback()| won't be invoked.
-  virtual void CancelPendingOperation() = 0;
+  // Close the handle. Cancel the pending operation, if any.
+  // Once called, any completion method on |callback()| won't be invoked, and
+  // future SelectCertificate and ComputeSignature calls should return failure.
+  virtual void CloseHandle() = 0;
 
   // Starts a select certificate operation. If the operation is not cancelled
   // when it completes, callback()->OnSelectCertificateDone will be invoked.
+  //
+  // server_address and client_address should be normalized by the caller before
+  // sending down to this function.
   //
   // If the operation is handled synchronously:
   // - QUIC_SUCCESS or QUIC_FAILURE will be returned.
@@ -289,7 +321,8 @@ class QUIC_EXPORT_PRIVATE ProofSourceHandle {
       const std::string& alpn,
       absl::optional<std::string> alps,
       const std::vector<uint8_t>& quic_transport_params,
-      const absl::optional<std::vector<uint8_t>>& early_data_context) = 0;
+      const absl::optional<std::vector<uint8_t>>& early_data_context,
+      const QuicSSLConfig& ssl_config) = 0;
 
   // Starts a compute signature operation. If the operation is not cancelled
   // when it completes, callback()->OnComputeSignatureDone will be invoked.
@@ -310,6 +343,12 @@ class QUIC_EXPORT_PRIVATE ProofSourceHandle {
  private:
   friend class test::FakeProofSourceHandle;
 };
+
+// Returns true if |chain| contains a parsable DER-encoded X.509 leaf cert and
+// it matches with |key|.
+QUIC_EXPORT_PRIVATE bool ValidateCertAndKey(
+    const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
+    const CertificatePrivateKey& key);
 
 }  // namespace quic
 

@@ -35,6 +35,7 @@ namespace printing {
 // settings/advanced_settings/advanced_settings_item.js in
 // chrome/browser/resources/print_preview.
 const char kOptionKey[] = "option";
+const char kResetToDefaultKey[] = "reset_to_default";
 const char kSelectCapKey[] = "select_cap";
 const char kSelectString[] = "SELECT";
 const char kTypeKey[] = "type";
@@ -54,9 +55,9 @@ void PrintersToValues(const PrinterList& printer_list,
     printer_info->SetString(kSettingPrinterDescription,
                             printer.printer_description);
 
-    auto options = std::make_unique<base::DictionaryValue>();
+    base::DictionaryValue options;
     for (const auto& opt_it : printer.options)
-      options->SetString(opt_it.first, opt_it.second);
+      options.SetString(opt_it.first, opt_it.second);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     printer_info->SetBoolean(
@@ -65,7 +66,7 @@ void PrintersToValues(const PrinterList& printer_list,
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    printer_info->Set(kSettingPrinterOptions, std::move(options));
+    printer_info->SetKey(kSettingPrinterOptions, std::move(options));
 
     printers->Append(std::move(printer_info));
 
@@ -123,7 +124,6 @@ base::Value ValidateCddForPrintPreview(base::Value cdd) {
   for (auto capability : caps->DictItems()) {
     const auto& key = capability.first;
     base::Value* value = &capability.second;
-
     base::Value* list_value = nullptr;
     if (value->is_dict())
       list_value = value->FindKeyOfType(kOptionKey, base::Value::Type::LIST);
@@ -155,6 +155,11 @@ base::Value ValidateCddForPrintPreview(base::Value cdd) {
     if (value->is_dict()) {
       base::Value option_dict(base::Value::Type::DICTIONARY);
       option_dict.SetKey(kOptionKey, std::move(*list_value));
+      absl::optional<bool> reset_to_default =
+          value->FindBoolKey(kResetToDefaultKey);
+      if (reset_to_default) {
+        option_dict.SetKey(kResetToDefaultKey, base::Value(*reset_to_default));
+      }
       out_caps.SetKey(key, std::move(option_dict));
     } else {
       out_caps.SetKey(key, std::move(*list_value));
@@ -171,9 +176,9 @@ void ConvertPrinterListForCallback(
   base::ListValue printers;
   PrintersToValues(printer_list, &printers);
 
-  VLOG(1) << "Enumerate printers finished, found " << printers.GetSize()
+  VLOG(1) << "Enumerate printers finished, found " << printers.GetList().size()
           << " printers";
-  if (!printers.empty())
+  if (!printers.GetList().empty())
     callback.Run(printers);
   std::move(done_callback).Run();
 }

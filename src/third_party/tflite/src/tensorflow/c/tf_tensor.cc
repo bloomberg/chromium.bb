@@ -69,9 +69,9 @@ void deallocate_buffer(void* data, size_t len, void* arg) {
 namespace {
 TF_Tensor* CreateTensor(TF_ManagedBuffer* buf, TF_DataType dtype,
                         const int64_t* dims, int num_dims, size_t len) {
-  std::vector<tensorflow::int64> dimvec(num_dims);
+  std::vector<int64_t> dimvec(num_dims);
   for (int i = 0; i < num_dims; ++i) {
-    dimvec[i] = static_cast<tensorflow::int64>(dims[i]);
+    dimvec[i] = static_cast<int64_t>(dims[i]);
   }
 
   // TODO(gjn): Make the choice of interface a compile-time configuration.
@@ -182,7 +182,17 @@ void TF_TensorBitcastFrom(const TF_Tensor* from, TF_DataType type,
 
 namespace tensorflow {
 
-void TensorInterface::Release() { delete this; }
+void TensorInterface::Release() {
+  if (Type() == DT_STRING && NumElements() > 0) {
+    TF_TString* data = static_cast<TF_TString*>(Data());
+    if (CanMove() && data != nullptr) {
+      for (int64_t i = 0; i < NumElements(); ++i) {
+        TF_TString_Dealloc(&data[i]);
+      }
+    }
+  }
+  delete this;
+}
 
 bool TensorInterface::CanMove() const {
   // It is safe to move the Tensor if and only if we own the unique reference to
@@ -194,6 +204,10 @@ bool TensorInterface::CanMove() const {
     return true;
   }
   return false;
+}
+
+std::string TensorInterface::SummarizeValue() const {
+  return tensor_.SummarizeValue(/*max_entries=*/3, /*print_v2=*/true);
 }
 
 DataType TensorInterface::Type() const { return tensor_.dtype(); }
@@ -225,60 +239,15 @@ Status TensorInterface::BitcastFrom(const TensorInterface& from, DataType type,
   return tensor_.BitcastFrom(from.tensor_, type, s);
 }
 
+Status TensorInterface::FromProto(const tensorflow::TensorProto& from) {
+  bool success = tensor_.FromProto(from);
+  if (success) return Status::OK();
+  return errors::InvalidArgument("Unparseable tensor proto");
+}
+
 }  // namespace tensorflow
 
 // --------------------------------------------------------------------------
-void StringEncode(const char* src, size_t src_len, char* dst) {
-  dst = tensorflow::core::EncodeVarint64(dst, src_len);
-  memcpy(dst, src, src_len);
-}
-
-size_t TF_StringEncode(const char* src, size_t src_len, char* dst,
-                       size_t dst_len, TF_Status* status) {
-  const size_t sz = TF_StringEncodedSize(src_len);
-  if (sz < src_len) {
-    Set_TF_Status_from_Status(
-        status, InvalidArgument("src string is too large to encode"));
-    return 0;
-  }
-  if (dst_len < sz) {
-    Set_TF_Status_from_Status(
-        status,
-        InvalidArgument("dst_len (", dst_len, ") too small to encode a ",
-                        src_len, "-byte string"));
-    return 0;
-  }
-  StringEncode(src, src_len, dst);
-  return sz;
-}
-
-static Status TF_StringDecode_Impl(const char* src, size_t src_len,
-                                   const char** dst, size_t* dst_len) {
-  tensorflow::uint64 len64 = 0;
-  const char* p = tensorflow::core::GetVarint64Ptr(src, src + src_len, &len64);
-  if (p == nullptr) {
-    return InvalidArgument("invalid string encoding or truncated src buffer");
-  }
-  if (len64 > std::numeric_limits<size_t>::max()) {
-    return InvalidArgument("encoded string is ", len64,
-                           "-bytes, which is too large for this architecture");
-  }
-  *dst = p;
-  *dst_len = static_cast<size_t>(len64);
-  return Status::OK();
-}
-
-size_t TF_StringDecode(const char* src, size_t src_len, const char** dst,
-                       size_t* dst_len, TF_Status* status) {
-  Set_TF_Status_from_Status(status,
-                            TF_StringDecode_Impl(src, src_len, dst, dst_len));
-  if (TF_GetCode(status) != TF_OK) return 0;
-  return static_cast<size_t>(*dst - src) + *dst_len;
-}
-
-size_t TF_StringEncodedSize(size_t len) {
-  return static_cast<size_t>(tensorflow::core::VarintLength(len)) + len;
-}
 
 static void DeleteArray(void* data, size_t size, void* arg) {
   DCHECK_EQ(data, arg);
@@ -290,15 +259,15 @@ static void DeleteArray(void* data, size_t size, void* arg) {
 static TF_Tensor* EmptyTensor(TF_DataType dtype,
                               const tensorflow::TensorShape& shape) {
   static char empty;
-  tensorflow::int64 nelems = 1;
-  std::vector<tensorflow::int64> dims;
-  for (int i = 0; i < shape.dims(); ++i) {
+  int64_t nelems = 1;
+  std::vector<int64_t> dims;
+  auto shape_dims = shape.dims();
+  dims.reserve(shape_dims);
+  for (int i = 0; i < shape_dims; ++i) {
     dims.push_back(shape.dim_size(i));
     nelems *= shape.dim_size(i);
   }
   CHECK_EQ(nelems, 0);
-  static_assert(sizeof(int64_t) == sizeof(tensorflow::int64),
-                "64-bit int types should match in size");
   return TF_NewTensor(
       dtype, reinterpret_cast<const int64_t*>(dims.data()), shape.dims(),
       reinterpret_cast<void*>(&empty), 0, [](void*, size_t, void*) {}, nullptr);
@@ -317,75 +286,12 @@ TF_Tensor* TF_TensorFromTensor(const tensorflow::Tensor& src, Status* status) {
   if (src.NumElements() == 0) {
     return EmptyTensor(static_cast<TF_DataType>(src.dtype()), src.shape());
   }
-  if (src.dtype() == tensorflow::DT_RESOURCE) {
-    if (src.shape().dims() != 0) {
-      *status = InvalidArgument(
-          "Unexpected non-scalar DT_RESOURCE tensor seen (shape: ",
-          src.shape().DebugString(),
-          "). Please file a bug at "
-          "https://github.com/tensorflow/tensorflow/issues/new, "
-          "ideally with a "
-          "short code snippet that reproduces this error.");
-      return nullptr;
-    }
-    const string str =
-        src.scalar<tensorflow::ResourceHandle>()().SerializeAsString();
-    TF_Tensor* t = TF_AllocateTensor(TF_RESOURCE, {}, 0, str.size());
-    std::memcpy(TF_TensorData(t), str.c_str(), str.size());
-    return t;
-  }
-  if (src.dtype() != tensorflow::DT_STRING) {
-    Tensor tensor;
-    if (!tensor.CopyFrom(src, src.shape())) {
-      return nullptr;
-    }
-    return new TF_Tensor{new tensorflow::TensorInterface(tensor)};
-  }
-  // DT_STRING tensors require a copying since TF_Tensor.buffer expects a flatly
-  // encoded sequence of strings.
 
-  // Compute bytes needed for encoding.
-  size_t size = 0;
-  const auto& srcarray = src.flat<tstring>();
-  for (int i = 0; i < srcarray.size(); ++i) {
-    const string& s = srcarray(i);
-    // uint64 starting_offset, TF_StringEncode-d string.
-    size += sizeof(tensorflow::uint64) + TF_StringEncodedSize(s.size());
-  }
-
-  // Encode all strings.
-  char* base = new char[size];
-  char* data_start = base + sizeof(tensorflow::uint64) * srcarray.size();
-  char* dst = data_start;  // Where next string is encoded.
-  size_t dst_len = size - static_cast<size_t>(data_start - base);
-  tensorflow::uint64* offsets = reinterpret_cast<tensorflow::uint64*>(base);
-  for (int i = 0; i < srcarray.size(); ++i) {
-    *offsets = (dst - data_start);
-    offsets++;
-    const string& s = srcarray(i);
-    const size_t consumed = TF_StringEncodedSize(s.size());
-    StringEncode(s.data(), s.size(), dst);
-    dst += consumed;
-    dst_len -= consumed;
-  }
-  if (dst != base + size) {
-    *status = InvalidArgument(
-        "invalid string tensor encoding (decoded ", (dst - base),
-        " bytes, but the tensor is encoded in ", size, " bytes");
-    delete[] base;
+  Tensor tensor;
+  if (!tensor.CopyFrom(src, src.shape())) {
     return nullptr;
   }
-
-  auto dims = src.shape().dim_sizes();
-  std::vector<tensorflow::int64> dimvec(dims.size());
-  for (size_t i = 0; i < dims.size(); ++i) {
-    dimvec[i] = dims[i];
-  }
-  static_assert(sizeof(int64_t) == sizeof(tensorflow::int64),
-                "64-bit int types should match in size");
-  return TF_NewTensor(TF_STRING,
-                      reinterpret_cast<const int64_t*>(dimvec.data()),
-                      dimvec.size(), base, size, DeleteArray, base);
+  return new TF_Tensor{new tensorflow::TensorInterface(std::move(tensor))};
 }
 
 Status TF_TensorToTensor(const TF_Tensor* src, Tensor* dst) {
@@ -394,54 +300,7 @@ Status TF_TensorToTensor(const TF_Tensor* src, Tensor* dst) {
 }
 
 Status TensorInterface::ToTensor(tensorflow::Tensor* dst) const {
-  if (tensor_.dtype() == DT_RESOURCE) {
-    if (tensor_.dims() != 0) {
-      return InvalidArgument(
-          "Malformed TF_RESOURCE tensor: expected a scalar, got a tensor with "
-          "shape ",
-          tensor_.shape().DebugString());
-    }
-    *dst = tensorflow::Tensor(tensorflow::DT_RESOURCE, tensor_.shape());
-    if (!dst->scalar<tensorflow::ResourceHandle>()().ParseFromString(
-            string(static_cast<const char*>(Data()), ByteSize()))) {
-      return InvalidArgument(
-          "Malformed TF_RESOURCE tensor: unable to parse resource handle");
-    }
-    return Status::OK();
-  }
-  if (tensor_.dtype() != DT_STRING) {
-    *dst = tensor_;
-    return Status::OK();
-  }
-  // TF_STRING tensors require copying since Tensor class expects a sequence of
-  // string objects.
-  const tensorflow::int64 num_elements = tensor_.NumElements();
-  const char* input = reinterpret_cast<const char*>(Data());
-  const size_t src_size = ByteSize();
-  if (static_cast<tensorflow::int64>(src_size / sizeof(tensorflow::uint64)) <
-      num_elements) {
-    return InvalidArgument(
-        "Malformed TF_STRING tensor; too short to hold number of elements");
-  }
-  const char* data_start = input + sizeof(tensorflow::uint64) * num_elements;
-  const char* limit = input + src_size;
-
-  *dst = tensorflow::Tensor(tensor_.dtype(), tensor_.shape());
-  auto dstarray = dst->flat<tstring>();
-  for (tensorflow::int64 i = 0; i < num_elements; ++i) {
-    tensorflow::uint64 offset =
-        reinterpret_cast<const tensorflow::uint64*>(input)[i];
-    if (static_cast<ptrdiff_t>(offset) >= (limit - data_start)) {
-      return InvalidArgument("Malformed TF_STRING tensor; element ", i,
-                             " out of range");
-    }
-    size_t len;
-    const char* p;
-    const char* srcp = data_start + offset;
-    Status status = TF_StringDecode_Impl(srcp, limit - srcp, &p, &len);
-    if (!status.ok()) return status;
-    dstarray(i).assign(p, len);
-  }
+  *dst = tensor_;
   return Status::OK();
 }
 

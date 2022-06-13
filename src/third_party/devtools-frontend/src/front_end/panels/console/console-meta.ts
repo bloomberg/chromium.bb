@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Console from './console.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
@@ -80,6 +78,14 @@ const UIStrings = {
   */
   doNotGroupSimilarMessagesIn: 'Do not group similar messages in console',
   /**
+  *@description Title of a setting under the Console category that can be invoked through the Command Menu
+  */
+  showCorsErrorsInConsole: 'Show `CORS` errors in console',
+  /**
+  *@description Title of a setting under the Console category that can be invoked through the Command Menu
+  */
+  doNotShowCorsErrorsIn: 'Do not show `CORS` errors in console',
+  /**
   *@description Title of a setting under the Console category in Settings
   */
   eagerEvaluation: 'Eager evaluation',
@@ -110,8 +116,6 @@ let loadedConsoleModule: (typeof Console|undefined);
 
 async function loadConsoleModule(): Promise<typeof Console> {
   if (!loadedConsoleModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/console');
     loadedConsoleModule = await import('./console.js');
   }
   return loadedConsoleModule;
@@ -214,6 +218,7 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.hideNetworkMessages),
   settingName: 'hideNetworkMessages',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -232,6 +237,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.selectedContextOnly),
   settingName: 'selectedContextFilterEnabled',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -250,6 +256,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.logXmlhttprequests),
   settingName: 'monitoringXHREnabled',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -258,6 +265,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showTimestamps),
   settingName: 'consoleTimestampsEnabled',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -294,6 +302,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.groupSimilarMessagesInConsole),
   settingName: 'consoleGroupSimilar',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -312,6 +321,25 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  title: i18nLazyString(UIStrings.showCorsErrorsInConsole),
+  settingName: 'consoleShowsCorsErrors',
+  settingType: Common.Settings.SettingType.BOOLEAN,
+  defaultValue: true,
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.showCorsErrorsInConsole),
+    },
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.doNotShowCorsErrorsIn),
+    },
+  ],
+});
+
+Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.eagerEvaluation),
   settingName: 'consoleEagerEval',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -330,6 +358,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.evaluateTriggersUserActivation),
   settingName: 'consoleUserActivationEval',
   settingType: Common.Settings.SettingType.BOOLEAN,

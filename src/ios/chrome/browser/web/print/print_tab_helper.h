@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_WEB_PRINT_PRINT_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_WEB_PRINT_PRINT_TAB_HELPER_H_
 
-#include "base/macros.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -15,6 +14,10 @@
 class PrintTabHelper : public web::WebStateUserData<PrintTabHelper> {
  public:
   explicit PrintTabHelper(web::WebState* web_state);
+
+  PrintTabHelper(const PrintTabHelper&) = delete;
+  PrintTabHelper& operator=(const PrintTabHelper&) = delete;
+
   ~PrintTabHelper() override;
 
   // Sets the |printer|, which is held weakly by this object.
@@ -31,8 +34,6 @@ class PrintTabHelper : public web::WebStateUserData<PrintTabHelper> {
   __weak id<WebStatePrinter> printer_ = nil;
 
   WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PrintTabHelper);
 };
 
 #endif  // IOS_CHROME_BROWSER_WEB_PRINT_PRINT_TAB_HELPER_H_

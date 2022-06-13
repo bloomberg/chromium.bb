@@ -12,7 +12,7 @@
 namespace {
 
 const CXFA_Node::PropertyData kDebugPropertyData[] = {
-    {XFA_Element::Uri, 1, 0},
+    {XFA_Element::Uri, 1, {}},
 };
 
 const CXFA_Node::AttributeData kDebugAttributeData[] = {
@@ -25,7 +25,7 @@ const CXFA_Node::AttributeData kDebugAttributeData[] = {
 CXFA_Debug::CXFA_Debug(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::Debug,
                 kDebugPropertyData,

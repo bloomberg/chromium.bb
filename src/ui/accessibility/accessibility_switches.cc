@@ -18,10 +18,6 @@ const char kEnableExperimentalAccessibilityAutoclick[] =
 const char kEnableExperimentalAccessibilityDictationExtension[] =
     "enable-experimental-accessibility-dictation-extension";
 
-// Enables dictation to use on-device speech recognition.
-const char kEnableExperimentalAccessibilityDictationOffline[] =
-    "enable-experimental-accessibility-dictation-offline";
-
 // Enables support for visually debugging the accessibility labels
 // feature, which provides images descriptions for screen reader users.
 const char kEnableExperimentalAccessibilityLabelsDebugging[] =
@@ -45,18 +41,14 @@ const char kEnableExperimentalAccessibilitySwitchAccessText[] =
 // zooming in.
 const char kEnableMagnifierDebugDrawRect[] = "enable-magnifier-debug-draw-rect";
 
-// Enables the Switch Access setup guide that hasn't launched yet.
-const char kEnableExperimentalAccessibilitySwitchAccessSetupGuide[] =
-    "enable-experimental-accessibility-switch-access-setup-guide";
+// Enables multistep automation for Switch Access, which is a 2021 accessibility
+// sprint project and hasn't launched yet.
+const char kEnableExperimentalAccessibilitySwitchAccessMultistepAutomation[] =
+    "enable-experimental-accessibility-switch-access-multistep-automation";
 
 bool IsExperimentalAccessibilityDictationExtensionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityDictationExtension);
-}
-
-bool IsExperimentalAccessibilityDictationOfflineEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableExperimentalAccessibilityDictationOffline);
 }
 
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
@@ -77,6 +69,12 @@ bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
 bool IsMagnifierDebugDrawRectEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableMagnifierDebugDrawRect);
+}
+
+bool IsSwitchAccessMultistepAutomationEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::
+          kEnableExperimentalAccessibilitySwitchAccessMultistepAutomation);
 }
 
 #if defined(OS_WIN)

@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
@@ -51,6 +51,12 @@ class AutofillWalletMetadataSyncBridge
   AutofillWalletMetadataSyncBridge(
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       AutofillWebDataBackend* web_data_backend);
+
+  AutofillWalletMetadataSyncBridge(const AutofillWalletMetadataSyncBridge&) =
+      delete;
+  AutofillWalletMetadataSyncBridge& operator=(
+      const AutofillWalletMetadataSyncBridge&) = delete;
+
   ~AutofillWalletMetadataSyncBridge() override;
 
   base::WeakPtr<AutofillWalletMetadataSyncBridge> GetWeakPtr() {
@@ -122,7 +128,7 @@ class AutofillWalletMetadataSyncBridge
 
   // AutofillWalletMetadataSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
-  AutofillWebDataBackend* const web_data_backend_;
+  const raw_ptr<AutofillWebDataBackend> web_data_backend_;
 
   base::ScopedObservation<AutofillWebDataBackend,
                           AutofillWebDataServiceObserverOnDBSequence>
@@ -137,8 +143,6 @@ class AutofillWalletMetadataSyncBridge
 
   base::WeakPtrFactory<AutofillWalletMetadataSyncBridge> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillWalletMetadataSyncBridge);
 };
 
 }  // namespace autofill

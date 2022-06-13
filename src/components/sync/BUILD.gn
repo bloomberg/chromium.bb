@@ -12,8 +12,10 @@ group("sync") {
     "//components/sync/engine",
     "//components/sync/model",
     "//components/sync/nigori",
-    "//components/sync/trusted_vault",
   ]
+  if (!is_android) {
+    public_deps += [ "//components/sync/trusted_vault" ]
+  }
 }
 
 group("test_support") {
@@ -25,8 +27,10 @@ group("test_support") {
     ":test_support_model",
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
-    "//components/sync/js:test_support",
   ]
+  if (!is_android) {
+    public_deps += [ "//components/sync/trusted_vault:test_support" ]
+  }
 }
 
 static_library("test_support_engine") {
@@ -124,29 +128,27 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "base/client_tag_hash_unittest.cc",
-    "base/enum_set_unittest.cc",
-    "base/immutable_unittest.cc",
     "base/model_type_unittest.cc",
     "base/node_ordinal_unittest.cc",
     "base/ordinal_unittest.cc",
     "base/protobuf_unittest.cc",
     "base/sync_prefs_unittest.cc",
     "base/sync_util_unittest.cc",
-    "base/system_encryptor_unittest.cc",
     "base/unique_position_unittest.cc",
     "base/weak_handle_unittest.cc",
     "driver/backend_migrator_unittest.cc",
     "driver/data_type_manager_impl_unittest.cc",
     "driver/glue/sync_engine_impl_unittest.cc",
+    "driver/glue/sync_transport_data_prefs_unittest.cc",
     "driver/model_load_manager_unittest.cc",
     "driver/model_type_controller_unittest.cc",
     "driver/passphrase_type_metrics_provider_unittest.cc",
-    "driver/profile_sync_service_startup_unittest.cc",
-    "driver/profile_sync_service_unittest.cc",
     "driver/startup_controller_unittest.cc",
     "driver/sync_auth_manager_unittest.cc",
     "driver/sync_internals_util_unittest.cc",
     "driver/sync_service_crypto_unittest.cc",
+    "driver/sync_service_impl_startup_unittest.cc",
+    "driver/sync_service_impl_unittest.cc",
     "driver/sync_service_utils_unittest.cc",
     "driver/sync_session_durations_metrics_recorder_unittest.cc",
     "driver/sync_stopped_reporter_unittest.cc",
@@ -163,8 +165,6 @@ source_set("unit_tests") {
     "engine/entity_data_unittest.cc",
     "engine/events/protocol_event_buffer_unittest.cc",
     "engine/get_updates_processor_unittest.cc",
-    "engine/js_sync_encryption_handler_observer_unittest.cc",
-    "engine/js_sync_manager_observer_unittest.cc",
     "engine/loopback_server/loopback_server_unittest.cc",
     "engine/loopback_server/persistent_bookmark_entity_unittest.cc",
     "engine/loopback_server/persistent_permanent_entity_unittest.cc",
@@ -180,8 +180,6 @@ source_set("unit_tests") {
     "engine/syncer_unittest.cc",
     "invalidations/fcm_handler_unittest.cc",
     "invalidations/interested_data_types_manager_unittest.cc",
-    "js/js_event_details_unittest.cc",
-    "js/sync_js_controller_unittest.cc",
     "model/client_tag_based_model_type_processor_unittest.cc",
     "model/client_tag_based_remote_update_handler_unittest.cc",
     "model/in_memory_metadata_change_list_unittest.cc",
@@ -206,15 +204,20 @@ source_set("unit_tests") {
     "nigori/nigori_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",
     "protocol/proto_value_conversions_unittest.cc",
-    "trusted_vault/download_keys_response_handler_unittest.cc",
-    "trusted_vault/proto_string_bytes_conversion_unittest.cc",
-    "trusted_vault/securebox_unittest.cc",
-    "trusted_vault/standalone_trusted_vault_backend_unittest.cc",
-    "trusted_vault/trusted_vault_access_token_fetcher_frontend_unittest.cc",
-    "trusted_vault/trusted_vault_connection_impl_unittest.cc",
-    "trusted_vault/trusted_vault_crypto_unittest.cc",
-    "trusted_vault/trusted_vault_request_unittest.cc",
   ]
+
+  if (!is_android) {
+    sources += [
+      "trusted_vault/download_keys_response_handler_unittest.cc",
+      "trusted_vault/proto_string_bytes_conversion_unittest.cc",
+      "trusted_vault/securebox_unittest.cc",
+      "trusted_vault/standalone_trusted_vault_backend_unittest.cc",
+      "trusted_vault/trusted_vault_access_token_fetcher_frontend_unittest.cc",
+      "trusted_vault/trusted_vault_connection_impl_unittest.cc",
+      "trusted_vault/trusted_vault_crypto_unittest.cc",
+      "trusted_vault/trusted_vault_request_unittest.cc",
+    ]
+  }
 
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -242,7 +245,7 @@ source_set("unit_tests") {
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
     "//components/sync/invalidations:test_support",
-    "//components/sync/js:test_support",
+    "//components/variations:test_support",
     "//components/version_info",
     "//components/version_info:generate_version_info",
     "//components/version_info:version_string",

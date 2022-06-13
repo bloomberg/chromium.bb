@@ -6,7 +6,6 @@
 #define NET_CERT_TEST_ROOT_CERTS_H_
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
@@ -15,6 +14,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/win/wincrypt_shim.h"
+#include "crypto/scoped_capi_types.h"
 #elif defined(OS_APPLE)
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecTrust.h>
@@ -37,6 +37,9 @@ class NET_EXPORT TestRootCerts {
  public:
   // Obtains the Singleton instance to the trusted certificates.
   static TestRootCerts* GetInstance();
+
+  TestRootCerts(const TestRootCerts&) = delete;
+  TestRootCerts& operator=(const TestRootCerts&) = delete;
 
   // Returns true if an instance exists, without forcing an initialization.
   static bool HasInstance();
@@ -70,9 +73,8 @@ class NET_EXPORT TestRootCerts {
 
   // Returns an HCERTCHAINENGINE suitable to be used for certificate
   // validation routines, or NULL to indicate that the default system chain
-  // engine is appropriate. The caller is responsible for freeing the
-  // returned HCERTCHAINENGINE.
-  HCERTCHAINENGINE GetChainEngine() const;
+  // engine is appropriate.
+  crypto::ScopedHCERTCHAINENGINE GetChainEngine() const;
 #endif
 
   TrustStore* test_trust_store() { return &test_trust_store_; }
@@ -95,8 +97,6 @@ class NET_EXPORT TestRootCerts {
 #endif
 
   TrustStoreInMemory test_trust_store_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRootCerts);
 };
 
 // Scoped helper for unittests to handle safely managing trusted roots.
@@ -111,6 +111,10 @@ class NET_EXPORT_PRIVATE ScopedTestRoot {
   // TestRootCerts store (if there were existing roots they are
   // cleared).
   explicit ScopedTestRoot(CertificateList certs);
+
+  ScopedTestRoot(const ScopedTestRoot&) = delete;
+  ScopedTestRoot& operator=(const ScopedTestRoot&) = delete;
+
   ~ScopedTestRoot();
 
   // Assigns |certs| to be the new test root certs. If |certs| is empty, undoes
@@ -122,8 +126,6 @@ class NET_EXPORT_PRIVATE ScopedTestRoot {
 
  private:
   CertificateList certs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestRoot);
 };
 
 }  // namespace net

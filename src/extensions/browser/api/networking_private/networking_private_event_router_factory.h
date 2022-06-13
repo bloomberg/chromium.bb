@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_FACTORY_H_
 #define EXTENSIONS_BROWSER_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -19,6 +18,11 @@ class NetworkingPrivateEventRouter;
 class NetworkingPrivateEventRouterFactory
     : public BrowserContextKeyedServiceFactory {
  public:
+  NetworkingPrivateEventRouterFactory(
+      const NetworkingPrivateEventRouterFactory&) = delete;
+  NetworkingPrivateEventRouterFactory& operator=(
+      const NetworkingPrivateEventRouterFactory&) = delete;
+
   // Returns the NetworkingPrivateEventRouter for |profile|, creating it if
   // it is not yet created.
   static NetworkingPrivateEventRouter* GetForProfile(
@@ -44,8 +48,6 @@ class NetworkingPrivateEventRouterFactory
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateEventRouterFactory);
 };
 
 }  // namespace extensions

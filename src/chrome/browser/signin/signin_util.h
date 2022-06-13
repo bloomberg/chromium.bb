@@ -5,24 +5,13 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_UTIL_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_UTIL_H_
 
-#include "base/supports_user_data.h"
+#include <string>
+
+#include "build/build_config.h"
 
 class Profile;
 
 namespace signin_util {
-
-// TODO(crbug.com/1134111): Remove GuestSignedInUserData when Ephemeral Guest
-// sign in functioncality is implemented.
-class GuestSignedInUserData : public base::SupportsUserData::Data {
- public:
-  static void SetIsSignedIn(Profile* profile, bool is_signed_in);
-  static bool IsSignedIn(Profile* profile);
-
- private:
-  static GuestSignedInUserData* GetForProfile(Profile* profile);
-
-  bool is_signed_in_ = false;
-};
 
 // This class calls ResetForceSigninForTesting when destroyed, so that
 // ForcedSigning doesn't leak across tests.
@@ -66,6 +55,18 @@ void EnsureUserSignoutAllowedIsInitializedForProfile(Profile* profile);
 // * If |IsUserSignoutAllowedForProfile| is not allowed and the primary account
 //   is not longer allowed, then this removes the profile.
 void EnsurePrimaryAccountAllowedForProfile(Profile* profile);
+
+#if !defined(OS_ANDROID)
+// Returns true if profile separation is enforced by policy.
+bool ProfileSeparationEnforcedByPolicy(
+    Profile* profile,
+    const std::string& intercepted_account_level_policy_value);
+
+// Records a UMA metric if the user accepts or not to create an enterprise
+// profile.
+void RecordEnterpriseProfileCreationUserChoice(bool enforced_by_policy,
+                                               bool created);
+#endif
 
 }  // namespace signin_util
 

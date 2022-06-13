@@ -36,23 +36,38 @@ REGISTER_KERNEL_BUILDER(
 class BoostedTreesCreateEnsembleOp : public OpKernel {
  public:
   explicit BoostedTreesCreateEnsembleOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
+  }
 
   void Compute(OpKernelContext* context) override {
     // Get the stamp token.
     const Tensor* stamp_token_t;
     OP_REQUIRES_OK(context, context->input("stamp_token", &stamp_token_t));
-    int64 stamp_token = stamp_token_t->scalar<int64>()();
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(stamp_token_t->shape()),
+                errors::InvalidArgument(
+                    "stamp_token must be a scalar, got a tensor of shape ",
+                    stamp_token_t->shape().DebugString()));
+    int64_t stamp_token = stamp_token_t->scalar<int64_t>()();
 
     // Get the tree ensemble proto.
     const Tensor* tree_ensemble_serialized_t;
     OP_REQUIRES_OK(context, context->input("tree_ensemble_serialized",
                                            &tree_ensemble_serialized_t));
+    OP_REQUIRES(
+        context,
+        TensorShapeUtils::IsScalar(tree_ensemble_serialized_t->shape()),
+        errors::InvalidArgument(
+            "tree_ensemble_serialized must be a scalar, got a tensor of shape ",
+            tree_ensemble_serialized_t->shape().DebugString()));
     std::unique_ptr<BoostedTreesEnsembleResource> result(
         new BoostedTreesEnsembleResource());
     if (!result->InitFromSerialized(
             tree_ensemble_serialized_t->scalar<tstring>()(), stamp_token)) {
       result->Unref();
+      result.release();  // Needed due to the `->Unref` above, to prevent UAF
       OP_REQUIRES(
           context, false,
           errors::InvalidArgument("Unable to parse tree ensemble proto."));
@@ -75,7 +90,11 @@ REGISTER_KERNEL_BUILDER(Name("BoostedTreesCreateEnsemble").Device(DEVICE_CPU),
 class BoostedTreesGetEnsembleStatesOp : public OpKernel {
  public:
   explicit BoostedTreesGetEnsembleStatesOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
+  }
 
   void Compute(OpKernelContext* context) override {
     // Looks up the resource.
@@ -114,13 +133,13 @@ class BoostedTreesGetEnsembleStatesOp : public OpKernel {
     OP_REQUIRES_OK(context, context->allocate_output(
                                 4, {2}, &output_last_layer_nodes_range_t));
 
-    output_stamp_token_t->scalar<int64>()() = tree_ensemble_resource->stamp();
+    output_stamp_token_t->scalar<int64_t>()() = tree_ensemble_resource->stamp();
     output_num_trees_t->scalar<int32>()() = num_trees;
     output_num_finalized_trees_t->scalar<int32>()() = num_finalized_trees;
     output_num_attempted_layers_t->scalar<int32>()() = num_attempted_layers;
 
-    int32 range_start;
-    int32 range_end;
+    int32_t range_start;
+    int32_t range_end;
     tree_ensemble_resource->GetLastLayerNodesRange(&range_start, &range_end);
 
     output_last_layer_nodes_range_t->vec<int32>()(0) = range_start;
@@ -138,7 +157,11 @@ REGISTER_KERNEL_BUILDER(
 class BoostedTreesSerializeEnsembleOp : public OpKernel {
  public:
   explicit BoostedTreesSerializeEnsembleOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
+  }
 
   void Compute(OpKernelContext* context) override {
     core::RefCountPtr<BoostedTreesEnsembleResource> tree_ensemble_resource;
@@ -148,7 +171,7 @@ class BoostedTreesSerializeEnsembleOp : public OpKernel {
     Tensor* output_stamp_token_t = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, TensorShape(),
                                                      &output_stamp_token_t));
-    output_stamp_token_t->scalar<int64>()() = tree_ensemble_resource->stamp();
+    output_stamp_token_t->scalar<int64_t>()() = tree_ensemble_resource->stamp();
     Tensor* output_proto_t = nullptr;
     OP_REQUIRES_OK(context,
                    context->allocate_output(1, TensorShape(), &output_proto_t));
@@ -165,7 +188,11 @@ REGISTER_KERNEL_BUILDER(
 class BoostedTreesDeserializeEnsembleOp : public OpKernel {
  public:
   explicit BoostedTreesDeserializeEnsembleOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    VLOG(1) << "Boosted Trees kernels in TF are deprecated. Please use "
+            << "TensorFlow Decision Forests instead "
+            << "(https://github.com/tensorflow/decision-forests).\n";
+  }
 
   void Compute(OpKernelContext* context) override {
     core::RefCountPtr<BoostedTreesEnsembleResource> tree_ensemble_resource;
@@ -176,12 +203,22 @@ class BoostedTreesDeserializeEnsembleOp : public OpKernel {
     // Get the stamp token.
     const Tensor* stamp_token_t;
     OP_REQUIRES_OK(context, context->input("stamp_token", &stamp_token_t));
-    int64 stamp_token = stamp_token_t->scalar<int64>()();
+    OP_REQUIRES(context, TensorShapeUtils::IsScalar(stamp_token_t->shape()),
+                errors::InvalidArgument(
+                    "stamp_token must be a scalar, got a tensor of shape ",
+                    stamp_token_t->shape().DebugString()));
+    int64_t stamp_token = stamp_token_t->scalar<int64_t>()();
 
     // Get the tree ensemble proto.
     const Tensor* tree_ensemble_serialized_t;
     OP_REQUIRES_OK(context, context->input("tree_ensemble_serialized",
                                            &tree_ensemble_serialized_t));
+    OP_REQUIRES(
+        context,
+        TensorShapeUtils::IsScalar(tree_ensemble_serialized_t->shape()),
+        errors::InvalidArgument(
+            "tree_ensemble_serialized must be a scalar, got a tensor of shape ",
+            tree_ensemble_serialized_t->shape().DebugString()));
     // Deallocate all the previous objects on the resource.
     tree_ensemble_resource->Reset();
     OP_REQUIRES(

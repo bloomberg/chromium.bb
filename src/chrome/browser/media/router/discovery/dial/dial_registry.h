@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -62,6 +62,9 @@ class DialRegistry
   };
 
   static DialRegistry* GetInstance();
+
+  DialRegistry(const DialRegistry&) = delete;
+  DialRegistry& operator=(const DialRegistry&) = delete;
 
   // Sets the NetLog object used for logging. Should be called right after
   // GetInstance(). If the registry already has a NetLog, does nothing. The
@@ -204,11 +207,12 @@ class DialRegistry
   base::ObserverList<Observer>::Unchecked observers_;
 
   // Set just after construction, only used on the IO thread.
-  net::NetLog* net_log_ = nullptr;
+  raw_ptr<net::NetLog> net_log_ = nullptr;
 
-  network::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_ =
+      nullptr;
 
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   friend class DialMediaSinkServiceImplTest;
   friend class DialRegistryTest;
@@ -224,7 +228,6 @@ class DialRegistry
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNetworkEventConnectionLost);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
                            TestNetworkEventConnectionRestored);
-  DISALLOW_COPY_AND_ASSIGN(DialRegistry);
 };
 
 }  // namespace media_router

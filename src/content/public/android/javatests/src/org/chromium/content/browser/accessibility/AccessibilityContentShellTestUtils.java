@@ -20,6 +20,8 @@ public class AccessibilityContentShellTestUtils {
             "Could not find specified node before polling timeout.";
     public static final String END_OF_TEST_ERROR =
             "Did not receive kEndOfTest signal before polling timeout.";
+    public static final String READY_FOR_TEST_ERROR =
+            "Did not receive kReadyForTest signal before polling timeout.";
 
     /**
      * Basic interface to define a way to match |AccessibilityNodeInfo| objects based on the
@@ -74,6 +76,12 @@ public class AccessibilityContentShellTestUtils {
     static AccessibilityNodeInfoMatcher<String> sRangeInfoMatcher =
             (node, element) -> node.getRangeInfo() != null;
 
+    static AccessibilityNodeInfoMatcher<String> sViewIdResourceNameMatcher = (node, text) -> {
+        if (node.getViewIdResourceName() == null) return false;
+
+        return node.getViewIdResourceName().equals(text);
+    };
+
     /**
      * Main AccessibilityDelegate for accessibility content shell tests.
      *
@@ -101,11 +109,13 @@ public class AccessibilityContentShellTestUtils {
                         case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED: {
                             data.setSelectionFromIndex(event.getFromIndex());
                             data.setSelectionToIndex(event.getToIndex());
+                            data.setReceivedSelectionEvent(true);
                             break;
                         }
                         case AccessibilityEvent.TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY: {
                             data.setTraverseFromIndex(event.getFromIndex());
                             data.setTraverseToIndex(event.getToIndex());
+                            data.setReceivedTraversalEvent(true);
                             break;
                         }
 

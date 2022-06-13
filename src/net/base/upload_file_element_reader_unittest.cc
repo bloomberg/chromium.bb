@@ -76,10 +76,10 @@ class UploadFileElementReaderTest : public testing::TestWithParam<bool>,
           length, expected_modification_time);
     }
 
-    // The base::File::FLAG_SHARE_DELETE lets the file be deleted without the
-    // test fixture waiting on it to be closed.
+    // The base::File::FLAG_WIN_SHARE_DELETE lets the file be deleted without
+    // the test fixture waiting on it to be closed.
     int open_flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-                     base::File::FLAG_SHARE_DELETE;
+                     base::File::FLAG_WIN_SHARE_DELETE;
 #if defined(OS_WIN)
     // On Windows, file must be opened for asynchronous operation.
     open_flags |= base::File::FLAG_ASYNC;
@@ -296,7 +296,7 @@ TEST_P(UploadFileElementReaderTest, FileChanged) {
 
   // Expect one second before the actual modification time to simulate change.
   const base::Time expected_modification_time =
-      info.last_modified - base::TimeDelta::FromSeconds(1);
+      info.last_modified - base::Seconds(1);
   reader_ = CreateReader(0, std::numeric_limits<uint64_t>::max(),
                          expected_modification_time);
   TestCompletionCallback init_callback;
@@ -309,7 +309,7 @@ TEST_P(UploadFileElementReaderTest, InexactExpectedTimeStamp) {
   ASSERT_TRUE(base::GetFileInfo(temp_file_path_, &info));
 
   const base::Time expected_modification_time =
-      info.last_modified - base::TimeDelta::FromMilliseconds(900);
+      info.last_modified - base::Milliseconds(900);
   reader_ = CreateReader(0, std::numeric_limits<uint64_t>::max(),
                          expected_modification_time);
   TestCompletionCallback init_callback;

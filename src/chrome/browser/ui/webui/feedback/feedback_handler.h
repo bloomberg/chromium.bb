@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FEEDBACK_FEEDBACK_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_FEEDBACK_FEEDBACK_HANDLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/webui/feedback/feedback_dialog.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -24,14 +25,14 @@ class FeedbackHandler : public content::WebUIMessageHandler {
 
  private:
   void HandleShowDialog(const base::ListValue* args);
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   void HandleShowAssistantLogsInfo(const base::ListValue* args);
   void HandleShowBluetoothLogsInfo(const base::ListValue* args);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
   void HandleShowMetrics(const base::ListValue* args);
   void HandleShowSystemInfo(const base::ListValue* args);
 
-  const FeedbackDialog* dialog_;
+  raw_ptr<const FeedbackDialog> dialog_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_FEEDBACK_FEEDBACK_HANDLER_H_

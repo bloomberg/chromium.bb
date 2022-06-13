@@ -1807,7 +1807,7 @@ static int fts3SegReaderCmp(Fts3SegReader *pLhs, Fts3SegReader *pRhs){
   if( rc==0 ){
     rc = pRhs->iIdx - pLhs->iIdx;
   }
-  assert( rc!=0 );
+  assert_fts3_nc( rc!=0 );
   return rc;
 }
 
@@ -3003,7 +3003,7 @@ int sqlite3Fts3SegReaderStep(
 
           nByte = sqlite3Fts3VarintLen(iDelta) + (isRequirePos?nList+1:0);
 
-          rc = fts3GrowSegReaderBuffer(pCsr, nByte+nDoclist);
+          rc = fts3GrowSegReaderBuffer(pCsr, nByte+nDoclist+FTS3_NODE_PADDING);
           if( rc ) return rc;
 
           if( isFirst ){

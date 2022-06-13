@@ -34,11 +34,11 @@ std::ostream& operator<<(std::ostream& out, TestEvent event) {
     case TestEvent::kAppListReady:
       out << "AppListReady";
       break;
+    case TestEvent::kErrorDisplayed:
+      out << "ErrorDisplayed";
+      break;
     case TestEvent::kPaymentCompleted:
       out << "PaymentCompleted";
-      break;
-    case TestEvent::kMinimalUIReady:
-      out << "MinimalUIReady";
       break;
     case TestEvent::kUIDisplayed:
       out << "UIDisplayed";

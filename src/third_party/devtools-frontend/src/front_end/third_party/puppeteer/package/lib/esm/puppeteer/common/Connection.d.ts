@@ -1,18 +1,22 @@
 import { Protocol } from 'devtools-protocol';
 import { ProtocolMapping } from 'devtools-protocol/types/protocol-mapping.js';
+
 import { ConnectionTransport } from './ConnectionTransport.js';
+import { ProtocolError } from './Errors.js';
 import { EventEmitter } from './EventEmitter.js';
+
 /**
  * @public
  */
 export { ConnectionTransport, ProtocolMapping };
+
 /**
  * @public
  */
 export interface ConnectionCallback {
     resolve: Function;
     reject: Function;
-    error: Error;
+    error: ProtocolError;
     method: string;
 }
 /**
@@ -24,7 +28,7 @@ export declare const ConnectionEmittedEvents: {
     readonly Disconnected: symbol;
 };
 /**
- * @internal
+ * @public
  */
 export declare class Connection extends EventEmitter {
     _url: string;
@@ -63,6 +67,7 @@ export interface CDPSessionOnMessageObject {
     error: {
         message: string;
         data: any;
+        code: number;
     };
     result?: any;
 }
@@ -83,7 +88,7 @@ export declare const CDPSessionEmittedEvents: {
  * events can be subscribed to with `CDPSession.on` method.
  *
  * Useful links: {@link https://chromedevtools.github.io/devtools-protocol/ | DevTools Protocol Viewer}
- * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md | Getting Started with DevTools Protocol}.
+ * and {@link https://github.com/aslushnikov/getting-started-with-cdp/blob/HEAD/README.md | Getting Started with DevTools Protocol}.
  *
  * @example
  * ```js
@@ -111,6 +116,7 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     constructor(connection: Connection, targetType: string, sessionId: string);
+    connection(): Connection;
     send<T extends keyof ProtocolMapping.Commands>(method: T, ...paramArgs: ProtocolMapping.Commands[T]['paramsType']): Promise<ProtocolMapping.Commands[T]['returnType']>;
     /**
      * @internal
@@ -125,5 +131,9 @@ export declare class CDPSession extends EventEmitter {
      * @internal
      */
     _onClosed(): void;
+    /**
+     * @internal
+     */
+    id(): string;
 }
 //# sourceMappingURL=Connection.d.ts.map

@@ -11,6 +11,7 @@
 
 #include "quic/core/crypto/proof_verifier.h"
 #include "quic/core/crypto/quic_crypto_client_config.h"
+#include "quic/core/proto/cached_network_parameters_proto.h"
 #include "quic/core/quic_config.h"
 #include "quic/core/quic_crypto_handshaker.h"
 #include "quic/core/quic_crypto_stream.h"
@@ -24,6 +25,8 @@ namespace quic {
 namespace test {
 class QuicCryptoClientStreamPeer;
 }  // namespace test
+
+class TlsClientHandshaker;
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
  public:
@@ -63,6 +66,35 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
   // client.  Does not count update messages that were received prior
   // to handshake confirmation.
   virtual int num_scup_messages_received() const = 0;
+
+  bool ExportKeyingMaterial(absl::string_view /*label*/,
+                            absl::string_view /*context*/,
+                            size_t /*result_len*/,
+                            std::string* /*result*/) override {
+    QUICHE_NOTREACHED();
+    return false;
+  }
+
+  std::string GetAddressToken(
+      const CachedNetworkParameters* /*cached_network_params*/) const override {
+    QUICHE_DCHECK(false);
+    return "";
+  }
+
+  bool ValidateAddressToken(absl::string_view /*token*/) const override {
+    QUICHE_DCHECK(false);
+    return false;
+  }
+
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override {
+    QUICHE_DCHECK(false);
+    return nullptr;
+  }
+
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters /*cached_network_params*/) override {
+    QUICHE_DCHECK(false);
+  }
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
@@ -185,6 +217,13 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Called when application state is received.
     virtual void SetServerApplicationStateForResumption(
         std::unique_ptr<ApplicationState> application_state) = 0;
+
+    // Called to obtain keying material export of length |result_len| with the
+    // given |label| and |context|. Returns false on failure.
+    virtual bool ExportKeyingMaterial(absl::string_view label,
+                                      absl::string_view context,
+                                      size_t result_len,
+                                      std::string* result) = 0;
   };
 
   // ProofHandler is an interface that handles callbacks from the crypto
@@ -240,8 +279,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
                           ConnectionCloseSource source) override;
   void OnHandshakeDoneReceived() override;
   void OnNewTokenReceived(absl::string_view token) override;
-  std::string GetAddressToken() const override;
-  bool ValidateAddressToken(absl::string_view token) const override;
   HandshakeState GetHandshakeState() const override;
   void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> application_state) override;
@@ -250,7 +287,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
       override;
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
-
+  SSL* GetSsl() const override;
+  bool ExportKeyingMaterial(absl::string_view label, absl::string_view context,
+                            size_t result_len, std::string* result) override;
   std::string chlo_hash() const;
 
  protected:
@@ -261,6 +300,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
  private:
   friend class test::QuicCryptoClientStreamPeer;
   std::unique_ptr<HandshakerInterface> handshaker_;
+  // Points to |handshaker_| if it uses TLS1.3. Otherwise, nullptr.
+  // TODO(danzh) change the type of |handshaker_| to TlsClientHandshaker after
+  // deprecating Google QUIC.
+  TlsClientHandshaker* tls_handshaker_{nullptr};
 };
 
 }  // namespace quic

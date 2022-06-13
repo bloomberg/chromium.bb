@@ -10,7 +10,6 @@
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 
 namespace device {
 
@@ -45,6 +44,11 @@ class BluetoothDiscoveryManagerMacClassic
             [[BluetoothDeviceInquiryDelegate alloc] initWithManager:this]),
         inquiry_([[IOBluetoothDeviceInquiry alloc]
             initWithDelegate:inquiry_delegate_]) {}
+
+  BluetoothDiscoveryManagerMacClassic(
+      const BluetoothDiscoveryManagerMacClassic&) = delete;
+  BluetoothDiscoveryManagerMacClassic& operator=(
+      const BluetoothDiscoveryManagerMacClassic&) = delete;
 
   ~BluetoothDiscoveryManagerMacClassic() override {}
 
@@ -180,8 +184,6 @@ class BluetoothDiscoveryManagerMacClassic
   // Objective-C objects for running and tracking device inquiry.
   base::scoped_nsobject<BluetoothDeviceInquiryDelegate> inquiry_delegate_;
   base::scoped_nsobject<IOBluetoothDeviceInquiry> inquiry_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDiscoveryManagerMacClassic);
 };
 
 BluetoothDiscoveryManagerMac::BluetoothDiscoveryManagerMac(

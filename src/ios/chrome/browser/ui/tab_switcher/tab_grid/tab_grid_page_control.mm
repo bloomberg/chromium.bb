@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -231,7 +231,7 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 
 - (void)setSliderPosition:(CGFloat)sliderPosition {
   // Clamp |selectionOffset| to (0.0 - 1.0).
-  sliderPosition = base::ClampToRange<CGFloat>(sliderPosition, 0.0, 1.0);
+  sliderPosition = base::clamp<CGFloat>(sliderPosition, 0.0, 1.0);
   CGPoint center = self.sliderView.center;
   center.x = self.sliderOrigin + self.sliderRange * sliderPosition;
   self.sliderView.center = center;
@@ -387,14 +387,10 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   self.remoteIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
   self.remoteSelectedIcon.center = [self centerOfSegment:TabGridPageRemoteTabs];
 
-  if (@available(iOS 13.4, *)) {
-      self.incognitoHoverView.center =
-          [self centerOfSegment:TabGridPageIncognitoTabs];
-      self.regularHoverView.center =
-          [self centerOfSegment:TabGridPageRegularTabs];
-      self.remoteHoverView.center =
-          [self centerOfSegment:TabGridPageRemoteTabs];
-  }
+  self.incognitoHoverView.center =
+      [self centerOfSegment:TabGridPageIncognitoTabs];
+  self.regularHoverView.center = [self centerOfSegment:TabGridPageRegularTabs];
+  self.remoteHoverView.center = [self centerOfSegment:TabGridPageRemoteTabs];
 
   // Determine the slider origin and range; this is based on the layout guides
   // and can't be computed until they are determined.
@@ -559,27 +555,25 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   [self.selectedImageView addSubview:remoteSelectedIcon];
   self.remoteSelectedIcon = remoteSelectedIcon;
 
-  if (@available(iOS 13.4, *)) {
-      CGRect segmentRect = CGRectMake(0, 0, kSegmentWidth, kOverallHeight);
-      UIView* incognitoHoverView = [[UIView alloc] initWithFrame:segmentRect];
-      UIView* regularHoverView = [[UIView alloc] initWithFrame:segmentRect];
-      UIView* remoteHoverView = [[UIView alloc] initWithFrame:segmentRect];
-      [self insertSubview:incognitoHoverView belowSubview:self.sliderView];
-      [self insertSubview:regularHoverView belowSubview:self.sliderView];
-      [self insertSubview:remoteHoverView belowSubview:self.sliderView];
-      self.incognitoHoverView = incognitoHoverView;
-      self.regularHoverView = regularHoverView;
-      self.remoteHoverView = remoteHoverView;
+  CGRect segmentRect = CGRectMake(0, 0, kSegmentWidth, kOverallHeight);
+  UIView* incognitoHoverView = [[UIView alloc] initWithFrame:segmentRect];
+  UIView* regularHoverView = [[UIView alloc] initWithFrame:segmentRect];
+  UIView* remoteHoverView = [[UIView alloc] initWithFrame:segmentRect];
+  [self insertSubview:incognitoHoverView belowSubview:self.sliderView];
+  [self insertSubview:regularHoverView belowSubview:self.sliderView];
+  [self insertSubview:remoteHoverView belowSubview:self.sliderView];
+  self.incognitoHoverView = incognitoHoverView;
+  self.regularHoverView = regularHoverView;
+  self.remoteHoverView = remoteHoverView;
 
-      [self.incognitoHoverView
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
-      [self.regularHoverView
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
-      [self.remoteHoverView
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
-      [self.sliderView
-          addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
-  }
+  [self.incognitoHoverView
+      addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+  [self.regularHoverView
+      addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+  [self.remoteHoverView
+      addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
+  [self.sliderView
+      addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
 
   // Update the label text, in case these properties have been set before the
   // views were set up.

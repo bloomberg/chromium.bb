@@ -89,7 +89,6 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
       receiver_info = VariableAllocationInfo::UNUSED;
     } else if (var->IsContextSlot()) {
       receiver_info = VariableAllocationInfo::CONTEXT;
-      context_local_count++;
     } else {
       DCHECK(var->IsParameter());
       receiver_info = VariableAllocationInfo::STACK;
@@ -144,8 +143,6 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
   const bool has_function_name =
       function_name_info != VariableAllocationInfo::NONE;
   const bool has_position_info = NeedsPositionInfo(scope->scope_type());
-  const bool has_receiver = receiver_info == VariableAllocationInfo::STACK ||
-                            receiver_info == VariableAllocationInfo::CONTEXT;
   const int parameter_count =
       scope->is_declaration_scope()
           ? scope->AsDeclarationScope()->num_parameters()
@@ -166,7 +163,6 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
 
   const int length = kVariablePartIndex + 2 * context_local_count +
                      (should_save_class_variable_index ? 1 : 0) +
-                     (has_receiver ? 1 : 0) +
                      (has_function_name ? kFunctionNameEntries : 0) +
                      (has_inferred_function_name ? 1 : 0) +
                      (has_position_info ? kPositionInfoEntries : 0) +
@@ -193,7 +189,7 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
       is_asm_module = function_scope->is_asm_module();
 #endif  // V8_ENABLE_WEBASSEMBLY
     }
-    FunctionKind function_kind = kNormalFunction;
+    FunctionKind function_kind = FunctionKind::kNormalFunction;
     if (scope->is_declaration_scope()) {
       function_kind = scope->AsDeclarationScope()->function_kind();
       sloppy_eval_can_extend_vars =
@@ -302,28 +298,11 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
       for (int i = 0; i < parameter_count; i++) {
         Variable* parameter = scope->AsDeclarationScope()->parameter(i);
         if (parameter->location() != VariableLocation::CONTEXT) continue;
-        int index = parameter->index() - scope->ContextHeaderLength();
-        int info_index = context_local_info_base + index;
+        int param_index = parameter->index() - scope->ContextHeaderLength();
+        int info_index = context_local_info_base + param_index;
         int info = Smi::ToInt(scope_info.get(info_index));
         info = ParameterNumberBits::update(info, i);
         scope_info.set(info_index, Smi::FromInt(info));
-      }
-
-      // TODO(verwaest): Remove this unnecessary entry.
-      if (scope->AsDeclarationScope()->has_this_declaration()) {
-        Variable* var = scope->AsDeclarationScope()->receiver();
-        if (var->location() == VariableLocation::CONTEXT) {
-          int local_index = var->index() - scope->ContextHeaderLength();
-          uint32_t info =
-              VariableModeBits::encode(var->mode()) |
-              InitFlagBit::encode(var->initialization_flag()) |
-              MaybeAssignedFlagBit::encode(var->maybe_assigned()) |
-              ParameterNumberBits::encode(ParameterNumberBits::kMax) |
-              IsStaticFlagBit::encode(var->is_static_flag());
-          scope_info.set(context_local_base + local_index, *var->name(), mode);
-          scope_info.set(context_local_info_base + local_index,
-                         Smi::FromInt(info));
-        }
       }
     }
 
@@ -337,15 +316,6 @@ Handle<ScopeInfo> ScopeInfo::Create(IsolateT* isolate, Zone* zone, Scope* scope,
       Variable* class_variable = scope->AsClassScope()->class_variable();
       DCHECK_EQ(class_variable->location(), VariableLocation::CONTEXT);
       scope_info.set(index++, Smi::FromInt(class_variable->index()));
-    }
-
-    // If the receiver is allocated, add its index.
-    DCHECK_EQ(index, scope_info.ReceiverInfoIndex());
-    if (has_receiver) {
-      int var_index = scope->AsDeclarationScope()->receiver()->index();
-      scope_info.set(index++, Smi::FromInt(var_index));
-      // ?? DCHECK(receiver_info != CONTEXT || var_index ==
-      // scope_info->ContextLength() - 1);
     }
 
     // If present, add the function variable name and its index.
@@ -431,7 +401,7 @@ Handle<ScopeInfo> ScopeInfo::CreateForWithScope(
       HasNewTargetBit::encode(false) |
       FunctionVariableBits::encode(VariableAllocationInfo::NONE) |
       IsAsmModuleBit::encode(false) | HasSimpleParametersBit::encode(true) |
-      FunctionKindBits::encode(kNormalFunction) |
+      FunctionKindBits::encode(FunctionKind::kNormalFunction) |
       HasOuterScopeInfoBit::encode(has_outer_scope_info) |
       IsDebugEvaluateScopeBit::encode(false) |
       ForceContextAllocationBit::encode(false) |
@@ -444,7 +414,6 @@ Handle<ScopeInfo> ScopeInfo::CreateForWithScope(
   scope_info->set_context_local_count(0);
 
   int index = kVariablePartIndex;
-  DCHECK_EQ(index, scope_info->ReceiverInfoIndex());
   DCHECK_EQ(index, scope_info->FunctionVariableInfoIndex());
   DCHECK_EQ(index, scope_info->InferredFunctionNameIndex());
   DCHECK_EQ(index, scope_info->PositionInfoIndex());
@@ -482,11 +451,9 @@ Handle<ScopeInfo> ScopeInfo::CreateForBootstrapping(Isolate* isolate,
   const bool is_script = type == BootstrappingType::kScript;
   const int context_local_count =
       is_empty_function || is_native_context ? 0 : 1;
-  const bool has_receiver = is_script;
   const bool has_inferred_function_name = is_empty_function;
   const bool has_position_info = true;
   const int length = kVariablePartIndex + 2 * context_local_count +
-                     (has_receiver ? 1 : 0) +
                      (is_empty_function ? kFunctionNameEntries : 0) +
                      (has_inferred_function_name ? 1 : 0) +
                      (has_position_info ? kPositionInfoEntries : 0);
@@ -538,13 +505,6 @@ Handle<ScopeInfo> ScopeInfo::CreateForBootstrapping(Isolate* isolate,
         ParameterNumberBits::encode(ParameterNumberBits::kMax) |
         IsStaticFlagBit::encode(IsStaticFlag::kNotStatic);
     scope_info->set(index++, Smi::FromInt(value));
-  }
-
-  // And here we record that this scopeinfo binds a receiver.
-  DCHECK_EQ(index, scope_info->ReceiverInfoIndex());
-  if (has_receiver) {
-    const int receiver_index = scope_info->ContextHeaderLength();
-    scope_info->set(index++, Smi::FromInt(receiver_index));
   }
 
   DCHECK_EQ(index, scope_info->FunctionVariableInfoIndex());
@@ -626,8 +586,8 @@ Handle<ScopeInfo> ScopeInfo::RecreateWithBlockList(
   DCHECK(!original.is_null());
   if (original->HasLocalsBlockList()) return original;
 
-  Handle<ScopeInfo> scope_info =
-      isolate->factory()->NewScopeInfo(original->length() + 1);
+  int length = original->length() + 1;
+  Handle<ScopeInfo> scope_info = isolate->factory()->NewScopeInfo(length);
 
   // Copy the static part first and update the flags to include the
   // blocklist field, so {LocalsBlockListIndex} returns the correct value.
@@ -645,11 +605,10 @@ Handle<ScopeInfo> ScopeInfo::RecreateWithBlockList(
       scope_info->LocalsBlockListIndex() - kVariablePartIndex,
       WriteBarrierMode::UPDATE_WRITE_BARRIER);
   scope_info->set_locals_block_list(*blocklist);
-  scope_info->CopyElements(
-      isolate, scope_info->LocalsBlockListIndex() + 1, *original,
-      scope_info->LocalsBlockListIndex(),
-      scope_info->length() - scope_info->LocalsBlockListIndex() - 1,
-      WriteBarrierMode::UPDATE_WRITE_BARRIER);
+  scope_info->CopyElements(isolate, scope_info->LocalsBlockListIndex() + 1,
+                           *original, scope_info->LocalsBlockListIndex(),
+                           length - scope_info->LocalsBlockListIndex() - 1,
+                           WriteBarrierMode::UPDATE_WRITE_BARRIER);
   return scope_info;
 }
 
@@ -685,26 +644,22 @@ bool ScopeInfo::is_declaration_scope() const {
 }
 
 int ScopeInfo::ContextLength() const {
-  if (!IsEmpty()) {
-    int context_locals = ContextLocalCount();
-    bool function_name_context_slot = FunctionVariableBits::decode(Flags()) ==
-                                      VariableAllocationInfo::CONTEXT;
-    bool force_context = ForceContextAllocationBit::decode(Flags());
-    bool has_context =
-        context_locals > 0 || force_context || function_name_context_slot ||
-        scope_type() == WITH_SCOPE || scope_type() == CLASS_SCOPE ||
-        (scope_type() == BLOCK_SCOPE && SloppyEvalCanExtendVars() &&
-         is_declaration_scope()) ||
-        (scope_type() == FUNCTION_SCOPE && SloppyEvalCanExtendVars()) ||
-        (scope_type() == FUNCTION_SCOPE && IsAsmModule()) ||
-        scope_type() == MODULE_SCOPE;
+  if (IsEmpty()) return 0;
+  int context_locals = ContextLocalCount();
+  bool function_name_context_slot = HasContextAllocatedFunctionName();
+  bool force_context = ForceContextAllocationBit::decode(Flags());
+  bool has_context =
+      context_locals > 0 || force_context || function_name_context_slot ||
+      scope_type() == WITH_SCOPE || scope_type() == CLASS_SCOPE ||
+      (scope_type() == BLOCK_SCOPE && SloppyEvalCanExtendVars() &&
+       is_declaration_scope()) ||
+      (scope_type() == FUNCTION_SCOPE && SloppyEvalCanExtendVars()) ||
+      (scope_type() == FUNCTION_SCOPE && IsAsmModule()) ||
+      scope_type() == MODULE_SCOPE;
 
-    if (has_context) {
-      return ContextHeaderLength() + context_locals +
-             (function_name_context_slot ? 1 : 0);
-    }
-  }
-  return 0;
+  if (!has_context) return 0;
+  return ContextHeaderLength() + context_locals +
+         (function_name_context_slot ? 1 : 0);
 }
 
 bool ScopeInfo::HasContextExtensionSlot() const {
@@ -742,6 +697,11 @@ bool ScopeInfo::HasFunctionName() const {
   return VariableAllocationInfo::NONE != FunctionVariableBits::decode(Flags());
 }
 
+bool ScopeInfo::HasContextAllocatedFunctionName() const {
+  return VariableAllocationInfo::CONTEXT ==
+         FunctionVariableBits::decode(Flags());
+}
+
 bool ScopeInfo::HasInferredFunctionName() const {
   return HasInferredFunctionNameBit::decode(Flags());
 }
@@ -764,6 +724,8 @@ bool ScopeInfo::HasSharedFunctionName() const {
 void ScopeInfo::SetFunctionName(Object name) {
   DCHECK(HasFunctionName());
   DCHECK(name.IsString() || name == SharedFunctionInfo::kNoSharedNameSentinel);
+  DCHECK_IMPLIES(HasContextAllocatedFunctionName(),
+                 name.IsInternalizedString());
   set_function_variable_info_name(name);
 }
 
@@ -930,15 +892,10 @@ int ScopeInfo::ModuleIndex(String name, VariableMode* mode,
 
 // static
 int ScopeInfo::ContextSlotIndex(ScopeInfo scope_info, String name,
-                                VariableMode* mode,
-                                InitializationFlag* init_flag,
-                                MaybeAssignedFlag* maybe_assigned_flag,
-                                IsStaticFlag* is_static_flag) {
+                                VariableLookupResult* lookup_result) {
   DisallowGarbageCollection no_gc;
   DCHECK(name.IsInternalizedString());
-  DCHECK_NOT_NULL(mode);
-  DCHECK_NOT_NULL(init_flag);
-  DCHECK_NOT_NULL(maybe_assigned_flag);
+  DCHECK_NOT_NULL(lookup_result);
 
   if (scope_info.IsEmpty()) return -1;
 
@@ -947,10 +904,12 @@ int ScopeInfo::ContextSlotIndex(ScopeInfo scope_info, String name,
     if (name != scope_info.context_local_names(var)) {
       continue;
     }
-    *mode = scope_info.ContextLocalMode(var);
-    *is_static_flag = scope_info.ContextLocalIsStaticFlag(var);
-    *init_flag = scope_info.ContextLocalInitFlag(var);
-    *maybe_assigned_flag = scope_info.ContextLocalMaybeAssignedFlag(var);
+    lookup_result->mode = scope_info.ContextLocalMode(var);
+    lookup_result->is_static_flag = scope_info.ContextLocalIsStaticFlag(var);
+    lookup_result->init_flag = scope_info.ContextLocalInitFlag(var);
+    lookup_result->maybe_assigned_flag =
+        scope_info.ContextLocalMaybeAssignedFlag(var);
+    lookup_result->is_repl_mode = scope_info.IsReplModeScope();
     int result = scope_info.ContextHeaderLength() + var;
 
     DCHECK_LT(result, scope_info.ContextLength());
@@ -971,17 +930,26 @@ int ScopeInfo::SavedClassVariableContextLocalIndex() const {
 int ScopeInfo::ReceiverContextSlotIndex() const {
   if (ReceiverVariableBits::decode(Flags()) ==
       VariableAllocationInfo::CONTEXT) {
-    return receiver_info();
+    return ContextHeaderLength();
   }
   return -1;
 }
 
+int ScopeInfo::ParametersStartIndex() const {
+  if (ReceiverVariableBits::decode(Flags()) ==
+      VariableAllocationInfo::CONTEXT) {
+    return ContextHeaderLength() + 1;
+  }
+  return ContextHeaderLength();
+}
+
 int ScopeInfo::FunctionContextSlotIndex(String name) const {
   DCHECK(name.IsInternalizedString());
-  if (FunctionVariableBits::decode(Flags()) ==
-          VariableAllocationInfo::CONTEXT &&
-      FunctionName() == name) {
-    return function_variable_info_context_or_stack_slot_index();
+  if (HasContextAllocatedFunctionName()) {
+    DCHECK_IMPLIES(HasFunctionName(), FunctionName().IsInternalizedString());
+    if (FunctionName() == name) {
+      return function_variable_info_context_or_stack_slot_index();
+    }
   }
   return -1;
 }
@@ -1000,10 +968,6 @@ int ScopeInfo::ContextLocalInfosIndex() const {
 
 int ScopeInfo::SavedClassVariableInfoIndex() const {
   return ConvertOffsetToIndex(SavedClassVariableInfoOffset());
-}
-
-int ScopeInfo::ReceiverInfoIndex() const {
-  return ConvertOffsetToIndex(ReceiverInfoOffset());
 }
 
 int ScopeInfo::FunctionVariableInfoIndex() const {
@@ -1074,7 +1038,6 @@ std::ostream& operator<<(std::ostream& os, VariableAllocationInfo var_info) {
       return os << "UNUSED";
   }
   UNREACHABLE();
-  return os;
 }
 
 template <typename IsolateT>
@@ -1132,7 +1095,8 @@ Handle<SourceTextModuleInfo> SourceTextModuleInfo::New(
     IsolateT* isolate, Zone* zone, SourceTextModuleDescriptor* descr) {
   // Serialize module requests.
   int size = static_cast<int>(descr->module_requests().size());
-  Handle<FixedArray> module_requests = isolate->factory()->NewFixedArray(size);
+  Handle<FixedArray> module_requests =
+      isolate->factory()->NewFixedArray(size, AllocationType::kOld);
   for (const auto& elem : descr->module_requests()) {
     Handle<ModuleRequest> serialized_module_request = elem->Serialize(isolate);
     module_requests->set(elem->index(), *serialized_module_request);
@@ -1140,7 +1104,7 @@ Handle<SourceTextModuleInfo> SourceTextModuleInfo::New(
 
   // Serialize special exports.
   Handle<FixedArray> special_exports = isolate->factory()->NewFixedArray(
-      static_cast<int>(descr->special_exports().size()));
+      static_cast<int>(descr->special_exports().size()), AllocationType::kOld);
   {
     int i = 0;
     for (auto entry : descr->special_exports()) {
@@ -1152,7 +1116,8 @@ Handle<SourceTextModuleInfo> SourceTextModuleInfo::New(
 
   // Serialize namespace imports.
   Handle<FixedArray> namespace_imports = isolate->factory()->NewFixedArray(
-      static_cast<int>(descr->namespace_imports().size()));
+      static_cast<int>(descr->namespace_imports().size()),
+      AllocationType::kOld);
   {
     int i = 0;
     for (auto entry : descr->namespace_imports()) {
@@ -1168,7 +1133,7 @@ Handle<SourceTextModuleInfo> SourceTextModuleInfo::New(
 
   // Serialize regular imports.
   Handle<FixedArray> regular_imports = isolate->factory()->NewFixedArray(
-      static_cast<int>(descr->regular_imports().size()));
+      static_cast<int>(descr->regular_imports().size()), AllocationType::kOld);
   {
     int i = 0;
     for (const auto& elem : descr->regular_imports()) {

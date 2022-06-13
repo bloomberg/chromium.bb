@@ -8,8 +8,9 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/hud_display/hud_display.h"
-#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/debug_utils.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/shell.h"
@@ -25,14 +26,32 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace debug {
 namespace {
+
+void HandlePrintLayerHierarchy() {
+  std::ostringstream out;
+  PrintLayerHierarchy(&out);
+  LOG(ERROR) << out.str();
+}
+
+void HandlePrintViewHierarchy() {
+  std::ostringstream out;
+  PrintViewHierarchy(&out);
+  LOG(ERROR) << out.str();
+}
+
+void HandlePrintWindowHierarchy() {
+  std::ostringstream out;
+  PrintWindowHierarchy(&out, /*scrub_data=*/false);
+  LOG(ERROR) << out.str();
+}
 
 gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   // TODO(oshima): Consider adding a command line option to control wallpaper
@@ -55,7 +74,7 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
 void HandleToggleWallpaperMode() {
   static int index = 0;
   auto* wallpaper_controller = Shell::Get()->wallpaper_controller();
-  WallpaperInfo info("", WALLPAPER_LAYOUT_STRETCH, DEFAULT,
+  WallpaperInfo info("", WALLPAPER_LAYOUT_STRETCH, WallpaperType::kDefault,
                      base::Time::Now().LocalMidnight());
   switch (++index % 4) {
     case 0:
@@ -79,6 +98,16 @@ void HandleToggleWallpaperMode() {
           /*preview_mode=*/false, /*always_on_top=*/false);
       break;
   }
+}
+
+void HandleToggleKeyboardBacklight() {
+  base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
+  accelerators::ToggleKeyboardBacklight();
+}
+
+void HandleToggleMicrophoneMute() {
+  base::RecordAction(base::UserMetricsAction("Accel_Microphone_Mute"));
+  accelerators::MicrophoneMuteToggle();
 }
 
 void HandleToggleTouchpad() {
@@ -109,24 +138,6 @@ void HandleTriggerHUDDisplay() {
 
 }  // namespace
 
-void HandlePrintLayerHierarchy() {
-  std::ostringstream out;
-  PrintLayerHierarchy(&out);
-  LOG(ERROR) << out.str();
-}
-
-void HandlePrintViewHierarchy() {
-  std::ostringstream out;
-  PrintViewHierarchy(&out);
-  LOG(ERROR) << out.str();
-}
-
-void HandlePrintWindowHierarchy() {
-  std::ostringstream out;
-  PrintWindowHierarchy(&out, /*scrub_data=*/false);
-  LOG(ERROR) << out.str();
-}
-
 void PrintUIHierarchies() {
   // This is a separate command so the user only has to hit one key to generate
   // all the logs. Developers use the individual dumps repeatedly, so keep
@@ -151,6 +162,12 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
     return;
 
   switch (action) {
+    case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
+      HandleToggleKeyboardBacklight();
+      break;
+    case DEBUG_MICROPHONE_MUTE_TOGGLE:
+      HandleToggleMicrophoneMute();
+      break;
     case DEBUG_PRINT_LAYER_HIERARCHY:
       HandlePrintLayerHierarchy();
       break;

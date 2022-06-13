@@ -11,13 +11,13 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -70,6 +70,10 @@ class VaapiJpegEncodeAccelerator::Encoder {
           scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper,
           base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb,
           base::RepeatingCallback<void(int32_t, Status)> notify_error_cb);
+
+  Encoder(const Encoder&) = delete;
+  Encoder& operator=(const Encoder&) = delete;
+
   ~Encoder();
 
   // Processes one encode task with DMA-buf.
@@ -106,8 +110,6 @@ class VaapiJpegEncodeAccelerator::Encoder {
   uint32_t va_format_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(Encoder);
 };
 
 VaapiJpegEncodeAccelerator::Encoder::Encoder(
@@ -123,9 +125,7 @@ VaapiJpegEncodeAccelerator::Encoder::Encoder(
       notify_error_cb_(std::move(notify_error_cb)),
       va_surface_id_(VA_INVALID_SURFACE),
       input_size_(gfx::Size()),
-      va_format_(0) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+      va_format_(0) {}
 
 VaapiJpegEncodeAccelerator::Encoder::~Encoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -157,8 +157,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
 
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
-            va_format, input_size, VaapiWrapper::SurfaceUsageHint::kGeneric, 1,
-            &va_surfaces)) {
+            va_format, input_size, {VaapiWrapper::SurfaceUsageHint::kGeneric},
+            1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -377,7 +377,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
             VA_RT_FORMAT_YUV420, input_size,
-            VaapiWrapper::SurfaceUsageHint::kGeneric, 1, &va_surfaces)) {
+            {VaapiWrapper::SurfaceUsageHint::kGeneric}, 1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -455,9 +455,16 @@ VaapiJpegEncodeAccelerator::VaapiJpegEncodeAccelerator(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(io_task_runner)),
+      encoder_thread_("VaapiJpegEncoderThread"),
       weak_this_factory_(this) {
   VLOGF(2);
   weak_this_ = weak_this_factory_.GetWeakPtr();
+}
+
+// Destroy |encoder_| on |encoder_thread_|.
+void VaapiJpegEncodeAccelerator::CleanUpOnEncoderThread() {
+  DCHECK(encoder_task_runner_->BelongsToCurrentThread());
+  encoder_.reset();
 }
 
 VaapiJpegEncodeAccelerator::~VaapiJpegEncodeAccelerator() {
@@ -465,9 +472,16 @@ VaapiJpegEncodeAccelerator::~VaapiJpegEncodeAccelerator() {
   VLOGF(2) << "Destroying VaapiJpegEncodeAccelerator";
 
   weak_this_factory_.InvalidateWeakPtrs();
+
+  // base::Unretained() is fine here because we control |encoder_task_runner_|
+  // lifetime.
   if (encoder_task_runner_) {
-    encoder_task_runner_->DeleteSoon(FROM_HERE, std::move(encoder_));
+    encoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VaapiJpegEncodeAccelerator::CleanUpOnEncoderThread,
+                       base::Unretained(this)));
   }
+  encoder_thread_.Stop();
 }
 
 void VaapiJpegEncodeAccelerator::NotifyError(int32_t task_id, Status status) {
@@ -486,27 +500,26 @@ void VaapiJpegEncodeAccelerator::VideoFrameReady(int32_t task_id,
   client_->VideoFrameReady(task_id, encoded_picture_size);
 }
 
-chromeos_camera::JpegEncodeAccelerator::Status
-VaapiJpegEncodeAccelerator::Initialize(
-    chromeos_camera::JpegEncodeAccelerator::Client* client) {
-  VLOGF(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
+void VaapiJpegEncodeAccelerator::InitializeOnEncoderTaskRunner(
+    chromeos_camera::JpegEncodeAccelerator::InitCB init_cb) {
+  DCHECK(encoder_task_runner_->BelongsToCurrentThread());
 
   if (!VaapiWrapper::IsJpegEncodeSupported()) {
     VLOGF(1) << "Jpeg encoder is not supported.";
-    return HW_JPEG_ENCODE_NOT_SUPPORTED;
+    std::move(init_cb).Run(HW_JPEG_ENCODE_NOT_SUPPORTED);
+    return;
   }
 
-  client_ = client;
   scoped_refptr<VaapiWrapper> vaapi_wrapper = VaapiWrapper::Create(
-      VaapiWrapper::kEncode, VAProfileJPEGBaseline,
+      VaapiWrapper::kEncodeConstantBitrate, VAProfileJPEGBaseline,
       EncryptionScheme::kUnencrypted,
       base::BindRepeating(&ReportVaapiErrorToUMA,
                           "Media.VaapiJpegEncodeAccelerator.VAAPIError"));
 
   if (!vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI";
-    return PLATFORM_FAILURE;
+    std::move(init_cb).Run(PLATFORM_FAILURE);
+    return;
   }
 
   scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper = VaapiWrapper::Create(
@@ -516,30 +529,66 @@ VaapiJpegEncodeAccelerator::Initialize(
                           "Media.VaapiJpegEncodeAccelerator.Vpp.VAAPIError"));
   if (!vpp_vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI wrapper for VPP";
-    return PLATFORM_FAILURE;
+    std::move(init_cb).Run(PLATFORM_FAILURE);
+    return;
   }
 
   // Size is irrelevant for a VPP context.
   if (!vpp_vaapi_wrapper->CreateContext(gfx::Size())) {
     VLOGF(1) << "Failed to create context for VPP";
-    return PLATFORM_FAILURE;
-  }
-
-  encoder_task_runner_ = base::ThreadPool::CreateSingleThreadTaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
-  if (!encoder_task_runner_) {
-    VLOGF(1) << "Failed to create encoder task runner.";
-    return THREAD_CREATION_FAILED;
+    std::move(init_cb).Run(PLATFORM_FAILURE);
+    return;
   }
 
   encoder_ = std::make_unique<Encoder>(
       std::move(vaapi_wrapper), std::move(vpp_vaapi_wrapper),
-      BindToCurrentLoop(base::BindRepeating(
-          &VaapiJpegEncodeAccelerator::VideoFrameReady, weak_this_)),
-      BindToCurrentLoop(base::BindRepeating(
-          &VaapiJpegEncodeAccelerator::NotifyError, weak_this_)));
+      BindPostTask(
+          task_runner_,
+          base::BindRepeating(&VaapiJpegEncodeAccelerator::VideoFrameReady,
+                              weak_this_)),
+      BindPostTask(task_runner_,
+                   base::BindRepeating(&VaapiJpegEncodeAccelerator::NotifyError,
+                                       weak_this_)));
 
-  return ENCODE_OK;
+  std::move(init_cb).Run(ENCODE_OK);
+}
+
+void VaapiJpegEncodeAccelerator::InitializeOnTaskRunner(
+    chromeos_camera::JpegEncodeAccelerator::Client* client,
+    chromeos_camera::JpegEncodeAccelerator::InitCB init_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_ = client;
+
+  if (!encoder_thread_.Start()) {
+    VLOGF(1) << "Failed to start encoding thread.";
+    std::move(init_cb).Run(THREAD_CREATION_FAILED);
+    return;
+  }
+
+  encoder_task_runner_ = encoder_thread_.task_runner();
+  DCHECK(encoder_task_runner_);
+
+  // base::Unretained() is fine here because we control |encoder_task_runner_|
+  // lifetime.
+  encoder_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VaapiJpegEncodeAccelerator::InitializeOnEncoderTaskRunner,
+                     base::Unretained(this), std::move(init_cb)));
+}
+
+void VaapiJpegEncodeAccelerator::InitializeAsync(
+    chromeos_camera::JpegEncodeAccelerator::Client* client,
+    chromeos_camera::JpegEncodeAccelerator::InitCB init_cb) {
+  VLOGF(2);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // To guarantee that the caller receives an asynchronous call after the
+  // return path, we are making use of InitializeOnTaskRunner.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VaapiJpegEncodeAccelerator::InitializeOnTaskRunner,
+                     weak_this_, client,
+                     BindToCurrentLoop(std::move(init_cb))));
 }
 
 size_t VaapiJpegEncodeAccelerator::GetMaxCodedBufferSize(

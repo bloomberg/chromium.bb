@@ -8,15 +8,16 @@
 #include <stddef.h>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -43,12 +44,17 @@ class ExtensionMessageBubbleController;
 class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                             public extensions::ExtensionRegistryObserver,
                             public extensions::ExtensionManagement::Observer,
+                            public content::NotificationObserver,
                             public KeyedService {
  public:
   using ActionId = std::string;
 
   ToolbarActionsModel(Profile* profile,
                       extensions::ExtensionPrefs* extension_prefs);
+
+  ToolbarActionsModel(const ToolbarActionsModel&) = delete;
+  ToolbarActionsModel& operator=(const ToolbarActionsModel&) = delete;
+
   ~ToolbarActionsModel() override;
 
   // A class which is informed of changes to the model; represents the view of
@@ -66,6 +72,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
     virtual void OnToolbarActionRemoved(const ActionId& id) = 0;
 
     // Signals that the browser action with |id| has been updated.
+    // This method covers lots of different extension updates and could be split
+    // in different methods if needed, such as
+    // `OnToolbarActionHostPermissionsUpdated`.
     virtual void OnToolbarActionUpdated(const ActionId& id) = 0;
 
     // Signals that the toolbar model has been initialized, so that if any
@@ -103,6 +112,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   std::unique_ptr<extensions::ExtensionMessageBubbleController>
   GetExtensionMessageBubbleController(Browser* browser);
 
+  // Returns the extension name corresponding to the `action_id`.
+  const std::string& GetExtensionName(const ActionId& action_id) const;
+
   // Returns true if the action is pinned to the toolbar.
   bool IsActionPinned(const ActionId& action_id) const;
 
@@ -139,6 +151,11 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // extensions::ExtensionManagement::Observer:
   void OnExtensionManagementSettingsChanged() override;
+
+  // content::NotificationObserver:
+  void Observe(int notification_type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the ExtensionRegistry, their saved order from the pref service, and
@@ -181,19 +198,19 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   base::ObserverList<Observer>::Unchecked observers_;
 
   // The Profile this toolbar model is for.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
-  extensions::ExtensionPrefs* extension_prefs_;
-  PrefService* prefs_;
+  raw_ptr<extensions::ExtensionPrefs> extension_prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // The ExtensionActionAPI object, cached for convenience.
-  extensions::ExtensionActionAPI* extension_action_api_;
+  raw_ptr<extensions::ExtensionActionAPI> extension_action_api_;
 
   // The ExtensionRegistry object, cached for convenience.
-  extensions::ExtensionRegistry* extension_registry_;
+  raw_ptr<extensions::ExtensionRegistry> extension_registry_;
 
   // The ExtensionActionManager, cached for convenience.
-  extensions::ExtensionActionManager* extension_action_manager_;
+  raw_ptr<extensions::ExtensionActionManager> extension_action_manager_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool actions_initialized_;
@@ -225,9 +242,10 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
                           extensions::ExtensionManagement::Observer>
       extension_management_observation_{this};
 
-  base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_{this};
+  // Registrar for receiving permission-related notifications.
+  content::NotificationRegistrar notification_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsModel);
+  base::WeakPtrFactory<ToolbarActionsModel> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_H_

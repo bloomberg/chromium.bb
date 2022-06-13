@@ -10,12 +10,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -160,17 +160,18 @@ TEST_F(FileProxyTest, CreateOrOpen_OpenNonExistent) {
 }
 
 TEST_F(FileProxyTest, CreateOrOpen_AbandonedCreate) {
-  bool prev = ThreadRestrictions::SetIOAllowed(false);
-  RunLoop run_loop;
   {
-    FileProxy proxy(file_task_runner());
-    proxy.CreateOrOpen(
-        TestPath(), File::FLAG_CREATE | File::FLAG_READ,
-        BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
-                 run_loop.QuitWhenIdleClosure()));
+    base::ScopedDisallowBlocking disallow_blocking;
+    RunLoop run_loop;
+    {
+      FileProxy proxy(file_task_runner());
+      proxy.CreateOrOpen(
+          TestPath(), File::FLAG_CREATE | File::FLAG_READ,
+          BindOnce(&FileProxyTest::DidCreateOrOpen, weak_factory_.GetWeakPtr(),
+                   run_loop.QuitWhenIdleClosure()));
+    }
+    run_loop.Run();
   }
-  run_loop.Run();
-  ThreadRestrictions::SetIOAllowed(prev);
 
   EXPECT_TRUE(PathExists(TestPath()));
 }
@@ -237,7 +238,7 @@ TEST_F(FileProxyTest, CreateTemporary) {
       deleted_temp_file = true;
     else
       // Wait one second and then try again
-      PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+      PlatformThread::Sleep(Seconds(1));
   }
   EXPECT_TRUE(deleted_temp_file);
 }
@@ -356,10 +357,8 @@ TEST_F(FileProxyTest, WriteAndFlush) {
   }
 }
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID)
 // Flaky on Android, see http://crbug.com/489602
-// TODO(crbug.com/851734): Implementation depends on stat, which is not
-// implemented on Fuchsia
 #define MAYBE_SetTimes DISABLED_SetTimes
 #else
 #define MAYBE_SetTimes SetTimes
@@ -370,8 +369,8 @@ TEST_F(FileProxyTest, MAYBE_SetTimes) {
       File::FLAG_CREATE | File::FLAG_WRITE | File::FLAG_WRITE_ATTRIBUTES,
       &proxy);
 
-  Time last_accessed_time = Time::Now() - TimeDelta::FromDays(12345);
-  Time last_modified_time = Time::Now() - TimeDelta::FromHours(98765);
+  Time last_accessed_time = Time::Now() - Days(12345);
+  Time last_modified_time = Time::Now() - Hours(98765);
 
   RunLoop run_loop;
   proxy.SetTimes(last_accessed_time, last_modified_time,
@@ -387,8 +386,12 @@ TEST_F(FileProxyTest, MAYBE_SetTimes) {
   // the double values to int here.
   EXPECT_EQ(static_cast<int>(last_modified_time.ToDoubleT()),
             static_cast<int>(info.last_modified.ToDoubleT()));
+
+#if !defined(OS_FUCHSIA)
+  // On Fuchsia, /tmp is noatime
   EXPECT_EQ(static_cast<int>(last_accessed_time.ToDoubleT()),
             static_cast<int>(info.last_accessed.ToDoubleT()));
+#endif  // OS_FUCHSIA
 }
 
 TEST_F(FileProxyTest, SetLength_Shrink) {

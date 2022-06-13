@@ -5,13 +5,13 @@
 #ifndef ASH_PUBLIC_CPP_LOGIN_TYPES_H_
 #define ASH_PUBLIC_CPP_LOGIN_TYPES_H_
 
+#include "ash/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
+#include "ash/components/security_token_pin/constants.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/token.h"
-#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
-#include "chromeos/components/security_token_pin/constants.h"
 #include "components/account_id/account_id.h"
 
 namespace ash {
@@ -69,6 +69,9 @@ enum class OobeDialogState {
 
   // Showing user creation screen.
   USER_CREATION = 15,
+
+  // Showing enrollment screen with the possibility to cancel.
+  ENROLLMENT_CANCEL_ENABLED = 16,
 };
 
 // Supported multi-profile user behavior values.
@@ -80,8 +83,8 @@ enum class MultiProfileUserBehavior {
   OWNER_PRIMARY_ONLY = 3,
 };
 
-// Easy unlock icon choices.
-enum class EasyUnlockIconId {
+// Easy unlock icon states.
+enum class EasyUnlockIconState {
   // No icon shown.
   NONE,
   // The user has clicked the easy unlock icon and disabled easy unlock for this
@@ -122,17 +125,17 @@ enum class FingerprintState {
 };
 
 // Information about the custom icon in the user pod.
-struct ASH_PUBLIC_EXPORT EasyUnlockIconOptions {
-  EasyUnlockIconOptions();
-  EasyUnlockIconOptions(const EasyUnlockIconOptions& other);
-  EasyUnlockIconOptions(EasyUnlockIconOptions&& other);
-  ~EasyUnlockIconOptions();
+struct ASH_PUBLIC_EXPORT EasyUnlockIconInfo {
+  EasyUnlockIconInfo();
+  EasyUnlockIconInfo(const EasyUnlockIconInfo& other);
+  EasyUnlockIconInfo(EasyUnlockIconInfo&& other);
+  ~EasyUnlockIconInfo();
 
-  EasyUnlockIconOptions& operator=(const EasyUnlockIconOptions& other);
-  EasyUnlockIconOptions& operator=(EasyUnlockIconOptions&& other);
+  EasyUnlockIconInfo& operator=(const EasyUnlockIconInfo& other);
+  EasyUnlockIconInfo& operator=(EasyUnlockIconInfo&& other);
 
   // Icon that should be displayed.
-  EasyUnlockIconId icon = EasyUnlockIconId::NONE;
+  EasyUnlockIconState icon_state = EasyUnlockIconState::NONE;
   // Tooltip that is associated with the icon. This is shown automatically if
   // |autoshow_tooltip| is true. The user can always see the tooltip if they
   // hover over the icon. The tooltip should be used for the accessibility label
@@ -345,16 +348,16 @@ struct ASH_PUBLIC_EXPORT SecurityTokenPinRequest {
   AccountId account_id;
 
   // Type of the code requested from the user.
-  chromeos::security_token_pin::CodeType code_type =
-      chromeos::security_token_pin::CodeType::kPin;
+  ash::security_token_pin::CodeType code_type =
+      ash::security_token_pin::CodeType::kPin;
 
   // Whether the UI controls that allow user to enter the value should be
   // enabled. MUST be |false| when |attempts_left| is zero.
   bool enable_user_input = true;
 
   // An optional error to be displayed to the user.
-  chromeos::security_token_pin::ErrorLabel error_label =
-      chromeos::security_token_pin::ErrorLabel::kNone;
+  ash::security_token_pin::ErrorLabel error_label =
+      ash::security_token_pin::ErrorLabel::kNone;
 
   // When non-negative, the UI should indicate this number to the user;
   // otherwise must be equal to -1.

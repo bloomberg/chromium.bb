@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/message_pipe.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -25,6 +25,10 @@ class WebrtcDataStreamAdapter : public MessagePipe,
  public:
   explicit WebrtcDataStreamAdapter(
       rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
+
+  WebrtcDataStreamAdapter(const WebrtcDataStreamAdapter&) = delete;
+  WebrtcDataStreamAdapter& operator=(const WebrtcDataStreamAdapter&) = delete;
+
   ~WebrtcDataStreamAdapter() override;
 
   std::string name() { return channel_->label(); }
@@ -66,7 +70,7 @@ class WebrtcDataStreamAdapter : public MessagePipe,
 
   rtc::scoped_refptr<webrtc::DataChannelInterface> channel_;
 
-  EventHandler* event_handler_ = nullptr;
+  raw_ptr<EventHandler> event_handler_ = nullptr;
 
   State state_ = State::CONNECTING;
 
@@ -74,8 +78,6 @@ class WebrtcDataStreamAdapter : public MessagePipe,
   base::queue<PendingMessage> pending_messages_;
 
   base::WeakPtrFactory<WebrtcDataStreamAdapter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebrtcDataStreamAdapter);
 };
 
 }  // namespace protocol

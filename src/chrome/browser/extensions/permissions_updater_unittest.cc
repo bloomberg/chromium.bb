@@ -102,7 +102,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
     UpdatedExtensionPermissionsInfo* info =
         content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
 
-    extension_ = info->extension;
+    extension_ = info->extension.get();
     permissions_ = info->permissions.Clone();
     reason_ = info->reason;
 
@@ -131,6 +131,12 @@ void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 class PermissionsUpdaterTestDelegate : public PermissionsUpdater::Delegate {
  public:
   PermissionsUpdaterTestDelegate() {}
+
+  PermissionsUpdaterTestDelegate(const PermissionsUpdaterTestDelegate&) =
+      delete;
+  PermissionsUpdaterTestDelegate& operator=(
+      const PermissionsUpdaterTestDelegate&) = delete;
+
   ~PermissionsUpdaterTestDelegate() override {}
 
   // PermissionsUpdater::Delegate
@@ -145,9 +151,6 @@ class PermissionsUpdaterTestDelegate : public PermissionsUpdater::Delegate {
         std::move(api_permission_set), ManifestPermissionSet(), URLPatternSet(),
         URLPatternSet());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PermissionsUpdaterTestDelegate);
 };
 
 }  // namespace
@@ -198,7 +201,7 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
 
     PermissionsUpdaterListener listener;
     PermissionsUpdater(profile_.get())
-        .GrantOptionalPermissions(*extension, delta, base::DoNothing::Once());
+        .GrantOptionalPermissions(*extension, delta, base::DoNothing());
 
     listener.Wait();
 
@@ -234,7 +237,7 @@ TEST_F(PermissionsUpdaterTest, GrantAndRevokeOptionalPermissions) {
     PermissionsUpdater(profile_.get())
         .RevokeOptionalPermissions(*extension, delta,
                                    PermissionsUpdater::REMOVE_SOFT,
-                                   base::DoNothing::Once());
+                                   base::DoNothing());
     listener.Wait();
 
     // Verify that the notification was correct.

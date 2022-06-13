@@ -16,12 +16,13 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/viz/common/constants.h"
+#include "components/viz/common/surfaces/frame_sink_bundle_id.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
@@ -48,6 +49,8 @@ namespace viz {
 
 class CapturableFrameSink;
 class CompositorFrameSinkSupport;
+class FrameSinkBundleImpl;
+class HintSessionFactory;
 class OutputSurfaceProvider;
 class SharedBitmapManager;
 
@@ -62,28 +65,33 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
  public:
   struct VIZ_SERVICE_EXPORT InitParams {
     InitParams();
-    InitParams(SharedBitmapManager* shared_bitmap_manager,
-               OutputSurfaceProvider* output_surface_provider);
+    explicit InitParams(
+        SharedBitmapManager* shared_bitmap_manager,
+        OutputSurfaceProvider* output_surface_provider = nullptr);
     InitParams(InitParams&& other);
     ~InitParams();
     InitParams& operator=(InitParams&& other);
 
-    SharedBitmapManager* shared_bitmap_manager = nullptr;
+    raw_ptr<SharedBitmapManager> shared_bitmap_manager = nullptr;
     absl::optional<uint32_t> activation_deadline_in_frames =
         kDefaultActivationDeadlineInFrames;
-    OutputSurfaceProvider* output_surface_provider = nullptr;
+    raw_ptr<OutputSurfaceProvider> output_surface_provider = nullptr;
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
     DebugRendererSettings debug_renderer_settings;
-    gfx::RenderingPipeline* gpu_pipeline = nullptr;
+    base::ProcessId host_process_id = base::kNullProcessId;
+    raw_ptr<HintSessionFactory> hint_session_factory = nullptr;
   };
   explicit FrameSinkManagerImpl(const InitParams& params);
-  // TODO(kylechar): Cleanup tests and remove this constructor.
-  FrameSinkManagerImpl(
-      SharedBitmapManager* shared_bitmap_manager,
-      OutputSurfaceProvider* output_surface_provider = nullptr);
+
+  FrameSinkManagerImpl(const FrameSinkManagerImpl&) = delete;
+  FrameSinkManagerImpl& operator=(const FrameSinkManagerImpl&) = delete;
+
   ~FrameSinkManagerImpl() override;
+
+  CompositorFrameSinkImpl* GetFrameSinkImpl(const FrameSinkId& id);
+  FrameSinkBundleImpl* GetFrameSinkBundle(const FrameSinkBundleId& id);
 
   // Binds |this| as a FrameSinkManagerImpl for |receiver| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
@@ -106,8 +114,13 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                               const std::string& debug_label) override;
   void CreateRootCompositorFrameSink(
       mojom::RootCompositorFrameSinkParamsPtr params) override;
+  void CreateFrameSinkBundle(
+      const FrameSinkBundleId& bundle_id,
+      mojo::PendingReceiver<mojom::FrameSinkBundle> receiver,
+      mojo::PendingRemote<mojom::FrameSinkBundleClient> client) override;
   void CreateCompositorFrameSink(
       const FrameSinkId& frame_sink_id,
+      const absl::optional<FrameSinkBundleId>& bundle_id,
       mojo::PendingReceiver<mojom::CompositorFrameSink> receiver,
       mojo::PendingRemote<mojom::CompositorFrameSinkClient> client) override;
   void DestroyCompositorFrameSink(
@@ -138,6 +151,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       const DebugRendererSettings& debug_settings) override;
   void Throttle(const std::vector<FrameSinkId>& ids,
                 base::TimeDelta interval) override;
+
+  void DestroyFrameSinkBundle(const FrameSinkBundleId& id);
 
   // SurfaceObserver implementation.
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
@@ -213,7 +228,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Returns an empty set if a parent doesn't have any children.
   base::flat_set<FrameSinkId> GetChildrenByParent(
       const FrameSinkId& parent_frame_sink_id) const;
-  const CompositorFrameSinkSupport* GetFrameSinkForId(
+  CompositorFrameSinkSupport* GetFrameSinkForId(
       const FrameSinkId& frame_sink_id) const;
 
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
@@ -232,15 +247,26 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Called when video capture stops on the target frame sink with |id|.
   void OnCaptureStopped(const FrameSinkId& id);
 
+  // Returns true if thread IDs do not belong to this process or the host (ie
+  // browser) process. Note this also returns false on any unexpected errors.
+  // Only implemented on Android.
+  bool VerifySandboxedThreadIds(
+      base::flat_set<base::PlatformThreadId> thread_ids);
+
  private:
   friend class FrameSinkManagerTest;
 
   // Metadata for a CompositorFrameSink.
   struct FrameSinkData {
     explicit FrameSinkData(bool report_activation);
+
+    FrameSinkData(const FrameSinkData&) = delete;
+    FrameSinkData& operator=(const FrameSinkData&) = delete;
+
     FrameSinkData(FrameSinkData&& other);
-    ~FrameSinkData();
     FrameSinkData& operator=(FrameSinkData&& other);
+
+    ~FrameSinkData();
 
     // A label to identify frame sink.
     std::string debug_label;
@@ -248,25 +274,24 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     // Indicates whether the client wishes to receive FirstSurfaceActivation
     // notification.
     bool report_activation;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 
   // BeginFrameSource routing information for a FrameSinkId.
   struct FrameSinkSourceMapping {
     FrameSinkSourceMapping();
+
+    FrameSinkSourceMapping(const FrameSinkSourceMapping&) = delete;
+    FrameSinkSourceMapping& operator=(const FrameSinkSourceMapping&) = delete;
+
     FrameSinkSourceMapping(FrameSinkSourceMapping&& other);
-    ~FrameSinkSourceMapping();
     FrameSinkSourceMapping& operator=(FrameSinkSourceMapping&& other);
 
+    ~FrameSinkSourceMapping();
+
     // The currently assigned begin frame source for this client.
-    BeginFrameSource* source = nullptr;
+    raw_ptr<BeginFrameSource> source = nullptr;
     // This represents a dag of parent -> children mapping.
     base::flat_set<FrameSinkId> children;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FrameSinkSourceMapping);
   };
 
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -301,10 +326,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // SharedBitmapManager for the viz display service for receiving software
   // resources in CompositorFrameSinks.
-  SharedBitmapManager* const shared_bitmap_manager_;
+  const raw_ptr<SharedBitmapManager> shared_bitmap_manager_;
 
   // Provides an output surface for CreateRootCompositorFrameSink().
-  OutputSurfaceProvider* const output_surface_provider_;
+  const raw_ptr<OutputSurfaceProvider> output_surface_provider_;
 
   SurfaceManager surface_manager_;
 
@@ -323,6 +348,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // This is viz-global instance of DebugRendererSettings.
   DebugRendererSettings debug_settings_;
+
+  base::ProcessId host_process_id_;
+
+  // Performance hint session factory of this viz instance.
+  const raw_ptr<HintSessionFactory> hint_session_factory_;
 
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and
@@ -346,6 +376,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
       root_sink_map_;
   base::flat_map<FrameSinkId, std::unique_ptr<CompositorFrameSinkImpl>>
       sink_map_;
+
+  base::flat_map<FrameSinkBundleId, std::unique_ptr<FrameSinkBundleImpl>>
+      bundle_map_;
 
   base::flat_set<std::unique_ptr<FrameSinkVideoCapturerImpl>,
                  base::UniquePtrComparator>
@@ -382,16 +415,12 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   //     remote client and |ui_task_runner_| will be nullptr, and calls to
   //     OnFrameTokenChanged() will be directly called (without PostTask) on
   //     |client_|. Used for some unit tests.
-  mojom::FrameSinkManagerClient* client_ = nullptr;
+  raw_ptr<mojom::FrameSinkManagerClient> client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   mojo::Remote<mojom::FrameSinkManagerClient> client_remote_;
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
-
-  gfx::RenderingPipeline* gpu_pipeline_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };
 
 }  // namespace viz

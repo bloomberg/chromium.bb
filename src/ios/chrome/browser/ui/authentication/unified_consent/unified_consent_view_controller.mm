@@ -4,23 +4,26 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
 
+#include <ostream>
+
 #include "base/check_op.h"
 #include "base/ios/ns_range.h"
+#include "base/notreached.h"
 #include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/string_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -43,7 +46,8 @@ const CGFloat kVerticalSeparatorTextMargin = 16.;
 const char* const kSettingsSyncURL = "internal://settings-sync";
 }  // namespace
 
-@interface UnifiedConsentViewController ()<UIScrollViewDelegate> {
+@interface UnifiedConsentViewController () <UIScrollViewDelegate,
+                                            UITextViewDelegate> {
   std::vector<int> _consentStringIds;
 }
 
@@ -63,10 +67,10 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 // Constraint for the maximum height of the header view (also used to hide the
 // the header view if needed).
 @property(nonatomic, strong) NSLayoutConstraint* headerViewMaxHeightConstraint;
-// Settings link controller.
-@property(nonatomic, strong) LabelLinkController* settingsLinkController;
-// Label related to customize sync text.
-@property(nonatomic, strong) UILabel* customizeSyncLabel;
+// Text description that may show link to advanced Sync settings.
+@property(nonatomic, strong) UITextView* syncSettingsTextView;
+// Text description that show a link to open the management help page.
+@property(nonatomic, strong) UITextView* managementNoticeTextView;
 
 @end
 
@@ -155,7 +159,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   UILabel* title =
       [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE
                        fontStyle:kAuthenticationTitleFontStyle
-                       textColor:UIColor.cr_labelColor
+                       textColor:[UIColor colorNamed:kTextPrimaryColor]
                       parentView:container];
 
   // Identity picker view.
@@ -169,16 +173,19 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   [container addSubview:self.identityButtonControl];
 
   // Sync title and subtitle.
+  int stringId = self.delegate.unifiedConsentCoordinatorHasManagedSyncDataType
+                     ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_MANAGED_TITLE
+                     : IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE;
   UILabel* syncTitleLabel =
-      [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE
+      [self addLabelWithStringId:stringId
                        fontStyle:kAuthenticationTextFontStyle
-                       textColor:UIColor.cr_labelColor
+                       textColor:[UIColor colorNamed:kTextPrimaryColor]
                       parentView:container];
 
   UILabel* syncSubtitleLabel =
       [self addLabelWithStringId:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE
                        fontStyle:kAuthenticationTextFontStyle
-                       textColor:UIColor.cr_secondaryLabelColor
+                       textColor:[UIColor colorNamed:kTextSecondaryColor]
                       parentView:container];
 
   // Separator.
@@ -187,13 +194,22 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   separator.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   [container addSubview:separator];
 
-  // Customize label.
-  self.openSettingsStringId = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS;
-  self.customizeSyncLabel =
-      [self addLabelWithStringId:self.openSettingsStringId
-                       fontStyle:kAuthenticationTextFontStyle
-                       textColor:UIColor.cr_secondaryLabelColor
-                      parentView:container];
+  // Sync settings description.
+  self.syncSettingsTextView = [[UITextView alloc] init];
+  self.syncSettingsTextView.scrollEnabled = NO;
+  self.syncSettingsTextView.editable = NO;
+  self.syncSettingsTextView.delegate = self;
+  self.syncSettingsTextView.backgroundColor = UIColor.clearColor;
+  self.syncSettingsTextView.font =
+      [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle];
+  self.syncSettingsTextView.adjustsFontForContentSizeCategory = YES;
+  self.syncSettingsTextView.translatesAutoresizingMaskIntoConstraints = NO;
+  [container addSubview:self.syncSettingsTextView];
+
+  self.openSettingsStringId =
+      self.delegate.unifiedConsentCoordinatorHasManagedSyncDataType
+          ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_MANAGED_SETTINGS
+          : IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS;
 
   // Layouts
   NSDictionary* views = @{
@@ -205,7 +221,7 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
     @"separator" : separator,
     @"synctitle" : syncTitleLabel,
     @"syncsubtitle" : syncSubtitleLabel,
-    @"customizesync" : self.customizeSyncLabel,
+    @"customizesync" : self.syncSettingsTextView,
   };
   NSDictionary* metrics = @{
     @"TitlePickerMargin" : @(kTitlePickerMargin),
@@ -231,11 +247,28 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
     @"V:|[container]|",
     @"V:|[header]-(HeaderTitleMargin)-[title]-(TitlePickerMargin)-[picker]",
     @"V:[synctitle]-[syncsubtitle]-(VBetweenText)-[separator]",
-    @"V:[separator]-(VSeparatorText)-[customizesync]-(VTextMargin)-|",
+    @"V:[separator]-(VSeparatorText)-[customizesync]-(>=VTextMargin)-|",
     // Size constraints.
     @"V:[separator(SeparatorHeight)]",
   ];
   ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+
+  if (self.delegate.unifiedConsentCoordinatorHasAccountRestrictions ||
+      self.delegate.unifiedConsentCoordinatorHasManagedSyncDataType) {
+    // Manage settings description.
+    [container addSubview:self.managementNoticeTextView];
+    [NSLayoutConstraint activateConstraints:@[
+      [self.managementNoticeTextView.leadingAnchor
+          constraintEqualToAnchor:self.syncSettingsTextView.leadingAnchor],
+      [self.managementNoticeTextView.trailingAnchor
+          constraintEqualToAnchor:self.syncSettingsTextView.trailingAnchor],
+      [self.managementNoticeTextView.topAnchor
+          constraintEqualToAnchor:self.syncSettingsTextView.bottomAnchor],
+      [self.managementNoticeTextView.bottomAnchor
+          constraintLessThanOrEqualToAnchor:container.bottomAnchor
+                                   constant:-kVerticalTextMargin],
+    ]];
+  }
 
   // Adding constraints for header image.
   AddSameCenterXConstraint(self.view, headerImageView);
@@ -338,6 +371,37 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
 
 #pragma mark - Private
 
+- (UITextView*)managementNoticeTextView {
+  if (_managementNoticeTextView)
+    return _managementNoticeTextView;
+
+  _managementNoticeTextView = [[UITextView alloc] init];
+  _managementNoticeTextView.scrollEnabled = NO;
+  _managementNoticeTextView.editable = NO;
+  _managementNoticeTextView.delegate = self;
+  _managementNoticeTextView.adjustsFontForContentSizeCategory = YES;
+  _managementNoticeTextView.translatesAutoresizingMaskIntoConstraints = NO;
+  _managementNoticeTextView.backgroundColor = UIColor.clearColor;
+
+  NSString* fullText =
+      l10n_util::GetNSString(IDS_IOS_ENTERPRISE_MANAGED_SIGNIN_LEARN_MORE);
+  NSDictionary* textAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle]
+  };
+  NSDictionary* linkAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+    NSLinkAttributeName : net::NSURLWithGURL(GURL(kChromeUIManagementURL)),
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle]
+  };
+  _managementNoticeTextView.attributedText = AttributedStringFromStringWithLink(
+      fullText, textAttributes, linkAttributes);
+
+  return _managementNoticeTextView;
+}
+
 // Adds label with title |stringId| into |parentView|.
 - (UILabel*)addLabelWithStringId:(int)stringId
                        fontStyle:(UIFontTextStyle)fontStyle
@@ -357,34 +421,47 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
   return label;
 }
 
-// Adds or removes the Settings link in |self.customizeSyncLabel|.
+// Displays the description used for advanced Sync Settings. The link to
+// customize Settings is shown when there is at least one selected identity on
+// the device.
 - (void)setSettingsLinkURLShown:(BOOL)showLink {
-  self.customizeSyncLabel.text =
-      l10n_util::GetNSString(self.openSettingsStringId);
-  GURL URL = google_util::AppendGoogleLocaleParam(
-      GURL(kSettingsSyncURL), GetApplicationContext()->GetApplicationLocale());
-  NSString* text = self.customizeSyncLabel.text;
+  NSString* text = l10n_util::GetNSString(self.openSettingsStringId);
+  NSDictionary* textAttributes = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
+    NSFontAttributeName :
+        [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle]
+  };
 
-  // TODO(crbug.com/1184151): Move to use AttributedStringFromStringWithLink.
-  const StringWithTag parsedString = ParseStringWithLink(text);
-  DCHECK(parsedString.range != NSMakeRange(NSNotFound, 0));
-  self.customizeSyncLabel.text = parsedString.string;
-
-  if (!showLink) {
-    self.settingsLinkController = nil;
-  } else {
-    __weak UnifiedConsentViewController* weakSelf = self;
-    self.settingsLinkController =
-        [[LabelLinkController alloc] initWithLabel:self.customizeSyncLabel
-                                            action:^(const GURL& URL) {
-                                              [weakSelf openSettings];
-                                            }];
-    [self.settingsLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
-    [self.settingsLinkController
-        addLinkWithRange:parsedString.range
-                     url:URL
-         accessibilityID:kAdvancedSigninSettingsLinkIdentifier];
+  NSDictionary* linkAttributes = nil;
+  if (showLink) {
+    linkAttributes = @{
+      NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor],
+      NSFontAttributeName :
+          [UIFont preferredFontForTextStyle:kAuthenticationTextFontStyle],
+      NSLinkAttributeName : net::NSURLWithGURL(GURL(kSettingsSyncURL)),
+    };
   }
+  self.syncSettingsTextView.attributedText =
+      AttributedStringFromStringWithLink(text, textAttributes, linkAttributes);
+}
+
+#pragma mark - UITextViewDelegate
+
+- (BOOL)textView:(UITextView*)textView
+    shouldInteractWithURL:(NSURL*)URL
+                  inRange:(NSRange)characterRange
+              interaction:(UITextItemInteraction)interaction {
+  if (textView == self.syncSettingsTextView) {
+    DCHECK([URL isEqual:net::NSURLWithGURL(GURL(kSettingsSyncURL))]);
+    [self.delegate unifiedConsentViewControllerDidTapSettingsLink:self];
+  } else if (textView == self.managementNoticeTextView) {
+    DCHECK([URL isEqual:net::NSURLWithGURL(GURL(kChromeUIManagementURL))]);
+    [self.delegate unifiedConsentViewControllerDidTapLearnMoreLink:self];
+  } else {
+    NOTREACHED();
+  }
+  // Returns NO as the app is handling the opening of the URL.
+  return NO;
 }
 
 // Updates constraints and content insets for the |scrollView| and
@@ -397,11 +474,6 @@ const char* const kSettingsSyncURL = "internal://settings-sync";
     // Don't send the notification if the delegate is not configured yet.
     [self sendDidReachBottomIfReached];
   }
-}
-
-// Notifies |delegate| that the user tapped on "Settings" link.
-- (void)openSettings {
-  [self.delegate unifiedConsentViewControllerDidTapSettingsLink:self];
 }
 
 // Sends notification to the delegate if the scroll view is scrolled to the

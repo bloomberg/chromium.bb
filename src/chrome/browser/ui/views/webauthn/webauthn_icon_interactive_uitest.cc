@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/webauthn/webauthn_icon_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/authenticator_environment.h"
@@ -51,7 +51,7 @@ class WebAuthUITest : public InProcessBrowserTest {
     return https_server_.GetURL(hostname, relative_url);
   }
 
-  AuthenticatorRequestDialogModel* dialog_model_;
+  raw_ptr<AuthenticatorRequestDialogModel> dialog_model_;
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -67,8 +67,8 @@ class WebAuthUITest : public InProcessBrowserTest {
 // When a conditional UI WebAuthn request is made, the browser should show an
 // icon on the omnibar if the tab executing the request is focused.
 IN_PROC_BROWSER_TEST_F(WebAuthUITest, ConditionalUI) {
-  ui_test_utils::NavigateToURL(browser(),
-                               GetHttpsURL("www.example.com", "/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GetHttpsURL("www.example.com", "/title1.html")));
   auto owned_virtual_device_factory =
       std::make_unique<device::test::VirtualFidoDeviceFactory>();
   auto* virtual_device_factory = owned_virtual_device_factory.get();

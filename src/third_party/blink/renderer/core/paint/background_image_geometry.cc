@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -62,7 +64,7 @@ PhysicalOffset AccumulatedScrollOffsetForFixedBackground(
        block && !skip_info.AncestorSkipped();
        block = block->ContainingBlock(&skip_info)) {
     if (block->IsScrollContainer())
-      result += PhysicalOffsetToBeNoop(block->ScrolledContentOffset());
+      result += block->ScrolledContentOffset();
     if (block == container)
       break;
   }
@@ -347,15 +349,15 @@ PhysicalRect FixedAttachmentPositioningArea(
   DCHECK(layout_viewport);
 
   PhysicalRect rect(PhysicalOffset(),
-                    PhysicalSize(layout_viewport->VisibleContentRect().Size()));
+                    PhysicalSize(layout_viewport->VisibleContentRect().size()));
 
   if (const auto* layout_view = DynamicTo<LayoutView>(obj)) {
     if (!(layout_view->GetBackgroundPaintLocation() &
-          kBackgroundPaintInScrollingContents))
+          kBackgroundPaintInContentsSpace))
       return rect;
     // The LayoutView is the only object that can paint a fixed background into
     // its scrolling contents layer, so it gets a special adjustment here.
-    rect.offset = PhysicalOffsetToBeNoop(layout_view->ScrolledContentOffset());
+    rect.offset = layout_view->ScrolledContentOffset();
   }
 
   rect.Move(AccumulatedScrollOffsetForFixedBackground(obj, container));
@@ -430,6 +432,25 @@ BackgroundImageGeometry::BackgroundImageGeometry(const LayoutNGTableCell& cell,
   positioning_size_override_ = table_part_size;
 }
 
+BackgroundImageGeometry::BackgroundImageGeometry(
+    const NGPhysicalBoxFragment& fragment)
+    : box_(To<LayoutBoxModelObject>(fragment.GetLayoutObject())),
+      positioning_box_(box_) {
+  DCHECK(box_);
+  DCHECK(box_->IsBox());
+  // Specialized constructor should be used for LayoutView.
+  DCHECK(!IsA<LayoutView>(box_));
+
+  if (!fragment.IsOnlyForNode()) {
+    // The element is block-fragmented. We need to calculate the correct
+    // background offset within an imaginary box where all the fragments have
+    // been stitched together.
+    element_positioning_area_offset_ =
+        OffsetInStitchedFragments(fragment, &positioning_size_override_);
+    box_has_multiple_fragments_ = true;
+  }
+}
+
 void BackgroundImageGeometry::ComputeDestRectAdjustments(
     const FillLayer& fill_layer,
     const PhysicalRect& unsnapped_positioning_area,
@@ -460,18 +481,18 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
         // TODO(schenney) The LayoutUnit(float) constructor always
         // rounds down. We should FromFloatFloor or FromFloatCeil to
         // move toward the border.
-        FloatRect inner_border_rect =
+        gfx::RectF inner_border_rect =
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
-        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.X()) -
+        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.x()) -
                                     unsnapped_dest_rect_.X());
-        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.Y()) -
+        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.y()) -
                                    unsnapped_dest_rect_.Y());
         snapped_dest_adjust.SetRight(unsnapped_dest_rect_.Right() -
-                                     LayoutUnit(inner_border_rect.MaxX()));
+                                     LayoutUnit(inner_border_rect.right()));
         snapped_dest_adjust.SetBottom(unsnapped_dest_rect_.Bottom() -
-                                      LayoutUnit(inner_border_rect.MaxY()));
+                                      LayoutUnit(inner_border_rect.bottom()));
       }
       return;
     case EFillBox::kBorder: {
@@ -497,28 +518,28 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
       // move toward the border.
       BorderEdge edges[4];
       positioning_box_->StyleRef().GetBorderEdgeInfo(edges);
-      FloatRect inner_border_rect =
+      gfx::RectF inner_border_rect =
           RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
               positioning_box_->StyleRef(), unsnapped_positioning_area)
               .Rect();
       LayoutRectOutsets box_outsets = positioning_box_->BorderBoxOutsets();
       if (edges[static_cast<unsigned>(BoxSide::kTop)].ObscuresBackground()) {
-        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.Y()) -
+        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.y()) -
                                    unsnapped_dest_rect_.Y());
         unsnapped_dest_adjust.SetTop(box_outsets.Top());
       }
       if (edges[static_cast<unsigned>(BoxSide::kRight)].ObscuresBackground()) {
         snapped_dest_adjust.SetRight(unsnapped_dest_rect_.Right() -
-                                     LayoutUnit(inner_border_rect.MaxX()));
+                                     LayoutUnit(inner_border_rect.right()));
         unsnapped_dest_adjust.SetRight(box_outsets.Right());
       }
       if (edges[static_cast<unsigned>(BoxSide::kBottom)].ObscuresBackground()) {
         snapped_dest_adjust.SetBottom(unsnapped_dest_rect_.Bottom() -
-                                      LayoutUnit(inner_border_rect.MaxY()));
+                                      LayoutUnit(inner_border_rect.bottom()));
         unsnapped_dest_adjust.SetBottom(box_outsets.Bottom());
       }
       if (edges[static_cast<unsigned>(BoxSide::kLeft)].ObscuresBackground()) {
-        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.X()) -
+        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.x()) -
                                     unsnapped_dest_rect_.X());
         unsnapped_dest_adjust.SetLeft(box_outsets.Left());
       }
@@ -559,18 +580,18 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
         // the size and position of the borders, sometimes adjusting the inner
         // border by more than a pixel when done (particularly under magnifying
         // zoom).
-        FloatRect inner_border_rect =
+        gfx::RectF inner_border_rect =
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
-        snapped_box_outset.SetLeft(LayoutUnit(inner_border_rect.X()) -
+        snapped_box_outset.SetLeft(LayoutUnit(inner_border_rect.x()) -
                                    unsnapped_positioning_area.X());
-        snapped_box_outset.SetTop(LayoutUnit(inner_border_rect.Y()) -
+        snapped_box_outset.SetTop(LayoutUnit(inner_border_rect.y()) -
                                   unsnapped_positioning_area.Y());
         snapped_box_outset.SetRight(unsnapped_positioning_area.Right() -
-                                    LayoutUnit(inner_border_rect.MaxX()));
+                                    LayoutUnit(inner_border_rect.right()));
         snapped_box_outset.SetBottom(unsnapped_positioning_area.Bottom() -
-                                     LayoutUnit(inner_border_rect.MaxY()));
+                                     LayoutUnit(inner_border_rect.bottom()));
       }
       return;
     case EFillBox::kBorder:
@@ -601,7 +622,8 @@ void BackgroundImageGeometry::ComputePositioningArea(
   } else {
     unsnapped_dest_rect_ = paint_rect;
 
-    if (painting_view_ || cell_using_container_background_)
+    if (painting_view_ || cell_using_container_background_ ||
+        box_has_multiple_fragments_)
       unsnapped_positioning_area.size = positioning_size_override_;
     else
       unsnapped_positioning_area = unsnapped_dest_rect_;
@@ -626,11 +648,12 @@ void BackgroundImageGeometry::ComputePositioningArea(
     //   the whole canvas).
     // * We are painting table cells using the table background, or the table
     //   has collapsed borders
+    // * We are painting a block-fragmented box.
     // * There is a border image, because it may not be opaque or may be outset.
     bool disallow_border_derived_adjustment =
         !ShouldPaintSelfBlockBackground(paint_phase) ||
         fill_layer.Composite() != CompositeOperator::kCompositeSourceOver ||
-        painting_view_ || painting_table_cell_ ||
+        painting_view_ || painting_table_cell_ || box_has_multiple_fragments_ ||
         positioning_box_->StyleRef().BorderImage().GetImage() ||
         positioning_box_->StyleRef().BorderCollapse() ==
             EBorderCollapse::kCollapse;
@@ -651,14 +674,14 @@ void BackgroundImageGeometry::ComputePositioningArea(
     // Apply the adjustments.
     snapped_dest_rect_ = unsnapped_dest_rect_;
     snapped_dest_rect_.Contract(snapped_dest_adjust);
-    snapped_dest_rect_ = PhysicalRect(PixelSnappedIntRect(snapped_dest_rect_));
+    snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(snapped_dest_rect_));
     snapped_dest_rect_.size.ClampNegativeToZero();
     unsnapped_dest_rect_.Contract(unsnapped_dest_adjust);
     unsnapped_dest_rect_.size.ClampNegativeToZero();
     snapped_positioning_area = unsnapped_positioning_area;
     snapped_positioning_area.Contract(snapped_box_outset);
     snapped_positioning_area =
-        PhysicalRect(PixelSnappedIntRect(snapped_positioning_area));
+        PhysicalRect(ToPixelSnappedRect(snapped_positioning_area));
     snapped_positioning_area.size.ClampNegativeToZero();
     unsnapped_positioning_area.Contract(unsnapped_box_outset);
     unsnapped_positioning_area.size.ClampNegativeToZero();
@@ -691,10 +714,9 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   PhysicalSize positioning_area_size = !image->HasIntrinsicSize()
                                            ? snapped_positioning_area_size
                                            : unsnapped_positioning_area_size;
-  PhysicalSize image_intrinsic_size = PhysicalSize::FromFloatSizeFloor(
-      image->ImageSize(positioning_box_->GetDocument(),
-                       positioning_box_->StyleRef().EffectiveZoom(),
-                       FloatSize(positioning_area_size),
+  PhysicalSize image_intrinsic_size = PhysicalSize::FromSizeFFloor(
+      image->ImageSize(positioning_box_->StyleRef().EffectiveZoom(),
+                       gfx::SizeF(positioning_area_size),
                        LayoutObject::ShouldRespectImageOrientation(box_)));
   switch (type) {
     case EFillSizeType::kSizeLength: {
@@ -949,7 +971,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   // Clip the snapped rect, and re-snap the dest rect as we may have
   // adjusted it with unsnapped values.
   snapped_dest_rect_.Intersect(paint_rect);
-  snapped_dest_rect_ = PhysicalRect(PixelSnappedIntRect(snapped_dest_rect_));
+  snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(snapped_dest_rect_));
 }
 
 const ImageResourceObserver& BackgroundImageGeometry::ImageClient() const {
@@ -977,6 +999,16 @@ PhysicalOffset BackgroundImageGeometry::OffsetInBackground(
   if (ShouldUseFixedAttachment(fill_layer))
     return PhysicalOffset();
   return element_positioning_area_offset_;
+}
+
+PhysicalOffset BackgroundImageGeometry::ComputeDestPhase() const {
+  // Given the size that the whole image should draw at, and the input phase
+  // requested by the content, and the space between repeated tiles, compute a
+  // phase that is no more than one size + space in magnitude.
+  const PhysicalSize step_per_tile = tile_size_ + repeat_spacing_;
+  const PhysicalOffset phase = {IntMod(-phase_.left, step_per_tile.width),
+                                IntMod(-phase_.top, step_per_tile.height)};
+  return snapped_dest_rect_.offset + phase;
 }
 
 }  // namespace blink

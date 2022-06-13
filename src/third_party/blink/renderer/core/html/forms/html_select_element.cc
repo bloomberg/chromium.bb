@@ -33,12 +33,11 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
-#include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
-#include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlelement_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmloptgroupelement_htmloptionelement.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -68,12 +67,25 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
+
+namespace {
+
+bool CanAssignToSelectSlot(const Node& node) {
+  // Even if options/optgroups are not rendered as children of menulist SELECT,
+  // we still need to add them to the flat tree through slotting since we need
+  // their ComputedStyle for popup rendering.
+  return node.HasTagName(html_names::kOptionTag) ||
+         node.HasTagName(html_names::kOptgroupTag) ||
+         node.HasTagName(html_names::kHrTag);
+}
+
+}  // namespace
 
 // Upper limit of list_items_. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
@@ -96,20 +108,11 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
   // Make sure SelectType is created after initializing |uses_menu_list_|.
   select_type_ = SelectType::Create(*this);
   SetHasCustomStyleCallbacks();
-  EnsureUserAgentShadowRoot();
+  EnsureUserAgentShadowRoot().SetSlotAssignmentMode(
+      SlotAssignmentMode::kManual);
 }
 
 HTMLSelectElement::~HTMLSelectElement() = default;
-
-// static
-bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
-  // Even if options/optgroups are not rendered as children of menulist SELECT,
-  // we still need to add them to the flat tree through slotting since we need
-  // their ComputedStyle for popup rendering.
-  return node.HasTagName(html_names::kOptionTag) ||
-         node.HasTagName(html_names::kOptgroupTag) ||
-         node.HasTagName(html_names::kHrTag);
-}
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, select_multiple, ("select-multiple"));
@@ -165,7 +168,7 @@ bool HTMLSelectElement::ValueMissing() const {
 
   int first_selection_index = selectedIndex();
 
-  // If a non-placeholer label option is selected (firstSelectionIndex > 0),
+  // If a non-placeholder label option is selected (firstSelectionIndex > 0),
   // it's not value-missing.
   return first_selection_index < 0 ||
          (!first_selection_index && HasPlaceholderLabelOption());
@@ -235,7 +238,6 @@ HTMLOptionElement* HTMLSelectElement::ActiveSelectionEnd() const {
   return select_type_->ActiveSelectionEnd();
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void HTMLSelectElement::add(
     const V8UnionHTMLOptGroupElementOrHTMLOptionElement* element,
     const V8UnionHTMLElementOrLong* before,
@@ -269,30 +271,6 @@ void HTMLSelectElement::add(
   InsertBefore(element_to_insert, before_element, exception_state);
   SetNeedsValidityCheck();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void HTMLSelectElement::add(
-    const HTMLOptionElementOrHTMLOptGroupElement& element,
-    const HTMLElementOrLong& before,
-    ExceptionState& exception_state) {
-  HTMLElement* element_to_insert;
-  DCHECK(!element.IsNull());
-  if (element.IsHTMLOptionElement())
-    element_to_insert = element.GetAsHTMLOptionElement();
-  else
-    element_to_insert = element.GetAsHTMLOptGroupElement();
-
-  HTMLElement* before_element;
-  if (before.IsHTMLElement())
-    before_element = before.GetAsHTMLElement();
-  else if (before.IsLong())
-    before_element = options()->item(before.GetAsLong());
-  else
-    before_element = nullptr;
-
-  InsertBefore(element_to_insert, before_element, exception_state);
-  SetNeedsValidityCheck();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void HTMLSelectElement::remove(int option_index) {
   if (HTMLOptionElement* option = item(option_index))
@@ -390,9 +368,8 @@ bool HTMLSelectElement::MayTriggerVirtualKeyboard() const {
 }
 
 bool HTMLSelectElement::ShouldHaveFocusAppearance() const {
-  // For FormControlsRefresh don't draw focus ring for a select that has its
-  // popup open.
-  if (::features::IsFormControlsRefreshEnabled() && PopupIsVisible())
+  // Don't draw focus ring for a select that has its popup open.
+  if (PopupIsVisible())
     return false;
 
   return HTMLFormControlElementWithState::ShouldHaveFocusAppearance();
@@ -460,7 +437,6 @@ void HTMLSelectElement::SetOption(unsigned index,
                        index, kMaxListItems)));
     return;
   }
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   auto* element =
       MakeGarbageCollected<V8UnionHTMLOptGroupElementOrHTMLOptionElement>(
           option);
@@ -479,24 +455,6 @@ void HTMLSelectElement::SetOption(unsigned index,
   // Finally add the new element.
   EventQueueScope scope;
   add(element, before, exception_state);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  HTMLOptionElementOrHTMLOptGroupElement element;
-  element.SetHTMLOptionElement(option);
-  HTMLElementOrLong before;
-  // Out of array bounds? First insert empty dummies.
-  if (diff > 0) {
-    setLength(index, exception_state);
-    // Replace an existing entry?
-  } else if (diff < 0) {
-    before.SetHTMLElement(options()->item(index + 1));
-    remove(index);
-  }
-  if (exception_state.HadException())
-    return;
-  // Finally add the new element.
-  EventQueueScope scope;
-  add(element, before, exception_state);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (exception_state.HadException())
     return;
   if (diff >= 0 && option->Selected())
@@ -1039,10 +997,14 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     // Preserving the first selection is compatible with Firefox and
     // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
     // March, the HTML specification says nothing about this.
-    if (old_selected_option)
+    if (old_selected_option) {
+      // Clear last_on_change_option_ in order to disable an optimization in
+      // DeselectItemsWithoutValidation().
+      last_on_change_option_ = nullptr;
       SelectOption(old_selected_option, kDeselectOtherOptionsFlag);
-    else
+    } else {
       ResetToDefaultSelection();
+    }
   }
   select_type_->UpdateTextStyleAndContent();
 }
@@ -1229,6 +1191,7 @@ bool HTMLSelectElement::IsInteractiveContent() const {
 
 void HTMLSelectElement::Trace(Visitor* visitor) const {
   visitor->Trace(list_items_);
+  visitor->Trace(option_slot_);
   visitor->Trace(last_on_change_option_);
   visitor->Trace(suggested_option_);
   visitor->Trace(select_type_);
@@ -1239,10 +1202,25 @@ void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   // Even if UsesMenuList(), the <slot> is necessary to have ComputedStyles
   // for <option>s. LayoutFlexibleBox::IsChildAllowed() rejects all of
   // LayoutObject children except for MenuListInnerElement's.
-  root.AppendChild(
-      HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
+
+  option_slot_ = MakeGarbageCollected<HTMLSlotElement>(GetDocument());
+  root.AppendChild(option_slot_);
   UpdateUserAgentShadowTree(root);
   select_type_->UpdateTextStyleAndContent();
+}
+
+void HTMLSelectElement::ManuallyAssignSlots() {
+  ShadowRoot* shadow_root = UserAgentShadowRoot();
+  DCHECK(shadow_root);
+
+  HeapVector<Member<Node>> option_nodes;
+  for (Node& child : NodeTraversal::ChildrenOf(*this)) {
+    if (!child.IsSlotable())
+      continue;
+    if (CanAssignToSelectSlot(child))
+      option_nodes.push_back(child);
+  }
+  option_slot_->Assign(option_nodes);
 }
 
 void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
@@ -1372,7 +1350,7 @@ void HTMLSelectElement::ProvisionalSelectionChanged(unsigned list_index) {
 }
 
 void HTMLSelectElement::ShowPopup() {
-  select_type_->ShowPopup();
+  select_type_->ShowPopup(PopupMenu::kOther);
 }
 
 void HTMLSelectElement::HidePopup() {

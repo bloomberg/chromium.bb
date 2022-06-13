@@ -10,14 +10,31 @@
 #ifndef EIGEN_PACKET_MATH_GPU_H
 #define EIGEN_PACKET_MATH_GPU_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
+
+// Read-only data cached load available.
+#if defined(EIGEN_HIP_DEVICE_COMPILE) || (defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 350)
+#define EIGEN_GPU_HAS_LDG 1
+#endif
+
+// FP16 math available.
+#if (defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 530)
+#define EIGEN_CUDA_HAS_FP16_ARITHMETIC 1
+#endif
+
+#if defined(EIGEN_HIP_DEVICE_COMPILE) || defined(EIGEN_CUDA_HAS_FP16_ARITHMETIC)
+#define EIGEN_GPU_HAS_FP16_ARITHMETIC 1
+#endif
 
 // Make sure this is only available when targeting a GPU: we don't want to
 // introduce conflicts between these packet_traits definitions and the ones
 // we'll use on the host side (SSE, AVX, ...)
 #if defined(EIGEN_GPUCC) && defined(EIGEN_USE_GPU)
+
 template<> struct is_arithmetic<float4>  { enum { value = true }; };
 template<> struct is_arithmetic<double2> { enum { value = true }; };
 
@@ -237,7 +254,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE double2
 pcmp_lt<double2>(const double2& a, const double2& b) {
   return make_double2(lt_mask(a.x, b.x), lt_mask(a.y, b.y));
 }
-#endif  // EIGEN_CUDA_ARCH || defined(EIGEN_HIP_DEVICE_COMPILE)
+#endif // defined(EIGEN_CUDA_ARCH) || defined(EIGEN_HIPCC) || (defined(EIGEN_CUDACC) && EIGEN_COMP_CLANG && !EIGEN_COMP_NVCC)
 
 template<> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE float4 plset<float4>(const float& a) {
   return make_float4(a, a+1, a+2, a+3);
@@ -342,7 +359,7 @@ template<> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void pstoreu<double>(double* to
 
 template<>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE float4 ploadt_ro<float4, Aligned>(const float* from) {
-#if defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 350
+#if defined(EIGEN_GPU_HAS_LDG)
   return __ldg((const float4*)from);
 #else
   return make_float4(from[0], from[1], from[2], from[3]);
@@ -350,7 +367,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE float4 ploadt_ro<float4, Aligned>(const fl
 }
 template<>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE double2 ploadt_ro<double2, Aligned>(const double* from) {
-#if defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 350
+#if defined(EIGEN_GPU_HAS_LDG)
   return __ldg((const double2*)from);
 #else
   return make_double2(from[0], from[1]);
@@ -359,7 +376,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE double2 ploadt_ro<double2, Aligned>(const 
 
 template<>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE float4 ploadt_ro<float4, Unaligned>(const float* from) {
-#if defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 350
+#if defined(EIGEN_GPU_HAS_LDG)
   return make_float4(__ldg(from+0), __ldg(from+1), __ldg(from+2), __ldg(from+3));
 #else
   return make_float4(from[0], from[1], from[2], from[3]);
@@ -367,7 +384,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE float4 ploadt_ro<float4, Unaligned>(const 
 }
 template<>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE double2 ploadt_ro<double2, Unaligned>(const double* from) {
-#if defined(EIGEN_CUDA_ARCH) && EIGEN_CUDA_ARCH >= 350
+#if defined(EIGEN_GPU_HAS_LDG)
   return make_double2(__ldg(from+0), __ldg(from+1));
 #else
   return make_double2(from[0], from[1]);
@@ -478,11 +495,10 @@ ptranspose(PacketBlock<double2,2>& kernel) {
 
 #endif // defined(EIGEN_GPUCC) && defined(EIGEN_USE_GPU)
 
-// Packet4h2 must be defined in the macro without EIGEN_CUDA_ARCH, meaning
-// its corresponding packet_traits<Eigen::half> must be visible on host.
-#if (defined(EIGEN_HAS_CUDA_FP16) && defined(EIGEN_CUDACC)) || \
-  (defined(EIGEN_HAS_HIP_FP16) && defined(EIGEN_HIPCC)) || \
-  (defined(EIGEN_HAS_CUDA_FP16) && defined(__clang__) && defined(__CUDA__))
+// Half-packet functions are not available on the host for CUDA 9.0-9.2, only
+// on device. There is no benefit to using them on the host anyways, since they are
+// emulated.
+#if (defined(EIGEN_HAS_CUDA_FP16) || defined(EIGEN_HAS_HIP_FP16)) && defined(EIGEN_GPU_COMPILE_PHASE)
 
 typedef ulonglong2 Packet4h2;
 template<> struct unpacket_traits<Packet4h2> { typedef Eigen::half type; enum {size=8, alignment=Aligned16, vectorizable=true, masked_load_available=false, masked_store_available=false}; typedef Packet4h2 half; };
@@ -515,16 +531,7 @@ template<> struct packet_traits<Eigen::half> : default_packet_traits
 
 template<>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pset1<half2>(const Eigen::half& from) {
-#if !defined(EIGEN_CUDA_ARCH) && !defined(EIGEN_HIPCC)
-  half2 r;
-  r.x = from;
-  r.y = from;
-  return r;
-#elif defined(EIGEN_HIPCC)
-  return __half2{from,from};
-#else
   return __half2half2(from);
-#endif
 }
 
 template <>
@@ -539,7 +546,6 @@ pset1<Packet4h2>(const Eigen::half& from) {
   return r;
 }
 
-#if defined(EIGEN_CUDA_ARCH) || defined(EIGEN_HIPCC) || (defined(EIGEN_CUDACC) && EIGEN_COMP_CLANG && !EIGEN_COMP_NVCC)
 namespace {
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pload(const Eigen::half* from) {
@@ -561,49 +567,27 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void pstore(Eigen::half* to,
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void pstoreu(Eigen::half* to,
                                                    const half2& from) {
-#if !defined(EIGEN_CUDA_ARCH) && !defined(EIGEN_HIPCC)
-  to[0] = from.x;
-  to[1] = from.y;
-#else
   to[0] = __low2half(from);
   to[1] = __high2half(from);
-#endif
 }
 
 
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE half2 ploadt_ro_aligned(
     const Eigen::half* from) {
-
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __ldg((const half2*)from);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 350
-   return __ldg((const half2*)from);
+#if defined(EIGEN_GPU_HAS_LDG)
+  // Input is guaranteed to be properly aligned.
+  return __ldg(reinterpret_cast<const half2*>(from));
 #else
   return __halves2half2(*(from+0), *(from+1));
-#endif
-
 #endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE half2 ploadt_ro_unaligned(
     const Eigen::half* from) {
-
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
+#if defined(EIGEN_GPU_HAS_LDG)
   return __halves2half2(__ldg(from+0), __ldg(from+1));
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 350
-   return __halves2half2(__ldg(from+0), __ldg(from+1));
 #else
   return __halves2half2(*(from+0), *(from+1));
-#endif
-
 #endif
 }
 
@@ -630,12 +614,12 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pabs(const half2& a) {
   return __halves2half2(result1, result2);
 }
 
-EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 ptrue(const half2& a) {
+EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 ptrue(const half2& /*a*/) {
   half true_half = half_impl::raw_uint16_to_half(0xffffu);
   return pset1<half2>(true_half);
 }
 
-EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pzero(const half2& a) {
+EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pzero(const half2& /*a*/) {
   half false_half = half_impl::raw_uint16_to_half(0x0000u);
   return pset1<half2>(false_half);
 }
@@ -651,19 +635,11 @@ ptranspose(PacketBlock<half2,2>& kernel) {
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 plset(const Eigen::half& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __halves2half2(a, __hadd(a, __float2half(1.0f)));
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __halves2half2(a, __hadd(a, __float2half(1.0f)));
 #else
   float f = __half2float(a) + 1.0f;
   return __halves2half2(a, __float2half(f));
-#endif
-
 #endif
 }
 
@@ -749,13 +725,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pandnot(const half2& a,
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 padd(const half2& a,
                                                  const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hadd2(a, b);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hadd2(a, b);
 #else
   float a1 = __low2float(a);
@@ -766,19 +736,11 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 padd(const half2& a,
   float r2 = a2 + b2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 psub(const half2& a,
                                                  const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hsub2(a, b);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hsub2(a, b);
 #else
   float a1 = __low2float(a);
@@ -789,25 +751,15 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 psub(const half2& a,
   float r2 = a2 - b2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pnegate(const half2& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hneg2(a);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hneg2(a);
 #else
   float a1 = __low2float(a);
   float a2 = __high2float(a);
   return __floats2half2_rn(-a1, -a2);
-#endif
-
 #endif
 }
 
@@ -815,13 +767,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pconj(const half2& a) { return a; }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmul(const half2& a,
                                                  const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hmul2(a, b);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hmul2(a, b);
 #else
   float a1 = __low2float(a);
@@ -832,20 +778,12 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmul(const half2& a,
   float r2 = a2 * b2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmadd(const half2& a,
                                                   const half2& b,
                                                   const half2& c) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-   return __hfma2(a, b, c);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
    return __hfma2(a, b, c);
 #else
   float a1 = __low2float(a);
@@ -858,18 +796,13 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmadd(const half2& a,
   float r2 = a2 * b2 + c2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pdiv(const half2& a,
                                                  const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __h2div(a, b);
-
-#else // EIGEN_CUDA_ARCH
-
+#else
   float a1 = __low2float(a);
   float a2 = __high2float(a);
   float b1 = __low2float(b);
@@ -877,7 +810,6 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pdiv(const half2& a,
   float r1 = a1 / b1;
   float r2 = a2 / b2;
   return __floats2half2_rn(r1, r2);
-
 #endif
 }
 
@@ -904,33 +836,17 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmax(const half2& a,
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux(const half2& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hadd(__low2half(a), __high2half(a));
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hadd(__low2half(a), __high2half(a));
 #else
   float a1 = __low2float(a);
   float a2 = __high2float(a);
   return Eigen::half(__float2half(a1 + a2));
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_max(const half2& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  __half first = __low2half(a);
-  __half second = __high2half(a);
-  return __hgt(first, second) ? first : second;
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   __half first = __low2half(a);
   __half second = __high2half(a);
   return __hgt(first, second) ? first : second;
@@ -939,20 +855,10 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_max(const half2& a) {
   float a2 = __high2float(a);
   return a1 > a2 ? __low2half(a) : __high2half(a);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_min(const half2& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  __half first = __low2half(a);
-  __half second = __high2half(a);
-  return __hlt(first, second) ? first : second;
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   __half first = __low2half(a);
   __half second = __high2half(a);
   return __hlt(first, second) ? first : second;
@@ -961,25 +867,15 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_min(const half2& a) {
   float a2 = __high2float(a);
   return a1 < a2 ? __low2half(a) : __high2half(a);
 #endif
-
-#endif
 }
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_mul(const half2& a) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hmul(__low2half(a), __high2half(a));
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hmul(__low2half(a), __high2half(a));
 #else
   float a1 = __low2float(a);
   float a2 = __high2float(a);
   return Eigen::half(__float2half(a1 * a2));
-#endif
-
 #endif
 }
 
@@ -999,7 +895,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pexpm1(const half2& a) {
   return __floats2half2_rn(r1, r2);
 }
 
-#if (EIGEN_CUDA_SDK_VER >= 80000 && defined EIGEN_CUDA_ARCH && EIGEN_CUDA_ARCH >= 530) || \
+#if (EIGEN_CUDA_SDK_VER >= 80000 && defined(EIGEN_CUDA_HAS_FP16_ARITHMETIC)) || \
   defined(EIGEN_HIP_DEVICE_COMPILE)
 
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -1108,16 +1004,9 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void pstoreu<Eigen::half>(
 template <>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE Packet4h2
 ploadt_ro<Packet4h2, Aligned>(const Eigen::half* from) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
+#if defined(EIGEN_GPU_HAS_LDG)
   Packet4h2 r;
-  r = __ldg((const Packet4h2*)from);
-  return r;
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 350
-  Packet4h2 r;
-  r = __ldg((const Packet4h2*)from);
+  r = __ldg(reinterpret_cast<const Packet4h2*>(from));
   return r;
 #else
   Packet4h2 r;
@@ -1127,8 +1016,6 @@ ploadt_ro<Packet4h2, Aligned>(const Eigen::half* from) {
   r_alias[2] = ploadt_ro_aligned(from + 4);
   r_alias[3] = ploadt_ro_aligned(from + 6);
   return r;
-#endif
-
 #endif
 }
 
@@ -1187,13 +1074,13 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Packet4h2 pabs<Packet4h2>(
 
 template <>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Packet4h2 ptrue<Packet4h2>(
-    const Packet4h2& a) {
+    const Packet4h2& /*a*/) {
   half true_half = half_impl::raw_uint16_to_half(0xffffu);
   return pset1<Packet4h2>(true_half);
 }
 
 template <>
-EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Packet4h2 pzero<Packet4h2>(const Packet4h2& a) {
+EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Packet4h2 pzero<Packet4h2>(const Packet4h2& /*a*/) {
   half false_half = half_impl::raw_uint16_to_half(0x0000u);
   return pset1<Packet4h2>(false_half);
 }
@@ -1294,7 +1181,7 @@ ptranspose(PacketBlock<Packet4h2,8>& kernel) {
   ptranspose_half(f_row0[1], f_row1[1]);
   ptranspose_half(f_row2[0], f_row3[0]);
   ptranspose_half(f_row2[1], f_row3[1]);
-  
+
 }
 
 template <>
@@ -1312,9 +1199,7 @@ plset<Packet4h2>(const Eigen::half& a) {
   p_alias[3] = __halves2half2(__hadd(a, __float2half(6.0f)),
                               __hadd(a, __float2half(7.0f)));
   return r;
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#elif defined(EIGEN_CUDA_HAS_FP16_ARITHMETIC)
   Packet4h2 r;
   half2* r_alias = reinterpret_cast<half2*>(&r);
 
@@ -1342,8 +1227,6 @@ plset<Packet4h2>(const Eigen::half& a) {
   p_alias[2] = __halves2half2(__float2half(f + 4.0f), __float2half(f + 5.0f));
   p_alias[3] = __halves2half2(__float2half(f + 6.0f), __float2half(f + 7.0f));
   return r;
-#endif
-
 #endif
 }
 
@@ -1568,7 +1451,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_max<Packet4h2>(
                             predux_max(a_alias[3]));
   __half first  = predux_max(m0);
   __half second = predux_max(m1);
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_CUDA_HAS_FP16_ARITHMETIC)
   return (__hgt(first, second) ? first : second);
 #else
   float ffirst  = __half2float(first);
@@ -1587,7 +1470,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Eigen::half predux_min<Packet4h2>(
                             predux_min(a_alias[3]));
   __half first  = predux_min(m0);
   __half second = predux_min(m1);
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_CUDA_HAS_FP16_ARITHMETIC)
   return (__hlt(first, second) ? first : second);
 #else
   float ffirst  = __half2float(first);
@@ -1685,13 +1568,7 @@ prsqrt<Packet4h2>(const Packet4h2& a) {
 template<>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 padd<half2>(const half2& a,
                                                         const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hadd2(a, b);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hadd2(a, b);
 #else
   float a1 = __low2float(a);
@@ -1702,20 +1579,12 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 padd<half2>(const half2& a,
   float r2 = a2 + b2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 template<>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmul<half2>(const half2& a,
                                                         const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
-  return __hmul2(a, b);
-
-#else  // EIGEN_CUDA_ARCH
-
-#if EIGEN_CUDA_ARCH >= 530
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __hmul2(a, b);
 #else
   float a1 = __low2float(a);
@@ -1726,19 +1595,14 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmul<half2>(const half2& a,
   float r2 = a2 * b2;
   return __floats2half2_rn(r1, r2);
 #endif
-
-#endif
 }
 
 template<>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pdiv<half2>(const half2& a,
                                                         const half2& b) {
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
-
+#if defined(EIGEN_GPU_HAS_FP16_ARITHMETIC)
   return __h2div(a, b);
-
-#else // EIGEN_CUDA_ARCH
-
+#else
   float a1 = __low2float(a);
   float a2 = __high2float(a);
   float b1 = __low2float(b);
@@ -1746,7 +1610,6 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pdiv<half2>(const half2& a,
   float r1 = a1 / b1;
   float r2 = a2 / b2;
   return __floats2half2_rn(r1, r2);
-
 #endif
 }
 
@@ -1774,9 +1637,11 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE half2 pmax<half2>(const half2& a,
   return __halves2half2(r1, r2);
 }
 
-#endif // defined(EIGEN_CUDA_ARCH)
+#endif // (defined(EIGEN_HAS_CUDA_FP16) || defined(EIGEN_HAS_HIP_FP16)) && defined(EIGEN_GPU_COMPILE_PHASE)
 
-#endif // defined(EIGEN_HAS_CUDA_FP16) && defined(EIGEN_CUDACC)
+#undef EIGEN_GPU_HAS_LDG
+#undef EIGEN_CUDA_HAS_FP16_ARITHMETIC
+#undef EIGEN_GPU_HAS_FP16_ARITHMETIC
 
 } // end namespace internal
 

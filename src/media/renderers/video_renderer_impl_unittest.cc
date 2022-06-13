@@ -11,15 +11,14 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -64,7 +63,7 @@ class VideoRendererImplTest : public testing::Test {
   std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest() {
     decoder_ = new NiceMock<MockVideoDecoder>();
     std::vector<std::unique_ptr<VideoDecoder>> decoders;
-    decoders.push_back(base::WrapUnique(decoder_));
+    decoders.push_back(base::WrapUnique(decoder_.get()));
     ON_CALL(*decoder_, Initialize_(_, _, _, _, _, _))
         .WillByDefault(DoAll(
             SaveArg<4>(&output_cb_),
@@ -87,7 +86,7 @@ class VideoRendererImplTest : public testing::Test {
         simulate_decode_delay_(false),
         expect_init_success_(true) {
     null_video_sink_ = std::make_unique<NullVideoSink>(
-        false, base::TimeDelta::FromSecondsD(1.0 / 60),
+        false, base::Seconds(1.0 / 60),
         base::BindRepeating(&MockCB::FrameReceived,
                             base::Unretained(&mock_cb_)),
         base::ThreadTaskRunnerHandle::Get());
@@ -111,6 +110,9 @@ class VideoRendererImplTest : public testing::Test {
     ON_CALL(demuxer_stream_, OnRead(_))
         .WillByDefault(Invoke(this, &VideoRendererImplTest::OnDemuxerRead));
   }
+
+  VideoRendererImplTest(const VideoRendererImplTest&) = delete;
+  VideoRendererImplTest& operator=(const VideoRendererImplTest&) = delete;
 
   ~VideoRendererImplTest() override = default;
 
@@ -153,8 +155,7 @@ class VideoRendererImplTest : public testing::Test {
 
   void StartPlayingFrom(int milliseconds) {
     SCOPED_TRACE(base::StringPrintf("StartPlayingFrom(%d)", milliseconds));
-    const base::TimeDelta media_time =
-        base::TimeDelta::FromMilliseconds(milliseconds);
+    const base::TimeDelta media_time = base::Milliseconds(milliseconds);
     time_source_.SetMediaTime(media_time);
     renderer_->StartPlayingFrom(media_time);
     base::RunLoop().RunUntilIdle();
@@ -234,7 +235,7 @@ class VideoRendererImplTest : public testing::Test {
         gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
             PIXEL_FORMAT_I420, natural_size, gfx::Rect(natural_size),
-            natural_size, base::TimeDelta::FromMilliseconds(timestamp_in_ms));
+            natural_size, base::Milliseconds(timestamp_in_ms));
         QueueFrame(DecodeStatus::OK, frame);
         continue;
       }
@@ -325,14 +326,14 @@ class VideoRendererImplTest : public testing::Test {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     base::AutoLock l(lock_);
-    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(time_ms));
+    tick_clock_.Advance(base::Milliseconds(time_ms));
   }
 
   void AdvanceTimeInMs(int time_ms) {
     EXPECT_TRUE(
         task_environment_.GetMainThreadTaskRunner()->BelongsToCurrentThread());
     base::AutoLock l(lock_);
-    time_ += base::TimeDelta::FromMilliseconds(time_ms);
+    time_ += base::Milliseconds(time_ms);
     time_source_.StopTicking();
     time_source_.SetMediaTime(time_);
     time_source_.StartTicking();
@@ -347,7 +348,7 @@ class VideoRendererImplTest : public testing::Test {
   // Fixture members.
   std::unique_ptr<VideoRendererImpl> renderer_;
   base::SimpleTestTickClock tick_clock_;
-  NiceMock<MockVideoDecoder>* decoder_;    // Owned by |renderer_|.
+  raw_ptr<NiceMock<MockVideoDecoder>> decoder_;  // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
   bool simulate_decode_delay_;
 
@@ -420,8 +421,6 @@ class VideoRendererImplTest : public testing::Test {
 
   base::circular_deque<std::pair<DecodeStatus, scoped_refptr<VideoFrame>>>
       decode_results_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererImplTest);
 };
 
 TEST_F(VideoRendererImplTest, DoNothing) {
@@ -560,7 +559,7 @@ static void VideoRendererImplTest_FlushDoneCB(VideoRendererImplTest* test,
                                               VideoRenderer* renderer,
                                               base::OnceClosure success_cb) {
   test->QueueFrames("0 10 20 30");
-  renderer->StartPlayingFrom(base::TimeDelta::FromSeconds(0));
+  renderer->StartPlayingFrom(base::Seconds(0));
   std::move(success_cb).Run();
 }
 
@@ -777,7 +776,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
         .WillOnce(RunOnceClosure(event.GetClosure()));
     EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
-        .Times(4)
+        .Times(5)
         .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
@@ -1019,19 +1018,19 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
-                                     base::TimeDelta::FromMilliseconds(0)));
+                                     base::Milliseconds(0)));
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
-                                     base::TimeDelta::FromMilliseconds(10)));
+                                     base::Milliseconds(10)));
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
-                                     base::TimeDelta::FromMilliseconds(20)));
+                                     base::Milliseconds(20)));
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
-                                     base::TimeDelta::FromMilliseconds(30)));
+                                     base::Milliseconds(30)));
 
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _));
   EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
@@ -1085,19 +1084,19 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(non_opaque_format, frame_size,
                                      gfx::Rect(frame_size), frame_size,
-                                     base::TimeDelta::FromMilliseconds(0)));
+                                     base::Milliseconds(0)));
   QueueFrame(DecodeStatus::OK,
              VideoFrame::CreateFrame(non_opaque_format, frame_size,
                                      gfx::Rect(frame_size), frame_size,
-                                     base::TimeDelta::FromMilliseconds(10)));
-  QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(opaque_format, frame_size,
-                                     gfx::Rect(frame_size), frame_size,
-                                     base::TimeDelta::FromMilliseconds(20)));
-  QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(opaque_format, frame_size,
-                                     gfx::Rect(frame_size), frame_size,
-                                     base::TimeDelta::FromMilliseconds(30)));
+                                     base::Milliseconds(10)));
+  QueueFrame(
+      DecodeStatus::OK,
+      VideoFrame::CreateFrame(opaque_format, frame_size, gfx::Rect(frame_size),
+                              frame_size, base::Milliseconds(20)));
+  QueueFrame(
+      DecodeStatus::OK,
+      VideoFrame::CreateFrame(opaque_format, frame_size, gfx::Rect(frame_size),
+                              frame_size, base::Milliseconds(30)));
 
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _));
   EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
@@ -1167,7 +1166,7 @@ TEST_F(VideoRendererImplTest, VideoFrameRateChange) {
     AdvanceTimeInMs(20);
     AdvanceWallclockTimeInMs(20);
     // This runs the sink callbacks to consume frames.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+    task_environment_.FastForwardBy(base::Milliseconds(20));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1458,7 +1457,7 @@ TEST_F(VideoRendererLatencyHintTest, HaveEnough_LowLatencyHint) {
 
   // Initial frames should trigger various callbacks.
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
-  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(1);
+  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(2);
   EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
   EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _));
@@ -1499,10 +1498,10 @@ TEST_F(VideoRendererLatencyHintTest, HaveEnough_HighLatencyHint) {
   // We must provide a |buffer_duration_| for the latencyHint to take effect
   // immediately. The VideoRendererAlgorithm will eventually provide a PTS-delta
   // duration, but not until after we've started rendering.
-  buffer_duration_ = base::TimeDelta::FromMilliseconds(30);
+  buffer_duration_ = base::Milliseconds(30);
 
   // Set latencyHint to a large value.
-  renderer_->SetLatencyHint(base::TimeDelta::FromMilliseconds(400));
+  renderer_->SetLatencyHint(base::Milliseconds(400));
 
   // NOTE: other tests will SetLatencyHint after Initialize(). Either way should
   // work. Initializing later is especially interesting for "high" hints because
@@ -1560,10 +1559,10 @@ TEST_F(VideoRendererLatencyHintTest,
   // We must provide a |buffer_duration_| for the latencyHint to take effect
   // immediately. The VideoRendererAlgorithm will eventually provide a PTS-delta
   // duration, but not until after we've started rendering.
-  buffer_duration_ = base::TimeDelta::FromMilliseconds(30);
+  buffer_duration_ = base::Milliseconds(30);
 
   // Set latency hint to a medium value.
-  renderer_->SetLatencyHint(base::TimeDelta::FromMilliseconds(200));
+  renderer_->SetLatencyHint(base::Milliseconds(200));
 
   // Stall the demuxer after 7 frames.
   simulate_demuxer_stall_after_n_reads_ = 7;
@@ -1619,10 +1618,10 @@ TEST_F(VideoRendererLatencyHintTest, LatencyHintOverridesLowDelay) {
   // We must provide a |buffer_duration_| for the latencyHint to take effect
   // immediately. The VideoRendererAlgorithm will eventually provide a PTS-delta
   // duration, but not until after we've started rendering.
-  buffer_duration_ = base::TimeDelta::FromMilliseconds(30);
+  buffer_duration_ = base::Milliseconds(30);
 
   // Set latency hint to a medium value.
-  renderer_->SetLatencyHint(base::TimeDelta::FromMilliseconds(200));
+  renderer_->SetLatencyHint(base::Milliseconds(200));
 
   // Initial frames should trigger various callbacks.
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
@@ -1679,11 +1678,11 @@ TEST_F(VideoRendererLatencyHintTest,
   // We must provide a |buffer_duration_| for the latencyHint to take effect
   // immediately. The VideoRendererAlgorithm will eventually provide a PTS-delta
   // duration, but not until after we've started rendering.
-  buffer_duration_ = base::TimeDelta::FromMilliseconds(30);
+  buffer_duration_ = base::Milliseconds(30);
 
   // Set latency hint to a medium value. At a spacing of 30ms this would set
   // the HAVE_ENOUGH threshold to 4 frames.
-  renderer_->SetLatencyHint(base::TimeDelta::FromMilliseconds(200));
+  renderer_->SetLatencyHint(base::Milliseconds(200));
 
   // Initial frames should trigger various callbacks.
   EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));

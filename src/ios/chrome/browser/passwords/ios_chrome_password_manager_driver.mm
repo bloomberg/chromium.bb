@@ -85,18 +85,17 @@ IOSChromePasswordManagerDriver::GetPasswordAutofillManager() {
   return nullptr;
 }
 
-autofill::AutofillDriver* IOSChromePasswordManagerDriver::GetAutofillDriver() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-bool IOSChromePasswordManagerDriver::IsMainFrame() const {
+bool IOSChromePasswordManagerDriver::IsInPrimaryMainFrame() const {
   // On IOS only processing of password forms in main frame is implemented.
   return true;
 }
 
 bool IOSChromePasswordManagerDriver::CanShowAutofillUi() const {
   return true;
+}
+
+::ui::AXTreeID IOSChromePasswordManagerDriver::GetAxTreeId() const {
+  return {};
 }
 
 const GURL& IOSChromePasswordManagerDriver::GetLastCommittedURL() const {

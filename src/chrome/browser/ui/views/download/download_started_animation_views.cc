@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/download/download_started_animation.h"
 
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -20,7 +20,7 @@
 #include "ui/views/widget/widget.h"
 
 // How long to spend moving downwards and fading out after waiting.
-constexpr auto kMoveTime = base::TimeDelta::FromMilliseconds(600);
+constexpr auto kMoveTime = base::Milliseconds(600);
 
 // The animation framerate.
 const int kFrameRateHz = 60;
@@ -53,7 +53,7 @@ class DownloadStartedAnimationViews : public gfx::LinearAnimation,
 
   // We use a TYPE_POPUP for the popup so that it may float above any windows in
   // our UI.
-  views::Widget* popup_;
+  raw_ptr<views::Widget> popup_;
 
   // The content area at the start of the animation. We store this so that the
   // download shelf's resizing of the content area doesn't cause the animation

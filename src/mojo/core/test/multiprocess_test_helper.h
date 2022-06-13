@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
@@ -50,6 +49,10 @@ class MultiprocessTestHelper {
   };
 
   MultiprocessTestHelper();
+
+  MultiprocessTestHelper(const MultiprocessTestHelper&) = delete;
+  MultiprocessTestHelper& operator=(const MultiprocessTestHelper&) = delete;
+
   ~MultiprocessTestHelper();
 
   // Start a child process and run the "main" function "named" |test_child_name|
@@ -98,8 +101,6 @@ class MultiprocessTestHelper {
   base::Process test_child_;
 
   std::unique_ptr<IsolatedConnection> isolated_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiprocessTestHelper);
 };
 
 }  // namespace test

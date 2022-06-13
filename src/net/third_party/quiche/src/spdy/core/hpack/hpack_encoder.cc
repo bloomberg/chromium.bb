@@ -14,7 +14,6 @@
 #include "spdy/core/hpack/hpack_constants.h"
 #include "spdy/core/hpack/hpack_header_table.h"
 #include "spdy/core/hpack/hpack_output_stream.h"
-#include "spdy/platform/api/spdy_estimate_memory_usage.h"
 
 namespace spdy {
 
@@ -85,8 +84,7 @@ HpackEncoder::HpackEncoder()
 
 HpackEncoder::~HpackEncoder() = default;
 
-bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
-                                   std::string* output) {
+std::string HpackEncoder::EncodeHeaderBlock(const SpdyHeaderBlock& header_set) {
   // Separate header set into pseudo-headers and regular headers.
   Representations pseudo_headers;
   Representations regular_headers;
@@ -105,11 +103,8 @@ bool HpackEncoder::EncodeHeaderSet(const SpdyHeaderBlock& header_set,
     }
   }
 
-  {
-    RepresentationIterator iter(pseudo_headers, regular_headers);
-    EncodeRepresentations(&iter, output);
-  }
-  return true;
+  RepresentationIterator iter(pseudo_headers, regular_headers);
+  return EncodeRepresentations(&iter);
 }
 
 void HpackEncoder::ApplyHeaderTableSizeSetting(size_t size_setting) {
@@ -124,13 +119,7 @@ void HpackEncoder::ApplyHeaderTableSizeSetting(size_t size_setting) {
   should_emit_table_size_ = true;
 }
 
-size_t HpackEncoder::EstimateMemoryUsage() const {
-  return SpdyEstimateMemoryUsage(header_table_) +
-         SpdyEstimateMemoryUsage(output_stream_);
-}
-
-void HpackEncoder::EncodeRepresentations(RepresentationIterator* iter,
-                                         std::string* output) {
+std::string HpackEncoder::EncodeRepresentations(RepresentationIterator* iter) {
   MaybeEmitTableSize();
   while (iter->HasNext()) {
     const auto header = iter->Next();
@@ -150,7 +139,7 @@ void HpackEncoder::EncodeRepresentations(RepresentationIterator* iter,
     }
   }
 
-  output_stream_.TakeString(output);
+  return output_stream_.TakeString();
 }
 
 void HpackEncoder::EmitIndex(size_t index) {
@@ -244,7 +233,7 @@ void HpackEncoder::CookieToCrumbs(const Representation& cookie,
     cookie_value = cookie_value.substr(first, (last - first) + 1);
   }
   for (size_t pos = 0;;) {
-    size_t end = cookie_value.find(";", pos);
+    size_t end = cookie_value.find(';', pos);
 
     if (end == absl::string_view::npos) {
       out->push_back(std::make_pair(cookie.first, cookie_value.substr(pos)));
@@ -289,9 +278,8 @@ class HpackEncoder::Encoderator : public ProgressiveEncoder {
   // Returns true iff more remains to encode.
   bool HasNext() const override { return has_next_; }
 
-  // Encodes up to max_encoded_bytes of the current header block into the
-  // given output string.
-  void Next(size_t max_encoded_bytes, std::string* output) override;
+  // Encodes and returns up to max_encoded_bytes of the current header block.
+  std::string Next(size_t max_encoded_bytes) override;
 
  private:
   HpackEncoder* encoder_;
@@ -344,8 +332,7 @@ HpackEncoder::Encoderator::Encoderator(const Representations& representations,
   encoder_->MaybeEmitTableSize();
 }
 
-void HpackEncoder::Encoderator::Next(size_t max_encoded_bytes,
-                                     std::string* output) {
+std::string HpackEncoder::Encoderator::Next(size_t max_encoded_bytes) {
   QUICHE_BUG_IF(spdy_bug_61_1, !has_next_)
       << "Encoderator::Next called with nothing left to encode.";
   const bool enable_compression = encoder_->enable_compression_;
@@ -371,7 +358,7 @@ void HpackEncoder::Encoderator::Next(size_t max_encoded_bytes,
   }
 
   has_next_ = encoder_->output_stream_.size() > max_encoded_bytes;
-  encoder_->output_stream_.BoundedTakeString(max_encoded_bytes, output);
+  return encoder_->output_stream_.BoundedTakeString(max_encoded_bytes);
 }
 
 std::unique_ptr<HpackEncoder::ProgressiveEncoder> HpackEncoder::EncodeHeaderSet(

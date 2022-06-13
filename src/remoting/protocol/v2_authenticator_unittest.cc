@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -37,6 +36,10 @@ const char kTestSharedSecretBad[] = "0000-0000-0001";
 class V2AuthenticatorTest : public AuthenticatorTestBase {
  public:
   V2AuthenticatorTest() = default;
+
+  V2AuthenticatorTest(const V2AuthenticatorTest&) = delete;
+  V2AuthenticatorTest& operator=(const V2AuthenticatorTest&) = delete;
+
   ~V2AuthenticatorTest() override = default;
 
  protected:
@@ -48,8 +51,6 @@ class V2AuthenticatorTest : public AuthenticatorTestBase {
     client_ = V2Authenticator::CreateForClient(
         client_secret, Authenticator::MESSAGE_READY);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(V2AuthenticatorTest);
 };
 
 TEST_F(V2AuthenticatorTest, SuccessfulAuth) {

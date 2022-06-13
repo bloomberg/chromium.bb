@@ -38,6 +38,8 @@ class POLICY_EXPORT PolicyConversions {
   // |client| provides embedder-specific policy information and must not be
   // nullptr.
   explicit PolicyConversions(std::unique_ptr<PolicyConversionsClient> client);
+  PolicyConversions(const PolicyConversions&) = delete;
+  PolicyConversions& operator=(const PolicyConversions&) = delete;
   virtual ~PolicyConversions();
 
   // Set to get policy types as human friendly string instead of enum integer.
@@ -79,14 +81,15 @@ class POLICY_EXPORT PolicyConversions {
 
  private:
   std::unique_ptr<PolicyConversionsClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyConversions);
 };
 
 class POLICY_EXPORT DictionaryPolicyConversions : public PolicyConversions {
  public:
   explicit DictionaryPolicyConversions(
       std::unique_ptr<PolicyConversionsClient> client);
+  DictionaryPolicyConversions(const DictionaryPolicyConversions&) = delete;
+  DictionaryPolicyConversions& operator=(const DictionaryPolicyConversions&) =
+      delete;
   ~DictionaryPolicyConversions() override;
 
   base::Value ToValue() override;
@@ -97,26 +100,25 @@ class POLICY_EXPORT DictionaryPolicyConversions : public PolicyConversions {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   base::Value GetDeviceLocalAccountPolicies();
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(DictionaryPolicyConversions);
 };
 
 class POLICY_EXPORT ArrayPolicyConversions : public PolicyConversions {
  public:
   explicit ArrayPolicyConversions(
       std::unique_ptr<PolicyConversionsClient> client);
+  ArrayPolicyConversions(const ArrayPolicyConversions&) = delete;
+  ArrayPolicyConversions& operator=(const ArrayPolicyConversions&) = delete;
   ~ArrayPolicyConversions() override;
 
   base::Value ToValue() override;
 
  private:
   base::Value GetChromePolicies();
+  base::Value GetPrecedencePolicies();
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::Value GetUpdaterPolicies();
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-  DISALLOW_COPY_AND_ASSIGN(ArrayPolicyConversions);
 };
 
 }  // namespace policy

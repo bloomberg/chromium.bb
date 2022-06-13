@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2017 The Khronos Group Inc.
- * Copyright (c) 2015-2017 Valve Corporation
- * Copyright (c) 2015-2017 LunarG, Inc.
+ * Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  * Copyright (C) 2015-2016 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,24 +19,26 @@
  * Author: Courtney Goeltzenleuchter <courtney@LunarG.com>
  * Author: Jon Ashburn <jon@LunarG.com>
  * Author: Mark Young <marky@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  *
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #ifndef WIN32
 #include <signal.h>
 #else
 #endif
-#include "vk_loader_platform.h"
-#include "debug_utils.h"
+
 #include "vulkan/vk_layer.h"
 #include "vk_object_types.h"
+
+#include "allocation.h"
+#include "debug_utils.h"
+#include "loader.h"
+#include "vk_loader_platform.h"
 
 // VK_EXT_debug_report related items
 
@@ -77,7 +79,7 @@ debug_utils_CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtils
                                          const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pMessenger) {
     struct loader_instance *inst = loader_get_instance(instance);
     loader_platform_thread_lock_mutex(&loader_lock);
-    VkResult result = inst->disp->layer_inst_disp.CreateDebugUtilsMessengerEXT(instance, pCreateInfo, pAllocator, pMessenger);
+    VkResult result = inst->disp->layer_inst_disp.CreateDebugUtilsMessengerEXT(inst->instance, pCreateInfo, pAllocator, pMessenger);
     loader_platform_thread_unlock_mutex(&loader_lock);
     return result;
 }
@@ -261,7 +263,7 @@ static VKAPI_ATTR void VKAPI_CALL debug_utils_SubmitDebugUtilsMessageEXT(
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData) {
     struct loader_instance *inst = loader_get_instance(instance);
 
-    inst->disp->layer_inst_disp.SubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, pCallbackData);
+    inst->disp->layer_inst_disp.SubmitDebugUtilsMessageEXT(inst->instance, messageSeverity, messageTypes, pCallbackData);
 }
 
 static VKAPI_ATTR void VKAPI_CALL debug_utils_DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT messenger,
@@ -269,7 +271,7 @@ static VKAPI_ATTR void VKAPI_CALL debug_utils_DestroyDebugUtilsMessengerEXT(VkIn
     struct loader_instance *inst = loader_get_instance(instance);
     loader_platform_thread_lock_mutex(&loader_lock);
 
-    inst->disp->layer_inst_disp.DestroyDebugUtilsMessengerEXT(instance, messenger, pAllocator);
+    inst->disp->layer_inst_disp.DestroyDebugUtilsMessengerEXT(inst->instance, messenger, pAllocator);
 
     loader_platform_thread_unlock_mutex(&loader_lock);
 }
@@ -477,7 +479,7 @@ debug_utils_CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugRepor
                                          const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback) {
     struct loader_instance *inst = loader_get_instance(instance);
     loader_platform_thread_lock_mutex(&loader_lock);
-    VkResult result = inst->disp->layer_inst_disp.CreateDebugReportCallbackEXT(instance, pCreateInfo, pAllocator, pCallback);
+    VkResult result = inst->disp->layer_inst_disp.CreateDebugReportCallbackEXT(inst->instance, pCreateInfo, pAllocator, pCallback);
     loader_platform_thread_unlock_mutex(&loader_lock);
     return result;
 }
@@ -668,7 +670,7 @@ static VKAPI_ATTR void VKAPI_CALL debug_utils_DestroyDebugReportCallbackEXT(VkIn
     struct loader_instance *inst = loader_get_instance(instance);
     loader_platform_thread_lock_mutex(&loader_lock);
 
-    inst->disp->layer_inst_disp.DestroyDebugReportCallbackEXT(instance, callback, pAllocator);
+    inst->disp->layer_inst_disp.DestroyDebugReportCallbackEXT(inst->instance, callback, pAllocator);
 
     loader_platform_thread_unlock_mutex(&loader_lock);
 }
@@ -679,7 +681,7 @@ static VKAPI_ATTR void VKAPI_CALL debug_utils_DebugReportMessageEXT(VkInstance i
                                                                     const char *pMsg) {
     struct loader_instance *inst = loader_get_instance(instance);
 
-    inst->disp->layer_inst_disp.DebugReportMessageEXT(instance, flags, objType, object, location, msgCode, pLayerPrefix, pMsg);
+    inst->disp->layer_inst_disp.DebugReportMessageEXT(inst->instance, flags, objType, object, location, msgCode, pLayerPrefix, pMsg);
 }
 
 // This is the instance chain terminator function
@@ -869,9 +871,6 @@ void debug_utils_AddInstanceExtensions(const struct loader_instance *inst, struc
 }
 
 void debug_utils_CreateInstance(struct loader_instance *ptr_instance, const VkInstanceCreateInfo *pCreateInfo) {
-    ptr_instance->enabled_known_extensions.ext_debug_report = 0;
-    ptr_instance->enabled_known_extensions.ext_debug_utils = 0;
-
     for (uint32_t i = 0; i < pCreateInfo->enabledExtensionCount; i++) {
         if (strcmp(pCreateInfo->ppEnabledExtensionNames[i], VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0) {
             ptr_instance->enabled_known_extensions.ext_debug_report = 1;
@@ -887,20 +886,24 @@ bool debug_utils_InstanceGpa(struct loader_instance *ptr_instance, const char *n
     *addr = NULL;
 
     if (!strcmp("vkCreateDebugReportCallbackEXT", name)) {
-        *addr = ptr_instance->enabled_known_extensions.ext_debug_report == 1 ? (void *)debug_utils_CreateDebugReportCallbackEXT : NULL;
+        *addr =
+            ptr_instance->enabled_known_extensions.ext_debug_report == 1 ? (void *)debug_utils_CreateDebugReportCallbackEXT : NULL;
         ret_type = true;
     } else if (!strcmp("vkDestroyDebugReportCallbackEXT", name)) {
-        *addr = ptr_instance->enabled_known_extensions.ext_debug_report == 1 ? (void *)debug_utils_DestroyDebugReportCallbackEXT : NULL;
+        *addr =
+            ptr_instance->enabled_known_extensions.ext_debug_report == 1 ? (void *)debug_utils_DestroyDebugReportCallbackEXT : NULL;
         ret_type = true;
     } else if (!strcmp("vkDebugReportMessageEXT", name)) {
         *addr = ptr_instance->enabled_known_extensions.ext_debug_report == 1 ? (void *)debug_utils_DebugReportMessageEXT : NULL;
         return true;
     }
     if (!strcmp("vkCreateDebugUtilsMessengerEXT", name)) {
-        *addr = ptr_instance->enabled_known_extensions.ext_debug_utils == 1 ? (void *)debug_utils_CreateDebugUtilsMessengerEXT : NULL;
+        *addr =
+            ptr_instance->enabled_known_extensions.ext_debug_utils == 1 ? (void *)debug_utils_CreateDebugUtilsMessengerEXT : NULL;
         ret_type = true;
     } else if (!strcmp("vkDestroyDebugUtilsMessengerEXT", name)) {
-        *addr = ptr_instance->enabled_known_extensions.ext_debug_utils == 1 ? (void *)debug_utils_DestroyDebugUtilsMessengerEXT : NULL;
+        *addr =
+            ptr_instance->enabled_known_extensions.ext_debug_utils == 1 ? (void *)debug_utils_DestroyDebugUtilsMessengerEXT : NULL;
         ret_type = true;
     } else if (!strcmp("vkSubmitDebugUtilsMessageEXT", name)) {
         *addr = ptr_instance->enabled_known_extensions.ext_debug_utils == 1 ? (void *)debug_utils_SubmitDebugUtilsMessageEXT : NULL;

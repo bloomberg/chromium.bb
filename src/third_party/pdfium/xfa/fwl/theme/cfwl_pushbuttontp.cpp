@@ -7,13 +7,18 @@
 #include "xfa/fwl/theme/cfwl_pushbuttontp.h"
 
 #include "xfa/fgas/graphics/cfgas_gecolor.h"
+#include "xfa/fgas/graphics/cfgas_gegraphics.h"
 #include "xfa/fgas/graphics/cfgas_gepath.h"
 #include "xfa/fwl/cfwl_pushbutton.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_widget.h"
 #include "xfa/fwl/ifwl_themeprovider.h"
 
-#define PUSHBUTTON_SIZE_Corner 2
+namespace {
+
+constexpr float kPushbuttonSizeCorner = 2.0f;
+
+}  // namespace
 
 CFWL_PushButtonTP::CFWL_PushButtonTP() : m_pThemeData(new PBThemeData) {
   SetThemeData();
@@ -23,30 +28,28 @@ CFWL_PushButtonTP::~CFWL_PushButtonTP() = default;
 
 void CFWL_PushButtonTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {
-    case CFWL_Part::Border: {
+    case CFWL_ThemePart::Part::kBorder: {
       DrawBorder(pParams.GetGraphics(), pParams.m_PartRect, pParams.m_matrix);
       break;
     }
-    case CFWL_Part::Background: {
+    case CFWL_ThemePart::Part::kBackground: {
       const CFX_RectF& rect = pParams.m_PartRect;
       float fRight = rect.right();
       float fBottom = rect.bottom();
 
       CFGAS_GEPath strokePath;
       strokePath.MoveTo(
-          CFX_PointF(rect.left + PUSHBUTTON_SIZE_Corner, rect.top));
-      strokePath.LineTo(CFX_PointF(fRight - PUSHBUTTON_SIZE_Corner, rect.top));
-      strokePath.LineTo(CFX_PointF(fRight, rect.top + PUSHBUTTON_SIZE_Corner));
-      strokePath.LineTo(CFX_PointF(fRight, fBottom - PUSHBUTTON_SIZE_Corner));
-      strokePath.LineTo(CFX_PointF(fRight - PUSHBUTTON_SIZE_Corner, fBottom));
+          CFX_PointF(rect.left + kPushbuttonSizeCorner, rect.top));
+      strokePath.LineTo(CFX_PointF(fRight - kPushbuttonSizeCorner, rect.top));
+      strokePath.LineTo(CFX_PointF(fRight, rect.top + kPushbuttonSizeCorner));
+      strokePath.LineTo(CFX_PointF(fRight, fBottom - kPushbuttonSizeCorner));
+      strokePath.LineTo(CFX_PointF(fRight - kPushbuttonSizeCorner, fBottom));
+      strokePath.LineTo(CFX_PointF(rect.left + kPushbuttonSizeCorner, fBottom));
+      strokePath.LineTo(CFX_PointF(rect.left, fBottom - kPushbuttonSizeCorner));
       strokePath.LineTo(
-          CFX_PointF(rect.left + PUSHBUTTON_SIZE_Corner, fBottom));
+          CFX_PointF(rect.left, rect.top + kPushbuttonSizeCorner));
       strokePath.LineTo(
-          CFX_PointF(rect.left, fBottom - PUSHBUTTON_SIZE_Corner));
-      strokePath.LineTo(
-          CFX_PointF(rect.left, rect.top + PUSHBUTTON_SIZE_Corner));
-      strokePath.LineTo(
-          CFX_PointF(rect.left + PUSHBUTTON_SIZE_Corner, rect.top));
+          CFX_PointF(rect.left + kPushbuttonSizeCorner, rect.top));
 
       CFGAS_GEPath fillPath;
       fillPath.AddSubpath(strokePath);
@@ -55,8 +58,8 @@ void CFWL_PushButtonTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
       pGraphics->SaveGraphState();
 
       CFX_RectF rtInner(rect);
-      rtInner.Deflate(PUSHBUTTON_SIZE_Corner + 1, PUSHBUTTON_SIZE_Corner + 1,
-                      PUSHBUTTON_SIZE_Corner, PUSHBUTTON_SIZE_Corner);
+      rtInner.Deflate(kPushbuttonSizeCorner + 1, kPushbuttonSizeCorner + 1,
+                      kPushbuttonSizeCorner, kPushbuttonSizeCorner);
       fillPath.AddRectangle(rtInner.left, rtInner.top, rtInner.width,
                             rtInner.height);
 
@@ -74,7 +77,7 @@ void CFWL_PushButtonTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
       pGraphics->SetFillColor(CFGAS_GEColor(m_pThemeData->clrFill[iColor]));
       pGraphics->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding,
                           pParams.m_matrix);
-      if (pParams.m_dwStates & CFWL_PartState_Focused) {
+      if (pParams.m_dwStates & CFWL_PartState::kFocused) {
         rtInner.Inflate(1, 1, 0, 0);
         DrawFocus(pGraphics, rtInner, pParams.m_matrix);
       }
@@ -109,16 +112,16 @@ void CFWL_PushButtonTP::SetThemeData() {
   m_pThemeData->clrFill[4] = ArgbEncode(255, 245, 244, 234);
 }
 
-int32_t CFWL_PushButtonTP::GetColorID(uint32_t dwStates) const {
+int32_t CFWL_PushButtonTP::GetColorID(Mask<CFWL_PartState> dwStates) const {
   int32_t color = 0;
-  if (dwStates & CFWL_PartState_Disabled)
+  if (dwStates & CFWL_PartState::kDisabled)
     color += 4;
-  if (dwStates & CFWL_PartState_Default) {
+  if (dwStates & CFWL_PartState::kDefault) {
     color += 3;
   } else {
-    if (dwStates & CFWL_PartState_Hovered)
+    if (dwStates & CFWL_PartState::kHovered)
       color += 2;
-    if (dwStates & CFWL_PartState_Pressed)
+    if (dwStates & CFWL_PartState::kPressed)
       color += 1;
   }
   return color;

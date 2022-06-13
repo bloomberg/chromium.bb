@@ -11,12 +11,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "ash/components/disks/disk_mount_manager.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/vm_plugin_dispatcher_client.h"
-#include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -24,9 +22,7 @@
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 
-class CrosUsbDetectorTest;
-
-namespace chromeos {
+namespace ash {
 
 const uint8_t kInvalidUsbPortNumber = 0xff;
 
@@ -86,6 +82,10 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
   static CrosUsbDetector* Get();
 
   CrosUsbDetector();
+
+  CrosUsbDetector(const CrosUsbDetector&) = delete;
+  CrosUsbDetector& operator=(const CrosUsbDetector&) = delete;
+
   ~CrosUsbDetector() override;
 
   void SetDeviceManagerForTesting(
@@ -124,7 +124,7 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
   std::vector<CrosUsbDeviceInfo> GetShareableDevices() const;
 
  private:
-  friend class ::CrosUsbDetectorTest;
+  friend class CrosUsbDetectorTest;
 
   // Internal representation of a USB device.
   struct UsbDevice {
@@ -260,8 +260,10 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
   // is shared successfully with the VM. When an file is closed (here or by the
   // VM,  PermissionBroker will reattach the previous host drivers (if any).
   struct DeviceClaim {
-    base::File device_file;
-    base::File lifeline_file;
+    DeviceClaim();
+    ~DeviceClaim();
+    base::ScopedFD device_file;
+    base::ScopedFD lifeline_file;
   };
   std::map<std::string, DeviceClaim> devices_claimed_;
 
@@ -270,10 +272,14 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CrosUsbDetector> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrosUsbDetector);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromOS code migration is done.
+namespace chromeos {
+using ::ash::CrosUsbDetector;
+using ::ash::CrosUsbDeviceObserver;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_USB_CROS_USB_DETECTOR_H_

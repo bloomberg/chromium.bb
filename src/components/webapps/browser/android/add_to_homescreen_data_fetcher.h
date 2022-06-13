@@ -7,13 +7,14 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/common/web_page_metadata_agent.mojom.h"
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -28,7 +29,7 @@ struct InstallableData;
 
 // Aysnchronously fetches and processes data needed to create a shortcut for an
 // Android Home screen launcher.
-class AddToHomescreenDataFetcher : public content::WebContentsObserver {
+class AddToHomescreenDataFetcher {
  public:
   class Observer {
    public:
@@ -44,7 +45,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
                                  const SkBitmap& primary_icon) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   // Initialize the fetcher by requesting the information about the page from
@@ -54,8 +55,11 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   AddToHomescreenDataFetcher(content::WebContents* web_contents,
                              int data_timeout_ms,
                              Observer* observer);
+  AddToHomescreenDataFetcher(const AddToHomescreenDataFetcher&) = delete;
+  AddToHomescreenDataFetcher& operator=(const AddToHomescreenDataFetcher&) =
+      delete;
 
-  ~AddToHomescreenDataFetcher() override;
+  ~AddToHomescreenDataFetcher();
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebPageMetadata(
@@ -63,6 +67,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
       mojom::WebPageMetadataPtr web_page_metadata);
 
   // Accessors, etc.
+  content::WebContents* web_contents() { return web_contents_.get(); }
   const SkBitmap& primary_icon() const { return primary_icon_; }
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
   bool has_maskable_primary_icon() const { return has_maskable_primary_icon_; }
@@ -95,8 +100,10 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
                      const SkBitmap& icon_for_view,
                      bool is_icon_generated);
 
-  InstallableManager* installable_manager_;
-  Observer* observer_;
+  base::WeakPtr<content::WebContents> web_contents_;
+
+  raw_ptr<InstallableManager> installable_manager_;
+  raw_ptr<Observer> observer_;
 
   // The icons must only be set on the UI thread for thread safety.
   SkBitmap raw_primary_icon_;
@@ -113,10 +120,6 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   bool is_waiting_for_manifest_;
 
   base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_{this};
-
-  AddToHomescreenDataFetcher(const AddToHomescreenDataFetcher&) = delete;
-  AddToHomescreenDataFetcher& operator=(const AddToHomescreenDataFetcher&) =
-      delete;
 };
 
 }  // namespace webapps

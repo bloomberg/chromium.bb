@@ -5,10 +5,10 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/test/view_event_test_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -40,6 +40,9 @@ class CommonMenuModel : public ui::MenuModel {
  public:
   CommonMenuModel() {
   }
+
+  CommonMenuModel(const CommonMenuModel&) = delete;
+  CommonMenuModel& operator=(const CommonMenuModel&) = delete;
 
   ~CommonMenuModel() override {}
 
@@ -75,9 +78,6 @@ class CommonMenuModel : public ui::MenuModel {
   ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
 
   void ActivatedAt(int index) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CommonMenuModel);
 };
 
 class SubMenuModel : public CommonMenuModel {
@@ -85,6 +85,9 @@ class SubMenuModel : public CommonMenuModel {
   SubMenuModel()
       : showing_(false) {
   }
+
+  SubMenuModel(const SubMenuModel&) = delete;
+  SubMenuModel& operator=(const SubMenuModel&) = delete;
 
   ~SubMenuModel() override {}
 
@@ -110,14 +113,15 @@ class SubMenuModel : public CommonMenuModel {
   void MenuWillClose() override { showing_ = false; }
 
   bool showing_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubMenuModel);
 };
 
 class TopMenuModel : public CommonMenuModel {
  public:
   TopMenuModel() {
   }
+
+  TopMenuModel(const TopMenuModel&) = delete;
+  TopMenuModel& operator=(const TopMenuModel&) = delete;
 
   ~TopMenuModel() override {}
 
@@ -142,8 +146,6 @@ class TopMenuModel : public CommonMenuModel {
   }
 
   mutable SubMenuModel sub_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(TopMenuModel);
 };
 
 }  // namespace
@@ -253,10 +255,10 @@ class MenuModelAdapterTest : public ViewEventTestBase {
                             ui::MENU_SOURCE_NONE);
   }
 
-  views::MenuButton* button_ = nullptr;
+  raw_ptr<views::MenuButton> button_ = nullptr;
   TopMenuModel top_menu_model_;
   views::MenuModelAdapter menu_model_adapter_{&top_menu_model_};
-  views::MenuItemView* menu_ = nullptr;
+  raw_ptr<views::MenuItemView> menu_ = nullptr;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 };
 

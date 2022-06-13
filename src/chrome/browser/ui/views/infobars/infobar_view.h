@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBAR_VIEW_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -91,13 +91,6 @@ class InfoBarView : public infobars::InfoBar,
   // decreasing preferred width.
   static void AssignWidthsSorted(Views* views, int available_width);
 
-  // Returns whether this infobar should draw a 1 px separator at its top.
-  bool GetDrawSeparator() const;
-
-  // Returns how much space the container should reserve for a separator between
-  // infobars, in addition to the height of the infobars themselves.
-  int GetSeparatorHeight() const;
-
   // Returns the current color for the theme property |id|.  Will return the
   // wrong value if no theme provider is available.
   SkColor GetColor(int id) const;
@@ -112,10 +105,10 @@ class InfoBarView : public infobars::InfoBar,
   void CloseButtonPressed();
 
   // The optional icon at the left edge of the InfoBar.
-  views::ImageView* icon_ = nullptr;
+  raw_ptr<views::ImageView> icon_ = nullptr;
 
   // The close button at the right edge of the InfoBar.
-  views::ImageButton* close_button_ = nullptr;
+  raw_ptr<views::ImageButton> close_button_ = nullptr;
 
   // Used to run the menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;

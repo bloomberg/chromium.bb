@@ -21,14 +21,11 @@ class WebData;
 // status known to a particular session. Since it can be updated any time there
 // is a keychange event, iteration order and completeness is not guaranteed
 // if the event loop runs.
-class MediaKeyStatusMap final
-    : public ScriptWrappable,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      public PairIterable<Member<V8BufferSource>, String>
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-      public PairIterable<ArrayBufferOrArrayBufferView, String>
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-{
+class MediaKeyStatusMap final : public ScriptWrappable,
+                                public PairIterable<Member<V8BufferSource>,
+                                                    V8BufferSource,
+                                                    String,
+                                                    IDLString> {
   DEFINE_WRAPPERTYPEINFO();
 
  private:
@@ -49,13 +46,8 @@ class MediaKeyStatusMap final
 
   // IDL attributes / methods
   uint32_t size() const { return entries_.size(); }
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   bool has(const V8BufferSource* key_id);
   ScriptValue get(ScriptState*, const V8BufferSource* key_id);
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  bool has(const ArrayBufferOrArrayBufferView& key_id);
-  ScriptValue get(ScriptState*, const ArrayBufferOrArrayBufferView& key_id);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void Trace(Visitor*) const override;
 

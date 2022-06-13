@@ -20,6 +20,7 @@
 #include "common/Log.h"
 #include "common/Math.h"
 #include "common/SwapChainUtils.h"
+#include "dawn_native/d3d12/D3D11on12Util.h"
 #include "dawn_native/d3d12/DeviceD3D12.h"
 #include "dawn_native/d3d12/NativeSwapChainImplD3D12.h"
 #include "dawn_native/d3d12/ResidencyManagerD3D12.h"
@@ -28,13 +29,11 @@
 namespace dawn_native { namespace d3d12 {
 
     ComPtr<ID3D12Device> GetD3D12Device(WGPUDevice device) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
-
-        return backendDevice->GetD3D12Device();
+        return ToBackend(FromAPI(device))->GetD3D12Device();
     }
 
     DawnSwapChainImplementation CreateNativeSwapChainImpl(WGPUDevice device, HWND window) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
+        Device* backendDevice = ToBackend(FromAPI(device));
 
         DawnSwapChainImplementation impl;
         impl = CreateSwapChainImplementation(new NativeSwapChainImpl(backendDevice, window));
@@ -62,13 +61,22 @@ namespace dawn_native { namespace d3d12 {
           mFormat(descriptor->format),
           mMipLevelCount(descriptor->mipLevelCount),
           mSampleCount(descriptor->sampleCount) {
-        ASSERT(descriptor->nextInChain == nullptr);
+        ASSERT(!descriptor->nextInChain ||
+               descriptor->nextInChain->sType == WGPUSType_DawnTextureInternalUsageDescriptor);
+        if (descriptor->nextInChain) {
+            mUsageInternal = reinterpret_cast<const WGPUDawnTextureInternalUsageDescriptor*>(
+                                 descriptor->nextInChain)
+                                 ->internalUsage;
+        }
+        mD3D11on12ResourceCache = std::make_unique<D3D11on12ResourceCache>();
     }
+
+    ExternalImageDXGI::~ExternalImageDXGI() = default;
 
     WGPUTexture ExternalImageDXGI::ProduceTexture(
         WGPUDevice device,
         const ExternalImageAccessDescriptorDXGIKeyedMutex* descriptor) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
+        Device* backendDevice = ToBackend(FromAPI(device));
 
         // Ensure the texture usage is allowed
         if (!IsSubset(descriptor->usage, mUsage)) {
@@ -84,24 +92,34 @@ namespace dawn_native { namespace d3d12 {
         textureDescriptor.mipLevelCount = mMipLevelCount;
         textureDescriptor.sampleCount = mSampleCount;
 
-        // Set the release key to acquire key + 1 if not set. This allows supporting the old keyed
-        // mutex protocol during the transition to making this a required parameter.
-        ExternalMutexSerial releaseMutexKey =
-            (descriptor->releaseMutexKey != UINT64_MAX)
-                ? ExternalMutexSerial(descriptor->releaseMutexKey)
-                : ExternalMutexSerial(descriptor->acquireMutexKey + 1);
+        DawnTextureInternalUsageDescriptor internalDesc = {};
+        if (mUsageInternal) {
+            textureDescriptor.nextInChain = &internalDesc;
+            internalDesc.internalUsage = static_cast<wgpu::TextureUsage>(mUsageInternal);
+            internalDesc.sType = wgpu::SType::DawnTextureInternalUsageDescriptor;
+        }
+
+        Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource =
+            mD3D11on12ResourceCache->GetOrCreateD3D11on12Resource(device, mD3D12Resource.Get());
+        if (d3d11on12Resource == nullptr) {
+            dawn::ErrorLog() << "Unable to create 11on12 resource for external image";
+            return nullptr;
+        }
 
         Ref<TextureBase> texture = backendDevice->CreateExternalTexture(
-            &textureDescriptor, mD3D12Resource, ExternalMutexSerial(descriptor->acquireMutexKey),
-            releaseMutexKey, descriptor->isSwapChainTexture, descriptor->isInitialized);
-        return reinterpret_cast<WGPUTexture>(texture.Detach());
+            &textureDescriptor, mD3D12Resource, std::move(d3d11on12Resource),
+            ExternalMutexSerial(descriptor->acquireMutexKey),
+            ExternalMutexSerial(descriptor->releaseMutexKey), descriptor->isSwapChainTexture,
+            descriptor->isInitialized);
+
+        return ToAPI(texture.Detach());
     }
 
     // static
     std::unique_ptr<ExternalImageDXGI> ExternalImageDXGI::Create(
         WGPUDevice device,
         const ExternalImageDescriptorDXGISharedHandle* descriptor) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
+        Device* backendDevice = ToBackend(FromAPI(device));
 
         Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource;
         if (FAILED(backendDevice->GetD3D12Device()->OpenSharedHandle(
@@ -109,8 +127,7 @@ namespace dawn_native { namespace d3d12 {
             return nullptr;
         }
 
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         if (backendDevice->ConsumedError(
                 ValidateTextureDescriptor(backendDevice, textureDescriptor))) {
@@ -118,7 +135,9 @@ namespace dawn_native { namespace d3d12 {
         }
 
         if (backendDevice->ConsumedError(
-                ValidateTextureDescriptorCanBeWrapped(textureDescriptor))) {
+                ValidateTextureDescriptorCanBeWrapped(textureDescriptor),
+                "validating that a D3D12 external image can be wrapped with %s",
+                textureDescriptor)) {
             return nullptr;
         }
 
@@ -146,10 +165,14 @@ namespace dawn_native { namespace d3d12 {
     uint64_t SetExternalMemoryReservation(WGPUDevice device,
                                           uint64_t requestedReservationSize,
                                           MemorySegment memorySegment) {
-        Device* backendDevice = reinterpret_cast<Device*>(device);
+        Device* backendDevice = ToBackend(FromAPI(device));
 
         return backendDevice->GetResidencyManager()->SetExternalMemoryReservation(
             memorySegment, requestedReservationSize);
+    }
+
+    AdapterDiscoveryOptions::AdapterDiscoveryOptions()
+        : AdapterDiscoveryOptionsBase(WGPUBackendType_D3D12), dxgiAdapter(nullptr) {
     }
 
     AdapterDiscoveryOptions::AdapterDiscoveryOptions(ComPtr<IDXGIAdapter> adapter)

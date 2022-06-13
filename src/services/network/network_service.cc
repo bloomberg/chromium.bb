@@ -11,14 +11,17 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
@@ -43,6 +46,7 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -59,11 +63,11 @@
 #include "services/network/net_log_proxy_sink.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/crash_keys.h"
-#include "services/network/public/cpp/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/cpp/parsed_headers.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
 
@@ -83,6 +87,8 @@
 #endif
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
+#include "components/certificate_transparency/ct_features.h"
+#include "services/network/ct_log_list_distributor.h"
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif
 
@@ -170,7 +176,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpAuthMechanism {
     std::move(callback).Run(result);
   }
 
-  NetworkContext* network_context_ = nullptr;
+  raw_ptr<NetworkContext> network_context_ = nullptr;
   net::android::HttpAuthNegotiateAndroid auth_negotiate_;
   base::WeakPtrFactory<NetworkServiceAuthNegotiateAndroid> weak_factory_{this};
 };
@@ -187,7 +193,7 @@ std::unique_ptr<net::HttpAuthMechanism> CreateAuthSystem(
 // NetworkService is running in a separate process - otherwise the existing bad
 // message handling inside the Browser process is sufficient).
 void HandleBadMessage(const std::string& error) {
-  LOG(WARNING) << "Mojo error in NetworkService:" << error;
+  LOG(WARNING) << "Mojo error in NetworkService: " << error;
   mojo::debug::ScopedMessageErrorCrashKey crash_key_value(error);
   base::debug::DumpWithoutCrashing();
   network::debug::ClearDeserializationCrashKeyString();
@@ -197,7 +203,7 @@ void HandleBadMessage(const std::string& error) {
 
 // static
 const base::TimeDelta NetworkService::kInitialDohProbeTimeout =
-    base::TimeDelta::FromSeconds(5);
+    base::Seconds(5);
 
 // Handler of delaying calls to NetworkContext::ActivateDohProbes() until after
 // an initial service startup delay.
@@ -239,7 +245,7 @@ class NetworkService::DelayedDohProbeActivator {
   }
 
  private:
-  NetworkService* const network_service_;
+  const raw_ptr<NetworkService> network_service_;
 
   // If running, DoH probes will be started on completion. If not running, DoH
   // probes may be started at any time.
@@ -326,6 +332,10 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
+  ct_log_list_distributor_ = std::make_unique<CtLogListDistributor>();
+#endif
+
   doh_probe_activator_ = std::make_unique<DelayedDohProbeActivator>(this);
 
   trust_token_key_commitments_ = std::make_unique<TrustTokenKeyCommitments>();
@@ -336,8 +346,7 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   }
 
   first_party_sets_ = std::make_unique<FirstPartySets>();
-  if (net::cookie_util::IsFirstPartySetsEnabled() &&
-      command_line->HasSwitch(switches::kUseFirstPartySet)) {
+  if (net::cookie_util::IsFirstPartySetsEnabled()) {
     first_party_sets_->SetManuallySpecifiedSet(
         command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
   }
@@ -556,7 +565,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
   int max_limit = 99;
   int min_limit = net::ClientSocketPoolManager::max_sockets_per_group(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-  new_limit = base::ClampToRange(new_limit, min_limit, max_limit);
+  new_limit = base::clamp(new_limit, min_limit, max_limit);
 
   // Assign the global limit.
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
@@ -698,6 +707,13 @@ void NetworkService::SetTrustTokenKeyCommitments(
   std::move(done).Run();
 }
 
+void NetworkService::ParseHeaders(
+    const GURL& url,
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    ParseHeadersCallback callback) {
+  std::move(callback).Run(PopulateParsedHeaders(headers.get(), url));
+}
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkService::ClearSCTAuditingCache() {
   sct_auditing_cache_->ClearCache();
@@ -715,7 +731,37 @@ void NetworkService::ConfigureSCTAuditing(
   sct_auditing_cache_->set_traffic_annotation(traffic_annotation);
   sct_auditing_cache_->set_url_loader_factory(std::move(factory));
 }
-#endif
+
+void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
+                                     base::Time update_time) {
+  log_list_ = std::move(log_list);
+  ct_log_list_update_time_ = update_time;
+
+  if (base::FeatureList::IsEnabled(
+          certificate_transparency::features::
+              kCertificateTransparencyComponentUpdater)) {
+    ct_log_list_distributor_->OnNewCtConfig(log_list_);
+    for (auto* context : network_contexts_) {
+      context->OnCTLogListUpdated(log_list_, update_time);
+      context->url_request_context()
+          ->transport_security_state()
+          ->SetCTLogListUpdateTime(update_time);
+    }
+  }
+}
+
+void NetworkService::SetCtEnforcementEnabled(bool enabled) {
+  DCHECK(base::FeatureList::IsEnabled(
+      certificate_transparency::features::
+          kCertificateTransparencyComponentUpdater));
+  for (auto* context : network_contexts_) {
+    context->url_request_context()
+        ->transport_security_state()
+        ->SetCTEmergencyDisabled(!enabled);
+  }
+}
+
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if defined(OS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
@@ -737,8 +783,16 @@ void NetworkService::BindTestInterface(
   }
 }
 
-void NetworkService::SetFirstPartySets(const std::string& raw_sets) {
-  first_party_sets_->ParseAndSet(raw_sets);
+void NetworkService::SetFirstPartySets(base::File sets_file) {
+  first_party_sets_->ParseAndSet(std::move(sets_file));
+}
+
+void NetworkService::SetPersistedFirstPartySetsAndGetCurrentSets(
+    const std::string& persisted_sets,
+    mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
+        callback) {
+  first_party_sets_->SetPersistedSets(persisted_sets);
+  first_party_sets_->SetOnSiteDataCleared(std::move(callback));
 }
 
 void NetworkService::SetExplicitlyAllowedPorts(

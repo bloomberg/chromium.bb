@@ -63,6 +63,7 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/ffmath.h"
 #include "libavutil/opt.h"
 #include "audio.h"
@@ -145,8 +146,6 @@ typedef struct BiquadsContext {
 static int query_formats(AVFilterContext *ctx)
 {
     BiquadsContext *s = ctx->priv;
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat auto_sample_fmts[] = {
         AV_SAMPLE_FMT_S16P,
         AV_SAMPLE_FMT_S32P,
@@ -158,46 +157,33 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_S16P,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    const enum AVSampleFormat *sample_fmts_list = sample_fmts;
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
     switch (s->precision) {
     case 0:
         sample_fmts[0] = AV_SAMPLE_FMT_S16P;
-        formats = ff_make_format_list(sample_fmts);
         break;
     case 1:
         sample_fmts[0] = AV_SAMPLE_FMT_S32P;
-        formats = ff_make_format_list(sample_fmts);
         break;
     case 2:
         sample_fmts[0] = AV_SAMPLE_FMT_FLTP;
-        formats = ff_make_format_list(sample_fmts);
         break;
     case 3:
         sample_fmts[0] = AV_SAMPLE_FMT_DBLP;
-        formats = ff_make_format_list(sample_fmts);
         break;
     default:
-        formats = ff_make_format_list(auto_sample_fmts);
+        sample_fmts_list = auto_sample_fmts;
         break;
     }
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts_list);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 #define BIQUAD_FILTER(name, type, min, max, need_clipping)                    \
@@ -811,7 +797,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
     td.in = buf;
     td.out = out_buf;
-    ctx->internal->execute(ctx, filter_channel, &td, NULL, FFMIN(outlink->channels, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, filter_channel, &td, NULL,
+                      FFMIN(outlink->channels, ff_filter_get_nb_threads(ctx)));
 
     for (ch = 0; ch < outlink->channels; ch++) {
         if (s->cache[ch].clippings > 0)
@@ -852,7 +839,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -861,15 +847,13 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(BiquadsContext, x)
 #define FLAGS AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 #define AF AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
 
-#define DEFINE_BIQUAD_FILTER(name_, description_)                       \
-AVFILTER_DEFINE_CLASS(name_);                                           \
+#define DEFINE_BIQUAD_FILTER_2(name_, description_, priv_class_)        \
 static av_cold int name_##_init(AVFilterContext *ctx)                   \
 {                                                                       \
     BiquadsContext *s = ctx->priv;                                      \
@@ -877,19 +861,23 @@ static av_cold int name_##_init(AVFilterContext *ctx)                   \
     return 0;                                                           \
 }                                                                       \
                                                          \
-AVFilter ff_af_##name_ = {                               \
+const AVFilter ff_af_##name_ = {                               \
     .name          = #name_,                             \
     .description   = NULL_IF_CONFIG_SMALL(description_), \
+    .priv_class    = &priv_class_##_class,               \
     .priv_size     = sizeof(BiquadsContext),             \
     .init          = name_##_init,                       \
     .uninit        = uninit,                             \
-    .query_formats = query_formats,                      \
-    .inputs        = inputs,                             \
-    .outputs       = outputs,                            \
-    .priv_class    = &name_##_class,                     \
+    FILTER_INPUTS(inputs),                               \
+    FILTER_OUTPUTS(outputs),                             \
+    FILTER_QUERY_FUNC(query_formats),                    \
     .process_command = process_command,                  \
     .flags         = AVFILTER_FLAG_SLICE_THREADS | AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL, \
 }
+
+#define DEFINE_BIQUAD_FILTER(name, description)                         \
+    AVFILTER_DEFINE_CLASS(name);                                        \
+    DEFINE_BIQUAD_FILTER_2(name, description, name)
 
 #if CONFIG_EQUALIZER_FILTER
 static const AVOption equalizer_options[] = {
@@ -969,14 +957,13 @@ static const AVOption bass_lowshelf_options[] = {
     {NULL}
 };
 
+AVFILTER_DEFINE_CLASS_EXT(bass_lowshelf, "bass/lowshelf", bass_lowshelf_options);
 #if CONFIG_BASS_FILTER
-#define bass_options bass_lowshelf_options
-DEFINE_BIQUAD_FILTER(bass, "Boost or cut lower frequencies.");
+DEFINE_BIQUAD_FILTER_2(bass, "Boost or cut lower frequencies.", bass_lowshelf);
 #endif  /* CONFIG_BASS_FILTER */
 
 #if CONFIG_LOWSHELF_FILTER
-#define lowshelf_options bass_lowshelf_options
-DEFINE_BIQUAD_FILTER(lowshelf, "Apply a low shelf filter.");
+DEFINE_BIQUAD_FILTER_2(lowshelf, "Apply a low shelf filter.", bass_lowshelf);
 #endif  /* CONFIG_LOWSHELF_FILTER */
 #endif  /* CONFIG_BASS_FILTER || CONFIG LOWSHELF_FILTER */
 #if CONFIG_TREBLE_FILTER || CONFIG_HIGHSHELF_FILTER
@@ -1018,14 +1005,15 @@ static const AVOption treble_highshelf_options[] = {
     {NULL}
 };
 
+AVFILTER_DEFINE_CLASS_EXT(treble_highshelf, "treble/highshelf",
+                          treble_highshelf_options);
+
 #if CONFIG_TREBLE_FILTER
-#define treble_options treble_highshelf_options
-DEFINE_BIQUAD_FILTER(treble, "Boost or cut upper frequencies.");
+DEFINE_BIQUAD_FILTER_2(treble, "Boost or cut upper frequencies.", treble_highshelf);
 #endif  /* CONFIG_TREBLE_FILTER */
 
 #if CONFIG_HIGHSHELF_FILTER
-#define highshelf_options treble_highshelf_options
-DEFINE_BIQUAD_FILTER(highshelf, "Apply a high shelf filter.");
+DEFINE_BIQUAD_FILTER_2(highshelf, "Apply a high shelf filter.", treble_highshelf);
 #endif  /* CONFIG_HIGHSHELF_FILTER */
 #endif  /* CONFIG_TREBLE_FILTER || CONFIG_HIGHSHELF_FILTER */
 #if CONFIG_BANDPASS_FILTER

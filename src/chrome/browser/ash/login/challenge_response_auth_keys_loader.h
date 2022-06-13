@@ -17,7 +17,7 @@
 
 class AccountId;
 
-namespace chromeos {
+namespace ash {
 
 // This class allows to prepare parameters for the challenge-response
 // authentication.
@@ -91,6 +91,6 @@ class ChallengeResponseAuthKeysLoader final : public ProfileObserver {
   base::WeakPtrFactory<ChallengeResponseAuthKeysLoader> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_CHALLENGE_RESPONSE_AUTH_KEYS_LOADER_H_

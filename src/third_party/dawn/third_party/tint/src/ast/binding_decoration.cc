@@ -14,6 +14,8 @@
 
 #include "src/ast/binding_decoration.h"
 
+#include <string>
+
 #include "src/program_builder.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::ast::BindingDecoration);
@@ -21,24 +23,21 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::BindingDecoration);
 namespace tint {
 namespace ast {
 
-BindingDecoration::BindingDecoration(ProgramID program_id,
-                                     const Source& source,
+BindingDecoration::BindingDecoration(ProgramID pid,
+                                     const Source& src,
                                      uint32_t val)
-    : Base(program_id, source), value_(val) {}
+    : Base(pid, src), value(val) {}
 
 BindingDecoration::~BindingDecoration() = default;
 
-void BindingDecoration::to_str(const sem::Info&,
-                               std::ostream& out,
-                               size_t indent) const {
-  make_indent(out, indent);
-  out << "BindingDecoration{" << value_ << "}" << std::endl;
+std::string BindingDecoration::Name() const {
+  return "binding";
 }
 
-BindingDecoration* BindingDecoration::Clone(CloneContext* ctx) const {
+const BindingDecoration* BindingDecoration::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<BindingDecoration>(src, value_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<BindingDecoration>(src, value);
 }
 
 }  // namespace ast

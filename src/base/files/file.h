@@ -18,18 +18,20 @@
 #include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-#include <sys/stat.h>
+#if defined(OS_BSD) || defined(OS_APPLE) || defined(OS_NACL) || \
+    defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
+struct stat;
+namespace base {
+typedef struct stat stat_wrapper_t;
+}
+#elif defined(OS_POSIX)
+struct stat64;
+namespace base {
+typedef struct stat64 stat_wrapper_t;
+}
 #endif
 
 namespace base {
-
-#if defined(OS_BSD) || defined(OS_APPLE) || defined(OS_NACL) || \
-    defined(OS_FUCHSIA) || (defined(OS_ANDROID) && __ANDROID_API__ < 21)
-typedef struct stat stat_wrapper_t;
-#elif defined(OS_POSIX)
-typedef struct stat64 stat_wrapper_t;
-#endif
 
 // Thin wrapper around an OS-level file.
 // Note that this class does not provide any support for asynchronous IO, other
@@ -48,8 +50,6 @@ class BASE_EXPORT File {
   // a file.
   // FLAG_(WRITE|APPEND) are mutually exclusive. This is so that APPEND behavior
   // will be consistent with O_APPEND on POSIX.
-  // FLAG_EXCLUSIVE_(READ|WRITE) only grant exclusive access to the file on
-  // creation on POSIX; for existing files, consider using Lock().
   enum Flags {
     FLAG_OPEN = 1 << 0,            // Opens a file, only if it exists.
     FLAG_CREATE = 1 << 1,          // Creates a new file, only if it does not
@@ -61,18 +61,19 @@ class BASE_EXPORT File {
     FLAG_READ = 1 << 5,
     FLAG_WRITE = 1 << 6,
     FLAG_APPEND = 1 << 7,
-    FLAG_EXCLUSIVE_READ = 1 << 8,  // EXCLUSIVE is opposite of Windows SHARE.
-    FLAG_EXCLUSIVE_WRITE = 1 << 9,
+    FLAG_WIN_EXCLUSIVE_READ = 1 << 8,   // Windows only. Opposite of SHARE.
+    FLAG_WIN_EXCLUSIVE_WRITE = 1 << 9,  // Windows only. Opposite of SHARE.
     FLAG_ASYNC = 1 << 10,
-    FLAG_TEMPORARY = 1 << 11,  // Used on Windows only.
-    FLAG_HIDDEN = 1 << 12,     // Used on Windows only.
+    FLAG_WIN_TEMPORARY = 1 << 11,  // Windows only.
+    FLAG_WIN_HIDDEN = 1 << 12,     // Windows only.
     FLAG_DELETE_ON_CLOSE = 1 << 13,
-    FLAG_WRITE_ATTRIBUTES = 1 << 14,     // Used on Windows only.
-    FLAG_SHARE_DELETE = 1 << 15,         // Used on Windows only.
-    FLAG_TERMINAL_DEVICE = 1 << 16,      // Serial port flags.
-    FLAG_BACKUP_SEMANTICS = 1 << 17,     // Used on Windows only.
-    FLAG_EXECUTE = 1 << 18,              // Used on Windows only.
-    FLAG_SEQUENTIAL_SCAN = 1 << 19,      // Used on Windows only.
+    FLAG_WRITE_ATTRIBUTES = 1 << 14,  // File opened in a mode allowing writing
+                                      // attributes, such as with SetTimes().
+    FLAG_WIN_SHARE_DELETE = 1 << 15,  // Windows only.
+    FLAG_TERMINAL_DEVICE = 1 << 16,   // Serial port flags.
+    FLAG_WIN_BACKUP_SEMANTICS = 1 << 17,  // Windows only.
+    FLAG_WIN_EXECUTE = 1 << 18,           // Windows only.
+    FLAG_WIN_SEQUENTIAL_SCAN = 1 << 19,   // Windows only.
     FLAG_CAN_DELETE_ON_CLOSE = 1 << 20,  // Requests permission to delete a file
                                          // via DeleteOnClose() (Windows only).
                                          // See DeleteOnClose() for details.
@@ -179,8 +180,8 @@ class BASE_EXPORT File {
   void Initialize(const FilePath& path, uint32_t flags);
 
   // Returns |true| if the handle / fd wrapped by this object is valid.  This
-  // method doesn't interact with the file system (and is safe to be called from
-  // ThreadRestrictions::SetIOAllowed(false) threads).
+  // method doesn't interact with the file system and is thus safe to be called
+  // from threads that disallow blocking.
   bool IsValid() const;
 
   // Returns true if a new file was created (or an old one truncated to zero
@@ -335,11 +336,11 @@ class BASE_EXPORT File {
   //   calling DeleteOnClose(true).
   //
   // In all cases, all pre-existing handles to the file must have been opened
-  // with FLAG_SHARE_DELETE. Once the disposition has been set by any of the
+  // with FLAG_WIN_SHARE_DELETE. Once the disposition has been set by any of the
   // above means, no new File objects can be created for the file.
   //
   // So:
-  // - Use FLAG_SHARE_DELETE when creating/opening a file to allow another
+  // - Use FLAG_WIN_SHARE_DELETE when creating/opening a file to allow another
   //   entity on the system to cause it to be deleted when it is closed. (Note:
   //   another entity can delete the file the moment after it is closed, so not
   //   using this permission doesn't provide any protections.)

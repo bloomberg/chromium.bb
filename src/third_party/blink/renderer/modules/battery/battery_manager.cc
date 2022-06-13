@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/battery/battery_dispatcher.h"
 
 namespace blink {
@@ -73,11 +74,11 @@ bool BatteryManager::charging() {
 }
 
 double BatteryManager::chargingTime() {
-  return battery_status_.charging_time();
+  return battery_status_.charging_time().InSecondsF();
 }
 
 double BatteryManager::dischargingTime() {
-  return battery_status_.discharging_time();
+  return battery_status_.discharging_time().InSecondsF();
 }
 
 double BatteryManager::level() {

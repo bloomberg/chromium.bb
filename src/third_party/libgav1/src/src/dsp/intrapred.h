@@ -38,9 +38,7 @@
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::intra_predictors, Dsp::directional_intra_predictor_zone*,
-// Dsp::cfl_intra_predictors, Dsp::cfl_subsamplers and
-// Dsp::filter_intra_predictor. This function is not thread-safe.
+// Initializes Dsp::intra_predictors. This function is not thread-safe.
 void IntraPredInit_C();
 
 }  // namespace dsp

@@ -10,9 +10,8 @@
 #include <deque>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_utils.h"
@@ -107,6 +106,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
       public ITfTextEditSink {
  public:
   TSFTextStore();
+
+  TSFTextStore(const TSFTextStore&) = delete;
+  TSFTextStore& operator=(const TSFTextStore&) = delete;
+
   virtual ~TSFTextStore();
   HRESULT Initialize();
 
@@ -322,10 +325,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   HWND window_handle_ = nullptr;
 
   // Current TextInputClient which is set in SetFocusedTextInputClient.
-  TextInputClient* text_input_client_ = nullptr;
+  raw_ptr<TextInputClient> text_input_client_ = nullptr;
 
   // InputMethodDelegate instance which is used dispatch key events.
-  internal::InputMethodDelegate* input_method_delegate_ = nullptr;
+  raw_ptr<internal::InputMethodDelegate> input_method_delegate_ = nullptr;
 
   //  |string_buffer_document_| contains all string in current active view.
   //  |string_pending_insertion_| contains only string in current edit session.
@@ -444,8 +447,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   Microsoft::WRL::ComPtr<ITfCategoryMgr> category_manager_;
   Microsoft::WRL::ComPtr<ITfDisplayAttributeMgr> display_attribute_manager_;
   Microsoft::WRL::ComPtr<ITfContext> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TSFTextStore);
 };
 
 }  // namespace ui

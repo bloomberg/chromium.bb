@@ -12,12 +12,14 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/bind.h"
-#include "base/bind_post_task.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/ash/arc/fileapi/arc_select_files_handler.h"
@@ -25,14 +27,12 @@
 #include "chrome/browser/ash/arc/fileapi/file_stream_forwarder.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/virtual_file_provider_client.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/session/arc_bridge_service.h"
+#include "chromeos/dbus/virtual_file_provider/virtual_file_provider_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -69,10 +69,9 @@ bool IsTestImageBuild() {
 
 // Returns FileSystemContext.
 scoped_refptr<storage::FileSystemContext> GetFileSystemContext(
-    content::BrowserContext* context,
-    const GURL& url) {
+    content::BrowserContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::StoragePartition* storage = context->GetStoragePartitionForUrl(url);
+  content::StoragePartition* storage = context->GetDefaultStoragePartition();
   return storage->GetFileSystemContext();
 }
 
@@ -86,26 +85,18 @@ file_manager::util::FileSystemURLAndHandle GetFileSystemURL(
       chromeos::ExternalFileURLToVirtualPath(url));
 }
 
-// Retrieves the file size on the IO thread, and runs the callback on the UI
+// Retrieves file's metadata on the IO thread, and runs the callback on the UI
 // thread.
-void GetFileSizeOnIOThread(scoped_refptr<storage::FileSystemContext> context,
-                           const storage::FileSystemURL& url,
-                           ArcFileSystemBridge::GetFileSizeCallback callback) {
+void GetMetadataOnIOThread(
+    scoped_refptr<storage::FileSystemContext> context,
+    const storage::FileSystemURL& url,
+    int flags,
+    storage::FileSystemOperation::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   context->operation_runner()->GetMetadata(
-      url,
-      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-          storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
-      base::BindOnce([](base::File::Error result,
-                        const base::File::Info& file_info) -> int64_t {
-        if (result == base::File::FILE_OK && !file_info.is_directory &&
-            file_info.size >= 0) {
-          return file_info.size;
-        }
-        return -1;
-      })
-          .Then(base::BindPostTask(content::GetUIThreadTaskRunner({}),
-                                   std::move(callback))));
+      url, flags,
+      base::BindPostTask(content::GetUIThreadTaskRunner({}),
+                         std::move(callback)));
 }
 
 // TODO(risan): Write test.
@@ -222,17 +213,64 @@ void ArcFileSystemBridge::GetFileSize(const std::string& url,
 
 void ArcFileSystemBridge::GetFileSizeInternal(const GURL& url_decoded,
                                               GetFileSizeCallback callback) {
+  GetMetadata(url_decoded,
+              storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+                  storage::FileSystemOperation::GET_METADATA_FIELD_SIZE,
+              base::BindOnce([](base::File::Error result,
+                                const base::File::Info& file_info) -> int64_t {
+                if (result == base::File::FILE_OK && !file_info.is_directory &&
+                    file_info.size >= 0) {
+                  return file_info.size;
+                }
+                return -1;
+              }).Then(std::move(callback)));
+}
+
+void ArcFileSystemBridge::GetLastModified(const GURL& url,
+                                          GetLastModifiedCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GURL url_decoded = DecodeFromChromeContentProviderUrl(url);
+  if (url_decoded.is_empty() || !IsUrlAllowed(url_decoded)) {
+    LOG(ERROR) << "Invalid URL: " << url << " " << url_decoded;
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  GetMetadata(url_decoded,
+              storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+              base::BindOnce([](base::File::Error result,
+                                const base::File::Info& file_info)
+                                 -> absl::optional<base::Time> {
+                if (result != base::File::FILE_OK) {
+                  return absl::nullopt;
+                }
+                return absl::make_optional(file_info.last_modified);
+              }).Then(std::move(callback)));
+}
+
+void ArcFileSystemBridge::GetMetadata(
+    const GURL& url_decoded,
+    int flags,
+    storage::FileSystemOperation::GetMetadataCallback callback) {
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url_decoded);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&GetFileSizeOnIOThread, std::move(context),
-                     file_system_url_and_handle.url, std::move(callback)));
-  // TODO(https://crbug.com/963027): This is currently leaking the isolated
-  // file system, the file system should somehow be revoked when the url
-  // returned by GetFileSystemURL is no longer needed.
+      base::BindOnce(
+          &GetMetadataOnIOThread, std::move(context),
+          file_system_url_and_handle.url, flags,
+          base::BindOnce(
+              [](const std::string& file_system_id,
+                 storage::FileSystemOperation::GetMetadataCallback callback,
+                 base::File::Error result, const base::File::Info& file_info) {
+                storage::IsolatedContext::GetInstance()->RemoveReference(
+                    file_system_id);
+                std::move(callback).Run(result, file_info);
+              },
+              file_system_url_and_handle.handle.id(), std::move(callback))));
+
   storage::IsolatedContext::GetInstance()->AddReference(
       file_system_url_and_handle.handle.id());
 }
@@ -247,7 +285,7 @@ void ArcFileSystemBridge::GetFileType(const std::string& url,
     return;
   }
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url_decoded);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
   extensions::app_file_handler_util::GetMimeTypeForLocalPath(
@@ -445,17 +483,15 @@ bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
 
   const GURL& url = it_url->second;
   scoped_refptr<storage::FileSystemContext> context =
-      GetFileSystemContext(profile_, url);
+      GetFileSystemContext(profile_);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url);
   *it_forwarder = FileStreamForwarderPtr(new FileStreamForwarder(
       std::move(context), file_system_url_and_handle.url, offset, size,
       std::move(pipe_write_end),
       base::BindOnce(&ArcFileSystemBridge::OnReadRequestCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), id, it_forwarder)));
-  // TODO(https://crbug.com/963027): This is currently leaking the isolated
-  // file system, the file system should somehow be revoked when the url
-  // returned by GetFileSystemURL is no longer needed.
+                     weak_ptr_factory_.GetWeakPtr(), id, it_forwarder,
+                     file_system_url_and_handle.handle.id())));
   storage::IsolatedContext::GetInstance()->AddReference(
       file_system_url_and_handle.handle.id());
   return true;
@@ -468,9 +504,11 @@ bool ArcFileSystemBridge::HandleIdReleased(const std::string& id) {
 void ArcFileSystemBridge::OnReadRequestCompleted(
     const std::string& id,
     std::list<FileStreamForwarderPtr>::iterator it,
+    const std::string& file_system_id,
     bool result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOG_IF(ERROR, !result) << "Failed to read " << id;
+  storage::IsolatedContext::GetInstance()->RemoveReference(file_system_id);
   file_stream_forwarders_.erase(it);
 }
 

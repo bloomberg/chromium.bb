@@ -121,27 +121,30 @@ bool ReadCRL(base::StringPiece* data,
 }
 
 // CopyHashListFromHeader parses a list of base64-encoded, SHA-256 hashes from
-// the given |key| in |header_dict| and sets |*out| to the decoded values. It's
-// not an error if |key| is not found in |header_dict|.
+// the given |key| (without path expansion) in |header_dict| and sets |*out|
+// to the decoded values. It's not an error if |key| is not found in
+// |header_dict|.
 bool CopyHashListFromHeader(base::DictionaryValue* header_dict,
                             const char* key,
                             std::vector<std::string>* out) {
-  base::ListValue* list = nullptr;
-  if (!header_dict->GetList(key, &list)) {
+  const base::Value* list = header_dict->FindListKey(key);
+  if (!list) {
     // Hash lists are optional so it's not an error if not present.
     return true;
   }
+  base::Value::ConstListView list_view = list->GetList();
 
   out->clear();
-  out->reserve(list->GetSize());
+  out->reserve(list_view.size());
 
   std::string sha256_base64;
 
-  for (size_t i = 0; i < list->GetSize(); ++i) {
+  for (const base::Value& i : list_view) {
     sha256_base64.clear();
 
-    if (!list->GetString(i, &sha256_base64))
+    if (!i.is_string())
       return false;
+    sha256_base64 = i.GetString();
 
     out->push_back(std::string());
     if (!base::Base64Decode(sha256_base64, &out->back())) {
@@ -169,7 +172,7 @@ bool CopyHashToHashesMapFromHeader(
     return true;
   }
 
-  for (const auto& i : dict->DictItems()) {
+  for (auto i : dict->DictItems()) {
     if (!i.second.is_list()) {
       return false;
     }
@@ -226,26 +229,20 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   if (contents != "CRLSet")
     return false;
 
-  int version;
-  if (!header_dict->GetInteger("Version", &version) ||
-      version != kCurrentFileVersion) {
-    return false;
-  }
-
-  int sequence;
-  if (!header_dict->GetInteger("Sequence", &sequence))
+  if (header_dict->FindIntKey("Version") != kCurrentFileVersion)
     return false;
 
-  double not_after;
-  if (!header_dict->GetDouble("NotAfter", &not_after)) {
-    // NotAfter is optional for now.
-    not_after = 0;
-  }
+  absl::optional<int> sequence = header_dict->FindIntKey("Sequence");
+  if (!sequence)
+    return false;
+
+  // NotAfter is optional for now.
+  double not_after = header_dict->FindDoubleKey("NotAfter").value_or(0);
   if (not_after < 0)
     return false;
 
   scoped_refptr<CRLSet> crl_set(new CRLSet());
-  crl_set->sequence_ = static_cast<uint32_t>(sequence);
+  crl_set->sequence_ = static_cast<uint32_t>(*sequence);
   crl_set->not_after_ = static_cast<uint64_t>(not_after);
   crl_set->crls_.reserve(64);  // Value observed experimentally.
 

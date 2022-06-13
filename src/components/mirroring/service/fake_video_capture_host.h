@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/token.h"
+#include "base/unguessable_token.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -16,10 +18,14 @@
 
 namespace mirroring {
 
-class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
+class FakeVideoCaptureHost : public media::mojom::VideoCaptureHost {
  public:
   explicit FakeVideoCaptureHost(
       mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver);
+
+  FakeVideoCaptureHost(const FakeVideoCaptureHost&) = delete;
+  FakeVideoCaptureHost& operator=(const FakeVideoCaptureHost&) = delete;
+
   ~FakeVideoCaptureHost() override;
 
   // mojom::VideoCaptureHost implementations
@@ -60,8 +66,6 @@ class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
  private:
   mojo::Receiver<media::mojom::VideoCaptureHost> receiver_;
   mojo::Remote<media::mojom::VideoCaptureObserver> observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureHost);
 };
 
 }  // namespace mirroring

@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_delegate.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_document_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_doublesequence.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -133,15 +135,19 @@ void ParseMargin(String margin_parameter,
   }
 }
 
-void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
-                     Vector<float>& thresholds,
-                     ExceptionState& exception_state) {
-  if (threshold_parameter.IsDouble()) {
-    thresholds.push_back(
-        base::MakeClampedNum<float>(threshold_parameter.GetAsDouble()));
-  } else {
-    for (auto threshold_value : threshold_parameter.GetAsDoubleSequence())
-      thresholds.push_back(base::MakeClampedNum<float>(threshold_value));
+void ParseThresholds(
+    const V8UnionDoubleOrDoubleSequence* threshold_parameter,
+    Vector<float>& thresholds,
+    ExceptionState& exception_state) {
+  switch (threshold_parameter->GetContentType()) {
+    case V8UnionDoubleOrDoubleSequence::ContentType::kDouble:
+      thresholds.push_back(
+          base::MakeClampedNum<float>(threshold_parameter->GetAsDouble()));
+      break;
+    case V8UnionDoubleOrDoubleSequence::ContentType::kDoubleSequence:
+      for (auto threshold_value : threshold_parameter->GetAsDoubleSequence())
+        thresholds.push_back(base::MakeClampedNum<float>(threshold_value));
+      break;
   }
 
   if (thresholds.IsEmpty())
@@ -174,10 +180,15 @@ IntersectionObserver* IntersectionObserver::Create(
     IntersectionObserverDelegate& delegate,
     ExceptionState& exception_state) {
   Node* root = nullptr;
-  if (observer_init->root().IsElement()) {
-    root = observer_init->root().GetAsElement();
-  } else if (observer_init->root().IsDocument()) {
-    root = observer_init->root().GetAsDocument();
+  if (observer_init->root()) {
+    switch (observer_init->root()->GetContentType()) {
+      case V8UnionDocumentOrElement::ContentType::kDocument:
+        root = observer_init->root()->GetAsDocument();
+        break;
+      case V8UnionDocumentOrElement::ContentType::kElement:
+        root = observer_init->root()->GetAsElement();
+        break;
+    }
   }
 
   DOMHighResTimeStamp delay = 0;
@@ -272,7 +283,6 @@ IntersectionObserver::IntersectionObserver(
       track_visibility_(track_visibility),
       track_fraction_of_root_(semantics == kFractionOfRoot),
       always_report_root_bounds_(always_report_root_bounds),
-      needs_delivery_(0),
       can_use_cached_rects_(0),
       use_overflow_clip_edge_(use_overflow_clip_edge) {
   switch (margin.size()) {
@@ -356,12 +366,15 @@ void IntersectionObserver::observe(Element* target,
   } else {
     // The IntersectionObsever spec requires that at least one observation
     // be recorded after observe() is called, even if the target is detached.
+    absl::optional<base::TimeTicks> monotonic_time;
     observation->ComputeIntersection(
         IntersectionObservation::kImplicitRootObserversNeedUpdate |
-        IntersectionObservation::kExplicitRootObserversNeedUpdate |
-        IntersectionObservation::kIgnoreDelay |
-        (use_overflow_clip_edge_ ? IntersectionObservation::kUseOverflowClipEdge
-                                 : 0));
+            IntersectionObservation::kExplicitRootObserversNeedUpdate |
+            IntersectionObservation::kIgnoreDelay |
+            (use_overflow_clip_edge_
+                 ? IntersectionObservation::kUseOverflowClipEdge
+                 : 0),
+        monotonic_time);
   }
 }
 
@@ -377,6 +390,7 @@ void IntersectionObserver::unobserve(Element* target,
 
   observation->Disconnect();
   observations_.erase(observation);
+  active_observations_.erase(observation);
   if (root() && root()->isConnected() && observations_.IsEmpty()) {
     root()
         ->GetDocument()
@@ -389,6 +403,7 @@ void IntersectionObserver::disconnect(ExceptionState& exception_state) {
   for (auto& observation : observations_)
     observation->Disconnect();
   observations_.clear();
+  active_observations_.clear();
   if (root() && root()->isConnected()) {
     root()
         ->GetDocument()
@@ -399,10 +414,10 @@ void IntersectionObserver::disconnect(ExceptionState& exception_state) {
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     ExceptionState& exception_state) {
-  needs_delivery_ = 0;
   HeapVector<Member<IntersectionObserverEntry>> entries;
   for (auto& observation : observations_)
     observation->TakeRecords(entries);
+  active_observations_.clear();
   return entries;
 }
 
@@ -436,16 +451,19 @@ DOMHighResTimeStamp IntersectionObserver::GetEffectiveDelay() const {
   return throttle_delay_enabled ? delay_ : 0;
 }
 
-DOMHighResTimeStamp IntersectionObserver::GetTimeStamp() const {
+DOMHighResTimeStamp IntersectionObserver::GetTimeStamp(
+    base::TimeTicks monotonic_time) const {
   return DOMWindowPerformance::performance(
              *To<LocalDOMWindow>(delegate_->GetExecutionContext()))
-      ->now();
+      ->MonotonicTimeToDOMHighResTimeStamp(monotonic_time);
 }
 
-bool IntersectionObserver::ComputeIntersections(unsigned flags) {
+int64_t IntersectionObserver::ComputeIntersections(
+    unsigned flags,
+    absl::optional<base::TimeTicks>& monotonic_time) {
   DCHECK(!RootIsImplicit());
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
-    return false;
+    return 0;
 
   // If we're processing post-layout deliveries only and we're not a post-layout
   // delivery observer, then return early. Likewise, return if we need to
@@ -457,7 +475,7 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
       GetDeliveryBehavior() ==
       IntersectionObserver::kDeliverDuringPostLayoutSteps;
   if (post_layout_delivery_only != is_post_layout_delivery_observer)
-    return false;
+    return 0;
 
   if (use_overflow_clip_edge_)
     flags |= IntersectionObservation::kUseOverflowClipEdge;
@@ -469,25 +487,35 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
   CopyToVector(observations_, observations_to_process);
+  int64_t result = 0;
   for (auto& observation : observations_to_process) {
-    observation->ComputeIntersection(root_geometry, flags);
+    result +=
+        observation->ComputeIntersection(root_geometry, flags, monotonic_time);
   }
   can_use_cached_rects_ = 1;
-  return trackVisibility();
+  return result;
+}
+
+bool IntersectionObserver::IsInternal() const {
+  return GetUkmMetricId() !=
+         LocalFrameUkmAggregator::kJavascriptIntersectionObserver;
 }
 
 LocalFrameUkmAggregator::MetricId IntersectionObserver::GetUkmMetricId() const {
   return delegate_->GetUkmMetricId();
 }
 
-void IntersectionObserver::SetNeedsDelivery() {
-  if (needs_delivery_)
-    return;
-  needs_delivery_ = 1;
-  To<LocalDOMWindow>(GetExecutionContext())
-      ->document()
-      ->EnsureIntersectionObserverController()
-      .ScheduleIntersectionObserverForDelivery(*this);
+void IntersectionObserver::ReportUpdates(IntersectionObservation& observation) {
+  DCHECK_EQ(observation.Observer(), this);
+  bool needs_scheduling = active_observations_.IsEmpty();
+  active_observations_.insert(&observation);
+
+  if (needs_scheduling) {
+    To<LocalDOMWindow>(GetExecutionContext())
+        ->document()
+        ->EnsureIntersectionObserverController()
+        .ScheduleIntersectionObserverForDelivery(*this);
+  }
 }
 
 IntersectionObserver::DeliveryBehavior
@@ -496,18 +524,18 @@ IntersectionObserver::GetDeliveryBehavior() const {
 }
 
 void IntersectionObserver::Deliver() {
-  if (!needs_delivery_)
+  if (!NeedsDelivery())
     return;
-  needs_delivery_ = 0;
   HeapVector<Member<IntersectionObserverEntry>> entries;
   for (auto& observation : observations_)
     observation->TakeRecords(entries);
+  active_observations_.clear();
   if (entries.size())
     delegate_->Deliver(entries, *this);
 }
 
 bool IntersectionObserver::HasPendingActivity() const {
-  return !observations_.IsEmpty();
+  return NeedsDelivery();
 }
 
 void IntersectionObserver::Trace(Visitor* visitor) const {
@@ -515,6 +543,7 @@ void IntersectionObserver::Trace(Visitor* visitor) const {
       IntersectionObserver, &IntersectionObserver::ProcessCustomWeakness>(this);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
+  visitor->Trace(active_observations_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

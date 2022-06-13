@@ -6,12 +6,9 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/double_or_scroll_timeline_auto_keyword.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_animationeffect_animationeffectsequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_documenttimeline_scrolltimeline.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
-#include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
@@ -28,7 +25,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -37,20 +34,13 @@ namespace blink {
 namespace {
 
 bool ConvertAnimationEffects(
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const V8UnionAnimationEffectOrAnimationEffectSequence* effects,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    const AnimationEffectOrAnimationEffectSequence& effects,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     HeapVector<Member<KeyframeEffect>>& keyframe_effects,
     String& error_string) {
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DCHECK(effects);
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   DCHECK(keyframe_effects.IsEmpty());
 
   // Currently we only support KeyframeEffect.
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   switch (effects->GetContentType()) {
     case V8UnionAnimationEffectOrAnimationEffectSequence::ContentType::
         kAnimationEffect: {
@@ -80,29 +70,6 @@ bool ConvertAnimationEffects(
       break;
     }
   }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-  if (effects.IsAnimationEffect()) {
-    auto* const effect = effects.GetAsAnimationEffect();
-    auto* key_frame = DynamicTo<KeyframeEffect>(effect);
-    if (!key_frame) {
-      error_string = "Effect must be a KeyframeEffect object";
-      return false;
-    }
-    keyframe_effects.push_back(key_frame);
-  } else {
-    const HeapVector<Member<AnimationEffect>>& effect_sequence =
-        effects.GetAsAnimationEffectSequence();
-    keyframe_effects.ReserveInitialCapacity(effect_sequence.size());
-    for (const auto& effect : effect_sequence) {
-      auto* key_frame = DynamicTo<KeyframeEffect>(*effect);
-      if (!key_frame) {
-        error_string = "Effects must all be KeyframeEffect objects";
-        return false;
-      }
-      keyframe_effects.push_back(key_frame);
-    }
-  }
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   if (keyframe_effects.IsEmpty()) {
     error_string = "Effects array must be non-empty";
@@ -133,37 +100,19 @@ bool IsActive(const Animation::AnimationPlayState& state) {
   }
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 bool ValidateTimeline(const V8UnionDocumentTimelineOrScrollTimeline* timeline,
                       String& error_string) {
   if (!timeline)
     return true;
   if (timeline->IsScrollTimeline()) {
-    V8UnionDoubleOrScrollTimelineAutoKeyword* time_range =
-        timeline->GetAsScrollTimeline()->timeRange();
-    if (time_range->IsScrollTimelineAutoKeyword()) {
-      error_string = "ScrollTimeline timeRange must have non-auto value";
-      return false;
-    }
+    // crbug.com/1238130 Add support for progress based timelines to worklet
+    // animations
+    error_string = "ScrollTimeline is not yet supported for worklet animations";
+    return false;
   }
   return true;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-bool ValidateTimeline(const DocumentTimelineOrScrollTimeline& timeline,
-                      String& error_string) {
-  if (timeline.IsScrollTimeline()) {
-    DoubleOrScrollTimelineAutoKeyword time_range;
-    timeline.GetAsScrollTimeline()->timeRange(time_range);
-    if (time_range.IsScrollTimelineAutoKeyword()) {
-      error_string = "ScrollTimeline timeRange must have non-auto value";
-      return false;
-    }
-  }
-  return true;
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 AnimationTimeline* ConvertAnimationTimeline(
     const Document& document,
     const V8UnionDocumentTimelineOrScrollTimeline* timeline) {
@@ -179,19 +128,6 @@ AnimationTimeline* ConvertAnimationTimeline(
   NOTREACHED();
   return nullptr;
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-AnimationTimeline* ConvertAnimationTimeline(
-    const Document& document,
-    const DocumentTimelineOrScrollTimeline& timeline) {
-  if (timeline.IsScrollTimeline())
-    return timeline.GetAsScrollTimeline();
-
-  if (timeline.IsDocumentTimeline())
-    return timeline.GetAsDocumentTimeline();
-
-  return &document.Timeline();
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool CheckElementComposited(const Node& target) {
   return target.GetLayoutObject() &&
@@ -248,17 +184,17 @@ absl::optional<base::TimeDelta> CalculateStartTime(
   // SetPlaybackRateInternal has a DCHECK for that.
   DCHECK_NE(playback_rate, 0);
   if (current_time.is_max())
-    return base::TimeDelta::FromMilliseconds(0);
+    return base::Milliseconds(0);
   if (current_time.is_min())
     return base::TimeDelta::Max();
   absl::optional<double> timeline_current_time_ms =
       timeline.CurrentTimeMilliseconds();
-  return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
+  return base::Milliseconds(timeline_current_time_ms.value()) -
          (current_time / playback_rate);
 }
+
 }  // namespace
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WorkletAnimation* WorkletAnimation::Create(
     ScriptState* script_state,
     const String& animator_name,
@@ -267,19 +203,7 @@ WorkletAnimation* WorkletAnimation::Create(
   return Create(script_state, animator_name, effects, nullptr, ScriptValue(),
                 exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WorkletAnimation* WorkletAnimation::Create(
-    ScriptState* script_state,
-    String animator_name,
-    const AnimationEffectOrAnimationEffectSequence& effects,
-    ExceptionState& exception_state) {
-  return Create(script_state, animator_name, effects,
-                DocumentTimelineOrScrollTimeline(), ScriptValue(),
-                exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 WorkletAnimation* WorkletAnimation::Create(
     ScriptState* script_state,
     const String& animator_name,
@@ -289,29 +213,12 @@ WorkletAnimation* WorkletAnimation::Create(
   return Create(script_state, animator_name, effects, timeline, ScriptValue(),
                 exception_state);
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-WorkletAnimation* WorkletAnimation::Create(
-    ScriptState* script_state,
-    String animator_name,
-    const AnimationEffectOrAnimationEffectSequence& effects,
-    DocumentTimelineOrScrollTimeline timeline,
-    ExceptionState& exception_state) {
-  return Create(script_state, animator_name, effects, timeline, ScriptValue(),
-                exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 WorkletAnimation* WorkletAnimation::Create(
     ScriptState* script_state,
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const String& animator_name,
     const V8UnionAnimationEffectOrAnimationEffectSequence* effects,
     const V8UnionDocumentTimelineOrScrollTimeline* timeline,
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-    String animator_name,
-    const AnimationEffectOrAnimationEffectSequence& effects,
-    DocumentTimelineOrScrollTimeline timeline,
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const ScriptValue& options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
@@ -389,17 +296,23 @@ WorkletAnimation::WorkletAnimation(
   auto timings = base::MakeRefCounted<base::RefCountedData<Vector<Timing>>>();
   timings->data.ReserveInitialCapacity(effects_.size());
 
+  auto normalized_timings = base::MakeRefCounted<
+      base::RefCountedData<Vector<Timing::NormalizedTiming>>>();
+  normalized_timings->data.ReserveInitialCapacity(effects_.size());
+
   DCHECK_GE(effects_.size(), 1u);
   for (auto& effect : effects_) {
     AnimationEffect* target_effect = effect;
     target_effect->Attach(this);
     local_times_.push_back(absl::nullopt);
     timings->data.push_back(target_effect->SpecifiedTiming());
+    normalized_timings->data.push_back(target_effect->NormalizedTiming());
   }
-  effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(timings);
+  effect_timings_ = std::make_unique<WorkletAnimationEffectTimings>(
+      timings, normalized_timings);
 
   if (timeline_->IsScrollTimeline())
-    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached();
+    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached(this);
 }
 
 String WorkletAnimation::playState() {
@@ -508,8 +421,8 @@ void WorkletAnimation::cancel() {
   // update the value in the next frame.
   if (IsActive(play_state_)) {
     for (auto& effect : effects_) {
-      effect->UpdateInheritedTime(absl::nullopt, absl::nullopt,
-                                  kTimingUpdateOnDemand);
+      effect->UpdateInheritedTime(absl::nullopt, absl::nullopt, false,
+                                  playback_rate_, kTimingUpdateOnDemand);
     }
   }
   SetPlayState(Animation::kIdle);
@@ -595,7 +508,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
         local_times_[i]
             ? absl::make_optional(AnimationTimeDelta(local_times_[i].value()))
             : absl::nullopt,
-        absl::nullopt, reason);
+        absl::nullopt, false, playback_rate_, reason);
   }
 }
 
@@ -712,7 +625,7 @@ bool WorkletAnimation::CanStartOnCompositor() {
   // If the scroll source is not composited, fall back to main thread.
   if (timeline_->IsScrollTimeline() &&
       !CompositorAnimations::CheckUsesCompositedScrolling(
-          To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
+          To<ScrollTimeline>(*timeline_).ResolvedSource())) {
     return false;
   }
 
@@ -852,8 +765,7 @@ absl::optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
     return absl::nullopt;
   }
 
-  return (base::TimeDelta::FromMillisecondsD(current_time.value()) -
-          starting_time.value()) *
+  return (base::Milliseconds(current_time.value()) - starting_time.value()) *
          playback_rate_;
 }
 
@@ -913,8 +825,7 @@ absl::optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   if (!timeline_time_ms)
     return absl::nullopt;
 
-  base::TimeDelta timeline_time =
-      base::TimeDelta::FromMillisecondsD(timeline_time_ms.value());
+  base::TimeDelta timeline_time = base::Milliseconds(timeline_time_ms.value());
   DCHECK(start_time_);
   return (timeline_time - start_time_.value()) * playback_rate_;
 }
@@ -973,8 +884,6 @@ void WorkletAnimation::NotifyLocalTimeUpdated(
 
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
-  if (timeline_->IsScrollTimeline())
-    To<ScrollTimeline>(*timeline_).WorkletAnimationDetached();
   DestroyCompositorAnimation();
 }
 

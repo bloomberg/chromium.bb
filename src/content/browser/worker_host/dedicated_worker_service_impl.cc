@@ -4,8 +4,8 @@
 
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 
-#include "base/stl_util.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -51,7 +51,7 @@ void DedicatedWorkerServiceImpl::NotifyWorkerCreated(
 
 void DedicatedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
     const blink::DedicatedWorkerToken& dedicated_worker_token,
-    GlobalFrameRoutingId ancestor_render_frame_host_id) {
+    GlobalRenderFrameHostId ancestor_render_frame_host_id) {
   size_t removed = dedicated_worker_hosts_.erase(dedicated_worker_token);
   DCHECK_EQ(1u, removed);
 

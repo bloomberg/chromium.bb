@@ -17,14 +17,53 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
-#include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/services/heap_profiling/public/cpp/merge_samples.h"
+#include "components/version_info/channel.h"
 
 namespace {
 
+// Platform-specific parameter defaults.
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+// Average 1M bytes per sample.
+constexpr int kDefaultSamplingRate = 1000000;
+
+// Default on iOS is equal to mean value of up process time. Android is
+// more similar to iOS than to Desktop.
+constexpr int kDefaultCollectionIntervalInMinutes = 30;
+#else
+// Average 10M bytes per sample.
+constexpr int kDefaultSamplingRate = 10000000;
+
+// Default on desktop is once per day.
+constexpr int kDefaultCollectionIntervalInMinutes = 24 * 60;
+#endif
+
+// Sets the chance that this client will report heap samples through a metrics
+// provider if it's on the stable channel.
+constexpr base::FeatureParam<double> kStableProbability{
+    &HeapProfilerController::kHeapProfilerReporting, "stable-probability",
+    0.01};
+
+// Sets the chance that this client will report heap samples through a metrics
+// provider if it's on a non-stable channel.
+constexpr base::FeatureParam<double> kNonStableProbability{
+    &HeapProfilerController::kHeapProfilerReporting, "nonstable-probability",
+    0.5};
+
 // Sets heap sampling interval in bytes.
-const char kHeapProfilerSamplingRate[] = "sampling-rate";
+constexpr base::FeatureParam<int> kSamplingRate{
+    &HeapProfilerController::kHeapProfilerReporting, "sampling-rate",
+    kDefaultSamplingRate};
+
+// Sets the interval between snapshots.
+constexpr base::FeatureParam<int> kCollectionIntervalMinutes{
+    &HeapProfilerController::kHeapProfilerReporting,
+    "heap-profiler-collection-interval-minutes",
+    kDefaultCollectionIntervalInMinutes};
 
 base::TimeDelta RandomInterval(base::TimeDelta mean) {
   // Time intervals between profile collections form a Poisson stream with
@@ -32,92 +71,70 @@ base::TimeDelta RandomInterval(base::TimeDelta mean) {
   return -std::log(base::RandDouble()) * mean;
 }
 
-// Returns collection interval by trying these steps:
-//  - get from command line if available to allow override for a single client
-//  - get from finch if available to allow experiment with different intervals
-//  - return default interval that is best suited for current OS
-int GetCollectionIntervalInMinutes() {
-#if defined(OS_IOS) || defined(OS_ANDROID)
-  // Default on iOS is equal to mean value of up process time. Android is more
-  // similar to iOS than to Desktop.
-  const int kDefaultValueInMinutes = 30;
-#else
-  const int kDefaultValueInMinutes = 24 * 60;
-#endif
-
-  return base::GetFieldTrialParamByFeatureAsInt(
-      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
-      "heap-profiler-collection-interval-minutes", kDefaultValueInMinutes);
+bool DecideIfCollectionIsEnabled(version_info::Channel channel) {
+  // TODO(crbug.com/1271555): Register a synthetic field trial
+  // (go/synthetic-trials) to keep track of which clients are opted in.
+  if (!base::FeatureList::IsEnabled(
+          HeapProfilerController::kHeapProfilerReporting))
+    return false;
+  const double probability = (channel == version_info::Channel::STABLE)
+                                 ? kStableProbability.Get()
+                                 : kNonStableProbability.Get();
+  return base::RandDouble() < probability;
 }
 
 }  // namespace
 
-HeapProfilerController::HeapProfilerController()
-    : stopped_(base::MakeRefCounted<StoppedFlag>()) {}
+constexpr base::Feature HeapProfilerController::kHeapProfilerReporting{
+    "HeapProfilerReporting", base::FEATURE_ENABLED_BY_DEFAULT};
+
+HeapProfilerController::HeapProfilerController(version_info::Channel channel)
+    : profiling_enabled_(DecideIfCollectionIsEnabled(channel)),
+      stopped_(base::MakeRefCounted<StoppedFlag>()) {}
 
 HeapProfilerController::~HeapProfilerController() {
   stopped_->data.Set();
 }
 
 void HeapProfilerController::Start() {
-  if (!base::FeatureList::IsEnabled(
-          metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting)) {
+  base::UmaHistogramBoolean("HeapProfiling.InProcess.Enabled",
+                            profiling_enabled_);
+  if (!profiling_enabled_)
     return;
-  }
-  int sampling_rate = base::GetFieldTrialParamByFeatureAsInt(
-      metrics::CallStackProfileMetricsProvider::kHeapProfilerReporting,
-      kHeapProfilerSamplingRate, 0);
+  int sampling_rate = kSamplingRate.Get();
   if (sampling_rate > 0)
     base::SamplingHeapProfiler::Get()->SetSamplingInterval(sampling_rate);
   base::SamplingHeapProfiler::Get()->Start();
-  const int interval = GetCollectionIntervalInMinutes();
+  const int interval = kCollectionIntervalMinutes.Get();
   DCHECK_GT(interval, 0);
-  ScheduleNextSnapshot(stopped_, base::TimeDelta::FromMinutes(interval));
+  ScheduleNextSnapshot(
+      stopped_, {.interval = base::Minutes(interval),
+                 .use_random_interval = !suppress_randomness_for_testing_});
 }
 
-bool HeapProfilerController::SampleComparator::operator()(
-    const Sample& lhs,
-    const Sample& rhs) const {
-  // We consider two samples to be equal if and only if their stacks are equal.
-  // Note that equal stack implies equal allocator. It's technically possible
-  // for two equal stacks to have different thread names, but it's an edge
-  // condition and marking them as equal will not significantly change analysis.
-  return lhs.stack < rhs.stack;
-}
-
-// Merges samples that have identical stack traces, excluding total and size.
-HeapProfilerController::SampleMap HeapProfilerController::MergeSamples(
-    const std::vector<Sample>& samples) {
-  SampleMap results;
-  for (const Sample& sample : samples) {
-    size_t count = std::max<size_t>(
-        static_cast<size_t>(
-            std::llround(static_cast<double>(sample.total) / sample.size)),
-        1);
-    // Either update the existing entry or construct a new entry [with default
-    // initializer 0].
-    SampleValue& value = results[sample];
-    value.total += sample.total;
-    value.count += count;
-  }
-  return results;
+void HeapProfilerController::SuppressRandomnessForTesting() {
+  suppress_randomness_for_testing_ = true;
 }
 
 // static
 void HeapProfilerController::ScheduleNextSnapshot(
     scoped_refptr<StoppedFlag> stopped,
-    base::TimeDelta heap_collection_interval) {
+    CollectionInterval heap_collection_interval) {
+  base::TimeDelta next_interval =
+      heap_collection_interval.use_random_interval
+          ? RandomInterval(heap_collection_interval.interval)
+          : heap_collection_interval.interval;
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(stopped),
                      heap_collection_interval),
-      RandomInterval(heap_collection_interval));
+      next_interval);
 }
 
 // static
 void HeapProfilerController::TakeSnapshot(
     scoped_refptr<StoppedFlag> stopped,
-    base::TimeDelta heap_collection_interval) {
+    CollectionInterval heap_collection_interval) {
   if (stopped->data.IsSet())
     return;
   RetrieveAndSendSnapshot();
@@ -126,29 +143,24 @@ void HeapProfilerController::TakeSnapshot(
 
 // static
 void HeapProfilerController::RetrieveAndSendSnapshot() {
-  std::vector<base::SamplingHeapProfiler::Sample> samples =
+  std::vector<Sample> samples =
       base::SamplingHeapProfiler::Get()->GetSamples(0);
   if (samples.empty())
     return;
 
-  size_t malloc_usage =
-      base::ProcessMetrics::CreateCurrentProcessMetrics()->GetMallocUsage();
-  int malloc_usage_mb = static_cast<int>(malloc_usage >> 20);
-  base::UmaHistogramMemoryLargeMB("Memory.HeapProfiler.Browser.Malloc",
-                                  malloc_usage_mb);
-
   base::ModuleCache module_cache;
   metrics::CallStackProfileParams params(
-      metrics::CallStackProfileParams::BROWSER_PROCESS,
-      metrics::CallStackProfileParams::UNKNOWN_THREAD,
-      metrics::CallStackProfileParams::PERIODIC_HEAP_COLLECTION);
+      metrics::CallStackProfileParams::Process::kBrowser,
+      metrics::CallStackProfileParams::Thread::kUnknown,
+      metrics::CallStackProfileParams::Trigger::kPeriodicHeapCollection);
   metrics::CallStackProfileBuilder profile_builder(params);
 
-  SampleMap merged_samples = MergeSamples(samples);
+  heap_profiling::SampleMap merged_samples =
+      heap_profiling::MergeSamples(samples);
 
   for (auto& pair : merged_samples) {
     const Sample& sample = pair.first;
-    const SampleValue& value = pair.second;
+    const heap_profiling::SampleValue& value = pair.second;
 
     std::vector<base::Frame> frames;
     frames.reserve(sample.stack.size());

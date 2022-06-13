@@ -3,11 +3,12 @@
 
 [[block]]
 struct Particles {
-  [[offset(0)]] particles : [[stride(16)]] array<f32, 4>;
+  particles : [[stride(16)]] array<f32, 4>;
 };
 
-[[group(1), binding(0)]] var<storage> particles : [[access(read_write)]] Particles;
+[[group(1), binding(0)]] var<storage, read_write> particles : Particles;
 
 [[stage(vertex)]]
-fn main() {
+fn main() -> [[builtin(position)]] vec4<f32> {
+  return vec4<f32>();
 }

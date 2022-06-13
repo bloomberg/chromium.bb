@@ -7,15 +7,20 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager_observer.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/render_frame_host.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PrefService;
@@ -27,7 +32,7 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 
-class AppRegistryController;
+class WebAppSyncBridge;
 class SystemWebAppManager;
 class OsIntegrationManager;
 
@@ -51,8 +56,8 @@ class WebAppPolicyManager {
 
   void SetSubsystems(
       ExternallyManagedAppManager* externally_managed_app_manager,
-      AppRegistrar* app_registrar,
-      AppRegistryController* app_registry_controller,
+      WebAppRegistrar* app_registrar,
+      WebAppSyncBridge* sync_bridge,
       SystemWebAppManager* web_app_manager,
       OsIntegrationManager* os_integration_manager);
 
@@ -63,7 +68,7 @@ class WebAppPolicyManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Used for handling SystemFeaturesDisableList policy. Checks if the app is
-  // disabled and notifies app_registry_controller_ about the current app state.
+  // disabled and notifies sync_bridge_ about the current app state.
   void OnDisableListPolicyChanged();
 
   // Gets system web apps disabled by SystemFeaturesDisableList policy.
@@ -71,6 +76,9 @@ class WebAppPolicyManager {
 
   // Gets ids of web apps disabled by SystemFeaturesDisableList policy.
   const std::set<AppId>& GetDisabledWebAppsIds() const;
+
+  // Checks if web app is disabled by SystemFeaturesDisableList policy.
+  bool IsWebAppInDisabledList(const AppId& app_id) const;
 
   // Checks if UI mode of disabled web apps is hidden.
   bool IsDisabledAppsModeHidden() const;
@@ -84,6 +92,10 @@ class WebAppPolicyManager {
       base::OnceClosure callback);
   void SetRefreshPolicySettingsCompletedCallbackForTesting(
       base::OnceClosure callback);
+
+  // Changes the manifest to conform to the WebAppInstallForceList policy.
+  void MaybeOverrideManifest(content::RenderFrameHost* frame_host,
+                             blink::mojom::ManifestPtr& manifest);
 
  private:
   friend class WebAppPolicyManagerTest;
@@ -100,7 +112,21 @@ class WebAppPolicyManager {
     RunOnOsLoginPolicy run_on_os_login_policy;
   };
 
-  void InitChangeRegistrarAndRefreshPolicy();
+  struct CustomManifestValues {
+    // The constructors and destructors have the "= default" implementations,
+    // but they cannot be inlined.
+    CustomManifestValues();
+    CustomManifestValues(const CustomManifestValues&);
+    ~CustomManifestValues();
+
+    void SetName(const std::string& utf8_name);
+    void SetIcon(const std::string& icon_url);
+
+    absl::optional<std::u16string> name;
+    absl::optional<std::vector<blink::Manifest::ImageResource>> icons;
+  };
+
+  void InitChangeRegistrarAndRefreshPolicy(bool enable_pwa_support);
 
   void RefreshPolicyInstalledApps();
   void RefreshPolicySettings();
@@ -110,6 +136,11 @@ class WebAppPolicyManager {
       std::map<GURL, bool> uninstall_results);
   void ApplyPolicySettings();
 
+  // Parses install options from a Value, which represents one entry of the
+  // kWepAppInstallForceList. If the value contains a custom_name or
+  // custom_icon, it is inserted into the custom_manifest_values_by_url_ map.
+  ExternalInstallOptions ParseInstallPolicyEntry(const base::Value& entry);
+
   void ObserveDisabledSystemFeaturesPolicy();
 
   void OnDisableModePolicyChanged();
@@ -118,16 +149,17 @@ class WebAppPolicyManager {
   // policy.
   void PopulateDisabledWebAppsIdsLists();
 
-  Profile* profile_;
-  PrefService* pref_service_;
+  raw_ptr<Profile> profile_;
+  raw_ptr<PrefService> pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class
   // (owned by WebAppProvider).
-  ExternallyManagedAppManager* externally_managed_app_manager_ = nullptr;
-  AppRegistrar* app_registrar_ = nullptr;
-  AppRegistryController* app_registry_controller_ = nullptr;
-  SystemWebAppManager* web_app_manager_ = nullptr;
-  OsIntegrationManager* os_integration_manager_ = nullptr;
+  raw_ptr<ExternallyManagedAppManager> externally_managed_app_manager_ =
+      nullptr;
+  raw_ptr<WebAppRegistrar> app_registrar_ = nullptr;
+  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
+  raw_ptr<SystemWebAppManager> web_app_manager_ = nullptr;
+  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
 
   PrefChangeRegistrar pref_change_registrar_;
   PrefChangeRegistrar local_state_pref_change_registrar_;
@@ -144,6 +176,7 @@ class WebAppPolicyManager {
   bool needs_refresh_ = false;
 
   base::flat_map<GURL, WebAppSetting> settings_by_url_;
+  base::flat_map<GURL, CustomManifestValues> custom_manifest_values_by_url_;
   std::unique_ptr<WebAppSetting> default_settings_;
   base::ObserverList<WebAppPolicyManagerObserver, /*check_empty=*/true>
       observers_;

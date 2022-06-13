@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,8 +80,9 @@ TEST_F(RTCEncodedAudioStreamTransformerTest,
        TransformerForwardsFrameToTransformerCallback) {
   EXPECT_FALSE(encoded_audio_stream_transformer_.HasTransformerCallback());
   encoded_audio_stream_transformer_.SetTransformerCallback(
-      WTF::BindRepeating(&MockTransformerCallbackHolder::OnEncodedFrame,
-                         WTF::Unretained(&mock_transformer_callback_holder_)));
+      WTF::CrossThreadBindRepeating(
+          &MockTransformerCallbackHolder::OnEncodedFrame,
+          WTF::CrossThreadUnretained(&mock_transformer_callback_holder_)));
   EXPECT_TRUE(encoded_audio_stream_transformer_.HasTransformerCallback());
 
   EXPECT_CALL(mock_transformer_callback_holder_, OnEncodedFrame);

@@ -7,17 +7,17 @@
 
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 
+#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
-#include "components/safe_browsing/core/file_type_policies.h"
+#include "components/safe_browsing/content/common/file_type_policies.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 

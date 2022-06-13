@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "src/api/api-inl.h"
+#include "src/base/strings.h"
 #include "src/objects/js-array-buffer-inl.h"
 #include "test/cctest/test-api.h"
 
@@ -25,10 +26,10 @@ void CheckIsDetached(v8::Local<v8::TypedArray> ta) {
 }
 
 void CheckIsTypedArrayVarDetached(const char* name) {
-  i::ScopedVector<char> source(1024);
-  i::SNPrintF(source,
-              "%s.byteLength == 0 && %s.byteOffset == 0 && %s.length == 0",
-              name, name, name);
+  v8::base::ScopedVector<char> source(1024);
+  v8::base::SNPrintF(
+      source, "%s.byteLength == 0 && %s.byteOffset == 0 && %s.length == 0",
+      name, name, name);
   CHECK(CompileRun(source.begin())->IsTrue());
   v8::Local<v8::TypedArray> ta = CompileRun(name).As<v8::TypedArray>();
   CheckIsDetached(ta);
@@ -229,7 +230,18 @@ THREADED_TEST(ArrayBuffer_DetachingScript) {
   CheckIsTypedArrayVarDetached("f32a");
   CheckIsTypedArrayVarDetached("f64a");
 
-  CHECK(CompileRun("dv.byteLength == 0 && dv.byteOffset == 0")->IsTrue());
+  {
+    v8::TryCatch try_catch(isolate);
+    CompileRun("dv.byteLength == 0 ");
+    CHECK(try_catch.HasCaught());
+  }
+
+  {
+    v8::TryCatch try_catch(isolate);
+    CompileRun("dv.byteOffset == 0");
+    CHECK(try_catch.HasCaught());
+  }
+
   CheckDataViewIsDetached(dv);
 }
 
@@ -335,8 +347,10 @@ THREADED_TEST(SkipArrayBufferBackingStoreDuringGC) {
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope handle_scope(isolate);
 
+  void* buffer = CcTest::array_buffer_allocator()->Allocate(100);
   // Make sure the pointer looks like a heap object
-  uint8_t* store_ptr = reinterpret_cast<uint8_t*>(i::kHeapObjectTag);
+  uintptr_t address = reinterpret_cast<uintptr_t>(buffer) | i::kHeapObjectTag;
+  void* store_ptr = reinterpret_cast<void*>(address);
   auto backing_store = v8::ArrayBuffer::NewBackingStore(
       store_ptr, 8, [](void*, size_t, void*) {}, nullptr);
 
@@ -352,6 +366,8 @@ THREADED_TEST(SkipArrayBufferBackingStoreDuringGC) {
 
   // Should not move the pointer
   CHECK_EQ(ab->GetBackingStore()->Data(), store_ptr);
+
+  CcTest::array_buffer_allocator()->Free(buffer, 100);
 }
 
 THREADED_TEST(SkipArrayBufferDuringScavenge) {
@@ -428,7 +444,7 @@ static void BackingStoreCustomDeleter(void* data, size_t length,
   CHECK_EQ(backing_store_custom_length, length);
   CHECK_EQ(backing_store_custom_deleter_data,
            reinterpret_cast<intptr_t>(deleter_data));
-  free(data);
+  CcTest::array_buffer_allocator()->Free(data, length);
   backing_store_custom_called = true;
 }
 
@@ -436,7 +452,7 @@ TEST(ArrayBuffer_NewBackingStore_CustomDeleter) {
   {
     // Create and destroy a backing store.
     backing_store_custom_called = false;
-    backing_store_custom_data = malloc(100);
+    backing_store_custom_data = CcTest::array_buffer_allocator()->Allocate(100);
     backing_store_custom_length = 100;
     v8::ArrayBuffer::NewBackingStore(
         backing_store_custom_data, backing_store_custom_length,
@@ -450,7 +466,7 @@ TEST(SharedArrayBuffer_NewBackingStore_CustomDeleter) {
   {
     // Create and destroy a backing store.
     backing_store_custom_called = false;
-    backing_store_custom_data = malloc(100);
+    backing_store_custom_data = CcTest::array_buffer_allocator()->Allocate(100);
     backing_store_custom_length = 100;
     v8::SharedArrayBuffer::NewBackingStore(
         backing_store_custom_data, backing_store_custom_length,
@@ -464,9 +480,10 @@ TEST(ArrayBuffer_NewBackingStore_EmptyDeleter) {
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  char static_buffer[100];
+  size_t size = 100;
+  void* buffer = CcTest::array_buffer_allocator()->Allocate(size);
   std::unique_ptr<v8::BackingStore> backing_store =
-      v8::ArrayBuffer::NewBackingStore(static_buffer, sizeof(static_buffer),
+      v8::ArrayBuffer::NewBackingStore(buffer, size,
                                        v8::BackingStore::EmptyDeleter, nullptr);
   uint64_t external_memory_before =
       isolate->AdjustAmountOfExternalAllocatedMemory(0);
@@ -476,17 +493,18 @@ TEST(ArrayBuffer_NewBackingStore_EmptyDeleter) {
   // The ArrayBuffer constructor does not increase the external memory counter.
   // The counter may decrease however if the allocation triggers GC.
   CHECK_GE(external_memory_before, external_memory_after);
+  CcTest::array_buffer_allocator()->Free(buffer, size);
 }
 
 TEST(SharedArrayBuffer_NewBackingStore_EmptyDeleter) {
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  char static_buffer[100];
+  size_t size = 100;
+  void* buffer = CcTest::array_buffer_allocator()->Allocate(size);
   std::unique_ptr<v8::BackingStore> backing_store =
       v8::SharedArrayBuffer::NewBackingStore(
-          static_buffer, sizeof(static_buffer), v8::BackingStore::EmptyDeleter,
-          nullptr);
+          buffer, size, v8::BackingStore::EmptyDeleter, nullptr);
   uint64_t external_memory_before =
       isolate->AdjustAmountOfExternalAllocatedMemory(0);
   v8::SharedArrayBuffer::New(isolate, std::move(backing_store));
@@ -495,6 +513,7 @@ TEST(SharedArrayBuffer_NewBackingStore_EmptyDeleter) {
   // The SharedArrayBuffer constructor does not increase the external memory
   // counter. The counter may decrease however if the allocation triggers GC.
   CHECK_GE(external_memory_before, external_memory_after);
+  CcTest::array_buffer_allocator()->Free(buffer, size);
 }
 
 THREADED_TEST(BackingStore_NotShared) {
@@ -505,7 +524,7 @@ THREADED_TEST(BackingStore_NotShared) {
   CHECK(!ab->GetBackingStore()->IsShared());
   CHECK(!v8::ArrayBuffer::NewBackingStore(isolate, 8)->IsShared());
   backing_store_custom_called = false;
-  backing_store_custom_data = malloc(100);
+  backing_store_custom_data = CcTest::array_buffer_allocator()->Allocate(100);
   backing_store_custom_length = 100;
   CHECK(!v8::ArrayBuffer::NewBackingStore(
              backing_store_custom_data, backing_store_custom_length,
@@ -522,7 +541,7 @@ THREADED_TEST(BackingStore_Shared) {
   CHECK(ab->GetBackingStore()->IsShared());
   CHECK(v8::SharedArrayBuffer::NewBackingStore(isolate, 8)->IsShared());
   backing_store_custom_called = false;
-  backing_store_custom_data = malloc(100);
+  backing_store_custom_data = CcTest::array_buffer_allocator()->Allocate(100);
   backing_store_custom_length = 100;
   CHECK(v8::SharedArrayBuffer::NewBackingStore(
             backing_store_custom_data, backing_store_custom_length,

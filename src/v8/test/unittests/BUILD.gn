@@ -106,6 +106,7 @@ v8_source_set("cppgc_unittests_sources") {
     "heap/cppgc/heap-statistics-collector-unittest.cc",
     "heap/cppgc/heap-unittest.cc",
     "heap/cppgc/incremental-marking-schedule-unittest.cc",
+    "heap/cppgc/liveness-broker-unittest.cc",
     "heap/cppgc/logging-unittest.cc",
     "heap/cppgc/marker-unittest.cc",
     "heap/cppgc/marking-verifier-unittest.cc",
@@ -118,6 +119,7 @@ v8_source_set("cppgc_unittests_sources") {
     "heap/cppgc/object-start-bitmap-unittest.cc",
     "heap/cppgc/page-memory-unittest.cc",
     "heap/cppgc/persistent-family-unittest.cc",
+    "heap/cppgc/platform-unittest.cc",
     "heap/cppgc/prefinalizer-unittest.cc",
     "heap/cppgc/sanitizer-unittest.cc",
     "heap/cppgc/source-location-unittest.cc",
@@ -201,6 +203,7 @@ v8_source_set("unittests_sources") {
     "../../testing/gmock-support.h",
     "../../testing/gtest-support.h",
     "api/access-check-unittest.cc",
+    "api/deserialize-unittest.cc",
     "api/exception-unittest.cc",
     "api/interceptor-unittest.cc",
     "api/isolate-unittest.cc",
@@ -229,6 +232,7 @@ v8_source_set("unittests_sources") {
     "base/template-utils-unittest.cc",
     "base/threaded-list-unittest.cc",
     "base/utils/random-number-generator-unittest.cc",
+    "base/vector-unittest.cc",
     "base/vlq-base64-unittest.cc",
     "base/vlq-unittest.cc",
     "codegen/aligned-slot-allocator-unittest.cc",
@@ -299,14 +303,21 @@ v8_source_set("unittests_sources") {
     "compiler/value-numbering-reducer-unittest.cc",
     "compiler/zone-stats-unittest.cc",
     "date/date-cache-unittest.cc",
+    "debug/debug-property-iterator-unittest.cc",
     "diagnostics/eh-frame-iterator-unittest.cc",
     "diagnostics/eh-frame-writer-unittest.cc",
+    "diagnostics/gdb-jit-unittest.cc",
     "execution/microtask-queue-unittest.cc",
     "heap/allocation-observer-unittest.cc",
     "heap/barrier-unittest.cc",
     "heap/bitmap-test-utils.h",
     "heap/bitmap-unittest.cc",
     "heap/code-object-registry-unittest.cc",
+    "heap/cppgc-js/traced-reference-unittest.cc",
+    "heap/cppgc-js/unified-heap-snapshot-unittest.cc",
+    "heap/cppgc-js/unified-heap-unittest.cc",
+    "heap/cppgc-js/unified-heap-utils.cc",
+    "heap/cppgc-js/unified-heap-utils.h",
     "heap/embedder-tracing-unittest.cc",
     "heap/gc-idle-time-handler-unittest.cc",
     "heap/gc-tracer-unittest.cc",
@@ -323,16 +334,11 @@ v8_source_set("unittests_sources") {
     "heap/memory-reducer-unittest.cc",
     "heap/object-stats-unittest.cc",
     "heap/persistent-handles-unittest.cc",
+    "heap/progressbar-unittest.cc",
     "heap/safepoint-unittest.cc",
     "heap/slot-set-unittest.cc",
     "heap/spaces-unittest.cc",
-    "heap/traced-reference-unittest.cc",
-    "heap/unified-heap-snapshot-unittest.cc",
-    "heap/unified-heap-unittest.cc",
-    "heap/unified-heap-utils.cc",
-    "heap/unified-heap-utils.h",
     "heap/unmapper-unittest.cc",
-    "heap/worklist-unittest.cc",
     "interpreter/bytecode-array-builder-unittest.cc",
     "interpreter/bytecode-array-iterator-unittest.cc",
     "interpreter/bytecode-array-random-iterator-unittest.cc",
@@ -368,6 +374,8 @@ v8_source_set("unittests_sources") {
     "regress/regress-crbug-1056054-unittest.cc",
     "regress/regress-crbug-938251-unittest.cc",
     "run-all-unittests.cc",
+    "runtime/runtime-debug-unittest.cc",
+    "security/virtual-memory-cage-unittest.cc",
     "strings/char-predicates-unittest.cc",
     "strings/unicode-unittest.cc",
     "tasks/background-compile-task-unittest.cc",
@@ -386,7 +394,6 @@ v8_source_set("unittests_sources") {
     "utils/detachable-vector-unittest.cc",
     "utils/locked-queue-unittest.cc",
     "utils/utils-unittest.cc",
-    "utils/vector-unittest.cc",
     "zone/zone-allocator-unittest.cc",
     "zone/zone-chunk-list-unittest.cc",
     "zone/zone-unittest.cc",
@@ -409,6 +416,7 @@ v8_source_set("unittests_sources") {
       "wasm/leb-helper-unittest.cc",
       "wasm/liftoff-register-unittests.cc",
       "wasm/loop-assignment-analysis-unittest.cc",
+      "wasm/memory-protection-unittest.cc",
       "wasm/module-decoder-memory64-unittest.cc",
       "wasm/module-decoder-unittest.cc",
       "wasm/simd-shuffle-unittest.cc",
@@ -478,14 +486,28 @@ v8_source_set("unittests_sources") {
       "assembler/turbo-assembler-s390-unittest.cc",
       "compiler/s390/instruction-selector-s390-unittest.cc",
     ]
+  } else if (v8_current_cpu == "loong64") {
+    sources += [
+      "assembler/turbo-assembler-loong64-unittest.cc",
+      "compiler/loong64/instruction-selector-loong64-unittest.cc",
+    ]
   }
 
-  if (is_posix && v8_enable_webassembly) {
-    sources += [ "wasm/trap-handler-posix-unittest.cc" ]
-  }
+  if (v8_enable_webassembly) {
+    if (is_posix) {
+      sources += [ "wasm/trap-handler-posix-unittest.cc" ]
+    }
 
-  if (is_win && v8_enable_webassembly) {
-    sources += [ "wasm/trap-handler-win-unittest.cc" ]
+    if (is_win) {
+      sources += [ "wasm/trap-handler-win-unittest.cc" ]
+    }
+
+    # Include this test only on arm64 simulator builds on x64 on Linux, Mac and
+    # Windows.
+    if (current_cpu == "x64" && v8_current_cpu == "arm64" &&
+        (is_linux || is_mac || is_win)) {
+      sources += [ "wasm/trap-handler-simulator-unittest.cc" ]
+    }
   }
 
   configs = [
@@ -515,5 +537,7 @@ v8_source_set("unittests_sources") {
     # bytecode-utils.h.
     # C4309: 'static_cast': truncation of constant value
     cflags = [ "/wd4309" ]
+
+    sources += [ "avoid-windows-h-includes.cc" ]
   }
 }

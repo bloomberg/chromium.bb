@@ -29,10 +29,6 @@ learning and deep learning and the flexible numerical computation core is used
 across many other scientific domains.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import fnmatch
 import os
 import re
@@ -44,39 +40,18 @@ from setuptools import setup
 from setuptools.command.install import install as InstallCommandBase
 from setuptools.dist import Distribution
 
+
 # This version string is semver compatible, but incompatible with pip.
 # For pip, we will remove all '-' characters from this string, and use the
 # result for pip.
 # Also update tensorflow/tensorflow.bzl and
 # tensorflow/core/public/version.h
-_VERSION = '2.3.1'
+_VERSION = '2.8.0'
 
-REQUIRED_PACKAGES = [
-    'absl-py >= 0.7.0',
-    'astunparse == 1.6.3',
-    'gast == 0.3.3',
-    'google_pasta >= 0.1.8',
-    'h5py >= 2.10.0, < 2.11.0',
-    'keras_preprocessing >= 1.1.1, < 1.2',
-    # TODO(mihaimaruseac): numpy 1.19.0 has ABI breakage
-    # https://github.com/numpy/numpy/pull/15355
-    'numpy >= 1.16.0, < 1.19.0',
-    'opt_einsum >= 2.3.2',
-    'protobuf >= 3.9.2',
-    'tensorboard >= 2.3.0, < 3',
-    'tensorflow_estimator >= 2.3.0, < 2.4.0',
-    'termcolor >= 1.1.0',
-    'wrapt >= 1.11.1',
-    'wheel >= 0.26',
-    'six >= 1.12.0',
-]
 
-if sys.byteorder == 'little':
-  # grpcio does not build correctly on big-endian machines due to lack of
-  # BoringSSL support.
-  # See https://github.com/tensorflow/tensorflow/issues/17882.
-  REQUIRED_PACKAGES.append('grpcio >= 1.8.6')
-
+# We use the same setup.py for all tensorflow_* packages and for the nightly
+# equivalents (tf_nightly_*). The package is controlled from the argument line
+# when building the pip package.
 project_name = 'tensorflow'
 if '--project_name' in sys.argv:
   project_name_idx = sys.argv.index('--project_name')
@@ -84,20 +59,91 @@ if '--project_name' in sys.argv:
   sys.argv.remove('--project_name')
   sys.argv.pop(project_name_idx)
 
-# tf-nightly should depend on tb-nightly
+
+# All versions of TF need these packages. We indicate the widest possible range
+# of package releases possible to be as up-to-date as possible as well as to
+# accomodate as many pre-installed packages as possible.
+# For packages that don't have yet a stable release, we pin using `~= 0.x` which
+# means we accept any `0.y` version (y >= x) but not the first major release. We
+# will need additional testing for that.
+# NOTE: This assumes that all packages follow SemVer. If a package follows a
+# different versioning scheme (e.g., PVP), we use different bound specifier and
+# comment the versioning scheme.
+# NOTE: Please add test only packages to `TEST_PACKAGES` below.
+REQUIRED_PACKAGES = [
+    # NOTE: As numpy has releases that break semver guarantees and several other
+    # deps depend on numpy without an upper bound, we must install numpy before
+    # everything else.
+    'numpy >= 1.14.5', # keras 2.6 needs 1.19.2, h5py needs 1.14.5 for py37
+    # Install other dependencies
+    'absl-py >= 0.4.0',
+    'astunparse >= 1.6.0',
+    'libclang >= 9.0.1',
+    'flatbuffers >= 1.12, < 3.0', # capped as jax 0.1.71 needs < 3.0
+    'google_pasta >= 0.1.1',
+    'h5py >= 2.9.0', # capped since 3.3.0 lacks py3.6
+    'keras_preprocessing >= 1.1.1', # 1.1.0 needs tensorflow==1.7
+    'opt_einsum >= 2.3.2', # sphinx pin not removed up til 3.3.0 release
+    'protobuf >= 3.9.2',
+    'six >= 1.12.0',
+    'termcolor >= 1.1.0',
+    'typing_extensions >= 3.6.6',
+    'wheel >= 0.32.0, < 1.0', # capped as astunparse 1.6.0-1.6.3 requires < 1.0
+    'wrapt >= 1.11.0',
+    # These packages need to be pinned exactly as newer versions are
+    # incompatible with the rest of the ecosystem
+    'gast >= 0.2.1, < 0.5.0', # TODO(lpak): if this breaks, revert to 0.4.0
+    # TensorFlow ecosystem packages that TF exposes API for
+    # These need to be in sync with the existing TF version
+    # They are updated during the release process
+    # When updating these, please also update the nightly versions below
+    'tensorboard >= 2.7, < 2.8',
+    'tensorflow_estimator >= 2.7.0, < 2.8',
+    'keras >= 2.7.0, < 2.8',
+    'tensorflow-io-gcs-filesystem >= 0.21.0',
+]
+
+
+# For nightly packages, instead of depending on tensorboard,
+# tensorflow_estimator and keras, we depend on their nightly equivalent.
+# When updating these, make sure to also update the release versions above.
+# NOTE: the nightly versions are one version ahead of the release ones!
+# NOTE: the nightly versions specify alpha/dev!
 if 'tf_nightly' in project_name:
   for i, pkg in enumerate(REQUIRED_PACKAGES):
     if 'tensorboard' in pkg:
-      REQUIRED_PACKAGES[i] = 'tb-nightly >= 2.3.0a0, < 2.4.0a0'
+      REQUIRED_PACKAGES[i] = 'tb-nightly ~= 2.8.0.a'
     elif 'tensorflow_estimator' in pkg:
-      REQUIRED_PACKAGES[i] = 'tf-estimator-nightly'
+      REQUIRED_PACKAGES[i] = 'tf-estimator-nightly ~= 2.8.0.dev'
+    elif 'keras' in pkg and 'keras_preprocessing' not in pkg:
+      REQUIRED_PACKAGES[i] = 'keras-nightly ~= 2.8.0.dev'
+
+
+# grpcio does not build correctly on big-endian machines due to lack of
+# BoringSSL support.
+# See https://github.com/tensorflow/tensorflow/issues/17882.
+if sys.byteorder == 'little':
+  REQUIRED_PACKAGES.append('grpcio >= 1.24.3, < 2.0')
+
+
+# Packages which are only needed for testing code.
+# Please don't add test-only packages to `REQUIRED_PACKAGES`!
+# Follows the same conventions as `REQUIRED_PACKAGES`
+TEST_PACKAGES = [
+    'portpicker >= 1.3.1',
+    'scipy ~= 1.5.2, < 1.7', # NOTE: capped due to py3.6 and opt-einsum requires
+    # sphinx==1.2.3 but scipy 1.7.1 requires sphinx >= 2.4.0, <3.1.0
+    'tblib >= 1.4.0',
+    'dill >= 0.2.9',
+]
+
 
 DOCLINES = __doc__.split('\n')
 if project_name.endswith('-gpu'):
   project_name_no_gpu = project_name[:-len('-gpu')]
   _GPU_PACKAGE_NOTE = 'Note that %s package by default supports both CPU and '\
       'GPU. %s has the same content and exists solely for backward '\
-      'compatiblity. Please migrate to %s for GPU support.'\
+      'compatibility. Please migrate to %s for GPU support.'\
       % (project_name_no_gpu, project_name, project_name_no_gpu)
   DOCLINES.append(_GPU_PACKAGE_NOTE)
 
@@ -108,6 +154,7 @@ CONSOLE_SCRIPTS = [
     'tflite_convert = tensorflow.lite.python.tflite_convert:main',
     'toco = tensorflow.lite.python.tflite_convert:main',
     'saved_model_cli = tensorflow.python.tools.saved_model_cli:main',
+    'import_pb_to_tensorboard = tensorflow.python.tools.import_pb_to_tensorboard:main',
     # We need to keep the TensorBoard command, even though the console script
     # is now declared by the tensorboard pip package. If we remove the
     # TensorBoard command, pip will inappropriately remove it during install,
@@ -123,10 +170,6 @@ CONSOLE_SCRIPTS = [
 if 'tf_nightly' in project_name:
   CONSOLE_SCRIPTS.remove('tensorboard = tensorboard.main:run_main')
 
-TEST_PACKAGES = [
-    'scipy >= 0.15.1',
-]
-
 
 class BinaryDistribution(Distribution):
 
@@ -138,7 +181,7 @@ class InstallCommand(InstallCommandBase):
   """Override the dir where the headers go."""
 
   def finalize_options(self):
-    ret = InstallCommandBase.finalize_options(self)
+    ret = InstallCommandBase.finalize_options(self)  # pylint: disable=assignment-from-no-return
     self.install_headers = os.path.join(self.install_platlib, 'tensorflow',
                                         'include')
     self.install_lib = self.install_platlib
@@ -238,13 +281,17 @@ headers = (
     list(find_files('*.proto', 'tensorflow/compiler')) +
     list(find_files('*.proto', 'tensorflow/core')) +
     list(find_files('*.proto', 'tensorflow/python')) +
+    list(find_files('*.proto', 'tensorflow/python/framework')) +
     list(find_files('*.def', 'tensorflow/compiler')) +
     list(find_files('*.h', 'tensorflow/c')) +
     list(find_files('*.h', 'tensorflow/cc')) +
     list(find_files('*.h', 'tensorflow/compiler')) +
     list(find_files('*.h.inc', 'tensorflow/compiler')) +
     list(find_files('*.h', 'tensorflow/core')) +
+    list(find_files('*.h', 'tensorflow/lite/kernels/shim')) +
     list(find_files('*.h', 'tensorflow/python')) +
+    list(find_files('*.h', 'tensorflow/python/client')) +
+    list(find_files('*.h', 'tensorflow/python/framework')) +
     list(find_files('*.h', 'tensorflow/stream_executor')) +
     list(find_files('*.h', 'google/com_google_protobuf/src')) +
     list(find_files('*.inc', 'google/com_google_protobuf/src')) +
@@ -258,6 +305,7 @@ setup(
     version=_VERSION.replace('-', ''),
     description=DOCLINES[0],
     long_description='\n'.join(DOCLINES[2:]),
+    long_description_content_type="text/markdown",
     url='https://www.tensorflow.org/',
     download_url='https://github.com/tensorflow/tensorflow/tags',
     author='Google Inc.',
@@ -286,15 +334,16 @@ setup(
     # PyPI package information.
     classifiers=sorted([
         'Development Status :: 5 - Production/Stable',
+        # TODO(angerson) Add IFTTT when possible
+        'Environment :: GPU :: NVIDIA CUDA :: 11.2',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',

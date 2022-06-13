@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -32,6 +31,10 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
  public:
   explicit ProfileImportImpl(
       mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver);
+
+  ProfileImportImpl(const ProfileImportImpl&) = delete;
+  ProfileImportImpl& operator=(const ProfileImportImpl&) = delete;
+
   ~ProfileImportImpl() override;
 
  private:
@@ -63,8 +66,6 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileImportImpl);
 };
 
 #endif  // CHROME_UTILITY_IMPORTER_PROFILE_IMPORT_IMPL_H_

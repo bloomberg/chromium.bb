@@ -11,8 +11,8 @@ python_version: "2.7"
 
 wheel: <
   name: "infra/celab/celab/windows-amd64"
-  # Source: https://ci.chromium.org/p/celab/builders/ci/Windows/b8863242163218578192
-  version: "IQHknf30R2DyRmnCQ9PWQToO1x-rS7ecoTeaDqncGmoC"
+  # Source: https://ci.chromium.org/p/celab/builders/ci/Windows/b8839159667690916800
+  version: "ESovjdrWROIDnSgn5pI9YH26d43O2_iYLvqCFSAZ7u0C"
 >
 
 # googleapiclient
@@ -97,4 +97,9 @@ wheel: <
 wheel: <
   name: "infra/python/wheels/wheel-py2_py3"
   version: "version:0.33.1"
+>
+
+wheel: <
+  name: "infra/python/wheels/requests-py2_py3"
+  version: "version:2.13.0"
 >

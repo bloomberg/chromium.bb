@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -41,6 +41,9 @@ class ScopedGLuint {
 
   GLuint id() const { return id_; }
 
+  ScopedGLuint(const ScopedGLuint&) = delete;
+  ScopedGLuint& operator=(const ScopedGLuint&) = delete;
+
   ~ScopedGLuint() {
     if (id_ != 0) {
       (gl_->*delete_func_)(1, &id_);
@@ -48,11 +51,9 @@ class ScopedGLuint {
   }
 
  private:
-  gles2::GLES2Interface* gl_;
+  raw_ptr<gles2::GLES2Interface> gl_;
   GLuint id_;
   DeleteFunc delete_func_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedGLuint);
 };
 
 class ScopedBuffer : public ScopedGLuint {
@@ -88,13 +89,14 @@ class ScopedBinder {
     (gl_->*bind_func_)(Target, id);
   }
 
+  ScopedBinder(const ScopedBinder&) = delete;
+  ScopedBinder& operator=(const ScopedBinder&) = delete;
+
   virtual ~ScopedBinder() { (gl_->*bind_func_)(Target, 0); }
 
  private:
-  gles2::GLES2Interface* gl_;
+  raw_ptr<gles2::GLES2Interface> gl_;
   BindFunc bind_func_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedBinder);
 };
 
 template <GLenum Target>
@@ -129,6 +131,10 @@ class ReadbackYUVInterface;
 class GPU_EXPORT GLHelper {
  public:
   GLHelper(gles2::GLES2Interface* gl, ContextSupport* context_support);
+
+  GLHelper(const GLHelper&) = delete;
+  GLHelper& operator=(const GLHelper&) = delete;
+
   ~GLHelper();
 
   enum ScalerQuality {
@@ -165,6 +171,9 @@ class GPU_EXPORT GLHelper {
   // a source texture at a fixed scaling ratio.
   class ScalerInterface {
    public:
+    ScalerInterface(const ScalerInterface&) = delete;
+    ScalerInterface& operator=(const ScalerInterface&) = delete;
+
     virtual ~ScalerInterface() {}
 
     // Scales a portion of |src_texture| and draws the result into
@@ -244,9 +253,6 @@ class GPU_EXPORT GLHelper {
 
    protected:
     ScalerInterface() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScalerInterface);
   };
 
   // Create a scaler that upscales or downscales at the given ratio
@@ -343,8 +349,8 @@ class GPU_EXPORT GLHelper {
 
   enum ReadbackSwizzle { kSwizzleNone = 0, kSwizzleBGRA };
 
-  gles2::GLES2Interface* gl_;
-  ContextSupport* context_support_;
+  raw_ptr<gles2::GLES2Interface> gl_;
+  raw_ptr<ContextSupport> context_support_;
   std::unique_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   std::unique_ptr<GLHelperScaling> scaler_impl_;
   std::unique_ptr<ReadbackYUVInterface> shared_readback_yuv_flip_;
@@ -353,9 +359,6 @@ class GPU_EXPORT GLHelper {
   // Memoized result for MaxDrawBuffers(), if >= 0. Otherwise, MaxDrawBuffers()
   // will need to query the GL implementation.
   GLint max_draw_buffers_ = -1;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GLHelper);
 };
 
 // Splits an RGBA source texture's image into separate Y, U, and V planes. The U
@@ -363,6 +366,10 @@ class GPU_EXPORT GLHelper {
 class GPU_EXPORT I420Converter {
  public:
   I420Converter();
+
+  I420Converter(const I420Converter&) = delete;
+  I420Converter& operator=(const I420Converter&) = delete;
+
   virtual ~I420Converter();
 
   // Transforms a RGBA |src_texture| into three textures, each containing bytes
@@ -406,9 +413,6 @@ class GPU_EXPORT I420Converter {
   // CEIL(output_rect_size.height() / 2); because the chroma planes are half-
   // length in both dimensions in the I420 format.
   static gfx::Size GetChromaPlaneTextureSize(const gfx::Size& output_rect_size);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(I420Converter);
 };
 
 // Similar to a ScalerInterface, a YUV readback pipeline will cache a scaler and

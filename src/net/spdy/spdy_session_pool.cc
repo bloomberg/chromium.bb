@@ -13,9 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/memory_usage_estimator.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -23,7 +20,7 @@
 #include "net/base/trace_constants.h"
 #include "net/dns/dns_alias_utility.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_source.h"
+#include "net/dns/public/host_resolver_source.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_request.h"
@@ -88,9 +85,11 @@ SpdySessionPool::SpdySessionPool(
     size_t session_max_recv_window_size,
     int session_max_queued_capped_frames,
     const spdy::SettingsMap& initial_settings,
+    bool enable_http2_settings_grease,
     const absl::optional<GreasedHttp2Frame>& greased_http2_frame,
     bool http2_end_stream_with_data_frame,
     bool enable_priority_update,
+    bool go_away_on_ip_change,
     SpdySessionPool::TimeFunc time_func,
     NetworkQualityEstimator* network_quality_estimator)
     : http_server_properties_(http_server_properties),
@@ -106,9 +105,11 @@ SpdySessionPool::SpdySessionPool(
       session_max_recv_window_size_(session_max_recv_window_size),
       session_max_queued_capped_frames_(session_max_queued_capped_frames),
       initial_settings_(initial_settings),
+      enable_http2_settings_grease_(enable_http2_settings_grease),
       greased_http2_frame_(greased_http2_frame),
       http2_end_stream_with_data_frame_(http2_end_stream_with_data_frame),
       enable_priority_update_(enable_priority_update),
+      go_away_on_ip_change_(go_away_on_ip_change),
       time_func_(time_func),
       push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator) {
@@ -276,17 +277,14 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
   // nothing, but inform the caller to wait for such a task to run.
   auto existing_session_it = LookupAvailableSessionByKey(key);
   if (existing_session_it != available_sessions_.end()) {
-    // If this is an alias, the host resolution is for a websocket
-    // connection, and the aliased session doesn't support websockets,
-    // continue looking for an aliased session that does.  Unlikely there
-    // is one, but can't hurt to check.
-    bool continue_searching_for_websockets =
-        is_websocket && !existing_session_it->second->support_websocket();
+    if (is_websocket && !existing_session_it->second->support_websocket()) {
+      // We don't look for aliased sessions because it would not be possible to
+      // add them to the available_sessions_ map. See https://crbug.com/1220771.
+      return OnHostResolutionCallbackResult::kContinue;
+    }
 
-    if (!continue_searching_for_websockets)
-      return OnHostResolutionCallbackResult::kMayBeDeletedAsync;
+    return OnHostResolutionCallbackResult::kMayBeDeletedAsync;
   }
-
   for (const auto& address : addresses) {
     auto range = aliases_.equal_range(address);
     for (auto alias_it = range.first; alias_it != range.second; ++alias_it) {
@@ -487,19 +485,15 @@ void SpdySessionPool::OnIPAddressChanged() {
     if (!*it)
       continue;
 
-// For OSs that terminate TCP connections upon relevant network changes,
-// attempt to preserve active streams by marking all sessions as going
-// away, rather than explicitly closing them. Streams may still fail due
-// to a generated TCP reset.
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
-    (*it)->MakeUnavailable();
-    (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
-    (*it)->MaybeFinishGoingAway();
-#else
-    (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                               "Closing current sessions.");
-    DCHECK((*it)->IsDraining());
-#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+    if (go_away_on_ip_change_) {
+      (*it)->MakeUnavailable();
+      (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
+      (*it)->MaybeFinishGoingAway();
+    } else {
+      (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                 "Closing current sessions.");
+      DCHECK((*it)->IsDraining());
+    }
     DCHECK(!IsSessionAvailable(*it));
   }
 }
@@ -521,6 +515,11 @@ void SpdySessionPool::OnSSLConfigForServerChanged(const HostPortPair& server) {
         (proxy_server.is_http_like() && !proxy_server.is_http() &&
          proxy_server.host_port_pair() == server)) {
       session->MakeUnavailable();
+      // Note this call preserves active streams but fails any streams that are
+      // waiting on a stream ID.
+      // TODO(https://crbug.com/1213609): This is not ideal, but SpdySession
+      // does not have a state that supports this.
+      session->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
       session->MaybeFinishGoingAway();
       DCHECK(!IsSessionAvailable(session));
     }
@@ -554,49 +553,6 @@ void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
 
   DCHECK(base::Contains(iter->second.request_set, request));
   RemoveRequestInternal(iter, iter->second.request_set.find(request));
-}
-
-void SpdySessionPool::DumpMemoryStats(
-    base::trace_event::ProcessMemoryDump* pmd,
-    const std::string& parent_dump_absolute_name) const {
-  if (sessions_.empty())
-    return;
-  size_t total_size = 0;
-  size_t buffer_size = 0;
-  size_t cert_count = 0;
-  size_t cert_size = 0;
-  size_t num_active_sessions = 0;
-  for (auto* session : sessions_) {
-    StreamSocket::SocketMemoryStats stats;
-    bool is_session_active = false;
-    total_size += session->DumpMemoryStats(&stats, &is_session_active);
-    buffer_size += stats.buffer_size;
-    cert_count += stats.cert_count;
-    cert_size += stats.cert_size;
-    if (is_session_active)
-      num_active_sessions++;
-  }
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(base::StringPrintf(
-          "%s/spdy_session_pool", parent_dump_absolute_name.c_str()));
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  total_size);
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
-                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  sessions_.size());
-  dump->AddScalar("active_session_count",
-                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  num_active_sessions);
-  dump->AddScalar("buffer_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  buffer_size);
-  dump->AddScalar("cert_count",
-                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  cert_count);
-  dump->AddScalar("cert_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  cert_size);
 }
 
 SpdySessionPool::RequestInfoForKey::RequestInfoForKey() = default;
@@ -707,9 +663,9 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
       enable_ping_based_connection_checking_, is_http2_enabled_,
       is_quic_enabled_, session_max_recv_window_size_,
       session_max_queued_capped_frames_, initial_settings_,
-      greased_http2_frame_, http2_end_stream_with_data_frame_,
-      enable_priority_update_, time_func_, push_delegate_,
-      network_quality_estimator_, net_log);
+      enable_http2_settings_grease_, greased_http2_frame_,
+      http2_end_stream_with_data_frame_, enable_priority_update_, time_func_,
+      push_delegate_, network_quality_estimator_, net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(

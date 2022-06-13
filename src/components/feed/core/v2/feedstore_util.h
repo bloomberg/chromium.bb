@@ -13,6 +13,10 @@
 #include "components/feed/core/v2/types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace feedwire {
+class ConsistencyToken;
+}
+
 namespace feedstore {
 class Metadata;
 
@@ -35,6 +39,11 @@ base::Time GetStreamViewTime(const Metadata& metadata,
                              const feed::StreamType& stream_type);
 bool IsKnownStale(const Metadata& metadata,
                   const feed::StreamType& stream_type);
+base::Time GetLastFetchTime(const Metadata& metadata,
+                            const feed::StreamType& stream_type);
+void SetLastFetchTime(Metadata& metadata,
+                      const feed::StreamType& stream_type,
+                      const base::Time& fetch_time);
 feedstore::Metadata MakeMetadata(const std::string& gaia);
 
 // Mutations of Metadata. Metadata will need stored again after being changed,
@@ -42,9 +51,15 @@ feedstore::Metadata MakeMetadata(const std::string& gaia);
 void SetSessionId(feedstore::Metadata& metadata,
                   std::string token,
                   base::Time expiry_time);
-absl::optional<Metadata> MaybeUpdateSessionId(
+void SetContentLifetime(
+    feedstore::Metadata& metadata,
+    const feed::StreamType& stream_type,
+    feedstore::Metadata::StreamMetadata::ContentLifetime content_lifetime);
+void MaybeUpdateSessionId(feedstore::Metadata& metadata,
+                          absl::optional<std::string> token);
+absl::optional<Metadata> MaybeUpdateConsistencyToken(
     const feedstore::Metadata& metadata,
-    absl::optional<std::string> token);
+    const feedwire::ConsistencyToken& token);
 feed::LocalActionId GetNextActionId(feedstore::Metadata& metadata);
 const Metadata::StreamMetadata* FindMetadataForStream(
     const Metadata& metadata,

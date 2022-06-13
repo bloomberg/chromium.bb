@@ -10,9 +10,6 @@ self.Resources = self.Resources || {};
 Resources = Resources || {};
 
 /** @constructor */
-Resources.ApplicationCacheModel = ResourcesModule.ApplicationCacheModel.ApplicationCacheModel;
-
-/** @constructor */
 Resources.ApplicationPanelSidebar = ResourcesModule.ApplicationPanelSidebar.ApplicationPanelSidebar;
 
 /** @constructor */
@@ -97,9 +94,6 @@ Resources.ResourcesPanel = ResourcesModule.ResourcesPanel.ResourcesPanel;
 
 /** @constructor */
 Resources.ResourcesPanel.ResourceRevealer = ResourcesModule.ResourcesPanel.ResourceRevealer;
-
-/** @constructor */
-Resources.ResourcesPanel.CookieReferenceRevealer = ResourcesModule.ResourcesPanel.CookieReferenceRevealer;
 
 /** @constructor */
 Resources.ResourcesPanel.FrameDetailsRevealer = ResourcesModule.ResourcesPanel.FrameDetailsRevealer;

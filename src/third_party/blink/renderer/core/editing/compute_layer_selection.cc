@@ -73,7 +73,7 @@ static gfx::Point LocalToInvalidationBackingPoint(
   // A layoutObject can have no invalidation backing if it is from a detached
   // frame, or when forced compositing is disabled.
   if (paint_invalidation_container->GetCompositingState() == kNotComposited)
-    return RoundedIntPoint(container_point);
+    return ToRoundedPoint(container_point);
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       paint_invalidation_container->GetLayoutObject(), container_point);
@@ -83,11 +83,11 @@ static gfx::Point LocalToInvalidationBackingPoint(
   // is a scroller.
   if (paint_invalidation_container->GetLayoutObject()
           .UsesCompositedScrolling()) {
-    container_point += PhysicalOffset::FromFloatSizeRound(
+    container_point += PhysicalOffset::FromVector2dFRound(
         paint_invalidation_container->GetScrollableArea()->GetScrollOffset());
   }
 
-  return RoundedIntPoint(container_point);
+  return ToRoundedPoint(container_point);
 }
 
 std::pair<PhysicalOffset, PhysicalOffset> static GetLocalSelectionStartpoints(

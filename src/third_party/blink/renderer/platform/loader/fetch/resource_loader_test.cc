@@ -27,7 +27,9 @@
 #include "third_party/blink/renderer/platform/loader/testing/bytes_consumer_test_reader.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/testing/code_cache_loader_mock.h"
 #include "third_party/blink/renderer/platform/testing/mock_context_lifecycle_notifier.h"
+#include "third_party/blink/renderer/platform/testing/noop_web_url_loader.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -47,8 +49,6 @@ const char kCnameAliasWasBlockedHistogram[] =
     "SubresourceFilter.CnameAlias.Renderer.WasBlockedBasedOnAlias";
 
 class ResourceLoaderTest : public testing::Test {
-  DISALLOW_COPY_AND_ASSIGN(ResourceLoaderTest);
-
  public:
   enum class From {
     kServiceWorker,
@@ -57,6 +57,8 @@ class ResourceLoaderTest : public testing::Test {
 
   ResourceLoaderTest()
       : foo_url_("https://foo.test"), bar_url_("https://bar.test") {}
+  ResourceLoaderTest(const ResourceLoaderTest&) = delete;
+  ResourceLoaderTest& operator=(const ResourceLoaderTest&) = delete;
 
  protected:
   using RequestMode = network::mojom::RequestMode;
@@ -88,7 +90,7 @@ class ResourceLoaderTest : public testing::Test {
           std::move(freezable_task_runner));
     }
     std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override {
-      return Platform::Current()->CreateCodeCacheLoader();
+      return std::make_unique<CodeCacheLoaderMock>();
     }
   };
 
@@ -105,51 +107,6 @@ class ResourceLoaderTest : public testing::Test {
         MakeGarbageCollected<MockContextLifecycleNotifier>(),
         nullptr /* back_forward_cache_loader_helper */));
   }
-
- private:
-  class NoopWebURLLoader final : public WebURLLoader {
-   public:
-    explicit NoopWebURLLoader(
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-        : task_runner_(task_runner) {}
-    ~NoopWebURLLoader() override = default;
-    void LoadSynchronously(
-        std::unique_ptr<network::ResourceRequest> request,
-        scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-        bool pass_response_pipe_to_client,
-        bool no_mime_sniffing,
-        base::TimeDelta timeout_interval,
-        WebURLLoaderClient*,
-        WebURLResponse&,
-        absl::optional<WebURLError>&,
-        WebData&,
-        int64_t& encoded_data_length,
-        int64_t& encoded_body_length,
-        WebBlobInfo& downloaded_blob,
-        std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-            resource_load_info_notifier_wrapper) override {
-      NOTREACHED();
-    }
-    void LoadAsynchronously(
-        std::unique_ptr<network::ResourceRequest> request,
-        scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-        bool no_mime_sniffing,
-        std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-            resource_load_info_notifier_wrapper,
-        WebURLLoaderClient*) override {}
-
-    void SetDefersLoading(WebURLLoader::DeferType) override {}
-    void DidChangePriority(WebURLRequest::Priority, int) override {
-      NOTREACHED();
-    }
-    scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForBodyLoader()
-        override {
-      return task_runner_;
-    }
-
-   private:
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  };
 };
 
 std::ostream& operator<<(std::ostream& o, const ResourceLoaderTest::From& f) {
@@ -221,7 +178,7 @@ TEST_F(ResourceLoaderTest, LoadResponseBody) {
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
   StringBuilder data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.Append(span.data(), static_cast<wtf_size_t>(span.size()));
   }
   EXPECT_EQ(data.ToString(), "hello");
 }
@@ -246,7 +203,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
   StringBuilder data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.Append(span.data(), static_cast<wtf_size_t>(span.size()));
   }
   EXPECT_EQ(data.ToString(), "Hello World!");
 }
@@ -353,7 +310,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_Sync) {
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
   StringBuilder data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.Append(span.data(), static_cast<wtf_size_t>(span.size()));
   }
   EXPECT_EQ(data.ToString(), "Hello World!");
 }
@@ -393,30 +350,30 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndNonStream) {
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
 
   // The resource should still be pending since it's deferred.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
 
   // The resource should still be pending since it's deferred again.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
 
   // The resource should still be pending if it's unset and set in a single
   // task.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kNone);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
 
   // The resource has a parsed body.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kNone);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kCached);
   scoped_refptr<const SharedBuffer> buffer = resource->ResourceBuffer();
   StringBuilder data;
   for (const auto& span : *buffer) {
-    data.Append(span.data(), span.size());
+    data.Append(span.data(), static_cast<wtf_size_t>(span.size()));
   }
   EXPECT_EQ(data.ToString(), "Hello World!");
 }
@@ -437,7 +394,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
   auto* raw_resource_client = MakeGarbageCollected<TestRawResourceClient>();
   Resource* resource = RawResource::Fetch(params, fetcher, raw_resource_client);
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
 
   // It's still pending because the body should not provided yet.
@@ -446,14 +403,14 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
 
   // The body should be provided since not deferring now, but it's still pending
   // since we haven't read the body yet.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kNone);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
   EXPECT_TRUE(raw_resource_client->body());
 
   // The resource should still be pending when it's set to deferred again. No
   // body is provided when deferred.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
   const char* buffer;
@@ -464,15 +421,15 @@ TEST_F(ResourceLoaderTest, LoadDataURL_DefersAsyncAndStream) {
 
   // The resource should still be pending if it's unset and set in a single
   // task. No body is provided when deferred.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kNone);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kStrict);
   task_runner->RunUntilIdle();
   EXPECT_EQ(resource->GetStatus(), ResourceStatus::kPending);
   result = raw_resource_client->body()->BeginRead(&buffer, &available);
   EXPECT_EQ(BytesConsumer::Result::kShouldWait, result);
 
   // Read through the bytes consumer passed back from the ResourceLoader.
-  fetcher->SetDefersLoading(WebURLLoader::DeferType::kNotDeferred);
+  fetcher->SetDefersLoading(LoaderFreezeMode::kNone);
   task_runner->RunUntilIdle();
   auto* test_reader = MakeGarbageCollected<BytesConsumerTestReader>(
       raw_resource_client->body());

@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
@@ -63,7 +62,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   void DispatchProtocolMessage(base::span<const uint8_t> message);
   void SuspendSendingMessagesToAgent();
   void ResumeSendingMessagesToAgent();
-  void ClearPendingMessages();
+  void ClearPendingMessages(bool did_crash);
 
   using HandlersMap =
       base::flat_map<std::string,

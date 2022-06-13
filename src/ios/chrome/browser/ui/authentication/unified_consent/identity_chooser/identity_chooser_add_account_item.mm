@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/authentication/cells/table_view_identity_cell.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -19,6 +20,7 @@
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [TableViewIdentityCell class];
+    self.useCustomSeparator = NO;
   }
   return self;
 }
@@ -30,7 +32,13 @@
       l10n_util::GetNSString(IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT);
   UIImage* image = [[UIImage imageNamed:@"settings_accounts_add_account"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [cell configureCellWithTitle:title subtitle:nil image:image checked:NO];
+  cell.accessibilityIdentifier = kIdentityPickerAddAccountIdentifier;
+  [cell configureCellWithTitle:title
+                      subtitle:nil
+                         image:image
+                       checked:NO
+             identityViewStyle:IdentityViewStyleIdentityChooser
+                    titleColor:[UIColor colorNamed:kBlueColor]];
 }
 
 @end

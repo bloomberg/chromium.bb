@@ -38,15 +38,15 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/common/chrome_constants.h"
 #include "sql/statement.h"
@@ -58,7 +58,7 @@ using extensions::Action;
 
 // Delay between cleaning passes (to delete old action records) through the
 // database.
-constexpr base::TimeDelta kCleaningDelay = base::TimeDelta::FromHours(12);
+constexpr base::TimeDelta kCleaningDelay = base::Hours(12);
 
 // We should log the arguments to these API calls.  Be careful when
 // constructing this allowlist to not keep arguments that might compromise
@@ -171,7 +171,7 @@ CountingPolicy::CountingPolicy(Profile* profile)
           base::FilePath(chrome::kExtensionActivityLogFilename)),
       string_table_("string_ids"),
       url_table_("url_ids"),
-      retention_time_(base::TimeDelta::FromHours(60)) {
+      retention_time_(base::Hours(60)) {
   for (size_t i = 0; i < base::size(kAlwaysLog); i++) {
     api_arg_allowlist_.insert(
         std::make_pair(kAlwaysLog[i].type, kAlwaysLog[i].name));

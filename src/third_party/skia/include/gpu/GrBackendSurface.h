@@ -9,12 +9,17 @@
 #define GrBackendSurface_DEFINED
 
 #include "include/gpu/GrBackendSurfaceMutableState.h"
+#include "include/gpu/GrSurfaceInfo.h"
 #include "include/gpu/GrTypes.h"
+#ifdef SK_GL
 #include "include/gpu/gl/GrGLTypes.h"
-#include "include/gpu/mock/GrMockTypes.h"
-#include "include/gpu/vk/GrVkTypes.h"
 #include "include/private/GrGLTypesPriv.h"
+#endif
+#include "include/gpu/mock/GrMockTypes.h"
+#ifdef SK_VULKAN
+#include "include/gpu/vk/GrVkTypes.h"
 #include "include/private/GrVkTypesPriv.h"
+#endif
 
 #ifdef SK_DAWN
 #include "include/gpu/dawn/GrDawnTypes.h"
@@ -34,8 +39,7 @@ class GrColorFormatDesc;
 #endif
 
 #ifdef SK_DIRECT3D
-#include "include/gpu/d3d/GrD3DTypesMinimal.h"
-#include "include/private/GrD3DTypesPriv.h"
+#include "include/private/GrD3DTypesMinimal.h"
 class GrD3DResourceState;
 #endif
 
@@ -77,15 +81,20 @@ public:
     GrBackendFormat(const GrBackendFormat&);
     GrBackendFormat& operator=(const GrBackendFormat&);
 
+#ifdef SK_GL
     static GrBackendFormat MakeGL(GrGLenum format, GrGLenum target) {
         return GrBackendFormat(format, target);
     }
+#endif
 
-    static GrBackendFormat MakeVk(VkFormat format) {
-        return GrBackendFormat(format, GrVkYcbcrConversionInfo());
+#ifdef SK_VULKAN
+    static GrBackendFormat MakeVk(VkFormat format, bool willUseDRMFormatModifiers = false) {
+        return GrBackendFormat(format, GrVkYcbcrConversionInfo(), willUseDRMFormatModifiers);
     }
 
-    static GrBackendFormat MakeVk(const GrVkYcbcrConversionInfo& ycbcrInfo);
+    static GrBackendFormat MakeVk(const GrVkYcbcrConversionInfo& ycbcrInfo,
+                                  bool willUseDRMFormatModifiers = false);
+#endif
 
 #ifdef SK_DAWN
     static GrBackendFormat MakeDawn(wgpu::TextureFormat format) {
@@ -122,12 +131,15 @@ public:
 
     GrColorFormatDesc desc() const;
 
+#ifdef SK_GL
     /**
      * If the backend API is GL this gets the format as a GrGLFormat. Otherwise, returns
      * GrGLFormat::kUnknown.
      */
     GrGLFormat asGLFormat() const;
+#endif
 
+#ifdef SK_VULKAN
     /**
      * If the backend API is Vulkan this gets the format as a VkFormat and returns true. Otherwise,
      * returns false.
@@ -135,6 +147,7 @@ public:
     bool asVkFormat(VkFormat*) const;
 
     const GrVkYcbcrConversionInfo* getVkYcbcrConversionInfo() const;
+#endif
 
 #ifdef SK_DAWN
     /**
@@ -182,9 +195,14 @@ public:
 #endif
 
 private:
+#ifdef SK_GL
     GrBackendFormat(GrGLenum format, GrGLenum target);
+#endif
 
-    GrBackendFormat(const VkFormat vkFormat, const GrVkYcbcrConversionInfo&);
+#ifdef SK_VULKAN
+    GrBackendFormat(const VkFormat vkFormat, const GrVkYcbcrConversionInfo&,
+                    bool willUseDRMFormatModifiers);
+#endif
 
 #ifdef SK_DAWN
     GrBackendFormat(wgpu::TextureFormat format);
@@ -208,11 +226,15 @@ private:
     bool         fValid = false;
 
     union {
+#ifdef SK_GL
         GrGLenum fGLFormat; // the sized, internal format of the GL resource
+#endif
+#ifdef SK_VULKAN
         struct {
             VkFormat                 fFormat;
             GrVkYcbcrConversionInfo  fYcbcrConversionInfo;
         } fVk;
+#endif
 #ifdef SK_DAWN
         wgpu::TextureFormat fDawnFormat;
 #endif
@@ -238,11 +260,13 @@ public:
     // Creates an invalid backend texture.
     GrBackendTexture();
 
+#ifdef SK_GL
     // The GrGLTextureInfo must have a valid fFormat.
     GrBackendTexture(int width,
                      int height,
                      GrMipmapped,
                      const GrGLTextureInfo& glInfo);
+#endif
 
 #ifdef SK_VULKAN
     GrBackendTexture(int width,
@@ -288,7 +312,9 @@ public:
     /** deprecated alias of hasMipmaps(). */
     bool hasMipMaps() const { return this->hasMipmaps(); }
     GrBackendApi backend() const {return fBackend; }
+    GrTextureType textureType() const { return fTextureType; }
 
+#ifdef SK_GL
     // If the backend API is GL, copies a snapshot of the GrGLTextureInfo struct into the passed in
     // pointer and returns true. Otherwise returns false if the backend API is not GL.
     bool getGLTextureInfo(GrGLTextureInfo*) const;
@@ -296,6 +322,7 @@ public:
     // Call this to indicate that the texture parameters have been modified in the GL context
     // externally to GrContext.
     void glTextureParametersModified();
+#endif
 
 #ifdef SK_DAWN
     // If the backend API is Dawn, copies a snapshot of the GrDawnTextureInfo struct into the passed
@@ -303,6 +330,7 @@ public:
     bool getDawnTextureInfo(GrDawnTextureInfo*) const;
 #endif
 
+#ifdef SK_VULKAN
     // If the backend API is Vulkan, copies a snapshot of the GrVkImageInfo struct into the passed
     // in pointer and returns true. This snapshot will set the fImageLayout to the current layout
     // state. Otherwise returns false if the backend API is not Vulkan.
@@ -311,6 +339,7 @@ public:
     // Anytime the client changes the VkImageLayout of the VkImage captured by this
     // GrBackendTexture, they must call this function to notify Skia of the changed layout.
     void setVkImageLayout(VkImageLayout);
+#endif
 
 #ifdef SK_METAL
     // If the backend API is Metal, copies a snapshot of the GrMtlTextureInfo struct into the passed
@@ -397,12 +426,15 @@ private:
     int fHeight;        //<! height in pixels
     GrMipmapped fMipmapped;
     GrBackendApi fBackend;
+    GrTextureType fTextureType;
 
     union {
 #ifdef SK_GL
         GrGLBackendTextureInfo fGLInfo;
 #endif
+#ifdef SK_VULKAN
         GrVkBackendSurfaceInfo fVkInfo;
+#endif
         GrMockTextureInfo fMockInfo;
 #ifdef SK_DIRECT3D
         GrD3DBackendSurfaceInfo fD3DInfo;
@@ -423,6 +455,7 @@ public:
     // Creates an invalid backend texture.
     GrBackendRenderTarget();
 
+#ifdef SK_GL
     // The GrGLTextureInfo must have a valid fFormat. If wrapping in an SkSurface we require the
     // stencil bits to be either 0, 8 or 16.
     GrBackendRenderTarget(int width,
@@ -430,6 +463,7 @@ public:
                           int sampleCnt,
                           int stencilBits,
                           const GrGLFramebufferInfo& glInfo);
+#endif
 
 #ifdef SK_DAWN
     // If wrapping in an SkSurface we require the stencil bits to be either 0, 8 or 16.
@@ -483,9 +517,11 @@ public:
     GrBackendApi backend() const {return fBackend; }
     bool isFramebufferOnly() const { return fFramebufferOnly; }
 
+#ifdef SK_GL
     // If the backend API is GL, copies a snapshot of the GrGLFramebufferInfo struct into the passed
     // in pointer and returns true. Otherwise returns false if the backend API is not GL.
     bool getGLFramebufferInfo(GrGLFramebufferInfo*) const;
+#endif
 
 #ifdef SK_DAWN
     // If the backend API is Dawn, copies a snapshot of the GrDawnRenderTargetInfo struct into the
@@ -493,6 +529,7 @@ public:
     bool getDawnRenderTargetInfo(GrDawnRenderTargetInfo*) const;
 #endif
 
+#ifdef SK_VULKAN
     // If the backend API is Vulkan, copies a snapshot of the GrVkImageInfo struct into the passed
     // in pointer and returns true. This snapshot will set the fImageLayout to the current layout
     // state. Otherwise returns false if the backend API is not Vulkan.
@@ -501,6 +538,7 @@ public:
     // Anytime the client changes the VkImageLayout of the VkImage captured by this
     // GrBackendRenderTarget, they must call this function to notify Skia of the changed layout.
     void setVkImageLayout(VkImageLayout);
+#endif
 
 #ifdef SK_METAL
     // If the backend API is Metal, copies a snapshot of the GrMtlTextureInfo struct into the passed
@@ -582,7 +620,9 @@ private:
 #ifdef SK_GL
         GrGLFramebufferInfo fGLInfo;
 #endif
+#ifdef SK_VULKAN
         GrVkBackendSurfaceInfo fVkInfo;
+#endif
         GrMockRenderTargetInfo fMockInfo;
 #ifdef SK_DIRECT3D
         GrD3DBackendSurfaceInfo fD3DInfo;

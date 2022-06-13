@@ -16,14 +16,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -44,11 +46,13 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -62,9 +66,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/gfx/test/gfx_util.h"
+#include "ui/gfx/test/scoped_default_font_description.h"
 
 using cc::MatchesPNGFile;
 using cc::WritePNGFile;
@@ -105,12 +109,16 @@ class ColoredLayer : public Layer, public LayerDelegate {
   SkColor color_;
 };
 
-// Param specifies whether to use SkiaRenderer or not
-class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
+class LayerWithRealCompositorTest : public testing::Test {
  public:
   LayerWithRealCompositorTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         default_font_desc_setter_("Segoe UI, 15px") {}
+
+  LayerWithRealCompositorTest(const LayerWithRealCompositorTest&) = delete;
+  LayerWithRealCompositorTest& operator=(const LayerWithRealCompositorTest&) =
+      delete;
+
   ~LayerWithRealCompositorTest() override = default;
 
   // Overridden from testing::Test:
@@ -125,7 +133,7 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
 
     const bool enable_pixel_output = true;
     context_factories_ =
-        std::make_unique<TestContextFactories>(enable_pixel_output, GetParam());
+        std::make_unique<TestContextFactories>(enable_pixel_output);
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(
@@ -175,7 +183,8 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
     scoped_refptr<ReadbackHolder> holder(new ReadbackHolder);
     std::unique_ptr<viz::CopyOutputRequest> request =
         std::make_unique<viz::CopyOutputRequest>(
-            viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+            viz::CopyOutputRequest::ResultFormat::RGBA,
+            viz::CopyOutputRequest::ResultDestination::kSystemMemory,
             base::BindOnce(&ReadbackHolder::OutputRequestCallback, holder));
     request->set_area(source_rect);
 
@@ -252,14 +261,16 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
   base::FilePath test_data_dir_;
 
   gfx::ScopedDefaultFontDescription default_font_desc_setter_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
 
 // LayerDelegate that paints colors to the layer.
 class TestLayerDelegate : public LayerDelegate {
  public:
   TestLayerDelegate() { reset(); }
+
+  TestLayerDelegate(const TestLayerDelegate&) = delete;
+  TestLayerDelegate& operator=(const TestLayerDelegate&) = delete;
+
   ~TestLayerDelegate() override {}
 
   void AddColor(SkColor color) {
@@ -305,8 +316,6 @@ class TestLayerDelegate : public LayerDelegate {
   int color_index_;
   float device_scale_factor_;
   gfx::Rect layer_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
 };
 
 // LayerDelegate that verifies that a layer was asked to update its canvas.
@@ -314,6 +323,10 @@ class DrawTreeLayerDelegate : public LayerDelegate {
  public:
   explicit DrawTreeLayerDelegate(const gfx::Rect& layer_bounds)
       : painted_(false), layer_bounds_(layer_bounds) {}
+
+  DrawTreeLayerDelegate(const DrawTreeLayerDelegate&) = delete;
+  DrawTreeLayerDelegate& operator=(const DrawTreeLayerDelegate&) = delete;
+
   ~DrawTreeLayerDelegate() override = default;
 
   void Reset() {
@@ -334,14 +347,16 @@ class DrawTreeLayerDelegate : public LayerDelegate {
 
   bool painted_;
   const gfx::Rect layer_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawTreeLayerDelegate);
 };
 
 // The simplest possible layer delegate. Does nothing.
 class NullLayerDelegate : public LayerDelegate {
  public:
   NullLayerDelegate() {}
+
+  NullLayerDelegate(const NullLayerDelegate&) = delete;
+  NullLayerDelegate& operator=(const NullLayerDelegate&) = delete;
+
   ~NullLayerDelegate() override {}
 
   gfx::Rect invalidation() const { return invalidation_; }
@@ -355,14 +370,15 @@ class NullLayerDelegate : public LayerDelegate {
   }
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
 
 // Remembers if it has been notified.
 class TestCompositorObserver : public CompositorObserver {
  public:
   TestCompositorObserver() = default;
+
+  TestCompositorObserver(const TestCompositorObserver&) = delete;
+  TestCompositorObserver& operator=(const TestCompositorObserver&) = delete;
 
   bool committed() const { return committed_; }
   bool notified() const { return started_ && ended_; }
@@ -388,8 +404,6 @@ class TestCompositorObserver : public CompositorObserver {
   bool committed_ = false;
   bool started_ = false;
   bool ended_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
 };
 
 class TestCompositorAnimationObserver : public CompositorAnimationObserver {
@@ -401,6 +415,11 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
     DCHECK(compositor_);
     compositor_->AddAnimationObserver(this);
   }
+
+  TestCompositorAnimationObserver(const TestCompositorAnimationObserver&) =
+      delete;
+  TestCompositorAnimationObserver& operator=(
+      const TestCompositorAnimationObserver&) = delete;
 
   ~TestCompositorAnimationObserver() override {
     if (compositor_)
@@ -422,11 +441,9 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
     shutdown_ = true;
   }
 
-  ui::Compositor* compositor_;
+  raw_ptr<ui::Compositor> compositor_;
   size_t animation_step_count_;
   bool shutdown_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
 };
 
 // An animation observer that invokes a callback when the animation ends.
@@ -451,9 +468,7 @@ class TestCallbackAnimationObserver : public ImplicitAnimationObserver {
 
 }  // namespace
 
-INSTANTIATE_TEST_SUITE_P(All, LayerWithRealCompositorTest, ::testing::Bool());
-
-TEST_P(LayerWithRealCompositorTest, Draw) {
+TEST_F(LayerWithRealCompositorTest, Draw) {
   std::unique_ptr<Layer> layer =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 50, 50));
   DrawTree(layer.get());
@@ -465,7 +480,7 @@ TEST_P(LayerWithRealCompositorTest, Draw) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_P(LayerWithRealCompositorTest, Hierarchy) {
+TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -486,6 +501,10 @@ class LayerWithDelegateTest : public testing::Test {
  public:
   LayerWithDelegateTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+
+  LayerWithDelegateTest(const LayerWithDelegateTest&) = delete;
+  LayerWithDelegateTest& operator=(const LayerWithDelegateTest&) = delete;
+
   ~LayerWithDelegateTest() override {}
 
   // Overridden from testing::Test:
@@ -553,8 +572,6 @@ class LayerWithDelegateTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<TestCompositorHost> compositor_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };
 
 void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
@@ -627,7 +644,7 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_P(LayerWithRealCompositorTest, Delegate) {
+TEST_F(LayerWithRealCompositorTest, Delegate) {
   // This test makes sure that whenever paint happens at a layer, its layer
   // delegate gets the paint, which in this test update its color and
   // |color_index|.
@@ -659,7 +676,7 @@ TEST_P(LayerWithRealCompositorTest, Delegate) {
   EXPECT_EQ(0, delegate.color_index());
 }
 
-TEST_P(LayerWithRealCompositorTest, DrawTree) {
+TEST_F(LayerWithRealCompositorTest, DrawTree) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -687,7 +704,7 @@ TEST_P(LayerWithRealCompositorTest, DrawTree) {
 }
 
 // Tests that scheduling paint on a layer with a mask updates the mask.
-TEST_P(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
+TEST_F(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
   std::unique_ptr<Layer> layer =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> mask_layer = CreateLayer(ui::LAYER_TEXTURED);
@@ -715,7 +732,7 @@ TEST_P(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_P(LayerWithRealCompositorTest, HierarchyNoTexture) {
+TEST_F(LayerWithRealCompositorTest, HierarchyNoTexture) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 = CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350));
@@ -980,6 +997,11 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
 class LayerWithNullDelegateTest : public LayerWithDelegateTest {
  public:
   LayerWithNullDelegateTest() {}
+
+  LayerWithNullDelegateTest(const LayerWithNullDelegateTest&) = delete;
+  LayerWithNullDelegateTest& operator=(const LayerWithNullDelegateTest&) =
+      delete;
+
   ~LayerWithNullDelegateTest() override {}
 
   void SetUp() override {
@@ -1018,8 +1040,6 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
 
  private:
   std::unique_ptr<NullLayerDelegate> default_layer_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
 };
 
 TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
@@ -1601,7 +1621,7 @@ void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
 }
 
 // Checks that pixels are actually drawn to the screen with a read back.
-TEST_P(LayerWithRealCompositorTest, DrawPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   // The window should be some non-trivial size but may not be exactly
@@ -1635,7 +1655,7 @@ TEST_P(LayerWithRealCompositorTest, DrawPixels) {
 
 // Checks that drawing a layer with transparent pixels is blended correctly
 // with the lower layer.
-TEST_P(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   int test_size = 200;
@@ -1671,7 +1691,7 @@ TEST_P(LayerWithRealCompositorTest, DrawAlphaBlendedPixels) {
 
 // Checks that using the AlphaShape filter applied to a layer with
 // transparency, alpha-blends properly with the layer below.
-TEST_P(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
+TEST_F(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
   gfx::Size viewport_size = GetCompositor()->size();
 
   int test_size = 200;
@@ -1711,7 +1731,7 @@ TEST_P(LayerWithRealCompositorTest, DrawAlphaThresholdFilterPixels) {
 }
 
 // Checks the logic around Compositor::SetRootLayer and Layer::SetCompositor.
-TEST_P(LayerWithRealCompositorTest, SetRootLayer) {
+TEST_F(LayerWithRealCompositorTest, SetRootLayer) {
   Compositor* compositor = GetCompositor();
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
@@ -1750,7 +1770,7 @@ TEST_P(LayerWithRealCompositorTest, SetRootLayer) {
 #else
 #define MAYBE_CompositorObservers CompositorObservers
 #endif
-TEST_P(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
+TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
   std::unique_ptr<Layer> l1 =
       CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400));
   std::unique_ptr<Layer> l2 =
@@ -1815,7 +1835,7 @@ TEST_P(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 }
 
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_P(LayerWithRealCompositorTest, ModifyHierarchy) {
+TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
@@ -1884,13 +1904,12 @@ TEST_P(LayerWithRealCompositorTest, ModifyHierarchy) {
 }
 
 // Checks that basic background blur is working.
-// TODO(crbug.com/1174372) Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_BackgroundBlur DISABLED_BackgroundBlur
-#else
-#define MAYBE_BackgroundBlur BackgroundBlur
+TEST_F(LayerWithRealCompositorTest, BackgroundBlur) {
+#if defined(THREAD_SANITIZER)
+  const base::test::ScopedRunLoopTimeout increased_run_timeout(
+      FROM_HERE, TestTimeouts::action_max_timeout());
 #endif
-TEST_P(LayerWithRealCompositorTest, MAYBE_BackgroundBlur) {
+
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
@@ -1933,7 +1952,7 @@ TEST_P(LayerWithRealCompositorTest, MAYBE_BackgroundBlur) {
 
 // Checks that background blur bounds rect gets properly updated when device
 // scale changes.
-TEST_P(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
+TEST_F(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(200, 200),
@@ -1981,7 +2000,7 @@ TEST_P(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
 
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_P(LayerWithRealCompositorTest, Opacity) {
+TEST_F(LayerWithRealCompositorTest, Opacity) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50),
@@ -2011,6 +2030,10 @@ namespace {
 class SchedulePaintLayerDelegate : public LayerDelegate {
  public:
   SchedulePaintLayerDelegate() : paint_count_(0), layer_(nullptr) {}
+
+  SchedulePaintLayerDelegate(const SchedulePaintLayerDelegate&) = delete;
+  SchedulePaintLayerDelegate& operator=(const SchedulePaintLayerDelegate&) =
+      delete;
 
   ~SchedulePaintLayerDelegate() override {}
 
@@ -2046,11 +2069,9 @@ class SchedulePaintLayerDelegate : public LayerDelegate {
                                   float new_device_scale_factor) override {}
 
   int paint_count_;
-  Layer* layer_;
+  raw_ptr<Layer> layer_;
   gfx::Rect schedule_paint_rect_;
   gfx::Rect last_clip_rect_;
-
-  DISALLOW_COPY_AND_ASSIGN(SchedulePaintLayerDelegate);
 };
 
 }  // namespace
@@ -2086,7 +2107,7 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
                   gfx::Rect(10, 10, 30, 30)));
 }
 
-TEST_P(LayerWithRealCompositorTest, ScaleUpDown) {
+TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   std::unique_ptr<Layer> root =
       CreateColorLayer(SK_ColorWHITE, gfx::Rect(10, 20, 200, 220));
   TestLayerDelegate root_delegate;
@@ -2163,7 +2184,7 @@ TEST_P(LayerWithRealCompositorTest, ScaleUpDown) {
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 }
 
-TEST_P(LayerWithRealCompositorTest, ScaleReparent) {
+TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   viz::ParentLocalSurfaceIdAllocator allocator;
   allocator.GenerateId();
   std::unique_ptr<Layer> root =
@@ -2389,7 +2410,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
 }
 
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
-TEST_P(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
+TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l2 = CreateLayer(LAYER_TEXTURED);
@@ -2438,7 +2459,7 @@ TEST_P(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
 
 // Tests that in-progress threaded animations complete when a Layer's
 // cc::Layer changes.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2460,7 +2481,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
 
 // Tests that when a LAYER_SOLID_COLOR has its CC layer switched, that
 // opaqueness and color set while not animating, are maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
   SkColor transparent = SK_ColorTRANSPARENT;
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
@@ -2486,7 +2507,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorNotAnimating) {
 // Tests that when a LAYER_SOLID_COLOR has its CC layer switched during an
 // animation of its opaquness and color, that both the current values, and the
 // targets are maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
   SkColor transparent = SK_ColorTRANSPARENT;
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
@@ -2500,7 +2521,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
           ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
   {
     ui::ScopedLayerAnimationSettings animation(root->GetAnimator());
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     root->SetFillsBoundsOpaquely(false);
     root->SetColor(transparent);
   }
@@ -2531,7 +2552,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
 
 // Tests that when a layer with cache_render_surface flag has its CC layer
 // switched, that the cache_render_surface flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2548,7 +2569,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
 
 // Tests that when a layer with trilinear_filtering flag has its CC layer
 // switched, that the trilinear_filtering flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_TEXTURED);
   GetCompositor()->SetRootLayer(root.get());
@@ -2565,7 +2586,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
 
 // Tests that when a layer with masks_to_bounds flag has its CC layer switched,
 // that the masks_to_bounds flag is maintained.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   GetCompositor()->SetRootLayer(root.get());
@@ -2583,7 +2604,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
 
 // Tests that no crash happens when switching cc layer with an animation
 // observer that deletes the layer itself.
-TEST_P(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   GetCompositor()->SetRootLayer(root.get());
@@ -2599,7 +2620,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
   {
     ui::ScopedLayerAnimationSettings animation(l1->GetAnimator());
     animation.AddObserver(&animation_observer);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     l1->SetOpacity(0.f);
   }
 
@@ -2611,7 +2632,7 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerDeleteLayer) {
 // transform animation, may cause a crash. This is because an animation observer
 // may mutate the tree, e.g. deleting a layer, changing ancestor z-order etc,
 // which breaks the tree traversal and might lead to a use-after-free seg fault.
-TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
+TEST_F(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   TestCallbackAnimationObserver animation_observer;
 
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
@@ -2637,7 +2658,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   {
     ui::ScopedLayerAnimationSettings animation(layer_to_delete->GetAnimator());
     animation.AddObserver(&animation_observer);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     layer_to_delete->SetTransform(transform);
   }
 
@@ -2658,7 +2679,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   {
     ui::ScopedLayerAnimationSettings animation(layer_to_delete->GetAnimator());
     animation.AddObserver(&animation_observer);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     layer_to_delete->SetTransform(transform);
   }
 
@@ -2680,7 +2701,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   {
     ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
     animation.AddObserver(&animation_observer);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     child->SetTransform(transform);
   }
 
@@ -2703,7 +2724,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
   {
     ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
     animation.AddObserver(&animation_observer);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    animation.SetTransitionDuration(base::Milliseconds(1000));
     child->SetTransform(transform);
   }
 
@@ -2713,7 +2734,7 @@ TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
 
 // Tests that no crash when parent/child layer is released by an animation
 // observer of the child layer bounds animation.
-TEST_P(LayerWithRealCompositorTest, ParentOrChildGoneDuringRemove) {
+TEST_F(LayerWithRealCompositorTest, ParentOrChildGoneDuringRemove) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
   GetCompositor()->SetRootLayer(root.get());
   root->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -2756,7 +2777,7 @@ TEST_P(LayerWithRealCompositorTest, ParentOrChildGoneDuringRemove) {
     {
       ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
       animation.AddObserver(&animation_observer);
-      animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+      animation.SetTransitionDuration(base::Milliseconds(1000));
       child->SetBounds(gfx::Rect(10, 20, 100, 100));
     }
 
@@ -2823,6 +2844,11 @@ class LayerRemovingLayerAnimationObserver : public LayerAnimationObserver {
   LayerRemovingLayerAnimationObserver(Layer* root, Layer* child)
       : root_(root), child_(child) {}
 
+  LayerRemovingLayerAnimationObserver(
+      const LayerRemovingLayerAnimationObserver&) = delete;
+  LayerRemovingLayerAnimationObserver& operator=(
+      const LayerRemovingLayerAnimationObserver&) = delete;
+
   // LayerAnimationObserver:
   void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
     root_->Remove(child_);
@@ -2835,10 +2861,8 @@ class LayerRemovingLayerAnimationObserver : public LayerAnimationObserver {
   void OnLayerAnimationScheduled(LayerAnimationSequence* sequence) override {}
 
  private:
-  Layer* root_;
-  Layer* child_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerRemovingLayerAnimationObserver);
+  raw_ptr<Layer> root_;
+  raw_ptr<Layer> child_;
 };
 
 // Verifies that empty LayerAnimators are not left behind when removing child
@@ -2857,8 +2881,7 @@ TEST_F(LayerWithDelegateTest, NonAnimatingAnimatorsAreRemovedFromCollection) {
   child->GetAnimator()->AddObserver(&observer);
 
   std::unique_ptr<LayerAnimationElement> element =
-      ui::LayerAnimationElement::CreateOpacityElement(
-          0.5f, base::TimeDelta::FromSeconds(1));
+      ui::LayerAnimationElement::CreateOpacityElement(0.5f, base::Seconds(1));
   LayerAnimationSequence* sequence =
       new LayerAnimationSequence(std::move(element));
 
@@ -2878,7 +2901,7 @@ std::string Vector2dFTo100thPrecisionString(const gfx::Vector2dF& vector) {
 
 }  // namespace
 
-TEST_P(LayerWithRealCompositorTest, SnapLayerToPixels) {
+TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> c1 = CreateLayer(LAYER_TEXTURED);
   std::unique_ptr<Layer> c11 = CreateLayer(LAYER_TEXTURED);
@@ -2951,8 +2974,8 @@ TEST(LayerDelegateTest, OnLayerBoundsChangedAnimation) {
 
   // Start the animation.
   std::unique_ptr<LayerAnimationElement> element =
-      LayerAnimationElement::CreateBoundsElement(
-          kTargetBounds, base::TimeDelta::FromSeconds(1));
+      LayerAnimationElement::CreateBoundsElement(kTargetBounds,
+                                                 base::Seconds(1));
   ASSERT_FALSE(element->IsThreaded(layer.get()));
   LayerAnimationElement* element_raw = element.get();
   animator->StartAnimation(new LayerAnimationSequence(std::move(element)));
@@ -3057,7 +3080,7 @@ TEST(LayerDelegateTest, OnLayerTransformedNonThreadedAnimation) {
   // Start the animation.
   std::unique_ptr<LayerAnimationElement> element =
       LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::move(interpolated_transform), base::TimeDelta::FromSeconds(1));
+          std::move(interpolated_transform), base::Seconds(1));
   // The LayerAnimationElement returned by CreateInterpolatedTransformElement()
   // is non-threaded.
   ASSERT_FALSE(element->IsThreaded(layer.get()));
@@ -3124,8 +3147,8 @@ TEST(LayerDelegateTest, OnLayerTransformedThreadedAnimation) {
   gfx::Transform target_transform;
   target_transform.Skew(10.0f, 5.0f);
   std::unique_ptr<LayerAnimationElement> element =
-      LayerAnimationElement::CreateTransformElement(
-          target_transform, base::TimeDelta::FromSeconds(1));
+      LayerAnimationElement::CreateTransformElement(target_transform,
+                                                    base::Seconds(1));
   ASSERT_TRUE(element->IsThreaded(layer.get()));
   LayerAnimationElement* element_raw = element.get();
   // At the beginning, setting the transform actually does not change, so
@@ -3191,8 +3214,8 @@ TEST(LayerDelegateTest, OnLayerOpacityChangedAnimation) {
   const float initial_opacity = layer->opacity();
   const float kTargetOpacity = 0.5f;
   std::unique_ptr<LayerAnimationElement> element =
-      LayerAnimationElement::CreateOpacityElement(
-          kTargetOpacity, base::TimeDelta::FromSeconds(1));
+      LayerAnimationElement::CreateOpacityElement(kTargetOpacity,
+                                                  base::Seconds(1));
   ASSERT_TRUE(element->IsThreaded(layer.get()));
   LayerAnimationElement* element_raw = element.get();
   EXPECT_CALL(delegate,
@@ -3244,7 +3267,7 @@ TEST(LayerDelegateTest, OnLayerAlphaShapeChanged) {
   testing::Mock::VerifyAndClear(&delegate);
 }
 
-TEST_P(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
+TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   std::unique_ptr<Layer> root = CreateLayer(LAYER_TEXTURED);
 
   root->SetAnimator(LayerAnimator::CreateImplicitAnimator());

@@ -21,6 +21,36 @@ uint64_t AlignWebGPUBytesPerRow(uint64_t bytesPerRow) {
          << kDawnBytesPerRowAlignmentBits;
 }
 
+bool IsPaintImageReadAllChannels(WGPUTextureFormat dawn_format) {
+  switch (dawn_format) {
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Float:
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG32Float:
+      return false;
+    default:
+      return true;
+  }
+}
+
+// SkImageInfo doesn't support R8Unorm, R16Float, R32Float and RG32Float.
+// So we config these formats to the 2 or 4 channel compatible ones to read
+// pixels.
+WGPUTextureFormat DawnColorTypeToCreateSkImageInfo(
+    WGPUTextureFormat dawn_format) {
+  switch (dawn_format) {
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG32Float:
+      return WGPUTextureFormat_RGBA32Float;
+    case WGPUTextureFormat_R8Unorm:
+      return WGPUTextureFormat_RG8Unorm;
+    case WGPUTextureFormat_R16Float:
+      return WGPUTextureFormat_RG16Float;
+    default:
+      return dawn_format;
+  }
+}
+
 SkColorType DawnColorTypeToSkColorType(WGPUTextureFormat dawn_format) {
   switch (dawn_format) {
     case WGPUTextureFormat_RGBA8Unorm:
@@ -51,7 +81,7 @@ SkColorType DawnColorTypeToSkColorType(WGPUTextureFormat dawn_format) {
 }  // anonymous namespace
 
 WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
-    const IntRect& rect,
+    const gfx::Rect& rect,
     const WGPUTextureFormat& destination_format) {
   WebGPUImageUploadSizeInfo info;
 
@@ -59,14 +89,14 @@ WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
   DCHECK_NE(bytes_per_pixel, 0u);
 
   uint64_t bytes_per_row =
-      AlignWebGPUBytesPerRow(rect.Width() * bytes_per_pixel);
+      AlignWebGPUBytesPerRow(rect.width() * bytes_per_pixel);
 
   // Currently, bytes per row for buffer copy view in WebGPU is an uint32_t type
   // value and the maximum value is std::numeric_limits<uint32_t>::max().
   DCHECK(bytes_per_row <= std::numeric_limits<uint32_t>::max());
 
   info.wgpu_bytes_per_row = static_cast<uint32_t>(bytes_per_row);
-  info.size_in_bytes = bytes_per_row * rect.Height();
+  info.size_in_bytes = bytes_per_row * rect.height();
 
   return info;
 }
@@ -74,39 +104,83 @@ WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
 bool CopyBytesFromImageBitmapForWebGPU(
     scoped_refptr<StaticBitmapImage> image,
     base::span<uint8_t> dst,
-    const IntRect& rect,
-    const WGPUTextureFormat destination_format) {
+    const gfx::Rect& rect,
+    const WGPUTextureFormat destination_format,
+    bool premultipliedAlpha,
+    bool flipY) {
   DCHECK(image);
   DCHECK_GT(dst.size(), static_cast<size_t>(0));
-  DCHECK(image->width() - rect.X() >= rect.Width());
-  DCHECK(image->height() - rect.Y() >= rect.Height());
-  DCHECK(rect.Width());
-  DCHECK(rect.Height());
+  DCHECK(image->width() - rect.x() >= rect.width());
+  DCHECK(image->height() - rect.y() >= rect.height());
+  DCHECK(rect.width());
+  DCHECK(rect.height());
 
-  WebGPUImageUploadSizeInfo wgpu_info =
+  WebGPUImageUploadSizeInfo dst_info =
       ComputeImageBitmapWebGPUUploadSizeInfo(rect, destination_format);
-  DCHECK_EQ(static_cast<uint64_t>(dst.size()), wgpu_info.size_in_bytes);
+  DCHECK_EQ(static_cast<uint64_t>(dst.size()), dst_info.size_in_bytes);
 
   // Prepare extract data from SkImage.
-  SkColorType sk_color_type = DawnColorTypeToSkColorType(destination_format);
+  SkColorType sk_color_type = DawnColorTypeToSkColorType(
+      DawnColorTypeToCreateSkImageInfo(destination_format));
   if (sk_color_type == kUnknown_SkColorType) {
     return false;
   }
   PaintImage paint_image = image->PaintImageForCurrentFrame();
 
+  bool read_all_channels = IsPaintImageReadAllChannels(destination_format);
+
   // Read pixel request dst info.
-  // Keep premulalpha config and color space from imageBitmap and using dest
-  // texture color type. This can help do conversions in ReadPixels.
+  // TODO(crbug.com/1217153): Convert to user-provided color space.
   SkImageInfo info = SkImageInfo::Make(
-      rect.Width(), rect.Height(), sk_color_type,
-      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
+      rect.width(), rect.height(), sk_color_type,
+      premultipliedAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       paint_image.GetSkImageInfo().refColorSpace());
 
-  bool read_pixels_successful = paint_image.readPixels(
-      info, dst.data(), wgpu_info.wgpu_bytes_per_row, rect.X(), rect.Y());
+  if (!flipY && read_all_channels) {
+    return paint_image.readPixels(info, dst.data(), dst_info.wgpu_bytes_per_row,
+                                  rect.x(), rect.y());
+  } else {
+    // Calculate size info if the destination format has been converted to the
+    // compatible ones.
+    WGPUTextureFormat compatible_dawn_format =
+        DawnColorTypeToCreateSkImageInfo(destination_format);
+    WebGPUImageUploadSizeInfo pixel_info =
+        ComputeImageBitmapWebGPUUploadSizeInfo(rect, compatible_dawn_format);
 
-  if (!read_pixels_successful) {
-    return false;
+    std::vector<uint8_t> paint_image_content;
+    paint_image_content.resize(pixel_info.wgpu_bytes_per_row * rect.height());
+    if (!paint_image.readPixels(info, paint_image_content.data(),
+                                pixel_info.wgpu_bytes_per_row, rect.x(),
+                                rect.y())) {
+      return false;
+    }
+    // Do flipY for the bottom left image.
+    if (flipY && read_all_channels) {
+      for (int i = 0; i < rect.height(); ++i) {
+        memcpy(
+            dst.data() + (rect.height() - 1 - i) * dst_info.wgpu_bytes_per_row,
+            paint_image_content.data() + i * dst_info.wgpu_bytes_per_row,
+            dst_info.wgpu_bytes_per_row);
+      }
+    } else {
+      // Copy from required channels pixel by pixel and do flipY if needed.
+      uint32_t destination_format_pixel_bytes = static_cast<uint32_t>(
+          DawnTextureFormatBytesPerPixel(destination_format));
+      uint32_t paint_image_pixel_bytes = static_cast<uint32_t>(
+          DawnTextureFormatBytesPerPixel(compatible_dawn_format));
+
+      for (int i = 0; i < rect.height(); ++i) {
+        uint32_t dst_height = flipY ? rect.height() - 1 - i : i;
+        for (int j = 0; j < rect.width(); ++j) {
+          memcpy(dst.data() + dst_height * dst_info.wgpu_bytes_per_row +
+                     j * destination_format_pixel_bytes,
+                 paint_image_content.data() +
+                     i * pixel_info.wgpu_bytes_per_row +
+                     j * paint_image_pixel_bytes,
+                 destination_format_pixel_bytes);
+        }
+      }
+    }
   }
 
   return true;
@@ -114,7 +188,10 @@ bool CopyBytesFromImageBitmapForWebGPU(
 
 uint64_t DawnTextureFormatBytesPerPixel(const WGPUTextureFormat color_type) {
   switch (color_type) {
+    case WGPUTextureFormat_R8Unorm:
+      return 1;
     case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_R16Float:
       return 2;
     case WGPUTextureFormat_RGBA8Unorm:
     case WGPUTextureFormat_RGBA8UnormSrgb:
@@ -122,8 +199,10 @@ uint64_t DawnTextureFormatBytesPerPixel(const WGPUTextureFormat color_type) {
     case WGPUTextureFormat_BGRA8UnormSrgb:
     case WGPUTextureFormat_RGB10A2Unorm:
     case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_R32Float:
       return 4;
     case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RG32Float:
       return 8;
     case WGPUTextureFormat_RGBA32Float:
       return 16;

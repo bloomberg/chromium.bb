@@ -24,7 +24,6 @@
 #include "aom_ports/mem.h"
 #include "av1/common/filter.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 
@@ -290,7 +289,7 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
         aom_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
   }
 
-  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  virtual void TearDown() {}
 
   static void TearDownTestSuite() {
     aom_free(input_ - 1);
@@ -536,11 +535,11 @@ TEST_P(ConvolveTest, MatchesReferenceSubpixelFilter) {
           if (filter_x && filter_y)
             continue;
           else if (filter_y)
-            ASM_REGISTER_STATE_CHECK(
+            API_REGISTER_STATE_CHECK(
                 UUT_->v8_(in, kInputStride, out, kOutputStride, kInvalidFilter,
                           16, filters[filter_y], 16, Width(), Height()));
           else if (filter_x)
-            ASM_REGISTER_STATE_CHECK(UUT_->h8_(
+            API_REGISTER_STATE_CHECK(UUT_->h8_(
                 in, kInputStride, out, kOutputStride, filters[filter_x], 16,
                 kInvalidFilter, 16, Width(), Height()));
           else
@@ -618,11 +617,11 @@ TEST_P(ConvolveTest, FilterExtremes) {
               if (filter_x && filter_y)
                 continue;
               else if (filter_y)
-                ASM_REGISTER_STATE_CHECK(UUT_->v8_(
+                API_REGISTER_STATE_CHECK(UUT_->v8_(
                     in, kInputStride, out, kOutputStride, kInvalidFilter, 16,
                     filters[filter_y], 16, Width(), Height()));
               else if (filter_x)
-                ASM_REGISTER_STATE_CHECK(UUT_->h8_(
+                API_REGISTER_STATE_CHECK(UUT_->h8_(
                     in, kInputStride, out, kOutputStride, filters[filter_x], 16,
                     kInvalidFilter, 16, Width(), Height()));
               else
@@ -688,11 +687,11 @@ TEST_P(ConvolveTest, DISABLED_Speed) {
         for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
           if (filter_x && filter_y) continue;
           if (filter_y)
-            ASM_REGISTER_STATE_CHECK(
+            API_REGISTER_STATE_CHECK(
                 UUT_->v8_(in, kInputStride, out, kOutputStride, kInvalidFilter,
                           16, filters[filter_y], 16, Width(), Height()));
           else if (filter_x)
-            ASM_REGISTER_STATE_CHECK(UUT_->h8_(
+            API_REGISTER_STATE_CHECK(UUT_->h8_(
                 in, kInputStride, out, kOutputStride, filters[filter_x], 16,
                 kInvalidFilter, 16, Width(), Height()));
         }

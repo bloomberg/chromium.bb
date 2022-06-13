@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -50,7 +50,7 @@ constexpr double kStrongMagnitude = 1.0;  // 100% intensity
 constexpr double kWeakMagnitude = 0.5;    // 50% intensity
 
 constexpr base::TimeDelta kPendingTaskDuration =
-    base::TimeDelta::FromMillisecondsD(kDurationMillis);
+    base::Milliseconds(kDurationMillis);
 
 class FakeHidWriter : public HidWriter {
  public:
@@ -80,6 +80,9 @@ class XboxHidControllerTest : public testing::Test {
     fake_hid_writer_ = fake_hid_writer.get();
     gamepad_ = std::make_unique<XboxHidController>(std::move(fake_hid_writer));
   }
+
+  XboxHidControllerTest(const XboxHidControllerTest&) = delete;
+  XboxHidControllerTest& operator=(const XboxHidControllerTest&) = delete;
 
   void TearDown() override { gamepad_->Shutdown(); }
 
@@ -111,12 +114,10 @@ class XboxHidControllerTest : public testing::Test {
   const std::vector<uint8_t> stop_vibration_report_;
   int callback_count_;
   mojom::GamepadHapticsResult callback_result_;
-  FakeHidWriter* fake_hid_writer_;
+  raw_ptr<FakeHidWriter> fake_hid_writer_;
   std::unique_ptr<XboxHidController> gamepad_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
-  DISALLOW_COPY_AND_ASSIGN(XboxHidControllerTest);
 };
 
 TEST_F(XboxHidControllerTest, PlayEffect) {

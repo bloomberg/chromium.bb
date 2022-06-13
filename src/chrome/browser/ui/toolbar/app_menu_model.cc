@@ -13,7 +13,6 @@
 #include "base/debug/debugging_buildflags.h"
 #include "base/debug/profiler.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/commander/commander.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -83,21 +83,20 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/feature_list.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/tablet_mode.h"
-#include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
+#include "chromeos/ui/base/tablet_state.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif
 
@@ -110,6 +109,8 @@
 using base::UserMetricsAction;
 using content::WebContents;
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kHistoryMenuItem);
+
 namespace {
 
 constexpr size_t kMaxAppNameLength = 30;
@@ -121,10 +122,7 @@ std::u16string GetUpgradeDialogMenuItemName() {
       UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
     return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_MENU_ITEM);
   } else {
-    return l10n_util::GetStringUTF16(
-        base::FeatureList::IsEnabled(features::kUseRelaunchToUpdateString)
-            ? IDS_RELAUNCH_TO_UPDATE
-            : IDS_UPDATE_NOW);
+    return l10n_util::GetStringUTF16(IDS_RELAUNCH_TO_UPDATE);
   }
 }
 
@@ -160,7 +158,7 @@ ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
   Build();
 }
 
-ZoomMenuModel::~ZoomMenuModel() {}
+ZoomMenuModel::~ZoomMenuModel() = default;
 
 void ZoomMenuModel::Build() {
   AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
@@ -178,6 +176,9 @@ class HelpMenuModel : public ui::SimpleMenuModel {
       : SimpleMenuModel(delegate) {
     Build(browser);
   }
+
+  HelpMenuModel(const HelpMenuModel&) = delete;
+  HelpMenuModel& operator=(const HelpMenuModel&) = delete;
 
  private:
   void Build(Browser* browser) {
@@ -197,6 +198,14 @@ class HelpMenuModel : public ui::SimpleMenuModel {
       if (base::FeatureList::IsEnabled(features::kChromeTipsInMainMenuNewBadge))
         SetIsNewFeatureAt(GetIndexOfCommandId(IDC_CHROME_TIPS), true);
     }
+    if (base::FeatureList::IsEnabled(features::kChromeWhatsNewUI)) {
+      AddItem(IDC_CHROME_WHATS_NEW,
+              l10n_util::GetStringUTF16(IDS_CHROME_WHATS_NEW));
+      if (base::FeatureList::IsEnabled(
+              features::kChromeWhatsNewInMainMenuNewBadge)) {
+        SetIsNewFeatureAt(GetIndexOfCommandId(IDC_CHROME_WHATS_NEW), true);
+      }
+    }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
     AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, help_string_id);
     if (browser_defaults::kShowHelpMenuItemIcon) {
@@ -207,8 +216,6 @@ class HelpMenuModel : public ui::SimpleMenuModel {
     if (browser->profile()->GetPrefs()->GetBoolean(prefs::kUserFeedbackAllowed))
       AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(HelpMenuModel);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,7 +227,7 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
   Build(browser);
 }
 
-ToolsMenuModel::~ToolsMenuModel() {}
+ToolsMenuModel::~ToolsMenuModel() = default;
 
 // More tools submenu is constructed as follows:
 // - Page specific actions overflow (save page, adding to desktop).
@@ -228,12 +235,16 @@ ToolsMenuModel::~ToolsMenuModel() {}
 // - Developer tools.
 // - Option to enable profiling.
 void ToolsMenuModel::Build(Browser* browser) {
-  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu))
+  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu) ||
+      browser->profile()->IsIncognitoProfile() ||
+      browser->profile()->IsGuestSession()) {
     AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
+  }
 
   AddItemWithStringId(IDC_CREATE_SHORTCUT, IDS_ADD_TO_OS_LAUNCH_SURFACE);
-  if (base::FeatureList::IsEnabled(features::kWindowNaming))
-    AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
+  AddItemWithStringId(IDC_NAME_WINDOW, IDS_NAME_WINDOW);
+  if (commander::IsEnabled())
+    AddItemWithStringId(IDC_TOGGLE_COMMANDER, IDS_TOGGLE_COMMANDER);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
@@ -257,8 +268,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
 // static
 const int AppMenuModel::kMinRecentTabsCommandId;
-// static
-const int AppMenuModel::kMaxRecentTabsCommandId;
+const int AppMenuModel::kNumUnboundedMenuTypes;
 
 AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider,
                            Browser* browser,
@@ -288,7 +298,7 @@ void AppMenuModel::Init() {
   Observe(tab_strip_model->GetActiveWebContents());
   UpdateZoomControls();
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   PrefService* const local_state = g_browser_process->local_state();
   if (local_state) {
     local_state_pref_change_registrar_.Init(local_state);
@@ -298,7 +308,7 @@ void AppMenuModel::Init() {
                             base::Unretained(this)));
     UpdateSettingsItemState();
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -651,6 +661,13 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeTips", delta);
       LogMenuAction(MENU_ACTION_CHROME_TIPS);
       break;
+    case IDC_CHROME_WHATS_NEW:
+      if (!uma_action_recorded_) {
+        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeWhatsNew",
+                                   delta);
+      }
+      LogMenuAction(MENU_ACTION_CHROME_WHATS_NEW);
+      break;
 #endif
 
     case IDC_TOGGLE_REQUEST_TABLET_SITE:
@@ -690,12 +707,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.AppInfo", delta);
       LogMenuAction(MENU_ACTION_APP_INFO);
-      break;
-    case IDC_SHOW_KALEIDOSCOPE:
-      if (!uma_action_recorded_)
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowKaleidoscope",
-                                   delta);
-      LogMenuAction(MENU_ACTION_SHOW_KALEIDOSCOPE);
       break;
   }
 
@@ -791,26 +802,24 @@ void AppMenuModel::Build() {
   if (AddGlobalErrorMenuItems() || IsCommandIdVisible(IDC_UPGRADE_DIALOG))
     AddSeparator(ui::NORMAL_SEPARATOR);
 
-  AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+  AddItemWithStringId(IDC_NEW_TAB, browser_->profile()->IsIncognitoProfile()
+                                       ? IDS_NEW_INCOGNITO_TAB
+                                       : IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
   AddSeparator(ui::NORMAL_SEPARATOR);
-
-  if (!browser_->profile()->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(media::kKaleidoscopeInMenu)) {
-    AddItemWithStringId(IDC_SHOW_KALEIDOSCOPE, IDS_SHOW_KALEIDOSCOPE);
-  }
 
   if (!browser_->profile()->IsOffTheRecord()) {
     sub_menus_.push_back(
         std::make_unique<RecentTabsSubMenuModel>(provider_, browser_));
     AddSubMenuWithStringId(IDC_RECENT_TABS_MENU, IDS_HISTORY_MENU,
                            sub_menus_.back().get());
+    SetElementIdentifierAt(GetIndexOfCommandId(IDC_RECENT_TABS_MENU),
+                           kHistoryMenuItem);
   }
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
-  if (!browser_->profile()->IsGuestSession() &&
-      !browser_->profile()->IsEphemeralGuestProfile()) {
+  if (!browser_->profile()->IsGuestSession()) {
     bookmark_sub_menu_model_ =
         std::make_unique<BookmarkSubMenuModel>(this, browser_);
     AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
@@ -821,7 +830,9 @@ void AppMenuModel::Build() {
   CreateZoomMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
 
-  if (base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu)) {
+  if (!(browser_->profile()->IsIncognitoProfile() ||
+        browser_->profile()->IsGuestSession()) &&
+      sharing_hub::SharingHubAppMenuEnabled(browser()->profile())) {
     sub_menus_.push_back(
         std::make_unique<sharing_hub::SharingHubSubMenuModel>(browser_));
     AddSubMenuWithStringId(IDC_SHARING_HUB_MENU, IDS_SHARING_HUB_TITLE,
@@ -830,7 +841,9 @@ void AppMenuModel::Build() {
 
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
-  if (!base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu)) {
+  if (!sharing_hub::SharingHubAppMenuEnabled(browser()->profile()) ||
+      browser_->profile()->IsIncognitoProfile() ||
+      browser_->profile()->IsGuestSession()) {
     if (media_router::MediaRouterEnabled(browser()->profile()))
       AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   }
@@ -842,13 +855,19 @@ void AppMenuModel::Build() {
     AddItem(IDC_INSTALL_PWA, *name);
   } else if (absl::optional<web_app::AppId> app_id =
                  web_app::GetWebAppForActiveTab(browser_)) {
-    auto* provider = web_app::WebAppProvider::Get(browser_->profile());
-    const std::u16string short_name =
-        base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
-    const std::u16string truncated_name = gfx::TruncateString(
-        short_name, kMaxAppNameLength, gfx::CHARACTER_BREAK);
-    AddItem(IDC_OPEN_IN_PWA_WINDOW,
-            l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
+    auto* provider =
+        web_app::WebAppProvider::GetForLocalAppsUnchecked(browser_->profile());
+    // Only applies to apps that open in an app window.
+    if (provider->registrar().GetAppUserDisplayMode(*app_id) !=
+        web_app::DisplayMode::kBrowser) {
+      const std::u16string short_name =
+          base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
+      const std::u16string truncated_name = gfx::TruncateString(
+          short_name, kMaxAppNameLength, gfx::CHARACTER_BREAK);
+      AddItem(
+          IDC_OPEN_IN_PWA_WINDOW,
+          l10n_util::GetStringFUTF16(IDS_OPEN_IN_APP_WINDOW, truncated_name));
+    }
   }
 
   if (dom_distiller::IsDomDistillerEnabled() &&
@@ -872,11 +891,10 @@ void AppMenuModel::Build() {
     }
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Always show this option if we're in tablet mode on Chrome OS.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableRequestTabletSite) ||
-      (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())) {
+  if (chromeos::TabletState::Get() &&
+      chromeos::TabletState::Get()->InTabletMode()) {
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
   }
@@ -918,10 +936,9 @@ void AppMenuModel::Build() {
     AddHighlightedItemWithIcon(
         IDC_SHOW_MANAGEMENT_PAGE,
         chrome::GetManagedUiMenuItemLabel(browser_->profile()),
-        ui::ImageModel::FromVectorIcon(
-            vector_icons::kBusinessIcon,
-            ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor,
-            kIconSize));
+        ui::ImageModel::FromVectorIcon(vector_icons::kBusinessIcon,
+                                       ui::kColorMenuItemForegroundHighlighted,
+                                       kIconSize));
   }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -961,12 +978,11 @@ void AppMenuModel::UpdateZoomControls() {
 }
 
 bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsGuestSession() ||
-      browser_->profile()->IsEphemeralGuestProfile())
+  if (browser_->profile()->IsGuestSession())
     return false;
 
   return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
-         IncognitoModePrefs::DISABLED;
+         IncognitoModePrefs::Availability::kDisabled;
 }
 
 bool AppMenuModel::AddGlobalErrorMenuItems() {
@@ -977,8 +993,7 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   bool menu_items_added = false;
-  for (auto it = errors.begin(); it != errors.end(); ++it) {
-    GlobalError* error = *it;
+  for (auto* error : errors) {
     DCHECK(error);
     if (error->HasMenuItem()) {
       AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
@@ -999,27 +1014,16 @@ void AppMenuModel::OnZoomLevelChanged(
   UpdateZoomControls();
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 void AppMenuModel::UpdateSettingsItemState() {
-  const base::ListValue* system_features_disable_list_pref = nullptr;
-  PrefService* const local_state = g_browser_process->local_state();
-  if (local_state) {  // Sometimes it's not available in tests.
-    system_features_disable_list_pref =
-        local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
-  }
-
-  bool is_enabled =
-      !system_features_disable_list_pref ||
-      // TODO(crbug.com/1187106): Use base::Contains once
-      // |system_features_disable_list_pref| is not a ListValue.
-      std::find(system_features_disable_list_pref->GetList().begin(),
-                system_features_disable_list_pref->GetList().end(),
-                base::Value(policy::SystemFeature::kBrowserSettings)) ==
-          system_features_disable_list_pref->GetList().end();
+  bool is_disabled =
+      policy::SystemFeaturesDisableListPolicyHandler::IsSystemFeatureDisabled(
+          policy::SystemFeature::kBrowserSettings,
+          g_browser_process->local_state());
 
   int index = GetIndexOfCommandId(IDC_OPTIONS);
   if (index != -1)
-    SetEnabledAt(index, is_enabled);
+    SetEnabledAt(index, !is_disabled);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   index = GetIndexOfCommandId(IDC_HELP_MENU);
@@ -1028,12 +1032,12 @@ void AppMenuModel::UpdateSettingsItemState() {
         static_cast<ui::SimpleMenuModel*>(GetSubmenuModelAt(index));
     index = help_menu->GetIndexOfCommandId(IDC_ABOUT);
     if (index != -1)
-      help_menu->SetEnabledAt(index, is_enabled);
+      help_menu->SetEnabledAt(index, !is_disabled);
   }
 #else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   index = GetIndexOfCommandId(IDC_ABOUT);
   if (index != -1)
-    SetEnabledAt(index, is_enabled);
+    SetEnabledAt(index, !is_disabled);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)

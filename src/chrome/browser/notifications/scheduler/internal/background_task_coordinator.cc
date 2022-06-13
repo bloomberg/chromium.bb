@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/numerics/ranges.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
@@ -151,14 +152,13 @@ class BackgroundTaskCoordinatorHelper {
 
     base::TimeDelta window_start_time =
         background_task_time_.value() - clock_->Now();
-    window_start_time = base::ClampToRange(window_start_time, base::TimeDelta(),
-                                           base::TimeDelta::Max());
+    window_start_time = base::clamp(window_start_time, base::TimeDelta(),
+                                    base::TimeDelta::Max());
 
     // TODO(xingliu): Remove SchedulerTaskTime.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kNotificationSchedulerImmediateBackgroundTask)) {
-      background_task_->Schedule(base::TimeDelta::FromSeconds(30),
-                                 base::TimeDelta::FromMinutes(1));
+      background_task_->Schedule(base::Seconds(30), base::Minutes(1));
       return;
     }
 
@@ -167,9 +167,9 @@ class BackgroundTaskCoordinatorHelper {
         window_start_time + config_->background_task_window_duration);
   }
 
-  NotificationBackgroundTaskScheduler* background_task_;
-  const SchedulerConfig* config_;
-  base::Clock* clock_;
+  raw_ptr<NotificationBackgroundTaskScheduler> background_task_;
+  raw_ptr<const SchedulerConfig> config_;
+  raw_ptr<base::Clock> clock_;
   absl::optional<base::Time> background_task_time_;
 };
 
@@ -204,10 +204,10 @@ class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
   std::unique_ptr<NotificationBackgroundTaskScheduler> background_task_;
 
   // System configuration.
-  const SchedulerConfig* config_;
+  raw_ptr<const SchedulerConfig> config_;
 
   // Clock to query the current timestamp.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 };
 
 // static

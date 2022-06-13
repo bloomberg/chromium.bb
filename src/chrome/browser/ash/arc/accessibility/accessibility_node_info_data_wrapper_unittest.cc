@@ -8,12 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/mojom/accessibility_helper.mojom.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_test_util.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/ash/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -40,7 +40,7 @@ class AccessibilityNodeInfoDataWrapperTest : public testing::Test,
   class TestAXTreeSourceArc : public AXTreeSourceArc {
    public:
     explicit TestAXTreeSourceArc(AXTreeSourceArc::Delegate* delegate)
-        : AXTreeSourceArc(delegate) {}
+        : AXTreeSourceArc(delegate, /*window=*/nullptr) {}
 
     // AXTreeSourceArc overrides.
     bool IsRootOfNodeTree(int32_t id) const override {
@@ -775,4 +775,24 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, FocusAndClickAction) {
   EXPECT_TRUE(data.HasState(ax::mojom::State::kFocusable));
 }
 
+TEST_F(AccessibilityNodeInfoDataWrapperTest, LiveRegionStatus) {
+  AXNodeInfoData root;
+  root.id = 1;
+  mojom::AccessibilityLiveRegionType politeLiveRegion =
+      mojom::AccessibilityLiveRegionType::POLITE;
+  SetProperty(root, AXIntProperty::LIVE_REGION,
+              static_cast<int32_t>(politeLiveRegion));
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &root);
+
+  // Check that live region status was set on node.
+  ui::AXNodeData data = CallSerialize(wrapper);
+  std::string val;
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus, &val));
+  ASSERT_EQ("polite", val);
+
+  ASSERT_TRUE(data.GetStringAttribute(
+      ax::mojom::StringAttribute::kContainerLiveStatus, &val));
+  ASSERT_EQ("polite", val);
+}
 }  // namespace arc

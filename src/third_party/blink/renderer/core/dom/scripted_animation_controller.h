@@ -30,6 +30,9 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -88,7 +91,8 @@ class CORE_EXPORT ScriptedAnimationController
 
   // Invokes callbacks, dispatches events, etc. The order is defined by HTML:
   // https://html.spec.whatwg.org/C/#event-loop-processing-model
-  void ServiceScriptedAnimations(base::TimeTicks monotonic_time_now);
+  void ServiceScriptedAnimations(base::TimeTicks monotonic_time_now,
+                                 bool can_throttle = false);
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
   void ContextDestroyed() final {}
@@ -99,8 +103,9 @@ class CORE_EXPORT ScriptedAnimationController
   void ScheduleAnimationIfNeeded();
 
   void RunTasks();
+  typedef absl::optional<bool (*)(const Event*)> DispatchFilter;
   void DispatchEvents(
-      const AtomicString& event_interface_filter = AtomicString());
+      const DispatchFilter& filter = DispatchFilter(absl::nullopt));
   void ExecuteFrameCallbacks();
   void ExecuteVideoFrameCallbacks();
   void CallMediaQueryListListeners();

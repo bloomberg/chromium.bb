@@ -5,6 +5,7 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_IMPL_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "headless/public/headless_browser.h"
 
 #include <memory>
@@ -12,7 +13,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_export.h"
@@ -51,6 +52,10 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   HeadlessBrowserImpl(
       base::OnceCallback<void(HeadlessBrowser*)> on_start_callback,
       HeadlessBrowser::Options options);
+
+  HeadlessBrowserImpl(const HeadlessBrowserImpl&) = delete;
+  HeadlessBrowserImpl& operator=(const HeadlessBrowserImpl&) = delete;
+
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
@@ -114,19 +119,16 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
  protected:
   base::OnceCallback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;
-  HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.
+  raw_ptr<HeadlessBrowserMainParts> browser_main_parts_;  // Not owned.
 
   base::flat_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
       browser_contexts_;
-  HeadlessBrowserContext* default_browser_context_;  // Not owned.
+  raw_ptr<HeadlessBrowserContext> default_browser_context_;  // Not owned.
 
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::unique_ptr<HeadlessRequestContextManager>
       system_request_context_manager_;
   base::WeakPtrFactory<HeadlessBrowserImpl> weak_ptr_factory_{this};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);
 };
 
 }  // namespace headless

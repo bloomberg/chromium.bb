@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
@@ -40,6 +40,9 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
  public:
   AudioDecoderTest()
       : cast_environment_(new StandaloneCastEnvironment()), cond_(&lock_) {}
+
+  AudioDecoderTest(const AudioDecoderTest&) = delete;
+  AudioDecoderTest& operator=(const AudioDecoderTest&) = delete;
 
   virtual ~AudioDecoderTest() {
     // Make sure all threads have stopped before the environment goes away.
@@ -171,8 +174,8 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
 
     // Signal the main test thread that more audio was decoded.
     base::AutoLock auto_lock(lock_);
-    total_audio_decoded_ += base::TimeDelta::FromSeconds(1) *
-                            audio_bus->frames() / GetParam().sampling_rate;
+    total_audio_decoded_ +=
+        base::Seconds(1) * audio_bus->frames() / GetParam().sampling_rate;
     cond_.Signal();
   }
 
@@ -187,13 +190,10 @@ class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
   base::ConditionVariable cond_;
   base::TimeDelta total_audio_feed_in_;
   base::TimeDelta total_audio_decoded_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);
 };
 
 TEST_P(AudioDecoderTest, DecodesFramesWithSameDuration) {
-  const base::TimeDelta kTenMilliseconds =
-      base::TimeDelta::FromMilliseconds(10);
+  const base::TimeDelta kTenMilliseconds = base::Milliseconds(10);
   const int kNumFrames = 10;
   for (int i = 0; i < kNumFrames; ++i)
     FeedMoreAudio(kTenMilliseconds, 0);
@@ -207,13 +207,12 @@ TEST_P(AudioDecoderTest, DecodesFramesWithVaryingDuration) {
   const int kNumFrames = 10;
   for (size_t i = 0; i < base::size(kFrameDurationMs); ++i)
     for (int j = 0; j < kNumFrames; ++j)
-      FeedMoreAudio(base::TimeDelta::FromMilliseconds(kFrameDurationMs[i]), 0);
+      FeedMoreAudio(base::Milliseconds(kFrameDurationMs[i]), 0);
   WaitForAllAudioToBeDecoded();
 }
 
 TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
-  const base::TimeDelta kTenMilliseconds =
-      base::TimeDelta::FromMilliseconds(10);
+  const base::TimeDelta kTenMilliseconds = base::Milliseconds(10);
   const int kNumFrames = 100;
   int next_drop_at = 3;
   int next_num_dropped = 1;

@@ -134,8 +134,8 @@ VideoFrameMetadata* WebGLVideoTexture::shareVideoImageWEBGL(
   current_frame_metadata_->setExpectedDisplayTime(
       metadata.expected_timestamp.InMicrosecondsF());
 
-  current_frame_metadata_->setWidth(metadata.visible_rect.Width());
-  current_frame_metadata_->setHeight(metadata.visible_rect.Height());
+  current_frame_metadata_->setWidth(metadata.visible_rect.width());
+  current_frame_metadata_->setHeight(metadata.visible_rect.height());
   current_frame_metadata_->setMediaTime(metadata.timestamp.InSecondsF());
 
   // This is a required field. It is supposed to be monotonically increasing for
@@ -156,17 +156,16 @@ bool WebGLVideoTexture::releaseVideoImageWEBGL(
 }
 
 // static
-WebGLTexture::VideoFrameUploadMetadata
-WebGLVideoTexture::CreateVideoFrameUploadMetadata(
+WebGLVideoFrameUploadMetadata WebGLVideoTexture::CreateVideoFrameUploadMetadata(
     const media::VideoFrame* frame,
     int already_uploaded_id) {
   DCHECK(frame);
-  WebGLTexture::VideoFrameUploadMetadata metadata = {};
+  WebGLVideoFrameUploadMetadata metadata = {};
   if (!RuntimeEnabledFeatures::ExtraWebGLVideoTextureMetadataEnabled())
     return metadata;
 
   metadata.frame_id = frame->unique_id();
-  metadata.visible_rect = IntRect(frame->visible_rect());
+  metadata.visible_rect = frame->visible_rect();
   metadata.timestamp = frame->timestamp();
   if (frame->metadata().frame_duration.has_value()) {
     metadata.expected_timestamp =

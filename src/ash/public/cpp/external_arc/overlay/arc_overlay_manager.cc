@@ -4,8 +4,9 @@
 
 #include "ash/public/cpp/external_arc/overlay/arc_overlay_manager.h"
 
-#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/external_arc/overlay/arc_overlay_controller_impl.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"

@@ -73,23 +73,16 @@ contains the Vulkan API definition files (registry) that are required to build
 the loader. You must also take note of the headers install directory and pass
 it on the CMake command line for building this repository, as described below.
 
-#### Google Test
+#### Test Dependencies
 
-The loader tests depend on the [Google Test](https://github.com/google/googletest)
-framework and do not build unless this framework is downloaded into the
-repository's `external` directory.
+The loader tests depend on the [Google Test](https://github.com/google/googletest) library and
+on Windows platforms depends on the [Microsoft Detours](https://github.com/microsoft/Detours) library.
 
-To obtain the framework, change your current directory to the top of your
-Vulkan-Loader repository and run:
-
-    git clone https://github.com/google/googletest.git external/googletest
-    cd external/googletest
-    git checkout tags/release-1.8.1
-
-before configuring your build with CMake.
-
-If you do not need the loader tests, there is no need to download this
-framework.
+To build the tests, pass the `-DUPDATE_DEPS=ON` and `-DBUILD_TESTS=ON` options when generating the project:
+```bash
+cmake ... -DUPDATE_DEPS=ON -DBUILD_TESTS=ON ...
+```
+This will ensure googletest and detours is downloaded and the appropriate version is used.
 
 ### Build and Install Directories
 
@@ -101,22 +94,34 @@ although you can place these directories in any location.
 ### Building Dependent Repositories with Known-Good Revisions
 
 There is a Python utility script, `scripts/update_deps.py`, that you can use
-to gather and build the dependent repositories mentioned above. This program
-also uses information stored in the `scripts/known-good.json` file to checkout
-dependent repository revisions that are known to be compatible with the
-revision of this repository that you currently have checked out.
+to gather and build the dependent repositories mentioned above.
+This program also uses information stored in the `scripts/known-good.json` file
+to checkout dependent repository revisions that are known to be compatible with
+the revision of this repository that you currently have checked out.
 
-Here is a usage example for this repository:
+You can choose to do this manually or automatically.
+The first step to either is cloning the Vulkan-Loader repo and stepping into
+that newly cloned folder:
 
-    git clone git@github.com:KhronosGroup/Vulkan-Loader.git
-    cd Vulkan-Loader
-    mkdir build
-    cd build
-    ../scripts/update_deps.py
-    cmake -C helper.cmake ..
-    cmake --build .
+```
+  git clone git@github.com:KhronosGroup/Vulkan-Loader.git
+  cd Vulkan-Loader
+```
 
-#### Notes
+#### Manually
+
+To manually update the dependencies you now must create the build folder, and
+run the update deps script followed by the necessary CMake build commands:
+
+```
+  mkdir build
+  cd build
+  ../scripts/update_deps.py
+  cmake -C helper.cmake ..
+  cmake --build .
+```
+
+##### Notes About the Manual Option
 
 - You may need to adjust some of the CMake options based on your platform. See
   the platform-specific sections later in this document.
@@ -143,6 +148,27 @@ Here is a usage example for this repository:
   execution.
 - Please use `update_deps.py --help` to list additional options and read the
   internal documentation in `update_deps.py` for further information.
+
+
+#### Automatically
+
+On the other hand, if you choose to let the CMake scripts do all the
+heavy-lifting, you may just trigger the following CMake commands:
+
+```
+  cmake -S. -Bbuild -DUPDATE_DEPS=On
+  cmake --build build
+```
+
+##### Notes About the Automatic Option
+
+- You may need to adjust some of the CMake options based on your platform. See
+  the platform-specific sections later in this document.
+- The `build` directory is also being used to build this
+  (Vulkan-ValidationLayers) repository. But there shouldn't be any conflicts
+  inside the `build` directory between the dependent repositories and the
+  build files for this repository.
+
 
 ### Generated source code
 
@@ -176,6 +202,7 @@ on/off options currently supported by this repository:
 | BUILD_WSI_SCREEN_QNX_SUPPORT | QNX | `OFF` | Build the loader with the QNX Screen entry points enabled. Without this the extension `VK_QNX_screen_surface` won't be available. |
 | ENABLE_WIN10_ONECORE | Windows | `OFF` | Link the loader to the [OneCore](https://msdn.microsoft.com/en-us/library/windows/desktop/mt654039.aspx) umbrella library, instead of the standard Win32 ones. |
 | USE_CCACHE | Linux | `OFF` | Enable caching with the CCache program. |
+| USE_GAS  | Linux   | `ON` | Controls whether to build assembly files with the GNU assembler, else fallback to C code. |
 | USE_MASM | Windows | `ON` | Controls whether to build assembly files with MS assembler, else fallback to C code |
 | BUILD_STATIC_LOADER | macOS | `OFF` | This allows the loader to be built as a static library on macOS. Not tested, use at your own risk. |
 
@@ -186,9 +213,9 @@ The following is a table of all string options currently supported by this repos
 | CMAKE_OSX_DEPLOYMENT_TARGET | MacOS | `10.12` | The minimum version of MacOS for loader deployment. |
 | FALLBACK_CONFIG_DIRS | Linux/MacOS | `/etc/xdg` | Configuration path(s) to use instead of `XDG_CONFIG_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
 | FALLBACK_DATA_DIRS | Linux/MacOS | `/usr/local/share:/usr/share` | Configuration path(s) to use instead of `XDG_DATA_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
+| BUILD_DLL_VERSIONINFO | Windows | `""` (empty string) | Allows setting the Windows specific version information for the Loader DLL. Format is "major.minor.patch.build". |
 
-These variables should be set using the `-D` option when invoking
-CMake to generate the native platform files.
+These variables should be set using the `-D` option when invoking CMake to generate the native platform files.
 
 ## Building On Windows
 
@@ -689,7 +716,7 @@ Fuchsia uses the project's GN build system to integrate with the Fuchsia platfor
 ## Building on QNX
 
 QNX is using its own build system. The proper build environment must be set
-under the QNX host development system (Linux, Win64, MacOS) by invoking 
+under the QNX host development system (Linux, Win64, MacOS) by invoking
 the shell/batch script provided with QNX installation.
 
 Then change working directory to the "build-qnx" in this project and type "make".

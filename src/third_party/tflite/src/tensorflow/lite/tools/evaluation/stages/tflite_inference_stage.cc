@@ -51,6 +51,27 @@ void TfliteInferenceStage::UpdateModelInfo() {
   }
 }
 
+TfLiteStatus TfliteInferenceStage::ResizeInputs(
+    const std::vector<std::vector<int>>& shapes) {
+  const std::vector<int>& intepreter_inputs = interpreter_->inputs();
+  if (intepreter_inputs.size() != shapes.size()) {
+    LOG(ERROR) << "New shape is not compatible";
+    return kTfLiteError;
+  }
+
+  for (int j = 0; j < shapes.size(); ++j) {
+    int i = intepreter_inputs[j];
+    TfLiteTensor* t = interpreter_->tensor(i);
+    if (t->type != kTfLiteString) {
+      TF_LITE_ENSURE_STATUS(interpreter_->ResizeInputTensor(i, shapes[j]));
+    }
+  }
+
+  TF_LITE_ENSURE_STATUS(interpreter_->AllocateTensors());
+  UpdateModelInfo();
+  return kTfLiteOk;
+}
+
 TfLiteStatus TfliteInferenceStage::ApplyCustomDelegate(
     Interpreter::TfLiteDelegatePtr delegate) {
   if (!interpreter_) {
@@ -88,7 +109,23 @@ TfLiteStatus TfliteInferenceStage::Init(
   }
 
   model_ = FlatBufferModel::BuildFromFile(params.model_file_path().c_str());
-  resolver_.reset(new ops::builtin::BuiltinOpResolver);
+
+  bool apply_default_delegates = true;
+  if (delegate_providers != nullptr) {
+    const auto& provider_params = delegate_providers->GetAllParams();
+    // When --use_xnnpack is explicitly set to false, to honor this, skip
+    // applying the XNNPACK delegate by default in TfLite runtime.
+    if (provider_params.HasParam("use_xnnpack") &&
+        provider_params.HasValueSet<bool>("use_xnnpack") &&
+        !provider_params.Get<bool>("use_xnnpack")) {
+      apply_default_delegates = false;
+    }
+  }
+
+  resolver_.reset(
+      apply_default_delegates
+          ? new ops::builtin::BuiltinOpResolver()
+          : new ops::builtin::BuiltinOpResolverWithoutDefaultDelegates());
   InterpreterBuilder(*model_, *resolver_)(&interpreter_);
   if (!interpreter_) {
     LOG(ERROR) << "Could not build interpreter";
@@ -108,7 +145,7 @@ TfLiteStatus TfliteInferenceStage::Init(
     }
   } else {
     auto delegates = delegate_providers->CreateAllDelegates(params);
-    for (auto& one : delegates) delegates_.push_back(std::move(one));
+    for (auto& one : delegates) delegates_.push_back(std::move(one.delegate));
   }
 
   for (int i = 0; i < delegates_.size(); ++i) {

@@ -5,16 +5,16 @@ Also serves as a larger test of async test functions, and of the logging system.
 `;
 
 import { SkipTestCase } from '../common/framework/fixture.js';
-import { Logger } from '../common/framework/logging/logger.js';
 import { makeTestGroup } from '../common/framework/test_group.js';
-import { assert } from '../common/framework/util/util.js';
+import { Logger } from '../common/internal/logging/logger.js';
+import { assert } from '../common/util/util.js';
 
 import { UnitTest } from './unit_test.js';
 
 export const g = makeTestGroup(UnitTest);
 
 g.test('construct').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [, res1] = mylog.record('one');
   const [, res2] = mylog.record('two');
 
@@ -29,7 +29,7 @@ g.test('construct').fn(t => {
 });
 
 g.test('empty').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -41,7 +41,7 @@ g.test('empty').fn(t => {
 });
 
 g.test('pass').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -54,7 +54,7 @@ g.test('pass').fn(t => {
 });
 
 g.test('skip').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -67,7 +67,7 @@ g.test('skip').fn(t => {
 });
 
 g.test('warn').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -80,7 +80,7 @@ g.test('warn').fn(t => {
 });
 
 g.test('fail,expectationFailed').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -94,7 +94,7 @@ g.test('fail,expectationFailed').fn(t => {
 });
 
 g.test('fail,validationFailed').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -108,7 +108,7 @@ g.test('fail,validationFailed').fn(t => {
 });
 
 g.test('fail,threw').fn(t => {
-  const mylog = new Logger(true);
+  const mylog = new Logger({ overrideDebugMode: true });
   const [rec, res] = mylog.record('one');
 
   rec.start();
@@ -122,14 +122,14 @@ g.test('fail,threw').fn(t => {
 });
 
 g.test('debug')
-  .params([
+  .paramsSimple([
     { debug: true, _logsCount: 5 }, //
     { debug: false, _logsCount: 3 },
   ])
   .fn(t => {
     const { debug, _logsCount } = t.params;
 
-    const mylog = new Logger(debug);
+    const mylog = new Logger({ overrideDebugMode: debug });
     const [rec, res] = mylog.record('one');
 
     rec.start();

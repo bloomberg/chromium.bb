@@ -9,8 +9,6 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -50,7 +48,7 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
 
 - (void)logSigninStarted {
   [super logSigninStarted];
-  if (!self.prefService) {
+  if (!self.accountManagerService) {
     return;
   }
 
@@ -58,7 +56,8 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
 
   // Records in user defaults that the promo has been shown as well as the
   // number of times it's been displayed.
-  signin::RecordVersionSeen(self.prefService, version_info::GetVersion());
+  signin::RecordVersionSeen(self.accountManagerService,
+                            version_info::GetVersion());
   NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
   int promoSeenCount =
       [standardDefaults integerForKey:kDisplayedSSORecallPromoCountKey];
@@ -66,16 +65,13 @@ typedef NS_ENUM(NSUInteger, UserSigninPromoAction) {
   [standardDefaults setInteger:promoSeenCount
                         forKey:kDisplayedSSORecallPromoCountKey];
 
-  NSArray* identities =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->GetAllIdentitiesSortedForDisplay(self.prefService);
+  NSArray* identities = self.accountManagerService->GetAllIdentities();
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallAccountsAvailable, [identities count]);
   UMA_HISTOGRAM_COUNTS_100(kUMASSORecallPromoSeenCount, promoSeenCount);
 }
 
 - (void)logSigninCompletedWithResult:(SigninCoordinatorResult)signinResult
-                         addedAcount:(BOOL)addedAccount
+                        addedAccount:(BOOL)addedAccount
                advancedSettingsShown:(BOOL)advancedSettingsShown {
   [super logSigninCompletedWithResult:signinResult
                          addedAccount:addedAccount

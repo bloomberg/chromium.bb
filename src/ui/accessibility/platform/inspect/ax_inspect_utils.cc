@@ -37,6 +37,7 @@ std::string AXFormatValue(const base::Value& value) {
                          base::CompareCase::SENSITIVE)) {
       return value.GetString().substr(const_prefix.length());
     }
+    // TODO: escape quotation marks if any to make the output unambiguous.
     return "'" + value.GetString() + "'";
   }
 
@@ -69,7 +70,7 @@ std::string AXFormatValue(const base::Value& value) {
     const std::string orderedkey_prefix(kOrderedKeyPrefixDictAttr);
 
     std::string output;
-    for (const auto& item : value.DictItems()) {
+    for (auto item : value.DictItems()) {
       if (!output.empty()) {
         output += ", ";
       }

@@ -205,7 +205,7 @@ class WeakPtrFactory {
 
   void Reset(T* instance) {
     // T is owned externally to WeakPtrFactory. Thus, provide a no-op Deleter.
-    bookkeeper_ = {instance, [](T* instance) {}};
+    bookkeeper_ = {instance, [](T*) {}};
   }
 
   // Manages the std::weak_ptr's referring to T. Does not own T.

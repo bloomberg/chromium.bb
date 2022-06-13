@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_checker.h"
@@ -159,7 +160,7 @@ class RasterTaskImpl : public TileTask {
   // The following members are needed for processing completion of this task on
   // origin thread. These are not thread-safe and should be accessed only in
   // origin thread. Ensure their access by checking CalledOnValidThread().
-  TileManager* tile_manager_;
+  raw_ptr<TileManager> tile_manager_;
   Tile::Id tile_id_;
   ResourcePool::InUsePoolResource resource_;
 
@@ -172,7 +173,7 @@ class RasterTaskImpl : public TileTask {
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
-  void* tile_tracing_id_;
+  raw_ptr<void> tile_tracing_id_;
   uint64_t new_content_id_;
   int source_frame_number_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
@@ -330,7 +331,7 @@ class TaskSetFinishedTaskImpl : public TileTask {
   }
 
  private:
-  base::SequencedTaskRunner* task_runner_;
+  raw_ptr<base::SequencedTaskRunner> task_runner_;
   const base::RepeatingClosure on_task_set_finished_callback_;
 };
 
@@ -363,8 +364,8 @@ class DidFinishRunningAllTilesTask : public TileTask {
   ~DidFinishRunningAllTilesTask() override = default;
 
  private:
-  base::SequencedTaskRunner* task_runner_;
-  RasterQueryQueue* pending_raster_queries_;
+  raw_ptr<base::SequencedTaskRunner> task_runner_;
+  raw_ptr<RasterQueryQueue> pending_raster_queries_;
   CompletionCb completion_cb_;
 };
 
@@ -896,8 +897,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     }
   }
 
-  UMA_HISTOGRAM_BOOLEAN("TileManager.ExceededMemoryBudget",
-                        !had_enough_memory_to_schedule_tiles_needed_now);
   did_oom_on_last_assign_ = !had_enough_memory_to_schedule_tiles_needed_now;
 
   memory_stats_from_last_assign_.total_budget_in_bytes =
@@ -1207,9 +1206,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   uint64_t resource_content_id = 0;
   gfx::Rect invalidated_rect = tile->invalidated_content_rect();
   if (UsePartialRaster(msaa_sample_count) && tile->invalidated_id()) {
+    const std::string& debug_name =
+        prioritized_tile.source_tiling()->raster_source()->debug_name();
     resource = resource_pool_->TryAcquireResourceForPartialRaster(
         tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
-        &invalidated_rect, raster_color_space);
+        &invalidated_rect, raster_color_space, debug_name);
   }
 
   bool partial_tile_decode = false;
@@ -1218,8 +1219,10 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
     DCHECK_EQ(format, resource.format());
     partial_tile_decode = true;
   } else {
-    resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
-                                               format, raster_color_space);
+    const std::string& debug_name =
+        prioritized_tile.source_tiling()->raster_source()->debug_name();
+    resource = resource_pool_->AcquireResource(
+        tile->desired_texture_size(), format, raster_color_space, debug_name);
     DCHECK(resource);
   }
 
@@ -1479,7 +1482,7 @@ void TileManager::ScheduleCheckRasterFinishedQueries() {
       &TileManager::CheckRasterFinishedQueries, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE,
                                 check_pending_tile_queries_callback_.callback(),
-                                base::TimeDelta::FromMilliseconds(100));
+                                base::Milliseconds(100));
 }
 
 void TileManager::CheckRasterFinishedQueries() {

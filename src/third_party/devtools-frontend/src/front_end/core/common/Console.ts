@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import {ObjectWrapper} from './Object.js';
 import {reveal} from './Revealer.js';
 
 let consoleInstance: Console;
 
-export class Console extends ObjectWrapper {
-  _messages: Message[];
+export class Console extends ObjectWrapper<EventTypes> {
+  readonly #messagesInternal: Message[];
   /**
    * Instantiable via the instance() factory below.
    */
   private constructor() {
     super();
-    this._messages = [];
+    this.#messagesInternal = [];
   }
 
   static instance({forceNew}: {
@@ -31,7 +29,7 @@ export class Console extends ObjectWrapper {
 
   addMessage(text: string, level: MessageLevel, show?: boolean): void {
     const message = new Message(text, level || MessageLevel.Info, Date.now(), show || false);
-    this._messages.push(message);
+    this.#messagesInternal.push(message);
     this.dispatchEventToListeners(Events.MessageAdded, message);
   }
 
@@ -48,7 +46,7 @@ export class Console extends ObjectWrapper {
   }
 
   messages(): Message[] {
-    return this._messages;
+    return this.#messagesInternal;
   }
 
   show(): void {
@@ -66,6 +64,9 @@ export enum Events {
   MessageAdded = 'messageAdded',
 }
 
+export type EventTypes = {
+  [Events.MessageAdded]: Message,
+};
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -74,7 +75,6 @@ export enum MessageLevel {
   Warning = 'warning',
   Error = 'error',
 }
-
 
 export class Message {
   text: string;

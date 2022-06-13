@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
@@ -109,7 +109,7 @@ class RequestContentScriptAPITest : public ExtensionBrowserTest {
       PermissionOrMatcherType script_matcher);
 
   std::unique_ptr<TestExtensionDir> test_extension_dir_;
-  const Extension* extension_;
+  raw_ptr<const Extension> extension_;
 };
 
 RequestContentScriptAPITest::RequestContentScriptAPITest()
@@ -132,9 +132,8 @@ testing::AssertionResult RequestContentScriptAPITest::RunTest(
       false /* won't reply */);
   injection_succeeded_listener.set_extension_id(extension_->id());
 
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/extensions/test_file.html"));
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html")));
 
   content::WebContents* web_contents =
       browser() ? browser()->tab_strip_model()->GetActiveWebContents() : NULL;

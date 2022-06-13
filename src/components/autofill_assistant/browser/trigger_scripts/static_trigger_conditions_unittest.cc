@@ -8,6 +8,7 @@
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 
+#include "base/containers/flat_map.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,7 +18,6 @@ namespace autofill_assistant {
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::NiceMock;
-using ::testing::Return;
 
 namespace {
 
@@ -46,7 +46,7 @@ TEST_F(StaticTriggerConditionsTest, Update) {
   StaticTriggerConditions static_trigger_conditions = {
       &fake_platform_delegate_, &trigger_context, GURL(kFakeUrl)};
   fake_platform_delegate_.is_first_time_user_ = true;
-  EXPECT_CALL(mock_website_login_manager_, OnGetLoginsForUrl(GURL(kFakeUrl), _))
+  EXPECT_CALL(mock_website_login_manager_, GetLoginsForUrl(GURL(kFakeUrl), _))
       .WillOnce(RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{
           WebsiteLoginManager::Login(GURL(kFakeUrl), "fake_username")}));
   EXPECT_CALL(mock_callback_, Run).Times(1);
@@ -66,7 +66,7 @@ TEST_F(StaticTriggerConditionsTest, HasResults) {
       &fake_platform_delegate_, &trigger_context, GURL(kFakeUrl)};
   EXPECT_FALSE(static_trigger_conditions.has_results());
 
-  EXPECT_CALL(mock_website_login_manager_, OnGetLoginsForUrl(GURL(kFakeUrl), _))
+  EXPECT_CALL(mock_website_login_manager_, GetLoginsForUrl(GURL(kFakeUrl), _))
       .WillOnce(RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{
           WebsiteLoginManager::Login(GURL(kFakeUrl), "fake_username")}));
   EXPECT_CALL(mock_callback_, Run).Times(1);
@@ -77,7 +77,8 @@ TEST_F(StaticTriggerConditionsTest, HasResults) {
 TEST_F(StaticTriggerConditionsTest, ScriptParameterMatches) {
   TriggerContext trigger_context = {
       std::make_unique<ScriptParameters>(
-          std::map<std::string, std::string>{{"must_match", "matching_value"}}),
+          base::flat_map<std::string, std::string>{
+              {"must_match", "matching_value"}}),
       {}};
   StaticTriggerConditions static_trigger_conditions = {
       &fake_platform_delegate_, &trigger_context, GURL(kFakeUrl)};
@@ -99,7 +100,7 @@ TEST_F(StaticTriggerConditionsTest, CachesFirstTimeUserFlag) {
   StaticTriggerConditions static_trigger_conditions = {
       &fake_platform_delegate_, &trigger_context, GURL(kFakeUrl)};
   fake_platform_delegate_.is_first_time_user_ = true;
-  EXPECT_CALL(mock_website_login_manager_, OnGetLoginsForUrl)
+  EXPECT_CALL(mock_website_login_manager_, GetLoginsForUrl)
       .WillRepeatedly(
           RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>{}));
   static_trigger_conditions.Update(mock_callback_.Get());

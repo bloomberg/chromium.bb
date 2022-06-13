@@ -33,7 +33,7 @@ limitations under the License.
 #endif
 
 // Detect APPLE.
-#ifdef __ppc__
+#if defined(__ppc__) || defined(__powerpc__)
 #define RUY_PLATFORM_PPC 1
 #else
 #define RUY_PLATFORM_PPC 0
@@ -118,6 +118,10 @@ limitations under the License.
 // Enable on recent versions of GCC. Might be possible
 // to relax this version requirement.
 #define RUY_PLATFORM_X86_ENHANCEMENTS 1
+// Things are working on MSVC 2019. This should also enable on sufficiently
+// recent Clang-CL.
+#elif defined(_MSC_VER) && (_MSC_VER >= 1920)
+#define RUY_PLATFORM_X86_ENHANCEMENTS 1
 #else
 #define RUY_PLATFORM_X86_ENHANCEMENTS 0
 #endif
@@ -132,36 +136,17 @@ limitations under the License.
 #define RUY_PLATFORM_AVX512 0
 #endif
 
-#if RUY_PLATFORM_X86_ENHANCEMENTS && RUY_PLATFORM_X86 && defined(__AVX2__)
-#define RUY_PLATFORM_AVX2 1
+#if RUY_PLATFORM_X86_ENHANCEMENTS && RUY_PLATFORM_X86 && defined(__AVX2__) && \
+    (defined(__FMA__) || defined(_MSC_VER))
+#define RUY_PLATFORM_AVX2_FMA 1
 #else
-#define RUY_PLATFORM_AVX2 0
+#define RUY_PLATFORM_AVX2_FMA 0
 #endif
 
-// TODO(b/147376783): SSE 4.2 and AVX-VNNI support is incomplete / placeholder.
-// Optimization is not finished. In particular the dimensions of the kernel
-// blocks can be changed as desired.
-//
-// Note does not check for LZCNT or POPCNT.
-#if defined(RUY_ENABLE_SSE_ENHANCEMENTS) && RUY_PLATFORM_X86_ENHANCEMENTS && \
-    RUY_PLATFORM_X86 && defined(__SSE4_2__) && defined(__FMA__)
-#define RUY_PLATFORM_SSE42 1
+#if RUY_PLATFORM_X86_ENHANCEMENTS && RUY_PLATFORM_X86 && defined(__AVX__)
+#define RUY_PLATFORM_AVX 1
 #else
-#define RUY_PLATFORM_SSE42 0
-#endif
-
-// TODO(b/147376783): SSE 4.2 and AVX-VNNI support is incomplete / placeholder.
-// Optimization is not finished. In particular the dimensions of the kernel
-// blocks can be changed as desired.
-//
-// Note that defined(__AVX512VBMI2__) can be false for compilation with
-// -march=cascadelake.
-// TODO(b/146646451) Check if we should also gate on defined(__AVX512VBMI2__).
-#if defined(RUY_ENABLE_VNNI_ENHANCEMENTS) && RUY_PLATFORM_AVX512 && \
-    defined(__AVX512VNNI__)
-#define RUY_PLATFORM_AVX_VNNI 1
-#else
-#define RUY_PLATFORM_AVX_VNNI 0
+#define RUY_PLATFORM_AVX 0
 #endif
 
 // Detect Emscripten, typically Wasm.

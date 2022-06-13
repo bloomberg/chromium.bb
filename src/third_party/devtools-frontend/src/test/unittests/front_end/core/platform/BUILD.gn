@@ -1,3 +1,7 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 import("../../../../../third_party/typescript/typescript.gni")
 
 ts_library("platform") {
@@ -5,6 +9,7 @@ ts_library("platform") {
   sources = [
     "ArrayUtilities_test.ts",
     "DateUtilities_test.ts",
+    "DevToolsPath_test.ts",
     "KeyboardUtilities_test.ts",
     "MapUtilities_test.ts",
     "NumberUtilities_test.ts",

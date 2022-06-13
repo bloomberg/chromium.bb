@@ -6,6 +6,7 @@
 
 #include "core/fxge/win32/cgdi_device_driver.h"
 
+#include <math.h>
 #include <windows.h>
 
 #include <algorithm>
@@ -14,7 +15,7 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/render_defines.h"
 #include "core/fxge/win32/cwin32_platform.h"
@@ -60,24 +61,24 @@ HPEN CreateExtPen(const CFX_GraphStateData* pGraphState,
     PenStyle |= PS_SOLID;
 
   switch (pGraphState->m_LineCap) {
-    case CFX_GraphStateData::LineCapButt:
+    case CFX_GraphStateData::LineCap::kButt:
       PenStyle |= PS_ENDCAP_FLAT;
       break;
-    case CFX_GraphStateData::LineCapRound:
+    case CFX_GraphStateData::LineCap::kRound:
       PenStyle |= PS_ENDCAP_ROUND;
       break;
-    case CFX_GraphStateData::LineCapSquare:
+    case CFX_GraphStateData::LineCap::kSquare:
       PenStyle |= PS_ENDCAP_SQUARE;
       break;
   }
   switch (pGraphState->m_LineJoin) {
-    case CFX_GraphStateData::LineJoinMiter:
+    case CFX_GraphStateData::LineJoin::kMiter:
       PenStyle |= PS_JOIN_MITER;
       break;
-    case CFX_GraphStateData::LineJoinRound:
+    case CFX_GraphStateData::LineJoin::kRound:
       PenStyle |= PS_JOIN_ROUND;
       break;
-    case CFX_GraphStateData::LineJoinBevel:
+    case CFX_GraphStateData::LineJoin::kBevel:
       PenStyle |= PS_JOIN_BEVEL;
       break;
   }
@@ -106,27 +107,25 @@ HBRUSH CreateBrush(uint32_t argb) {
   return CreateSolidBrush(ArgbToColorRef(argb));
 }
 
-void SetPathToDC(HDC hDC,
-                 const CFX_PathData* pPathData,
-                 const CFX_Matrix* pMatrix) {
+void SetPathToDC(HDC hDC, const CFX_Path& path, const CFX_Matrix* pMatrix) {
   BeginPath(hDC);
 
-  pdfium::span<const FX_PATHPOINT> points = pPathData->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = path.GetPoints();
   for (size_t i = 0; i < points.size(); ++i) {
     CFX_PointF pos = points[i].m_Point;
     if (pMatrix)
       pos = pMatrix->Transform(pos);
 
     CFX_Point screen(FXSYS_roundf(pos.x), FXSYS_roundf(pos.y));
-    FXPT_TYPE point_type = points[i].m_Type;
-    if (point_type == FXPT_TYPE::MoveTo) {
+    CFX_Path::Point::Type point_type = points[i].m_Type;
+    if (point_type == CFX_Path::Point::Type::kMove) {
       MoveToEx(hDC, screen.x, screen.y, nullptr);
-    } else if (point_type == FXPT_TYPE::LineTo) {
+    } else if (point_type == CFX_Path::Point::Type::kLine) {
       if (points[i].m_Point == points[i - 1].m_Point)
         screen.x++;
 
       LineTo(hDC, screen.x, screen.y);
-    } else if (point_type == FXPT_TYPE::BezierTo) {
+    } else if (point_type == CFX_Path::Point::Type::kBezier) {
       POINT lppt[3];
       lppt[0].x = screen.x;
       lppt[0].y = screen.y;
@@ -308,9 +307,7 @@ unsigned clip_liang_barsky(float x1,
 
 CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, DeviceType device_type)
     : m_hDC(hDC), m_DeviceType(device_type) {
-  auto* pPlatform =
-      static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
-  SetStretchBltMode(m_hDC, pPlatform->m_bHalfTone ? HALFTONE : COLORONCOLOR);
+  SetStretchBltMode(m_hDC, HALFTONE);
   DWORD obj_type = GetObjectType(m_hDC);
   m_bMetafileDCType = obj_type == OBJ_ENHMETADC || obj_type == OBJ_ENHMETAFILE;
   if (obj_type == OBJ_MEMDC) {
@@ -541,7 +538,7 @@ void CGdiDeviceDriver::DrawLine(float x1, float y1, float x2, float y2) {
   LineTo(m_hDC, FXSYS_roundf(x2), FXSYS_roundf(y2));
 }
 
-bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
+bool CGdiDeviceDriver::DrawPath(const CFX_Path& path,
                                 const CFX_Matrix* pMatrix,
                                 const CFX_GraphStateData* pGraphState,
                                 uint32_t fill_color,
@@ -555,7 +552,7 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
       static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   if (!(pGraphState || stroke_color == 0) &&
       !pPlatform->m_GdiplusExt.IsAvailable()) {
-    CFX_FloatRect bbox_f = pPathData->GetBoundingBox();
+    CFX_FloatRect bbox_f = path.GetBoundingBox();
     if (pMatrix)
       bbox_f = pMatrix->TransformRect(bbox_f);
 
@@ -583,13 +580,10 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
         ((m_DeviceType != DeviceType::kPrinter && !fill_options.full_cover) ||
          (pGraphState && !pGraphState->m_DashArray.empty()))) {
       if (!((!pMatrix || !pMatrix->WillScale()) && pGraphState &&
-            pGraphState->m_LineWidth == 1.0f &&
-            (pPathData->GetPoints().size() == 5 ||
-             pPathData->GetPoints().size() == 4) &&
-            pPathData->IsRect())) {
-        if (pPlatform->m_GdiplusExt.DrawPath(m_hDC, pPathData, pMatrix,
-                                             pGraphState, fill_color,
-                                             stroke_color, fill_options)) {
+            pGraphState->m_LineWidth == 1.0f && path.IsRect())) {
+        if (pPlatform->m_GdiplusExt.DrawPath(m_hDC, path, pMatrix, pGraphState,
+                                             fill_color, stroke_color,
+                                             fill_options)) {
           return true;
         }
       }
@@ -609,24 +603,24 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
     hBrush = CreateBrush(fill_color);
     hBrush = (HBRUSH)SelectObject(m_hDC, hBrush);
   }
-  if (pPathData->GetPoints().size() == 2 && pGraphState &&
+  if (path.GetPoints().size() == 2 && pGraphState &&
       !pGraphState->m_DashArray.empty()) {
-    CFX_PointF pos1 = pPathData->GetPoint(0);
-    CFX_PointF pos2 = pPathData->GetPoint(1);
+    CFX_PointF pos1 = path.GetPoint(0);
+    CFX_PointF pos2 = path.GetPoint(1);
     if (pMatrix) {
       pos1 = pMatrix->Transform(pos1);
       pos2 = pMatrix->Transform(pos2);
     }
     DrawLine(pos1.x, pos1.y, pos2.x, pos2.y);
   } else {
-    SetPathToDC(m_hDC, pPathData, pMatrix);
+    SetPathToDC(m_hDC, path, pMatrix);
     if (pGraphState && stroke_alpha) {
       if (fill && fill_alpha) {
         if (fill_options.text_mode) {
           StrokeAndFillPath(m_hDC);
         } else {
           FillPath(m_hDC);
-          SetPathToDC(m_hDC, pPathData, pMatrix);
+          SetPathToDC(m_hDC, path, pMatrix);
           StrokePath(m_hDC);
         }
       } else {
@@ -674,34 +668,32 @@ void CGdiDeviceDriver::SetBaseClip(const FX_RECT& rect) {
 }
 
 bool CGdiDeviceDriver::SetClip_PathFill(
-    const CFX_PathData* pPathData,
+    const CFX_Path& path,
     const CFX_Matrix* pMatrix,
     const CFX_FillRenderOptions& fill_options) {
-  if (pPathData->GetPoints().size() == 5) {
-    Optional<CFX_FloatRect> maybe_rectf = pPathData->GetRect(pMatrix);
-    if (maybe_rectf.has_value()) {
-      FX_RECT rect = maybe_rectf.value().GetOuterRect();
-      // Can easily apply base clip to protect against wildly large rectangular
-      // clips. crbug.com/1019026
-      if (m_BaseClipBox.has_value())
-        rect.Intersect(m_BaseClipBox.value());
-      return IntersectClipRect(m_hDC, rect.left, rect.top, rect.right,
-                               rect.bottom) != ERROR;
-    }
+  absl::optional<CFX_FloatRect> maybe_rectf = path.GetRect(pMatrix);
+  if (maybe_rectf.has_value()) {
+    FX_RECT rect = maybe_rectf.value().GetOuterRect();
+    // Can easily apply base clip to protect against wildly large rectangular
+    // clips. crbug.com/1019026
+    if (m_BaseClipBox.has_value())
+      rect.Intersect(m_BaseClipBox.value());
+    return IntersectClipRect(m_hDC, rect.left, rect.top, rect.right,
+                             rect.bottom) != ERROR;
   }
-  SetPathToDC(m_hDC, pPathData, pMatrix);
+  SetPathToDC(m_hDC, path, pMatrix);
   SetPolyFillMode(m_hDC, FillTypeToGdiFillType(fill_options.fill_type));
   SelectClipPath(m_hDC, RGN_AND);
   return true;
 }
 
 bool CGdiDeviceDriver::SetClip_PathStroke(
-    const CFX_PathData* pPathData,
+    const CFX_Path& path,
     const CFX_Matrix* pMatrix,
     const CFX_GraphStateData* pGraphState) {
   HPEN hPen = CreateExtPen(pGraphState, pMatrix, 0xff000000);
   hPen = (HPEN)SelectObject(m_hDC, hPen);
-  SetPathToDC(m_hDC, pPathData, pMatrix);
+  SetPathToDC(m_hDC, path, pMatrix);
   WidenPath(m_hDC);
   SetPolyFillMode(m_hDC, WINDING);
   bool ret = !!SelectClipPath(m_hDC, RGN_AND);

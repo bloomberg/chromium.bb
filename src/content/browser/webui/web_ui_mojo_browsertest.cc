@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -112,11 +112,11 @@ class TestWebUIController : public WebUIController {
     }
   }
 
+  TestWebUIController(const TestWebUIController&) = delete;
+  TestWebUIController& operator=(const TestWebUIController&) = delete;
+
  protected:
   std::unique_ptr<WebUIMojoTestCacheImpl> cache_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWebUIController);
 };
 
 // TestWebUIController that can bind a WebUIMojoTestCache interface when
@@ -148,6 +148,10 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
               base::BindRepeating(
                   &TestWebUIControllerFactory::CreateWebUIController,
                   base::Unretained(this))}}) {}
+
+  TestWebUIControllerFactory(const TestWebUIControllerFactory&) = delete;
+  TestWebUIControllerFactory& operator=(const TestWebUIControllerFactory&) =
+      delete;
 
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
@@ -197,8 +201,6 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
       std::string,
       base::RepeatingCallback<std::unique_ptr<WebUIController>(WebUI*)>>
       registered_controllers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };
 
 // Base for unit tests that need a ContentBrowserClient.
@@ -230,6 +232,9 @@ class WebUIMojoTest : public ContentBrowserTest {
  public:
   WebUIMojoTest() = default;
 
+  WebUIMojoTest(const WebUIMojoTest&) = delete;
+  WebUIMojoTest& operator=(const WebUIMojoTest&) = delete;
+
   TestWebUIControllerFactory* factory() { return &factory_; }
 
   void NavigateWithNewWebUI(const std::string& path) {
@@ -259,10 +264,8 @@ class WebUIMojoTest : public ContentBrowserTest {
   TestWebUIControllerFactory factory_;
   content::ScopedWebUIControllerFactoryRegistration factory_registration_{
       &factory_};
-  ContentBrowserClient* original_client_ = nullptr;
+  raw_ptr<ContentBrowserClient> original_client_ = nullptr;
   TestWebUIContentBrowserClient client_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebUIMojoTest);
 };
 
 // Loads a WebUI page that contains Mojo JS bindings and verifies a message

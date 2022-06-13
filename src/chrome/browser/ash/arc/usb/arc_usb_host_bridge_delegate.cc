@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ash/arc/usb/arc_usb_host_bridge_delegate.h"
 
+#include "ash/components/arc/arc_util.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
-#include "components/arc/arc_util.h"
 
 namespace arc {
 
 void ArcUsbHostBridgeDelegate::AttachDevicesToArcVm() {
-  auto* const usb_detector = chromeos::CrosUsbDetector::Get();
+  auto* const usb_detector = ash::CrosUsbDetector::Get();
   if (usb_detector && IsArcVmEnabled())
     usb_detector->ConnectSharedDevicesOnVmStartup(kArcVmName);
 }

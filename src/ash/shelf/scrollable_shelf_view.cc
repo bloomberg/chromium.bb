@@ -4,6 +4,8 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
+#include <algorithm>
+
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -15,21 +17,21 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/numerics/ranges.h"
-#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform_util.h"
-#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -44,28 +46,28 @@ int64_t GetDisplayIdForView(const views::View* view) {
 }
 
 void ReportSmoothness(bool tablet_mode, bool launcher_visible, int smoothness) {
-  base::UmaHistogramPercentageObsoleteDoNotUse(
+  base::UmaHistogramPercentage(
       scrollable_shelf_constants::kAnimationSmoothnessHistogram, smoothness);
   if (tablet_mode) {
     if (launcher_visible) {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessTabletLauncherVisibleHistogram,
           smoothness);
     } else {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessTabletLauncherHiddenHistogram,
           smoothness);
     }
   } else {
     if (launcher_visible) {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessClamshellLauncherVisibleHistogram,
           smoothness);
     } else {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessClamshellLauncherHiddenHistogram,
           smoothness);
@@ -79,65 +81,6 @@ gfx::Insets GetMirroredInsets(const gfx::Insets& insets) {
 }
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// DragIconDropAnimationDelegate
-
-class ScrollableShelfView::DragIconDropAnimationDelegate
-    : public ui::ImplicitAnimationObserver {
- public:
-  DragIconDropAnimationDelegate(views::View* original_view,
-                                const gfx::Rect& src_bounds_in_screen,
-                                const gfx::Rect& dst_bounds_in_screen,
-                                views::UniqueWidgetPtr proxy_view_widget)
-      : original_view_(original_view),
-        src_bounds_in_screen_(src_bounds_in_screen),
-        dst_bounds_in_screen_(dst_bounds_in_screen),
-        proxy_view_widget_(std::move(proxy_view_widget)) {}
-  ~DragIconDropAnimationDelegate() override = default;
-
-  DragIconDropAnimationDelegate(const DragIconDropAnimationDelegate&) = delete;
-  DragIconDropAnimationDelegate& operator=(
-      const DragIconDropAnimationDelegate&) = delete;
-
-  void StartAnimation() {
-    ui::ScopedLayerAnimationSettings animation_settings(
-        proxy_view_widget_->GetContentsView()->layer()->GetAnimator());
-    animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
-    animation_settings.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-    animation_settings.AddObserver(this);
-
-    proxy_view_widget_->GetContentsView()->layer()->SetTransform(
-        gfx::TransformBetweenRects(gfx::RectF(src_bounds_in_screen_),
-                                   gfx::RectF(dst_bounds_in_screen_)));
-  }
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsCompleted() override {
-    StopObserving();
-
-    // Destructs the proxy image view and shows the original drag view at the
-    // end of animation.
-    original_view_->layer()->SetOpacity(1.0f);
-    proxy_view_widget_.reset();
-  }
-
- private:
-  // Original app icon being dragged in ShelfView.
-  views::View* const original_view_ = nullptr;
-
-  // Bounds of the DragImageView, aka the DragIconProxy created by the user of
-  // ApplicationDragAndDropHost.
-  gfx::Rect const src_bounds_in_screen_;
-
-  // Bounds of the ShelfAppButton which DragImageView is imitating.
-  gfx::Rect const dst_bounds_in_screen_;
-
-  // Placeholder icon representing |original_view_| that moves with the pointer
-  // while being dragged.
-  views::UniqueWidgetPtr proxy_view_widget_;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfArrowView
@@ -155,7 +98,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
                         shelf,
                         shelf_button_delegate),
         shelf_(shelf) {
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -237,6 +180,11 @@ class ScrollableShelfContainerView : public ShelfContainerView,
         scrollable_shelf_view_(scrollable_shelf_view) {
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
+
+  ScrollableShelfContainerView(const ScrollableShelfContainerView&) = delete;
+  ScrollableShelfContainerView& operator=(const ScrollableShelfContainerView&) =
+      delete;
+
   ~ScrollableShelfContainerView() override = default;
 
   // ShelfContainerView:
@@ -251,8 +199,6 @@ class ScrollableShelfContainerView : public ShelfContainerView,
                          const gfx::Rect& rect) const override;
 
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfContainerView);
 };
 
 void ScrollableShelfContainerView::TranslateShelfView(
@@ -302,6 +248,10 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
                     /*accessibility_mode=*/true),
         scrollable_shelf_view_(scrollable_shelf_view) {}
 
+  ScrollableShelfFocusSearch(const ScrollableShelfFocusSearch&) = delete;
+  ScrollableShelfFocusSearch& operator=(const ScrollableShelfFocusSearch&) =
+      delete;
+
   ~ScrollableShelfFocusSearch() override = default;
 
   // views::FocusSearch
@@ -347,8 +297,6 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
 
  private:
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfFocusSearch);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -478,6 +426,15 @@ bool ScrollableShelfView::NeedUpdateToTargetBounds() const {
 
 gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
     const ShelfID& id) const {
+  const int item_index_in_model = shelf_view_->model()->ItemIndexByID(id);
+
+  // Return a dummy value if the item specified by `id` does not exist in the
+  // shelf model.
+  // TODO(https://crbug.com/1270498): it is a quick fixing. We should
+  // investigate the root cause.
+  if (item_index_in_model < 0)
+    return gfx::Rect();
+
   // Calculates the available space for child views based on the target bounds.
   // To ease coding, we use the variables before mirroring in computation.
   const gfx::Insets target_edge_padding_RTL_mirrored =
@@ -493,8 +450,8 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   const gfx::Insets current_edge_padding_before_RTL_mirror =
       ShouldAdaptToRTL() ? GetMirroredInsets(current_edge_padding_RTL_mirrored)
                          : current_edge_padding_RTL_mirrored;
-  gfx::Rect icon_bounds = shelf_view_->view_model()->ideal_bounds(
-      shelf_view_->model()->ItemIndexByID(id));
+  gfx::Rect icon_bounds =
+      shelf_view_->view_model()->ideal_bounds(item_index_in_model);
   icon_bounds.Offset(target_edge_padding_before_RTL_mirror.left() -
                          current_edge_padding_before_RTL_mirror.left(),
                      0);
@@ -635,6 +592,10 @@ float ScrollableShelfView::GetScrollUpperBoundForTest() const {
   return CalculateScrollUpperBound(GetSpaceForIcons());
 }
 
+bool ScrollableShelfView::IsPageFlipTimerBusyForTest() const {
+  return page_flip_timer_.IsRunning();
+}
+
 int ScrollableShelfView::GetSumOfButtonSizeAndSpacing() const {
   return shelf_view_->GetButtonSize() + ShelfConfig::Get()->button_spacing();
 }
@@ -657,7 +618,7 @@ float ScrollableShelfView::CalculateClampedScrollOffset(
     int available_space_for_icons) const {
   const float scroll_upper_bound =
       CalculateScrollUpperBound(available_space_for_icons);
-  scroll = base::ClampToRange(scroll, 0.0f, scroll_upper_bound);
+  scroll = base::clamp(scroll, 0.0f, scroll_upper_bound);
   return scroll;
 }
 
@@ -1155,40 +1116,13 @@ views::View* ScrollableShelfView::GetViewForEvent(const ui::Event& event) {
   return nullptr;
 }
 
-bool ScrollableShelfView::ShouldStartDrag(
-    const std::string& app_id,
-    const gfx::Point& location_in_screen_coordinates) const {
-  return false;
-}
+void ScrollableShelfView::ScheduleScrollForItemDragIfNeeded(
+    const gfx::Rect& item_bounds_in_screen) {
+  gfx::Rect visible_space_in_screen = visible_space_;
+  views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
-void ScrollableShelfView::CreateDragIconProxyByLocationWithNoAnimation(
-    const gfx::Point& origin_in_screen_coordinates,
-    const gfx::ImageSkia& icon,
-    views::View* replaced_view,
-    float scale_factor,
-    int blur_radius) {
-  drag_icon_widget_ =
-      DragImageView::Create(GetWidget()->GetNativeWindow()->GetRootWindow(),
-                            ui::mojom::DragEventSource::kMouse);
-  DragImageView* drag_icon =
-      static_cast<DragImageView*>(drag_icon_widget_->GetContentsView());
-  drag_icon->SetImage(icon);
-  const gfx::Rect replaced_view_screen_bounds =
-      replaced_view->GetBoundsInScreen();
-  drag_icon->SetBoundsInScreen(replaced_view_screen_bounds);
-  drag_icon_widget_->SetVisibilityAnimationTransition(
-      views::Widget::ANIMATE_NONE);
-  drag_icon->SetWidgetVisible(true);
-  drag_icon->SetPaintToLayer();
-  drag_icon->layer()->SetFillsBoundsOpaquely(false);
-}
-
-void ScrollableShelfView::UpdateDragIconProxy(
-    const gfx::Point& location_in_screen_coordinates) {
-  static_cast<DragImageView*>(drag_icon_widget_->GetContentsView())
-      ->SetScreenPosition(location_in_screen_coordinates);
-
-  if (IsDragIconWithinVisibleSpace()) {
+  drag_item_bounds_in_screen_.emplace(item_bounds_in_screen);
+  if (AreBoundsWithinVisibleSpace(*drag_item_bounds_in_screen_)) {
     page_flip_timer_.AbandonAndStop();
     return;
   }
@@ -1198,80 +1132,10 @@ void ScrollableShelfView::UpdateDragIconProxy(
                            &ScrollableShelfView::OnPageFlipTimer);
   }
 }
-
-void ScrollableShelfView::DestroyDragIconProxy() {
+void ScrollableShelfView::CancelScrollForItemDrag() {
+  drag_item_bounds_in_screen_.reset();
   if (page_flip_timer_.IsRunning())
     page_flip_timer_.AbandonAndStop();
-
-  ShelfAppButton* drag_view = shelf_view_->drag_view();
-
-  const bool should_start_animation =
-      drag_view && !shelf_view_->dragged_off_shelf() && drag_icon_widget_;
-  if (!should_start_animation) {
-    drag_icon_widget_.reset();
-    return;
-  }
-
-  // The ideal bounds stored in view model are in |shelf_view_|'s coordinates.
-  views::ViewModel* shelf_view_model = shelf_view_->view_model();
-  const gfx::Rect target_bounds = shelf_view_model->ideal_bounds(
-      shelf_view_model->GetIndexOfView(drag_view));
-  const gfx::Rect mirrored_target_bounds_in_shelf_view =
-      shelf_view_->GetMirroredRect(target_bounds);
-
-  // No animation is created if the target slot for the drag icon is not on the
-  // current page. This edge case may be triggered by trying to move the icon of
-  // a running app to the area exclusively for pinned apps.
-  gfx::RectF target_bounds_in_local(mirrored_target_bounds_in_shelf_view);
-  ConvertRectToTarget(shelf_view_, this, &target_bounds_in_local);
-  if (!visible_space_.Contains(gfx::ToEnclosedRect(target_bounds_in_local))) {
-    drag_icon_widget_.reset();
-    drag_view->layer()->SetOpacity(1.0f);
-    return;
-  }
-
-  const bool drag_originated_from_app_list =
-      shelf_view_->IsShelfViewHandlingDragAndDrop();
-
-  // The drag proxy is the DragImageView created for the DragAndDropHost which
-  // could be either the ShelfView or ScrollableShelfView depending on where the
-  // drag originated from.
-  views::UniqueWidgetPtr drag_proxy;
-  if (drag_originated_from_app_list) {
-    drag_proxy = shelf_view_->RetrieveDragIconProxyAndClearDragProxyState();
-
-    // Handles the edge case that an app icon is dragged from AppListView to
-    // ShelfView then it is pinned to another page.
-    drag_icon_widget_.reset();
-  } else {
-    drag_proxy = std::move(drag_icon_widget_);
-  }
-
-  gfx::Rect start_in_screen(drag_proxy->GetContentsView()->GetBoundsInScreen());
-
-  gfx::Rect end_in_screen = mirrored_target_bounds_in_shelf_view;
-  ConvertRectToScreen(shelf_view_, &end_in_screen);
-
-  if (start_in_screen.IsEmpty() || end_in_screen.IsEmpty()) {
-    drag_proxy.reset();
-    return;
-  }
-
-  drag_icon_drop_animation_delegate_ =
-      std::make_unique<DragIconDropAnimationDelegate>(
-          drag_view, start_in_screen, end_in_screen, std::move(drag_proxy));
-  drag_icon_drop_animation_delegate_->StartAnimation();
-}
-
-bool ScrollableShelfView::StartDrag(
-    const std::string& app_id,
-    const gfx::Point& location_in_screen_coordinates) {
-  return false;
-}
-
-bool ScrollableShelfView::Drag(
-    const gfx::Point& location_in_screen_coordinates) {
-  return false;
 }
 
 void ScrollableShelfView::OnImplicitAnimationsCompleted() {
@@ -1287,12 +1151,12 @@ void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                         /*send_native_event=*/true);
 
-  if (!drag_icon_widget_)
+  if (!drag_item_bounds_in_screen_ ||
+      AreBoundsWithinVisibleSpace(*drag_item_bounds_in_screen_)) {
     return;
+  }
 
-  if (IsDragIconWithinVisibleSpace())
-    return;
-
+  // Keep scrolling if the dragged shelf item is outside of the visible space.
   page_flip_timer_.Start(FROM_HERE, page_flip_time_threshold_, this,
                          &ScrollableShelfView::OnPageFlipTimer);
 }
@@ -1305,20 +1169,6 @@ bool ScrollableShelfView::ShouldShowLeftArrow() const {
 bool ScrollableShelfView::ShouldShowRightArrow() const {
   return (layout_strategy_ == kShowRightArrowButton) ||
          (layout_strategy_ == kShowButtons);
-}
-
-int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
-    bool use_target_bounds) const {
-  const gfx::Size status_widget_size =
-      use_target_bounds
-          ? GetShelf()->status_area_widget()->GetTargetBounds().size()
-          : GetShelf()
-                ->shelf_widget()
-                ->status_area_widget()
-                ->GetWindowBoundsInScreen()
-                .size();
-  return GetShelf()->PrimaryAxisValue(status_widget_size.width(),
-                                      status_widget_size.height());
 }
 
 gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
@@ -1677,9 +1527,9 @@ float ScrollableShelfView::CalculatePageScrollingOffsetInAbs(
     }
   }
 
-  DCHECK_GE(offset, 0);
-
-  return offset;
+  // Ensure the return value to be non-negative. Note that if the screen is too
+  // small (usually on the Linux emulator), `offset` may be negative.
+  return std::fmax(offset, 0.f);
 }
 
 float ScrollableShelfView::CalculateTargetOffsetAfterScroll(
@@ -1902,8 +1752,14 @@ std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
   } else {
     DCHECK_EQ(layout_strategy, kShowLeftArrowButton);
     last_visible_view_index = visible_views_indices.size() - 1;
+
+    // In fuzz tests, `visible_size` may be smaller than
+    // `space_needed_for_button` although it never happens on real devices.
     first_visible_view_index =
-        last_visible_view_index - visible_size / space_needed_for_button + 1;
+        visible_size >= space_needed_for_button
+            ? last_visible_view_index - visible_size / space_needed_for_button +
+                  1
+            : last_visible_view_index;
   }
 
   DCHECK_GE(first_visible_view_index, 0);
@@ -2132,23 +1988,18 @@ void ScrollableShelfView::OnPageFlipTimer() {
   gfx::Rect visible_space_in_screen = visible_space_;
   views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
-  const gfx::Rect drag_icon_screen_bounds =
-      drag_icon_widget_->GetWindowBoundsInScreen();
-
-  DCHECK(!visible_space_in_screen.Contains(drag_icon_screen_bounds));
-
-  // Calculates the page scrolling direction based on the |drag_icon_widget_|'s
-  // location and the bounds of the visible space.
+  // Calculates the page scrolling direction based on the drag item bounds and
+  // the bounds of the visible space.
   bool should_scroll_to_next;
   if (ShouldAdaptToRTL()) {
     should_scroll_to_next =
-        drag_icon_screen_bounds.x() < visible_space_in_screen.x();
+        drag_item_bounds_in_screen_->x() < visible_space_in_screen.x();
   } else {
-    should_scroll_to_next =
-        GetShelf()->IsHorizontalAlignment()
-            ? drag_icon_screen_bounds.right() > visible_space_in_screen.right()
-            : drag_icon_screen_bounds.bottom() >
-                  visible_space_in_screen.bottom();
+    should_scroll_to_next = GetShelf()->IsHorizontalAlignment()
+                                ? drag_item_bounds_in_screen_->right() >
+                                      visible_space_in_screen.right()
+                                : drag_item_bounds_in_screen_->bottom() >
+                                      visible_space_in_screen.bottom();
   }
 
   ScrollToNewPage(/*forward=*/should_scroll_to_next);
@@ -2157,20 +2008,21 @@ void ScrollableShelfView::OnPageFlipTimer() {
     test_observer_->OnPageFlipTimerFired();
 }
 
-bool ScrollableShelfView::IsDragIconWithinVisibleSpace() const {
+bool ScrollableShelfView::AreBoundsWithinVisibleSpace(
+    const gfx::Rect& bounds_in_screen) const {
+  if (bounds_in_screen.IsEmpty())
+    return false;
+
   gfx::Rect visible_space_in_screen = visible_space_;
   views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
-  const gfx::Rect drag_icon_screen_bounds =
-      drag_icon_widget_->GetContentsView()->GetBoundsInScreen();
-
   if (GetShelf()->IsHorizontalAlignment()) {
-    return drag_icon_screen_bounds.x() >= visible_space_in_screen.x() &&
-           drag_icon_screen_bounds.right() <= visible_space_in_screen.right();
+    return bounds_in_screen.x() >= visible_space_in_screen.x() &&
+           bounds_in_screen.right() <= visible_space_in_screen.right();
   }
 
-  return drag_icon_screen_bounds.y() >= visible_space_in_screen.y() &&
-         drag_icon_screen_bounds.bottom() <= visible_space_in_screen.bottom();
+  return bounds_in_screen.y() >= visible_space_in_screen.y() &&
+         bounds_in_screen.bottom() <= visible_space_in_screen.bottom();
 }
 
 bool ScrollableShelfView::ShouldDelegateScrollToShelf(

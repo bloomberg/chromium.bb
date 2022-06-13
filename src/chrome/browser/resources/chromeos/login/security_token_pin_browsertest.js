@@ -57,23 +57,23 @@ TEST_F('PolymerSecurityTokenPinTest', 'All', function() {
     securityTokenPin.onBeforeShow();
     securityTokenPin.parameters = DEFAULT_PARAMETERS;
 
-    pinKeyboardContainer = securityTokenPin.$$('#pinKeyboardContainer');
+    pinKeyboardContainer = securityTokenPin.shadowRoot.querySelector('#pinKeyboardContainer');
     assert(pinKeyboardContainer);
-    pinKeyboard = securityTokenPin.$$('#pinKeyboard');
+    pinKeyboard = securityTokenPin.shadowRoot.querySelector('#pinKeyboard');
     assert(pinKeyboard);
-    progressElement = securityTokenPin.$$('#progress');
+    progressElement = securityTokenPin.shadowRoot.querySelector('#progress');
     assert(progressElement);
-    pinInput = pinKeyboard.$$('#pinInput');
+    pinInput = pinKeyboard.shadowRoot.querySelector('#pinInput');
     assert(pinInput);
-    inputField = pinInput.$$('input');
+    inputField = pinInput.shadowRoot.querySelector('input');
     assert(inputField);
-    errorContainer = securityTokenPin.$$('#errorContainer');
+    errorContainer = securityTokenPin.shadowRoot.querySelector('#errorContainer');
     assert(errorContainer);
-    errorElement = securityTokenPin.$$('#error');
+    errorElement = securityTokenPin.shadowRoot.querySelector('#error');
     assert(errorElement);
-    submitElement = securityTokenPin.$$('#submit');
+    submitElement = securityTokenPin.shadowRoot.querySelector('#submit');
     assert(submitElement);
-    backElement = securityTokenPin.$$('#back');
+    backElement = securityTokenPin.shadowRoot.querySelector('#back');
     assert(backElement);
   });
 
@@ -246,7 +246,45 @@ TEST_F('PolymerSecurityTokenPinTest', 'All', function() {
     // The user clicks the buttons of the on-screen keypad. The input field is
     // updated accordingly.
     for (const character of PIN)
-      pinKeyboard.$$('#digitButton' + character).click();
+      pinKeyboard.shadowRoot.querySelector('#digitButton' + character).click();
+    expectEquals(pinInput.value, PIN);
+    expectEquals(inputField.value, PIN);
+
+    // The user submits the PIN. The completed event is fired, containing the
+    // PIN.
+    submitElement.click();
+    expectEquals(completedEventDetail, PIN);
+  });
+
+  // Test that the asynchronously clicking the PIN keypad buttons still results
+  // in a correct PIN.
+  test('PIN async input via keypad', async function() {
+    const PIN = '123';
+
+    function enterPinAsync() {
+      return new Promise((resolve, reject) => {
+        // Click `PIN[0]`, then `PIN[1]`, then `PIN[2]`. Use specific delays
+        // that can catch ordering bugs in the tested code (in case it handles
+        // clicks in asynchronous tasks without proper sequencing).
+        setTimeout(() => {
+          pinKeyboard.shadowRoot.querySelector('#digitButton' + PIN[1]).click();
+        }, 0);
+        pinKeyboard.shadowRoot.querySelector('#digitButton' + PIN[0]).click();
+        setTimeout(() => {
+          pinKeyboard.shadowRoot.querySelector('#digitButton' + PIN[2]).click();
+          resolve();
+        }, 0);
+      });
+    }
+
+    let completedEventDetail = null;
+    securityTokenPin.addEventListener('completed', (event) => {
+      completedEventDetail = event.detail;
+    });
+
+    // The user clicks the buttons of the on-screen keypad. The input field is
+    // updated accordingly.
+    await enterPinAsync();
     expectEquals(pinInput.value, PIN);
     expectEquals(inputField.value, PIN);
 

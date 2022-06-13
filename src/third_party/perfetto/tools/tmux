@@ -56,7 +56,9 @@ function tmux_ensure_bash() {
 
 function reset_tracing() {
   if is_android "$OUT"; then
-    adb shell 'echo 0 > /d/tracing/tracing_on'
+    # Newer versions of Android don't have debugfs mounted at all
+    # anymore so use /sys/kernel/tracing if /d/tracing doesn't exist
+    adb shell 'test -d /sys/kernel/tracing && echo 0 > /sys/kernel/tracing/tracing_on || echo 0 > /sys/kernel/debug/tracing/tracing_on'
   elif ! is_mac; then
     # shellcheck disable=SC2016
     local script='
@@ -370,13 +372,13 @@ fi
 reset_tracing
 
 TRACE=$TMPDIR/trace
-echo -e "\n\x1b[32mPulling trace into $TRACE.protobuf\x1b[0m"
-pull trace "$TRACE.protobuf"
+echo -e "\n\x1b[32mPulling trace into $TRACE.perfetto-trace\x1b[0m"
+pull trace "$TRACE.perfetto-trace"
 
 if [[ SKIP_CONVERTERS -eq 0 ]]; then
   echo -e "\n\x1b[32mPulling trace into $TRACE.pbtext\x1b[0m"
-  "$OUT/trace_to_text" text <"$TRACE.protobuf" >"$TRACE.pbtext"
+  "$OUT/trace_to_text" text <"$TRACE.perfetto-trace" >"$TRACE.pbtext"
   echo -e "\n\x1b[32mPulling trace into $TRACE.json\x1b[0m"
-  "$OUT/trace_to_text" systrace <"$TRACE.protobuf" >"$TRACE.json"
+  "$OUT/trace_to_text" systrace <"$TRACE.perfetto-trace" >"$TRACE.json"
   # Keep this last so it can fail.
 fi

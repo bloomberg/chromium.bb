@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -84,6 +84,12 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   // they will all be within the subtree of the *parent* of |scope| - in other
   // words, siblings of |scope| and their descendants.
   explicit OneShotAccessibilityTreeSearch(BrowserAccessibility* scope);
+
+  OneShotAccessibilityTreeSearch(const OneShotAccessibilityTreeSearch&) =
+      delete;
+  OneShotAccessibilityTreeSearch& operator=(
+      const OneShotAccessibilityTreeSearch&) = delete;
+
   virtual ~OneShotAccessibilityTreeSearch();
 
   //
@@ -137,9 +143,9 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   void SearchByIteratingOverChildren();
   bool Matches(BrowserAccessibility* node);
 
-  BrowserAccessibilityManager* tree_;
-  BrowserAccessibility* scope_node_;
-  BrowserAccessibility* start_node_;
+  raw_ptr<BrowserAccessibilityManager> tree_;
+  raw_ptr<BrowserAccessibility> scope_node_;
+  raw_ptr<BrowserAccessibility> start_node_;
   Direction direction_;
   int result_limit_;
   bool immediate_descendants_only_;
@@ -151,8 +157,6 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   std::vector<BrowserAccessibility*> matches_;
 
   bool did_search_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneShotAccessibilityTreeSearch);
 };
 
 }  // namespace content

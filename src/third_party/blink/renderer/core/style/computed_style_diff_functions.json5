@@ -35,7 +35,7 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "margin-top", "margin-left", "margin-right", "margin-bottom",
                   "left", "right", "top", "bottom", "padding-top",
                   "padding-left", "padding-right", "padding-bottom",
-                  "contain-intrinsic-size"],
+                  "contain-intrinsic-width", "contain-intrinsic-height"],
         methods_to_diff: [
           {
             method: "GetPosition()",
@@ -95,16 +95,16 @@
                 "NamedGridAreaRowCount", "NamedGridAreaColumnCount",
                 "GridAutoRepeatColumns", "GridAutoRepeatRows", "GridAutoRepeatColumnsInsertionPoint",
                 "GridAutoRepeatRowsInsertionPoint", "grid-auto-flow", "GridAutoRepeatColumnsType",
-                "GridAutoRepeatRowsType", "-webkit-box-flex",
-                "-webkit-box-ordinal-group", "flex-basis",
+                "GridAutoRepeatRowsType", "GridColumnsAxisType", "GridRowsAxisType",
+                "-webkit-box-flex", "-webkit-box-ordinal-group", "flex-basis",
                 "flex-shrink", "flex-grow", "flex-direction", "flex-wrap", "-webkit-box-align",
-                "-webkit-box-pack", "-webkit-box-orient",
+                "-webkit-box-decoration-break", "-webkit-box-pack", "-webkit-box-orient",
                 "grid-row-start", "grid-row-end", "grid-column-start", "grid-column-end",
-                "column-gap", "column-width", "column-rule-style",
-                "column-rule-width", "column-rule-color", "-internal-visited-column-rule-color",
+                "column-gap", "column-width",
                 "column-count", "HasAutoColumnCount", "HasAutoColumnWidth", "column-fill", "column-span",
                 "cx", "cy", "d", "rx", "ry", "x", "y", "r", "alignment-baseline", "vector-effect",
-                "BaselineShiftType", "baseline-shift", "dominant-baseline", "text-anchor",
+                "BaselineShiftType", "baseline-shift", "dominant-baseline",
+                "CssDominantBaseline", "text-anchor",
                 "stroke-width", "stroke-miterlimit", "stroke-linecap", "stroke-linejoin",
                 "marker-end", "marker-mid", "marker-start", "scrollbar-width"],
         methods_to_diff: [
@@ -230,9 +230,11 @@
         fields_to_diff: ["width", "min-width", "max-width", "height", "min-height",
                 "max-height", "VerticalAlignLength", "box-sizing", "align-content",
                 "align-items", "align-self", "justify-content", "justify-items",
-                "justify-self", "contain", "contain-intrinsic-size", "aspect-ratio",
-                "overflow-clip-margin", "-internal-align-self-block", "orphans",
-                "widows"],
+                "justify-self", "contain", "contain-intrinsic-width",
+                "contain-intrinsic-height", "container-type",
+                "content-visibility", "aspect-ratio", "overflow-clip-margin",
+                "-internal-align-self-block", "orphans", "widows",
+                "scrollbar-gutter"],
         methods_to_diff: [
           {
             method: "VerticalAlign()",
@@ -242,18 +244,24 @@
             method: "GetPosition()",
             field_dependencies: ["position"]
           },
+          {
+            method: "SkipsContents()",
+            field_dependencies: ["content-visibility"]
+          },
         ]
     },
     {
         name: "DiffNeedsPaintInvalidation",
         fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering",
+                "column-rule-style", "column-rule-width", "column-rule-color",
+                "-internal-visited-column-rule-color",
                 "-webkit-user-drag", "object-fit", "object-position",
                 "mix-blend-mode", "isolation", "Mask", "MaskBoxImage", "mask", "mask-type",
                 "stop-color", "stop-opacity", "flood-color", "flood-opacity",
                 "lighting-color", "shape-rendering", "clip-rule", "fill-rule",
                 "color-interpolation", "color-interpolation-filters", "paint-order",
                 "fill", "fill-opacity", "stroke", "stroke-opacity",
-                "-internal-visited-stroke", "stroke-dashoffset"],
+                "-internal-visited-stroke", "stroke-dashoffset", "ColorSchemeForced"],
         methods_to_diff: [
           {
             method: "Visibility()",
@@ -280,8 +288,8 @@
             field_dependencies: ["color-scheme"]
           },
           {
-            method: "AccentColor()",
-            field_dependencies: ["accent-color"]
+            method: "AccentColorResolved()",
+            field_dependencies: ["accent-color", "color"]
           }
         ],
         predicates_to_test: [

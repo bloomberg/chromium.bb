@@ -33,16 +33,18 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_Loop) {
 
   gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(out, l)) << gen.error();
-  EXPECT_EQ(result(), R"(  for(;;) {
+  ASSERT_TRUE(gen.EmitStatement(l)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  [loop] while (true) {
     discard;
   }
 )");
 }
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithContinuing) {
+  Func("a_statement", {}, ty.void_(), {});
+
   auto* body = Block(create<ast::DiscardStatement>());
-  auto* continuing = Block(Return());
+  auto* continuing = Block(CallStmt(Call("a_statement")));
   auto* l = Loop(body, continuing);
 
   WrapInFunction(l);
@@ -51,27 +53,24 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithContinuing) {
 
   gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(out, l)) << gen.error();
-  EXPECT_EQ(result(), R"(  {
-    bool tint_hlsl_is_first_1 = true;
-    for(;;) {
-      if (!tint_hlsl_is_first_1) {
-        return;
-      }
-      tint_hlsl_is_first_1 = false;
-
-      discard;
+  ASSERT_TRUE(gen.EmitStatement(l)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  [loop] while (true) {
+    discard;
+    {
+      a_statement();
     }
   }
 )");
 }
 
 TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopNestedWithContinuing) {
+  Func("a_statement", {}, ty.void_(), {});
+
   Global("lhs", ty.f32(), ast::StorageClass::kPrivate);
   Global("rhs", ty.f32(), ast::StorageClass::kPrivate);
 
   auto* body = Block(create<ast::DiscardStatement>());
-  auto* continuing = Block(Return());
+  auto* continuing = Block(CallStmt(Call("a_statement")));
   auto* inner = Loop(body, continuing);
 
   body = Block(inner);
@@ -88,26 +87,16 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopNestedWithContinuing) {
 
   gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(out, outer)) << gen.error();
-  EXPECT_EQ(result(), R"(  {
-    bool tint_hlsl_is_first_1 = true;
-    for(;;) {
-      if (!tint_hlsl_is_first_1) {
-        lhs = rhs;
-      }
-      tint_hlsl_is_first_1 = false;
-
+  ASSERT_TRUE(gen.EmitStatement(outer)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  [loop] while (true) {
+    [loop] while (true) {
+      discard;
       {
-        bool tint_hlsl_is_first_2 = true;
-        for(;;) {
-          if (!tint_hlsl_is_first_2) {
-            return;
-          }
-          tint_hlsl_is_first_2 = false;
-
-          discard;
-        }
+        a_statement();
       }
+    }
+    {
+      lhs = rhs;
     }
   }
 )");
@@ -152,19 +141,271 @@ TEST_F(HlslGeneratorImplTest_Loop, Emit_LoopWithVarUsedInContinuing) {
 
   gen.increment_indent();
 
-  ASSERT_TRUE(gen.EmitStatement(out, outer)) << gen.error();
-  EXPECT_EQ(result(), R"(  {
-    bool tint_hlsl_is_first_1 = true;
-    float lhs;
-    float other;
-    for(;;) {
-      if (!tint_hlsl_is_first_1) {
-        lhs = rhs;
-      }
-      tint_hlsl_is_first_1 = false;
+  ASSERT_TRUE(gen.EmitStatement(outer)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  [loop] while (true) {
+    float lhs = 2.400000095f;
+    float other = 0.0f;
+    {
+      lhs = rhs;
+    }
+  }
+)");
+}
 
-      lhs = 2.400000095f;
-      other = 0.0f;
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoop) {
+  // for(; ; ) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* f =
+      For(nullptr, nullptr, nullptr, Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] for(; ; ) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithSimpleInit) {
+  // for(var i : i32; ; ) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* f = For(Decl(Var("i", ty.i32())), nullptr, nullptr,
+                Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] for(int i = 0; ; ) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithMultiStmtInit) {
+  // for(var b = true && false; ; ) {
+  //   return;
+  // }
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* multi_stmt = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                   Expr(true), Expr(false));
+  auto* f = For(Decl(Var("b", nullptr, multi_stmt)), nullptr, nullptr,
+                Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    bool tint_tmp = true;
+    if (tint_tmp) {
+      tint_tmp = false;
+    }
+    bool b = (tint_tmp);
+    [loop] for(; ; ) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithSimpleCond) {
+  // for(; true; ) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* f = For(nullptr, true, nullptr, Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] for(; true; ) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithMultiStmtCond) {
+  // for(; true && false; ) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* multi_stmt = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                   Expr(true), Expr(false));
+  auto* f =
+      For(nullptr, multi_stmt, nullptr, Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] while (true) {
+      bool tint_tmp = true;
+      if (tint_tmp) {
+        tint_tmp = false;
+      }
+      if (!((tint_tmp))) { break; }
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithSimpleCont) {
+  // for(; ; i = i + 1) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* v = Decl(Var("i", ty.i32()));
+  auto* f = For(nullptr, nullptr, Assign("i", Add("i", 1)),
+                Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(v, f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] for(; ; i = (i + 1)) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithMultiStmtCont) {
+  // for(; ; i = true && false) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* multi_stmt = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                   Expr(true), Expr(false));
+  auto* v = Decl(Var("i", ty.bool_()));
+  auto* f = For(nullptr, nullptr, Assign("i", multi_stmt),
+                Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(v, f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] while (true) {
+      a_statement();
+      bool tint_tmp = true;
+      if (tint_tmp) {
+        tint_tmp = false;
+      }
+      i = (tint_tmp);
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithSimpleInitCondCont) {
+  // for(var i : i32; true; i = i + 1) {
+  //   return;
+  // }
+
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* f = For(Decl(Var("i", ty.i32())), true, Assign("i", Add("i", 1)),
+                Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    [loop] for(int i = 0; true; i = (i + 1)) {
+      a_statement();
+    }
+  }
+)");
+}
+
+TEST_F(HlslGeneratorImplTest_Loop, Emit_ForLoopWithMultiStmtInitCondCont) {
+  // for(var i = true && false; true && false; i = true && false) {
+  //   return;
+  // }
+  Func("a_statement", {}, ty.void_(), {});
+
+  auto* multi_stmt_a = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                     Expr(true), Expr(false));
+  auto* multi_stmt_b = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                     Expr(true), Expr(false));
+  auto* multi_stmt_c = create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                     Expr(true), Expr(false));
+
+  auto* f =
+      For(Decl(Var("i", nullptr, multi_stmt_a)), multi_stmt_b,
+          Assign("i", multi_stmt_c), Block(CallStmt(Call("a_statement"))));
+  WrapInFunction(f);
+
+  GeneratorImpl& gen = Build();
+
+  gen.increment_indent();
+
+  ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
+  EXPECT_EQ(gen.result(), R"(  {
+    bool tint_tmp = true;
+    if (tint_tmp) {
+      tint_tmp = false;
+    }
+    bool i = (tint_tmp);
+    [loop] while (true) {
+      bool tint_tmp_1 = true;
+      if (tint_tmp_1) {
+        tint_tmp_1 = false;
+      }
+      if (!((tint_tmp_1))) { break; }
+      a_statement();
+      bool tint_tmp_2 = true;
+      if (tint_tmp_2) {
+        tint_tmp_2 = false;
+      }
+      i = (tint_tmp_2);
     }
   }
 )");

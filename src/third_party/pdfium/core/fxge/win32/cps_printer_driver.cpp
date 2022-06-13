@@ -13,28 +13,46 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/win32/cpsoutput.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 
+namespace {
+
+CFX_PSRenderer::RenderingLevel RenderingLevelFromWindowsPrintMode(
+    WindowsPrintMode mode) {
+  switch (mode) {
+    case WindowsPrintMode::kPostScript2:
+    case WindowsPrintMode::kPostScript2PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel2;
+    case WindowsPrintMode::kPostScript3:
+    case WindowsPrintMode::kPostScript3PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel3;
+    case WindowsPrintMode::kPostScript3Type42:
+    case WindowsPrintMode::kPostScript3Type42PassThrough:
+      return CFX_PSRenderer::RenderingLevel::kLevel3Type42;
+    default:
+      // |mode| should be PostScript.
+      NOTREACHED();
+      return CFX_PSRenderer::RenderingLevel::kLevel2;
+  }
+}
+
+}  // namespace
+
 CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
                                    WindowsPrintMode mode,
-                                   const EncoderIface* pEncoderIface)
-    : m_hDC(hDC), m_PSRenderer(pEncoderIface) {
-  // |mode| should be PostScript.
-  DCHECK(mode == WindowsPrintMode::kModePostScript2 ||
-         mode == WindowsPrintMode::kModePostScript3 ||
-         mode == WindowsPrintMode::kModePostScript2PassThrough ||
-         mode == WindowsPrintMode::kModePostScript3PassThrough);
-  int pslevel = (mode == WindowsPrintMode::kModePostScript2 ||
-                 mode == WindowsPrintMode::kModePostScript2PassThrough)
-                    ? 2
-                    : 3;
+                                   CFX_PSFontTracker* ps_font_tracker,
+                                   const EncoderIface* encoder_iface)
+    : m_hDC(hDC), m_PSRenderer(ps_font_tracker, encoder_iface) {
+  CFX_PSRenderer::RenderingLevel level =
+      RenderingLevelFromWindowsPrintMode(mode);
   CPSOutput::OutputMode output_mode =
-      (mode == WindowsPrintMode::kModePostScript2 ||
-       mode == WindowsPrintMode::kModePostScript3)
+      (mode == WindowsPrintMode::kPostScript2 ||
+       mode == WindowsPrintMode::kPostScript3 ||
+       mode == WindowsPrintMode::kPostScript3Type42)
           ? CPSOutput::OutputMode::kGdiComment
           : CPSOutput::OutputMode::kExtEscape;
 
@@ -44,7 +62,7 @@ CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
   m_Height = ::GetDeviceCaps(m_hDC, VERTRES);
   m_nBitsPerPixel = ::GetDeviceCaps(m_hDC, BITSPIXEL);
 
-  m_PSRenderer.Init(pdfium::MakeRetain<CPSOutput>(m_hDC, output_mode), pslevel,
+  m_PSRenderer.Init(pdfium::MakeRetain<CPSOutput>(m_hDC, output_mode), level,
                     m_Width, m_Height);
   HRGN hRgn = ::CreateRectRgn(0, 0, 1, 1);
   if (::GetClipRgn(m_hDC, hRgn) == 1) {
@@ -53,7 +71,7 @@ CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
       std::vector<uint8_t, FxAllocAllocator<uint8_t>> buffer(dwCount);
       RGNDATA* pData = reinterpret_cast<RGNDATA*>(buffer.data());
       if (::GetRegionData(hRgn, dwCount, pData)) {
-        CFX_PathData path;
+        CFX_Path path;
         for (uint32_t i = 0; i < pData->rdh.nCount; i++) {
           RECT* pRect =
               reinterpret_cast<RECT*>(pData->Buffer + pData->rdh.nRgnSize * i);
@@ -62,7 +80,7 @@ CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
                           static_cast<float>(pRect->right),
                           static_cast<float>(pRect->top));
         }
-        m_PSRenderer.SetClip_PathFill(&path, nullptr,
+        m_PSRenderer.SetClip_PathFill(path, nullptr,
                                       CFX_FillRenderOptions::WindingOptions());
       }
     }
@@ -70,9 +88,7 @@ CPSPrinterDriver::CPSPrinterDriver(HDC hDC,
   ::DeleteObject(hRgn);
 }
 
-CPSPrinterDriver::~CPSPrinterDriver() {
-  m_PSRenderer.EndRendering();
-}
+CPSPrinterDriver::~CPSPrinterDriver() = default;
 
 DeviceType CPSPrinterDriver::GetDeviceType() const {
   return DeviceType::kPrinter;
@@ -107,22 +123,22 @@ void CPSPrinterDriver::RestoreState(bool bKeepSaved) {
 }
 
 bool CPSPrinterDriver::SetClip_PathFill(
-    const CFX_PathData* pPathData,
+    const CFX_Path& path,
     const CFX_Matrix* pObject2Device,
     const CFX_FillRenderOptions& fill_options) {
-  m_PSRenderer.SetClip_PathFill(pPathData, pObject2Device, fill_options);
+  m_PSRenderer.SetClip_PathFill(path, pObject2Device, fill_options);
   return true;
 }
 
 bool CPSPrinterDriver::SetClip_PathStroke(
-    const CFX_PathData* pPathData,
+    const CFX_Path& path,
     const CFX_Matrix* pObject2Device,
     const CFX_GraphStateData* pGraphState) {
-  m_PSRenderer.SetClip_PathStroke(pPathData, pObject2Device, pGraphState);
+  m_PSRenderer.SetClip_PathStroke(path, pObject2Device, pGraphState);
   return true;
 }
 
-bool CPSPrinterDriver::DrawPath(const CFX_PathData* pPathData,
+bool CPSPrinterDriver::DrawPath(const CFX_Path& path,
                                 const CFX_Matrix* pObject2Device,
                                 const CFX_GraphStateData* pGraphState,
                                 FX_ARGB fill_color,
@@ -131,8 +147,8 @@ bool CPSPrinterDriver::DrawPath(const CFX_PathData* pPathData,
                                 BlendMode blend_type) {
   if (blend_type != BlendMode::kNormal)
     return false;
-  return m_PSRenderer.DrawPath(pPathData, pObject2Device, pGraphState,
-                               fill_color, stroke_color, fill_options);
+  return m_PSRenderer.DrawPath(path, pObject2Device, pGraphState, fill_color,
+                               stroke_color, fill_options);
 }
 
 bool CPSPrinterDriver::GetClipBox(FX_RECT* pRect) {

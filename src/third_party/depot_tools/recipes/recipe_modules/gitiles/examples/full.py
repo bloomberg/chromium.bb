@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
+
 DEPS = [
     'gitiles',
     'recipe_engine/json',
@@ -68,16 +70,16 @@ def GenTests(api):
           ])
       )
       + api.step_data(
-          'fetch master:OWNERS',
+          'fetch main:OWNERS',
           api.gitiles.make_encoded_file('foobar')
       )
       + api.step_data(
-          'fetch master:NONEXISTENT',
+          'fetch main:NONEXISTENT',
           api.json.output({'value': None})
       )
       + api.step_data(
           ('download https://chromium.googlesource.com/chromium/src @ '
-           'refs/heads/master (2)'),
+           'refs/heads/main (2)'),
         api.json.output({
           'extracted': {
             'filecount': 10,

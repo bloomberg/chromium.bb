@@ -23,6 +23,7 @@ if (skia_enable_skottie) {
       "../skresources",
       "../sksg",
       "../skshaper",
+      "../skunicode",
     ]
   }
 
@@ -55,6 +56,7 @@ if (skia_enable_skottie) {
         sources = [
           "src/SkottieTest.cpp",
           "tests/AudioLayer.cpp",
+          "tests/Expression.cpp",
           "tests/Image.cpp",
           "tests/Keyframe.cpp",
           "tests/Text.cpp",

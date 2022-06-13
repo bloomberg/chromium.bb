@@ -31,6 +31,8 @@ target_sources(dawn_native PRIVATE
     ${DAWN_NATIVE_UTILS_GEN_SOURCES}
     "Adapter.cpp"
     "Adapter.h"
+    "AsyncTask.cpp"
+    "AsyncTask.h"
     "AttachmentState.cpp"
     "AttachmentState.h"
     "BackendConnection.cpp"
@@ -90,21 +92,26 @@ target_sources(dawn_native PRIVATE
     "ErrorInjector.h"
     "ErrorScope.cpp"
     "ErrorScope.h"
-    "Extensions.cpp"
-    "Extensions.h"
+    "Features.cpp"
+    "Features.h"
     "ExternalTexture.cpp"
     "ExternalTexture.h"
+    "IndirectDrawMetadata.cpp"
+    "IndirectDrawMetadata.h"
+    "IndirectDrawValidationEncoder.cpp"
+    "IndirectDrawValidationEncoder.h"
     "ObjectContentHasher.cpp"
     "ObjectContentHasher.h"
-    "Fence.cpp"
-    "Fence.h"
     "Format.cpp"
     "Format.h"
     "Forward.h"
     "Instance.cpp"
     "Instance.h"
+    "InternalPipelineStore.cpp"
     "InternalPipelineStore.h"
     "IntegerTypes.h"
+    "Limits.cpp"
+    "Limits.h"
     "ObjectBase.cpp"
     "ObjectBase.h"
     "PassResourceUsage.h"
@@ -120,8 +127,8 @@ target_sources(dawn_native PRIVATE
     "PipelineLayout.h"
     "PooledResourceMemoryAllocator.cpp"
     "PooledResourceMemoryAllocator.h"
-    "ProgrammablePassEncoder.cpp"
-    "ProgrammablePassEncoder.h"
+    "ProgrammableEncoder.cpp"
+    "ProgrammableEncoder.h"
     "QueryHelper.cpp"
     "QueryHelper.h"
     "QuerySet.cpp"
@@ -146,10 +153,10 @@ target_sources(dawn_native PRIVATE
     "RingBufferAllocator.h"
     "Sampler.cpp"
     "Sampler.h"
+    "ScratchBuffer.cpp"
+    "ScratchBuffer.h"
     "ShaderModule.cpp"
     "ShaderModule.h"
-    "SpirvUtils.cpp"
-    "SpirvUtils.h"
     "StagingBuffer.cpp"
     "StagingBuffer.h"
     "Subresource.cpp"
@@ -166,7 +173,11 @@ target_sources(dawn_native PRIVATE
     "ToBackend.h"
     "Toggles.cpp"
     "Toggles.h"
+    "VertexFormat.cpp"
+    "VertexFormat.h"
     "dawn_platform.h"
+    "utils/WGPUHelpers.cpp"
+    "utils/WGPUHelpers.h"
 )
 target_link_libraries(dawn_native
     PUBLIC dawncpp_headers
@@ -174,12 +185,19 @@ target_link_libraries(dawn_native
             dawn_platform
             dawn_internal_config
             libtint
-            spirv-cross-core
-            spirv-cross-glsl
-            spirv-cross-hlsl
-            spirv-cross-msl
             SPIRV-Tools-opt
+            absl_strings
+            absl_str_format_internal
 )
+
+if (DAWN_REQUIRES_SPIRV_CROSS)
+    target_link_libraries(dawn_native PRIVATE spirv-cross-core)
+    if (DAWN_ENABLE_OPENGL)
+        target_link_libraries(dawn_native PRIVATE spirv-cross-glsl)
+    endif()
+endif()
+
+target_include_directories(dawn_native PRIVATE ${DAWN_ABSEIL_DIR})
 
 if (DAWN_USE_X11)
     find_package(X11 REQUIRED)
@@ -191,8 +209,22 @@ if (DAWN_USE_X11)
     )
 endif()
 
-if (WIN32)
+# Only win32 app needs to link with user32.lib
+# In UWP, all availiable APIs are defined in WindowsApp.lib
+# and is automatically linked when WINDOWS_STORE set
+if (WIN32 AND NOT WINDOWS_STORE)
     target_link_libraries(dawn_native PRIVATE user32.lib)
+endif()
+
+# DXGIGetDebugInterface1 is defined in dxgi.lib
+# But this API is tagged as a development-only capability
+# which implies that linking to this function will cause
+# the application to fail Windows store certification
+# So we only link to it in debug build when compiling for UWP.
+# In win32 we load dxgi.dll using LoadLibrary
+# so no need for static linking.
+if (WINDOWS_STORE)
+    target_link_libraries(dawn_native PRIVATE debug dxgi.lib)
 endif()
 
 if (DAWN_ENABLE_D3D12)
@@ -218,6 +250,8 @@ if (DAWN_ENABLE_D3D12)
         "d3d12/CommandRecordingContext.h"
         "d3d12/ComputePipelineD3D12.cpp"
         "d3d12/ComputePipelineD3D12.h"
+        "d3d12/D3D11on12Util.cpp"
+        "d3d12/D3D11on12Util.h"
         "d3d12/D3D12Error.cpp"
         "d3d12/D3D12Error.h"
         "d3d12/D3D12Info.cpp"
@@ -338,6 +372,13 @@ if (DAWN_ENABLE_NULL)
     )
 endif()
 
+if (DAWN_ENABLE_OPENGL OR DAWN_ENABLE_VULKAN)
+    target_sources(dawn_native PRIVATE
+        "SpirvValidation.cpp"
+        "SpirvValidation.h"
+    )
+endif()
+
 if (DAWN_ENABLE_OPENGL)
     DawnGenerator(
         SCRIPT "${Dawn_SOURCE_DIR}/generator/opengl_loader_generator.py"
@@ -391,6 +432,8 @@ if (DAWN_ENABLE_OPENGL)
         "opengl/SamplerGL.h"
         "opengl/ShaderModuleGL.cpp"
         "opengl/ShaderModuleGL.h"
+        "opengl/SpirvUtils.cpp"
+        "opengl/SpirvUtils.h"
         "opengl/SwapChainGL.cpp"
         "opengl/SwapChainGL.h"
         "opengl/TextureGL.cpp"
@@ -475,7 +518,7 @@ if (DAWN_ENABLE_VULKAN)
     if (UNIX AND NOT APPLE)
         target_sources(dawn_native PRIVATE
             "vulkan/external_memory/MemoryServiceOpaqueFD.cpp"
-            "vulkan/external_semaphore/SemaphoreServiceOpaqueFD.cpp"
+            "vulkan/external_semaphore/SemaphoreServiceFD.cpp"
         )
     else()
         target_sources(dawn_native PRIVATE
@@ -502,3 +545,17 @@ endif()
 if (DAWN_ENABLE_VULKAN)
     target_sources(dawn_native PRIVATE "vulkan/VulkanBackend.cpp")
 endif()
+
+DawnJSONGenerator(
+    TARGET "webgpu_dawn_native_proc"
+    PRINT_NAME "Dawn native WebGPU procs"
+    RESULT_VARIABLE "WEBGPU_DAWN_NATIVE_PROC_GEN"
+)
+
+add_library(webgpu_dawn ${DAWN_DUMMY_FILE})
+target_link_libraries(webgpu_dawn PRIVATE dawn_native)
+target_compile_definitions(webgpu_dawn PRIVATE "WGPU_IMPLEMENTATION")
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(webgpu_dawn PRIVATE "WGPU_SHARED_LIBRARY")
+endif()
+target_sources(webgpu_dawn PRIVATE ${WEBGPU_DAWN_NATIVE_PROC_GEN})

@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #include "tools/benchmark/benchmark_codec_custom.h"
 
@@ -23,9 +14,9 @@
 
 #include "lib/extras/codec.h"
 #include "lib/extras/codec_png.h"
+#include "lib/extras/time.h"
 #include "lib/jxl/base/file_io.h"
 #include "lib/jxl/base/thread_pool_internal.h"
-#include "lib/jxl/base/time.h"
 #include "lib/jxl/codec_in_out.h"
 #include "lib/jxl/image_bundle.h"
 #include "tools/benchmark/benchmark_utils.h"
@@ -109,7 +100,7 @@ class CustomCodec : public ImageCodec {
     const size_t bits = io->metadata.m.bit_depth.bits_per_sample;
     PaddedBytes png;
     JXL_RETURN_IF_ERROR(
-        EncodeImagePNG(io, io->Main().c_current(), bits, pool, &png));
+        extras::EncodeImagePNG(io, io->Main().c_current(), bits, pool, &png));
     JXL_RETURN_IF_ERROR(WriteFile(png, png_filename));
     std::vector<std::string> arguments = compress_args_;
     arguments.push_back(png_filename);
@@ -139,7 +130,7 @@ class CustomCodec : public ImageCodec {
         },
         png_filename, speed_stats));
     io->target_nits = saved_intensity_target_;
-    return SetFromFile(png_filename, io, pool);
+    return SetFromFile(png_filename, ColorHints(), io, pool);
   }
 
  private:

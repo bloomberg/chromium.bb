@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
@@ -189,6 +188,10 @@ class DemoSetupController
   static std::string GetDemoSetupStepString(const DemoSetupStep step_enum);
 
   DemoSetupController();
+
+  DemoSetupController(const DemoSetupController&) = delete;
+  DemoSetupController& operator=(const DemoSetupController&) = delete;
+
   ~DemoSetupController() override;
 
   // Sets demo mode config that will be used to setup the device. It has to be
@@ -229,7 +232,6 @@ class DemoSetupController
   void OnOtherError(EnterpriseEnrollmentHelper::OtherError error) override;
   void OnDeviceAttributeUploadCompleted(bool success) override;
   void OnDeviceAttributeUpdatePermission(bool granted) override;
-  void OnRestoreAfterRollbackCompleted() override;
 
   void SetCrOSComponentLoadErrorForTest(
       component_updater::CrOSComponentManager::Error error);
@@ -324,8 +326,6 @@ class DemoSetupController
   std::unique_ptr<DemoResources> demo_resources_;
 
   base::WeakPtrFactory<DemoSetupController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupController);
 };
 
 }  //  namespace ash

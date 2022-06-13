@@ -13,7 +13,6 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/fetch/fetch_request_type_converters.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -22,12 +21,15 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_loader_helpers.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "ui/base/page_transition_types.h"
@@ -38,6 +40,13 @@ namespace {
 
 constexpr char kServiceWorkerSubresourceLoaderScope[] =
     "ServiceWorkerSubresourceLoader";
+
+template <typename T>
+static std::string MojoEnumToString(T mojo_enum) {
+  std::ostringstream oss;
+  oss << mojo_enum;
+  return oss.str();
+}
 
 network::mojom::URLResponseHeadPtr RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
@@ -137,6 +146,9 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
 
+  StreamWaiter(const StreamWaiter&) = delete;
+  StreamWaiter& operator=(const StreamWaiter&) = delete;
+
   // mojom::ServiceWorkerStreamCallback implementations:
   void OnCompleted() override { owner_->OnBodyReadingComplete(net::OK); }
   void OnAborted() override { owner_->OnBodyReadingComplete(net::ERR_ABORTED); }
@@ -144,8 +156,6 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
  private:
   ServiceWorkerSubresourceLoader* owner_;
   mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
 
 // ServiceWorkerSubresourceLoader -------------------------------------------
@@ -162,7 +172,8 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::WeakPtr<ServiceWorkerSubresourceLoaderFactory>
         service_worker_subresource_loader_factory)
-    : redirect_limit_(net::URLRequest::kMaxRedirects),
+    : response_head_(network::mojom::URLResponseHead::New()),
+      redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_receiver_(this, std::move(receiver)),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
@@ -343,8 +354,7 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
       TRACE_ID_WITH_SCOPE(kServiceWorkerSubresourceLoaderScope,
                           TRACE_ID_LOCAL(request_id_)),
-      TRACE_EVENT_FLAG_FLOW_IN, "status",
-      ServiceWorkerUtils::MojoEnumToString(status));
+      TRACE_EVENT_FLAG_FLOW_IN, "status", MojoEnumToString(status));
 
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
   // fetch event dispatch reached the renderer.
@@ -565,7 +575,8 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   // for a script.
   auto request_destination = resource_request_.destination;
   if (response->side_data_blob &&
-      request_destination == network::mojom::RequestDestination::kScript) {
+      (request_destination == network::mojom::RequestDestination::kScript ||
+       response->mime_type == "application/wasm")) {
     side_data_as_blob_.Bind(std::move(response->side_data_blob->blob));
     side_data_as_blob_->ReadSideData(base::BindOnce(
         &ServiceWorkerSubresourceLoader::OnSideDataReadingComplete,
@@ -633,11 +644,9 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
 void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
   DCHECK(fetch_event_timing_);
 
-  // |report_raw_headers| is true when DevTools is attached. Don't record
+  // |devtools_request_id| is set when DevTools is attached. Don't record
   // metrics when DevTools is attached to reduce noise.
-  // TODO(bashi): Relying on |report_raw_header| to detect DevTools existence
-  // is brittle. Figure out a better way to check DevTools is attached.
-  if (resource_request_.report_raw_headers)
+  if (resource_request_.devtools_request_id.has_value())
     return;
 
   // |fetch_event_timing_| can be recorded in different process. We can get
@@ -680,10 +689,11 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
         completion_time - response_head_->load_timing.receive_headers_end);
     // Same as above, breakdown by response source.
     base::UmaHistogramMediumTimes(
-        base::StrCat({"ServiceWorker.LoadTiming.Subresource."
-                      "ResponseReceivedToCompleted2",
-                      ServiceWorkerUtils::FetchResponseSourceToSuffix(
-                          response_source_)}),
+        base::StrCat(
+            {"ServiceWorker.LoadTiming.Subresource."
+             "ResponseReceivedToCompleted2",
+             blink::ServiceWorkerLoaderHelpers::FetchResponseSourceToSuffix(
+                 response_source_)}),
         completion_time - response_head_->load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.

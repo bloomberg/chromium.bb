@@ -5,7 +5,7 @@ package(
         "//tensorflow/lite:__subpackages__",
         "//tensorflow/tools/pip_package:__subpackages__",
     ],
-    licenses = ["notice"],  # Apache 2.0
+    licenses = ["notice"],
 )
 
 config_setting(
@@ -30,12 +30,16 @@ cc_library(
     name = "toco_python_api",
     srcs = ["toco_python_api.cc"],
     hdrs = ["toco_python_api.h"],
+    features = ["-parse_headers"],
     visibility = [
         "//tensorflow/python:__subpackages__",
     ],
     deps = [
         "@com_google_protobuf//:protobuf_headers",
         "//third_party/python_runtime:headers",  # build_cleaner: keep; DNR: b/35864863
+        "//tensorflow/c:kernels",
+        "//tensorflow/core:protos_all_cc",
+        "//tensorflow/core:framework",
         "//tensorflow/core:lib",
         "//tensorflow/lite/c:common",
         "//tensorflow/lite/core/api",
@@ -51,11 +55,14 @@ cc_library(
         "//tensorflow/lite/toco:toco_port",
         "//tensorflow/lite/toco:toco_tooling",
         "//tensorflow/lite/toco:tooling_util",
+        "//tensorflow/lite/toco:types_proto_cc",
+        "//tensorflow/compiler/mlir/lite/python:flatbuffer_to_mlir",
         "//tensorflow/compiler/mlir/lite/python:graphdef_to_tfl_flatbuffer",
         "//tensorflow/compiler/mlir/lite/python:saved_model_to_tfl_flatbuffer",
+        "//tensorflow/compiler/mlir/lite/python:jax_to_tfl_flatbuffer",
         "//tensorflow/compiler/mlir/lite/quantization/lite:quantize_model",
         "//tensorflow/compiler/mlir/lite/sparsity:sparsify_model",
-        "//tensorflow/lite/toco:types_proto_cc",
+        "//tensorflow/compiler/mlir/lite/metrics:error_collector",
     ] + select({
         # This is required when running `tflite_convert` from `bazel`.
         # It requires to link with TensorFlow Ops to get the op definitions.
@@ -71,6 +78,7 @@ cc_library(
 py_library(
     name = "tensorflow_wrap_toco",
     srcs = ["tensorflow_wrap_toco.py"],
+    srcs_version = "PY3",
     visibility = [
         "//learning/expander/pod/deep_pod/utils:__subpackages__",
         "//research/handwriting/converters/tflite:__subpackages__",
@@ -85,11 +93,12 @@ py_binary(
     name = "toco_from_protos",
     srcs = ["toco_from_protos.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorflow/python:_pywrap_toco_api",
         "//tensorflow/python:platform",
         "//tensorflow/python:pywrap_tensorflow",
+        "@absl_py//absl:app",
     ],
 )
 

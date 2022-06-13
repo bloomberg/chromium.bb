@@ -24,12 +24,12 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
-#include "components/safe_browsing/core/proto/client_model.pb.h"
-#include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
+#include "components/safe_browsing/core/common/proto/client_model.pb.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace safe_browsing {
@@ -77,12 +77,16 @@ class Scorer {
       base::OnceCallback<void(std::unique_ptr<ClientPhishingRequest>)> callback)
       const = 0;
 
+// TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   // This method applies the TfLite visual model to the given bitmap. It
   // asynchronously returns the list of scores for each category, in the same
   // order as `tflite_thresholds()`.
   virtual void ApplyVisualTfLiteModel(
       const SkBitmap& bitmap,
       base::OnceCallback<void(std::vector<double>)> callback) const = 0;
+#endif
 
   // Returns the version number of the loaded client model.
   virtual int model_version() const = 0;

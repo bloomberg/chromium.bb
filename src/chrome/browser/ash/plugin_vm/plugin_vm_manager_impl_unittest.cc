@@ -10,6 +10,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_metrics_util.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
@@ -28,9 +28,9 @@
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
-#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "chromeos/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
+#include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -60,7 +60,8 @@ class PluginVmManagerImplTest : public testing::Test {
         testing_profile_.get());
     shelf_model_ = std::make_unique<ash::ShelfModel>();
     chrome_shelf_controller_ = std::make_unique<ChromeShelfController>(
-        testing_profile_.get(), shelf_model_.get());
+        testing_profile_.get(), shelf_model_.get(),
+        /*shelf_item_factory=*/nullptr);
     chrome_shelf_controller_->SetProfileForTest(testing_profile_.get());
     chrome_shelf_controller_->SetShelfControllerHelperForTest(
         std::make_unique<ShelfControllerHelper>(testing_profile_.get()));
@@ -68,6 +69,9 @@ class PluginVmManagerImplTest : public testing::Test {
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     chromeos::DlcserviceClient::InitializeFake();
   }
+
+  PluginVmManagerImplTest(const PluginVmManagerImplTest&) = delete;
+  PluginVmManagerImplTest& operator=(const PluginVmManagerImplTest&) = delete;
 
   ~PluginVmManagerImplTest() override {
     chromeos::DlcserviceClient::Shutdown();
@@ -126,6 +130,14 @@ class PluginVmManagerImplTest : public testing::Test {
     VmPluginDispatcherClient().NotifyVmStateChanged(state_changed_signal);
   }
 
+  void NotifyVmStarted() {
+    vm_tools::concierge::VmStartedSignal signal;
+    signal.set_name(kPluginVmName);
+    signal.set_owner_id(
+        ash::ProfileHelper::GetUserIdHashFromProfile(testing_profile_.get()));
+    ConciergeClient().NotifyVmStarted(signal);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<PluginVmTestHelper> test_helper_;
@@ -134,9 +146,6 @@ class PluginVmManagerImplTest : public testing::Test {
   std::unique_ptr<ash::ShelfModel> shelf_model_;
   std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PluginVmManagerImplTest);
 };
 
 TEST_F(PluginVmManagerImplTest, LaunchPluginVmRequiresPluginVmAllowed) {
@@ -245,6 +254,7 @@ TEST_F(PluginVmManagerImplTest, OnStateChangedRunningStoppedSuspended) {
   EXPECT_TRUE(
       chrome_shelf_controller_->IsOpen(ash::ShelfID(kPluginVmShelfAppId)));
 
+  NotifyVmStarted();
   NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   task_environment_.RunUntilIdle();
   EXPECT_GE(ConciergeClient().get_vm_info_call_count(), 1);

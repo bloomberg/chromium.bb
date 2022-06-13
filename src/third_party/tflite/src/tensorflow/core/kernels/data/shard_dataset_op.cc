@@ -14,10 +14,12 @@ limitations under the License.
 ==============================================================================*/
 #include "tensorflow/core/kernels/data/shard_dataset_op.h"
 
+#include "tensorflow/core/data/dataset_utils.h"
+#include "tensorflow/core/data/name_utils.h"
 #include "tensorflow/core/framework/partial_tensor_shape.h"
 #include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/kernels/data/name_utils.h"
 #include "tensorflow/core/lib/core/errors.h"
+#include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/stringprintf.h"
 #include "tensorflow/core/util/batch_util.h"
 
@@ -40,7 +42,7 @@ constexpr char kNextIndex[] = "next_index";
 
 class ShardDatasetOp::Dataset : public DatasetBase {
  public:
-  Dataset(OpKernelContext* ctx, int64 num_shards, int64 index,
+  Dataset(OpKernelContext* ctx, int64_t num_shards, int64_t index,
           bool require_non_empty, const DatasetBase* input)
       : DatasetBase(DatasetContext(ctx)),
         num_shards_(num_shards),
@@ -76,16 +78,35 @@ class ShardDatasetOp::Dataset : public DatasetBase {
     return name_utils::DatasetDebugString(kDatasetType, params);
   }
 
-  int64 Cardinality() const override {
-    int64 n = input_->Cardinality();
+  int64_t CardinalityInternal() const override {
+    int64_t n = input_->Cardinality();
     if (n == kInfiniteCardinality || n == kUnknownCardinality) {
       return n;
     }
     return n / num_shards_ + (index_ < n % num_shards_ ? 1 : 0);
   }
 
+  int64_t CardinalityInternal(CardinalityOptions options) const override {
+    int64_t n = input_->Cardinality(options);
+    if (n == kInfiniteCardinality || n == kUnknownCardinality) {
+      return n;
+    }
+    return n / num_shards_ + (index_ < n % num_shards_ ? 1 : 0);
+  }
+
+  Status InputDatasets(std::vector<const DatasetBase*>* inputs) const override {
+    inputs->push_back(input_);
+    return Status::OK();
+  }
+
   Status CheckExternalState() const override {
     return input_->CheckExternalState();
+  }
+
+  Status Get(OpKernelContext* ctx, int64 index,
+             std::vector<Tensor>* out_tensors) const override {
+    TF_RETURN_IF_ERROR(CheckRandomAccessCompatible(index));
+    return input_->Get(ctx, index_ + (num_shards_ * index), out_tensors);
   }
 
  protected:
@@ -115,6 +136,15 @@ class ShardDatasetOp::Dataset : public DatasetBase {
         : DatasetIterator<Dataset>(params), next_index_(0) {}
 
     Status Initialize(IteratorContext* ctx) override {
+      if (dataset()->num_shards_ == kShardHint) {
+        return errors::FailedPrecondition(
+            "`tf.data.Dataset.shard(SHARD_HINT, ...)` can only be used in "
+            "`tf.distribute.Strategy.experimental_distribute_dataset()` with "
+            "`tf.data.experimental.AutoShardPolicy.HINT` policy, or tf.data "
+            "service with "
+            "`tf.data.experimental.service.ShardingPolicy.HINT` processing "
+            "mode.");
+      }
       return dataset()->input_->MakeIterator(ctx, this, prefix(), &input_impl_);
     }
 
@@ -123,40 +153,59 @@ class ShardDatasetOp::Dataset : public DatasetBase {
                            bool* end_of_sequence) override {
       mutex_lock l(mu_);
 
+      *end_of_sequence = false;
       if (!input_impl_) {
         *end_of_sequence = true;
         return Status::OK();
       }
 
+      int num_to_skip =
+          (dataset()->index_ - next_index_) % dataset()->num_shards_;
+      if (num_to_skip < 0) {
+        num_to_skip += dataset()->num_shards_;
+      }
+      int num_skipped;
+      TF_RETURN_IF_ERROR(
+          input_impl_->Skip(ctx, num_to_skip, end_of_sequence, &num_skipped));
+      next_index_ += num_skipped;
+      if (*end_of_sequence) {
+        input_impl_.reset();
+        return Status::OK();
+      }
+
       std::vector<Tensor> result;
-      do {
-        result.clear();
-        TF_RETURN_IF_ERROR(input_impl_->GetNext(ctx, &result, end_of_sequence));
-        if (*end_of_sequence) {
-          input_impl_.reset();
-          return Status::OK();
-        }
-      } while ((next_index_++ % dataset()->num_shards_) != dataset()->index_);
+      TF_RETURN_IF_ERROR(input_impl_->GetNext(ctx, &result, end_of_sequence));
+      if (*end_of_sequence) {
+        input_impl_.reset();
+        return Status::OK();
+      }
+      next_index_++;
 
-      while (dataset()->require_non_empty_ &&
-             next_index_ < dataset()->num_shards_) {
-        std::vector<Tensor> unused_result;
-
-        Status s = input_impl_->GetNext(ctx, &unused_result, end_of_sequence);
+      if (dataset()->require_non_empty_ &&
+          next_index_ < dataset()->num_shards_) {
+        int num_skipped;
+        Status s = input_impl_->Skip(ctx, dataset()->num_shards_ - next_index_,
+                                     end_of_sequence, &num_skipped);
         if (*end_of_sequence || errors::IsOutOfRange(s)) {
+          // `dataset()->require_non_empty_` implies that this transformation
+          // was introduced by auto_sharding rewrite, so it's acceptable
+          // produce an error message that assumes auto-sharding context.
           return errors::InvalidArgument(
-              "There aren't enough elements in this dataset for each shard to "
-              "have at least one element (# elems = ",
-              next_index_, ", ", "# shards = ", dataset()->num_shards_,
-              "). If you are using datasets with distribution strategy, "
-              "considering setting the auto sharding policy to either DATA or "
+              "Could not apply FILE based sharding: the dataset only has ",
+              next_index_, " file(s), which is not enough for the required ",
+              dataset()->num_shards_,
+              " shards/workers."
+              "If you are using datasets with distribution strategy, "
+              "consider setting the auto sharding policy to either DATA or "
               "OFF using the `experimental_distribute.auto_shard_policy` option"
-              "of `tf.data.Options()`.");
+              "of `tf.data.Options()`. Or, split your input files into a "
+              "larger number of small files such that number of files is "
+              "greater than number of shards/workers.");
         } else if (!s.ok()) {
           return s;
         }
 
-        next_index_++;
+        next_index_ = dataset()->num_shards_;
       }
 
       *out_tensors = std::move(result);
@@ -202,11 +251,11 @@ class ShardDatasetOp::Dataset : public DatasetBase {
    private:
     mutex mu_;
     std::unique_ptr<IteratorBase> input_impl_ TF_GUARDED_BY(mu_);
-    int64 next_index_ TF_GUARDED_BY(mu_);
+    int64_t next_index_ TF_GUARDED_BY(mu_);
   };
 
-  const int64 num_shards_;
-  const int64 index_;
+  const int64_t num_shards_;
+  const int64_t index_;
   const DatasetBase* const input_;
   const bool require_non_empty_;
   const TraceMeMetadata traceme_metadata_;
@@ -219,19 +268,20 @@ ShardDatasetOp::ShardDatasetOp(OpKernelConstruction* ctx)
 
 void ShardDatasetOp::MakeDataset(OpKernelContext* ctx, DatasetBase* input,
                                  DatasetBase** output) {
-  int64 index = 0;
-  int64 num_shards = 0;
+  int64_t index = 0;
+  int64_t num_shards = 0;
 
-  OP_REQUIRES_OK(ctx, ParseScalarArgument<int64>(ctx, kNumShards, &num_shards));
+  OP_REQUIRES_OK(ctx,
+                 ParseScalarArgument<int64_t>(ctx, kNumShards, &num_shards));
   OP_REQUIRES(
-      ctx, num_shards > 0,
+      ctx, num_shards > 0 || num_shards == kShardHint,
       errors::InvalidArgument("Number of shards must be greater than zero "
                               "(currently num_shards = ",
                               num_shards, ")."));
 
-  OP_REQUIRES_OK(ctx, ParseScalarArgument<int64>(ctx, kIndex, &index));
+  OP_REQUIRES_OK(ctx, ParseScalarArgument<int64_t>(ctx, kIndex, &index));
   OP_REQUIRES(
-      ctx, index >= 0 && index < num_shards,
+      ctx, (index >= 0 && index < num_shards) || num_shards == kShardHint,
       errors::InvalidArgument("Index must be between 0 and ", num_shards - 1,
                               " (currently index = ", index, ")."));
 

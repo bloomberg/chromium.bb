@@ -482,11 +482,14 @@ inline void WienerVerticalTap1(const int16_t* wiener_buffer,
 }
 
 void WienerFilter_SSE4_1(
-    const RestorationUnitInfo& restoration_info, const void* const source,
-    const ptrdiff_t stride, const void* const top_border,
-    const ptrdiff_t top_border_stride, const void* const bottom_border,
+    const RestorationUnitInfo& LIBGAV1_RESTRICT restoration_info,
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_border,
+    const ptrdiff_t top_border_stride,
+    const void* LIBGAV1_RESTRICT const bottom_border,
     const ptrdiff_t bottom_border_stride, const int width, const int height,
-    RestorationBuffer* const restoration_buffer, void* const dest) {
+    RestorationBuffer* LIBGAV1_RESTRICT const restoration_buffer,
+    void* LIBGAV1_RESTRICT const dest) {
   const int16_t* const number_leading_zero_coefficients =
       restoration_info.wiener_info.number_leading_zero_coefficients;
   const int number_rows_to_skip = std::max(
@@ -2510,11 +2513,14 @@ inline void BoxFilterProcessPass2(const RestorationUnitInfo& restoration_info,
 // in the end of each row. It is safe to overwrite the output as it will not be
 // part of the visible frame.
 void SelfGuidedFilter_SSE4_1(
-    const RestorationUnitInfo& restoration_info, const void* const source,
-    const ptrdiff_t stride, const void* const top_border,
-    const ptrdiff_t top_border_stride, const void* const bottom_border,
+    const RestorationUnitInfo& LIBGAV1_RESTRICT restoration_info,
+    const void* LIBGAV1_RESTRICT const source, const ptrdiff_t stride,
+    const void* LIBGAV1_RESTRICT const top_border,
+    const ptrdiff_t top_border_stride,
+    const void* LIBGAV1_RESTRICT const bottom_border,
     const ptrdiff_t bottom_border_stride, const int width, const int height,
-    RestorationBuffer* const restoration_buffer, void* const dest) {
+    RestorationBuffer* LIBGAV1_RESTRICT const restoration_buffer,
+    void* LIBGAV1_RESTRICT const dest) {
   const int index = restoration_info.sgr_proj_info.index;
   const int radius_pass_0 = kSgrProjParams[index][0];  // 2 or 0
   const int radius_pass_1 = kSgrProjParams[index][2];  // 1 or 0

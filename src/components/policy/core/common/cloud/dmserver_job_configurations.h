@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -55,6 +55,9 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
                            absl::optional<std::string> oauth_token,
                            Callback callback);
 
+  DMServerJobConfiguration(const DMServerJobConfiguration&) = delete;
+  DMServerJobConfiguration& operator=(const DMServerJobConfiguration&) = delete;
+
   ~DMServerJobConfiguration() override;
 
   enterprise_management::DeviceManagementRequest* request() {
@@ -83,8 +86,6 @@ class POLICY_EXPORT DMServerJobConfiguration : public JobConfigurationBase {
   std::string server_url_;
   enterprise_management::DeviceManagementRequest request_;
   Callback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DMServerJobConfiguration);
 };
 
 // A configuration for sending registration requests to the DM server.  These
@@ -100,13 +101,14 @@ class POLICY_EXPORT RegistrationJobConfiguration
                                DMAuth auth_data,
                                absl::optional<std::string> oauth_token,
                                Callback callback);
+  RegistrationJobConfiguration(const RegistrationJobConfiguration&) = delete;
+  RegistrationJobConfiguration& operator=(const RegistrationJobConfiguration&) =
+      delete;
 
  private:
   // JobConfiguration interface.
   void OnBeforeRetry(int response_code,
                      const std::string& response_body) override;
-
-  DISALLOW_COPY_AND_ASSIGN(RegistrationJobConfiguration);
 };
 
 }  // namespace policy

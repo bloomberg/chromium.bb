@@ -109,6 +109,10 @@ void AppShimHost::OnShimProcessTerminated(bool recreate_shims_requested) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppShimHost, chrome::mojom::AppShimHost
 
+void AppShimHost::SetOnShimConnectedForTesting(base::OnceClosure closure) {
+  on_shim_connected_for_testing_ = std::move(closure);
+}
+
 bool AppShimHost::HasBootstrapConnected() const {
   return bootstrap_ != nullptr;
 }
@@ -127,6 +131,9 @@ void AppShimHost::OnBootstrapConnected(
   host_receiver_.Bind(bootstrap_->GetAppShimHostReceiver());
   host_receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
+
+  if (on_shim_connected_for_testing_)
+    std::move(on_shim_connected_for_testing_).Run();
 }
 
 void AppShimHost::LaunchShim() {
@@ -161,6 +168,10 @@ void AppShimHost::ProfileSelectedFromMenu(const base::FilePath& profile_path) {
 
 void AppShimHost::UrlsOpened(const std::vector<GURL>& urls) {
   client_->OnShimOpenedUrls(this, urls);
+}
+
+void AppShimHost::OpenAppWithOverrideUrl(const GURL& override_url) {
+  client_->OnShimOpenAppWithOverrideUrl(this, override_url);
 }
 
 base::FilePath AppShimHost::GetProfilePath() const {

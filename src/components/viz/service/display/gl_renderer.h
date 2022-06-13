@@ -15,7 +15,7 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
@@ -80,6 +80,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
              DisplayResourceProviderGL* resource_provider,
              OverlayProcessorInterface* overlay_processor,
              scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
+
+  GLRenderer(const GLRenderer&) = delete;
+  GLRenderer& operator=(const GLRenderer&) = delete;
+
   ~GLRenderer() override;
 
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
@@ -87,6 +91,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void SwapBuffers(SwapFrameData swap_frame_data) override;
   void SwapBuffersSkipped() override;
   void SwapBuffersComplete(gfx::GpuFenceHandle release_fence) override;
+  void BuffersPresented() override;
 
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
@@ -412,6 +417,11 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   OverlayResourceLockList pending_overlay_resources_;
   // Resources that should be shortly swapped by the GPU process.
   base::circular_deque<OverlayResourceLockList> swapping_overlay_resources_;
+
+  // Locks for overlays that have release fences and read lock fences.
+  base::circular_deque<OverlayResourceLockList>
+      read_lock_release_fence_overlay_locks_;
+
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
@@ -439,8 +449,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
            std::map<gfx::ColorSpace, std::unique_ptr<gfx::ColorTransform>>>
       color_transform_cache_;
 
-  gpu::gles2::GLES2Interface* gl_;
-  gpu::ContextSupport* context_support_;
+  raw_ptr<gpu::gles2::GLES2Interface> gl_;
+  raw_ptr<gpu::ContextSupport> context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
   std::unique_ptr<ContextCacheController::ScopedBusy> context_busy_;
 
@@ -453,11 +463,11 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool is_scissor_enabled_ = false;
   bool stencil_shadow_ = false;
   bool blend_shadow_ = false;
-  const Program* current_program_ = nullptr;
+  raw_ptr<const Program> current_program_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_cache_ = 0;
 
-  ScopedRenderPassTexture* current_framebuffer_texture_;
+  raw_ptr<ScopedRenderPassTexture> current_framebuffer_texture_;
 
   SyncQueryCollection sync_queries_;
   bool use_discard_framebuffer_ = false;
@@ -500,8 +510,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
   base::WeakPtrFactory<GLRenderer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };
 
 }  // namespace viz

@@ -23,6 +23,10 @@
 // test will have consecutive numbers.
 + (id<GREYMatcher>)windowWithNumber:(int)windowNumber;
 
+// Same as above, but for the blocking window which only appears when a blocking
+// UI is shown in another window.
++ (id<GREYMatcher>)blockerWindowWithNumber:(int)windowNumber;
+
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithAccessibilityLabel:(NSString*)label;
@@ -121,6 +125,11 @@
 // Matcher for Tools menu button.
 + (id<GREYMatcher>)toolsMenuButton;
 
+// Matcher for the New Tab button, which can be long-pressed for a menu.
+// (This method can't be named +newTabButton, because starting a class method
+// with 'new' implicitly treats it as a constructor).
++ (id<GREYMatcher>)openNewTabButton;
+
 // Matcher for the Share... button.
 + (id<GREYMatcher>)shareButton;
 
@@ -154,8 +163,8 @@
 + (id<GREYMatcher>)openLinkInNewTabButton;
 
 // Matcher for the Open in Incognito option in the context menu when long
-// pressing a link. |useNewString| determines which string to use.
-+ (id<GREYMatcher>)openLinkInIncognitoButtonWithUseNewString:(BOOL)useNewString;
+// pressing a link.
++ (id<GREYMatcher>)openLinkInIncognitoButton;
 
 // Matcher for the Open in New Window option in the context menu when long
 // pressing a link.
@@ -194,10 +203,6 @@
 
 // Returns matcher for the "Done" button in the settings' navigation bar.
 + (id<GREYMatcher>)settingsDoneButton;
-
-// Returns matcher for the "Confirm" button in the Sync and Google services
-// settings' navigation bar.
-+ (id<GREYMatcher>)syncSettingsConfirmButton;
 
 // Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
 + (id<GREYMatcher>)autofillCreditCardEditTableView;
@@ -265,15 +270,16 @@
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
 
-// Returns matcher for the menu button to sync accounts.
-+ (id<GREYMatcher>)accountsSyncButton;
-
 // Returns matcher for the Content Settings button on the main Settings screen.
 + (id<GREYMatcher>)contentSettingsButton;
 
 // Returns matcher for the Google Services Settings button on the main Settings
 // screen.
 + (id<GREYMatcher>)googleServicesSettingsButton;
+
+// Returns matcher for the Manage Sync Settings button on the main Settings
+// screen.
++ (id<GREYMatcher>)manageSyncSettingsButton;
 
 // Returns matcher for the Google Services Settings view.
 + (id<GREYMatcher>)googleServicesSettingsView;
@@ -330,6 +336,15 @@
 // Returns matcher for the collection view of the NTP.
 + (id<GREYMatcher>)ntpCollectionView;
 
+// Returns matcher for the NTP view when the user is in incognito mode.
++ (id<GREYMatcher>)ntpIncognitoView;
+
+// Returns matcher for the NTP Feed menu button which enables the feed.
++ (id<GREYMatcher>)ntpFeedMenuEnableButton;
+
+// Returns matcher for the NTP Feed menu button which disables the feed.
++ (id<GREYMatcher>)ntpFeedMenuDisableButton;
+
 // Returns matcher for the warning message while filling in payment requests.
 + (id<GREYMatcher>)warningMessageView;
 
@@ -360,17 +375,20 @@
 // Returns matcher for the copy button on the system selection callout.
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton;
 
+// Returns matcher for the system selection callout overflow button to show more
+// menu items.
++ (id<GREYMatcher>)systemSelectionCalloutOverflowButton;
+
 // Matcher for a Copy button, such as the one in the Activity View. This matcher
 // is very broad and will look for any button with a matching string.
-+ (id<GREYMatcher>)copyActivityButton API_AVAILABLE(ios(13));
++ (id<GREYMatcher>)copyActivityButton;
 
 // Matcher for the Copy Link option in the updated context menus when long
-// pressing on a link. |useNewString| determines which string to use.
-+ (id<GREYMatcher>)copyLinkButtonWithUseNewString:(BOOL)useNewString;
+// pressing on a link.
++ (id<GREYMatcher>)copyLinkButton;
 
-// Matcher for the Edit option on the updated context menus. |useNewString|
-// determines which string to use.
-+ (id<GREYMatcher>)editButtonWithUseNewString:(BOOL)useNewString;
+// Matcher for the Edit option on the context menus.
++ (id<GREYMatcher>)editButton;
 
 // Matcher for the Move option on the updated context menus.
 + (id<GREYMatcher>)moveButton;
@@ -404,6 +422,11 @@
 
 // Returns a matcher for the current WebState's scroll view.
 + (id<GREYMatcher>)webStateScrollViewMatcher;
+
+// Returns a matcher for the current WebState's scroll view in the given
+// |windowNumber|.
++ (id<GREYMatcher>)webStateScrollViewMatcherInWindowWithNumber:
+    (int)windowNumber;
 
 // Returns a matcher for the Clear Browsing Data button in the History UI.
 + (id<GREYMatcher>)historyClearBrowsingDataButton;
@@ -490,12 +513,6 @@
 // smaller than the scroll view bounds.
 + (id<GREYMatcher>)contentViewSmallerThanScrollView;
 
-// Returns a matcher for the infobar asking to save a credit card locally.
-+ (id<GREYMatcher>)autofillSaveCardLocallyInfobar;
-
-// Returns a matcher for the infobar asking to upload a credit card.
-+ (id<GREYMatcher>)autofillUploadCardInfobar;
-
 // Returns a matcher for a history entry with |url| and |title|.
 + (id<GREYMatcher>)historyEntryForURL:(NSString*)URL title:(NSString*)title;
 
@@ -571,6 +588,30 @@
 
 // Returns a matcher for the button to accept the generated password.
 + (id<GREYMatcher>)useSuggestedPasswordMatcher;
+
+#pragma mark - Tab Grid Edit Mode
+
+// Returns a matcher for the button to open the context menu for edit actions.
++ (id<GREYMatcher>)tabGridEditButton;
+
+// Returns a matcher for the context menu button to close all tabs.
++ (id<GREYMatcher>)tabGridEditMenuCloseAllButton;
+
+// Returns a matcher for the context menu button to enter the tab grid tab
+// selection mode.
++ (id<GREYMatcher>)tabGridSelectTabsMenuButton;
+
+// Returns a matcher for the button to act on the selected tabs.
++ (id<GREYMatcher>)tabGridEditAddToButton;
+
+// Returns a matcher for the button to close the selected tabs.
++ (id<GREYMatcher>)tabGridEditCloseTabsButton;
+
+// Returns a matcher for the button to select all tabs.
++ (id<GREYMatcher>)tabGridEditSelectAllButton;
+
+// Returns a matcher for the button to share tabs.
++ (id<GREYMatcher>)tabGridEditShareButton;
 
 @end
 

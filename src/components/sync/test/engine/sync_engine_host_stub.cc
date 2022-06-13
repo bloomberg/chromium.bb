@@ -10,8 +10,6 @@ SyncEngineHostStub::SyncEngineHostStub() = default;
 SyncEngineHostStub::~SyncEngineHostStub() = default;
 
 void SyncEngineHostStub::OnEngineInitialized(
-    ModelTypeSet initial_types,
-    const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     bool success,
     bool is_first_time_sync_configure) {}

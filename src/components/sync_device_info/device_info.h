@@ -9,9 +9,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -75,7 +75,10 @@ class DeviceInfo {
     PhoneAsASecurityKeyInfo& operator=(const PhoneAsASecurityKeyInfo& other);
     ~PhoneAsASecurityKeyInfo();
 
-    bool operator==(const PhoneAsASecurityKeyInfo& other) const;
+    // NonRotatingFieldsEqual returns true if this object is equal to |other|,
+    // ignoring the |id| and |secret| fields, which update based on the current
+    // time.
+    bool NonRotatingFieldsEqual(const PhoneAsASecurityKeyInfo& other) const;
 
     // The domain of the tunnel service. See
     // |device::cablev2::tunnelserver::DecodeDomain| to decode this value.
@@ -109,6 +112,10 @@ class DeviceInfo {
              const absl::optional<PhoneAsASecurityKeyInfo>& paask_info,
              const std::string& fcm_registration_token,
              const ModelTypeSet& interested_data_types);
+
+  DeviceInfo(const DeviceInfo&) = delete;
+  DeviceInfo& operator=(const DeviceInfo&) = delete;
+
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -177,9 +184,6 @@ class DeviceInfo {
   // Gets the device type in string form.
   std::string GetDeviceTypeString() const;
 
-  // Compares this object's fields with another's.
-  bool Equals(const DeviceInfo& other) const;
-
   // Apps can set ids for a device that is meaningful to them but
   // not unique enough so the user can be tracked. Exposing |guid|
   // would lead to a stable unique id for a device which can potentially
@@ -245,7 +249,9 @@ class DeviceInfo {
   // Data types for which this device receives invalidations.
   ModelTypeSet interested_data_types_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
+  // NOTE: when adding a member, don't forget to update
+  // |StoredDeviceInfoStillAccurate| in device_info_sync_bridge.cc or else
+  // changes in that member might not trigger uploads of updated DeviceInfos.
 };
 
 }  // namespace syncer

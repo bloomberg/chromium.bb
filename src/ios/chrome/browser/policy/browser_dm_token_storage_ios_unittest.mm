@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
 #import "components/policy/core/common/policy_loader_ios_constants.h"
@@ -37,6 +37,18 @@ const char kEnrollmentTokenPolicyName[] = "CloudManagementEnrollmentToken";
 }  // namespace
 
 class BrowserDMTokenStorageIOSTest : public PlatformTest {
+ protected:
+  BrowserDMTokenStorageIOSTest() {
+    // Make sure there is no pre-existing policy present.
+    [[NSUserDefaults standardUserDefaults]
+        removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
+  }
+  ~BrowserDMTokenStorageIOSTest() override {
+    // Cleanup any policies left from the test.
+    [[NSUserDefaults standardUserDefaults]
+        removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
 };

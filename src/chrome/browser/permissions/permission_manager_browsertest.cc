@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_delegate.h"
@@ -74,6 +75,10 @@ class PermissionManagerBrowserTest : public InProcessBrowserTest {
  public:
   PermissionManagerBrowserTest() = default;
 
+  PermissionManagerBrowserTest(const PermissionManagerBrowserTest&) = delete;
+  PermissionManagerBrowserTest& operator=(const PermissionManagerBrowserTest&) =
+      delete;
+
   ~PermissionManagerBrowserTest() override = default;
 
   static std::unique_ptr<KeyedService> CreateTestingPermissionManager(
@@ -97,8 +102,7 @@ class PermissionManagerBrowserTest : public InProcessBrowserTest {
   Browser* incognito_browser() { return incognito_browser_; }
 
  private:
-  Browser* incognito_browser_ = nullptr;
-  DISALLOW_COPY_AND_ASSIGN(PermissionManagerBrowserTest);
+  raw_ptr<Browser> incognito_browser_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
@@ -109,9 +113,10 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
   static_cast<SubscriptionInterceptingPermissionManager*>(pm)
       ->SetSubscribeCallback(run_loop.QuitClosure());
 
-  ui_test_utils::NavigateToURL(
-      incognito_browser(), embedded_test_server()->GetURL(
-                               "/permissions/permissions_service_worker.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      incognito_browser(),
+      embedded_test_server()->GetURL(
+          "/permissions/permissions_service_worker.html")));
   run_loop.Run();
 
   // TODO(crbug.com/889276) : We are relying here on the test shuts down to
@@ -145,8 +150,9 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
       PermissionManagerFactory::GetForProfile(incognito_browser()->profile()));
   pm->SetSubscribeCallback(run_loop.QuitClosure());
 
-  ui_test_utils::NavigateToURL(
-      incognito_browser(), embedded_test_server()->GetURL(
-                               "/permissions/permissions_service_worker.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      incognito_browser(),
+      embedded_test_server()->GetURL(
+          "/permissions/permissions_service_worker.html")));
   run_loop.Run();
 }

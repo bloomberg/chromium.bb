@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
+#include "third_party/blink/renderer/core/pointer_type_names.h"
+#include "third_party/blink/renderer/core/script_type_names.h"
 #include "third_party/blink/renderer/core/securitypolicyviolation_disposition_names.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/timezone/timezone_controller.h"
@@ -60,6 +62,8 @@
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -109,7 +113,8 @@ void CoreInitializer::Initialize() {
       html_tokenizer_names::kNamesCount + http_names::kNamesCount +
       input_type_names::kNamesCount + keywords::kNamesCount +
       media_feature_names::kNamesCount + media_type_names::kNamesCount +
-      performance_entry_names::kNamesCount + shadow_element_names::kNamesCount;
+      performance_entry_names::kNamesCount + pointer_type_names::kNamesCount +
+      shadow_element_names::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -136,7 +141,9 @@ void CoreInitializer::Initialize() {
   media_feature_names::Init();
   media_type_names::Init();
   performance_entry_names::Init();
+  pointer_type_names::Init();
   shadow_element_names::Init();
+  script_type_names::Init();
   securitypolicyviolation_disposition_names::Init();
 
   MediaQueryEvaluator::Init();
@@ -153,6 +160,10 @@ void CoreInitializer::Initialize() {
   BindingSecurity::Init();
 
   TimeZoneController::Init();
+
+  auto* name_lookup = FontGlobalContext::Get()->GetFontUniqueNameLookup();
+  if (name_lookup)
+    name_lookup->Init();
 }
 
 }  // namespace blink

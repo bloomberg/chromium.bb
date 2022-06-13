@@ -29,6 +29,7 @@ suite('NewTabPageModulesModuleHeaderTest', () => {
     document.body.innerHTML = '';
     moduleHeader = new ModuleHeaderElement();
     document.body.appendChild(moduleHeader);
+    render(moduleHeader);
   });
 
   test('setting text shows text', () => {
@@ -38,6 +39,7 @@ suite('NewTabPageModulesModuleHeaderTest', () => {
     moduleHeader.showDismissButton = true;
     moduleHeader.dismissText = 'baz';
     moduleHeader.disableText = 'abc';
+    moduleHeader.showInfoButtonDropdown = true;
     render(moduleHeader);
 
     // Assert.
@@ -45,6 +47,9 @@ suite('NewTabPageModulesModuleHeaderTest', () => {
     assertEquals('bar', $$(moduleHeader, '#description').textContent.trim());
     assertEquals('baz', $$(moduleHeader, '#dismissButton').textContent.trim());
     assertEquals('abc', $$(moduleHeader, '#disableButton').textContent.trim());
+    assertEquals(
+        'Why am I seeing this?',
+        $$(moduleHeader, '#infoButton').textContent.trim());
   });
 
   test('clicking buttons sends events', () => {
@@ -77,5 +82,25 @@ suite('NewTabPageModulesModuleHeaderTest', () => {
     assertTrue($$(moduleHeader, '#actionMenu').open);
     $$(moduleHeader, '#disableButton').click();
     assertFalse($$(moduleHeader, '#actionMenu').open);
+  });
+
+  test('module icon appears', () => {
+    // Act.
+    moduleHeader.iconSrc = 'icons/module_logo.svg';
+    render(moduleHeader);
+
+    // Assert.
+    assertEquals(
+        'chrome://new-tab-page/icons/module_logo.svg',
+        $$(moduleHeader, '.module-icon').src);
+  });
+
+  test('can hide menu button', () => {
+    // Act.
+    moduleHeader.hideMenuButton = true;
+    render(moduleHeader);
+
+    // Assert.
+    assertFalse(!!$$(moduleHeader, '#menuButton'));
   });
 });

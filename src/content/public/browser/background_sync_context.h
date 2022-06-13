@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_SYNC_CONTEXT_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 #include "url/origin.h"
 
@@ -39,6 +39,9 @@ class CONTENT_EXPORT BackgroundSyncContext {
 
   BackgroundSyncContext() = default;
 
+  BackgroundSyncContext(const BackgroundSyncContext&) = delete;
+  BackgroundSyncContext& operator=(const BackgroundSyncContext&) = delete;
+
   // Process any pending Background Sync registrations.
   // This involves firing any sync events ready to be fired, and optionally
   // scheduling a job to wake up the browser when the next event needs to be
@@ -56,8 +59,6 @@ class CONTENT_EXPORT BackgroundSyncContext {
 
  protected:
   virtual ~BackgroundSyncContext() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContext);
 };
 
 }  // namespace content

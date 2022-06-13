@@ -7,17 +7,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
 #include "chrome/browser/sync/test/integration/migration_watcher.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/driver/sync_service_impl.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "content/public/test/browser_test.h"
 
@@ -37,8 +35,7 @@ syncer::ModelTypeSet MakeSet(syncer::ModelType type) {
   return syncer::ModelTypeSet(type);
 }
 
-syncer::ModelTypeSet MakeSet(syncer::ModelType type1,
-                             syncer::ModelType type2) {
+syncer::ModelTypeSet MakeSet(syncer::ModelType type1, syncer::ModelType type2) {
   return syncer::ModelTypeSet(type1, type2);
 }
 
@@ -65,14 +62,17 @@ MigrationList MakeList(syncer::ModelType type) {
   return MakeList(MakeSet(type));
 }
 
-MigrationList MakeList(syncer::ModelType type1,
-                       syncer::ModelType type2) {
+MigrationList MakeList(syncer::ModelType type1, syncer::ModelType type2) {
   return MakeList(MakeSet(type1), MakeSet(type2));
 }
 
-class MigrationTest : public SyncTest  {
+class MigrationTest : public SyncTest {
  public:
   explicit MigrationTest(TestType test_type) : SyncTest(test_type) {}
+
+  MigrationTest(const MigrationTest&) = delete;
+  MigrationTest& operator=(const MigrationTest&) = delete;
+
   ~MigrationTest() override {}
 
   enum TriggerMethod { MODIFY_PREF, MODIFY_BOOKMARK, TRIGGER_REFRESH };
@@ -92,7 +92,7 @@ class MigrationTest : public SyncTest  {
   }
 
   syncer::ModelTypeSet GetPreferredDataTypes() {
-    // ProfileSyncService must already have been created before we can call
+    // SyncServiceImpl must already have been created before we can call
     // GetPreferredDataTypes().
     DCHECK(GetSyncService(0));
     syncer::ModelTypeSet preferred_data_types =
@@ -105,7 +105,7 @@ class MigrationTest : public SyncTest  {
       EXPECT_EQ(other_preferred_data_types, preferred_data_types);
     }
 
-    preferred_data_types.RemoveAll(syncer::ProxyTypes());
+    preferred_data_types.RetainAll(syncer::ProtocolTypes());
 
     // Supervised user data types will be "unready" during this test, so we
     // should not request that they be migrated.
@@ -131,8 +131,7 @@ class MigrationTest : public SyncTest  {
   // set.
   MigrationList GetPreferredDataTypesList() {
     MigrationList migration_list;
-    const syncer::ModelTypeSet preferred_data_types =
-        GetPreferredDataTypes();
+    const syncer::ModelTypeSet preferred_data_types = GetPreferredDataTypes();
     for (syncer::ModelType type : preferred_data_types) {
       migration_list.push_back(MakeSet(type));
     }
@@ -203,13 +202,16 @@ class MigrationTest : public SyncTest  {
  private:
   // Used to keep track of the migration progress for each sync client.
   std::vector<std::unique_ptr<MigrationWatcher>> migration_watchers_;
-
-  DISALLOW_COPY_AND_ASSIGN(MigrationTest);
 };
 
 class MigrationSingleClientTest : public MigrationTest {
  public:
   MigrationSingleClientTest() : MigrationTest(SINGLE_CLIENT) {}
+
+  MigrationSingleClientTest(const MigrationSingleClientTest&) = delete;
+  MigrationSingleClientTest& operator=(const MigrationSingleClientTest&) =
+      delete;
+
   ~MigrationSingleClientTest() override {}
 
   void RunSingleClientMigrationTest(const MigrationList& migration_list,
@@ -217,9 +219,6 @@ class MigrationSingleClientTest : public MigrationTest {
     ASSERT_TRUE(SetupSync());
     RunMigrationTest(migration_list, trigger_method);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MigrationSingleClientTest);
 };
 
 // The simplest possible migration tests -- a single data type.
@@ -229,8 +228,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyPref) {
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyModifyBookmark) {
-  RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES),
-                               MODIFY_BOOKMARK);
+  RunSingleClientMigrationTest(MakeList(syncer::PREFERENCES), MODIFY_BOOKMARK);
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsOnlyTriggerRefresh) {
@@ -246,9 +244,8 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, NigoriOnly) {
 // A little more complicated -- two data types.
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsIndividually) {
-  RunSingleClientMigrationTest(
-      MakeList(syncer::BOOKMARKS, syncer::PREFERENCES),
-      MODIFY_PREF);
+  RunSingleClientMigrationTest(MakeList(syncer::BOOKMARKS, syncer::PREFERENCES),
+                               MODIFY_PREF);
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsBoth) {
@@ -266,8 +263,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriIndividiaully) {
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
   RunSingleClientMigrationTest(
-      MakeList(MakeSet(syncer::PREFERENCES, syncer::NIGORI)),
-      MODIFY_PREF);
+      MakeList(MakeSet(syncer::PREFERENCES, syncer::NIGORI)), MODIFY_PREF);
 }
 
 // The whole shebang -- all data types.
@@ -284,8 +280,7 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesAtOnce) {
   ASSERT_TRUE(SetupClients());
-  RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()),
-                               MODIFY_PREF);
+  RunSingleClientMigrationTest(MakeList(GetPreferredDataTypes()), MODIFY_PREF);
 }
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
@@ -315,6 +310,10 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
 class MigrationTwoClientTest : public MigrationTest {
  public:
   MigrationTwoClientTest() : MigrationTest(TWO_CLIENT) {}
+
+  MigrationTwoClientTest(const MigrationTwoClientTest&) = delete;
+  MigrationTwoClientTest& operator=(const MigrationTwoClientTest&) = delete;
+
   ~MigrationTwoClientTest() override = default;
 
   // Helper function that verifies that preferences sync still works.
@@ -337,25 +336,20 @@ class MigrationTwoClientTest : public MigrationTest {
     // test.
     VerifyPrefSync();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MigrationTwoClientTest);
 };
 
 // Easiest possible test of migration errors: triggers a server
 // migration on one datatype, then modifies some other datatype.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigratePrefsThenModifyBookmark) {
-  RunTwoClientMigrationTest(MakeList(syncer::PREFERENCES),
-                            MODIFY_BOOKMARK);
+  RunTwoClientMigrationTest(MakeList(syncer::PREFERENCES), MODIFY_BOOKMARK);
 }
 
 // Triggers a server migration on two datatypes, then makes a local
 // modification to one of them.
 IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
                        MigratePrefsAndBookmarksThenModifyBookmark) {
-  RunTwoClientMigrationTest(
-      MakeList(syncer::PREFERENCES, syncer::BOOKMARKS),
-      MODIFY_BOOKMARK);
+  RunTwoClientMigrationTest(MakeList(syncer::PREFERENCES, syncer::BOOKMARKS),
+                            MODIFY_BOOKMARK);
 }
 
 // Migrate every datatype in sequence; the catch being that the server
@@ -388,10 +382,10 @@ class MigrationReconfigureTest : public MigrationTwoClientTest {
     // Do not add optional datatypes.
   }
 
-  ~MigrationReconfigureTest() override {}
+  MigrationReconfigureTest(const MigrationReconfigureTest&) = delete;
+  MigrationReconfigureTest& operator=(const MigrationReconfigureTest&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MigrationReconfigureTest);
+  ~MigrationReconfigureTest() override {}
 };
 
 }  // namespace

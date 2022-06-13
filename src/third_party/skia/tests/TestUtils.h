@@ -12,17 +12,17 @@
 #include "src/gpu/GrDataUtils.h"
 #include "tests/Test.h"
 
-class GrSurfaceContext;
+namespace skgpu { class SurfaceContext; }
 class GrSurfaceProxy;
 typedef uint32_t GrColor;
 
 // Ensure that reading back from 'srcContext' as RGBA 8888 matches 'expectedPixelValues
-void TestReadPixels(skiatest::Reporter*, GrDirectContext*, GrSurfaceContext* srcContext,
+void TestReadPixels(skiatest::Reporter*, GrDirectContext*, skgpu::SurfaceContext*,
                     uint32_t expectedPixelValues[], const char* testName);
 
 // See if trying to write RGBA 8888 pixels to 'dstContext' matches matches the
 // expectation ('expectedToWork')
-void TestWritePixels(skiatest::Reporter*, GrDirectContext*, GrSurfaceContext* srcContext,
+void TestWritePixels(skiatest::Reporter*, GrDirectContext*, skgpu::SurfaceContext*,
                      bool expectedToWork, const char* testName);
 
 // Ensure that the pixels can be copied from 'proxy' viewed as colorType, to an RGBA 8888
@@ -82,5 +82,19 @@ void CheckSingleThreadedProxyRefs(skiatest::Reporter* reporter,
                                   GrSurfaceProxy* proxy,
                                   int32_t expectedProxyRefs,
                                   int32_t expectedBackingRefs);
+
+// Makes either a SurfaceContext, SurfaceFillContext, or a SurfaceDrawContext, depending on
+// GrRenderable and the GrImageInfo.
+// The texture format is the default for the provided color type.
+std::unique_ptr<skgpu::SurfaceContext> CreateSurfaceContext(
+            GrRecordingContext*,
+            const GrImageInfo&,
+            SkBackingFit = SkBackingFit::kExact,
+            GrSurfaceOrigin = kTopLeft_GrSurfaceOrigin,
+            GrRenderable = GrRenderable::kNo,
+            int sampleCount = 1,
+            GrMipmapped = GrMipmapped::kNo,
+            GrProtected = GrProtected::kNo,
+            SkBudgeted = SkBudgeted::kYes);
 
 #endif

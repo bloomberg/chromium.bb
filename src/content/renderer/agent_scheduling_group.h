@@ -5,11 +5,14 @@
 #ifndef CONTENT_RENDERER_AGENT_SCHEDULING_GROUP_H_
 #define CONTENT_RENDERER_AGENT_SCHEDULING_GROUP_H_
 
+#include <map>
+
 #include "base/containers/id_map.h"
 #include "content/common/agent_scheduling_group.mojom.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/common/content_features.h"
+#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom-forward.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -88,7 +91,7 @@ class CONTENT_EXPORT AgentSchedulingGroup
 
   // mojom::AgentSchedulingGroup:
   void CreateView(mojom::CreateViewParamsPtr params) override;
-  void DestroyView(int32_t view_id, DestroyViewCallback callback) override;
+  void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
       const blink::RemoteFrameToken& token,
@@ -96,9 +99,14 @@ class CONTENT_EXPORT AgentSchedulingGroup
       const absl::optional<blink::FrameToken>& opener_frame_token,
       int32_t view_routing_id,
       int32_t parent_routing_id,
+      blink::mojom::TreeScopeType tree_scope_type,
       blink::mojom::FrameReplicationStatePtr replicated_state,
       const base::UnguessableToken& devtools_frame_token,
       mojom::RemoteMainFrameInterfacesPtr remote_main_frame_interfaces)
+      override;
+  void CreateSharedStorageWorkletService(
+      mojo::PendingReceiver<
+          shared_storage_worklet::mojom::SharedStorageWorkletService> receiver)
       override;
 
   // mojom::RouteProvider
@@ -150,6 +158,23 @@ class CONTENT_EXPORT AgentSchedulingGroup
   mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
                               int32_t>
       associated_interface_provider_receivers_;
+
+  struct ReceiverData {
+    ReceiverData(
+        const std::string& name,
+        mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface>
+            receiver);
+    ReceiverData(ReceiverData&& other);
+    ~ReceiverData();
+
+    std::string name;
+    mojo::PendingAssociatedReceiver<blink::mojom::AssociatedInterface> receiver;
+  };
+
+  // See warning in `GetAssociatedInterface`.
+  // Map from routing id to pending receivers that have not had their route
+  // added. Note this is unsafe and can lead to message drops.
+  std::multimap<int32_t, ReceiverData> pending_receivers_;
 };
 
 }  // namespace content

@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <memory>
 
+#include "absl/functional/bind_front.h"
+#include "absl/time/time.h"
 #include "core/internal/bluetooth_bwu_handler.h"
 #include "core/internal/bwu_handler.h"
 #include "core/internal/offline_frames.h"
@@ -26,8 +28,6 @@
 #include "platform/base/feature_flags.h"
 #include "platform/public/count_down_latch.h"
 #include "proto/connections_enums.pb.h"
-#include "absl/functional/bind_front.h"
-#include "absl/time/time.h"
 
 namespace location {
 namespace nearby {
@@ -82,7 +82,7 @@ BwuManager::BwuManager(
 }
 
 BwuManager::~BwuManager() {
-  NEARBY_LOG(INFO, "BwuManager going down");
+  NEARBY_LOGS(INFO) << "BwuManager going down";
   Shutdown();
 }
 
@@ -110,7 +110,7 @@ void BwuManager::InitBwuHandlers() {
 }
 
 void BwuManager::Shutdown() {
-  NEARBY_LOG(INFO, "Initiating shutdown of BwuManager.");
+  NEARBY_LOGS(INFO) << "Initiating shutdown of BwuManager.";
 
   endpoint_manager_->UnregisterFrameProcessor(
       V1Frame::BANDWIDTH_UPGRADE_NEGOTIATION, this);
@@ -135,7 +135,7 @@ void BwuManager::Shutdown() {
   }
   handlers_.clear();
 
-  NEARBY_LOG(INFO, "BwuHandler has shut down.");
+  NEARBY_LOGS(INFO) << "BwuHandler has shut down.";
 }
 
 // This is the point on the Initiator side where the
@@ -143,8 +143,8 @@ void BwuManager::Shutdown() {
 void BwuManager::InitiateBwuForEndpoint(ClientProxy* client,
                                         const std::string& endpoint_id,
                                         Medium new_medium) {
-  NEARBY_LOG(INFO, "InitiateBwuForEndpoint for endpoint %s with medium %d",
-             endpoint_id.c_str(), new_medium);
+  NEARBY_LOGS(INFO) << "InitiateBwuForEndpoint for endpoint " << endpoint_id
+                    << " with medium " << new_medium;
   RunOnBwuManagerThread("bwu-init", [this, client, endpoint_id, new_medium]() {
     Medium proposed_medium = ChooseBestUpgradeMedium(
         client->GetUpgradeMediums(endpoint_id).GetMediums(true));
@@ -152,17 +152,38 @@ void BwuManager::InitiateBwuForEndpoint(ClientProxy* client,
       proposed_medium = new_medium;
     }
     auto* handler = SetCurrentBwuHandler(proposed_medium);
-
-    if (!handler) return;
+    if (!handler) {
+      NEARBY_LOGS(ERROR)
+          << "BwuManager cannot initiate bandwidth upgrade for endpoint "
+          << endpoint_id
+          << " because the current BandwidthUpgradeMedium cannot be deduced.";
+      return;
+    }
 
     if (in_progress_upgrades_.contains(endpoint_id)) {
+      NEARBY_LOGS(INFO)
+          << "BwuManager is ignoring bandwidth upgrade for endpoint "
+          << endpoint_id
+          << " because we're already upgrading bandwidth for that endpoint.";
+
       return;
     }
     CancelRetryUpgradeAlarm(endpoint_id);
 
     auto channel = channel_manager_->GetChannelForEndpoint(endpoint_id);
-
+    Medium channel_medium =
+        channel ? channel->GetMedium() : Medium::UNKNOWN_MEDIUM;
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeStarted(
+        endpoint_id, channel_medium, medium_, proto::connections::INCOMING,
+        client->GetConnectionToken(endpoint_id));
     if (channel == nullptr) {
+      NEARBY_LOGS(INFO)
+          << "BwuManager couldn't complete the upgrade for endpoint "
+          << endpoint_id
+          << " because it couldn't find an existing EndpointChannel for it.";
+      client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+          endpoint_id, proto::connections::CHANNEL_ERROR,
+          proto::connections::NETWORK_AVAILABLE);
       return;
     }
 
@@ -173,6 +194,11 @@ void BwuManager::InitiateBwuForEndpoint(ClientProxy* client,
     // LAN). Very specifically, this happens now when a device uses P2P_CLUSTER,
     // connects over Bluetooth, and is not connected to LAN. Bluetooth is the
     // best medium, and we attempt to upgrade from Bluetooth to Bluetooth.
+    // if (medium_ == channel->GetMedium()) {
+    NEARBY_LOGS(INFO) << "BwuManager ignoring the upgrade for endpoint "
+                      << endpoint_id
+                      << " because it is already connected over medium "
+                      << proto::connections::Medium_Name(medium_);
     if (medium_ == channel->GetMedium()) {
       return;
     }
@@ -184,30 +210,37 @@ void BwuManager::InitiateBwuForEndpoint(ClientProxy* client,
     // Because we grab the endpointChannel first thing, it is possible the
     // endpointChannel is stale by the time we attempt to write over it.
     if (bytes.Empty()) {
-      NEARBY_LOG(ERROR,
-                 "Couldn't complete the upgrade for endpoint "
-                 "%s to %d because it failed to initialize the "
-                 "BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE OfflineFrame.",
-                 endpoint_id.c_str(), medium_);
+      NEARBY_LOGS(ERROR)
+          << "BwuManager couldn't complete the upgrade for endpoint "
+          << endpoint_id << " to medium "
+          << proto::connections::Medium_Name(medium_)
+          << " because it failed to initialize the "
+             "BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE OfflineFrame.";
       UpgradePathInfo info;
       info.set_medium(parser::MediumToUpgradePathInfoMedium(medium_));
 
       ProcessUpgradeFailureEvent(client, endpoint_id, info);
+      client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+          endpoint_id, proto::connections::RESULT_IO_ERROR,
+          proto::connections::NETWORK_AVAILABLE);
       return;
     }
     if (!channel->Write(bytes).Ok()) {
-      NEARBY_LOG(ERROR,
-                 "Couldn't complete the upgrade for endpoint %s to %d because "
-                 "it failed to write the "
-                 "BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE OfflineFrame.",
-                 endpoint_id.c_str(), medium_);
+      NEARBY_LOGS(ERROR)
+          << "BwuManager couldn't complete the upgrade for endpoint "
+          << endpoint_id << " to medium "
+          << proto::connections::Medium_Name(medium_)
+          << " because it failed to write the "
+             "BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE OfflineFrame.";
       return;
     }
 
-    NEARBY_LOG(INFO,
-               "Successfully wrote the BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE "
-               "OfflineFrame while upgrading endpoint %s to %d.",
-               endpoint_id.c_str(), medium_);
+    NEARBY_LOGS(INFO)
+        << "BwuManager successfully wrote the "
+           "BWU_NEGOTIATION.UPGRADE_PATH_AVAILABLE OfflineFrame while "
+           "upgrading endpoint "
+        << endpoint_id << " to medium"
+        << proto::connections::Medium_Name(medium_);
     in_progress_upgrades_.emplace(endpoint_id, client);
   });
 }
@@ -215,8 +248,9 @@ void BwuManager::InitiateBwuForEndpoint(ClientProxy* client,
 void BwuManager::OnIncomingFrame(OfflineFrame& frame,
                                  const std::string& endpoint_id,
                                  ClientProxy* client, Medium medium) {
-  NEARBY_LOG(INFO, "OnIncomingFrame for endpoint %s with medium: %d",
-             endpoint_id.c_str(), medium);
+  NEARBY_LOGS(INFO) << "OnIncomingFrame for endpoint " << endpoint_id
+                    << " with medium "
+                    << proto::connections::Medium_Name(medium);
   if (parser::GetFrameType(frame) != V1Frame::BANDWIDTH_UPGRADE_NEGOTIATION)
     return;
   auto bwu_frame = frame.v1().bandwidth_upgrade_negotiation();
@@ -239,11 +273,17 @@ void BwuManager::OnIncomingFrame(OfflineFrame& frame,
 void BwuManager::OnEndpointDisconnect(ClientProxy* client,
                                       const std::string& endpoint_id,
                                       CountDownLatch barrier) {
-  NEARBY_LOG(INFO, "OnEndpointDisconnect for endpoint %s", endpoint_id.c_str());
+  NEARBY_LOGS(INFO)
+      << "BwuManager has processed endpoint disconnection for endpoint "
+      << endpoint_id;
   RunOnBwuManagerThread(
       "bwu-on-endpoint-disconnect",
       [this, client, endpoint_id, barrier]() mutable {
         if (medium_ == Medium::UNKNOWN_MEDIUM) {
+          NEARBY_LOGS(INFO)
+              << "BwuManager has processed endpoint disconnection for endpoint "
+              << endpoint_id
+              << " because there is no current BandwidthUpgradeMedium.";
           barrier.CountDown();
           return;
         }
@@ -278,7 +318,8 @@ void BwuManager::OnEndpointDisconnect(ClientProxy* client,
 }
 
 BwuHandler* BwuManager::SetCurrentBwuHandler(Medium medium) {
-  NEARBY_LOG(INFO, "SetCurrentBwuHandler to %d", medium);
+  NEARBY_LOGS(INFO) << "SetCurrentBwuHandler to medium "
+                    << proto::connections::Medium_Name(medium);
   handler_ = nullptr;
   medium_ = medium;
   if (medium != Medium::UNKNOWN_MEDIUM) {
@@ -291,7 +332,8 @@ BwuHandler* BwuManager::SetCurrentBwuHandler(Medium medium) {
 }
 
 void BwuManager::Revert() {
-  NEARBY_LOG(INFO, "Revert reseting medium %d", medium_);
+  NEARBY_LOGS(INFO) << "Revert reseting medium "
+                    << proto::connections::Medium_Name(medium_);
   if (handler_) {
     handler_->Revert();
     handler_ = nullptr;
@@ -302,8 +344,8 @@ void BwuManager::Revert() {
 void BwuManager::OnBwuNegotiationFrame(ClientProxy* client,
                                        const BwuNegotiationFrame frame,
                                        const string& endpoint_id) {
-  NEARBY_LOG(INFO, "OnBwuNegotiationFrame for endpoint %s",
-             endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "BwuManager process incoming OfflineFrame for endpoint "
+                    << endpoint_id;
   switch (frame.event_type()) {
     case BwuNegotiationFrame::UPGRADE_PATH_AVAILABLE:
       ProcessBwuPathAvailableEvent(client, endpoint_id,
@@ -320,6 +362,9 @@ void BwuManager::OnBwuNegotiationFrame(ClientProxy* client,
       ProcessSafeToClosePriorChannelEvent(client, endpoint_id);
       break;
     default:
+      NEARBY_LOGS(WARNING)
+          << "BwuManager can't process unknown incoming OfflineFrame of type "
+          << frame.event_type() << ", ignoring it.";
       break;
   }
 }
@@ -327,23 +372,41 @@ void BwuManager::OnBwuNegotiationFrame(ClientProxy* client,
 void BwuManager::OnIncomingConnection(
     ClientProxy* client,
     std::unique_ptr<BwuHandler::IncomingSocketConnection> mutable_connection) {
-  NEARBY_LOG(INFO, "OnIncomingConnection service id: %s",
-             client->GetServiceId().c_str());
+  NEARBY_LOGS(INFO) << "BwuManager process incoming connection service_id="
+                    << client->GetServiceId();
   std::shared_ptr<BwuHandler::IncomingSocketConnection> connection(
       mutable_connection.release());
   RunOnBwuManagerThread(
       "bwu-on-incoming-connection", [this, client, connection]() {
+        absl::Time connection_attempt_start_time =
+            SystemClock::ElapsedRealtime();
         EndpointChannel* channel = connection->channel.get();
         if (channel == nullptr) {
+          NEARBY_LOGS(ERROR)
+              << "BwuManager failed to create new EndpointChannel for incoming "
+                 "socket.";
           connection->socket->Close();
+          AttemptToRecordBandwidthUpgradeErrorForUnknownEndpoint(
+              proto::connections::MEDIUM_ERROR,
+              proto::connections::SOCKET_CREATION);
           return;
         }
+
+        NEARBY_LOGS(VERBOSE)
+            << "BwuManager successfully created new EndpointChannel for "
+               "incoming socket";
 
         ClientIntroduction introduction;
         if (!ReadClientIntroductionFrame(channel, introduction)) {
           // This was never a fully EstablishedConnection, no need to provide a
           // closure reason.
           channel->Close();
+          NEARBY_LOGS(ERROR)
+              << "BwuManager failed to read "
+                 "BWU_NEGOTIATION.CLIENT_INTRODUCTION OfflineFrame from "
+                 "newly-created EndpointChannel "
+              << channel->GetName()
+              << ", so the EndpointChannel was discarded.";
           return;
         }
 
@@ -353,6 +416,11 @@ void BwuManager::OnIncomingConnection(
           channel->Close();
           return;
         }
+
+        NEARBY_LOGS(VERBOSE) << "BwuManager successfully received "
+                                "BWU_NEGOTIATION.CLIENT_INTRODUCTION "
+                                "OfflineFrame on EndpointChannel "
+                             << channel->GetName();
 
         const std::string& endpoint_id = introduction.endpoint_id();
         ClientProxy* mapped_client;
@@ -369,6 +437,13 @@ void BwuManager::OnIncomingConnection(
 
         CHECK(client == mapped_client);
 
+        // The ConnectionAttempt has now succeeded, so record it as such.
+        client->GetAnalyticsRecorder().OnIncomingConnectionAttempt(
+            proto::connections::UPGRADE, channel->GetMedium(),
+            proto::connections::RESULT_SUCCESS,
+            SystemClock::ElapsedRealtime() - connection_attempt_start_time,
+            client->GetConnectionToken(endpoint_id));
+
         // Use the introductory client information sent over to run the upgrade
         // protocol.
         RunUpgradeProtocol(mapped_client, endpoint_id,
@@ -384,9 +459,9 @@ void BwuManager::RunOnBwuManagerThread(const std::string& name,
 void BwuManager::RunUpgradeProtocol(
     ClientProxy* client, const std::string& endpoint_id,
     std::unique_ptr<EndpointChannel> new_channel) {
-  NEARBY_LOG(INFO, "RunUpgradeProtocol new channel @%d name: %s, medium: %d",
-             new_channel.get(), new_channel->GetName().c_str(),
-             new_channel->GetMedium());
+  NEARBY_LOGS(INFO) << "RunUpgradeProtocol new channel @" << new_channel.get()
+                    << " name: " << new_channel->GetName()
+                    << ", medium: " << new_channel->GetMedium();
   // First, register this new EndpointChannel as *the* EndpointChannel to use
   // for this endpoint here onwards. NOTE: We pause this new EndpointChannel
   // until we've completely drained the old EndpointChannel to avoid out of
@@ -397,7 +472,17 @@ void BwuManager::RunUpgradeProtocol(
   // side to read messages out of sequence
   new_channel->Pause();
   auto old_channel = channel_manager_->GetChannelForEndpoint(endpoint_id);
-  if (!old_channel) return;
+  if (!old_channel) {
+    NEARBY_LOGS(INFO)
+        << "BwuManager didn't find a previous EndpointChannel for "
+        << endpoint_id
+        << " when registering the new EndpointChannel, short-circuiting the "
+           "upgrade protocol.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::CHANNEL_ERROR,
+        proto::connections::PRIOR_ENDPOINT_CHANNEL);
+    return;
+  }
   channel_manager_->ReplaceChannelForEndpoint(client, endpoint_id,
                                               std::move(new_channel));
 
@@ -405,8 +490,20 @@ void BwuManager::RunUpgradeProtocol(
   // this endpoint by telling the remote device that it will not receive any
   // more writes over that EndpointChannel.
   if (!old_channel->Write(parser::ForBwuLastWrite()).Ok()) {
+    NEARBY_LOGS(ERROR)
+        << "BwuManager failed to write "
+           "BWU_NEGOTIATION.LAST_WRITE_TO_PRIOR_CHANNEL OfflineFrame to "
+           "endpoint "
+        << endpoint_id << ", short-circuiting the upgrade protocol.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_IO_ERROR,
+        proto::connections::LAST_WRITE_TO_PRIOR_CHANNEL);
     return;
   }
+  NEARBY_LOGS(VERBOSE) << "BwuManager successfully wrote "
+                          "BWU_NEGOTIATION.LAST_WRITE_TO_PRIOR_CHANNEL "
+                          "OfflineFrame while upgrading endpoint "
+                       << endpoint_id;
 
   // The remainder of this clean shutdown for the previous EndpointChannel will
   // continue when we receive a corresponding
@@ -426,17 +523,16 @@ void BwuManager::RunUpgradeProtocol(
 void BwuManager::ProcessBwuPathAvailableEvent(
     ClientProxy* client, const string& endpoint_id,
     const UpgradePathInfo& upgrade_path_info) {
-  NEARBY_LOG(INFO, "ProcessBwuPathAvailableEvent for endpoint %s medium %d.",
-             endpoint_id.c_str(),
-             parser::UpgradePathInfoMediumToMedium(upgrade_path_info.medium()));
+  NEARBY_LOGS(INFO) << "ProcessBwuPathAvailableEvent for endpoint "
+                    << endpoint_id << " medium "
+                    << parser::UpgradePathInfoMediumToMedium(
+                           upgrade_path_info.medium());
   if (in_progress_upgrades_.contains(endpoint_id)) {
-    NEARBY_LOG(INFO, "Invoking duplicate ProcessBwuPathAvailableEvent for %s",
-               endpoint_id.c_str());
-    NEARBY_LOG(ERROR,
-               "BandwidthUpgradeManager received a duplicate bandwidth "
-               "upgrade for endpoint %s. We're out of sync with the remote "
-               "device and cannot recover; closing all channels.",
-               endpoint_id.c_str());
+    NEARBY_LOGS(ERROR)
+        << "BwuManager received a duplicate bandwidth upgrade for endpoint "
+        << endpoint_id
+        << ". We're out of sync with the remote device and cannot recover; "
+           "closing all channels.";
 
     auto item = previous_endpoint_channels_.extract(endpoint_id);
     if (!item.empty()) {
@@ -464,15 +560,38 @@ void BwuManager::ProcessBwuPathAvailableEvent(
   }
   // Check for the correct medium so we don't process an incorrect OfflineFrame.
   if (medium != medium_) {
-    NEARBY_LOG(INFO, "Medium not matching");
+    NEARBY_LOGS(INFO) << "Medium not matching";
     RunUpgradeFailedProtocol(client, endpoint_id, upgrade_path_info);
     return;
   }
 
+  client->GetAnalyticsRecorder().OnBandwidthUpgradeStarted(
+      endpoint_id, medium, medium_, proto::connections::OUTGOING,
+      client->GetConnectionToken(endpoint_id));
+
+  absl::Time connection_attempt_start_time = SystemClock::ElapsedRealtime();
   auto channel = ProcessBwuPathAvailableEventInternal(client, endpoint_id,
                                                       upgrade_path_info);
+  proto::connections::ConnectionAttemptResult connection_attempt_result;
+  if (channel != nullptr) {
+    connection_attempt_result = proto::connections::RESULT_SUCCESS;
+  } else if (client->GetCancellationFlag(endpoint_id)->Cancelled()) {
+    connection_attempt_result = proto::connections::RESULT_CANCELLED;
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_REMOTE_ERROR,
+        proto::connections::UPGRADE_CANCEL);
+  } else {
+    connection_attempt_result = proto::connections::RESULT_ERROR;
+  }
+
+  client->GetAnalyticsRecorder().OnOutgoingConnectionAttempt(
+      endpoint_id, proto::connections::UPGRADE, medium_,
+      connection_attempt_result,
+      SystemClock::ElapsedRealtime() - connection_attempt_start_time,
+      client->GetConnectionToken(endpoint_id));
+
   if (channel == nullptr) {
-    NEARBY_LOG(INFO, "Failed to get new channel.");
+    NEARBY_LOGS(INFO) << "Failed to get new channel.";
     RunUpgradeFailedProtocol(client, endpoint_id, upgrade_path_info);
     return;
   }
@@ -485,14 +604,20 @@ std::unique_ptr<EndpointChannel>
 BwuManager::ProcessBwuPathAvailableEventInternal(
     ClientProxy* client, const string& endpoint_id,
     const UpgradePathInfo& upgrade_path_info) {
-  NEARBY_LOG(INFO,
-             "ProcessBwuPathAvailableEventInternal for endpoint %s medium %d",
-             endpoint_id.c_str(),
-             parser::UpgradePathInfoMediumToMedium(upgrade_path_info.medium()));
+  NEARBY_LOGS(INFO) << "ProcessBwuPathAvailableEventInternal for endpoint "
+                    << endpoint_id << " medium "
+                    << parser::UpgradePathInfoMediumToMedium(
+                           upgrade_path_info.medium());
   std::unique_ptr<EndpointChannel> channel =
       handler_->CreateUpgradedEndpointChannel(client, client->GetServiceId(),
                                               endpoint_id, upgrade_path_info);
   if (!channel) {
+    NEARBY_LOGS(ERROR)
+        << "BwuManager failed to create an endpoint channel to endpoint"
+        << endpoint_id << ", aborting upgrade.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_IO_ERROR,
+        proto::connections::SOCKET_CREATION);
     return nullptr;
   }
 
@@ -504,12 +629,13 @@ BwuManager::ProcessBwuPathAvailableEventInternal(
     // closure reason.
     channel->Close();
 
-    NEARBY_LOG(
-        ERROR,
-        "Failed to write BWU_NEGOTIATION.CLIENT_INTRODUCTION OfflineFrame to "
-        "newly-created EndpointChannel %s, aborting upgrade.",
-        channel->GetName().c_str());
-
+    NEARBY_LOGS(ERROR)
+        << "BwuManager failed to write BWU_NEGOTIATION.CLIENT_INTRODUCTION "
+           "OfflineFrame to newly-created EndpointChannel "
+        << channel->GetName() << ", aborting upgrade.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_IO_ERROR,
+        proto::connections::CLIENT_INTRODUCTION);
     return {};
   }
 
@@ -519,21 +645,20 @@ BwuManager::ProcessBwuPathAvailableEventInternal(
       // closure reason.
       channel->Close();
 
-      NEARBY_LOG(
-          ERROR,
-          "Failed to read BWU_NEGOTIATION.CLIENT_INTRODUCTION_ACK OfflineFrame "
-          "to newly-created EndpointChannel %s, aborting upgrade.",
-          channel->GetName().c_str());
+      NEARBY_LOGS(ERROR) << "BwuManager failed to read "
+                            "BWU_NEGOTIATION.CLIENT_INTRODUCTION_ACK "
+                            "OfflineFrame to newly-created EndpointChannel "
+                         << channel->GetName() << ", aborting upgrade.";
 
       return {};
     }
   }
 
-  NEARBY_LOG(
-      INFO,
-      "Successfully wrote  BWU_NEGOTIATION.CLIENT_INTRODUCTION OfflineFrame to "
-      "newly-created EndpointChannel %s while upgrading endpoint %s.",
-      channel->GetName().c_str(), endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "BwuManager successfully wrote "
+                       "BWU_NEGOTIATION.CLIENT_INTRODUCTION OfflineFrame to "
+                       "newly-created EndpointChannel "
+                    << channel->GetName() << " while upgrading endpoint "
+                    << endpoint_id;
 
   // Set the AnalyticsRecorder so that the future closure of this
   // EndpointChannel will be recorded.
@@ -543,20 +668,24 @@ BwuManager::ProcessBwuPathAvailableEventInternal(
 void BwuManager::RunUpgradeFailedProtocol(
     ClientProxy* client, const std::string& endpoint_id,
     const UpgradePathInfo& upgrade_path_info) {
-  NEARBY_LOG(INFO, "RunUpgradeFailedProtocol for endpoint %s medium %d",
-             endpoint_id.c_str(),
-             parser::UpgradePathInfoMediumToMedium(upgrade_path_info.medium()));
+  NEARBY_LOGS(INFO) << "RunUpgradeFailedProtocol for endpoint " << endpoint_id
+                    << " medium "
+                    << parser::UpgradePathInfoMediumToMedium(
+                           upgrade_path_info.medium());
   // We attempted to connect to the new medium that the remote device has set up
   // for us but we failed. We need to let the remote device know so that they
   // can pick another medium for us to try.
   std::shared_ptr<EndpointChannel> channel =
       channel_manager_->GetChannelForEndpoint(endpoint_id);
   if (!channel) {
-    NEARBY_LOG(ERROR,
-               "Couldn't find a previous EndpointChannel for %s "
-               "when sending an upgrade failure frame, short-circuiting the "
-               "upgrade protocol.",
-               endpoint_id.c_str());
+    NEARBY_LOGS(ERROR)
+        << "BwuManager didn't find a previous EndpointChannel for "
+        << endpoint_id
+        << " when sending an upgrade failure frame, short-circuiting the "
+           "upgrade protocol.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::CHANNEL_ERROR,
+        proto::connections::NETWORK_AVAILABLE);
     return;
   }
 
@@ -564,11 +693,13 @@ void BwuManager::RunUpgradeFailedProtocol(
   if (!channel->Write(parser::ForBwuFailure(upgrade_path_info)).Ok()) {
     channel->Close(DisconnectionReason::IO_ERROR);
 
-    NEARBY_LOG(
-        ERROR,
-        "Failed to write BANDWIDTH_UPGRADE_NEGOTIATION.UPGRADE_FAILURE "
-        "OfflineFrame to endpoint %s, short-circuiting the upgrade protocol.",
-        endpoint_id.c_str());
+    NEARBY_LOGS(ERROR)
+        << "BwuManager failed to write BWU_NEGOTIATION.UPGRADE_FAILURE "
+           "OfflineFrame to endpoint "
+        << endpoint_id << ", short-circuiting the upgrade protocol.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_IO_ERROR,
+        proto::connections::NETWORK_AVAILABLE);
     return;
   }
 
@@ -578,22 +709,24 @@ void BwuManager::RunUpgradeFailedProtocol(
     Revert();
   }
   in_progress_upgrades_.erase(endpoint_id);
+  NEARBY_LOGS(INFO) << "BwuManager has informed endpoint " << endpoint_id
+                    << " that the bandwidth upgrade failed.";
 }
 
 bool BwuManager::ReadClientIntroductionFrame(EndpointChannel* channel,
                                              ClientIntroduction& introduction) {
-  NEARBY_LOG(INFO,
-             "ReadClientIntroductionFrame with channel name: %s, medium: %d",
-             channel->GetName().c_str(), channel->GetMedium());
+  NEARBY_LOGS(INFO) << "ReadClientIntroductionFrame with channel name: "
+                    << channel->GetName()
+                    << ", medium: " << channel->GetMedium();
   CancelableAlarm timeout_alarm(
       "BwuManager::ReadClientIntroductionFrame",
       [channel]() {
-        NEARBY_LOG(
-            ERROR,
-            "In BandwidthUpgradeManager, failed to read the "
-            "ClientIntroductionFrame after %d seconds. Timing out and closing "
-            "EndpointChannel %s.",
-            kReadClientIntroductionFrameTimeout, channel->GetType().c_str());
+        NEARBY_LOGS(ERROR) << "In BwuManager, failed to read the "
+                              "ClientIntroductionFrame after "
+                           << absl::FormatDuration(
+                                  kReadClientIntroductionFrameTimeout)
+                           << ". Timing out and closing EndpointChannel "
+                           << channel->GetType();
         channel->Close();
       },
       kReadClientIntroductionFrameTimeout, &alarm_executor_);
@@ -601,13 +734,31 @@ bool BwuManager::ReadClientIntroductionFrame(EndpointChannel* channel,
   timeout_alarm.Cancel();
   if (!data.ok()) return false;
   auto transfer(parser::FromBytes(data.result()));
-  if (!transfer.ok()) return false;
+  if (!transfer.ok()) {
+    NEARBY_LOGS(ERROR) << "In ReadClientIntroductionFrame, attempted to read a "
+                          "ClientIntroductionFrame from EndpointChannel "
+                       << channel->GetType()
+                       << " but was unable to obtain any OfflineFrame.";
+    return false;
+  }
   OfflineFrame frame = transfer.result();
-  if (!frame.has_v1() || !frame.v1().has_bandwidth_upgrade_negotiation())
+  if (!frame.has_v1() || !frame.v1().has_bandwidth_upgrade_negotiation()) {
+    NEARBY_LOGS(ERROR)
+        << "In ReadClientIntroductionFrame, expected a "
+           "BANDWIDTH_UPGRADE_NEGOTIATION v1 OfflineFrame but got a "
+        << parser::GetFrameType(frame) << " frame instead.";
     return false;
+  }
   if (frame.v1().bandwidth_upgrade_negotiation().event_type() !=
-      BandwidthUpgradeNegotiationFrame::CLIENT_INTRODUCTION)
+      BandwidthUpgradeNegotiationFrame::CLIENT_INTRODUCTION) {
+    NEARBY_LOGS(ERROR)
+        << "In ReadClientIntroductionFrame, expected a CLIENT_INTRODUCTION "
+           "v1 OfflineFrame but got a BANDWIDTH_UPGRADE_NEGOTIATION frame "
+           "with eventType "
+        << frame.v1().bandwidth_upgrade_negotiation().event_type()
+        << " instead.";
     return false;
+  }
   const auto& frame_intro =
       frame.v1().bandwidth_upgrade_negotiation().client_introduction();
   introduction = frame_intro;
@@ -615,18 +766,18 @@ bool BwuManager::ReadClientIntroductionFrame(EndpointChannel* channel,
 }
 
 bool BwuManager::ReadClientIntroductionAckFrame(EndpointChannel* channel) {
-  NEARBY_LOG(INFO,
-             "ReadClientIntroductionFrame with channel name: %s, medium: %d",
-             channel->GetName().c_str(), channel->GetMedium());
+  NEARBY_LOGS(INFO) << "ReadClientIntroductionAckFrame with channel name: "
+                    << channel->GetName() << ", medium: "
+                    << proto::connections::Medium_Name(channel->GetMedium());
   CancelableAlarm timeout_alarm(
       "BwuManager::ReadClientIntroductionAckFrame",
       [channel]() {
-        NEARBY_LOG(ERROR,
-                   "In BandwidthUpgradeManager, failed to read the "
-                   "ClientIntroductionAckFrame after %d seconds. Timing out "
-                   "and closing EndpointChannel %s.",
-                   kReadClientIntroductionFrameTimeout,
-                   channel->GetType().c_str());
+        NEARBY_LOGS(ERROR)
+            << "In BwuManager, failed to read the ClientIntroductionAckFrame "
+               "after "
+            << absl::FormatDuration(kReadClientIntroductionFrameTimeout)
+            << ". Timing out and closing EndpointChannel "
+            << channel->GetType();
         channel->Close();
       },
       kReadClientIntroductionFrameTimeout, &alarm_executor_);
@@ -645,16 +796,16 @@ bool BwuManager::ReadClientIntroductionAckFrame(EndpointChannel* channel) {
 }
 
 bool BwuManager::WriteClientIntroductionAckFrame(EndpointChannel* channel) {
-  NEARBY_LOG(INFO,
-             "WriteClientIntroductionAckFrame channel name: %s, medium: %d",
-             channel->GetName().c_str(), channel->GetMedium());
+  NEARBY_LOGS(INFO) << "WriteClientIntroductionAckFrame channel name: "
+                    << channel->GetName()
+                    << ", medium: " << channel->GetMedium();
   return channel->Write(parser::ForBwuIntroductionAck()).Ok();
 }
 
 void BwuManager::ProcessLastWriteToPriorChannelEvent(
     ClientProxy* client, const std::string& endpoint_id) {
-  NEARBY_LOG(INFO, "ProcessLastWriteToPriorChannelEvent for endpoint %s",
-             endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "ProcessLastWriteToPriorChannelEvent for endpoint "
+                    << endpoint_id;
   // By this point in the upgrade protocol, there is the guarantee that both
   // involved endpoints have registered a new EndpointChannel with the
   // EndpointChannelManager as the official channel for communication; given
@@ -667,12 +818,10 @@ void BwuManager::ProcessLastWriteToPriorChannelEvent(
   EndpointChannel* previous_endpoint_channel =
       previous_endpoint_channels_[endpoint_id].get();
   if (!previous_endpoint_channel) {
-    NEARBY_LOG(
-        ERROR,
-        "Received a BWU_NEGOTIATION.LAST_WRITE_TO_PRIOR_CHANNEL OfflineFrame "
-        "for unknown endpoint %s, can't complete the upgrade protocol.",
-        endpoint_id.c_str());
-
+    NEARBY_LOGS(ERROR)
+        << "BwuManager received a BWU_NEGOTIATION.LAST_WRITE_TO_PRIOR_CHANNEL "
+           "OfflineFrame for unknown endpoint "
+        << endpoint_id << ", can't complete the upgrade protocol.";
     successfully_upgraded_endpoints_.emplace(endpoint_id);
     return;
   }
@@ -683,13 +832,20 @@ void BwuManager::ProcessLastWriteToPriorChannelEvent(
     // avoid leaks.
     previous_endpoint_channels_.erase(endpoint_id);
 
-    NEARBY_LOG(
-        ERROR,
-        "Failed to write BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL "
-        "OfflineFrame to endpoint %s, short-circuiting the upgrade protocol.",
-        endpoint_id.c_str());
+    NEARBY_LOGS(ERROR) << "BwuManager failed to write "
+                          "BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL "
+                          "OfflineFrame to endpoint "
+                       << endpoint_id
+                       << ", short-circuiting the upgrade protocol.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::RESULT_IO_ERROR,
+        proto::connections::SAFE_TO_CLOSE_PRIOR_CHANNEL);
     return;
   }
+  NEARBY_LOGS(VERBOSE) << "BwuManager successfully wrote "
+                          "BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL "
+                          "OfflineFrame while trying to upgrade endpoint "
+                       << endpoint_id;
 
   // The upgrade protocol's clean shutdown of the prior EndpointChannel will
   // conclude when we receive a corresponding
@@ -699,8 +855,8 @@ void BwuManager::ProcessLastWriteToPriorChannelEvent(
 
 void BwuManager::ProcessSafeToClosePriorChannelEvent(
     ClientProxy* client, const std::string& endpoint_id) {
-  NEARBY_LOG(INFO, "ProcessSafeToClosePriorChannelEvent for endpoint %s",
-             endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "ProcessSafeToClosePriorChannelEvent for endpoint "
+                    << endpoint_id;
   // By this point in the upgrade protocol, there's no more writes happening
   // over the prior EndpointChannel, and the remote device has given us the
   // go-ahead to close this EndpointChannel [1], so we can safely close it
@@ -717,19 +873,16 @@ void BwuManager::ProcessSafeToClosePriorChannelEvent(
   auto item = previous_endpoint_channels_.extract(endpoint_id);
   auto& previous_endpoint_channel = item.mapped();
   if (previous_endpoint_channel == nullptr) {
-    NEARBY_LOG(
-        ERROR,
-        "Received a BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL OfflineFrame "
-        "for unknown endpoint %s, can't complete the upgrade protocol.",
-        endpoint_id.c_str());
+    NEARBY_LOGS(ERROR)
+        << "BwuManager received a BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL "
+           "OfflineFrame for unknown endpoint "
+        << endpoint_id << ", can't complete the upgrade protocol.";
     return;
   }
-
-  NEARBY_LOG(INFO,
-             "BwuManager successfully received a "
-             "BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL OfflineFrame while "
-             "trying to upgrade endpoint %s.",
-             endpoint_id.c_str());
+  NEARBY_LOGS(INFO)
+      << "BwuManager successfully received a "
+      << "BWU_NEGOTIATION.SAFE_TO_CLOSE_PRIOR_CHANNEL OfflineFrame while "
+      << "trying to upgrade endpoint " << endpoint_id;
 
   // Each encrypted message includes the key to decrypt the next message. The
   // disconnect message is optional and may not be received under normal
@@ -746,15 +899,27 @@ void BwuManager::ProcessSafeToClosePriorChannelEvent(
   previous_endpoint_channel->Read();
   previous_endpoint_channel->Close(DisconnectionReason::UPGRADED);
 
+  NEARBY_LOGS(VERBOSE)
+      << "BwuManager cleanly shut down prior "
+      << previous_endpoint_channel->GetType()
+      << " EndpointChannel to conclude upgrade protocol for endpoint "
+      << endpoint_id;
+
+  // Now the upgrade protocol has completed, record analytics for this new
+  // upgraded bandwidth connection...
+  client->GetAnalyticsRecorder().OnConnectionEstablished(
+      endpoint_id, medium_, client->GetConnectionToken(endpoint_id));
+  // ...and the success of the upgrade itself.
+  client->GetAnalyticsRecorder().OnBandwidthUpgradeSuccess(endpoint_id);
+
   // Now that the old channel has been drained, we can unpause the new channel
   std::shared_ptr<EndpointChannel> channel =
       channel_manager_->GetChannelForEndpoint(endpoint_id);
 
   if (!channel) {
-    NEARBY_LOG(ERROR,
-               "Attempted to resume the current EndpointChannel with  endpoint "
-               "%s, but none was found",
-               endpoint_id.c_str());
+    NEARBY_LOGS(ERROR) << "BwuManager attempted to resume the current "
+                          "EndpointChannel with endpoint "
+                       << endpoint_id << ", but none was found.";
     return;
   }
 
@@ -768,9 +933,10 @@ void BwuManager::ProcessSafeToClosePriorChannelEvent(
 void BwuManager::ProcessUpgradeFailureEvent(
     ClientProxy* client, const std::string& endpoint_id,
     const UpgradePathInfo& upgrade_info) {
-  NEARBY_LOG(INFO, "ProcessUpgradeFailureEvent for endpoint %s from medium: %d",
-             endpoint_id.c_str(),
-             parser::UpgradePathInfoMediumToMedium(upgrade_info.medium()));
+  NEARBY_LOGS(INFO) << "ProcessUpgradeFailureEvent for endpoint " << endpoint_id
+                    << " from medium: "
+                    << parser::UpgradePathInfoMediumToMedium(
+                           upgrade_info.medium());
   // The remote device failed to upgrade to the new medium we set up for them.
   // That's alright! We'll just try the next available medium (if there is
   // one).
@@ -784,11 +950,14 @@ void BwuManager::ProcessUpgradeFailureEvent(
   if (channel_manager_->GetConnectedEndpointsCount() > 1) {
     // We can't change the currentBwuMedium, so there are no more
     // upgrade attempts for this endpoint. Sorry.
-    NEARBY_LOG(
-        ERROR,
-        "Failed to attempt a new bandwidth upgrade for endpoint %s because we "
-        "have other connected endpoints and can't try a new upgrade medium.",
-        endpoint_id.c_str());
+    NEARBY_LOGS(ERROR)
+        << "BwuManager failed to attempt a new bandwidth upgrade for endpoint "
+        << endpoint_id
+        << " because we have other connected endpoints and can't try a new "
+           "upgrade medium.";
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(
+        endpoint_id, proto::connections::CHANNEL_ERROR,
+        proto::connections::NETWORK_AVAILABLE);
     return;
   }
 
@@ -819,10 +988,8 @@ void BwuManager::RetryUpgradeMediums(ClientProxy* client,
                                      const std::string& endpoint_id,
                                      std::vector<Medium> upgrade_mediums) {
   Medium next_medium = ChooseBestUpgradeMedium(upgrade_mediums);
-  NEARBY_LOG(
-      INFO,
-      "RetryUpgradeMediums for endpoint %s after ChooseBestUpgradeMedium: %d",
-      endpoint_id.c_str(), next_medium);
+  NEARBY_LOGS(INFO) << "RetryUpgradeMediums for endpoint " << endpoint_id
+                    << " after ChooseBestUpgradeMedium: " << next_medium;
 
   // If current medium is not WiFi and we have not succeeded with upgrading
   // yet, retry upgrade.
@@ -836,20 +1003,18 @@ void BwuManager::RetryUpgradeMediums(ClientProxy* client,
 
   // Attempt to set the new upgrade medium.
   if (!SetCurrentBwuHandler(next_medium)) {
-    NEARBY_LOG(
-        INFO,
-        "BwuManager failed to attempt a new bandwidth upgrade for endpoint %s "
-        "because we couldn't set a new bandwidth upgrade medium.",
-        endpoint_id.c_str());
+    NEARBY_LOGS(INFO)
+        << "BwuManager failed to attempt a new bandwidth upgrade for endpoint "
+        << endpoint_id
+        << " because we couldn't set a new bandwidth upgrade medium.";
     return;
   }
 
   // Now that we've successfully picked a new upgrade medium to try,
   // re-initiate the bandwidth upgrade.
-  NEARBY_LOG(INFO,
-             "BwuManager is attempting to upgrade endpoint %s again with a new "
-             " bandwidth upgrade medium.",
-             endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "BwuManager is attempting to upgrade endpoint "
+                    << endpoint_id
+                    << " again with a new bandwidth upgrade medium.";
   InitiateBwuForEndpoint(client, endpoint_id, next_medium);
 }
 
@@ -900,10 +1065,9 @@ Medium BwuManager::ChooseBestUpgradeMedium(const std::vector<Medium>& mediums) {
     // Case 2: This is our first time upgrading, but there are no available
     // upgrade mediums. Fall through to returning UNKNOWN_MEDIUM at the
     // bottom.
-    NEARBY_LOG(
-        INFO,
-        "Current upgrade medium is unset, but there are no common supported "
-        "upgrade mediums.");
+    NEARBY_LOGS(INFO)
+        << "Current upgrade medium is unset, but there are no common supported "
+           "upgrade mediums.";
   } else {
     // Case 3: We have already upgraded, and there is a list of supported
     // mediums to check against. Return the current upgrade medium if it's in
@@ -917,10 +1081,15 @@ Medium BwuManager::ChooseBestUpgradeMedium(const std::vector<Medium>& mediums) {
     // empty). Fall through and return Medium.UNKNOWN_MEDIUM because we cannot
     // continue with the current upgrade medium, and we are not allowed to
     // switch.
-    NEARBY_LOG(
-        INFO,
-        "Current upgrade medium %d is not supported by the remote endpoint",
-        medium_);
+    std::string mediums_string;
+    for (const auto& medium : available_mediums) {
+      absl::StrAppend(&mediums_string, proto::connections::Medium_Name(medium),
+                      "; ");
+    }
+    NEARBY_LOGS(INFO)
+        << "Current upgrade medium " << proto::connections::Medium_Name(medium_)
+        << " is not supported by the remote endpoint (supported mediums: "
+        << mediums_string << ")";
   }
 
   return Medium::UNKNOWN_MEDIUM;
@@ -948,7 +1117,40 @@ void BwuManager::RetryUpgradesAfterDelay(ClientProxy* client,
   retry_upgrade_alarms_.emplace(endpoint_id,
                                 std::make_pair(std::move(alarm), delay));
   retry_delays_[endpoint_id] = delay;
-  NEARBY_LOGS(INFO) << "Retry bandwidth upgrade after " << delay;
+  NEARBY_LOGS(INFO) << "Retry bandwidth upgrade after "
+                    << absl::FormatDuration(delay);
+}
+
+void BwuManager::AttemptToRecordBandwidthUpgradeErrorForUnknownEndpoint(
+    proto::connections::BandwidthUpgradeResult result,
+    proto::connections::BandwidthUpgradeErrorStage error_stage) {
+  if (in_progress_upgrades_.size() == 1) {
+    auto it = in_progress_upgrades_.begin();
+    std::string endpoint_id = it->first;
+    ClientProxy* client = it->second;
+    // Note: Even though we know this is an error, we cannot clear state yet.
+    // We've sent the remote device the credentials they need and it's up to
+    // them if they want to repeatedly attempt to connect or if they want to
+    // give up and have us try a different medium. This isn't a decision we can
+    // make for them.
+    client->GetAnalyticsRecorder().OnBandwidthUpgradeError(endpoint_id, result,
+                                                           error_stage);
+    NEARBY_LOGS(INFO) << "BwuManager got error "
+                      << proto::connections::BandwidthUpgradeResult_Name(result)
+                      << " at stage "
+                      << proto::connections::BandwidthUpgradeErrorStage_Name(
+                             error_stage)
+                      << " when upgrading endpoint " << endpoint_id;
+  }
+  // Otherwise, we have no way of knowing which endpoint was trying to connect
+  // to us :(
+  NEARBY_LOGS(INFO) << "BwuManager got error "
+                    << proto::connections::BandwidthUpgradeResult_Name(result)
+                    << " at stage "
+                    << proto::connections::BandwidthUpgradeErrorStage_Name(
+                           error_stage)
+                    << ", but we don't know which endpoint was trying to "
+                       "connect to us, so skipping analytics for his error.";
 }
 
 absl::Duration BwuManager::CalculateNextRetryDelay(
@@ -970,7 +1172,7 @@ absl::Duration BwuManager::CalculateNextRetryDelay(
 }
 
 void BwuManager::CancelRetryUpgradeAlarm(const std::string& endpoint_id) {
-  NEARBY_LOG(INFO, "CancelRetryUpgradeAlarm for %s", endpoint_id.c_str());
+  NEARBY_LOGS(INFO) << "CancelRetryUpgradeAlarm for endpoint " << endpoint_id;
   auto item = retry_upgrade_alarms_.extract(endpoint_id);
   if (item.empty()) return;
   auto& pair = item.mapped();
@@ -978,11 +1180,11 @@ void BwuManager::CancelRetryUpgradeAlarm(const std::string& endpoint_id) {
 }
 
 void BwuManager::CancelAllRetryUpgradeAlarms() {
-  NEARBY_LOG(INFO, "CancelAllRetryUpgradeAlarms invoked");
+  NEARBY_LOGS(INFO) << "CancelAllRetryUpgradeAlarms invoked";
   for (auto& item : retry_upgrade_alarms_) {
     const std::string& endpoint_id = item.first;
     CancelableAlarm& cancellable_alarm = item.second.first;
-    NEARBY_LOG(INFO, "CancelRetryUpgradeAlarm for %s", endpoint_id.c_str());
+    NEARBY_LOGS(INFO) << "CancelRetryUpgradeAlarm for endpoint " << endpoint_id;
     cancellable_alarm.Cancel();
   }
   retry_upgrade_alarms_.clear();

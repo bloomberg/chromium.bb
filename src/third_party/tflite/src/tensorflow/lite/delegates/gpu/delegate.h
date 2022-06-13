@@ -20,20 +20,6 @@ limitations under the License.
 
 #include "tensorflow/lite/c/common.h"
 
-#ifdef SWIG
-#define TFL_CAPI_EXPORT
-#else
-#if defined(_WIN32)
-#ifdef TFL_COMPILE_LIBRARY
-#define TFL_CAPI_EXPORT __declspec(dllexport)
-#else
-#define TFL_CAPI_EXPORT __declspec(dllimport)
-#endif  // TFL_COMPILE_LIBRARY
-#else
-#define TFL_CAPI_EXPORT __attribute__((visibility("default")))
-#endif  // _WIN32
-#endif  // SWIG
-
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -65,10 +51,21 @@ enum TfLiteGpuInferencePriority {
 enum TfLiteGpuExperimentalFlags {
   TFLITE_GPU_EXPERIMENTAL_FLAGS_NONE = 0,
   // Enables inference on quantized models with the delegate.
+  // NOTE: This is enabled in TfLiteGpuDelegateOptionsV2Default.
   TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT = 1 << 0,
   // Enforces execution with the provided backend.
   TFLITE_GPU_EXPERIMENTAL_FLAGS_CL_ONLY = 1 << 1,
-  TFLITE_GPU_EXPERIMENTAL_FLAGS_GL_ONLY = 1 << 2
+  TFLITE_GPU_EXPERIMENTAL_FLAGS_GL_ONLY = 1 << 2,
+  // Enable serialization of GPU kernels & model data. Speeds up initilization
+  // at the cost of space on disk.
+  // Delegate performs serialization the first time it is applied with a new
+  // model or inference params. Later initializations are fast.
+  // ModifyGraphWithDelegate will fail if data cannot be serialized.
+  //
+  // NOTE: User also needs to set serialization_dir & model_token in
+  // TfLiteGpuDelegateOptionsV2.
+  // Currently works only if CL backend is used.
+  TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION = 1 << 3,
 };
 
 // IMPORTANT: Always use TfLiteGpuDelegateOptionsV2Default() method to create
@@ -114,6 +111,26 @@ typedef struct {
   // This limits the maximum number of partitions to be delegated. By default,
   // it's set to 1 in TfLiteGpuDelegateOptionsV2Default().
   int32_t max_delegated_partitions;
+
+  // The nul-terminated directory to use for serialization.
+  // Whether serialization actually happens or not is dependent on backend used
+  // and validity of this directory.
+  // Set to nullptr in TfLiteGpuDelegateOptionsV2Default(), which implies the
+  // delegate will not try serialization.
+  //
+  // NOTE: Users should ensure that this directory is private to the app to
+  // avoid data access issues.
+  const char* serialization_dir;
+
+  // The unique nul-terminated token string that acts as a 'namespace' for
+  // all serialization entries.
+  // Should be unique to a particular model (graph & constants).
+  // For an example of how to generate this from a TFLite model, see
+  // StrFingerprint() in lite/delegates/serialization.h.
+  //
+  // Set to nullptr in TfLiteGpuDelegateOptionsV2Default(), which implies the
+  // delegate will not try serialization.
+  const char* model_token;
 } TfLiteGpuDelegateOptionsV2;
 
 // Populates TfLiteGpuDelegateOptionsV2 as follows:
@@ -122,6 +139,8 @@ typedef struct {
 //   priority1 = TFLITE_GPU_INFERENCE_PRIORITY_MAX_PRECISION
 //   priority2 = TFLITE_GPU_INFERENCE_PRIORITY_AUTO
 //   priority3 = TFLITE_GPU_INFERENCE_PRIORITY_AUTO
+//   experimental_flags = TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_QUANT
+//   max_delegated_partitions = 1
 TFL_CAPI_EXPORT TfLiteGpuDelegateOptionsV2 TfLiteGpuDelegateOptionsV2Default();
 
 // Creates a new delegate instance that need to be destroyed with

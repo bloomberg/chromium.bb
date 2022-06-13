@@ -15,7 +15,6 @@
 #include "base/thread_annotations.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "media/base/video_util.h"
 
 namespace media {
 
@@ -35,6 +34,8 @@ class PictureBufferManagerImpl : public PictureBufferManager {
       : reuse_picture_buffer_cb_(std::move(reuse_picture_buffer_cb)) {
     DVLOG(1) << __func__;
   }
+  PictureBufferManagerImpl(const PictureBufferManagerImpl&) = delete;
+  PictureBufferManagerImpl& operator=(const PictureBufferManagerImpl&) = delete;
 
   void Initialize(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -219,10 +220,7 @@ class PictureBufferManagerImpl : public PictureBufferManager {
       DLOG(WARNING) << "visible_rect " << visible_rect.ToString()
                     << " exceeds coded_size "
                     << picture_buffer_data.texture_size.ToString();
-      double pixel_aspect_ratio =
-          GetPixelAspectRatio(visible_rect, natural_size);
       visible_rect.Intersect(gfx::Rect(picture_buffer_data.texture_size));
-      natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio);
     }
 
     // Record the output.
@@ -244,6 +242,10 @@ class PictureBufferManagerImpl : public PictureBufferManager {
                        picture_buffer_id),
         picture_buffer_data.texture_size, visible_rect, natural_size,
         timestamp);
+    if (!frame) {
+      DLOG(ERROR) << "Failed to create VideoFrame for picture.";
+      return nullptr;
+    }
 
     frame->set_color_space(picture.color_space());
 
@@ -384,8 +386,6 @@ class PictureBufferManagerImpl : public PictureBufferManager {
   base::Lock picture_buffers_lock_;
   std::map<int32_t, PictureBufferData> picture_buffers_
       GUARDED_BY(picture_buffers_lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(PictureBufferManagerImpl);
 };
 
 }  // namespace

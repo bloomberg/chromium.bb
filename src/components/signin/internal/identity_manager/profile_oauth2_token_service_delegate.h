@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -40,6 +40,12 @@ class ProfileOAuth2TokenService;
 class ProfileOAuth2TokenServiceDelegate {
  public:
   ProfileOAuth2TokenServiceDelegate();
+
+  ProfileOAuth2TokenServiceDelegate(const ProfileOAuth2TokenServiceDelegate&) =
+      delete;
+  ProfileOAuth2TokenServiceDelegate& operator=(
+      const ProfileOAuth2TokenServiceDelegate&) = delete;
+
   virtual ~ProfileOAuth2TokenServiceDelegate();
 
   virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
@@ -60,7 +66,7 @@ class ProfileOAuth2TokenServiceDelegate {
                                const GoogleServiceAuthError& error) {}
 
   // Returns a list of accounts for which a refresh token is maintained by
-  // |this| instance.
+  // |this| instance, in the order the refresh tokens were added.
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
   // Also, see |RefreshTokenIsAvailable|.
   virtual std::vector<CoreAccountId> GetAccounts() const;
@@ -167,11 +173,14 @@ class ProfileOAuth2TokenServiceDelegate {
   class ScopedBatchChange {
    public:
     explicit ScopedBatchChange(ProfileOAuth2TokenServiceDelegate* delegate);
+
+    ScopedBatchChange(const ScopedBatchChange&) = delete;
+    ScopedBatchChange& operator=(const ScopedBatchChange&) = delete;
+
     ~ScopedBatchChange();
 
    private:
-    ProfileOAuth2TokenServiceDelegate* delegate_;  // Weak.
-    DISALLOW_COPY_AND_ASSIGN(ScopedBatchChange);
+    raw_ptr<ProfileOAuth2TokenServiceDelegate> delegate_;  // Weak.
   };
 
  private:
@@ -189,8 +198,6 @@ class ProfileOAuth2TokenServiceDelegate {
 
   // The depth of batch changes.
   int batch_change_depth_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceDelegate);
 };
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

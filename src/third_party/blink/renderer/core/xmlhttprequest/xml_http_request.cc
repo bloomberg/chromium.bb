@@ -37,8 +37,6 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/document_or_xml_http_request_body_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_blob_document_formdata_urlsearchparams_usvstring.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
@@ -80,7 +78,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
@@ -95,6 +93,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -135,7 +134,7 @@ void FindCharsetInMediaType(const String& media_type,
                             unsigned& charset_len) {
   charset_len = 0;
 
-  size_t pos = charset_pos;
+  unsigned pos = charset_pos;
   unsigned length = media_type.length();
 
   while (pos < length) {
@@ -325,6 +324,15 @@ v8::Local<v8::String> XMLHttpRequest::responseText(
 v8::Local<v8::String> XMLHttpRequest::ResponseJSONSource() {
   DCHECK_EQ(response_type_code_, kResponseTypeJSON);
 
+  const auto& head = response_body_head_;
+  if (state_ == kDone && !error_ && head.size() >= 2) {
+    if ((head[0] == 0xfe && head[1] == 0xff) ||
+        (head[0] == 0xff && head[1] == 0xfe)) {
+      Deprecation::CountDeprecation(GetExecutionContext(),
+                                    WebFeature::kXHRJSONEncodingDetection);
+    }
+  }
+
   if (error_ || state_ != kDone)
     return v8::Local<v8::String>();
   return response_text_.V8Value(isolate_);
@@ -462,7 +470,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
     return;
   }
 
-  timeout_ = base::TimeDelta::FromMilliseconds(timeout);
+  timeout_ = base::Milliseconds(timeout);
 
   // From http://www.w3.org/TR/XMLHttpRequest/#the-timeout-attribute:
   // Note: This implies that the timeout attribute can be set while fetching is
@@ -763,7 +771,6 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
   return true;
 }
 
-#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void XMLHttpRequest::send(const V8UnionDocumentOrXMLHttpRequestBodyInit* body,
                           ExceptionState& exception_state) {
   probe::WillSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
@@ -790,56 +797,11 @@ void XMLHttpRequest::send(const V8UnionDocumentOrXMLHttpRequestBodyInit* body,
 
   NOTREACHED();
 }
-#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
-void XMLHttpRequest::send(
-    const DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString&
-        body,
-    ExceptionState& exception_state) {
-  probe::WillSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
-
-  if (body.IsNull()) {
-    send(String(), exception_state);
-    return;
-  }
-
-  if (body.IsDocument()) {
-    send(body.GetAsDocument(), exception_state);
-    return;
-  }
-
-  if (body.IsBlob()) {
-    send(body.GetAsBlob(), exception_state);
-    return;
-  }
-
-  if (body.IsArrayBuffer()) {
-    send(body.GetAsArrayBuffer(), exception_state);
-    return;
-  }
-
-  if (body.IsArrayBufferView()) {
-    send(body.GetAsArrayBufferView().Get(), exception_state);
-    return;
-  }
-
-  if (body.IsFormData()) {
-    send(body.GetAsFormData(), exception_state);
-    return;
-  }
-
-  if (body.IsURLSearchParams()) {
-    send(body.GetAsURLSearchParams(), exception_state);
-    return;
-  }
-
-  DCHECK(body.IsUSVString());
-  send(body.GetAsUSVString(), exception_state);
-}
-#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {
   return method_ != http_names::kGET && method_ != http_names::kHEAD &&
-         url_.ProtocolIsInHTTPFamily();
+         SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
+             url_.Protocol());
 }
 
 void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
@@ -982,7 +944,8 @@ void XMLHttpRequest::SendBytesData(const void* data,
   scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
-    http_body = EncodedFormData::Create(data, length);
+    http_body =
+        EncodedFormData::Create(data, base::checked_cast<wtf_size_t>(length));
   }
 
   CreateRequest(std::move(http_body), exception_state);
@@ -1055,8 +1018,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // Also, only async requests support upload progress events.
   bool upload_events = false;
   if (async_) {
-    probe::AsyncTaskScheduled(&execution_context, "XMLHttpRequest.send",
-                              &async_task_id_);
+    async_task_context_.Schedule(&execution_context, "XMLHttpRequest.send");
     DispatchProgressEvent(event_type_names::kLoadstart, 0, 0);
     // Event handler could have invalidated this send operation,
     // (re)setting the send flag and/or initiating another send
@@ -1324,7 +1286,7 @@ void XMLHttpRequest::DispatchProgressEvent(const AtomicString& type,
 
   ExecutionContext* context = GetExecutionContext();
   probe::AsyncTask async_task(
-      context, &async_task_id_,
+      context, &async_task_context_,
       type == event_type_names::kLoadend ? nullptr : "progress", async_);
   progress_event_throttle_->DispatchProgressEvent(type, length_computable,
                                                   loaded, total);
@@ -1692,7 +1654,7 @@ String XMLHttpRequest::statusText() const {
   return String();
 }
 
-void XMLHttpRequest::DidFail(const ResourceError& error) {
+void XMLHttpRequest::DidFail(uint64_t, const ResourceError& error) {
   DVLOG(1) << this << " didFail()";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 
@@ -1725,7 +1687,7 @@ void XMLHttpRequest::DidFail(const ResourceError& error) {
   HandleNetworkError();
 }
 
-void XMLHttpRequest::DidFailRedirectCheck() {
+void XMLHttpRequest::DidFailRedirectCheck(uint64_t) {
   DVLOG(1) << this << " didFailRedirectCheck()";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
 
@@ -1768,13 +1730,6 @@ void XMLHttpRequest::DidFinishLoadingInternal() {
 
   if (decoder_) {
     auto text = decoder_->Flush();
-
-    if (response_type_code_ == kResponseTypeJSON) {
-      // See https://crbug.com/1189627: We want to deprecate the BOM sniffing.
-      if (decoder_->Encoding() != UTF8Encoding()) {
-        GetExecutionContext()->CountUse(WebFeature::kXHRJSONEncodingDetection);
-      }
-    }
 
     if (!text.IsEmpty() && !response_text_overflow_) {
       response_text_.Concat(isolate_, text);
@@ -1897,11 +1852,9 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 }
 
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
-  const TextResourceDecoderOptions decoder_options_for_utf8_plain_text(
-      TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding());
   if (response_type_code_ == kResponseTypeJSON) {
-    return std::make_unique<TextResourceDecoder>(
-        decoder_options_for_utf8_plain_text);
+    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+        TextResourceDecoderOptions::CreateUTF8Decode()));
   }
 
   WTF::TextEncoding final_response_charset = FinalResponseCharset();
@@ -1925,8 +1878,9 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
         return std::make_unique<TextResourceDecoder>(decoder_options_for_xml);
       FALLTHROUGH;
     case kResponseTypeText:
-      return std::make_unique<TextResourceDecoder>(
-          decoder_options_for_utf8_plain_text);
+      return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+          TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
+
     case kResponseTypeDocument:
       if (ResponseIsHTML()) {
         return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
@@ -1960,6 +1914,13 @@ void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
 
   if (!len)
     return;
+
+  // Store the first few bytes of the response body so that we can check the BOM
+  // later.
+  for (wtf_size_t i = 0;
+       i < len && response_body_head_.size() < kResponseBodyHeadSize; ++i) {
+    response_body_head_.push_back(static_cast<uint8_t>(data[i]));
+  }
 
   if (response_type_code_ == kResponseTypeDocument && ResponseIsHTML()) {
     ParseDocumentChunk(data, len);

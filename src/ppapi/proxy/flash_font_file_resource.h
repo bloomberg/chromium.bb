@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/macros.h"
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/serialized_structs.h"
@@ -29,6 +28,10 @@ class FlashFontFileResource : public PluginResource,
                         PP_Instance instance,
                         const PP_BrowserFont_Trusted_Description* description,
                         PP_PrivateFontCharset charset);
+
+  FlashFontFileResource(const FlashFontFileResource&) = delete;
+  FlashFontFileResource& operator=(const FlashFontFileResource&) = delete;
+
   ~FlashFontFileResource() override;
 
   // Resource overrides.
@@ -52,8 +55,6 @@ class FlashFontFileResource : public PluginResource,
 
   SerializedFontDescription description_;
   const PP_PrivateFontCharset charset_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlashFontFileResource);
 };
 
 }  // namespace proxy

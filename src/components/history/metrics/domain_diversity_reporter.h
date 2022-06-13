@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_
 #define COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
@@ -25,6 +26,10 @@ class DomainDiversityReporter : public KeyedService,
   DomainDiversityReporter(history::HistoryService* history_service,
                           PrefService* prefs,
                           base::Clock* clock);
+
+  DomainDiversityReporter(const DomainDiversityReporter&) = delete;
+  DomainDiversityReporter& operator=(const DomainDiversityReporter&) = delete;
+
   ~DomainDiversityReporter() override;
 
   // Registers Profile preferences in `registry`.
@@ -53,9 +58,9 @@ class DomainDiversityReporter : public KeyedService,
   void Shutdown() override {}
 
  private:
-  history::HistoryService* history_service_;
-  PrefService* prefs_;
-  base::Clock* clock_;
+  raw_ptr<history::HistoryService> history_service_;
+  raw_ptr<PrefService> prefs_;
+  raw_ptr<base::Clock> clock_;
 
   base::ScopedObservation<history::HistoryService,
                           history::HistoryServiceObserver>
@@ -65,8 +70,6 @@ class DomainDiversityReporter : public KeyedService,
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<DomainDiversityReporter> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DomainDiversityReporter);
 };
 
 #endif  // COMPONENTS_HISTORY_METRICS_DOMAIN_DIVERSITY_REPORTER_H_

@@ -159,11 +159,11 @@ struct vectorization_logic
       EIGEN_UNALIGNED_VECTORIZE ? InnerUnrolling : NoUnrolling));
 
     VERIFY(test_assign(Matrix1(),Matrix1()+Matrix1(),
-      (Matrix1::InnerSizeAtCompileTime % PacketSize)==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal,
+      (int(Matrix1::InnerSizeAtCompileTime) % int(PacketSize))==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal,
       CompleteUnrolling));
 
     VERIFY(test_assign(Matrix1u(),Matrix1()+Matrix1(),
-      EIGEN_UNALIGNED_VECTORIZE ? ((Matrix1::InnerSizeAtCompileTime % PacketSize)==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal)
+      EIGEN_UNALIGNED_VECTORIZE ? ((int(Matrix1::InnerSizeAtCompileTime) % int(PacketSize))==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal)
                                 : LinearTraversal, CompleteUnrolling));
 
     VERIFY(test_assign(Matrix44c().col(1),Matrix44c().col(2)+Matrix44c().col(3),
@@ -324,7 +324,7 @@ struct vectorization_logic_half
       EIGEN_UNALIGNED_VECTORIZE ? InnerUnrolling : NoUnrolling));
 
     VERIFY(test_assign(Matrix1u(),Matrix1()+Matrix1(),
-      EIGEN_UNALIGNED_VECTORIZE ? ((Matrix1::InnerSizeAtCompileTime % PacketSize)==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal) : LinearTraversal,CompleteUnrolling));
+      EIGEN_UNALIGNED_VECTORIZE ? ((int(Matrix1::InnerSizeAtCompileTime) % int(PacketSize))==0 ? InnerVectorizedTraversal : LinearVectorizedTraversal) : LinearTraversal,CompleteUnrolling));
         
     if(PacketSize>1)
     {
@@ -337,7 +337,8 @@ struct vectorization_logic_half
         ((!EIGEN_UNALIGNED_VECTORIZE) && (sizeof(Scalar)==16)) ? NoUnrolling : CompleteUnrolling));
               
       VERIFY(test_assign(Matrix3(),Matrix3().cwiseQuotient(Matrix3()),
-        PacketTraits::HasDiv ? LinearVectorizedTraversal : LinearTraversal,CompleteUnrolling));
+        PacketTraits::HasDiv ? LinearVectorizedTraversal : LinearTraversal,
+        PacketTraits::HasDiv ? CompleteUnrolling : NoUnrolling));
         
       VERIFY(test_assign(Matrix<Scalar,17,17>(),Matrix<Scalar,17,17>()+Matrix<Scalar,17,17>(),
         sizeof(Scalar)==16 ? InnerVectorizedTraversal : (EIGEN_UNALIGNED_VECTORIZE ? LinearVectorizedTraversal : LinearTraversal),

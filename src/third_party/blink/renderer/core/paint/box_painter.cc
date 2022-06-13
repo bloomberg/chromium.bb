@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 
+#include "base/unguessable_token.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
@@ -64,13 +65,13 @@ void BoxPainter::PaintBoxDecorationBackground(
   PhysicalRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
   absl::optional<ScopedBoxContentsPaintState> contents_paint_state;
-  bool painting_scrolling_background =
-      BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_);
-  IntRect visual_rect;
-  if (painting_scrolling_background) {
-    // For the case where we are painting the background into the scrolling
-    // contents layer of a composited scroller we need to include the entire
-    // overflow rect.
+  bool painting_background_in_contents_space =
+      BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
+                                                             layout_box_);
+  gfx::Rect visual_rect;
+  if (painting_background_in_contents_space) {
+    // For the case where we are painting the background in the contents space,
+    // we need to include the entire overflow rect.
     paint_rect = layout_box_.PhysicalLayoutOverflowRect();
     contents_paint_state.emplace(paint_info, paint_offset, layout_box_);
     paint_rect.Move(contents_paint_state->PaintOffset());
@@ -104,6 +105,7 @@ void BoxPainter::PaintBoxDecorationBackground(
   }
 
   RecordHitTestData(paint_info, paint_rect, *background_client);
+  RecordRegionCaptureData(paint_info, paint_rect, *background_client);
 
   bool needs_scroll_hit_test = true;
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -125,13 +127,13 @@ void BoxPainter::PaintBoxDecorationBackground(
   // Record the scroll hit test after the non-scrolling background so
   // background squashing is not affected. Hit test order would be equivalent
   // if this were immediately before the non-scrolling background.
-  if (!painting_scrolling_background && needs_scroll_hit_test)
+  if (!painting_background_in_contents_space && needs_scroll_hit_test)
     RecordScrollHitTestData(paint_info, *background_client);
 }
 
 void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
-    const IntRect& visual_rect,
+    const gfx::Rect& visual_rect,
     const PhysicalRect& paint_rect,
     const DisplayItemClient& background_client) {
   const ComputedStyle& style = layout_box_.StyleRef();
@@ -181,7 +183,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   // If we have a native theme appearance, paint that before painting our
   // background.  The theme will tell us whether or not we should also paint the
   // CSS background.
-  IntRect snapped_paint_rect(PixelSnappedIntRect(paint_rect));
+  gfx::Rect snapped_paint_rect = ToPixelSnappedRect(paint_rect);
   ThemePainter& theme_painter = LayoutTheme::GetTheme().Painter();
   bool theme_painted =
       box_decoration_data.HasAppearance() &&
@@ -272,6 +274,13 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const PhysicalRect& paint_rect,
                                    const DisplayItemClient& background_client) {
+  if (BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
+                                                             layout_box_) &&
+      layout_box_.EffectiveAllowedTouchAction() == TouchAction::kAuto &&
+      !layout_box_.InsideBlockingWheelEventHandler()) {
+    return;
+  }
+
   // Hit test data are only needed for compositing. This flag is used for for
   // printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
@@ -285,9 +294,23 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
     return;
 
   paint_info.context.GetPaintController().RecordHitTestData(
-      background_client, PixelSnappedIntRect(paint_rect),
+      background_client, ToPixelSnappedRect(paint_rect),
       layout_box_.EffectiveAllowedTouchAction(),
       layout_box_.InsideBlockingWheelEventHandler());
+}
+
+void BoxPainter::RecordRegionCaptureData(
+    const PaintInfo& paint_info,
+    const PhysicalRect& paint_rect,
+    const DisplayItemClient& background_client) {
+  const Element* element = DynamicTo<Element>(layout_box_.GetNode());
+  if (element) {
+    const RegionCaptureCropId* crop_id = element->GetRegionCaptureCropId();
+    if (crop_id) {
+      paint_info.context.GetPaintController().RecordRegionCaptureData(
+          background_client, *crop_id, ToPixelSnappedRect(paint_rect));
+    }
+  }
 }
 
 void BoxPainter::RecordScrollHitTestData(
@@ -329,12 +352,12 @@ void BoxPainter::RecordScrollHitTestData(
                                       fragment->PaintOffset());
 }
 
-IntRect BoxPainter::VisualRect(const PhysicalOffset& paint_offset) {
+gfx::Rect BoxPainter::VisualRect(const PhysicalOffset& paint_offset) {
   DCHECK(!layout_box_.VisualRectRespectsVisibility() ||
          layout_box_.StyleRef().Visibility() == EVisibility::kVisible);
   PhysicalRect rect = layout_box_.PhysicalSelfVisualOverflowRect();
   rect.Move(paint_offset);
-  return EnclosingIntRect(rect);
+  return ToEnclosingRect(rect);
 }
 
 }  // namespace blink

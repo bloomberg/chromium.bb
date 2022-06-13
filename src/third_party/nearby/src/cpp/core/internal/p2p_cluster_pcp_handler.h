@@ -29,7 +29,6 @@
 #include "core/internal/mediums/bluetooth_classic.h"
 #include "core/internal/mediums/mediums.h"
 #include "core/internal/mediums/webrtc.h"
-#include "core/internal/mediums/webrtc/peer_id.h"
 #include "core/internal/pcp.h"
 #include "core/internal/wifi_lan_service_info.h"
 #include "core/options.h"
@@ -172,29 +171,22 @@ class P2pClusterPcpHandler : public BasePcpHandler {
   // WifiLan
   bool IsRecognizedWifiLanEndpoint(
       const std::string& service_id,
-      const WifiLanServiceInfo& service_info) const;
+      const WifiLanServiceInfo& wifi_lan_service_info) const;
   void WifiLanServiceDiscoveredHandler(ClientProxy* client,
-                                       WifiLanService& service,
+                                       NsdServiceInfo service_info,
                                        const std::string& service_id);
-  void WifiLanServiceLostHandler(ClientProxy* client, WifiLanService& service,
+  void WifiLanServiceLostHandler(ClientProxy* client,
+                                 NsdServiceInfo service_info,
                                  const std::string& service_id);
   proto::connections::Medium StartWifiLanAdvertising(
       ClientProxy* client, const std::string& service_id,
-      const ByteArray& service_id_hash, const std::string& local_endpoint_id,
+      const std::string& local_endpoint_id,
       const ByteArray& local_endpoint_info, WebRtcState web_rtc_state);
   proto::connections::Medium StartWifiLanDiscovery(
       WifiLanDiscoveredServiceCallback callback, ClientProxy* client,
       const std::string& service_id);
   BasePcpHandler::ConnectImplResult WifiLanConnectImpl(
       ClientProxy* client, WifiLanEndpoint* endpoint);
-
-  // WebRtc
-  proto::connections::Medium StartListeningForWebRtcConnections(
-      ClientProxy* client, const std::string& service_id,
-      const std::string& local_endpoint_id,
-      const ByteArray& local_endpoint_info);
-  BasePcpHandler::ConnectImplResult WebRtcConnectImpl(
-      ClientProxy* client, WebRtcEndpoint* webrtc_endpoint);
 
   BluetoothRadio& bluetooth_radio_;
   BluetoothClassic& bluetooth_medium_;

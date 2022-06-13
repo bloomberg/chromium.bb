@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -52,10 +53,6 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/devices/touchscreen_device.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #endif
 
 namespace display {
@@ -537,7 +534,7 @@ void DisplayManager::SetOverscanInsets(int64_t display_id,
 void DisplayManager::SetDisplayRotation(int64_t display_id,
                                         Display::Rotation rotation,
                                         Display::RotationSource source) {
-  if (IsInUnifiedMode())
+  if (IsInUnifiedMode() && display_id == kUnifiedDisplayId)
     return;
 
   DisplayInfoList display_info_list;
@@ -884,12 +881,6 @@ void DisplayManager::UpdateDisplays() {
 void DisplayManager::UpdateDisplaysWith(
     const DisplayInfoList& updated_display_info_list) {
   BeginEndNotifier notifier(this);
-
-#if defined(OS_WIN)
-  DCHECK_EQ(1u, updated_display_info_list.size())
-      << ": Multiple display test does not work on Windows bots. Please "
-         "skip (don't disable) the test.";
-#endif
 
   DisplayInfoList new_display_info_list = updated_display_info_list;
   std::sort(active_display_list_.begin(), active_display_list_.end(),
@@ -1364,6 +1355,13 @@ void DisplayManager::SetMirrorMode(
   if (num_connected_displays() < 2)
     return;
 
+  // If the user turned off mirror mode, disable
+  // `forced_mirror_mode_for_tablet`.
+  if (mode != MirrorMode::kNormal &&
+      layout_store_->forced_mirror_mode_for_tablet()) {
+    layout_store_->set_forced_mirror_mode_for_tablet(false);
+  }
+
   if (mode == MirrorMode::kMixed) {
     // Set mixed mirror mode parameters. This will be used to do two things:
     // 1. Set the specified source and destination displays in mirror mode
@@ -1407,7 +1405,8 @@ void DisplayManager::AddRemoveDisplay(
     gfx::Rect host_bounds = first_display.bounds_in_native();
     if (display_modes.empty()) {
       display_modes.emplace_back(
-          gfx::Size(600 /* width */, host_bounds.height()),
+          gfx::Size(host_bounds.height() + 100 /* width */,
+                    host_bounds.height()),
           60.0, /* refresh_rate */
           false /* is_interlaced */, true /* native */);
     }
@@ -1568,7 +1567,7 @@ void DisplayManager::UpdateZoomFactor(int64_t display_id, float zoom_factor) {
         base::BindOnce(&OnInternalDisplayZoomChanged, zoom_factor));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, on_display_zoom_modify_timeout_.callback(),
-        base::TimeDelta::FromSeconds(kDisplayZoomModifyTimeoutSec));
+        base::Seconds(kDisplayZoomModifyTimeoutSec));
   }
 
   iter->second.set_zoom_factor(zoom_factor);
@@ -1817,6 +1816,19 @@ void DisplayManager::CreateUnifiedDesktopDisplayInfo(
   if (display_info_list->size() == 1)
     return;
 
+  for (auto& display_info : *display_info_list) {
+    auto it = display_info_.find(display_info.id());
+    if (it != display_info_.end()) {
+      display_info.SetRotation(
+          it->second.GetRotation(Display::RotationSource::USER),
+          Display::RotationSource::USER);
+      display_info.SetRotation(
+          it->second.GetRotation(Display::RotationSource::ACTIVE),
+          Display::RotationSource::ACTIVE);
+      display_info.UpdateDisplaySize();
+    }
+  }
+
   if (!ValidateMatrix(current_unified_desktop_matrix_) ||
       !ValidateMatrixForDisplayInfoList(*display_info_list,
                                         current_unified_desktop_matrix_)) {
@@ -1843,7 +1855,6 @@ void DisplayManager::CreateUnifiedDesktopDisplayInfo(
     for (const auto& id : row) {
       const ManagedDisplayInfo* info = FindInfoById(*display_info_list, id);
       DCHECK(info);
-
       max_height = std::max(max_height, info->size_in_pixel().height());
     }
     rows_max_heights.emplace_back(max_height);
@@ -2105,6 +2116,8 @@ Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
                                   display_info.size_in_pixel(), scale)));
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
+  new_display.set_rotation(display_info.GetActiveRotation());
+  new_display.set_panel_rotation(display_info.GetLogicalActiveRotation());
   return new_display;
 }
 

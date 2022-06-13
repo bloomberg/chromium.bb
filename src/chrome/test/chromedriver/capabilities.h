@@ -15,6 +15,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -23,8 +24,6 @@
 
 namespace base {
 class CommandLine;
-class DictionaryValue;
-class ListValue;
 }
 
 class Status;
@@ -140,6 +139,8 @@ struct Capabilities {
 
   bool android_use_running_app;
 
+  bool android_keep_app_data_dir = false;
+
   int android_devtools_port = 0;
 
   base::FilePath binary;
@@ -177,7 +178,7 @@ struct Capabilities {
 
   PerfLoggingPrefs perf_logging_prefs;
 
-  std::unique_ptr<base::ListValue> devtools_events_logging_prefs;
+  base::Value devtools_events_logging_prefs;
 
   std::unique_ptr<base::DictionaryValue> prefs;
 

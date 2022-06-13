@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -48,7 +48,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.default_config = '/fake_src/tools/mb/mb_config.pyl'
       self.default_isolate_map = '/fake_src/testing/buildbot/gn_isolate_map.pyl'
       self.executable = '/usr/bin/python'
-      self.platform = 'linux2'
+      self.platform = 'linux'
       self.sep = '/'
       self.cwd = '/fake_src/out/Default'
 
@@ -84,7 +84,10 @@ class FakeMBW(mb.MetaBuildWrapper):
     return self.sep.join(comps)
 
   def ReadFile(self, path):
-    return self.files[self._AbsPath(path)]
+    try:
+      return self.files[self._AbsPath(path)]
+    except KeyError:
+      raise IOError('%s not found' % path)
 
   def WriteFile(self, path, contents, force_verbose=False):
     if self.args.dryrun or self.args.verbose or force_verbose:
@@ -119,10 +122,12 @@ class FakeMBW(mb.MetaBuildWrapper):
     abpath = self._AbsPath(path)
     self.files[abpath] = None
 
-  def RemoveDirectory(self, path):
-    abpath = self._AbsPath(path)
-    self.rmdirs.append(abpath)
-    files_to_delete = [f for f in self.files if f.startswith(abpath)]
+  def RemoveDirectory(self, abs_path):
+    # Normalize the passed-in path to handle different working directories
+    # used during unit testing.
+    abs_path = self._AbsPath(abs_path)
+    self.rmdirs.append(abs_path)
+    files_to_delete = [f for f in self.files if f.startswith(abs_path)]
     for f in files_to_delete:
       self.files[f] = None
 
@@ -132,8 +137,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       path = self.PathJoin(self.cwd, path)
     if self.sep == '\\':
       return re.sub(r'\\+', r'\\', path)
-    else:
-      return re.sub('/+', '/', path)
+    return re.sub('/+', '/', path)
 
 
 class FakeFile(object):
@@ -156,32 +160,33 @@ TEST_CONFIG = """\
     'fake_builder_group': {
       'fake_builder': 'rel_bot',
       'fake_debug_builder': 'debug_goma',
-      'fake_args_bot': '//build/args/bots/fake_builder_group/fake_args_bot.gn',
+      'fake_args_bot': 'fake_args_bot',
       'fake_multi_phase': { 'phase_1': 'phase_1', 'phase_2': 'phase_2'},
       'fake_args_file': 'args_file_goma',
       'fake_ios_error': 'ios_error',
     },
   },
   'configs': {
-    'args_file_goma': ['args_file', 'goma'],
+    'args_file_goma': ['fake_args_bot', 'goma'],
+    'fake_args_bot': ['fake_args_bot'],
     'rel_bot': ['rel', 'goma', 'fake_feature1'],
     'debug_goma': ['debug', 'goma'],
-    'phase_1': ['phase_1'],
-    'phase_2': ['phase_2'],
+    'phase_1': ['rel', 'phase_1'],
+    'phase_2': ['rel', 'phase_2'],
     'ios_error': ['error'],
   },
   'mixins': {
     'error': {
       'gn_args': 'error',
     },
+    'fake_args_bot': {
+      'args_file': '//build/args/bots/fake_builder_group/fake_args_bot.gn',
+    },
     'fake_feature1': {
       'gn_args': 'enable_doom_melon=true',
     },
     'goma': {
       'gn_args': 'use_goma=true',
-    },
-    'args_file': {
-      'args_file': '//build/args/fake.gn',
     },
     'phase_1': {
       'gn_args': 'phase=1',
@@ -190,7 +195,7 @@ TEST_CONFIG = """\
       'gn_args': 'phase=2',
     },
     'rel': {
-      'gn_args': 'is_debug=false',
+      'gn_args': 'is_debug=false dcheck_always_on=false',
     },
     'debug': {
       'gn_args': 'is_debug=true',
@@ -302,7 +307,7 @@ class UnitTest(unittest.TestCase):
       }''')
     mbw.files.setdefault(
         mbw.ToAbsPath('//build/args/bots/fake_builder_group/fake_args_bot.gn'),
-        'is_debug = false\n')
+        'is_debug = false\ndcheck_always_on=false\n')
     mbw.files.setdefault(mbw.ToAbsPath('//tools/mb/rts_banned_suites.json'),
                          '{}')
     if files:
@@ -470,7 +475,7 @@ class UnitTest(unittest.TestCase):
 
     self.assertEqual(
         mbw.files['/fake_src/out/Debug/args.gn'],
-        ('import("//build/args/fake.gn")\n'
+        ('import("//build/args/bots/fake_builder_group/fake_args_bot.gn")\n'
          'use_goma = true\n'))
 
   def test_gen_args_file_twice(self):
@@ -653,6 +658,45 @@ class UnitTest(unittest.TestCase):
                files=files,
                ret=0)
 
+  def test_dedup_runtime_deps(self):
+    files = {
+        '/tmp/swarming_targets':
+        'base_unittests\n',
+        '/fake_src/testing/buildbot/gn_isolate_map.pyl':
+        ("{'base_unittests': {"
+         "  'label': '//base:base_unittests',"
+         "  'type': 'console_test_launcher',"
+         "}}\n"),
+    }
+
+    mbw = self.fake_mbw(files)
+
+    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
+      del cmd
+      del env
+      del buffer_output
+      del stdin
+      mbw.files['/fake_src/out/Default/base_unittests.runtime_deps'] = (
+          'base_unittests\n'
+          '../../filters/some_filter/\n'
+          '../../filters/some_filter/foo\n'
+          '../../filters/another_filter/hoo\n')
+      return 0, '', ''
+
+    mbw.Call = fake_call
+
+    self.check([
+        'gen', '-c', 'debug_goma', '--swarming-targets-file',
+        '/tmp/swarming_targets', '//out/Default'
+    ],
+               mbw=mbw,
+               ret=0)
+    self.assertIn('/fake_src/out/Default/base_unittests.isolate', mbw.files)
+    files = mbw.files.get('/fake_src/out/Default/base_unittests.isolate')
+    self.assertIn('../../filters/some_filter', files)
+    self.assertNotIn('../../filters/some_filter/foo', files)
+    self.assertIn('../../filters/another_filter/hoo', files)
+
   def test_isolate_dir(self):
     files = {
         '/fake_src/out/Default/toolchain.ninja':
@@ -810,9 +854,11 @@ class UnitTest(unittest.TestCase):
                     'use_goma = true\n'))
 
   def test_lookup_goma_dir_expansion(self):
-    self.check(['lookup', '-c', 'rel_bot', '-g', '/foo'], ret=0,
+    self.check(['lookup', '-c', 'rel_bot', '-g', '/foo'],
+               ret=0,
                out=('\n'
                     'Writing """\\\n'
+                    'dcheck_always_on = false\n'
                     'enable_doom_melon = true\n'
                     'goma_dir = "/foo"\n'
                     'is_debug = false\n'
@@ -862,10 +908,14 @@ class UnitTest(unittest.TestCase):
           'enable_antidoom_banana = true\n'
         )
     }
-    self.check(['lookup', '-m', 'fake_builder_group', '-b', 'fake_args_file',
-                '--recursive'], files=files, ret=0,
-               out=('enable_antidoom_banana = true\n'
-                    'enable_doom_melon = true\n'
+    self.check([
+        'lookup', '-m', 'fake_builder_group', '-b', 'fake_args_file',
+        '--recursive'
+    ],
+               files=files,
+               ret=0,
+               out=('dcheck_always_on = false\n'
+                    'is_debug = false\n'
                     'use_goma = true\n'))
 
   def test_train(self):

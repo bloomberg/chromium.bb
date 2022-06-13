@@ -75,7 +75,8 @@ InterpolatingLayoutManager::GetInterpolation(
         << " but there is no smaller layout to interpolate with.";
     result.second = (--match)->second;
     result.percent_second =
-        float{first_span.end() - bound.value()} / first_span.length();
+        static_cast<float>(first_span.end() - bound.value()) /
+        first_span.length();
   }
 
   return result;
@@ -163,7 +164,8 @@ int InterpolatingLayoutManager::GetPreferredHeightForWidth(
 const views::LayoutManagerBase* InterpolatingLayoutManager::GetDefaultLayout()
     const {
   DCHECK(!embedded_layouts_.empty());
-  return default_layout_ ? default_layout_ : embedded_layouts_.rbegin()->second;
+  return default_layout_ ? default_layout_.get()
+                         : embedded_layouts_.rbegin()->second;
 }
 
 const views::LayoutManagerBase* InterpolatingLayoutManager::GetSmallestLayout()

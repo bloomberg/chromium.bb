@@ -29,7 +29,7 @@ DnsResolveFunction::~DnsResolveFunction() {}
 
 ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
+  std::unique_ptr<Resolve::Params> params(Resolve::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Yes, we are passing zero as the port. There are some interesting but not
@@ -37,7 +37,7 @@ ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
   // hostname you'd like to resolve, even though it doesn't use that value in
   // determining its answer.
   net::HostPortPair host_port_pair(params->hostname, 0);
-  url::Origin origin = url::Origin::Create(extension_->url());
+  url::Origin origin = extension_->origin();
   browser_context()
       ->GetDefaultStoragePartition()
       ->GetNetworkContext()

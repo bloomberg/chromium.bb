@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/connection.h"
@@ -24,6 +23,10 @@ class PPAPI_PROXY_EXPORT PDFResource
       public thunk::PPB_PDF_API {
  public:
   PDFResource(Connection connection, PP_Instance instance);
+
+  PDFResource(const PDFResource&) = delete;
+  PDFResource& operator=(const PDFResource&) = delete;
+
   ~PDFResource() override;
 
   // For unittesting with a given locale.
@@ -74,8 +77,6 @@ class PPAPI_PROXY_EXPORT PDFResource
 
  private:
   std::string locale_;
-
-  DISALLOW_COPY_AND_ASSIGN(PDFResource);
 };
 
 }  // namespace proxy

@@ -20,8 +20,10 @@ package perfetto.protos;
 
 import "protos/perfetto/metrics/android/batt_metric.proto";
 import "protos/perfetto/metrics/android/cpu_metric.proto";
+import "protos/perfetto/metrics/android/camera_metric.proto";
 import "protos/perfetto/metrics/android/display_metrics.proto";
 import "protos/perfetto/metrics/android/dma_heap_metric.proto";
+import "protos/perfetto/metrics/android/dvfs_metric.proto";
 import "protos/perfetto/metrics/android/fastrpc_metric.proto";
 import "protos/perfetto/metrics/android/g2d_metric.proto";
 import "protos/perfetto/metrics/android/gpu_metric.proto";
@@ -35,13 +37,18 @@ import "protos/perfetto/metrics/android/lmk_metric.proto";
 import "protos/perfetto/metrics/android/lmk_reason_metric.proto";
 import "protos/perfetto/metrics/android/mem_metric.proto";
 import "protos/perfetto/metrics/android/mem_unagg_metric.proto";
+import "protos/perfetto/metrics/android/multiuser_metric.proto";
+import "protos/perfetto/metrics/android/network_metric.proto";
 import "protos/perfetto/metrics/android/package_list.proto";
 import "protos/perfetto/metrics/android/powrails_metric.proto";
+import "protos/perfetto/metrics/android/profiler_smaps.proto";
+import "protos/perfetto/metrics/android/simpleperf.proto";
 import "protos/perfetto/metrics/android/startup_metric.proto";
 import "protos/perfetto/metrics/android/surfaceflinger.proto";
 import "protos/perfetto/metrics/android/sysui_cuj_metrics.proto";
 import "protos/perfetto/metrics/android/task_names.proto";
 import "protos/perfetto/metrics/android/thread_time_in_state_metric.proto";
+import "protos/perfetto/metrics/android/trace_quality.proto";
 import "protos/perfetto/metrics/android/unsymbolized_frames.proto";
 
 // Trace processor metadata
@@ -88,7 +95,7 @@ message TraceAnalysisStats {
 
 // Root message for all Perfetto-based metrics.
 //
-// Next id: 34
+// Next id: 41
 message TraceMetrics {
   reserved 4, 10, 13, 14, 16, 19;
 
@@ -171,6 +178,27 @@ message TraceMetrics {
 
   // Dmabuf heap metrics.
   optional AndroidDmaHeapMetric android_dma_heap = 32;
+
+  // Metric to verify the quality of the trace.
+  optional AndroidTraceQualityMetric android_trace_quality = 34;
+
+  // Profiler smaps
+  optional ProfilerSmaps profiler_smaps = 35;
+
+  // Multiuser - metrics for switching users.
+  optional AndroidMultiuserMetric android_multiuser = 36;
+
+  // Metrics related to simpleperf tool
+  optional AndroidSimpleperfMetric android_simpleperf = 37;
+
+  // Metrics for the Camera team.
+  optional AndroidCameraMetric android_camera = 38;
+
+  // Metrics for dynamic voltage and frequency scaling.
+  optional AndroidDvfsMetric android_dvfs = 39;
+
+  // Metrics for network performance.
+  optional AndroidNetworkMetric android_netperf = 40;
 
   // Demo extensions.
   extensions 450 to 499;

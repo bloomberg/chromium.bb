@@ -22,7 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 
-#if defined(OS_ANDROID) || defined(ARCH_CPU_32_BITS)
+#if defined(OS_ANDROID) || defined(ARCH_CPU_32_BITS) || \
+    (defined(OS_FUCHSIA) && defined(ARCH_CPU_ARM64))
 // Some tests allocate many GB of memory, which can cause issues on Android and
 // address-space exhaustion for any 32-bit process.
 #define MEMORY_CONSTRAINED
@@ -33,7 +34,7 @@ namespace {
 
 // Change kTimeLimit to something higher if you need more time to capture a
 // trace.
-constexpr base::TimeDelta kTimeLimit = base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kTimeLimit = base::Seconds(2);
 constexpr int kWarmupRuns = 10000;
 constexpr int kTimeCheckInterval = 100000;
 constexpr size_t kAllocSize = 40;
@@ -93,8 +94,10 @@ class PartitionAllocator : public Allocator {
   ThreadSafePartitionRoot alloc_{{PartitionOptions::AlignedAlloc::kDisallowed,
                                   PartitionOptions::ThreadCache::kDisabled,
                                   PartitionOptions::Quarantine::kDisallowed,
-                                  PartitionOptions::Cookies::kAllowed,
-                                  PartitionOptions::RefCount::kDisallowed}};
+                                  PartitionOptions::Cookie::kAllowed,
+                                  PartitionOptions::BackupRefPtr::kDisabled,
+                                  PartitionOptions::UseConfigurablePool::kNo,
+                                  PartitionOptions::LazyCommit::kEnabled}};
 };
 
 // Only one partition with a thread cache.
@@ -107,8 +110,10 @@ class PartitionAllocatorWithThreadCache : public Allocator {
           {PartitionOptions::AlignedAlloc::kDisallowed,
            PartitionOptions::ThreadCache::kEnabled,
            PartitionOptions::Quarantine::kDisallowed,
-           PartitionOptions::Cookies::kAllowed,
-           PartitionOptions::RefCount::kDisallowed});
+           PartitionOptions::Cookie::kAllowed,
+           PartitionOptions::BackupRefPtr::kDisabled,
+           PartitionOptions::UseConfigurablePool::kNo,
+           PartitionOptions::LazyCommit::kEnabled});
     }
     internal::ThreadCacheRegistry::Instance().PurgeAll();
   }
@@ -369,62 +374,59 @@ void RunTest(int thread_count,
              min_laps_per_second);
 }
 
-class MemoryAllocationPerfTest
+class PartitionAllocMemoryAllocationPerfTest
     : public testing::TestWithParam<std::tuple<int, AllocatorType>> {};
 
 // Only one partition with a thread cache: cannot use the thread cache when
 // PartitionAlloc is malloc().
 INSTANTIATE_TEST_SUITE_P(
     ,
-    MemoryAllocationPerfTest,
+    PartitionAllocMemoryAllocationPerfTest,
     ::testing::Combine(
         ::testing::Values(1, 2, 3, 4),
         ::testing::Values(AllocatorType::kSystem,
-                          AllocatorType::kPartitionAlloc
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-                          ,
-                          AllocatorType::kPartitionAllocWithThreadCache
-#endif
-                          )));
+                          AllocatorType::kPartitionAlloc,
+                          AllocatorType::kPartitionAllocWithThreadCache)));
 
 // This test (and the other one below) allocates a large amount of memory, which
 // can cause issues on Android.
 #if !defined(MEMORY_CONSTRAINED)
-TEST_P(MemoryAllocationPerfTest, SingleBucket) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest, SingleBucket) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), SingleBucket, nullptr,
           "SingleBucket");
 }
 #endif  // defined(MEMORY_CONSTRAINED)
 
-TEST_P(MemoryAllocationPerfTest, SingleBucketWithFree) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest, SingleBucketWithFree) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), SingleBucketWithFree,
           nullptr, "SingleBucketWithFree");
 }
 
 #if !defined(MEMORY_CONSTRAINED)
-TEST_P(MemoryAllocationPerfTest, MultiBucket) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest, MultiBucket) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), MultiBucket, nullptr,
           "MultiBucket");
 }
 #endif  // defined(MEMORY_CONSTRAINED)
 
-TEST_P(MemoryAllocationPerfTest, MultiBucketWithFree) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest, MultiBucketWithFree) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), MultiBucketWithFree,
           nullptr, "MultiBucketWithFree");
 }
 
-TEST_P(MemoryAllocationPerfTest, DirectMapped) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest, DirectMapped) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), DirectMapped, nullptr,
           "DirectMapped");
 }
 
 #if !defined(MEMORY_CONSTRAINED)
-TEST_P(MemoryAllocationPerfTest, DISABLED_MultiBucketWithNoisyNeighbor) {
+TEST_P(PartitionAllocMemoryAllocationPerfTest,
+       DISABLED_MultiBucketWithNoisyNeighbor) {
   auto params = GetParam();
   RunTest(std::get<0>(params), std::get<1>(params), MultiBucket, DirectMapped,
           "MultiBucketWithNoisyNeighbor");

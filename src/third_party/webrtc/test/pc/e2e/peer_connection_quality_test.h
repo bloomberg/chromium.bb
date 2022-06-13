@@ -27,7 +27,6 @@
 #include "rtc_base/thread.h"
 #include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/clock.h"
-#include "test/field_trial.h"
 #include "test/pc/e2e/analyzer/video/single_process_encoded_image_data_injector.h"
 #include "test/pc/e2e/analyzer/video/video_quality_analyzer_injection_helper.h"
 #include "test/pc/e2e/analyzer_helper.h"
@@ -69,9 +68,9 @@ class PeerConnectionE2EQualityTest
   void AddQualityMetricsReporter(std::unique_ptr<QualityMetricsReporter>
                                      quality_metrics_reporter) override;
 
-  void AddPeer(rtc::Thread* network_thread,
-               rtc::NetworkManager* network_manager,
-               rtc::FunctionView<void(PeerConfigurer*)> configurer) override;
+  PeerHandle* AddPeer(
+      const PeerNetworkDependencies& network_dependencies,
+      rtc::FunctionView<void(PeerConfigurer*)> configurer) override;
   void Run(RunParams run_params) override;
 
   TimeDelta GetRealTestDuration() const override {
@@ -81,9 +80,14 @@ class PeerConnectionE2EQualityTest
   }
 
  private:
-  // For some functionality some field trials have to be enabled, so we will
-  // enable them here.
-  void SetupRequiredFieldTrials(const RunParams& run_params);
+  class PeerHandleImpl : public PeerHandle {
+   public:
+    ~PeerHandleImpl() override = default;
+  };
+
+  // For some functionality some field trials have to be enabled, they will be
+  // enabled in Run().
+  std::string GetFieldTrials(const RunParams& run_params);
   void OnTrackCallback(absl::string_view peer_name,
                        rtc::scoped_refptr<RtpTransceiverInterface> transceiver,
                        std::vector<VideoConfig> remote_video_configs);
@@ -110,14 +114,12 @@ class PeerConnectionE2EQualityTest
   std::unique_ptr<VideoQualityAnalyzerInjectionHelper>
       video_quality_analyzer_injection_helper_;
   std::unique_ptr<MediaHelper> media_helper_;
-  std::unique_ptr<SingleProcessEncodedImageDataInjector>
-      encoded_image_id_controller_;
+  std::unique_ptr<EncodedImageDataPropagator> encoded_image_data_propagator_;
   std::unique_ptr<AudioQualityAnalyzerInterface> audio_quality_analyzer_;
   std::unique_ptr<TestActivitiesExecutor> executor_;
 
   std::vector<std::unique_ptr<PeerConfigurerImpl>> peer_configurations_;
-
-  std::unique_ptr<test::ScopedFieldTrials> override_field_trials_ = nullptr;
+  std::vector<PeerHandleImpl> peer_handles_;
 
   std::unique_ptr<TestPeer> alice_;
   std::unique_ptr<TestPeer> bob_;

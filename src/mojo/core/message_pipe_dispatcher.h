@@ -10,7 +10,6 @@
 #include <memory>
 #include <queue>
 
-#include "base/macros.h"
 #include "mojo/core/atomic_flag.h"
 #include "mojo/core/dispatcher.h"
 #include "mojo/core/ports/port_ref.h"
@@ -39,6 +38,9 @@ class MessagePipeDispatcher : public Dispatcher {
                         const ports::PortRef& port,
                         uint64_t pipe_id,
                         int endpoint);
+
+  MessagePipeDispatcher(const MessagePipeDispatcher&) = delete;
+  MessagePipeDispatcher& operator=(const MessagePipeDispatcher&) = delete;
 
   // Fuses this pipe with |other|. Returns |true| on success or |false| on
   // failure. Regardless of the return value, both dispatchers are closed by
@@ -89,6 +91,8 @@ class MessagePipeDispatcher : public Dispatcher {
   void OnPortStatusChanged();
 
   // These are safe to access from any thread without locking.
+  // `node_controller_` is not a raw_ptr<...> for performance reasons (based on
+  // analysis of sampling profiler data).
   NodeController* const node_controller_;
   const ports::PortRef port_;
   const uint64_t pipe_id_;
@@ -108,8 +112,6 @@ class MessagePipeDispatcher : public Dispatcher {
   absl::optional<uint64_t> receive_queue_length_limit_;
   absl::optional<uint64_t> receive_queue_memory_size_limit_;
   absl::optional<uint64_t> unread_message_count_limit_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);
 };
 
 }  // namespace core

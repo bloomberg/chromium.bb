@@ -108,8 +108,8 @@ TEST_F(AcceleratedStaticBitmapImageTest, CopyToTextureSynchronization) {
           sync_token2.GetConstData(),
           sync_token2.GetConstData() + sizeof(gpu::SyncToken)));
 
-  IntPoint dest_point(0, 0);
-  IntRect source_sub_rectangle(0, 0, 10, 10);
+  gfx::Point dest_point(0, 0);
+  gfx::Rect source_sub_rectangle(0, 0, 10, 10);
   ASSERT_TRUE(bitmap->CopyToTexture(
       &destination_gl, GL_TEXTURE_2D, 1 /*dest_texture_id*/,
       0 /*dest_texture_level*/, false /*unpack_premultiply_alpha*/,

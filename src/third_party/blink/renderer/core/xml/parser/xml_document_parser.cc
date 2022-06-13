@@ -37,7 +37,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/cdata_section.h"
 #include "third_party/blink/renderer/core/dom/comment.h"
@@ -65,7 +65,7 @@
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser_scope.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_parser_input.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -707,8 +707,8 @@ scoped_refptr<XMLParserContext> XMLParserContext::CreateMemoryParser(
   InitializeLibXMLIfNecessary();
 
   // appendFragmentSource() checks that the length doesn't overflow an int.
-  xmlParserCtxtPtr parser =
-      xmlCreateMemoryParserCtxt(chunk.c_str(), chunk.length());
+  xmlParserCtxtPtr parser = xmlCreateMemoryParserCtxt(
+      chunk.c_str(), base::checked_cast<int>(chunk.length()));
 
   if (!parser)
     return nullptr;
@@ -981,10 +981,13 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
 
   AtomicString adjusted_uri = uri;
   if (parsing_fragment_ && adjusted_uri.IsNull()) {
-    if (!prefix.IsNull())
-      adjusted_uri = prefix_to_namespace_map_.at(prefix);
-    else
+    if (!prefix.IsNull()) {
+      auto it = prefix_to_namespace_map_.find(prefix);
+      if (it != prefix_to_namespace_map_.end())
+        adjusted_uri = it->value;
+    } else {
       adjusted_uri = default_namespace_uri_;
+    }
   }
 
   bool is_first_element = !saw_first_element_;

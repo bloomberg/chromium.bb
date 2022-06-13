@@ -6,14 +6,15 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
@@ -23,6 +24,7 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_parser.h"
 #include "components/update_client/update_checker.h"
+#include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -39,7 +41,6 @@ UpdateContext::UpdateContext(
     PersistedData* persisted_data)
     : config(config),
       is_foreground(is_foreground),
-      enabled_component_updates(config->EnabledComponentUpdates()),
       ids(ids),
       crx_state_change_callback(crx_state_change_callback),
       notify_observers_callback(notify_observers_callback),
@@ -161,7 +162,6 @@ void UpdateEngine::DoUpdateCheck(scoped_refptr<UpdateContext> update_context) {
       update_context->session_id,
       update_context->components_to_check_for_updates,
       update_context->components, config_->ExtraRequestParams(),
-      update_context->enabled_component_updates,
       base::BindOnce(&UpdateEngine::UpdateCheckResultsAvailable, this,
                      update_context));
 }
@@ -185,8 +185,7 @@ void UpdateEngine::UpdateCheckResultsAvailable(
       std::min(update_context->retry_after_sec, kMaxRetryAfterSec);
   if (throttle_sec >= 0) {
     throttle_updates_until_ =
-        throttle_sec ? base::TimeTicks::Now() +
-                           base::TimeDelta::FromSeconds(throttle_sec)
+        throttle_sec ? base::TimeTicks::Now() + base::Seconds(throttle_sec)
                      : base::TimeTicks();
   }
 
@@ -219,7 +218,7 @@ void UpdateEngine::UpdateCheckResultsAvailable(
     const auto& it = id_to_result.find(id);
     if (it != id_to_result.end()) {
       const auto result = it->second;
-      const auto error = [](const std::string& status) {
+      const auto pair = [](const std::string& status) {
         // First, handle app status literals which can be folded down as an
         // updatecheck status
         if (status == "error-unknownApplication")
@@ -235,8 +234,8 @@ void UpdateEngine::UpdateCheckResultsAvailable(
         // the literals above, then this must be a success an not a parse error.
         return std::make_pair(ErrorCategory::kNone, ProtocolError::NONE);
       }(result.status);
-      component->SetUpdateCheckResult(result, error.first,
-                                      static_cast<int>(error.second));
+      component->SetUpdateCheckResult(result, pair.first,
+                                      static_cast<int>(pair.second));
     } else {
       component->SetUpdateCheckResult(
           absl::nullopt, ErrorCategory::kUpdateCheck,
@@ -321,20 +320,22 @@ void UpdateEngine::HandleComponentComplete(
   const auto& component = update_context->components.at(id);
   DCHECK(component);
 
+  base::OnceClosure callback =
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context);
   if (component->IsHandled()) {
     update_context->next_update_delay = component->GetUpdateDuration();
-
-    if (!component->events().empty()) {
-      ping_manager_->SendPing(*component,
-                              base::BindOnce([](int, const std::string&) {}));
-    }
-
     queue.pop();
+    if (!component->events().empty()) {
+      ping_manager_->SendPing(
+          *component, *metadata_,
+          base::BindOnce([](base::OnceClosure callback, int,
+                            const std::string&) { std::move(callback).Run(); },
+                         std::move(callback)));
+      return;
+    }
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void UpdateEngine::UpdateComplete(scoped_refptr<UpdateContext> update_context,
@@ -373,15 +374,16 @@ bool UpdateEngine::IsThrottled(bool is_foreground) const {
 
   // Throttle the calls in the interval (t - 1 day, t) to limit the effect of
   // unset clocks or clock drift.
-  return throttle_updates_until_ - base::TimeDelta::FromDays(1) < now &&
+  return throttle_updates_until_ - base::Days(1) < now &&
          now < throttle_updates_until_;
 }
 
-void UpdateEngine::SendUninstallPing(const std::string& id,
-                                     const base::Version& version,
+void UpdateEngine::SendUninstallPing(const CrxComponent& crx_component,
                                      int reason,
                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::string& id = crx_component.app_id;
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
@@ -399,7 +401,7 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
   DCHECK_EQ(1u, update_context->components.count(id));
   const auto& component = update_context->components.at(id);
 
-  component->Uninstall(version, reason);
+  component->Uninstall(crx_component, reason);
 
   update_context->component_queue.push(id);
 
@@ -408,10 +410,11 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
       base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
-void UpdateEngine::SendRegistrationPing(const std::string& id,
-                                        const base::Version& version,
+void UpdateEngine::SendRegistrationPing(const CrxComponent& crx_component,
                                         Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  const std::string& id = crx_component.app_id;
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
@@ -429,7 +432,7 @@ void UpdateEngine::SendRegistrationPing(const std::string& id,
   DCHECK_EQ(1u, update_context->components.count(id));
   const auto& component = update_context->components.at(id);
 
-  component->Registration(version);
+  component->Registration(crx_component);
 
   update_context->component_queue.push(id);
 

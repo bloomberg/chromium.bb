@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
@@ -57,6 +57,10 @@ const unsigned char kRequestData[] = {
 class TestClientStub : public protocol::ClientStub {
  public:
   TestClientStub();
+
+  TestClientStub(const TestClientStub&) = delete;
+  TestClientStub& operator=(const TestClientStub&) = delete;
+
   ~TestClientStub() override;
 
   // protocol::ClientStub implementation.
@@ -83,8 +87,6 @@ class TestClientStub : public protocol::ClientStub {
  private:
   protocol::ExtensionMessage message_;
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClientStub);
 };
 
 TestClientStub::TestClientStub() : run_loop_(new base::RunLoop) {}
@@ -137,6 +139,10 @@ void TestClientStub::CheckHostDataMessage(int id, const std::string& data) {
 class TestClientSessionDetails : public ClientSessionDetails {
  public:
   TestClientSessionDetails();
+
+  TestClientSessionDetails(const TestClientSessionDetails&) = delete;
+  TestClientSessionDetails& operator=(const TestClientSessionDetails&) = delete;
+
   ~TestClientSessionDetails() override;
 
   // ClientSessionDetails interface.
@@ -147,8 +153,6 @@ class TestClientSessionDetails : public ClientSessionDetails {
 
  private:
   uint32_t desktop_session_id_ = UINT32_MAX;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClientSessionDetails);
 };
 
 TestClientSessionDetails::TestClientSessionDetails() = default;
@@ -158,6 +162,12 @@ TestClientSessionDetails::~TestClientSessionDetails() = default;
 class SecurityKeyExtensionSessionTest : public testing::Test {
  public:
   SecurityKeyExtensionSessionTest();
+
+  SecurityKeyExtensionSessionTest(const SecurityKeyExtensionSessionTest&) =
+      delete;
+  SecurityKeyExtensionSessionTest& operator=(
+      const SecurityKeyExtensionSessionTest&) = delete;
+
   ~SecurityKeyExtensionSessionTest() override;
 
   void WaitForAndVerifyHostMessage();
@@ -171,13 +181,10 @@ class SecurityKeyExtensionSessionTest : public testing::Test {
   // Object under test.
   std::unique_ptr<SecurityKeyExtensionSession> security_key_extension_session_;
 
-  MockSecurityKeyAuthHandler* mock_security_key_auth_handler_ = nullptr;
+  raw_ptr<MockSecurityKeyAuthHandler> mock_security_key_auth_handler_ = nullptr;
 
   TestClientStub client_stub_;
   TestClientSessionDetails client_details_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityKeyExtensionSessionTest);
 };
 
 SecurityKeyExtensionSessionTest::SecurityKeyExtensionSessionTest()
@@ -190,19 +197,18 @@ SecurityKeyExtensionSessionTest::SecurityKeyExtensionSessionTest()
   // once |security_key_extension_session_| is destroyed.
   mock_security_key_auth_handler_ = new MockSecurityKeyAuthHandler();
   security_key_extension_session_->SetSecurityKeyAuthHandlerForTesting(
-      base::WrapUnique(mock_security_key_auth_handler_));
+      base::WrapUnique(mock_security_key_auth_handler_.get()));
 }
 
 SecurityKeyExtensionSessionTest::~SecurityKeyExtensionSessionTest() = default;
 
 void SecurityKeyExtensionSessionTest::WaitForAndVerifyHostMessage() {
-  client_stub_.WaitForDeliverHostMessage(
-      base::TimeDelta::FromMilliseconds(500));
+  client_stub_.WaitForDeliverHostMessage(base::Milliseconds(500));
   base::ListValue expected_data;
 
   // Skip first four bytes.
   for (size_t i = 4; i < sizeof(kRequestData); ++i) {
-    expected_data.AppendInteger(kRequestData[i]);
+    expected_data.Append(kRequestData[i]);
   }
 
   std::string expected_data_json;
@@ -455,8 +461,7 @@ TEST_F(SecurityKeyExtensionSessionTest, SendMessageToClient_ValidData) {
   // Inject data into SendMessageCallback to simulate a security key request.
   mock_security_key_auth_handler_->GetSendMessageCallback().Run(42, "test_msg");
 
-  client_stub_.WaitForDeliverHostMessage(
-      base::TimeDelta::FromMilliseconds(500));
+  client_stub_.WaitForDeliverHostMessage(base::Milliseconds(500));
 
   // Expects a JSON array of the ASCII character codes for "test_msg".
   client_stub_.CheckHostDataMessage(42, "[116,101,115,116,95,109,115,103]");

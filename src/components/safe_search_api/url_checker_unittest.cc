@@ -12,8 +12,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/safe_search_api/fake_url_checker_client.h"
@@ -89,7 +89,7 @@ class SafeSearchURLCheckerTest : public testing::Test {
   }
 
   size_t next_url_;
-  FakeURLCheckerClient* fake_client_;
+  raw_ptr<FakeURLCheckerClient> fake_client_;
   std::unique_ptr<URLChecker> checker_;
   base::test::SingleThreadTaskEnvironment task_environment_;
 };
@@ -152,7 +152,7 @@ TEST_F(SafeSearchURLCheckerTest, CoalesceRequestsToSameURL) {
 TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
   GURL url(GetNewURL());
 
-  checker_->SetCacheTimeoutForTesting(base::TimeDelta::FromSeconds(0));
+  checker_->SetCacheTimeoutForTesting(base::Seconds(0));
 
   EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
   ASSERT_FALSE(SendResponse(url, Classification::SAFE, false));

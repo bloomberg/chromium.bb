@@ -35,6 +35,7 @@
 #include "libavutil/imgutils.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "encode.h"
 #include "internal.h"
 #include "lzw.h"
 #include "gif.h"
@@ -383,13 +384,12 @@ static int gif_image_write_image(AVCodecContext *avctx,
     bytestream_put_le16(bytestream, height);
 
     if (palette || !s->use_global_palette) {
-        const uint32_t *pal = palette ? palette : s->palette;
         unsigned pow2_count = av_log2(shrunk_palette_count - 1);
         unsigned i;
 
         bytestream_put_byte(bytestream, 1<<7 | pow2_count); /* flags */
         for (i = 0; i < 1 << (pow2_count + 1); i++) {
-            const uint32_t v = pal[i];
+            const uint32_t v = shrunk_palette[i];
             bytestream_put_be24(bytestream, v);
         }
     } else {
@@ -481,7 +481,7 @@ static int gif_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     const uint32_t *palette = NULL;
     int ret;
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, avctx->width*avctx->height*7/5 + AV_INPUT_BUFFER_MIN_SIZE, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, pkt, avctx->width*avctx->height*7/5 + AV_INPUT_BUFFER_MIN_SIZE)) < 0)
         return ret;
     outbuf_ptr = pkt->data;
     end        = pkt->data + pkt->size;
@@ -552,7 +552,7 @@ static const AVClass gif_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_gif_encoder = {
+const AVCodec ff_gif_encoder = {
     .name           = "gif",
     .long_name      = NULL_IF_CONFIG_SMALL("GIF (Graphics Interchange Format)"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -566,5 +566,5 @@ AVCodec ff_gif_encoder = {
         AV_PIX_FMT_GRAY8, AV_PIX_FMT_PAL8, AV_PIX_FMT_NONE
     },
     .priv_class     = &gif_class,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

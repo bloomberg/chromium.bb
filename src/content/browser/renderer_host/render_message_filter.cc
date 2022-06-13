@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -174,12 +173,8 @@ void RenderMessageFilter::OnMediaLogRecords(
 }
 
 void RenderMessageFilter::HasGpuProcess(HasGpuProcessCallback callback) {
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(GetHasGpuProcess, std::move(callback)));
-    return;
-  }
-  GpuProcessHost::GetHasGpuProcess(std::move(callback));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(GetHasGpuProcess, std::move(callback)));
 }
 
 }  // namespace content

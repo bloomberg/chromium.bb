@@ -52,14 +52,15 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createTabStateFile;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
-import static org.chromium.chrome.test.util.ViewUtils.waitForView;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -71,7 +72,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
-import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -93,7 +93,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -144,10 +143,6 @@ public class TabGridDialogTest {
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
 
-    @Rule
-    public IntentsTestRule<ChromeActivity> mShareActivityTestRule =
-            new IntentsTestRule<>(ChromeActivity.class, false, false);
-
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
         ChromeNightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
@@ -161,6 +156,7 @@ public class TabGridDialogTest {
 
     @Before
     public void setUp() {
+        Intents.init();
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(true);
         mActivityTestRule.startMainActivityOnBlankPage();
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
@@ -173,10 +169,12 @@ public class TabGridDialogTest {
     public void tearDown() {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(null);
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
+        Intents.release();
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testBackPressCloseDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -211,6 +209,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testClickScrimCloseDialog() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -305,7 +304,7 @@ public class TabGridDialogTest {
 
         // Add 400px top margin to the recyclerView.
         RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
-        float tabGridCardPadding = cta.getResources().getDimension(R.dimen.tab_list_card_padding);
+        float tabGridCardPadding = TabUiThemeProvider.getTabCardPaddingDimension(cta);
         int deltaTopMargin = 400;
         ViewGroup.MarginLayoutParams params =
                 (ViewGroup.MarginLayoutParams) recyclerView.getLayoutParams();
@@ -315,7 +314,7 @@ public class TabGridDialogTest {
 
         // Calculate expected values of animation source rect.
         mHasReceivedSourceRect = false;
-        View parentView = cta.getCompositorViewHolder();
+        View parentView = cta.getCompositorViewHolderForTesting();
         Rect parentRect = new Rect();
         parentView.getGlobalVisibleRect(parentRect);
         Rect sourceRect = new Rect();
@@ -340,7 +339,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1121363")
+    @DisabledTest(message = "crbug.com/1231024 and https://crbug.com/1121363")
     public void testUndoClosureInDialog_DialogUndoBar() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -369,8 +368,12 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            "force-fieldtrial-params=Study.Group:enable_tab_group_sharing/true"})
     public void testDialogToolbarMenuShareGroup() {
+        // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
         enterTabSwitcher(cta);
@@ -393,7 +396,9 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+        "force-fieldtrial-params=Study.Group:enable_tab_group_sharing/true"})
     public void testDialogToolbarMenuShareGroup_WithSharingHub() {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -455,6 +460,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1206781")
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testSelectionEditorUngroup() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -541,7 +547,7 @@ public class TabGridDialogTest {
     public void testSelectionEditorPosition() {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        View parentView = cta.getCompositorViewHolder();
+        View parentView = cta.getCompositorViewHolderForTesting();
         createTabs(cta, false, 3);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 3);
@@ -596,6 +602,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -634,6 +641,7 @@ public class TabGridDialogTest {
     // clang-format off
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
+    @DisabledTest(message = "crbug.com/1231024")
     public void testTabGroupNaming_KeyboardVisibility() throws ExecutionException {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -661,6 +669,8 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisableIf.
+    Build(sdk_is_greater_than = VERSION_CODES.N_MR1, message = "https://crbug.com/1124336")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1124336")
     public void testDialogInitialShowFromStrip() throws Exception {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -978,6 +988,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1231024")
     public void testCreateTabInDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -1115,7 +1126,7 @@ public class TabGridDialogTest {
         CriteriaHelper.pollUiThread(()
                                             -> isEnabled
                         == KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                                cta, cta.getCompositorViewHolder()));
+                                cta, cta.getCompositorViewHolderForTesting()));
     }
 
     private void openDialogToolbarMenuAndVerify(ChromeTabbedActivity cta) {
@@ -1129,8 +1140,10 @@ public class TabGridDialogTest {
                     ListView listView = (ListView) v;
                     verifyTabGridDialogToolbarMenuItem(listView, 0,
                             cta.getString(R.string.tab_grid_dialog_toolbar_remove_from_group));
-                    verifyTabGridDialogToolbarMenuItem(listView, 1,
-                            cta.getString(R.string.tab_grid_dialog_toolbar_share_group));
+                    if (TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING.getValue()) {
+                        verifyTabGridDialogToolbarMenuItem(listView, 1,
+                                cta.getString(R.string.tab_grid_dialog_toolbar_share_group));
+                    }
                     if (TabUiFeatureUtilities.isLaunchPolishEnabled()) {
                         assertEquals(3, listView.getCount());
                         verifyTabGridDialogToolbarMenuItem(listView, 2,
@@ -1154,12 +1167,10 @@ public class TabGridDialogTest {
     }
 
     private void triggerShareGroupAndVerify(ChromeTabbedActivity cta) {
-        Intents.init();
         selectTabGridDialogToolbarMenuItem(cta, "Share group");
         intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
                 hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/plain"))))));
-        Intents.release();
     }
 
     private void waitForDialogHidingAnimation(ChromeTabbedActivity cta) {
@@ -1208,7 +1219,7 @@ public class TabGridDialogTest {
         int largeMargin = (int) cta.getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
         int topMargin = isPortrait ? largeMargin : smallMargin;
         int sideMargin = isPortrait ? smallMargin : largeMargin;
-        View parentView = cta.getCompositorViewHolder();
+        View parentView = cta.getCompositorViewHolderForTesting();
         Rect parentRect = new Rect();
         parentView.getGlobalVisibleRect(parentRect);
 
@@ -1238,7 +1249,7 @@ public class TabGridDialogTest {
         // Wait until the keyboard is hidden to make sure the edit has taken effect.
         KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
         CriteriaHelper.pollUiThread(
-                () -> !delegate.isKeyboardShowing(cta, cta.getCompositorViewHolder()));
+                () -> !delegate.isKeyboardShowing(cta, cta.getCompositorViewHolderForTesting()));
     }
 
     private void verifyFirstCardTitle(String title) {
@@ -1273,7 +1284,7 @@ public class TabGridDialogTest {
         assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                                      : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
                 bottomControls.getImportantForAccessibility());
-        View compositorViewHolder = cta.getCompositorViewHolder();
+        View compositorViewHolder = cta.getCompositorViewHolderForTesting();
         assertEquals(isDialogShowing ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
                                      : IMPORTANT_FOR_ACCESSIBILITY_AUTO,
                 compositorViewHolder.getImportantForAccessibility());
@@ -1331,7 +1342,7 @@ public class TabGridDialogTest {
             View titleTextView = cta.findViewById(R.id.tab_group_toolbar).findViewById(R.id.title);
             KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
             boolean keyboardVisible =
-                    delegate.isKeyboardShowing(cta, cta.getCompositorViewHolder());
+                    delegate.isKeyboardShowing(cta, cta.getCompositorViewHolderForTesting());
             boolean isFocused = titleTextView.isFocused();
             return (!shouldFocus ^ isFocused) && (!shouldFocus ^ keyboardVisible);
         });

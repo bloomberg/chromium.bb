@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -262,7 +261,7 @@ void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame(
   snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
 }
 
-void BackgroundLoaderOffliner::RenderProcessGone(
+void BackgroundLoaderOffliner::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
   if (pending_request_) {
     SavePageRequest request(*pending_request_.get());
@@ -490,7 +489,7 @@ void BackgroundLoaderOffliner::ResetLoader() {
 void BackgroundLoaderOffliner::AttachObservers() {
   content::WebContents* contents = loader_->web_contents();
   content::WebContentsObserver::Observe(contents);
-  OfflinerUserData::AddToWebContents(contents, this);
+  OfflinerUserData::CreateForWebContents(contents, this);
 }
 
 void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
@@ -500,7 +499,7 @@ void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
   // Given the choice between int and double, we choose to implicitly convert to
   // a double since it maintains more precision (we can get a longer time in
   // milliseconds than we can with a 2 bit int, 53 bits vs 32).
-  signal_data_.SetDouble(signal_name, delay_so_far.InMillisecondsF());
+  signal_data_.SetDoubleKey(signal_name, delay_so_far.InMillisecondsF());
 }
 
 void BackgroundLoaderOffliner::RenovationsCompleted() {

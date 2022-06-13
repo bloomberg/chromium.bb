@@ -5,21 +5,17 @@
 import json
 import os
 import shutil
-import sys
 import tempfile
 import unittest
 
 from tracing.trace_data import trace_data
-if sys.version_info < (3,):
-  from tracing_build import merge_traces
+from tracing_build import merge_traces
 
 
 def _FakeDumpEvent(pid, tid):
   return {'ph': 'v', 'ts': 100, 'pid': pid, 'tid': tid, 'args': {'dumps': {}}}
 
 
-@unittest.skipIf(sys.version_info >= (3,),
-                 'py_vulcanize is not ported to python3')
 class MergeTracesTest(unittest.TestCase):
   def setUp(self):
     self.test_dir = tempfile.mkdtemp()
@@ -46,4 +42,4 @@ class MergeTracesTest(unittest.TestCase):
       events = json.load(f)['traceEvents']
     # Check that both dumps are found in the merged trace.
     dump_pids = [e['pid'] for e in events if e['ph'] == 'v']
-    self.assertEquals([1, 2], dump_pids)
+    self.assertEqual([1, 2], dump_pids)

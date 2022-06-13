@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "src/ast/access_control.h"
+#include "src/ast/access.h"
 #include "src/program_builder.h"
 #include "src/sem/storage_texture_type.h"
 
@@ -26,7 +26,13 @@ namespace ast {
 namespace intrinsic {
 namespace test {
 
-enum class TextureKind { kRegular, kDepth, kMultisampled, kStorage };
+enum class TextureKind {
+  kRegular,
+  kDepth,
+  kDepthMultisampled,
+  kMultisampled,
+  kStorage
+};
 enum class TextureDataType { kF32, kU32, kI32 };
 
 std::ostream& operator<<(std::ostream& out, const TextureKind& kind);
@@ -54,14 +60,29 @@ enum class ValidTextureOverload {
   kDimensionsDepthCubeLevel,
   kDimensionsDepthCubeArray,
   kDimensionsDepthCubeArrayLevel,
-  kDimensionsStorageRO1d,
-  kDimensionsStorageRO2d,
-  kDimensionsStorageRO2dArray,
-  kDimensionsStorageRO3d,
+  kDimensionsDepthMultisampled2d,
   kDimensionsStorageWO1d,
   kDimensionsStorageWO2d,
   kDimensionsStorageWO2dArray,
   kDimensionsStorageWO3d,
+  kGather2dF32,
+  kGather2dOffsetF32,
+  kGather2dArrayF32,
+  kGather2dArrayOffsetF32,
+  kGatherCubeF32,
+  kGatherCubeArrayF32,
+  kGatherDepth2dF32,
+  kGatherDepth2dOffsetF32,
+  kGatherDepth2dArrayF32,
+  kGatherDepth2dArrayOffsetF32,
+  kGatherDepthCubeF32,
+  kGatherDepthCubeArrayF32,
+  kGatherCompareDepth2dF32,
+  kGatherCompareDepth2dOffsetF32,
+  kGatherCompareDepth2dArrayF32,
+  kGatherCompareDepth2dArrayOffsetF32,
+  kGatherCompareDepthCubeF32,
+  kGatherCompareDepthCubeArrayF32,
   kNumLayers2dArray,
   kNumLayersCubeArray,
   kNumLayersDepth2dArray,
@@ -77,6 +98,7 @@ enum class ValidTextureOverload {
   kNumLevelsDepthCube,
   kNumLevelsDepthCubeArray,
   kNumSamplesMultisampled2d,
+  kNumSamplesDepthMultisampled2d,
   kSample1dF32,
   kSample2dF32,
   kSample2dOffsetF32,
@@ -128,6 +150,12 @@ enum class ValidTextureOverload {
   kSampleCompareDepth2dArrayOffsetF32,
   kSampleCompareDepthCubeF32,
   kSampleCompareDepthCubeArrayF32,
+  kSampleCompareLevelDepth2dF32,
+  kSampleCompareLevelDepth2dOffsetF32,
+  kSampleCompareLevelDepth2dArrayF32,
+  kSampleCompareLevelDepth2dArrayOffsetF32,
+  kSampleCompareLevelDepthCubeF32,
+  kSampleCompareLevelDepthCubeArrayF32,
   kLoad1dLevelF32,
   kLoad1dLevelU32,
   kLoad1dLevelI32,
@@ -145,30 +173,16 @@ enum class ValidTextureOverload {
   kLoadMultisampled2dI32,
   kLoadDepth2dLevelF32,
   kLoadDepth2dArrayLevelF32,
-  kLoadStorageRO1dRgba32float,  // Not permutated for all texel formats
-  kLoadStorageRO2dRgba8unorm,
-  kLoadStorageRO2dRgba8snorm,
-  kLoadStorageRO2dRgba8uint,
-  kLoadStorageRO2dRgba8sint,
-  kLoadStorageRO2dRgba16uint,
-  kLoadStorageRO2dRgba16sint,
-  kLoadStorageRO2dRgba16float,
-  kLoadStorageRO2dR32uint,
-  kLoadStorageRO2dR32sint,
-  kLoadStorageRO2dR32float,
-  kLoadStorageRO2dRg32uint,
-  kLoadStorageRO2dRg32sint,
-  kLoadStorageRO2dRg32float,
-  kLoadStorageRO2dRgba32uint,
-  kLoadStorageRO2dRgba32sint,
-  kLoadStorageRO2dRgba32float,
-  kLoadStorageRO2dArrayRgba32float,  // Not permutated for all texel formats
-  kLoadStorageRO3dRgba32float,       // Not permutated for all texel formats
-  kStoreWO1dRgba32float,             // Not permutated for all texel formats
-  kStoreWO2dRgba32float,             // Not permutated for all texel formats
-  kStoreWO2dArrayRgba32float,        // Not permutated for all texel formats
-  kStoreWO3dRgba32float,             // Not permutated for all texel formats
+  kLoadDepthMultisampled2dF32,
+  kStoreWO1dRgba32float,       // Not permutated for all texel formats
+  kStoreWO2dRgba32float,       // Not permutated for all texel formats
+  kStoreWO2dArrayRgba32float,  // Not permutated for all texel formats
+  kStoreWO3dRgba32float,       // Not permutated for all texel formats
 };
+
+/// @param texture_overload the ValidTextureOverload
+/// @returns true if the ValidTextureOverload intrinsic returns no value.
+bool ReturnsVoid(ValidTextureOverload texture_overload);
 
 /// Describes a texture intrinsic overload
 struct TextureOverloadCase {
@@ -192,7 +206,7 @@ struct TextureOverloadCase {
   /// Constructor for textureLoad() with storage textures
   TextureOverloadCase(ValidTextureOverload,
                       const char*,
-                      AccessControl::Access,
+                      Access,
                       ast::ImageFormat,
                       ast::TextureDimension,
                       TextureDataType,
@@ -209,35 +223,36 @@ struct TextureOverloadCase {
 
   /// @param builder the AST builder used for the test
   /// @returns the vector component type of the texture function return value
-  ast::Type* buildResultVectorComponentType(ProgramBuilder* builder) const;
+  const ast::Type* BuildResultVectorComponentType(
+      ProgramBuilder* builder) const;
   /// @param builder the AST builder used for the test
   /// @returns a variable holding the test texture, automatically registered as
   /// a global variable.
-  ast::Variable* buildTextureVariable(ProgramBuilder* builder) const;
+  const ast::Variable* BuildTextureVariable(ProgramBuilder* builder) const;
   /// @param builder the AST builder used for the test
   /// @returns a Variable holding the test sampler, automatically registered as
   /// a global variable.
-  ast::Variable* buildSamplerVariable(ProgramBuilder* builder) const;
+  const ast::Variable* BuildSamplerVariable(ProgramBuilder* builder) const;
 
   /// The enumerator for this overload
-  ValidTextureOverload const overload;
+  const ValidTextureOverload overload;
   /// A human readable description of the overload
   const char* const description;
   /// The texture kind for the texture parameter
-  TextureKind const texture_kind;
+  const TextureKind texture_kind;
   /// The sampler kind for the sampler parameter
   /// Used only when texture_kind is not kStorage
   ast::SamplerKind const sampler_kind = ast::SamplerKind::kSampler;
   /// The access control for the storage texture
   /// Used only when texture_kind is kStorage
-  AccessControl::Access const access_control = AccessControl::kReadWrite;
+  Access const access = Access::kReadWrite;
   /// The image format for the storage texture
   /// Used only when texture_kind is kStorage
   ast::ImageFormat const image_format = ast::ImageFormat::kNone;
   /// The dimensions of the texture parameter
   ast::TextureDimension const texture_dimension;
   /// The data type of the texture parameter
-  TextureDataType const texture_data_type;
+  const TextureDataType texture_data_type;
   /// Name of the function. e.g. `textureSample`, `textureSampleGrad`, etc
   const char* const function;
   /// A function that builds the AST arguments for the overload

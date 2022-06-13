@@ -48,7 +48,7 @@ void LoginTabHelper::DidStartNavigation(
   // these could happen in the case of 401/407 error pages that have fancy
   // response bodies that have subframes or can trigger same-document
   // navigations.
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument())
     return;
 
@@ -61,7 +61,7 @@ void LoginTabHelper::DidStartNavigation(
 
 void LoginTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
   }
@@ -98,16 +98,13 @@ void LoginTabHelper::DidFinishNavigation(
     return;
   }
 
-  // Show a login prompt with the navigation's AuthChallengeInfo on FTP
-  // navigations and on HTTP 401/407 responses.
-  if (!navigation_handle->GetURL().SchemeIs(url::kFtpScheme)) {
-    int response_code =
-        navigation_handle->GetResponseHeaders()->response_code();
-    if (response_code !=
-            net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
-        response_code != net::HttpStatusCode::HTTP_UNAUTHORIZED) {
-      return;
-    }
+  // Show a login prompt with the navigation's AuthChallengeInfo on HTTP 401/407
+  // responses.
+  int response_code = navigation_handle->GetResponseHeaders()->response_code();
+  if (response_code !=
+          net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
+      response_code != net::HttpStatusCode::HTTP_UNAUTHORIZED) {
+    return;
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
@@ -214,7 +211,8 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
 }
 
 LoginTabHelper::LoginTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<LoginTabHelper>(*web_contents) {}
 
 void LoginTabHelper::HandleCredentials(
     const absl::optional<net::AuthCredentials>& credentials) {
@@ -267,4 +265,4 @@ void LoginTabHelper::Reload() {
                                          false /* check_for_repost */);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginTabHelper);

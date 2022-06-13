@@ -66,7 +66,7 @@ static SkMutex& f_c_mutex() {
 }
 
 class FCLocker {
-    static constexpr int FontConfigThreadSafeVersion = 21393;
+    inline static constexpr int FontConfigThreadSafeVersion = 21393;
 
     // Assume FcGetVersion() has always been thread safe.
     static void lock() SK_NO_THREAD_SAFETY_ANALYSIS {
@@ -1000,25 +1000,6 @@ protected:
 
     sk_sp<SkTypeface> onMakeFromFile(const char path[], int ttcIndex) const override {
         return this->makeFromStream(SkStream::MakeFromFile(path), ttcIndex);
-    }
-
-    sk_sp<SkTypeface> onMakeFromFontData(std::unique_ptr<SkFontData> fontData) const override {
-        SkStreamAsset* stream(fontData->getStream());
-        const size_t length = stream->getLength();
-        if (length <= 0 || (1u << 30) < length) {
-            return nullptr;
-        }
-
-        const int ttcIndex = fontData->getIndex();
-        SkString name;
-        SkFontStyle style;
-        bool isFixedWidth = false;
-        if (!fScanner.scanFont(stream, ttcIndex, &name, &style, &isFixedWidth, nullptr)) {
-            return nullptr;
-        }
-
-        return sk_sp<SkTypeface>(new SkTypeface_stream(std::move(fontData), std::move(name),
-                                                       style, isFixedWidth));
     }
 
     sk_sp<SkTypeface> onLegacyMakeTypeface(const char familyName[], SkFontStyle style) const override {

@@ -4,23 +4,15 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include "build/chromeos_buildflags.h"
+
 namespace autofill {
 namespace features {
-
-// Controls if Autocomplete suggestions are only shown/stored for meaningful
-// field names.
-// TODO(crbug.com/1181759): Remove once launched.
-const base::Feature kAutocompleteFilterForMeaningfulNames{
-    "AutocompleteFilterForMeaningfulNames", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to flatten and fill cross-iframe forms.
 // TODO(crbug.com/1187842) Remove once launched.
 const base::Feature kAutofillAcrossIframes{"AutofillAcrossIframes",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls if Autofill sends votes for the new address types.
-const base::Feature kAutofillAddressEnhancementVotes{
-    "kAutofillAddressEnhancementVotes", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
@@ -28,6 +20,7 @@ const base::Feature kAutofillAddressEnhancementVotes{
 // storing any detected address profile.
 const base::Feature kAutofillAddressProfileSavePrompt{
     "AutofillAddressProfileSavePrompt", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This parameter controls if save profile prompts are automatically blocked for
 // a given domain after N (default is 3) subsequent declines.
 const base::FeatureParam<bool> kAutofillAutoBlockSaveAddressProfilePrompt{
@@ -61,6 +54,15 @@ const base::FeatureParam<int>
 
 // TODO(crbug.com/1135188): Remove this feature flag after the explicit save
 // prompts for address profiles is complete.
+// When enabled, address data will be verified and autocorrected in the
+// save/update prompt before saving an address profile. Relevant only if the
+// AutofillAddressProfileSavePrompt feature is enabled.
+const base::Feature kAutofillAddressProfileSavePromptAddressVerificationSupport{
+    "AutofillAddressProfileSavePromptAddressVerificationSupport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// TODO(crbug.com/1135188): Remove this feature flag after the explicit save
+// prompts for address profiles is complete.
 // When enabled, address profile save problem will contain a dropdown for
 // assigning a nickname to the address profile. Relevant only if the
 // AutofillAddressProfileSavePrompt feature is enabled.
@@ -82,29 +84,35 @@ const base::Feature kAutofillAllowDuplicateFormSubmissions{
 const base::Feature kAutofillAllowNonHttpActivation{
     "AutofillAllowNonHttpActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether some members of FormData are retrieved in the renderer
-// instead of being extracted in the browser.
-// TODO(crbug/1206049): Disable and remove once the extraction code has been
-// migrated to the browser.
-const base::Feature kAutofillAugmentFormsInRenderer{
-    "AutofillAugmentFormsInRenderer", base::FEATURE_ENABLED_BY_DEFAULT};
-
+// If enabled, three address profiles are created for testing.
 const base::Feature kAutofillCreateDataForTest{
     "AutofillCreateDataForTest", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, AutofillPopupControllerImpl is destructed not immediately in its
+// HideViewAndDie() function, but as a delayed task.
+// TODO(crbug.com/1277218): Cleanup when launched.
+const base::Feature kAutofillDelayPopupControllerDeletion{
+    "AutofillDelayPopupControllerDeletion", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for Autofill filling.
+const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to displace removed forms in both FormCache and
+// AutofillManager.
+// TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
+const base::Feature kAutofillDisplaceRemovedForms{
+    "AutofillDisplaceRemovedForms", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for Autofill address import.
+const base::Feature kAutofillDisableAddressImport{
+    "AutofillDisableAddressImport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug/1165780): Remove once shared labels are launched.
 const base::Feature kAutofillEnableSupportForParsingWithSharedLabels{
     "AutofillEnableSupportForParsingWithSharedLabels",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Kill switch for Autofill filling.
-const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Kill switch for Autofill address import.
-const base::Feature kAutofillDisableAddressImport{
-    "AutofillDisableAddressImport", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls if Chrome support filling and importing apartment numbers.
 // TODO(crbug.com/1153715): Remove once launched.
@@ -116,9 +124,8 @@ const base::Feature kAutofillEnableSupportForApartmentNumbers{
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage {
   "AutofillEnableAccountWalletStorage",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_IOS)
-      // Wallet transport is only currently available on Win/Mac/Linux/Android.
-      // (Somehow, swapping this check makes iOS unhappy?)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // Wallet transport is currently unavailable on ChromeOS.
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -149,21 +156,6 @@ const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers{
     "AutofillEnableImportWhenMultiplePhoneNumbers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled and user has single account, a footer indicating user's e-mail
-// address and profile picture will appear at the bottom of InfoBars which has
-// corresponding account indication footer flags on.
-const base::Feature
-    kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers{
-        "AutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers",
-        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled and user is syncing, a footer indicating user's e-mail address
-// and profile picture will appear at the bottom of InfoBars which has
-// corresponding account indication footer flags on.
-const base::Feature kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers{
-    "AutofillEnableInfoBarAccountIndicationFooterForSyncUsers",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, the precedence is given to the field label over the name when
 // they match different types. Applied only for parsing of address forms in
 // Turkish.
@@ -177,7 +169,13 @@ const base::Feature kAutofillEnableLabelPrecedenceForTurkishAddresses{
 // InfoBars.
 const base::Feature kAutofillEnablePasswordInfoBarAccountIndicationFooter{
     "AutofillEnablePasswordInfoBarAccountIndicationFooter",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the parsing of a sequence of fields that follows the pattern of Name,
+// Surname.
+// TODO(crbug.com/1277480): Remove once launched.
+const base::Feature kAutofillEnableNameSurenameParsing{
+    "AutofillEnableNameSurenameParsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, the address profile deduplication logic runs after the browser
 // startup, once per chrome version.
@@ -216,13 +214,18 @@ const base::Feature kAutofillEnableSupportForHonorificPrefixes{
 const base::Feature kAutofillExtractAllDatalists{
     "AutofillExtractAllDatalists", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls if type-specific popup widths are used.
+// TODO(crbug.com/1250729): Remove once launched.
+const base::Feature kAutofillTypeSpecificPopupWidth{
+    "AutofillTypeSpecificPopupWidth", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Autofill uses the local heuristic such that address forms are only filled if
 // at least 3 fields are fillable according to local heuristics. Unfortunately,
 // the criterion for fillability is only that the field type is unknown. So many
 // field types that we don't fill (search term, price, ...) count towards that
 // counter, effectively reducing the threshold for some forms.
 const base::Feature kAutofillFixFillableFieldTypes{
-    "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillFixFillableFieldTypes", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The autocomplete attribute may prevent Autofill import, crbug/1213301. This
 // feature addresses the issue. For now, the fix only concerns fields with the
@@ -231,23 +234,17 @@ const base::Feature kAutofillFixFillableFieldTypes{
 const base::Feature kAutofillIgnoreAutocompleteForImport{
     "AutofillIgnoreAutocompleteForImport", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, only changed values are highlighted in preview mode.
+// TODO(crbug/1248585): Remove when launched.
+const base::Feature kAutofillHighlightOnlyChangedValuesInPreviewMode{
+    "AutofillHighlightOnlyChangedValuesInPreviewMode",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls if a server prediction with a prediction source |OVERRIDE| is
 // granted precedence over html type attributes.
 // TODO(crbug.com/1170384) Remove once launched
 const base::Feature kAutofillServerTypeTakesPrecedence{
     "AutofillServerTypeTakesPrecedence", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, Autofill will use FormRendererIds instead of
-// GetIdentifierForRefill() to identify forms during refills.
-// TODO(crbug/896689): Remove once experiment is finished.
-const base::Feature kAutofillRefillWithRendererIds{
-    "AutofillRefillWithRendererIds", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// When enabled, Autofill will use FormRendererIds instead of
-// unique_name() to create unique section names.
-// TODO(crbug/896689): Remove once experiment is finished.
-const base::Feature kAutofillNameSectionsWithRendererIds{
-    "AutofillNameSectionsWithRendererIds", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
@@ -259,11 +256,35 @@ const base::Feature kAutofillKeyboardAccessory{
 extern const base::Feature kAutofillLabelAffixRemoval{
     "AutofillLabelAffixRemoval", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillPruneSuggestions{
-    "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enabled a suggestion menu that is aligned to the center of the field.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::Feature kAutofillCenterAlignedSuggestions{
+    "AutofillCenterAlignedSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillMetadataUploads{"AutofillMetadataUploads",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls the maximum pixels the popup is shifted towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaximumPixelsToMoveSuggestionopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "maximum_pixels_to_move_the_suggestion_popup__towards_the_fields_"
+        "center",
+        120};
+
+// Controls the width percentage to move the popup towards the center.
+// TODO(crbug/1248339): Remove once experiment is finished.
+extern const base::FeatureParam<int>
+    kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter{
+        &kAutofillCenterAlignedSuggestions,
+        "width_percentage_to_shift_the_suggestion_popup_towards_the_center_of_"
+        "fields",
+        50};
+
+// When enabled, Autofill would not override the field values that were either
+// filled by Autofill or on page load.
+// TODO(crbug/1275649): Remove once experiment is finished.
+extern const base::Feature kAutofillPreventOverridingPrefilledValues{
+    "AutofillPreventOverridingPrefilledValues",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill will load remote patterns via the component updater.
 // TODO(crbug/1121990): Remove once launched.
@@ -288,11 +309,6 @@ const base::Feature kAutofillParsingPatternsLanguageDependent{
     "AutofillParsingPatternsLanguageDependent",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If feature is enabled, Autofill will be disabled for mixed forms (forms on
-// HTTPS sites that submit over HTTP).
-const base::Feature kAutofillPreventMixedFormsFilling{
-    "AutofillPreventMixedFormsFilling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If the feature is enabled, FormTracker's probable-form-submission detection
 // is disabled and replaced with browser-side detection.
 // TODO(crbug/1117451): Remove once it works.
@@ -312,6 +328,11 @@ const base::Feature kAutofillProfileImportFromUnfocusableFields{
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{
     "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls if the heuristic field parsing utilizes shared labels.
+// TODO(crbug/1275772): Remove if no negative consequences observed.
+const base::Feature kAutofillRecordMetricsOfUnownedForms{
+    "AutofillRecordMetricsOfUnownedForms", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not overall prediction are retrieved from the cache.
 const base::Feature kAutofillRetrieveOverallPredictionsFromCache{
@@ -341,17 +362,16 @@ const base::Feature kAutofillServerCommunication{
 const base::Feature kAutofillShowTypePredictions{
     "AutofillShowTypePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows silent profile updates even when the profile import requirements are
+// not met.
+const base::Feature kAutofillSilentProfileUpdateForInsufficientImport{
+    "AutofillSilentProfileUpdateForInsufficientImport",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether inferred label is considered for comparing in
 // FormFieldData.SimilarFieldAs.
 const base::Feature kAutofillSkipComparingInferredLabels{
     "AutofillSkipComparingInferredLabels", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether we require an expiration date or verification field when a
-// name field is detected for a credit card, but we aren't confident it's not
-// a non-credit card specific name field.
-const base::Feature kAutofillStrictContextualCardNameConditions{
-    "AutofillStrictContextualCardNameConditions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether Autofill should search prefixes of all words/tokens when
 // filtering profiles, or only on prefixes of the whole string.
@@ -375,10 +395,29 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to use the same icon for the settings section in the popup
+// footer.
+const base::Feature kAutofillUseConsistentPopupSettingsIcons{
+    "AutofillUseConsistentPopupSettingsIcons",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to use the combined heuristic and the autocomplete section
 // implementation for section splitting or not. See https://crbug.com/1076175.
 const base::Feature kAutofillUseNewSectioningMethod{
     "AutofillUseNewSectioningMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, to get the unowned control elements we call
+// Document::UnassociatedListedElements(). This way we can reduce the number of
+// DOM traversals.
+// TODO(crbug/1201875): Remove once experiment is finished.
+const base::Feature kAutofillUseUnassociatedListedElements{
+    "AutofillUseUnassociatedListedElements", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Introduces various visual improvements of the Autofill suggestion UI that is
+// also used for the password manager.
+const base::Feature kAutofillVisualImprovementsForSuggestionUi{
+    "AutofillVisualImprovementsForSuggestionUi",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls an ablation study in which autofill for addresses and payment data
 // can be suppressed.
@@ -405,6 +444,12 @@ const base::Feature kAutofillManualFallbackAndroid{
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the touch to fill surface is shown for credit cards on
+// Android.
+const base::Feature kAutofillTouchToFillForCreditCardsAndroid{
+    "AutofillTouchToFillForCreditCardsAndroid",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -416,12 +461,6 @@ const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_IOS)
-// Controls whether or not autofill uses numeric renderer IDs instead of string
-// form and field identifiers in filling logic.
-// TODO(crbug/1131038): Remove once it's launched.
-const base::Feature kAutofillUseUniqueRendererIDsOnIOS{
-    "AutofillUseUniqueRendererIDsOnIOS", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether the creation of new address profiles is enabled in settings
 // on IOS.
 // TODO(crbug/1167105): Remove once it's launched.
@@ -431,18 +470,13 @@ const base::Feature kAutofillEnableNewAddressProfileCreationInSettingsOnIOS{
 #endif
 
 #if defined(OS_ANDROID)
-// Controls whether Android autofill (WebView and WebLayer) should query the
-// Autofill server for the server field type predictions and send them to
-// Android autofill service.
-const base::Feature kAndroidAutofillQueryServerFieldTypes{
-    "AndroidAutofillQueryServerFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether the Wallet (GPay) integration requires first-sync-setup to
-// be complete.
-// TODO(crbug.com/1134564): Clean up after launch.
-const base::Feature kWalletRequiresFirstSyncSetupComplete{
-    "WalletRequiresFirstSyncSetupComplete", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
+bool IsAutofillManualFallbackEnabled() {
+  return base::FeatureList::IsEnabled(
+             autofill::features::kAutofillKeyboardAccessory) &&
+         base::FeatureList::IsEnabled(
+             autofill::features::kAutofillManualFallbackAndroid);
+}
+#endif  // OS_ANDROID
 
 }  // namespace features
 }  // namespace autofill

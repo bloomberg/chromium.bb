@@ -28,7 +28,6 @@
 #include "include/utils/SkBase64.h"
 #include "src/codec/SkJpegCodec.h"
 #include "src/core/SkAnnotationKeys.h"
-#include "src/core/SkClipOpPriv.h"
 #include "src/core/SkClipStack.h"
 #include "src/core/SkDraw.h"
 #include "src/core/SkFontPriv.h"
@@ -405,8 +404,11 @@ void SkSVGDevice::AutoElement::addGradientShaderResources(const SkShader* shader
                                                           Resources* resources) {
     SkShader::GradientInfo grInfo;
     memset(&grInfo, 0, sizeof(grInfo));
-    if (SkShader::kLinear_GradientType != shader->asAGradient(&grInfo)) {
-        // TODO: non-linear gradient support
+    const auto gradient_type = shader->asAGradient(&grInfo);
+
+    if (gradient_type != SkShader::kColor_GradientType &&
+        gradient_type != SkShader::kLinear_GradientType) {
+        // TODO: other gradient support
         return;
     }
 
@@ -420,7 +422,10 @@ void SkSVGDevice::AutoElement::addGradientShaderResources(const SkShader* shader
     SkASSERT(grInfo.fColorCount <= grColors.count());
     SkASSERT(grInfo.fColorCount <= grOffsets.count());
 
-    resources->fPaintServer.printf("url(#%s)", addLinearGradientDef(grInfo, shader).c_str());
+    SkASSERT(grColors.size() > 0);
+    resources->fPaintServer = gradient_type == SkShader::kColor_GradientType
+            ? svg_color(grColors[0])
+            : SkStringPrintf("url(#%s)", addLinearGradientDef(grInfo, shader).c_str());
 }
 
 void SkSVGDevice::AutoElement::addColorFilterResources(const SkColorFilter& cf,
@@ -805,7 +810,7 @@ void SkSVGDevice::drawAnnotation(const SkRect& rect, const char key[], SkData* v
     if (!strcmp(SkAnnotationKeys::URL_Key(), key) ||
         !strcmp(SkAnnotationKeys::Link_Named_Dest_Key(), key)) {
         this->cs().save();
-        this->cs().clipRect(rect, this->localToDevice(), kIntersect_SkClipOp, true);
+        this->cs().clipRect(rect, this->localToDevice(), SkClipOp::kIntersect, true);
         SkRect transformedRect = this->cs().bounds(this->getGlobalBounds());
         this->cs().restore();
         if (transformedRect.isEmpty()) {
@@ -968,7 +973,7 @@ void SkSVGDevice::drawImageRect(const SkImage* image, const SkRect* src, const S
     SkClipStack::AutoRestore ar(cs, false);
     if (src && *src != SkRect::Make(bm.bounds())) {
         cs->save();
-        cs->clipRect(dst, this->localToDevice(), kIntersect_SkClipOp, paint.isAntiAlias());
+        cs->clipRect(dst, this->localToDevice(), SkClipOp::kIntersect, paint.isAntiAlias());
     }
 
     SkMatrix adjustedMatrix = this->localToDevice()
@@ -1095,6 +1100,6 @@ void SkSVGDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const S
     }
 }
 
-void SkSVGDevice::drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) {
+void SkSVGDevice::drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&) {
     // todo
 }

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LOCK_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -23,6 +22,10 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
                            public ExecutionContextClient {
  public:
   explicit KeyboardLock(ExecutionContext*);
+
+  KeyboardLock(const KeyboardLock&) = delete;
+  KeyboardLock& operator=(const KeyboardLock&) = delete;
+
   ~KeyboardLock();
 
   ScriptPromise lock(ScriptState*, const Vector<String>&, ExceptionState&);
@@ -45,8 +48,6 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
 
   HeapMojoRemote<mojom::blink::KeyboardLockService> service_;
   Member<ScriptPromiseResolver> request_keylock_resolver_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardLock);
 };
 
 }  // namespace blink

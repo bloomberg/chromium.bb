@@ -9,6 +9,7 @@
 
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/sharing/fake_device_info.h"
@@ -47,15 +48,16 @@ const char kVapidFcmToken[] = "vapid_fcm_token";
 const char kSharingFcmToken[] = "sharing_fcm_token";
 const char kDeviceName[] = "other_name";
 const char kAuthorizedEntity[] = "authorized_entity";
-constexpr base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kTimeout = base::Seconds(15);
 
 class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
  public:
   MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
-  ~MockInstanceIDDriver() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
+  MockInstanceIDDriver(const MockInstanceIDDriver&) = delete;
+  MockInstanceIDDriver& operator=(const MockInstanceIDDriver&) = delete;
+
+  ~MockInstanceIDDriver() override = default;
 };
 
 class MockSharingHandlerRegistry : public SharingHandlerRegistry {
@@ -127,7 +129,7 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int unregistration_attempts() { return unregistration_attempts_; }
 
  private:
-  VapidKeyManager* vapid_key_manager_;
+  raw_ptr<VapidKeyManager> vapid_key_manager_;
   SharingDeviceRegistrationResult result_ =
       SharingDeviceRegistrationResult::kSuccess;
   int registration_attempts_ = 0;
@@ -190,11 +192,13 @@ class SharingServiceTest : public testing::Test {
   SharingService* GetSharingService() {
     if (!sharing_service_) {
       sharing_service_ = std::make_unique<SharingService>(
-          base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
-          base::WrapUnique(sharing_device_registration_),
-          base::WrapUnique(sharing_message_sender_),
-          base::WrapUnique(device_source_), base::WrapUnique(handler_registry_),
-          base::WrapUnique(fcm_handler_), &test_sync_service_);
+          base::WrapUnique(sync_prefs_.get()),
+          base::WrapUnique(vapid_key_manager_.get()),
+          base::WrapUnique(sharing_device_registration_.get()),
+          base::WrapUnique(sharing_message_sender_.get()),
+          base::WrapUnique(device_source_.get()),
+          base::WrapUnique(handler_registry_.get()),
+          base::WrapUnique(fcm_handler_.get()), &test_sync_service_);
     }
     task_environment_.RunUntilIdle();
     return sharing_service_.get();
@@ -209,14 +213,14 @@ class SharingServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
 
   testing::NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
-  testing::NiceMock<MockSharingHandlerRegistry>* handler_registry_;
-  testing::NiceMock<MockSharingFCMHandler>* fcm_handler_;
-  testing::NiceMock<MockSharingDeviceSource>* device_source_;
+  raw_ptr<testing::NiceMock<MockSharingHandlerRegistry>> handler_registry_;
+  raw_ptr<testing::NiceMock<MockSharingFCMHandler>> fcm_handler_;
+  raw_ptr<testing::NiceMock<MockSharingDeviceSource>> device_source_;
 
-  SharingSyncPreference* sync_prefs_;
-  VapidKeyManager* vapid_key_manager_;
-  FakeSharingDeviceRegistration* sharing_device_registration_;
-  testing::NiceMock<MockSharingMessageSender>* sharing_message_sender_;
+  raw_ptr<SharingSyncPreference> sync_prefs_;
+  raw_ptr<VapidKeyManager> vapid_key_manager_;
+  raw_ptr<FakeSharingDeviceRegistration> sharing_device_registration_;
+  raw_ptr<testing::NiceMock<MockSharingMessageSender>> sharing_message_sender_;
   bool device_candidates_initialized_ = false;
 
  private:
@@ -402,7 +406,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
       SharingDeviceRegistrationResult::kSuccess);
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   task_environment_.FastForwardBy(
-      base::TimeDelta::FromMilliseconds(kRetryBackoffPolicy.initial_delay_ms));
+      base::Milliseconds(kRetryBackoffPolicy.initial_delay_ms));
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE,
             GetSharingService()->GetStateForTesting());

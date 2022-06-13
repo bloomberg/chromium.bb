@@ -11,8 +11,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
 
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.toolbar.R;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarPrefs;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStats;
@@ -80,7 +80,7 @@ public class AdaptiveToolbarPreferenceFragment extends PreferenceFragmentCompat 
         if (activity == null) return false;
         AndroidPermissionDelegate permissionDelegate =
                 new ActivityAndroidPermissionDelegate(new WeakReference(activity));
-        return AdaptiveToolbarFeatures.isVoiceSearchEnabled(permissionDelegate);
+        return VoiceRecognitionUtil.isVoiceSearchEnabled(permissionDelegate);
     }
 
     @VisibleForTesting

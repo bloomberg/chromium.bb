@@ -4,5 +4,7 @@ include_rules = [
   "+net",
   "+services/data_decoder/public",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+services/network/test",
+  "+third_party/blink/public/mojom",
 ]

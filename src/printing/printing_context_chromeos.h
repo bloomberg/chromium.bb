@@ -12,8 +12,8 @@
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_printer.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printing_context.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace printing {
 
@@ -34,20 +34,20 @@ class COMPONENT_EXPORT(PRINTING) PrintingContextChromeos
                           bool has_selection,
                           bool is_scripted,
                           PrintSettingsCallback callback) override;
-  Result UseDefaultSettings() override;
+  mojom::ResultCode UseDefaultSettings() override;
   gfx::Size GetPdfPaperSizeDeviceUnits() override;
-  Result UpdatePrinterSettings(bool external_preview,
-                               bool show_system_dialog,
-                               int page_count) override;
-  Result NewDocument(const std::u16string& document_name) override;
-  Result NewPage() override;
-  Result PageDone() override;
-  Result DocumentDone() override;
+  mojom::ResultCode UpdatePrinterSettings(
+      const PrinterSettings& printer_settings) override;
+  mojom::ResultCode NewDocument(const std::u16string& document_name) override;
+  mojom::ResultCode PrintDocument(const MetafilePlayer& metafile,
+                                  const PrintSettings& settings,
+                                  uint32_t num_pages) override;
+  mojom::ResultCode DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
   printing::NativeDrawingContext context() const override;
 
-  Result StreamData(const std::vector<char>& buffer);
+  mojom::ResultCode StreamData(const std::vector<char>& buffer);
 
  private:
   // For testing. Use CreateForTesting() to create.
@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(PRINTING) PrintingContextChromeos
                           std::unique_ptr<CupsConnection> connection);
 
   // Lazily initializes `printer_`.
-  Result InitializeDevice(const std::string& device);
+  mojom::ResultCode InitializeDevice(const std::string& device);
 
   const std::unique_ptr<CupsConnection> connection_;
   std::unique_ptr<CupsPrinter> printer_;

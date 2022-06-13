@@ -5,19 +5,78 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_
 
-#include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/wtf/buildflags.h"
+#include "base/bind.h"
+#include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
+#include "v8/include/cppgc/cross-thread-persistent.h"
+#include "v8/include/cppgc/persistent.h"
+#include "v8/include/cppgc/source-location.h"
 
-#if BUILDFLAG(USE_V8_OILPAN)
-#include "third_party/blink/renderer/platform/heap/v8_wrapper/persistent.h"
-#else  // !USE_V8_OILPAN
-#include "third_party/blink/renderer/platform/heap/impl/persistent.h"
-#endif  // !USE_V8_OILPAN
+#if BUILDFLAG(RAW_HEAP_SNAPSHOTS)
+#define PERSISTENT_LOCATION_FOR_DEBUGGING blink::PersistentLocation::Current()
+#else  // !BUILDFLAG(RAW_HEAP_SNAPSHOTS)
+#define PERSISTENT_LOCATION_FOR_DEBUGGING blink::PersistentLocation()
+#endif  // !BUILDFLAG(RAW_HEAP_SNAPSHOTS)
 
 namespace blink {
+
+template <typename T>
+using Persistent = cppgc::Persistent<T>;
+
+template <typename T>
+using WeakPersistent = cppgc::WeakPersistent<T>;
+
+template <typename T>
+using CrossThreadPersistent = cppgc::subtle::CrossThreadPersistent<T>;
+
+template <typename T>
+using CrossThreadWeakPersistent = cppgc::subtle::WeakCrossThreadPersistent<T>;
+
+using PersistentLocation = cppgc::SourceLocation;
+
+template <typename T>
+Persistent<T> WrapPersistent(
+    T* value,
+    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+  return Persistent<T>(value, loc);
+}
+
+template <typename T>
+WeakPersistent<T> WrapWeakPersistent(
+    T* value,
+    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+  return WeakPersistent<T>(value, loc);
+}
+
+template <typename T>
+CrossThreadPersistent<T> WrapCrossThreadPersistent(
+    T* value,
+    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+  return CrossThreadPersistent<T>(value, loc);
+}
+
+template <typename T>
+CrossThreadWeakPersistent<T> WrapCrossThreadWeakPersistent(
+    T* value,
+    const cppgc::SourceLocation& loc = PERSISTENT_LOCATION_FOR_DEBUGGING) {
+  return CrossThreadWeakPersistent<T>(value, loc);
+}
+
+template <typename U, typename T, typename weakness>
+cppgc::internal::BasicPersistent<U, weakness> DownCast(
+    const cppgc::internal::BasicPersistent<T, weakness>& p) {
+  return p.template To<U>();
+}
+
+template <typename U, typename T, typename weakness>
+cppgc::internal::BasicCrossThreadPersistent<U, weakness> DownCast(
+    const cppgc::internal::BasicCrossThreadPersistent<T, weakness>& p) {
+  return p.template To<U>();
+}
 
 template <typename T,
           typename = std::enable_if_t<WTF::IsGarbageCollectedType<T>::value>>
@@ -85,19 +144,11 @@ struct BasePersistentHashTraits : SimpleClassHashTraits<PersistentType> {
   static PeekOutType Peek(const PersistentType& value) { return value; }
 
   static void ConstructDeletedValue(PersistentType& slot, bool) {
-#if BUILDFLAG(USE_V8_OILPAN)
-    slot = cppgc::kSentinelPointer;
-#else   // !USE_V8_OILPAN
-    slot = WTF::kHashTableDeletedValue;
-#endif  // !USE_V8_OILPAN
+    new (&slot) PersistentType(cppgc::kSentinelPointer);
   }
 
   static bool IsDeletedValue(const PersistentType& value) {
-#if BUILDFLAG(USE_V8_OILPAN)
     return value.Get() == cppgc::kSentinelPointer;
-#else   // !USE_V8_OILPAN
-    return value.IsHashTableDeletedValue();
-#endif  // !USE_V8_OILPAN
   }
 };
 
@@ -106,31 +157,55 @@ struct HashTraits<blink::Persistent<T>>
     : BasePersistentHashTraits<T, blink::Persistent<T>> {};
 
 template <typename T>
+struct HashTraits<blink::WeakPersistent<T>>
+    : BasePersistentHashTraits<T, blink::WeakPersistent<T>> {};
+
+template <typename T>
 struct HashTraits<blink::CrossThreadPersistent<T>>
     : BasePersistentHashTraits<T, blink::CrossThreadPersistent<T>> {};
 
 template <typename T>
+struct HashTraits<blink::CrossThreadWeakPersistent<T>>
+    : BasePersistentHashTraits<T, blink::CrossThreadWeakPersistent<T>> {};
+
+// Default hash for hash tables with Persistent<>-derived elements.
+template <typename T>
+struct PersistentHashBase : PtrHash<T> {
+  STATIC_ONLY(PersistentHashBase);
+
+  template <typename U>
+  static unsigned GetHash(const U& key) {
+    return PtrHash<T>::GetHash(key);
+  }
+
+  template <typename U, typename V>
+  static bool Equal(const U& a, const V& b) {
+    return a == b;
+  }
+};
+
+template <typename T>
 struct DefaultHash<blink::Persistent<T>> {
   STATIC_ONLY(DefaultHash);
-  using Hash = MemberHash<T>;
+  using Hash = PersistentHashBase<T>;
 };
 
 template <typename T>
 struct DefaultHash<blink::WeakPersistent<T>> {
   STATIC_ONLY(DefaultHash);
-  using Hash = MemberHash<T>;
+  using Hash = PersistentHashBase<T>;
 };
 
 template <typename T>
 struct DefaultHash<blink::CrossThreadPersistent<T>> {
   STATIC_ONLY(DefaultHash);
-  using Hash = MemberHash<T>;
+  using Hash = PersistentHashBase<T>;
 };
 
 template <typename T>
 struct DefaultHash<blink::CrossThreadWeakPersistent<T>> {
   STATIC_ONLY(DefaultHash);
-  using Hash = MemberHash<T>;
+  using Hash = PersistentHashBase<T>;
 };
 
 template <typename T>
@@ -159,7 +234,7 @@ template <typename T>
 struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
   static blink::CrossThreadPersistent<T> Unwrap(
       const blink::CrossThreadWeakPersistent<T>& wrapped) {
-    return blink::CrossThreadPersistent<T>(wrapped);
+    return wrapped.Lock();
   }
 };
 

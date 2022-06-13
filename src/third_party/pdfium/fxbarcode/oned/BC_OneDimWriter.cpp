@@ -22,6 +22,8 @@
 
 #include "fxbarcode/oned/BC_OneDimWriter.h"
 
+#include <math.h>
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -31,7 +33,7 @@
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_path.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/cfx_unicodeencodingex.h"
 #include "core/fxge/text_char_pos.h"
@@ -84,7 +86,7 @@ void CBC_OneDimWriter::SetFontColor(FX_ARGB color) {
 }
 
 uint8_t* CBC_OneDimWriter::EncodeWithHint(const ByteString& contents,
-                                          BCFORMAT format,
+                                          BC_TYPE format,
                                           int32_t& outWidth,
                                           int32_t& outHeight,
                                           int32_t hints) {
@@ -93,7 +95,7 @@ uint8_t* CBC_OneDimWriter::EncodeWithHint(const ByteString& contents,
 }
 
 uint8_t* CBC_OneDimWriter::Encode(const ByteString& contents,
-                                  BCFORMAT format,
+                                  BC_TYPE format,
                                   int32_t& outWidth,
                                   int32_t& outHeight) {
   return EncodeWithHint(contents, format, outWidth, outHeight, 0);
@@ -198,11 +200,11 @@ bool CBC_OneDimWriter::ShowChars(WideStringView contents,
   std::vector<TextCharPos> charpos(str.GetLength());
   float charsLen = 0;
   float geWidth = 0;
-  if (m_locTextLoc == BC_TEXT_LOC_ABOVEEMBED ||
-      m_locTextLoc == BC_TEXT_LOC_BELOWEMBED) {
+  if (m_locTextLoc == BC_TEXT_LOC::kAboveEmbed ||
+      m_locTextLoc == BC_TEXT_LOC::kBelowEmbed) {
     geWidth = 0;
-  } else if (m_locTextLoc == BC_TEXT_LOC_ABOVE ||
-             m_locTextLoc == BC_TEXT_LOC_BELOW) {
+  } else if (m_locTextLoc == BC_TEXT_LOC::kAbove ||
+             m_locTextLoc == BC_TEXT_LOC::kBelow) {
     geWidth = (float)barWidth;
   }
   int32_t iFontSize = static_cast<int32_t>(fabs(m_fFontSize));
@@ -215,22 +217,22 @@ bool CBC_OneDimWriter::ShowChars(WideStringView contents,
   int32_t locX = 0;
   int32_t locY = 0;
   switch (m_locTextLoc) {
-    case BC_TEXT_LOC_ABOVEEMBED:
+    case BC_TEXT_LOC::kAboveEmbed:
       locX = static_cast<int32_t>(barWidth - charsLen) / 2;
       locY = 0;
       geWidth = charsLen;
       break;
-    case BC_TEXT_LOC_ABOVE:
+    case BC_TEXT_LOC::kAbove:
       locX = 0;
       locY = 0;
       geWidth = (float)barWidth;
       break;
-    case BC_TEXT_LOC_BELOWEMBED:
+    case BC_TEXT_LOC::kBelowEmbed:
       locX = static_cast<int32_t>(barWidth - charsLen) / 2;
       locY = m_Height - iTextHeight;
       geWidth = charsLen;
       break;
-    case BC_TEXT_LOC_BELOW:
+    case BC_TEXT_LOC::kBelow:
     default:
       locX = 0;
       locY = m_Height - iTextHeight;
@@ -249,21 +251,21 @@ bool CBC_OneDimWriter::RenderDeviceResult(CFX_RenderDevice* device,
     return false;
 
   CFX_GraphStateData stateData;
-  CFX_PathData path;
+  CFX_Path path;
   path.AppendRect(0, 0, static_cast<float>(m_Width),
                   static_cast<float>(m_Height));
-  device->DrawPath(&path, &matrix, &stateData, kBackgroundColor,
+  device->DrawPath(path, &matrix, &stateData, kBackgroundColor,
                    kBackgroundColor, CFX_FillRenderOptions::EvenOddOptions());
   CFX_Matrix scaledMatrix(m_outputHScale, 0.0, 0.0,
                           static_cast<float>(m_Height), 0.0, 0.0);
   scaledMatrix.Concat(matrix);
   for (const auto& rect : m_output) {
     CFX_GraphStateData data;
-    device->DrawPath(&rect, &scaledMatrix, &data, kBarColor, 0,
+    device->DrawPath(rect, &scaledMatrix, &data, kBarColor, 0,
                      CFX_FillRenderOptions::WindingOptions());
   }
 
-  return m_locTextLoc == BC_TEXT_LOC_NONE || !contents.Contains(' ') ||
+  return m_locTextLoc == BC_TEXT_LOC::kNone || !contents.Contains(' ') ||
          ShowChars(contents, device, matrix, m_barWidth, m_multiple);
 }
 

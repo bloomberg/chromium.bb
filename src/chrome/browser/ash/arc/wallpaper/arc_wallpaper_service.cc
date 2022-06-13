@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -16,8 +18,6 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,6 +75,10 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
  public:
   DecodeRequest(ArcWallpaperService* service, int32_t android_id)
       : service_(service), android_id_(android_id) {}
+
+  DecodeRequest(const DecodeRequest&) = delete;
+  DecodeRequest& operator=(const DecodeRequest&) = delete;
+
   ~DecodeRequest() override = default;
 
   // ImageDecoder::ImageRequest overrides.
@@ -101,8 +105,6 @@ class ArcWallpaperService::DecodeRequest : public ImageDecoder::ImageRequest {
   // ArcWallpaperService owns DecodeRequest, so it will outlive this.
   ArcWallpaperService* const service_;
   const int32_t android_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
 };
 
 ArcWallpaperService::DecodeRequestSender::~DecodeRequestSender() = default;
@@ -169,12 +171,13 @@ void ArcWallpaperService::OnWallpaperDecoded(const gfx::ImageSkia& image,
                                              int32_t android_id) {
   const AccountId account_id =
       UserManager::Get()->GetPrimaryUser()->GetAccountId();
-  const std::string wallpaper_files_id =
-      WallpaperControllerClientImpl::Get()->GetFilesId(account_id);
+
+  WallpaperControllerClientImpl::Get()->RecordWallpaperSourceUMA(
+      ash::WallpaperType::kThirdParty);
 
   const bool result =
       WallpaperControllerClientImpl::Get()->SetThirdPartyWallpaper(
-          account_id, wallpaper_files_id, kAndroidWallpaperFilename,
+          account_id, kAndroidWallpaperFilename,
           ash::WALLPAPER_LAYOUT_CENTER_CROPPED, image);
 
   // Notify the Android side whether the request is going through or not.

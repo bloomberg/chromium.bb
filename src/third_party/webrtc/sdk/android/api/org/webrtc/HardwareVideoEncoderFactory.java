@@ -17,7 +17,7 @@ import static org.webrtc.MediaCodecUtils.QCOM_PREFIX;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.os.Build;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -94,7 +94,7 @@ public class HardwareVideoEncoderFactory implements VideoEncoderFactory {
       return null;
     }
 
-    VideoCodecMimeType type = VideoCodecMimeType.valueOf(input.name);
+    VideoCodecMimeType type = VideoCodecMimeType.valueOf(input.getName());
     MediaCodecInfo info = findCodecForType(type);
 
     if (info == null) {

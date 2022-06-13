@@ -15,7 +15,8 @@
 #include "dawn_native/QuerySet.h"
 
 #include "dawn_native/Device.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
 #include <set>
@@ -39,35 +40,34 @@ namespace dawn_native {
 
     MaybeError ValidateQuerySetDescriptor(DeviceBase* device,
                                           const QuerySetDescriptor* descriptor) {
-        if (descriptor->nextInChain != nullptr) {
-            return DAWN_VALIDATION_ERROR("nextInChain must be nullptr");
-        }
-
-        if (descriptor->count > kMaxQueryCount) {
-            return DAWN_VALIDATION_ERROR("Max query count exceeded");
-        }
+        DAWN_INVALID_IF(descriptor->nextInChain != nullptr, "nextInChain must be nullptr");
 
         DAWN_TRY(ValidateQueryType(descriptor->type));
 
+        DAWN_INVALID_IF(descriptor->count > kMaxQueryCount,
+                        "Query count (%u) exceeds the maximum query count (%u).", descriptor->count,
+                        kMaxQueryCount);
+
         switch (descriptor->type) {
             case wgpu::QueryType::Occlusion:
-                if (descriptor->pipelineStatisticsCount != 0) {
-                    return DAWN_VALIDATION_ERROR(
-                        "The pipeline statistics should not be set if query type is Occlusion");
-                }
+                DAWN_INVALID_IF(descriptor->pipelineStatisticsCount != 0,
+                                "Pipeline statistics specified for a query of type %s.",
+                                descriptor->type);
                 break;
 
             case wgpu::QueryType::PipelineStatistics: {
-                if (!device->IsExtensionEnabled(Extension::PipelineStatisticsQuery)) {
-                    return DAWN_VALIDATION_ERROR(
-                        "The pipeline statistics query feature is not supported");
-                }
+                // TODO(crbug.com/1177506): Pipeline statistics query is not fully implemented.
+                // Disallow it as unsafe until the implementaion is completed.
+                DAWN_INVALID_IF(device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs),
+                                "Pipeline statistics queries are disallowed because they are not "
+                                "fully implemented");
 
-                if (descriptor->pipelineStatisticsCount == 0) {
-                    return DAWN_VALIDATION_ERROR(
-                        "At least one pipeline statistics is set if query type is "
-                        "PipelineStatistics");
-                }
+                DAWN_INVALID_IF(
+                    !device->IsFeatureEnabled(Feature::PipelineStatisticsQuery),
+                    "Pipeline statistics query set created without the feature being enabled.");
+
+                DAWN_INVALID_IF(descriptor->pipelineStatisticsCount == 0,
+                                "Pipeline statistics query set created with 0 statistics.");
 
                 std::set<wgpu::PipelineStatisticName> pipelineStatisticsSet;
                 for (uint32_t i = 0; i < descriptor->pipelineStatisticsCount; i++) {
@@ -75,21 +75,22 @@ namespace dawn_native {
 
                     std::pair<std::set<wgpu::PipelineStatisticName>::iterator, bool> res =
                         pipelineStatisticsSet.insert((descriptor->pipelineStatistics[i]));
-                    if (!res.second) {
-                        return DAWN_VALIDATION_ERROR("Duplicate pipeline statistics found");
-                    }
+                    DAWN_INVALID_IF(!res.second, "Statistic %s is specified more than once.",
+                                    descriptor->pipelineStatistics[i]);
                 }
             } break;
 
             case wgpu::QueryType::Timestamp:
-                if (!device->IsExtensionEnabled(Extension::TimestampQuery)) {
-                    return DAWN_VALIDATION_ERROR("The timestamp query feature is not supported");
-                }
+                DAWN_INVALID_IF(device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs),
+                                "Timestamp queries are disallowed because they may expose precise "
+                                "timing information.");
 
-                if (descriptor->pipelineStatisticsCount != 0) {
-                    return DAWN_VALIDATION_ERROR(
-                        "The pipeline statistics should not be set if query type is Timestamp");
-                }
+                DAWN_INVALID_IF(!device->IsFeatureEnabled(Feature::TimestampQuery),
+                                "Timestamp query set created without the feature being enabled.");
+
+                DAWN_INVALID_IF(descriptor->pipelineStatisticsCount != 0,
+                                "Pipeline statistics specified for a query of type %s.",
+                                descriptor->type);
                 break;
 
             default:
@@ -100,7 +101,7 @@ namespace dawn_native {
     }
 
     QuerySetBase::QuerySetBase(DeviceBase* device, const QuerySetDescriptor* descriptor)
-        : ObjectBase(device),
+        : ApiObjectBase(device, descriptor->label),
           mQueryType(descriptor->type),
           mQueryCount(descriptor->count),
           mState(QuerySetState::Available) {
@@ -109,10 +110,15 @@ namespace dawn_native {
         }
 
         mQueryAvailability.resize(descriptor->count);
+        TrackInDevice();
+    }
+
+    QuerySetBase::QuerySetBase(DeviceBase* device) : ApiObjectBase(device, kLabelNotImplemented) {
+        TrackInDevice();
     }
 
     QuerySetBase::QuerySetBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : ObjectBase(device, tag) {
+        : ApiObjectBase(device, tag) {
     }
 
     QuerySetBase::~QuerySetBase() {
@@ -120,9 +126,17 @@ namespace dawn_native {
         ASSERT(mState == QuerySetState::Unavailable || mState == QuerySetState::Destroyed);
     }
 
+    void QuerySetBase::DestroyImpl() {
+        mState = QuerySetState::Destroyed;
+    }
+
     // static
     QuerySetBase* QuerySetBase::MakeError(DeviceBase* device) {
         return new ErrorQuerySet(device);
+    }
+
+    ObjectType QuerySetBase::GetType() const {
+        return ObjectType::QuerySet;
     }
 
     wgpu::QueryType QuerySetBase::GetQueryType() const {
@@ -147,9 +161,7 @@ namespace dawn_native {
 
     MaybeError QuerySetBase::ValidateCanUseInSubmitNow() const {
         ASSERT(!IsError());
-        if (mState == QuerySetState::Destroyed) {
-            return DAWN_VALIDATION_ERROR("Destroyed query set used in a submit");
-        }
+        DAWN_INVALID_IF(mState == QuerySetState::Destroyed, "%s used while destroyed.", this);
         return {};
     }
 
@@ -157,19 +169,12 @@ namespace dawn_native {
         if (GetDevice()->ConsumedError(ValidateDestroy())) {
             return;
         }
-        DestroyInternal();
+        Destroy();
     }
 
     MaybeError QuerySetBase::ValidateDestroy() const {
         DAWN_TRY(GetDevice()->ValidateObject(this));
         return {};
-    }
-
-    void QuerySetBase::DestroyInternal() {
-        if (mState != QuerySetState::Destroyed) {
-            DestroyImpl();
-        }
-        mState = QuerySetState::Destroyed;
     }
 
 }  // namespace dawn_native

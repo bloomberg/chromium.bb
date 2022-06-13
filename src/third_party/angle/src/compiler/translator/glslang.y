@@ -657,6 +657,11 @@ function_header_with_parameters
         {
             $1->addParameter($2.createVariable(&context->symbolTable));
         }
+        else
+        {
+            // Remember that void was seen, so error can be generated if another parameter is seen.
+            $1->setHasVoidParameter();
+        }
     }
     | function_header_with_parameters COMMA parameter_declaration {
         $$ = $1;
@@ -669,6 +674,12 @@ function_header_with_parameters
         }
         else
         {
+            if ($1->hasVoidParameter())
+            {
+                // Only first parameter of one-parameter functions can be void.  This check prevents
+                // (void, non_void) parameters.
+                context->error(@2, "cannot be a parameter type except for '(void)'", "void");
+            }
             $1->addParameter($3.createVariable(&context->symbolTable));
         }
     }
@@ -700,7 +711,7 @@ parameter_declaration
     }
     | parameter_declarator {
         $$ = $1;
-        $$.type->setQualifier(EvqIn);
+        $$.type->setQualifier(EvqParamIn);
     }
     | type_qualifier parameter_type_specifier {
         $$ = $2;
@@ -708,7 +719,7 @@ parameter_declaration
     }
     | parameter_type_specifier {
         $$ = $1;
-        $$.type->setQualifier(EvqIn);
+        $$.type->setQualifier(EvqParamIn);
     }
     ;
 
@@ -811,7 +822,7 @@ invariant_qualifier
 
 precise_qualifier
     : PRECISE {
-        // empty
+        context->markShaderHasPrecise();
     }
     ;
 

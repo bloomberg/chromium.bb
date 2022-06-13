@@ -14,7 +14,7 @@ namespace {
 bool g_is_download_manager_disabled_for_testing = false;
 }  // namespace
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillProvider)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutofillProvider);
 
 bool AutofillProvider::is_download_manager_disabled_for_testing() {
   return g_is_download_manager_disabled_for_testing;
@@ -25,17 +25,17 @@ void AutofillProvider::set_is_download_manager_disabled_for_testing() {
 }
 
 AutofillProvider::AutofillProvider(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : content::WebContentsUserData<AutofillProvider>(*web_contents) {
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(this));
 }
 
 AutofillProvider::~AutofillProvider() = default;
 
-void AutofillProvider::SendFormDataToRenderer(AndroidAutofillManager* manager,
-                                              int requestId,
-                                              const FormData& formData) {
-  manager->SendFormDataToRenderer(
-      requestId, AutofillDriver::FORM_DATA_ACTION_FILL, formData);
+void AutofillProvider::FillOrPreviewForm(AndroidAutofillManager* manager,
+                                         int requestId,
+                                         const FormData& formData) {
+  manager->FillOrPreviewForm(requestId, mojom::RendererFormDataAction::kFill,
+                             formData);
 }
 
 void AutofillProvider::RendererShouldAcceptDataListSuggestion(

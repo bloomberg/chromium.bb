@@ -8,11 +8,11 @@
 
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
-#include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 
 namespace media {
@@ -167,14 +167,14 @@ const uint8_t kKeyId[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
 // See http://crbug.com/592067
 
 // Common test results.
-const char kFailed[] = "FAILED";
+const char kFailedTitle[] = "FAILED";
 
 // Upper case event name set by Utils.installTitleEventHandler().
-const char kEnded[] = "ENDED";
-const char kErrorEvent[] = "ERROR";
+const char kEndedTitle[] = "ENDED";
+const char kErrorEventTitle[] = "ERROR";
 
 // Lower case event name as set by Utils.failTest().
-const char kError[] = "error";
+const char kErrorTitle[] = "error";
 
 const base::FilePath::CharType kTestDataPath[] =
     FILE_PATH_LITERAL("media/test/data");

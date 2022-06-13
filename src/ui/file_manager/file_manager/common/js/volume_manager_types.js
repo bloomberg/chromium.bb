@@ -2,12 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * @suppress {uselessCode} Temporary suppress because of the line exporting.
- */
-
-// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 
 /**
  * Namespace for common types.
@@ -19,7 +14,7 @@ const VolumeManagerCommon = {};
  * @enum {string}
  * @const
  */
-/* #export */ const AllowedPaths = {
+export const AllowedPaths = {
   NATIVE_PATH: 'nativePath',
   ANY_PATH: 'anyPath',
   ANY_PATH_OR_URL: 'anyPathOrUrl',
@@ -85,8 +80,8 @@ VolumeManagerCommon.RootType = {
   PROVIDED: 'provided',
 
   // Root for entries that is not located under RootType.DRIVE. e.g. shared
-  // files.
-  DRIVE_OTHER: 'drive_other',
+  // files. Deprecated, applied to pre-drivefs.
+  DEPRECATED_DRIVE_OTHER: 'drive_other',
 
   // Fake root for offline available files on the drive.
   DRIVE_OFFLINE: 'drive_offline',
@@ -166,7 +161,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.SHARED_DRIVE,                      // 5
   VolumeManagerCommon.RootType.MTP,                               // 6
   VolumeManagerCommon.RootType.PROVIDED,                          // 7
-  VolumeManagerCommon.RootType.DRIVE_OTHER,                       // 8
+  VolumeManagerCommon.RootType.DEPRECATED_DRIVE_OTHER,            // 8
   VolumeManagerCommon.RootType.DRIVE_OFFLINE,                     // 9
   VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,              // 10
   VolumeManagerCommon.RootType.DRIVE_RECENT,                      // 11
@@ -240,6 +235,7 @@ VolumeManagerCommon.VolumeType = {
   ANDROID_FILES: 'android_files',
   MY_FILES: 'my_files',
   SMB: 'smb',
+  SYSTEM_INTERNAL: 'system_internal',
   TRASH: 'trash',
 };
 
@@ -289,7 +285,7 @@ VolumeManagerCommon.getVolumeTypeFromRootType = rootType => {
     case VolumeManagerCommon.RootType.DRIVE:
     case VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT:
     case VolumeManagerCommon.RootType.SHARED_DRIVE:
-    case VolumeManagerCommon.RootType.DRIVE_OTHER:
+    case VolumeManagerCommon.RootType.DEPRECATED_DRIVE_OTHER:
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
     case VolumeManagerCommon.RootType.DRIVE_RECENT:
@@ -453,5 +449,4 @@ VolumeManagerCommon.createArchiveOpenedEvent = mountPoint => {
       {detail: {mountPoint: mountPoint}});
 };
 
-// eslint-disable-next-line semi,no-extra-semi
-/* #export */ {VolumeManagerCommon};
+export {VolumeManagerCommon};

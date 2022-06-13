@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/user_script.h"
@@ -39,6 +38,10 @@ struct ContentScriptsInfo : public Extension::ManifestData {
 class ContentScriptsHandler : public ManifestHandler {
  public:
   ContentScriptsHandler();
+
+  ContentScriptsHandler(const ContentScriptsHandler&) = delete;
+  ContentScriptsHandler& operator=(const ContentScriptsHandler&) = delete;
+
   ~ContentScriptsHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
@@ -48,8 +51,6 @@ class ContentScriptsHandler : public ManifestHandler {
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentScriptsHandler);
 };
 
 }  // namespace extensions

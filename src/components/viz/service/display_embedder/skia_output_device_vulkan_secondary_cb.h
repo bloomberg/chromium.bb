@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 
 namespace viz {
@@ -21,7 +22,8 @@ class SkiaOutputDeviceVulkanSecondaryCB final : public SkiaOutputDevice {
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
 
-  std::unique_ptr<SkiaOutputDevice::ScopedPaint> BeginScopedPaint() override;
+  std::unique_ptr<SkiaOutputDevice::ScopedPaint> BeginScopedPaint(
+      bool allocate_frame_buffer) override;
   void Submit(bool sync_cpu, base::OnceClosure callback) override;
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
@@ -34,6 +36,7 @@ class SkiaOutputDeviceVulkanSecondaryCB final : public SkiaOutputDevice {
                      BufferPresentedCallback feedback,
                      OutputSurfaceFrame frame) override;
   SkSurface* BeginPaint(
+      bool allocate_frame_buffer,
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndPaint() override;
 
@@ -50,7 +53,7 @@ class SkiaOutputDeviceVulkanSecondaryCB final : public SkiaOutputDevice {
             sk_sp<const SkDeferredDisplayList> ddl) override;
 
  private:
-  VulkanContextProvider* const context_provider_;
+  const raw_ptr<VulkanContextProvider> context_provider_;
   gfx::Size size_;
 };
 

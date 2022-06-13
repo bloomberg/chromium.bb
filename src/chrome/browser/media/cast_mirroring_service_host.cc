@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -20,9 +20,9 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/service_sandbox_type.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
+#include "components/mirroring/mojom/mirroring_service.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "content/public/browser/audio_service.h"
@@ -37,6 +37,7 @@
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
 #include "media/audio/audio_device_description.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -284,8 +285,7 @@ void CastMirroringServiceHost::GetNetworkContext(
   network::mojom::NetworkContextParamsPtr network_context_params =
       g_browser_process->system_network_context_manager()
           ->CreateDefaultNetworkContextParams();
-  network_context_params->context_name = "mirroring";
-  content::GetNetworkService()->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       std::move(receiver), std::move(network_context_params));
 }
 
@@ -464,14 +464,6 @@ void CastMirroringServiceHost::ShowCaptureIndicator() {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-void CastMirroringServiceHost::RequestMediaAccessPermission(
-    const content::MediaStreamRequest& request,
-    content::MediaResponseCallback callback) {
-  // This should not be called when mirroring an OffscreenTab through the
-  // mirroring service.
-  NOTREACHED();
-}
-
 void CastMirroringServiceHost::DestroyTab(OffscreenTab* tab) {
   if (offscreen_tab_ && (offscreen_tab_.get() == tab))
     offscreen_tab_.reset();

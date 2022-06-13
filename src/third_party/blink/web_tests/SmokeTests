@@ -7,7 +7,6 @@
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_expectations.md
 
 accessibility/aria-labelledby-on-input.html
-accessibility/aria-link-supports-press.html
 accessibility/insert-adjacent-html-causes-crash.xhtml
 animations/animation-shorthand-overriding.html
 animations/stability/empty-keyframes.html
@@ -205,8 +204,6 @@ external/wpt/html/browsers/history/the-history-interface/history_back.html
 external/wpt/html/browsers/history/the-history-interface/history_pushstate.html
 external/wpt/html/browsers/history/the-history-interface/history_replacestate_err.html
 external/wpt/html/browsers/history/the-history-interface/history_replacestate_nooptionalparam.html
-external/wpt/html/browsers/offline/application-cache-api/api_update_error.html
-external/wpt/html/browsers/offline/introduction-4/event_cached.html
 external/wpt/html/browsers/the-window-object/named-access-on-the-window-object/window-null-names.html
 external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html
 external/wpt/html/dom/documents/dom-tree-accessors/Document.getElementsByClassName-null-undef.html
@@ -771,14 +768,13 @@ html5lib/generated/run-tests24-write.html
 html/details_summary/details-clone.html
 html/details_summary/details-element-render-inline-crash.html
 html/details_summary/details-summary-document-child.html
-html/dialog/inert-label-focus.html
+external/wpt/html/semantics/interactive-elements/the-dialog-element/inert-label-focus.html
 html/grouping_content/figure-element.html
 html/marquee/marquee-inside-template-tag-crash.html
 html/sections/article-element.html
 html/sections/body-offset-properties.html
 html/tabular_data/tbody_insertrow_default_argument.html
 html/text_level_semantics/q-empty-crash.html
-http/tests/appcache/abort-cache-onchecking-resource-404.html
 http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html
 http/tests/dom/create-contextual-fragment-from-svg-document-range.html
 http/tests/dom/location-stringify.html

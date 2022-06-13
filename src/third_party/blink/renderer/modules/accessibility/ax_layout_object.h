@@ -29,23 +29,29 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_LAYOUT_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_LAYOUT_OBJECT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace blink {
 
 class AXObjectCacheImpl;
-class Element;
 class HTMLAreaElement;
-class IntPoint;
 class Node;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
  public:
   AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
+
+  AXLayoutObject(const AXLayoutObject&) = delete;
+  AXLayoutObject& operator=(const AXLayoutObject&) = delete;
+
   ~AXLayoutObject() override;
+  void Trace(Visitor*) const override;
 
   // AXObject overrides:
   LayoutObject* GetLayoutObject() const final;
@@ -57,10 +63,9 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // DOM and layout tree access.
   Document* GetDocument() const override;
-  Element* AnchorElement() const override;
 
  protected:
-  LayoutObject* layout_object_;
+  Member<LayoutObject> layout_object_;
 
   //
   // Overridden from AXObject.
@@ -70,7 +75,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool IsAXLayoutObject() const final;
 
   // Check object role or purpose.
-  bool IsLineBreakingObject() const override;
   bool IsLinked() const override;
   bool IsOffScreen() const override;
   bool IsVisited() const override;
@@ -91,14 +95,14 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
   // AX name calc.
   String TextAlternative(bool recursive,
-                         bool in_aria_labelled_by_traversal,
+                         const AXObject* aria_label_or_description_root,
                          AXObjectSet& visited,
                          ax::mojom::blink::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 
   // Hit testing.
-  AXObject* AccessibilityHitTest(const IntPoint&) const override;
+  AXObject* AccessibilityHitTest(const gfx::Point&) const override;
 
   // Called when autofill/autocomplete state changes on a form control.
   void HandleAutofillStateChanged(WebAXAutofillState state) override;
@@ -121,6 +125,10 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // For a table row or column.
   AXObject* HeaderObject() const override;
 
+  // For a list marker.
+  void GetWordBoundaries(Vector<int>& word_starts,
+                         Vector<int>& word_ends) const override;
+
   //
   // Layout object specific methods.
   //
@@ -133,13 +141,11 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
 
  private:
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,
-                                         const IntPoint&) const;
+                                         const gfx::Point&) const;
   bool FindAllTableCellsWithRole(ax::mojom::blink::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
   bool IsPlaceholder() const;
-
-  DISALLOW_COPY_AND_ASSIGN(AXLayoutObject);
 };
 
 template <>

@@ -14,6 +14,8 @@
 namespace openscreen {
 namespace osp {
 
+constexpr char kOpenScreenServiceName[] = "_openscreen._udp";
+
 // This contains canonical information about a specific Open Screen service
 // found on the network via our discovery mechanism (mDNS).
 struct ServiceInfo {

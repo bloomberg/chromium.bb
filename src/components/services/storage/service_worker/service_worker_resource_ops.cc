@@ -6,9 +6,12 @@
 
 #include "base/numerics/checked_math.h"
 #include "base/pickle.h"
+#include "components/services/storage/public/cpp/big_io_buffer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/http/http_response_info.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
@@ -42,7 +45,12 @@ network::mojom::URLResponseHeadPtr ConvertHttpResponseInfo(
   response_head->alpn_negotiated_protocol = http_info.alpn_negotiated_protocol;
   response_head->remote_endpoint = http_info.remote_endpoint;
   response_head->cert_status = http_info.ssl_info.cert_status;
-  response_head->ssl_info = http_info.ssl_info;
+  // See ConvertToPickle(), where an invalid ssl_info is put into storage in
+  // case of |response_head->ssl_info| being nullptr. Here we restore
+  // |response_head->ssl_info| to nullptr if we got the invalid ssl_info from
+  // storage.
+  if (http_info.ssl_info.is_valid())
+    response_head->ssl_info = http_info.ssl_info;
 
   return response_head;
 }
@@ -53,8 +61,10 @@ std::unique_ptr<base::Pickle> ConvertToPickle(
     network::mojom::URLResponseHeadPtr response_head) {
   net::HttpResponseInfo response_info;
   response_info.headers = response_head->headers;
-  if (response_head->ssl_info.has_value())
+  if (response_head->ssl_info.has_value()) {
     response_info.ssl_info = *response_head->ssl_info;
+    DCHECK(response_info.ssl_info.is_valid());
+  }
   response_info.was_fetched_via_spdy = response_head->was_fetched_via_spdy;
   response_info.was_alpn_negotiated = response_head->was_alpn_negotiated;
   response_info.alpn_negotiated_protocol =
@@ -88,41 +98,6 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 };
 
 }  // namespace
-
-// BigBuffer backed IOBuffer.
-class BigIOBuffer : public net::IOBufferWithSize {
- public:
-  explicit BigIOBuffer(mojo_base::BigBuffer buffer);
-
-  BigIOBuffer(const BigIOBuffer&) = delete;
-  BigIOBuffer& operator=(const BigIOBuffer&) = delete;
-
-  mojo_base::BigBuffer TakeBuffer();
-
- protected:
-  ~BigIOBuffer() override;
-
- private:
-  mojo_base::BigBuffer buffer_;
-};
-
-BigIOBuffer::BigIOBuffer(mojo_base::BigBuffer buffer)
-    : net::IOBufferWithSize(nullptr, buffer.size()),
-      buffer_(std::move(buffer)) {
-  data_ = reinterpret_cast<char*>(buffer_.data());
-}
-
-BigIOBuffer::~BigIOBuffer() {
-  // Reset `data_` to avoid double-free. The base class (IOBuffer) tries to
-  // delete it.
-  data_ = nullptr;
-}
-
-mojo_base::BigBuffer BigIOBuffer::TakeBuffer() {
-  data_ = nullptr;
-  size_ = 0UL;
-  return std::move(buffer_);
-}
 
 DiskEntryCreator::DiskEntryCreator(
     int64_t resource_id,

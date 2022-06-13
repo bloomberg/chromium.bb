@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/ignore_result.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/mouse_capture.h"
@@ -464,13 +465,30 @@ void NativeWidgetMacNSWindowHost::SetBoundsInScreen(const gfx::Rect& bounds) {
   }
 }
 
-void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen) {
+void NativeWidgetMacNSWindowHost::SetFullscreen(bool fullscreen,
+                                                base::TimeDelta delay) {
   // Note that when the NSWindow begins a fullscreen transition, the value of
   // |target_fullscreen_state_| updates via OnWindowFullscreenTransitionStart.
   // The update here is necessary for the case where we are currently in
   // transition (and therefore OnWindowFullscreenTransitionStart will not be
   // called until the current transition completes).
   target_fullscreen_state_ = fullscreen;
+
+  if (!delay.is_zero()) {
+    // Synchronously requesting fullscreen after moving the window to another
+    // display causes the window to resign key. Workaround this OS-specific
+    // quirk by delaying the fullscreen request, after setting the target state,
+    // to encapsulate some of these details from the calling client window code,
+    // i.e. so BrowserView::ProcessFullscreen will still hide its frame, etc.
+    // TODO(crbug.com/1034783): Refine cross-display fullscreen implementations.
+    // TODO(crbug.com/1210548): Find a better solution to avoid key resignation.
+    auto callback = base::BindOnce(
+        &NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay, widget_id_);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, std::move(callback), delay);
+    return;
+  }
+
   GetNSWindowMojo()->SetFullscreen(target_fullscreen_state_);
 }
 
@@ -565,6 +583,13 @@ void NativeWidgetMacNSWindowHost::DestroyCompositor() {
   compositor_->compositor()->SetRootLayer(nullptr);
   ui::RecyclableCompositorMacFactory::Get()->RecycleCompositor(
       std::move(compositor_));
+}
+
+// static
+void NativeWidgetMacNSWindowHost::SetFullscreenAfterDelay(
+    uint64_t bridged_native_widget_id) {
+  if (NativeWidgetMacNSWindowHost* host = GetFromId(bridged_native_widget_id))
+    host->GetNSWindowMojo()->SetFullscreen(host->target_fullscreen_state_);
 }
 
 bool NativeWidgetMacNSWindowHost::SetWindowTitle(const std::u16string& title) {
@@ -733,6 +758,10 @@ void NativeWidgetMacNSWindowHost::UpdateRemoteWindowControlsOverlayView(
   GetNSWindowMojo()->UpdateWindowControlsOverlayNSView(bounds, overlay_type);
 }
 
+void NativeWidgetMacNSWindowHost::RemoveRemoteWindowControlsOverlayView(
+    remote_cocoa::mojom::WindowControlsOverlayNSViewType overlay_type) {
+  GetNSWindowMojo()->RemoveWindowControlsOverlayNSView(overlay_type);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMacNSWindowHost, remote_cocoa::BridgedNativeWidgetHostHelper:
 
@@ -762,6 +791,10 @@ remote_cocoa::DragDropClient* NativeWidgetMacNSWindowHost::GetDragDropClient() {
 
 ui::TextInputClient* NativeWidgetMacNSWindowHost::GetTextInputClient() {
   return text_input_host_->GetTextInputClient();
+}
+
+bool NativeWidgetMacNSWindowHost::MustPostTaskToRunModalSheetAnimation() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

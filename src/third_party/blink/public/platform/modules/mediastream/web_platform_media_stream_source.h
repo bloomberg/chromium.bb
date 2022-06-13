@@ -36,7 +36,11 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
   // https://dev.w3.org/2011/webrtc/editor/getusermedia.html.
   static const char kSourceId[];
 
-  WebPlatformMediaStreamSource();
+  explicit WebPlatformMediaStreamSource(
+      scoped_refptr<base::SingleThreadTaskRunner>);
+  WebPlatformMediaStreamSource(const WebPlatformMediaStreamSource&) = delete;
+  WebPlatformMediaStreamSource& operator=(const WebPlatformMediaStreamSource&) =
+      delete;
   virtual ~WebPlatformMediaStreamSource();
 
   // Returns device information about a source that has been created by a
@@ -86,6 +90,9 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
   // implementations to implement custom stop methods.
   void FinalizeStopSource();
 
+  // Gets the TaskRunner for the main thread, for subclasses that need it.
+  base::SingleThreadTaskRunner* GetTaskRunner() const;
+
  private:
   MediaStreamDevice device_;
   SourceStoppedCallback stop_callback_;
@@ -94,7 +101,10 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
                 WebPrivatePtrStrength::kWeak>
       owner_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPlatformMediaStreamSource);
+  // Task runner for the main thread. Also used to check that all methods that
+  // could cause object graph or data flow changes are being called on the main
+  // thread.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace blink

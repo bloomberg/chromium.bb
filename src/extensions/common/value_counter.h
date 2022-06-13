@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
-
 namespace base {
 class Value;
 }
@@ -24,6 +22,10 @@ namespace extensions {
 class ValueCounter {
  public:
   ValueCounter();
+
+  ValueCounter(const ValueCounter&) = delete;
+  ValueCounter& operator=(const ValueCounter&) = delete;
+
   ~ValueCounter();
 
   // Adds |value| to the set. In the case where a Value equal to |value|
@@ -42,8 +44,6 @@ class ValueCounter {
  private:
   struct Entry;
   std::vector<Entry> entries_;
-
-  DISALLOW_COPY_AND_ASSIGN(ValueCounter);
 };
 
 }  // namespace extensions

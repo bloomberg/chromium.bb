@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_popup_menu_element.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_focus_options.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -113,6 +114,7 @@ void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
   MediaControlDivElement::SetIsWanted(wanted);
 
   if (wanted) {
+    GetDocument().AddToTopLayer(this);
     SetPosition();
 
     SelectFirstItem();
@@ -123,6 +125,7 @@ void MediaControlPopupMenuElement::SetIsWanted(bool wanted) {
   } else {
     if (event_listener_)
       event_listener_->StopListening();
+    GetDocument().RemoveFromTopLayer(this);
   }
 }
 
@@ -149,11 +152,15 @@ void MediaControlPopupMenuElement::DefaultEventHandler(Event& event) {
 
     event.stopPropagation();
     event.SetDefaultHandled();
-  } else if (event.type() == event_type_names::kFocus) {
+  } else if (event.type() == event_type_names::kFocus &&
+             event.target() == this) {
     // When the popup menu gains focus from scrolling, switch focus
     // back to the last focused item in the menu.
-    if (last_focused_element_)
-      last_focused_element_->focus();
+    if (last_focused_element_) {
+      FocusOptions* focus_options = FocusOptions::Create();
+      focus_options->setPreventScroll(true);
+      last_focused_element_->focus(focus_options);
+    }
   }
 
   MediaControlDivElement::DefaultEventHandler(event);

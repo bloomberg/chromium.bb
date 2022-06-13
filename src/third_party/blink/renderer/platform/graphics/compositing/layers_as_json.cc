@@ -5,12 +5,12 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 
 #include "cc/layers/layer.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 
@@ -37,14 +37,13 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer& layer,
   json->SetString("name", String(layer.DebugName().c_str()));
 
   if (layer.offset_to_transform_parent() != gfx::Vector2dF()) {
-    json->SetArray(
-        "position",
-        PointAsJSONArray(FloatPoint(layer.offset_to_transform_parent())));
+    json->SetArray("position",
+                   VectorAsJSONArray(layer.offset_to_transform_parent()));
   }
 
   // This is testing against gfx::Size(), *not* whether the size is empty.
   if (layer.bounds() != gfx::Size())
-    json->SetArray("bounds", SizeAsJSONArray(IntSize(layer.bounds())));
+    json->SetArray("bounds", SizeAsJSONArray(layer.bounds()));
 
   if (layer.contents_opaque())
     json->SetBoolean("contentsOpaque", true);
@@ -108,8 +107,10 @@ int LayersAsJSON::AddTransformJSON(
   }
 
   if (!transform.IsIdentityOr2DTranslation() &&
-      !transform.Matrix().IsIdentityOrTranslation())
-    transform_json->SetArray("origin", PointAsJSONArray(transform.Origin()));
+      !transform.Matrix().IsIdentityOrTranslation()) {
+    transform_json->SetArray(
+        "origin", Point3AsJSONArray(ToGfxPoint3F(transform.Origin())));
+  }
 
   if (!transform.FlattensInheritedTransform())
     transform_json->SetBoolean("flattenInheritedTransform", false);

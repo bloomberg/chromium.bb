@@ -10,7 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -33,6 +33,9 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   explicit Transformer(ScriptState* script_state)
       : encoder_(NewTextCodec(WTF::TextEncoding("utf-8"))),
         script_state_(script_state) {}
+
+  Transformer(const Transformer&) = delete;
+  Transformer& operator=(const Transformer&) = delete;
 
   // Implements the "encode and enqueue a chunk" algorithm. For efficiency, only
   // the characters at the end of chunks are special-cased.
@@ -101,10 +104,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   }
 
  private:
-  static std::string ReplacementCharacterInUtf8() {
-    constexpr char kRawBytes[] = {0xEF, 0xBF, 0xBD};
-    return std::string(kRawBytes, sizeof(kRawBytes));
-  }
+  static std::string ReplacementCharacterInUtf8() { return "\ufffd"; }
 
   static DOMUint8Array* CreateDOMUint8ArrayFromTwoStdStringsConcatenated(
       const std::string& string1,
@@ -163,8 +163,6 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   // TextEncoderStream can only be accessed from the world that created it.
   Member<ScriptState> script_state_;
   absl::optional<UChar> pending_high_surrogate_;
-
-  DISALLOW_COPY_AND_ASSIGN(Transformer);
 };
 
 TextEncoderStream* TextEncoderStream::Create(ScriptState* script_state,

@@ -10,15 +10,18 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/callback_forward.h"
+#include "base/check.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/video_capture_target.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_frame.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
@@ -26,6 +29,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/viz/public/cpp/compositing/video_capture_target_mojom_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -51,6 +55,11 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       public viz::mojom::FrameSinkVideoConsumer {
  public:
   FrameSinkVideoCaptureDevice();
+
+  FrameSinkVideoCaptureDevice(const FrameSinkVideoCaptureDevice&) = delete;
+  FrameSinkVideoCaptureDevice& operator=(const FrameSinkVideoCaptureDevice&) =
+      delete;
+
   ~FrameSinkVideoCaptureDevice() override;
 
   // Deviation from the VideoCaptureDevice interface: Since the memory pooling
@@ -72,13 +81,16 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void RequestRefreshFrame() final;
   void MaybeSuspend() final;
   void Resume() final;
+  void Crop(const base::Token& crop_id,
+            base::OnceCallback<void(media::mojom::CropRequestResult)> callback)
+      override;
   void StopAndDeAllocate() final;
   void OnUtilizationReport(int frame_feedback_id,
                            media::VideoCaptureFeedback feedback) final;
 
   // FrameSinkVideoConsumer implementation.
   void OnFrameCaptured(
-      base::ReadOnlySharedMemoryRegion data,
+      media::mojom::VideoBufferHandlePtr data,
       media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
@@ -87,8 +99,10 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void OnLog(const std::string& message) final;
 
   // These are called to notify when the capture target has changed or was
-  // permanently lost.
-  virtual void OnTargetChanged(const viz::FrameSinkId& frame_sink_id);
+  // permanently lost. NOTE: a target can be temporarily absl::nullopt without
+  // being permanently lost.
+  virtual void OnTargetChanged(
+      const absl::optional<viz::VideoCaptureTarget>& target);
   virtual void OnTargetPermanentlyLost();
 
  protected:
@@ -138,7 +152,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   // Current capture target. This is cached to resolve a race where
   // OnTargetChanged() can be called before the |capturer_| is created in
   // OnCapturerCreated().
-  viz::FrameSinkId target_;
+  absl::optional<viz::VideoCaptureTarget> target_;
 
   // The requested format, rate, and other capture constraints.
   media::VideoCaptureParams capture_params_;
@@ -180,8 +194,6 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   // Creates WeakPtrs for use on the device thread.
   base::WeakPtrFactory<FrameSinkVideoCaptureDevice> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FrameSinkVideoCaptureDevice);
 };
 
 }  // namespace content

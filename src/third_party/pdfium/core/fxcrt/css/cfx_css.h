@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include <type_traits>
+
 enum CFX_CSSVALUETYPE {
   CFX_CSSVALUETYPE_Primitive = 1 << 0,
   CFX_CSSVALUETYPE_List = 1 << 1,
@@ -19,16 +21,7 @@ enum CFX_CSSVALUETYPE {
   CFX_CSSVALUETYPE_MaybeString = 1 << 7,
   CFX_CSSVALUETYPE_MaybeColor = 1 << 8
 };
-
-enum class CFX_CSSPrimitiveType : uint8_t {
-  Unknown = 0,
-  Number,
-  String,
-  RGB,
-  Enum,
-  Function,
-  List,
-};
+using CFX_CSSValueTypeMask = std::underlying_type<CFX_CSSVALUETYPE>::type;
 
 // Any entries added/removed here, will need to be mirrored in
 // propertyValueTable, in core/fxcrt/css/cfx_cssdata.cpp.
@@ -171,13 +164,13 @@ enum class CFX_CSSFontVariant : uint8_t {
   SmallCaps,
 };
 
-enum CFX_CSSTEXTDECORATION {
-  CFX_CSSTEXTDECORATION_None = 0,
-  CFX_CSSTEXTDECORATION_Underline = 1 << 0,
-  CFX_CSSTEXTDECORATION_Overline = 1 << 1,
-  CFX_CSSTEXTDECORATION_LineThrough = 1 << 2,
-  CFX_CSSTEXTDECORATION_Blink = 1 << 3,
-  CFX_CSSTEXTDECORATION_Double = 1 << 4,
+enum class CFX_CSSTEXTDECORATION : uint8_t {
+  kNone = 0,
+  kUnderline = 1 << 0,
+  kOverline = 1 << 1,
+  kLineThrough = 1 << 2,
+  kBlink = 1 << 3,
+  kDouble = 1 << 4,
 };
 
 class CFX_CSSLength {

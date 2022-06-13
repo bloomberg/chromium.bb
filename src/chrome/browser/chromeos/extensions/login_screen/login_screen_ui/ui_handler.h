@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+// TODO(https://crbug.com/1164001): use forward declaration.
+#include "chrome/browser/ash/login/ui/login_screen_extension_ui/window.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/extension_registry.h"
@@ -22,11 +24,7 @@ class Extension;
 }  // namespace extensions
 
 namespace chromeos {
-
 namespace login_screen_extension_ui {
-
-class Window;
-class WindowFactory;
 
 struct ExtensionIdToWindowMapping {
   ExtensionIdToWindowMapping(const std::string& extension_id,
@@ -54,6 +52,10 @@ class UiHandler : public session_manager::SessionManagerObserver,
   static void Shutdown();
 
   explicit UiHandler(std::unique_ptr<WindowFactory> window_factory);
+
+  UiHandler(const UiHandler&) = delete;
+  UiHandler& operator=(const UiHandler&) = delete;
+
   ~UiHandler() override;
 
   // Endpoint for calls to the chrome.loginScreenUi.show() API. If an error
@@ -116,8 +118,6 @@ class UiHandler : public session_manager::SessionManagerObserver,
       extension_registry_observation_{this};
 
   base::WeakPtrFactory<UiHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UiHandler);
 };
 
 }  // namespace login_screen_extension_ui

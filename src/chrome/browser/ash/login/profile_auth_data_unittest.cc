@@ -39,9 +39,9 @@
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 const char kProxyAuthURL[] = "https://example.com/";
@@ -174,8 +174,9 @@ net::CookieList ProfileAuthDataTest::GetUserCookies() {
 void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
   net::HttpAuthCache::Entry* entry =
       GetAuthCache(user_network_context_.get())
-          ->Lookup(GURL(kProxyAuthURL), net::HttpAuth::AUTH_PROXY,
-                   kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
+          ->Lookup(url::SchemeHostPort(GURL(kProxyAuthURL)),
+                   net::HttpAuth::AUTH_PROXY, kProxyAuthRealm,
+                   net::HttpAuth::AUTH_SCHEME_BASIC,
                    net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
   EXPECT_EQ(kProxyAuthPassword1, entry->credentials().password());
@@ -210,9 +211,9 @@ void ProfileAuthDataTest::PopulateBrowserContext(
     const std::u16string& proxy_auth_password,
     const std::string& cookie_value) {
   GetAuthCache(network_context)
-      ->Add(GURL(kProxyAuthURL), net::HttpAuth::AUTH_PROXY, kProxyAuthRealm,
-            net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey(),
-            kProxyAuthChallenge,
+      ->Add(url::SchemeHostPort(GURL(kProxyAuthURL)), net::HttpAuth::AUTH_PROXY,
+            kProxyAuthRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
+            net::NetworkIsolationKey(), kProxyAuthChallenge,
             net::AuthCredentials(std::u16string(), proxy_auth_password),
             std::string());
 
@@ -231,7 +232,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           kSAMLIdPCookieDomainWithWildcard, std::string(), base::Time(),
           base::Time(), base::Time(), true, false,
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-          false),
+          false, absl::nullopt),
       GURL(kSAMLIdPCookieURL), options, base::DoNothing());
 
   cookies->SetCanonicalCookie(
@@ -239,7 +240,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-          false),
+          false, absl::nullopt),
       GURL(kSAMLIdPCookieURL), options, base::DoNothing());
 
   cookies->SetCanonicalCookie(
@@ -247,7 +248,7 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           GURL(kGAIACookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-          false),
+          false, absl::nullopt),
       GURL(kGAIACookieURL), options, base::DoNothing());
 }
 
@@ -306,4 +307,4 @@ TEST_F(ProfileAuthDataTest, TransferOnSubsequentLogin) {
   VerifyUserCookies(kCookieValue2, kCookieValue1);
 }
 
-}  // namespace chromeos
+}  // namespace ash

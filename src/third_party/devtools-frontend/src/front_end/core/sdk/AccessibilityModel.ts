@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import type * as Protocol from '../../generated/protocol.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 
 import type {DOMNode} from './DOMModel.js';
-import {DeferredDOMNode} from './DOMModel.js';  // eslint-disable-line no-unused-vars
-import type {Target} from './SDKModel.js';
-import {Capability, SDKModel} from './SDKModel.js';  // eslint-disable-line no-unused-vars
+import {DeferredDOMNode} from './DOMModel.js';
+import type {Target} from './Target.js';
+import {Capability} from './Target.js';
+import {SDKModel} from './SDKModel.js';
 
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -27,119 +26,123 @@ export interface CoreOrProtocolAxProperty {
 }
 
 export class AccessibilityNode {
-  _accessibilityModel: AccessibilityModel;
-  _agent: ProtocolProxyApi.AccessibilityApi;
-  _id: string;
-  _backendDOMNodeId: number|null;
-  _deferredDOMNode: DeferredDOMNode|null;
-  _ignored: boolean;
-  _ignoredReasons: Protocol.Accessibility.AXProperty[]|undefined;
-  _role: Protocol.Accessibility.AXValue|null;
-  _name: Protocol.Accessibility.AXValue|null;
-  _description: Protocol.Accessibility.AXValue|null;
-  _value: Protocol.Accessibility.AXValue|null;
-  _properties: Protocol.Accessibility.AXProperty[]|null;
-  _childIds: string[]|null;
-  _parentNode: AccessibilityNode|null;
+  readonly #accessibilityModelInternal: AccessibilityModel;
+  readonly #idInternal: Protocol.Accessibility.AXNodeId;
+  readonly #backendDOMNodeIdInternal: Protocol.DOM.BackendNodeId|null;
+  readonly #deferredDOMNodeInternal: DeferredDOMNode|null;
+  readonly #ignoredInternal: boolean;
+  readonly #ignoredReasonsInternal: Protocol.Accessibility.AXProperty[]|undefined;
+  readonly #roleInternal: Protocol.Accessibility.AXValue|null;
+  readonly #nameInternal: Protocol.Accessibility.AXValue|null;
+  readonly #descriptionInternal: Protocol.Accessibility.AXValue|null;
+  readonly #valueInternal: Protocol.Accessibility.AXValue|null;
+  readonly #propertiesInternal: Protocol.Accessibility.AXProperty[]|null;
+  readonly #parentId: Protocol.Accessibility.AXNodeId|null;
+  readonly #frameId: Protocol.Page.FrameId|null;
+  readonly #childIds: Protocol.Accessibility.AXNodeId[]|null;
 
   constructor(accessibilityModel: AccessibilityModel, payload: Protocol.Accessibility.AXNode) {
-    this._accessibilityModel = accessibilityModel;
-    this._agent = accessibilityModel._agent;
+    this.#accessibilityModelInternal = accessibilityModel;
 
-    this._id = payload.nodeId;
-    accessibilityModel._setAXNodeForAXId(this._id, this);
+    this.#idInternal = payload.nodeId;
+    accessibilityModel.setAXNodeForAXId(this.#idInternal, this);
     if (payload.backendDOMNodeId) {
-      accessibilityModel._setAXNodeForBackendDOMNodeId(payload.backendDOMNodeId, this);
-      this._backendDOMNodeId = payload.backendDOMNodeId;
-      this._deferredDOMNode = new DeferredDOMNode(accessibilityModel.target(), payload.backendDOMNodeId);
+      accessibilityModel.setAXNodeForBackendDOMNodeId(payload.backendDOMNodeId, this);
+      this.#backendDOMNodeIdInternal = payload.backendDOMNodeId;
+      this.#deferredDOMNodeInternal = new DeferredDOMNode(accessibilityModel.target(), payload.backendDOMNodeId);
     } else {
-      this._backendDOMNodeId = null;
-      this._deferredDOMNode = null;
+      this.#backendDOMNodeIdInternal = null;
+      this.#deferredDOMNodeInternal = null;
     }
-    this._ignored = payload.ignored;
-    if (this._ignored && 'ignoredReasons' in payload) {
-      this._ignoredReasons = payload.ignoredReasons;
+    this.#ignoredInternal = payload.ignored;
+    if (this.#ignoredInternal && 'ignoredReasons' in payload) {
+      this.#ignoredReasonsInternal = payload.ignoredReasons;
     }
 
-    this._role = payload.role || null;
-    this._name = payload.name || null;
-    this._description = payload.description || null;
-    this._value = payload.value || null;
-    this._properties = payload.properties || null;
-    this._childIds = payload.childIds || null;
-    this._parentNode = null;
+    this.#roleInternal = payload.role || null;
+    this.#nameInternal = payload.name || null;
+    this.#descriptionInternal = payload.description || null;
+    this.#valueInternal = payload.value || null;
+    this.#propertiesInternal = payload.properties || null;
+    this.#childIds = payload.childIds || null;
+    this.#parentId = payload.parentId || null;
+    if (payload.frameId && !payload.parentId) {
+      this.#frameId = payload.frameId;
+      accessibilityModel.setRootAXNodeForFrameId(payload.frameId, this);
+    } else {
+      this.#frameId = null;
+    }
   }
 
-  id(): string {
-    return this._id;
+  id(): Protocol.Accessibility.AXNodeId {
+    return this.#idInternal;
   }
 
   accessibilityModel(): AccessibilityModel {
-    return this._accessibilityModel;
+    return this.#accessibilityModelInternal;
   }
 
   ignored(): boolean {
-    return this._ignored;
+    return this.#ignoredInternal;
   }
 
   ignoredReasons(): Protocol.Accessibility.AXProperty[]|null {
-    return this._ignoredReasons || null;
+    return this.#ignoredReasonsInternal || null;
   }
 
   role(): Protocol.Accessibility.AXValue|null {
-    return this._role || null;
+    return this.#roleInternal || null;
   }
 
   coreProperties(): CoreOrProtocolAxProperty[] {
     const properties: CoreOrProtocolAxProperty[] = [];
 
-    if (this._name) {
-      properties.push({name: CoreAxPropertyName.Name, value: this._name});
+    if (this.#nameInternal) {
+      properties.push({name: CoreAxPropertyName.Name, value: this.#nameInternal});
     }
-    if (this._description) {
-      properties.push({name: CoreAxPropertyName.Description, value: this._description});
+    if (this.#descriptionInternal) {
+      properties.push({name: CoreAxPropertyName.Description, value: this.#descriptionInternal});
     }
-    if (this._value) {
-      properties.push({name: CoreAxPropertyName.Value, value: this._value});
+    if (this.#valueInternal) {
+      properties.push({name: CoreAxPropertyName.Value, value: this.#valueInternal});
     }
 
     return properties;
   }
 
   name(): Protocol.Accessibility.AXValue|null {
-    return this._name || null;
+    return this.#nameInternal || null;
   }
 
   description(): Protocol.Accessibility.AXValue|null {
-    return this._description || null;
+    return this.#descriptionInternal || null;
   }
 
   value(): Protocol.Accessibility.AXValue|null {
-    return this._value || null;
+    return this.#valueInternal || null;
   }
 
   properties(): Protocol.Accessibility.AXProperty[]|null {
-    return this._properties || null;
+    return this.#propertiesInternal || null;
   }
 
   parentNode(): AccessibilityNode|null {
-    return this._parentNode;
-  }
-
-  _setParentNode(parentNode: AccessibilityNode|null): void {
-    this._parentNode = parentNode;
+    if (this.#parentId) {
+      return this.#accessibilityModelInternal.axNodeForId(this.#parentId);
+    }
+    return null;
   }
 
   isDOMNode(): boolean {
-    return Boolean(this._backendDOMNodeId);
+    return Boolean(this.#backendDOMNodeIdInternal);
   }
 
-  backendDOMNodeId(): number|null {
-    return this._backendDOMNodeId;
+  backendDOMNodeId(): Protocol.DOM.BackendNodeId|null {
+    return this.#backendDOMNodeIdInternal;
   }
 
   deferredDOMNode(): DeferredDOMNode|null {
-    return this._deferredDOMNode;
+    return this.#deferredDOMNodeInternal;
   }
 
   highlightDOMNode(): void {
@@ -152,13 +155,13 @@ export class AccessibilityNode {
   }
 
   children(): AccessibilityNode[] {
-    if (!this._childIds) {
+    if (!this.#childIds) {
       return [];
     }
 
     const children = [];
-    for (const childId of this._childIds) {
-      const child = this._accessibilityModel.axNodeForId(childId);
+    for (const childId of this.#childIds) {
+      const child = this.#accessibilityModelInternal.axNodeForId(childId);
       if (child) {
         children.push(child);
       }
@@ -168,168 +171,197 @@ export class AccessibilityNode {
   }
 
   numChildren(): number {
-    if (!this._childIds) {
+    if (!this.#childIds) {
       return 0;
     }
-    return this._childIds.length;
+    return this.#childIds.length;
   }
 
   hasOnlyUnloadedChildren(): boolean {
-    if (!this._childIds || !this._childIds.length) {
+    if (!this.#childIds || !this.#childIds.length) {
       return false;
     }
+    return this.#childIds.every(id => this.#accessibilityModelInternal.axNodeForId(id) === null);
+  }
 
-    return !this._childIds.some(id => this._accessibilityModel.axNodeForId(id) !== null);
+  hasUnloadedChildren(): boolean {
+    if (!this.#childIds || !this.#childIds.length) {
+      return false;
+    }
+    return this.#childIds.some(id => this.#accessibilityModelInternal.axNodeForId(id) === null);
+  }
+  // Only the root node gets a frameId, so nodes have to walk up the tree to find their frameId.
+  getFrameId(): Protocol.Page.FrameId|null {
+    return this.#frameId || this.parentNode()?.getFrameId() || null;
   }
 }
 
-export class AccessibilityModel extends SDKModel {
-  _agent: ProtocolProxyApi.AccessibilityApi;
-  _axIdToAXNode: Map<string, AccessibilityNode>;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _backendDOMNodeIdToAXNode: Map<any, any>;
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum Events {
+  TreeUpdated = 'TreeUpdated',
+}
+
+export type EventTypes = {
+  [Events.TreeUpdated]: {root?: AccessibilityNode},
+};
+
+export class AccessibilityModel extends SDKModel<EventTypes> implements ProtocolProxyApi.AccessibilityDispatcher {
+  agent: ProtocolProxyApi.AccessibilityApi;
+  #axIdToAXNode: Map<string, AccessibilityNode>;
+  #backendDOMNodeIdToAXNode: Map<Protocol.DOM.BackendNodeId, AccessibilityNode>;
+  #frameIdToAXNode: Map<Protocol.Page.FrameId, AccessibilityNode>;
+  #pendingChildRequests: Map<string, Promise<Protocol.Accessibility.GetChildAXNodesResponse>>;
+  #root: AccessibilityNode|null;
+
   constructor(target: Target) {
     super(target);
-    this._agent = target.accessibilityAgent();
+    target.registerAccessibilityDispatcher(this);
+    this.agent = target.accessibilityAgent();
     this.resumeModel();
 
-    this._axIdToAXNode = new Map();
-    this._backendDOMNodeIdToAXNode = new Map();
+    this.#axIdToAXNode = new Map();
+    this.#backendDOMNodeIdToAXNode = new Map();
+    this.#frameIdToAXNode = new Map();
+    this.#pendingChildRequests = new Map();
+    this.#root = null;
   }
 
   clear(): void {
-    this._axIdToAXNode.clear();
+    this.#root = null;
+    this.#axIdToAXNode.clear();
+    this.#backendDOMNodeIdToAXNode.clear();
+    this.#frameIdToAXNode.clear();
   }
 
   async resumeModel(): Promise<void> {
-    await this._agent.invoke_enable();
+    await this.agent.invoke_enable();
   }
 
   async suspendModel(): Promise<void> {
-    await this._agent.invoke_disable();
+    await this.agent.invoke_disable();
   }
 
   async requestPartialAXTree(node: DOMNode): Promise<void> {
-    const {nodes} = await this._agent.invoke_getPartialAXTree(
-        {nodeId: node.id, backendNodeId: undefined, objectId: undefined, fetchRelatives: true});
+    const {nodes} = await this.agent.invoke_getPartialAXTree({nodeId: node.id, fetchRelatives: true});
     if (!nodes) {
       return;
     }
-
-    for (const payload of nodes) {
-      new AccessibilityNode(this, payload);
-    }
-
-    for (const axNode of this._axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild._setParentNode(axNode);
-      }
-    }
-  }
-
-  async requestRootNode(depth: number = 2): Promise<AccessibilityNode|undefined> {
-    const {nodes} = await this._agent.invoke_getFullAXTree({max_depth: depth});
-    if (!nodes) {
-      return;
-    }
-
-    const axNodes = nodes.map(node => new AccessibilityNode(this, node));
-
-    for (const axNode of this._axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild._setParentNode(axNode);
-      }
-    }
-
-    return axNodes[0];
-  }
-
-  async requestAXChildren(nodeId: string): Promise<AccessibilityNode[]> {
-    const {nodes} = await this._agent.invoke_getChildAXNodes({id: nodeId});
-    if (!nodes) {
-      return [];
-    }
-
     const axNodes = [];
     for (const payload of nodes) {
-      if (!this._axIdToAXNode.has(payload.nodeId)) {
-        axNodes.push(new AccessibilityNode(this, payload));
-      }
+      axNodes.push(new AccessibilityNode(this, payload));
     }
-
-    for (const axNode of this._axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild._setParentNode(axNode);
-      }
-    }
-
-    return axNodes;
   }
 
-  /**
-   *
-   * @param {!DOMNode} node
-   * @return ?{!Promise<!AccessibilityNode[]>}
-   */
+  loadComplete({root}: Protocol.Accessibility.LoadCompleteEvent): void {
+    this.clear();
+    this.#root = new AccessibilityNode(this, root);
+    this.dispatchEventToListeners(Events.TreeUpdated, {root: this.#root});
+  }
 
-  async requestAndLoadSubTreeToNode(node: DOMNode): Promise<AccessibilityNode|null> {
-    // Node may have already been loaded, so don't bother requesting it again.
-    const loadedAXNode = this.axNodeForDOMNode(node);
-    if (loadedAXNode) {
-      return loadedAXNode;
+  nodesUpdated({nodes}: Protocol.Accessibility.NodesUpdatedEvent): void {
+    this.createNodesFromPayload(nodes);
+    this.dispatchEventToListeners(Events.TreeUpdated, {});
+    return;
+  }
+
+  private createNodesFromPayload(payloadNodes: Protocol.Accessibility.AXNode[]): AccessibilityNode[] {
+    const accessibilityNodes = payloadNodes.map(node => {
+      const sdkNode = new AccessibilityNode(this, node);
+      return sdkNode;
+    });
+
+    return accessibilityNodes;
+  }
+
+  async requestRootNode(frameId?: Protocol.Page.FrameId): Promise<AccessibilityNode|undefined> {
+    if (frameId && this.#frameIdToAXNode.has(frameId)) {
+      return this.#frameIdToAXNode.get(frameId);
+    }
+    if (!frameId && this.#root) {
+      return this.#root;
+    }
+    const {node} = await this.agent.invoke_getRootAXNode({frameId});
+    if (!node) {
+      return;
+    }
+    return this.createNodesFromPayload([node])[0];
+  }
+
+  async requestAXChildren(nodeId: Protocol.Accessibility.AXNodeId, frameId?: Protocol.Page.FrameId):
+      Promise<AccessibilityNode[]> {
+    const parent = this.#axIdToAXNode.get(nodeId);
+    if (!parent) {
+      throw Error('Cannot request children before parent');
+    }
+    if (!parent.hasUnloadedChildren()) {
+      return parent.children();
     }
 
-    const {nodes} = await this._agent.invoke_getPartialAXTree(
-        {nodeId: node.id, backendNodeId: undefined, objectId: undefined, fetchRelatives: true});
+    let nodes;
+    const request = this.#pendingChildRequests.get(nodeId);
+    if (request) {
+      await request;
+    } else {
+      const req = this.agent.invoke_getChildAXNodes({id: nodeId, frameId});
+      this.#pendingChildRequests.set(nodeId, req);
+      nodes = (await req).nodes;
+      this.createNodesFromPayload(nodes);
+      this.#pendingChildRequests.delete(nodeId);
+    }
+    return parent.children();
+  }
+
+  async requestAndLoadSubTreeToNode(node: DOMNode): Promise<AccessibilityNode[]|null> {
+    // Node may have already been loaded, so don't bother requesting it again.
+    const result = [];
+    let ancestor = this.axNodeForDOMNode(node);
+    while (ancestor) {
+      result.push(ancestor);
+      const parent = ancestor.parentNode();
+      if (!parent) {
+        return result;
+      }
+      ancestor = parent;
+    }
+    const {nodes} = await this.agent.invoke_getAXNodeAndAncestors({backendNodeId: node.backendNodeId()});
     if (!nodes) {
       return null;
     }
+    const ancestors = this.createNodesFromPayload(nodes);
 
-    const ancestors = [];
-    for (const payload of nodes) {
-      if (!this._axIdToAXNode.has(payload.nodeId)) {
-        ancestors.push(new AccessibilityNode(this, payload));
-      }
-    }
-
-    for (const axNode of this._axIdToAXNode.values()) {
-      for (const axChild of axNode.children()) {
-        axChild._setParentNode(axNode);
-      }
-    }
-
-    // Request top level children nodes.
-    for (const node of ancestors) {
-      await this.requestAXChildren(node.id());
-    }
-
-    return this.axNodeForDOMNode(node);
+    return ancestors;
   }
 
-  /**
-   * @param {string} axId
-   * @return {?AccessibilityNode}
-   */
-  axNodeForId(axId: string): AccessibilityNode|null {
-    return this._axIdToAXNode.get(axId) || null;
+  axNodeForId(axId: Protocol.Accessibility.AXNodeId): AccessibilityNode|null {
+    return this.#axIdToAXNode.get(axId) || null;
   }
 
-  _setAXNodeForAXId(axId: string, axNode: AccessibilityNode): void {
-    this._axIdToAXNode.set(axId, axNode);
+  setRootAXNodeForFrameId(frameId: Protocol.Page.FrameId, axNode: AccessibilityNode): void {
+    this.#frameIdToAXNode.set(frameId, axNode);
+  }
+
+  axNodeForFrameId(frameId: Protocol.Page.FrameId): AccessibilityNode|null {
+    return this.#frameIdToAXNode.get(frameId) ?? null;
+  }
+
+  setAXNodeForAXId(axId: string, axNode: AccessibilityNode): void {
+    this.#axIdToAXNode.set(axId, axNode);
   }
 
   axNodeForDOMNode(domNode: DOMNode|null): AccessibilityNode|null {
     if (!domNode) {
       return null;
     }
-    return this._backendDOMNodeIdToAXNode.get(domNode.backendNodeId());
+    return this.#backendDOMNodeIdToAXNode.get(domNode.backendNodeId()) ?? null;
   }
 
-  _setAXNodeForBackendDOMNodeId(backendDOMNodeId: number, axNode: AccessibilityNode): void {
-    this._backendDOMNodeIdToAXNode.set(backendDOMNodeId, axNode);
+  setAXNodeForBackendDOMNodeId(backendDOMNodeId: Protocol.DOM.BackendNodeId, axNode: AccessibilityNode): void {
+    this.#backendDOMNodeIdToAXNode.set(backendDOMNodeId, axNode);
+  }
+
+  getAgent(): ProtocolProxyApi.AccessibilityApi {
+    return this.agent;
   }
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 
 namespace base {
@@ -19,7 +20,6 @@ namespace base {
 // e.g. where an observer observes more than a single source.
 //
 // Use base::ScopedObservation for objects that observe only a single source.
-// This class and base::ScopedObservation replace ScopedObserver.
 //
 // When ScopedMultiSourceObservation is destroyed, it removes the object as an
 // observer from all sources it has been added to.
@@ -94,7 +94,7 @@ class ScopedMultiSourceObservation {
   size_t GetSourcesCount() const { return sources_.size(); }
 
  private:
-  Observer* const observer_;
+  const raw_ptr<Observer> observer_;
 
   std::vector<Source*> sources_;
 };

@@ -24,7 +24,6 @@
 #include "src/core/SkAdvancedTypefaceMetrics.h"
 #include "src/core/SkAnnotationKeys.h"
 #include "src/core/SkBitmapDevice.h"
-#include "src/core/SkClipOpPriv.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkDraw.h"
 #include "src/core/SkGlyphRun.h"
@@ -181,7 +180,7 @@ static SkTCopyOnFirstWrite<SkPaint> clean_paint(const SkPaint& srcPaint) {
     SkTCopyOnFirstWrite<SkPaint> paint(srcPaint);
     // If the paint will definitely draw opaquely, replace kSrc with
     // kSrcOver.  http://crbug.com/473572
-    if (SkBlendMode::kSrcOver != paint->getBlendMode() &&
+    if (!paint->isSrcOver() &&
         kSrcOver_SkXfermodeInterpretation == SkInterpretXfermode(*paint, false))
     {
         paint.writable()->setBlendMode(SkBlendMode::kSrcOver);
@@ -241,7 +240,7 @@ public:
             NOT_IMPLEMENTED(!matrix.hasPerspective(), false);
             return;
         }
-        fBlendMode = paint.getBlendMode();
+        fBlendMode = paint.getBlendMode_or(SkBlendMode::kSrcOver);
         fContentStream =
             fDevice->setUpContentEntry(clipStack, matrix, paint, textScale, &fDstFormXObject);
     }
@@ -411,9 +410,9 @@ void SkPDFDevice::drawPoints(SkCanvas::PointMode mode,
     }
 
     // SkDraw::drawPoints converts to multiple calls to fDevice->drawPath.
-    // We only use this when there's a path effect because of the overhead
+    // We only use this when there's a path effect or perspective because of the overhead
     // of multiple calls to setUpContentEntry it causes.
-    if (paint->getPathEffect()) {
+    if (paint->getPathEffect() || this->localToDevice().hasPerspective()) {
         draw_points(mode, count, points, *paint, this->devClipBounds(), this);
         return;
     }
@@ -665,13 +664,16 @@ public:
             fInText = false;
         }
     }
-    void setWideChars(bool wide) {
+    void setFont(SkPDFFont* pdfFont) {
         this->flush();
-        fWideChars = wide;
+        fPDFFont = pdfFont;
+        // Reader 2020.013.20064 incorrectly advances some Type3 fonts https://crbug.com/1226960
+        bool convertedToType3 = fPDFFont->getType() == SkAdvancedTypefaceMetrics::kOther_Font;
+        bool thousandEM = fPDFFont->typeface()->getUnitsPerEm() == 1000;
+        fViewersAgreeOnAdvancesInFont = thousandEM || !convertedToType3;
     }
-    void writeGlyph(SkPoint xy,
-                    SkScalar advanceWidth,
-                    uint16_t glyph) {
+    void writeGlyph(uint16_t glyph, SkScalar advanceWidth, SkPoint xy) {
+        SkASSERT(fPDFFont);
         if (!fInitialized) {
             // Flip the text about the x-axis to account for origin swap and include
             // the passed parameters.
@@ -686,7 +688,7 @@ public:
             fInitialized = true;
         }
         SkPoint position = xy - fCurrentMatrixOrigin;
-        if (position != SkPoint{fXAdvance, 0}) {
+        if (!fViewersAgreeOnXAdvance || position != SkPoint{fXAdvance, 0}) {
             this->flush();
             SkPDFUtils::AppendScalar(position.x() - position.y() * fTextSkewX, fContent);
             fContent->writeText(" ");
@@ -694,13 +696,17 @@ public:
             fContent->writeText(" Td ");
             fCurrentMatrixOrigin = xy;
             fXAdvance = 0;
+            fViewersAgreeOnXAdvance = true;
         }
         fXAdvance += advanceWidth;
+        if (!fViewersAgreeOnAdvancesInFont) {
+            fViewersAgreeOnXAdvance = false;
+        }
         if (!fInText) {
             fContent->writeText("<");
             fInText = true;
         }
-        if (fWideChars) {
+        if (fPDFFont->multiByteGlyphs()) {
             SkPDFUtils::WriteUInt16BE(fContent, glyph);
         } else {
             SkASSERT(0 == glyph >> 8);
@@ -710,10 +716,12 @@ public:
 
 private:
     SkDynamicMemoryWStream* fContent;
+    SkPDFFont* fPDFFont = nullptr;
     SkPoint fCurrentMatrixOrigin;
     SkScalar fXAdvance = 0.0f;
+    bool fViewersAgreeOnAdvancesInFont = true;
+    bool fViewersAgreeOnXAdvance = true;
     SkScalar fTextSkewX;
-    bool fWideChars = true;
     bool fInText = false;
     bool fInitialized = false;
 };
@@ -829,7 +837,7 @@ void SkPDFDevice::internalDrawGlyphRun(
     if (!metrics) {
         return;
     }
-    SkAdvancedTypefaceMetrics::FontType fontType = SkPDFFont::FontType(*metrics);
+    SkAdvancedTypefaceMetrics::FontType fontType = SkPDFFont::FontType(*typeface, *metrics);
 
     const std::vector<SkUnichar>& glyphToUnicode = SkPDFFont::GetUnicodeMap(typeface, fDocument);
 
@@ -932,8 +940,7 @@ void SkPDFDevice::internalDrawGlyphRun(
                 // Not yet specified font or need to switch font.
                 font = SkPDFFont::GetFontResource(fDocument, glyphs[index], typeface);
                 SkASSERT(font);  // All preconditions for SkPDFFont::GetFontResource are met.
-                glyphPositioner.flush();
-                glyphPositioner.setWideChars(font->multiByteGlyphs());
+                glyphPositioner.setFont(font);
                 SkPDFWriteResourceName(out, SkPDFResourceType::kFont,
                                        add_resource(fFontResources, font->indirectReference()));
                 out->writeText(" ");
@@ -942,10 +949,9 @@ void SkPDFDevice::internalDrawGlyphRun(
 
             }
             font->noteGlyphUsage(gid);
-            SkGlyphID encodedGlyph = font->multiByteGlyphs()
-                                   ? gid : font->glyphToPDFFontEncoding(gid);
+            SkGlyphID encodedGlyph = font->glyphToPDFFontEncoding(gid);
             SkScalar advance = advanceScale * glyphs[index]->advanceX();
-            glyphPositioner.writeGlyph(xy, advance, encodedGlyph);
+            glyphPositioner.writeGlyph(encodedGlyph, advance, xy);
         }
     }
 }
@@ -957,7 +963,7 @@ void SkPDFDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const S
     }
 }
 
-void SkPDFDevice::drawVertices(const SkVertices*, SkBlendMode, const SkPaint&) {
+void SkPDFDevice::drawVertices(const SkVertices*, sk_sp<SkBlender>, const SkPaint&) {
     if (this->hasEmptyClip()) {
         return;
     }
@@ -1155,6 +1161,8 @@ static void populate_graphic_state_entry_from_paint(
     // PDF treats a shader as a color, so we only set one or the other.
     SkShader* shader = paint.getShader();
     if (shader) {
+        // note: we always present the alpha as 1 for the shader, knowing that it will be
+        //       accounted for when we create our newGraphicsState (below)
         if (SkShader::kColor_GradientType == shader->asAGradient(nullptr)) {
             // We don't have to set a shader just for a color.
             SkShader::GradientInfo gradientInfo;
@@ -1183,8 +1191,9 @@ static void populate_graphic_state_entry_from_paint(
             SkIRect bounds;
             clipStackBounds.roundOut(&bounds);
 
-            SkPDFIndirectReference pdfShader
-                = SkPDFMakeShader(doc, shader, transform, bounds, paint.getColor4f());
+            auto c = paint.getColor4f();
+            SkPDFIndirectReference pdfShader = SkPDFMakeShader(doc, shader, transform, bounds,
+                                                               {c.fR, c.fG, c.fB, 1.0f});
 
             if (pdfShader) {
                 // pdfShader has been canonicalized so we can directly compare pointers.
@@ -1211,7 +1220,7 @@ SkDynamicMemoryWStream* SkPDFDevice::setUpContentEntry(const SkClipStack* clipSt
                                                        SkScalar textScale,
                                                        SkPDFIndirectReference* dst) {
     SkASSERT(!*dst);
-    SkBlendMode blendMode = paint.getBlendMode();
+    SkBlendMode blendMode = paint.getBlendMode_or(SkBlendMode::kSrcOver);
 
     // Dst xfer mode doesn't draw source at all.
     if (blendMode == SkBlendMode::kDst) {
@@ -1472,7 +1481,7 @@ void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
     // If the image is opaque and the paint's alpha is too, replace
     // kSrc blendmode with kSrcOver.  http://crbug.com/473572
     SkTCopyOnFirstWrite<SkPaint> paint(srcPaint);
-    if (SkBlendMode::kSrcOver != paint->getBlendMode() &&
+    if (!paint->isSrcOver() &&
         imageSubset.image()->isOpaque() &&
         kSrcOver_SkXfermodeInterpretation == SkInterpretXfermode(*paint, false))
     {
@@ -1574,15 +1583,15 @@ void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
         SkPath perspectiveOutline = SkPath::Rect(imageBounds).makeTransform(transform);
 
         // Retrieve the bounds of the new shape.
-        SkRect bounds = perspectiveOutline.getBounds();
-        if (!bounds.intersect(SkRect::Make(this->devClipBounds()))) {
+        SkRect outlineBounds = perspectiveOutline.getBounds();
+        if (!outlineBounds.intersect(SkRect::Make(this->devClipBounds()))) {
             return;
         }
 
         // Transform the bitmap in the new space to the final space, to account for DPI
-        SkRect physicalBounds = fInitialTransform.mapRect(bounds);
-        SkScalar scaleX = physicalBounds.width() / bounds.width();
-        SkScalar scaleY = physicalBounds.height() / bounds.height();
+        SkRect physicalBounds = fInitialTransform.mapRect(outlineBounds);
+        SkScalar scaleX = physicalBounds.width() / outlineBounds.width();
+        SkScalar scaleY = physicalBounds.height() / outlineBounds.height();
 
         // TODO(edisonn): A better approach would be to use a bitmap shader
         // (in clamp mode) and draw a rect over the entire bounding box. Then
@@ -1600,8 +1609,8 @@ void SkPDFDevice::internalDrawImageRect(SkKeyedImage imageSubset,
         SkCanvas* canvas = surface->getCanvas();
         canvas->clear(SK_ColorTRANSPARENT);
 
-        SkScalar deltaX = bounds.left();
-        SkScalar deltaY = bounds.top();
+        SkScalar deltaX = outlineBounds.left();
+        SkScalar deltaY = outlineBounds.top();
 
         SkMatrix offsetMatrix = transform;
         offsetMatrix.postTranslate(-deltaX, -deltaY);
